@@ -34,7 +34,7 @@ export function HitEffectsLayer({
                 fontSize: 24,
                 fill: 0xff4444,
                 fontWeight: "bold",
-                stroke: 0x000000,
+                stroke: { color: 0x000000, width: 2 },
               }}
             />
             <pixiText

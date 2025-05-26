@@ -53,12 +53,12 @@ interface TrigramTechnique {
   readonly vitalPoints: readonly string[];
 }
 
-// Movement constraints
+// Movement constraints - responsive to screen size
 const MOVEMENT_BOUNDS = {
-  MIN_X: 80,
-  MAX_X: 720,
-  MIN_Y: 220,
-  MAX_Y: 420,
+  MIN_X: window.innerWidth * 0.1,
+  MAX_X: window.innerWidth * 0.9,
+  MIN_Y: window.innerHeight * 0.3,
+  MAX_Y: window.innerHeight * 0.7,
 } as const;
 
 // Game balance constants
