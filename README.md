@@ -2,8 +2,7 @@
 
 2D action-combat game. Focus 정격자 = "Precision Attacker" , 비수 = "Dagger", 암살자 = "Assassin",급소격 = "Vital Point Strike"
 
-![Dark Trigram](src/assets/dark-trigram.png)
-
+![Dark Trigram](src/assets/black-trigram.png)
 
 ## Badges
 
