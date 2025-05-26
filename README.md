@@ -2,6 +2,9 @@
 
 2D action-combat game. Focus 정격자 = "Precision Attacker" , 비수 = "Dagger", 암살자 = "Assassin",급소격 = "Vital Point Strike"
 
+![Dark Trigram](src/assets/dark-trigram.png)
+
+
 ## Badges
 
 [![License](https://img.shields.io/github/license/Hack23/blacktrigram.svg)](https://github.com/Hack23/blacktrigram/raw/master/LICENSE.md)
