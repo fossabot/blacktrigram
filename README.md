@@ -1,11 +1,11 @@
-# Game Template
+# Black Trigram
 
-A clean, minimal template for building games with React, TypeScript, PixiJS, and Vite - built with **security-first principles**.
+2D action-combat game. Focus 정격자 = "Precision Attacker" , 비수 = "Dagger", 암살자 = "Assassin",급소격 = "Vital Point Strike"
 
 ## Badges
 
-[![License](https://img.shields.io/github/license/Hack23/game.svg)](https://github.com/Hack23/game/raw/master/LICENSE.md)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Hack23/game/badge)](https://scorecard.dev/viewer/?uri=github.com/Hack23/game)
+[![License](https://img.shields.io/github/license/Hack23/blacktrigram.svg)](https://github.com/Hack23/blacktrigram/raw/master/LICENSE.md)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Hack23/blacktrigram/badge)](https://scorecard.dev/viewer/?uri=github.com/Hack23/blacktrigram)
 
 ## 🔒 Security Features
 
