@@ -347,9 +347,9 @@ function IntroScreen({
         }}
       />
 
-      {/* Subtitle */}
+      {/* Subtitle with Korean martial arts terminology */}
       <pixiText
-        text="BLACK TRIGRAM"
+        text="BLACK TRIGRAM MARTIAL DOJANG"
         x={window.innerWidth / 2}
         y={window.innerHeight / 2 - 100}
         anchor={{ x: 0.5, y: 0.5 }}
@@ -366,9 +366,9 @@ function IntroScreen({
         <pixiGraphics draw={drawCenterCircle} />
       </pixiContainer>
 
-      {/* Core concepts with better typography */}
+      {/* Core concepts with better typography and Korean martial arts terms */}
       <pixiText
-        text="정격자 · 비수 · 암살자 · 급소격"
+        text="정격자 · 비수 · 암살자 · 급소격 · 도장"
         x={window.innerWidth / 2}
         y={window.innerHeight / 2 + 90}
         anchor={{ x: 0.5, y: 0.5 }}
@@ -381,7 +381,7 @@ function IntroScreen({
       />
 
       <pixiText
-        text="Precision Attacker · Lethal Blade · Assassin · Vital Point Strike"
+        text="Precision Attacker · Lethal Blade · Assassin · Vital Point Strike · Dojang"
         x={window.innerWidth / 2}
         y={window.innerHeight / 2 + 120}
         anchor={{ x: 0.5, y: 0.5 }}
@@ -447,9 +447,9 @@ function IntroScreen({
         </pixiContainer>
       ))}
 
-      {/* Enhanced philosophy quote */}
+      {/* Enhanced philosophy quote with Korean martial arts context */}
       <pixiText
-        text="무예는 몸과 마음, 그리고 영혼의 조화이다"
+        text="도장에서 무예는 몸과 마음, 그리고 영혼의 조화이다"
         x={window.innerWidth / 2}
         y={window.innerHeight - 100}
         anchor={{ x: 0.5, y: 0.5 }}
@@ -463,7 +463,7 @@ function IntroScreen({
       />
 
       <pixiText
-        text="Martial arts are the harmony of body, mind, and spirit"
+        text="In the dojang, martial arts are the harmony of body, mind, and spirit"
         x={window.innerWidth / 2}
         y={window.innerHeight - 70}
         anchor={{ x: 0.5, y: 0.5 }}

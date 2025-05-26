@@ -5,10 +5,10 @@ describe("Black Trigram Intro Page E2E", () => {
 
   describe("Initial Page Load", () => {
     it("should display the Black Trigram intro page correctly", () => {
-      // Check page title
+      // Check page title - updated to match Korean terminology
       cy.title().should(
         "eq",
-        "Black Trigram (흑괘) - Korean Martial Arts Game"
+        "Black Trigram (흑괘) - Korean Martial Arts Dojang"
       );
 
       // Check that the main container exists with full-screen styling

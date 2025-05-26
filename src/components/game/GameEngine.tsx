@@ -2,7 +2,7 @@ import { useTick } from "@pixi/react";
 import { useState, useCallback } from "react";
 import type { JSX } from "react";
 import { PlayerContainer } from "./Player";
-import { DojoBackground } from "./DojoBackground";
+import { DojangBackground } from "./DojangBackground";
 import { HitEffectsLayer, HitEffect } from "./HitEffectsLayer";
 import { GameUI } from "./GameUI";
 
@@ -184,13 +184,14 @@ export function GameEngine(): JSX.Element {
   const [gameState, setGameState] = useState<GameState>(
     GameStateManager.createInitialState()
   );
+  // Center players in the middle of the screen
   const [player1Pos, setPlayer1Pos] = useState<PlayerPosition>({
-    x: 200,
-    y: 400,
+    x: window.innerWidth / 2 - 150,
+    y: window.innerHeight / 2,
   });
   const [player2Pos, setPlayer2Pos] = useState<PlayerPosition>({
-    x: 600,
-    y: 400,
+    x: window.innerWidth / 2 + 150,
+    y: window.innerHeight / 2,
   });
   const [combatLog, setCombatLog] = useState<readonly string[]>([]);
   const [hitEffects, setHitEffects] = useState<readonly HitEffect[]>([]);
@@ -263,15 +264,26 @@ export function GameEngine(): JSX.Element {
 
   const resetMatch = useCallback(() => {
     setGameState(GameStateManager.resetMatch());
-    setPlayer1Pos({ x: 200, y: 400 });
-    setPlayer2Pos({ x: 600, y: 400 });
+    // Reset to centered positions
+    setPlayer1Pos({
+      x: window.innerWidth / 2 - 150,
+      y: window.innerHeight / 2,
+    });
+    setPlayer2Pos({
+      x: window.innerWidth / 2 + 150,
+      y: window.innerHeight / 2,
+    });
     setCombatLog([]);
     setHitEffects([]);
   }, []);
 
   return (
     <pixiContainer>
-      <DojoBackground gameTime={gameTime} />
+      <DojangBackground gameTime={gameTime} />
+
+      {/* Tutorial overlay when game hasn't started */}
+      {!gameState.matchStarted && <TutorialOverlay />}
+
       <PlayerContainer
         x={player1Pos.x}
         y={player1Pos.y}
@@ -302,6 +314,184 @@ export function GameEngine(): JSX.Element {
         onStartMatch={startMatch}
         onResetMatch={resetMatch}
       />
+    </pixiContainer>
+  );
+}
+
+// New tutorial overlay component
+function TutorialOverlay(): JSX.Element {
+  return (
+    <pixiContainer>
+      {/* Semi-transparent background */}
+      <pixiGraphics
+        draw={(g) => {
+          g.clear();
+          g.setFillStyle({ color: 0x000000, alpha: 0.8 });
+          g.rect(0, 0, window.innerWidth, window.innerHeight);
+          g.fill();
+        }}
+      />
+
+      {/* Main tutorial panel - centered */}
+      <pixiContainer x={window.innerWidth / 2} y={window.innerHeight / 2}>
+        <pixiGraphics
+          draw={(g) => {
+            g.clear();
+            // Tutorial panel background
+            g.setFillStyle({ color: 0x1a1a1a, alpha: 0.95 });
+            g.roundRect(-300, -200, 600, 400, 20);
+            g.fill();
+
+            // Traditional Korean border
+            g.setStrokeStyle({ color: 0x8b0000, width: 3 });
+            g.roundRect(-300, -200, 600, 400, 20);
+            g.stroke();
+
+            // Inner accent border
+            g.setStrokeStyle({ color: 0xffd700, width: 1 });
+            g.roundRect(-290, -190, 580, 380, 15);
+            g.stroke();
+          }}
+        />
+
+        {/* Tutorial title */}
+        <pixiText
+          text="흑괘 무술 대련"
+          y={-160}
+          anchor={{ x: 0.5, y: 0.5 }}
+          style={{
+            fontFamily: "Noto Sans KR",
+            fontSize: 28,
+            fill: 0x8b0000,
+            fontWeight: "bold",
+          }}
+        />
+
+        <pixiText
+          text="BLACK TRIGRAM MARTIAL COMBAT"
+          y={-130}
+          anchor={{ x: 0.5, y: 0.5 }}
+          style={{
+            fontFamily: "monospace",
+            fontSize: 14,
+            fill: 0xffd700,
+            letterSpacing: 2,
+          }}
+        />
+
+        {/* Controls section */}
+        <pixiText
+          text="조작법 (Controls)"
+          y={-80}
+          anchor={{ x: 0.5, y: 0.5 }}
+          style={{
+            fontFamily: "Noto Sans KR",
+            fontSize: 20,
+            fill: 0xffd700,
+            fontWeight: "bold",
+          }}
+        />
+
+        {/* Movement controls */}
+        <pixiText
+          text="이동 (Movement): WASD 또는 방향키"
+          x={-150}
+          y={-40}
+          anchor={{ x: 0, y: 0.5 }}
+          style={{
+            fontFamily: "Noto Sans KR",
+            fontSize: 16,
+            fill: 0xffffff,
+          }}
+        />
+
+        {/* Attack controls */}
+        <pixiText
+          text="팔괘 기술 (Trigram Techniques): 1-8 번호키"
+          x={-150}
+          y={-10}
+          anchor={{ x: 0, y: 0.5 }}
+          style={{
+            fontFamily: "Noto Sans KR",
+            fontSize: 16,
+            fill: 0xffffff,
+          }}
+        />
+
+        {/* Block controls */}
+        <pixiText
+          text="방어 (Block): 스페이스바"
+          x={-150}
+          y={20}
+          anchor={{ x: 0, y: 0.5 }}
+          style={{
+            fontFamily: "Noto Sans KR",
+            fontSize: 16,
+            fill: 0xffffff,
+          }}
+        />
+
+        {/* Quick attack */}
+        <pixiText
+          text="급공 (Quick Attack): 마우스 클릭"
+          x={-150}
+          y={50}
+          anchor={{ x: 0, y: 0.5 }}
+          style={{
+            fontFamily: "Noto Sans KR",
+            fontSize: 16,
+            fill: 0xffffff,
+          }}
+        />
+
+        {/* Objective */}
+        <pixiText
+          text="목표: 상대의 체력을 0으로 만드세요!"
+          y={90}
+          anchor={{ x: 0.5, y: 0.5 }}
+          style={{
+            fontFamily: "Noto Sans KR",
+            fontSize: 18,
+            fill: 0x8b0000,
+            fontWeight: "bold",
+          }}
+        />
+
+        <pixiText
+          text="Objective: Reduce opponent's health to zero!"
+          y={115}
+          anchor={{ x: 0.5, y: 0.5 }}
+          style={{
+            fontFamily: "monospace",
+            fontSize: 14,
+            fill: 0xffd700,
+          }}
+        />
+
+        {/* Start instruction */}
+        <pixiText
+          text="아무 키나 누르거나 클릭하여 시작하세요"
+          y={160}
+          anchor={{ x: 0.5, y: 0.5 }}
+          style={{
+            fontFamily: "Noto Sans KR",
+            fontSize: 16,
+            fill: 0xffffff,
+            fontWeight: "bold",
+          }}
+        />
+
+        <pixiText
+          text="Press any key or click to start combat"
+          y={185}
+          anchor={{ x: 0.5, y: 0.5 }}
+          style={{
+            fontFamily: "monospace",
+            fontSize: 12,
+            fill: 0xcccccc,
+          }}
+        />
+      </pixiContainer>
     </pixiContainer>
   );
 }
