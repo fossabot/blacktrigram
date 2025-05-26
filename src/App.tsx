@@ -80,6 +80,9 @@ function IntroScreen({
 }): JSX.Element {
   const [hoveredTrigram, setHoveredTrigram] = useState<string | null>(null);
   const [time, setTime] = useState<number>(0);
+  const [selectedOption, setSelectedOption] = useState<"sparring" | "training">(
+    "sparring"
+  );
 
   // Enhanced trigram positioning in octagon formation for better visual balance
   const trigrams: TrigramSymbol[] = [
@@ -163,6 +166,55 @@ function IntroScreen({
     }, 16);
     return () => clearInterval(interval);
   }, []);
+
+  // Keyboard controls for intro screen
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      // Navigation controls
+      if (event.code === "ArrowLeft" || event.code === "KeyA") {
+        setSelectedOption("sparring");
+      }
+      if (event.code === "ArrowRight" || event.code === "KeyD") {
+        setSelectedOption("training");
+      }
+
+      // Action controls
+      if (event.code === "Space" || event.code === "Enter") {
+        event.preventDefault();
+        if (selectedOption === "sparring") {
+          onStartGame();
+        } else {
+          onStartTraining();
+        }
+      }
+
+      // Alternative keys
+      if (event.code === "AltLeft" || event.code === "AltRight") {
+        event.preventDefault();
+        onStartTraining();
+      }
+
+      // Quick start with number keys
+      if (event.code === "Digit1") {
+        onStartGame();
+      }
+      if (event.code === "Digit2") {
+        onStartTraining();
+      }
+    };
+
+    const handleKeyUp = (): void => {
+      // Key up handler - no state tracking needed for intro screen
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [selectedOption, onStartGame, onStartTraining]);
 
   const drawBackground = useCallback((graphics: Graphics) => {
     graphics.clear();
@@ -423,38 +475,65 @@ function IntroScreen({
         }}
       />
 
-      {/* Enhanced call to action */}
+      {/* Controls instructions */}
       <pixiText
-        text="Press any key to begin your journey"
+        text="← → 방향키 또는 A/D로 선택 | 스페이스/엔터로 확인 | 1-대련, 2-수련"
         x={window.innerWidth / 2}
-        y={window.innerHeight - 30}
+        y={window.innerHeight - 40}
         anchor={{ x: 0.5, y: 0.5 }}
-        alpha={Math.sin(time * 2) * 0.4 + 0.6}
         style={{
-          fontFamily: "monospace",
+          fontFamily: "Noto Sans KR",
           fontSize: 12,
           fill: 0x555555,
-          letterSpacing: 2,
+          letterSpacing: 1,
         }}
       />
 
-      {/* Game mode selection */}
+      <pixiText
+        text="Arrow Keys/A-D to Select | Space/Enter to Confirm | Alt for Training"
+        x={window.innerWidth / 2}
+        y={window.innerHeight - 20}
+        anchor={{ x: 0.5, y: 0.5 }}
+        style={{
+          fontFamily: "monospace",
+          fontSize: 10,
+          fill: 0x444444,
+          letterSpacing: 1,
+        }}
+      />
+
+      {/* Game mode selection with keyboard selection indicator */}
       <pixiContainer
         x={window.innerWidth / 2 - 100}
         y={window.innerHeight / 2 + 150}
         interactive={true}
         cursor="pointer"
         onPointerDown={onStartGame}
+        onPointerEnter={() => setSelectedOption("sparring")}
       >
         <pixiGraphics
           draw={(g) => {
             g.clear();
-            g.setFillStyle({ color: 0x8b0000 });
+            const isSelected = selectedOption === "sparring";
+            const pulse = isSelected ? Math.sin(time * 0.1) * 0.2 + 0.8 : 1.0;
+
+            g.setFillStyle({ color: 0x8b0000, alpha: pulse });
             g.roundRect(-80, -25, 160, 50, 10);
             g.fill();
-            g.setStrokeStyle({ color: 0xffffff, width: 2 });
+
+            g.setStrokeStyle({
+              color: isSelected ? 0xffffff : 0x999999,
+              width: isSelected ? 3 : 2,
+            });
             g.roundRect(-80, -25, 160, 50, 10);
             g.stroke();
+
+            // Selection indicator
+            if (isSelected) {
+              g.setFillStyle({ color: 0xffffff, alpha: 0.3 });
+              g.roundRect(-85, -30, 170, 60, 12);
+              g.fill();
+            }
           }}
         />
         <pixiText
@@ -463,8 +542,18 @@ function IntroScreen({
           style={{
             fontFamily: "Noto Sans KR",
             fontSize: 16,
-            fill: 0xffffff,
+            fill: selectedOption === "sparring" ? 0xffffff : 0xcccccc,
             fontWeight: "bold",
+          }}
+        />
+        <pixiText
+          text="[1]"
+          anchor={{ x: 0.5, y: 0.5 }}
+          y={20}
+          style={{
+            fontFamily: "monospace",
+            fontSize: 12,
+            fill: 0x999999,
           }}
         />
       </pixiContainer>
@@ -475,16 +564,31 @@ function IntroScreen({
         interactive={true}
         cursor="pointer"
         onPointerDown={onStartTraining}
+        onPointerEnter={() => setSelectedOption("training")}
       >
         <pixiGraphics
           draw={(g) => {
             g.clear();
-            g.setFillStyle({ color: 0x4a4a4a });
+            const isSelected = selectedOption === "training";
+            const pulse = isSelected ? Math.sin(time * 0.1) * 0.2 + 0.8 : 1.0;
+
+            g.setFillStyle({ color: 0x4a4a4a, alpha: pulse });
             g.roundRect(-80, -25, 160, 50, 10);
             g.fill();
-            g.setStrokeStyle({ color: 0xffffff, width: 2 });
+
+            g.setStrokeStyle({
+              color: isSelected ? 0xffffff : 0x999999,
+              width: isSelected ? 3 : 2,
+            });
             g.roundRect(-80, -25, 160, 50, 10);
             g.stroke();
+
+            // Selection indicator
+            if (isSelected) {
+              g.setFillStyle({ color: 0xffffff, alpha: 0.3 });
+              g.roundRect(-85, -30, 170, 60, 12);
+              g.fill();
+            }
           }}
         />
         <pixiText
@@ -493,8 +597,18 @@ function IntroScreen({
           style={{
             fontFamily: "Noto Sans KR",
             fontSize: 16,
-            fill: 0xffffff,
+            fill: selectedOption === "training" ? 0xffffff : 0xcccccc,
             fontWeight: "bold",
+          }}
+        />
+        <pixiText
+          text="[2] [Alt]"
+          anchor={{ x: 0.5, y: 0.5 }}
+          y={20}
+          style={{
+            fontFamily: "monospace",
+            fontSize: 12,
+            fill: 0x999999,
           }}
         />
       </pixiContainer>
