@@ -1,8 +1,9 @@
 import { Application, extend } from "@pixi/react";
 import { Container, Graphics, Text } from "pixi.js";
-import { useCallback, useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { JSX } from "react";
 import "./App.css";
+import { GameEngine } from "./components/game/GameEngine";
 
 // Extend @pixi/react with the Pixi components we want to use
 extend({
@@ -10,6 +11,8 @@ extend({
   Graphics,
   Text,
 });
+
+type GameMode = "intro" | "game" | "training";
 
 interface TrigramSymbol {
   name: string;
@@ -21,7 +24,60 @@ interface TrigramSymbol {
   alpha: number;
 }
 
-function GameContent(): JSX.Element {
+function App(): JSX.Element {
+  const [gameMode, setGameMode] = useState<GameMode>("intro");
+
+  const startGame = (): void => {
+    setGameMode("game");
+  };
+
+  const startTraining = (): void => {
+    setGameMode("training");
+  };
+
+  const returnToIntro = (): void => {
+    setGameMode("intro");
+  };
+
+  return (
+    <div className="app-container">
+      <Application
+        width={window.innerWidth}
+        height={window.innerHeight}
+        backgroundColor={0x000000}
+        antialias={true}
+        resizeTo={window}
+      >
+        {gameMode === "intro" && (
+          <IntroScreen
+            onStartGame={startGame}
+            onStartTraining={startTraining}
+          />
+        )}
+        {gameMode === "game" && (
+          <pixiContainer>
+            <GameEngine />
+            <BackButton onBack={returnToIntro} />
+          </pixiContainer>
+        )}
+        {gameMode === "training" && (
+          <pixiContainer>
+            <TrainingMode />
+            <BackButton onBack={returnToIntro} />
+          </pixiContainer>
+        )}
+      </Application>
+    </div>
+  );
+}
+
+function IntroScreen({
+  onStartGame,
+  onStartTraining,
+}: {
+  onStartGame: () => void;
+  onStartTraining: () => void;
+}): JSX.Element {
   const [hoveredTrigram, setHoveredTrigram] = useState<string | null>(null);
   const [time, setTime] = useState<number>(0);
 
@@ -381,23 +437,131 @@ function GameContent(): JSX.Element {
           letterSpacing: 2,
         }}
       />
+
+      {/* Game mode selection */}
+      <pixiContainer
+        x={window.innerWidth / 2 - 100}
+        y={window.innerHeight / 2 + 150}
+        interactive={true}
+        cursor="pointer"
+        onPointerDown={onStartGame}
+      >
+        <pixiGraphics
+          draw={(g) => {
+            g.clear();
+            g.setFillStyle({ color: 0x8b0000 });
+            g.roundRect(-80, -25, 160, 50, 10);
+            g.fill();
+            g.setStrokeStyle({ color: 0xffffff, width: 2 });
+            g.roundRect(-80, -25, 160, 50, 10);
+            g.stroke();
+          }}
+        />
+        <pixiText
+          text="대련 (Sparring)"
+          anchor={{ x: 0.5, y: 0.5 }}
+          style={{
+            fontFamily: "Noto Sans KR",
+            fontSize: 16,
+            fill: 0xffffff,
+            fontWeight: "bold",
+          }}
+        />
+      </pixiContainer>
+
+      <pixiContainer
+        x={window.innerWidth / 2 + 100}
+        y={window.innerHeight / 2 + 150}
+        interactive={true}
+        cursor="pointer"
+        onPointerDown={onStartTraining}
+      >
+        <pixiGraphics
+          draw={(g) => {
+            g.clear();
+            g.setFillStyle({ color: 0x4a4a4a });
+            g.roundRect(-80, -25, 160, 50, 10);
+            g.fill();
+            g.setStrokeStyle({ color: 0xffffff, width: 2 });
+            g.roundRect(-80, -25, 160, 50, 10);
+            g.stroke();
+          }}
+        />
+        <pixiText
+          text="수련 (Training)"
+          anchor={{ x: 0.5, y: 0.5 }}
+          style={{
+            fontFamily: "Noto Sans KR",
+            fontSize: 16,
+            fill: 0xffffff,
+            fontWeight: "bold",
+          }}
+        />
+      </pixiContainer>
     </pixiContainer>
   );
 }
 
-function App(): JSX.Element {
+function TrainingMode(): JSX.Element {
   return (
-    <div className="app-container">
-      <Application
-        width={window.innerWidth}
-        height={window.innerHeight}
-        backgroundColor={0x000000}
-        antialias={true}
-        resizeTo={window}
-      >
-        <GameContent />
-      </Application>
-    </div>
+    <pixiContainer>
+      <pixiText
+        text="수련 모드 (Training Mode)"
+        x={window.innerWidth / 2}
+        y={window.innerHeight / 2}
+        anchor={{ x: 0.5, y: 0.5 }}
+        style={{
+          fontFamily: "Noto Sans KR",
+          fontSize: 32,
+          fill: 0xffffff,
+          fontWeight: "bold",
+        }}
+      />
+      <pixiText
+        text="곧 출시됩니다 (Coming Soon)"
+        x={window.innerWidth / 2}
+        y={window.innerHeight / 2 + 50}
+        anchor={{ x: 0.5, y: 0.5 }}
+        style={{
+          fontFamily: "Noto Sans KR",
+          fontSize: 18,
+          fill: 0x999999,
+        }}
+      />
+    </pixiContainer>
+  );
+}
+
+function BackButton({ onBack }: { onBack: () => void }): JSX.Element {
+  return (
+    <pixiContainer
+      x={50}
+      y={50}
+      interactive={true}
+      cursor="pointer"
+      onPointerDown={onBack}
+    >
+      <pixiGraphics
+        draw={(g) => {
+          g.clear();
+          g.setFillStyle({ color: 0x666666 });
+          g.roundRect(-30, -15, 60, 30, 5);
+          g.fill();
+          g.setStrokeStyle({ color: 0xffffff, width: 1 });
+          g.roundRect(-30, -15, 60, 30, 5);
+          g.stroke();
+        }}
+      />
+      <pixiText
+        text="뒤로"
+        anchor={{ x: 0.5, y: 0.5 }}
+        style={{
+          fontFamily: "Noto Sans KR",
+          fontSize: 12,
+          fill: 0xffffff,
+        }}
+      />
+    </pixiContainer>
   );
 }
 

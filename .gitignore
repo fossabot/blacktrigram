@@ -3,6 +3,8 @@ coverage/
 coverage/game/
 cypress/results/
 node_modules
+dist/
+dist
 coverage
 coverage/game
 cypress/results
@@ -5688,3 +5690,4 @@ dist/assets/browserAll-B03a4uXL.js
 dist/assets/index-DhEMd0Oq.js
 dist/assets/pixi-DgHaZaFf.js
 dist/assets/webworkerAll-BOoFFBj4.js
+dist/assets/pixi-CmkkZA4O.js
