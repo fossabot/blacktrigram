@@ -1,8 +1,9 @@
 import { Application, extend } from "@pixi/react";
 import { Container, Graphics, Text } from "pixi.js";
-import { useCallback, useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { JSX } from "react";
 import "./App.css";
+import { GameEngine } from "./components/game/GameEngine";
 
 // Extend @pixi/react with the Pixi components we want to use
 extend({
@@ -10,6 +11,8 @@ extend({
   Graphics,
   Text,
 });
+
+type GameMode = "intro" | "game" | "training";
 
 interface TrigramSymbol {
   name: string;
@@ -21,9 +24,65 @@ interface TrigramSymbol {
   alpha: number;
 }
 
-function GameContent(): JSX.Element {
+function App(): JSX.Element {
+  const [gameMode, setGameMode] = useState<GameMode>("intro");
+
+  const startGame = (): void => {
+    setGameMode("game");
+  };
+
+  const startTraining = (): void => {
+    setGameMode("training");
+  };
+
+  const returnToIntro = (): void => {
+    setGameMode("intro");
+  };
+
+  return (
+    <div className="app-container">
+      <Application
+        width={window.innerWidth}
+        height={window.innerHeight}
+        backgroundColor={0x000000}
+        antialias={true}
+        resizeTo={window}
+      >
+        {gameMode === "intro" && (
+          <IntroScreen
+            onStartGame={startGame}
+            onStartTraining={startTraining}
+          />
+        )}
+        {gameMode === "game" && (
+          <pixiContainer>
+            <GameEngine />
+            <BackButton onBack={returnToIntro} />
+          </pixiContainer>
+        )}
+        {gameMode === "training" && (
+          <pixiContainer>
+            <TrainingMode />
+            <BackButton onBack={returnToIntro} />
+          </pixiContainer>
+        )}
+      </Application>
+    </div>
+  );
+}
+
+function IntroScreen({
+  onStartGame,
+  onStartTraining,
+}: {
+  onStartGame: () => void;
+  onStartTraining: () => void;
+}): JSX.Element {
   const [hoveredTrigram, setHoveredTrigram] = useState<string | null>(null);
   const [time, setTime] = useState<number>(0);
+  const [selectedOption, setSelectedOption] = useState<"sparring" | "training">(
+    "sparring"
+  );
 
   // Enhanced trigram positioning in octagon formation for better visual balance
   const trigrams: TrigramSymbol[] = [
@@ -107,6 +166,55 @@ function GameContent(): JSX.Element {
     }, 16);
     return () => clearInterval(interval);
   }, []);
+
+  // Keyboard controls for intro screen
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      // Navigation controls
+      if (event.code === "ArrowLeft" || event.code === "KeyA") {
+        setSelectedOption("sparring");
+      }
+      if (event.code === "ArrowRight" || event.code === "KeyD") {
+        setSelectedOption("training");
+      }
+
+      // Action controls
+      if (event.code === "Space" || event.code === "Enter") {
+        event.preventDefault();
+        if (selectedOption === "sparring") {
+          onStartGame();
+        } else {
+          onStartTraining();
+        }
+      }
+
+      // Alternative keys
+      if (event.code === "AltLeft" || event.code === "AltRight") {
+        event.preventDefault();
+        onStartTraining();
+      }
+
+      // Quick start with number keys
+      if (event.code === "Digit1") {
+        onStartGame();
+      }
+      if (event.code === "Digit2") {
+        onStartTraining();
+      }
+    };
+
+    const handleKeyUp = (): void => {
+      // Key up handler - no state tracking needed for intro screen
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [selectedOption, onStartGame, onStartTraining]);
 
   const drawBackground = useCallback((graphics: Graphics) => {
     graphics.clear();
@@ -367,37 +475,207 @@ function GameContent(): JSX.Element {
         }}
       />
 
-      {/* Enhanced call to action */}
+      {/* Controls instructions */}
       <pixiText
-        text="Press any key to begin your journey"
+        text="← → 방향키 또는 A/D로 선택 | 스페이스/엔터로 확인 | 1-대련, 2-수련"
         x={window.innerWidth / 2}
-        y={window.innerHeight - 30}
+        y={window.innerHeight - 40}
         anchor={{ x: 0.5, y: 0.5 }}
-        alpha={Math.sin(time * 2) * 0.4 + 0.6}
         style={{
-          fontFamily: "monospace",
+          fontFamily: "Noto Sans KR",
           fontSize: 12,
           fill: 0x555555,
-          letterSpacing: 2,
+          letterSpacing: 1,
+        }}
+      />
+
+      <pixiText
+        text="Arrow Keys/A-D to Select | Space/Enter to Confirm | Alt for Training"
+        x={window.innerWidth / 2}
+        y={window.innerHeight - 20}
+        anchor={{ x: 0.5, y: 0.5 }}
+        style={{
+          fontFamily: "monospace",
+          fontSize: 10,
+          fill: 0x444444,
+          letterSpacing: 1,
+        }}
+      />
+
+      {/* Game mode selection with keyboard selection indicator */}
+      <pixiContainer
+        x={window.innerWidth / 2 - 100}
+        y={window.innerHeight / 2 + 150}
+        interactive={true}
+        cursor="pointer"
+        onPointerDown={onStartGame}
+        onPointerEnter={() => setSelectedOption("sparring")}
+      >
+        <pixiGraphics
+          draw={(g) => {
+            g.clear();
+            const isSelected = selectedOption === "sparring";
+            const pulse = isSelected ? Math.sin(time * 0.1) * 0.2 + 0.8 : 1.0;
+
+            g.setFillStyle({ color: 0x8b0000, alpha: pulse });
+            g.roundRect(-80, -25, 160, 50, 10);
+            g.fill();
+
+            g.setStrokeStyle({
+              color: isSelected ? 0xffffff : 0x999999,
+              width: isSelected ? 3 : 2,
+            });
+            g.roundRect(-80, -25, 160, 50, 10);
+            g.stroke();
+
+            // Selection indicator
+            if (isSelected) {
+              g.setFillStyle({ color: 0xffffff, alpha: 0.3 });
+              g.roundRect(-85, -30, 170, 60, 12);
+              g.fill();
+            }
+          }}
+        />
+        <pixiText
+          text="대련 (Sparring)"
+          anchor={{ x: 0.5, y: 0.5 }}
+          style={{
+            fontFamily: "Noto Sans KR",
+            fontSize: 16,
+            fill: selectedOption === "sparring" ? 0xffffff : 0xcccccc,
+            fontWeight: "bold",
+          }}
+        />
+        <pixiText
+          text="[1]"
+          anchor={{ x: 0.5, y: 0.5 }}
+          y={20}
+          style={{
+            fontFamily: "monospace",
+            fontSize: 12,
+            fill: 0x999999,
+          }}
+        />
+      </pixiContainer>
+
+      <pixiContainer
+        x={window.innerWidth / 2 + 100}
+        y={window.innerHeight / 2 + 150}
+        interactive={true}
+        cursor="pointer"
+        onPointerDown={onStartTraining}
+        onPointerEnter={() => setSelectedOption("training")}
+      >
+        <pixiGraphics
+          draw={(g) => {
+            g.clear();
+            const isSelected = selectedOption === "training";
+            const pulse = isSelected ? Math.sin(time * 0.1) * 0.2 + 0.8 : 1.0;
+
+            g.setFillStyle({ color: 0x4a4a4a, alpha: pulse });
+            g.roundRect(-80, -25, 160, 50, 10);
+            g.fill();
+
+            g.setStrokeStyle({
+              color: isSelected ? 0xffffff : 0x999999,
+              width: isSelected ? 3 : 2,
+            });
+            g.roundRect(-80, -25, 160, 50, 10);
+            g.stroke();
+
+            // Selection indicator
+            if (isSelected) {
+              g.setFillStyle({ color: 0xffffff, alpha: 0.3 });
+              g.roundRect(-85, -30, 170, 60, 12);
+              g.fill();
+            }
+          }}
+        />
+        <pixiText
+          text="수련 (Training)"
+          anchor={{ x: 0.5, y: 0.5 }}
+          style={{
+            fontFamily: "Noto Sans KR",
+            fontSize: 16,
+            fill: selectedOption === "training" ? 0xffffff : 0xcccccc,
+            fontWeight: "bold",
+          }}
+        />
+        <pixiText
+          text="[2] [Alt]"
+          anchor={{ x: 0.5, y: 0.5 }}
+          y={20}
+          style={{
+            fontFamily: "monospace",
+            fontSize: 12,
+            fill: 0x999999,
+          }}
+        />
+      </pixiContainer>
+    </pixiContainer>
+  );
+}
+
+function TrainingMode(): JSX.Element {
+  return (
+    <pixiContainer>
+      <pixiText
+        text="수련 모드 (Training Mode)"
+        x={window.innerWidth / 2}
+        y={window.innerHeight / 2}
+        anchor={{ x: 0.5, y: 0.5 }}
+        style={{
+          fontFamily: "Noto Sans KR",
+          fontSize: 32,
+          fill: 0xffffff,
+          fontWeight: "bold",
+        }}
+      />
+      <pixiText
+        text="곧 출시됩니다 (Coming Soon)"
+        x={window.innerWidth / 2}
+        y={window.innerHeight / 2 + 50}
+        anchor={{ x: 0.5, y: 0.5 }}
+        style={{
+          fontFamily: "Noto Sans KR",
+          fontSize: 18,
+          fill: 0x999999,
         }}
       />
     </pixiContainer>
   );
 }
 
-function App(): JSX.Element {
+function BackButton({ onBack }: { onBack: () => void }): JSX.Element {
   return (
-    <div className="app-container">
-      <Application
-        width={window.innerWidth}
-        height={window.innerHeight}
-        backgroundColor={0x000000}
-        antialias={true}
-        resizeTo={window}
-      >
-        <GameContent />
-      </Application>
-    </div>
+    <pixiContainer
+      x={50}
+      y={50}
+      interactive={true}
+      cursor="pointer"
+      onPointerDown={onBack}
+    >
+      <pixiGraphics
+        draw={(g) => {
+          g.clear();
+          g.setFillStyle({ color: 0x666666 });
+          g.roundRect(-30, -15, 60, 30, 5);
+          g.fill();
+          g.setStrokeStyle({ color: 0xffffff, width: 1 });
+          g.roundRect(-30, -15, 60, 30, 5);
+          g.stroke();
+        }}
+      />
+      <pixiText
+        text="뒤로"
+        anchor={{ x: 0.5, y: 0.5 }}
+        style={{
+          fontFamily: "Noto Sans KR",
+          fontSize: 12,
+          fill: 0xffffff,
+        }}
+      />
+    </pixiContainer>
   );
 }
 
