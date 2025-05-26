@@ -1,11 +1,56 @@
-import "@testing-library/jest-dom";
-import { vi } from "vitest";
-import React from "react";
+import { beforeAll, afterEach, vi } from "vitest";
+import { cleanup } from "@testing-library/react";
+import "@testing-library/jest-dom/vitest";
+import type { ReactNode } from "react";
+import { createElement } from "react";
 
-// Create a proper spy for the extend function
-const extendSpy = vi.fn();
+// Enhanced PixiJS mocking for Korean martial arts game
+export const extendSpy = vi.fn();
 
-// Mock @pixi/react with proper React components
+// Define proper types for mock components
+interface MockApplicationProps {
+  children?: ReactNode;
+  width?: number;
+  height?: number;
+  backgroundColor?: number;
+  antialias?: boolean;
+  [key: string]: unknown;
+}
+
+interface MockContainerProps {
+  children?: ReactNode;
+  interactive?: boolean;
+  onPointerDown?: () => void;
+  onPointerEnter?: () => void;
+  onPointerLeave?: () => void;
+  cursor?: string;
+  x?: number;
+  y?: number;
+  [key: string]: unknown;
+}
+
+interface MockGraphicsProps {
+  draw?: (g: unknown) => void;
+  [key: string]: unknown;
+}
+
+interface MockTextProps {
+  text?: string;
+  style?: {
+    fontFamily?: string;
+    fontSize?: number;
+    fill?: number;
+    [key: string]: unknown;
+  };
+  anchor?: { x: number; y: number };
+  alpha?: number;
+  scale?: { x?: number; y?: number };
+  x?: number;
+  y?: number;
+  [key: string]: unknown;
+}
+
+// Mock @pixi/react with comprehensive Korean game support
 vi.mock("@pixi/react", () => ({
   Application: ({
     children,
@@ -13,339 +58,342 @@ vi.mock("@pixi/react", () => ({
     height,
     backgroundColor,
     antialias,
-  }: {
-    children?: React.ReactNode;
-    width: number;
-    height: number;
-    backgroundColor: number;
-    antialias: boolean;
-  }) =>
-    React.createElement(
+    ...props
+  }: MockApplicationProps) => {
+    return createElement(
       "div",
       {
         "data-testid": "pixi-application",
-        "data-width": width,
-        "data-height": height,
-        "data-background-color": backgroundColor,
-        "data-antialias": antialias,
+        "data-width": String(width || 0),
+        "data-height": String(height || 0),
+        "data-background-color": String(backgroundColor || 0),
+        "data-antialias": String(antialias || false),
+        ...Object.fromEntries(
+          Object.entries(props).map(([key, value]) => [
+            `data-${key}`,
+            typeof value === "string" ||
+            typeof value === "number" ||
+            typeof value === "boolean"
+              ? String(value)
+              : "",
+          ])
+        ),
       },
       children
-    ),
+    );
+  },
+
   extend: extendSpy,
+
+  useTick: vi.fn(
+    (callback?: (ticker: { deltaTime: number; elapsedMS: number }) => void) => {
+      // Simulate game loop for Korean martial arts mechanics
+      if (typeof callback === "function") {
+        // Don't actually call the callback in tests to avoid infinite loops
+        // const mockTicker = { deltaTime: 1, elapsedMS: 16.67 };
+        // callback(mockTicker);
+      }
+    }
+  ),
+
+  // Enhanced PixiJS component mocks for martial arts game
+  pixiContainer: ({
+    children,
+    interactive,
+    onPointerDown,
+    onPointerEnter,
+    onPointerLeave,
+    cursor,
+    x,
+    y,
+    ...props
+  }: MockContainerProps) => {
+    return createElement(
+      "div",
+      {
+        "data-testid": "pixi-container",
+        "data-interactive": String(interactive || false),
+        "data-cursor": cursor || "default",
+        "data-x": String(x || 0),
+        "data-y": String(y || 0),
+        onClick: onPointerDown,
+        onMouseEnter: onPointerEnter,
+        onMouseLeave: onPointerLeave,
+        ...Object.fromEntries(
+          Object.entries(props).map(([key, value]) => [
+            `data-${key}`,
+            typeof value === "string" ||
+            typeof value === "number" ||
+            typeof value === "boolean"
+              ? String(value)
+              : "",
+          ])
+        ),
+      },
+      children
+    );
+  },
+
+  pixiGraphics: ({ draw, ...props }: MockGraphicsProps) => {
+    // Mock graphics for Korean dojo backgrounds and effects
+    if (typeof draw === "function") {
+      const mockGraphics = {
+        clear: vi.fn(),
+        setFillStyle: vi.fn(),
+        setStrokeStyle: vi.fn(),
+        rect: vi.fn(),
+        circle: vi.fn(),
+        roundRect: vi.fn(),
+        moveTo: vi.fn(),
+        lineTo: vi.fn(),
+        fill: vi.fn(),
+        stroke: vi.fn(),
+      };
+      draw(mockGraphics);
+    }
+
+    return createElement("div", {
+      "data-testid": "pixi-graphics",
+      ...Object.fromEntries(
+        Object.entries(props).map(([key, value]) => [
+          `data-${key}`,
+          typeof value === "string" ||
+          typeof value === "number" ||
+          typeof value === "boolean"
+            ? String(value)
+            : "",
+        ])
+      ),
+    });
+  },
+
+  pixiText: ({
+    text,
+    style,
+    anchor,
+    alpha,
+    scale,
+    x,
+    y,
+    ...props
+  }: MockTextProps) => {
+    return createElement(
+      "div",
+      {
+        "data-testid": "pixi-text",
+        "data-text": text || "",
+        "data-font-family": style?.fontFamily || "",
+        "data-font-size": String(style?.fontSize || 12),
+        "data-fill": String(style?.fill || 0),
+        "data-alpha": String(alpha || 1),
+        "data-scale-x": String(scale?.x || 1),
+        "data-scale-y": String(scale?.y || 1),
+        "data-x": String(x || 0),
+        "data-y": String(y || 0),
+        ...Object.fromEntries(
+          Object.entries(props).map(([key, value]) => [
+            `data-${key}`,
+            typeof value === "string" ||
+            typeof value === "number" ||
+            typeof value === "boolean"
+              ? String(value)
+              : "",
+          ])
+        ),
+      },
+      text || ""
+    );
+  },
 }));
 
-// Mock PixiJS core components with complete exports using importOriginal
-vi.mock("pixi.js", async (importOriginal) => {
-  const actual = (await importOriginal()) as Record<string, unknown>;
-  return {
-    ...actual,
-    Container: vi.fn().mockImplementation(() => ({})),
-    Graphics: vi.fn().mockImplementation(() => ({
-      clear: vi.fn(),
-      setFillStyle: vi.fn(),
-      circle: vi.fn(),
-      rect: vi.fn(),
-      fill: vi.fn(),
-      setStrokeStyle: vi.fn(),
-      stroke: vi.fn(),
-    })),
-    Text: vi.fn().mockImplementation(() => ({})),
-    TextStyle: vi.fn().mockImplementation(() => ({})),
-    Application: vi.fn().mockImplementation(() => ({})),
-    Sprite: vi.fn().mockImplementation(() => ({})),
-    Texture: {
-      from: vi.fn(),
-      EMPTY: {},
-      WHITE: {},
-    },
-    Rectangle: vi.fn().mockImplementation(() => ({})),
-    Point: vi.fn().mockImplementation(() => ({})),
-  };
-});
+// Mock pixi.js core components for martial arts game
+vi.mock("pixi.js", () => ({
+  Container: class MockContainer {
+    addChild = vi.fn();
+    removeChild = vi.fn();
+    destroy = vi.fn();
+  },
+  Graphics: class MockGraphics {
+    clear = vi.fn();
+    setFillStyle = vi.fn();
+    setStrokeStyle = vi.fn();
+    rect = vi.fn();
+    circle = vi.fn();
+    roundRect = vi.fn();
+    moveTo = vi.fn();
+    lineTo = vi.fn();
+    fill = vi.fn();
+    stroke = vi.fn();
+  },
+  Text: class MockText {
+    text: string;
+    style?: unknown;
 
-// Create properly typed React components for PixiJS intrinsic elements
-const createPixiComponent = (displayName: string) => {
-  const Component = ({
-    children,
-    draw,
-    interactive,
-    cursor,
-    onClick,
-    style,
-    text,
-    ...props
-  }: {
-    children?: React.ReactNode;
-    draw?: (graphics: unknown) => void;
-    interactive?: boolean;
-    cursor?: string;
-    onClick?: () => void;
-    style?: Record<string, unknown>;
-    text?: string;
-    [key: string]: unknown;
-  }): React.ReactElement => {
-    // Convert problematic props to strings for DOM compatibility
-    const domProps: Record<string, unknown> = {
-      ...props,
-      "data-testid": displayName.toLowerCase(),
-      "data-has-draw": draw ? "true" : undefined,
-      "data-interactive": interactive ? "true" : undefined,
-      "data-cursor": cursor,
-      "data-style": style ? JSON.stringify(style) : undefined,
-      "data-text": text,
-      // Handle click events properly
-      onClick: onClick,
-    };
-
-    // Clean up undefined values
-    Object.keys(domProps).forEach((key) => {
-      if (domProps[key] === undefined) {
-        delete domProps[key];
-      }
-    });
-
-    return React.createElement("div", domProps, text || children);
-  };
-  Component.displayName = displayName;
-  return Component;
-};
-
-// Define the PixiJS components as proper React components
-const PixiContainer = createPixiComponent("pixi-container");
-const PixiGraphics = createPixiComponent("pixi-graphics");
-const PixiText = createPixiComponent("pixi-text");
-
-// Store original createElement and create a safe override
-const originalCreateElement = React.createElement;
-
-// Create a type-safe createElement override
-const createElementOverride = (
-  type: string | React.ComponentType<unknown>,
-  props: Record<string, unknown> | null,
-  ...children: React.ReactNode[]
-): React.ReactElement => {
-  // Handle PixiJS intrinsic elements
-  if (typeof type === "string") {
-    switch (type) {
-      case "pixiContainer":
-        return originalCreateElement(PixiContainer, props, ...children);
-      case "pixiGraphics":
-        return originalCreateElement(PixiGraphics, props, ...children);
-      case "pixiText":
-        return originalCreateElement(PixiText, props, ...children);
-      default:
-        // For regular HTML elements, use the original createElement
-        return originalCreateElement(type, props, ...children);
+    constructor(text: string, style?: unknown) {
+      this.text = text;
+      this.style = style;
     }
-  }
 
-  return originalCreateElement(type, props, ...children);
-};
+    destroy = vi.fn();
+  },
+  TextStyle: class MockTextStyle {
+    style: unknown;
 
-// Override React.createElement safely
-Object.defineProperty(React, "createElement", {
-  value: createElementOverride,
+    constructor(style: unknown) {
+      this.style = style;
+    }
+  },
+}));
+
+// Mock window properties for Korean game testing
+Object.defineProperty(window, "innerWidth", {
   writable: true,
   configurable: true,
+  value: 1920,
 });
 
-// Declare global JSX namespace for PixiJS intrinsic elements
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      pixiContainer: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLDivElement>,
-        HTMLDivElement
-      > & {
-        x?: number;
-        y?: number;
-        interactive?: boolean;
-        cursor?: string;
-        onClick?: () => void;
-        alpha?: number;
-        visible?: boolean;
-        rotation?: number;
-        scale?: number | { x: number; y: number };
-        pivot?: { x: number; y: number };
-        anchor?: { x: number; y: number };
-      };
-      pixiGraphics: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLDivElement>,
-        HTMLDivElement
-      > & {
-        draw?: (graphics: unknown) => void;
-        x?: number;
-        y?: number;
-        alpha?: number;
-        visible?: boolean;
-        rotation?: number;
-        scale?: number | { x: number; y: number };
-        pivot?: { x: number; y: number };
-      };
-      pixiText: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLDivElement>,
-        HTMLDivElement
-      > & {
-        text: string;
-        x?: number;
-        y?: number;
-        style?: Record<string, unknown>;
-        alpha?: number;
-        visible?: boolean;
-        rotation?: number;
-        scale?: number | { x: number; y: number };
-        pivot?: { x: number; y: number };
-        anchor?: { x: number; y: number };
-      };
-    }
-  }
-}
-
-// Create a properly typed ImageData mock
-const createMockImageData = (
-  width: number = 1,
-  height: number = 1
-): ImageData => {
-  const data = new Uint8ClampedArray(width * height * 4);
-  return {
-    data,
-    width,
-    height,
-    colorSpace: "srgb" as PredefinedColorSpace,
-  } as ImageData;
-};
-
-// Mock canvas context with proper typing
-HTMLCanvasElement.prototype.getContext = vi.fn(function (
-  this: HTMLCanvasElement,
-  contextId: string
-):
-  | CanvasRenderingContext2D
-  | WebGLRenderingContext
-  | ImageBitmapRenderingContext
-  | null {
-  const mockCreateImageData = vi
-    .fn()
-    .mockImplementation(
-      (widthOrImageData: number | ImageData, height?: number): ImageData => {
-        if (typeof widthOrImageData === "number") {
-          const w = widthOrImageData;
-          const h = height || 1;
-          return createMockImageData(w, h);
-        } else {
-          const imageData = widthOrImageData as ImageData;
-          return createMockImageData(imageData.width, imageData.height);
-        }
-      }
-    );
-
-  const mockContext2D: Partial<CanvasRenderingContext2D> = {
-    canvas: this,
-    fillRect: vi.fn(),
-    clearRect: vi.fn(),
-    getImageData: vi.fn(() => createMockImageData()),
-    putImageData: vi.fn(),
-    createImageData:
-      mockCreateImageData as CanvasRenderingContext2D["createImageData"],
-    setTransform: vi.fn(),
-    drawImage: vi.fn(),
-    save: vi.fn(),
-    fillText: vi.fn(),
-    restore: vi.fn(),
-    beginPath: vi.fn(),
-    moveTo: vi.fn(),
-    lineTo: vi.fn(),
-    closePath: vi.fn(),
-    stroke: vi.fn(),
-    translate: vi.fn(),
-    scale: vi.fn(),
-    rotate: vi.fn(),
-    arc: vi.fn(),
-    fill: vi.fn(),
-    measureText: vi.fn(() => ({ width: 0 } as TextMetrics)),
-    transform: vi.fn(),
-    rect: vi.fn(),
-    clip: vi.fn(),
-    globalAlpha: 1,
-    globalCompositeOperation: "source-over" as GlobalCompositeOperation,
-    fillStyle: "#000000",
-    strokeStyle: "#000000",
-    lineWidth: 1,
-    lineCap: "butt" as CanvasLineCap,
-    lineJoin: "miter" as CanvasLineJoin,
-    miterLimit: 10,
-    getLineDash: vi.fn(() => []),
-    setLineDash: vi.fn(),
-    lineDashOffset: 0,
-    shadowOffsetX: 0,
-    shadowOffsetY: 0,
-    shadowBlur: 0,
-    shadowColor: "transparent",
-    font: "10px sans-serif",
-    textAlign: "start" as CanvasTextAlign,
-    textBaseline: "alphabetic" as CanvasTextBaseline,
-    direction: "inherit" as CanvasDirection,
-  };
-
-  const mockContextWebGL: Partial<WebGLRenderingContext> = {
-    canvas: this,
-    getExtension: vi.fn(),
-    createShader: vi.fn(),
-    shaderSource: vi.fn(),
-    compileShader: vi.fn(),
-    createProgram: vi.fn(),
-    attachShader: vi.fn(),
-    linkProgram: vi.fn(),
-    useProgram: vi.fn(),
-    createBuffer: vi.fn(),
-    bindBuffer: vi.fn(),
-    bufferData: vi.fn(),
-    enableVertexAttribArray: vi.fn(),
-    vertexAttribPointer: vi.fn(),
-    drawArrays: vi.fn(),
-    viewport: vi.fn(),
-    clearColor: vi.fn(),
-    clear: vi.fn(),
-    enable: vi.fn(),
-    disable: vi.fn(),
-    blendFunc: vi.fn(),
-    drawingBufferWidth: 800,
-    drawingBufferHeight: 600,
-    drawingBufferColorSpace: "srgb" as PredefinedColorSpace,
-  };
-
-  const mockContextImageBitmap: Partial<ImageBitmapRenderingContext> = {
-    canvas: this,
-    transferFromImageBitmap: vi.fn(),
-  };
-
-  switch (contextId) {
-    case "2d":
-      return mockContext2D as CanvasRenderingContext2D;
-    case "webgl":
-    case "webgl2":
-      return mockContextWebGL as WebGLRenderingContext;
-    case "bitmaprenderer":
-      return mockContextImageBitmap as ImageBitmapRenderingContext;
-    default:
-      return null;
-  }
-}) as HTMLCanvasElement["getContext"];
-
-// Mock window.matchMedia
-Object.defineProperty(window, "matchMedia", {
+Object.defineProperty(window, "innerHeight", {
   writable: true,
-  value: vi.fn().mockImplementation((query: string) => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
+  configurable: true,
+  value: 1080,
+});
+
+// Mock ResizeObserver for responsive Korean game design
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}));
+
+// Mock requestAnimationFrame for smooth Korean martial arts animations
+global.requestAnimationFrame = vi.fn((callback: FrameRequestCallback) => {
+  setTimeout(callback, 16); // ~60fps for martial arts combat
+  return 1;
+});
+
+global.cancelAnimationFrame = vi.fn();
+
+// Mock performance API for combat timing
+Object.defineProperty(global, "performance", {
+  value: {
+    ...global.performance,
+    now: vi.fn(() => Date.now()),
+  },
+});
+
+// Mock AudioContext for Korean martial arts sound effects
+const MockAudioContext = vi.fn().mockImplementation(() => ({
+  createOscillator: vi.fn(),
+  createGain: vi.fn(),
+  destination: {},
+  close: vi.fn(),
+}));
+
+Object.defineProperty(global, "AudioContext", {
+  value: MockAudioContext,
+});
+
+// Mock document.fonts for Korean font loading
+Object.defineProperty(document, "fonts", {
+  value: {
+    ready: Promise.resolve(),
+    load: vi.fn(() => Promise.resolve()),
+    check: vi.fn(() => true),
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
+  },
 });
 
-// Export the spy for use in tests
-export { extendSpy };
+// Enhanced keyboard event mocking for Korean game controls
+const originalAddEventListener = document.addEventListener;
+const originalRemoveEventListener = document.removeEventListener;
+
+document.addEventListener = vi.fn(
+  (
+    event: string,
+    handler: EventListener,
+    options?: AddEventListenerOptions | boolean
+  ) => {
+    if (event === "keydown" || event === "keyup") {
+      // Track keyboard event listeners for Korean martial arts controls
+      return originalAddEventListener.call(document, event, handler, options);
+    }
+    return originalAddEventListener.call(document, event, handler, options);
+  }
+);
+
+document.removeEventListener = vi.fn(
+  (
+    event: string,
+    handler: EventListener,
+    options?: EventListenerOptions | boolean
+  ) => {
+    return originalRemoveEventListener.call(document, event, handler, options);
+  }
+);
+
+// Setup and cleanup for Korean martial arts testing
+beforeAll(() => {
+  // Initialize Korean font support
+  Object.defineProperty(document.body.style, "fontFamily", {
+    value: "Noto Sans KR, sans-serif",
+    writable: true,
+  });
+
+  // Set up dark theme for Korean martial arts aesthetic
+  Object.defineProperty(document.body.style, "backgroundColor", {
+    value: "#000000",
+    writable: true,
+  });
+});
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+
+  // Reset Korean game state
+  extendSpy.mockClear();
+});
+
+// Export test utilities for Korean martial arts game testing
+export const createMockTicker = (deltaTime = 1) => ({
+  deltaTime,
+  elapsedMS: deltaTime * 16.67,
+});
+
+export const createMockKeyboardEvent = (code: string, type = "keydown") =>
+  new KeyboardEvent(type, { code, bubbles: true });
+
+export const createMockPointerEvent = (clientX = 0, clientY = 0) =>
+  new PointerEvent("pointerdown", { clientX, clientY, bubbles: true });
+
+// Korean martial arts specific test helpers
+export const trigrams = [
+  "geon",
+  "tae",
+  "li",
+  "jin",
+  "son",
+  "gam",
+  "gan",
+  "gon",
+] as const;
+
+export const koreanTechniques = {
+  geon: "천둥벽력",
+  tae: "유수연타",
+  li: "화염지창",
+  jin: "벽력일섬",
+  son: "선풍연격",
+  gam: "수류반격",
+  gan: "반석방어",
+  gon: "대지포옹",
+} as const;
+
+export const mockTrigramAttack = (
+  technique: keyof typeof koreanTechniques
+) => ({
+  technique: koreanTechniques[technique],
+  damage: Math.floor(Math.random() * 40) + 10,
+  position: { x: Math.random() * 800, y: Math.random() * 600 },
+});
