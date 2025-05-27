@@ -1,55 +1,45 @@
 import { useState, useEffect } from "react";
 import { Texture, Assets } from "pixi.js";
 
-interface UseTextureResult {
+interface TextureState {
   readonly texture: Texture | null;
   readonly loading: boolean;
-  readonly error: string | null;
+  readonly error: Error | null;
 }
 
-// Texture cache to prevent reloading
-const textureCache = new Map<string, Texture>();
-
-export function useTexture(url: string): UseTextureResult {
-  const [texture, setTexture] = useState<Texture | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+export function useTexture(url: string): TextureState {
+  const [state, setState] = useState<TextureState>({
+    texture: null,
+    loading: true,
+    error: null,
+  });
 
   useEffect(() => {
-    // Check cache first
-    if (textureCache.has(url)) {
-      const cachedTexture = textureCache.get(url);
-      if (cachedTexture) {
-        setTexture(cachedTexture);
-        setLoading(false);
-        return;
-      }
-    }
-
     let cancelled = false;
 
     const loadTexture = async (): Promise<void> => {
       try {
-        setLoading(true);
-        setError(null);
+        setState((prev) => ({ ...prev, loading: true, error: null }));
 
-        const loadedTexture = await Assets.load(url);
+        const texture = await Assets.load(url);
 
         if (!cancelled) {
-          // Cache the texture
-          textureCache.set(url, loadedTexture);
-          setTexture(loadedTexture);
-          setLoading(false);
+          setState({
+            texture,
+            loading: false,
+            error: null,
+          });
         }
-      } catch (err) {
+      } catch (error) {
         if (!cancelled) {
-          const errorMessage =
-            err instanceof Error
-              ? err.message
-              : `Failed to load texture: ${url}`;
-          setError(errorMessage);
-          setLoading(false);
-          console.warn(`[useTexture] ${errorMessage}`);
+          setState({
+            texture: null,
+            loading: false,
+            error:
+              error instanceof Error
+                ? error
+                : new Error("Failed to load texture"),
+          });
         }
       }
     };
@@ -61,8 +51,11 @@ export function useTexture(url: string): UseTextureResult {
     };
   }, [url]);
 
-  return { texture, loading, error };
+  return state;
 }
+
+// Texture cache to prevent reloading
+const textureCache = new Map<string, Texture>();
 
 // Preload commonly used textures
 export async function preloadGameTextures(): Promise<void> {

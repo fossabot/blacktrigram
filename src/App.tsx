@@ -1,6 +1,7 @@
 import { Application, extend } from "@pixi/react";
 import { Container, Graphics, Text, Sprite } from "pixi.js";
-import { useState, useEffect, useCallback } from "react";
+import type { Texture } from "pixi.js";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import type { JSX } from "react";
 import "./App.css";
 import { GameEngine } from "./components/game/GameEngine";
@@ -15,45 +16,87 @@ extend({
   Sprite,
 });
 
+// Type definitions
 type GameMode = "intro" | "game" | "training";
 
+type SelectedOption = "sparring" | "training";
+
 interface TrigramSymbol {
-  name: string;
-  korean: string;
-  symbol: string;
-  meaning: string;
-  icon: string;
-  combatStyle: string;
-  x: number;
-  y: number;
-  alpha: number;
+  readonly name: string;
+  readonly korean: string;
+  readonly symbol: string;
+  readonly meaning: string;
+  readonly icon: string;
+  readonly combatStyle: string;
+  readonly x: number;
+  readonly y: number;
+  readonly alpha: number;
 }
+
+interface IntroScreenProps {
+  readonly onStartGame: () => void;
+  readonly onStartTraining: () => void;
+}
+
+interface BackButtonProps {
+  readonly onBack: () => void;
+}
+
+interface MenuButtonProps {
+  readonly isSelected: boolean;
+  readonly time: number;
+  readonly onSelect: () => void;
+  readonly title: string;
+  readonly subtitle: string;
+  readonly keyBinding: string;
+}
+
+// Constants
+const COLORS = {
+  BLACK: 0x000000,
+  CYAN: 0x00ffd0,
+  WHITE: 0xffffff,
+  DARK_BLUE: 0x000a12,
+  ACCENT_BLUE: 0x004455,
+  GRID_DARK: 0x003333,
+  RED: 0x8b0000,
+  GRAY_LIGHT: 0x888888,
+  GRAY_MEDIUM: 0x666666,
+  GRAY_DARK: 0x444444,
+  GRAY_DARKER: 0x999999,
+  GRAY_TEXT: 0xcccccc,
+  CYAN_LIGHT: 0x7accd4,
+  DARK_PANEL: 0x10171e,
+} as const;
+
+const GRID_SIZE = 50;
+const BUTTON_ANIMATION_SPEED = 0.1;
 
 function App(): JSX.Element {
   const [gameMode, setGameMode] = useState<GameMode>("intro");
   const audio = useAudio();
 
-  const startGame = (): void => {
+  const startGame = useCallback((): void => {
     audio.playSFX("menu_select");
     setGameMode("game");
-  };
+  }, [audio]);
 
-  const startTraining = (): void => {
+  const startTraining = useCallback((): void => {
     audio.playSFX("menu_select");
     setGameMode("training");
-  };
+  }, [audio]);
 
-  const returnToIntro = (): void => {
+  const returnToIntro = useCallback((): void => {
     audio.playSFX("menu_back");
     setGameMode("intro");
-  };
+  }, [audio]);
 
   return (
     <div className="app-container">
       <Application
         width={window.innerWidth}
         height={window.innerHeight}
-        backgroundColor={0x000000}
+        backgroundColor={COLORS.BLACK}
         antialias={true}
         resizeTo={window}
       >
@@ -83,110 +126,109 @@ function App(): JSX.Element {
 function IntroScreen({
   onStartGame,
   onStartTraining,
-}: {
-  onStartGame: () => void;
-  onStartTraining: () => void;
-}): JSX.Element {
+}: IntroScreenProps): JSX.Element {
   const [hoveredTrigram, setHoveredTrigram] = useState<string | null>(null);
   const [time, setTime] = useState<number>(0);
-  const [selectedOption, setSelectedOption] = useState<"sparring" | "training">(
-    "sparring"
-  );
-  const audio = useAudio();
+  const [selectedOption, setSelectedOption] =
+    useState<SelectedOption>("sparring");
   const [initialized, setInitialized] = useState<boolean>(false);
+  const audio = useAudio();
   const { texture: logoTexture } = useTexture("/dark-trigram-256.png");
 
-  // Enhanced trigram positioning with combat style icons
-  const trigrams: TrigramSymbol[] = [
-    {
-      name: "Geon",
-      korean: "건",
-      symbol: "☰",
-      meaning: "Heaven",
-      icon: "🔥",
-      combatStyle: "Power Strikes",
-      x: window.innerWidth / 2,
-      y: 120,
-      alpha: 0.9,
-    },
-    {
-      name: "Tae",
-      korean: "태",
-      symbol: "☱",
-      meaning: "Lake",
-      icon: "🌊",
-      combatStyle: "Flowing Combos",
-      x: window.innerWidth / 2 + 220,
-      y: 180,
-      alpha: 0.9,
-    },
-    {
-      name: "Li",
-      korean: "리",
-      symbol: "☲",
-      meaning: "Fire",
-      icon: "⚡",
-      combatStyle: "Fast Attacks",
-      x: window.innerWidth / 2 + 280,
-      y: window.innerHeight / 2,
-      alpha: 0.9,
-    },
-    {
-      name: "Jin",
-      korean: "진",
-      symbol: "☳",
-      meaning: "Thunder",
-      icon: "💥",
-      combatStyle: "Explosive Bursts",
-      x: window.innerWidth / 2 + 220,
-      y: window.innerHeight / 2 + 220,
-      alpha: 0.9,
-    },
-    {
-      name: "Son",
-      korean: "손",
-      symbol: "☴",
-      meaning: "Wind",
-      icon: "🌪️",
-      combatStyle: "Continuous Pressure",
-      x: window.innerWidth / 2,
-      y: window.innerHeight - 120,
-      alpha: 0.9,
-    },
-    {
-      name: "Gam",
-      korean: "감",
-      symbol: "☵",
-      meaning: "Water",
-      icon: "🛡️",
-      combatStyle: "Evasion & Counters",
-      x: window.innerWidth / 2 - 220,
-      y: window.innerHeight / 2 + 220,
-      alpha: 0.9,
-    },
-    {
-      name: "Gan",
-      korean: "간",
-      symbol: "☶",
-      meaning: "Mountain",
-      icon: "🗿",
-      combatStyle: "Immovable Defense",
-      x: window.innerWidth / 2 - 280,
-      y: window.innerHeight / 2,
-      alpha: 0.9,
-    },
-    {
-      name: "Gon",
-      korean: "곤",
-      symbol: "☷",
-      meaning: "Earth",
-      icon: "🤜",
-      combatStyle: "Throws & Takedowns",
-      x: window.innerWidth / 2 - 220,
-      y: 180,
-      alpha: 0.9,
-    },
-  ];
+  // Memoized trigram symbols
+  const trigrams = useMemo(
+    (): readonly TrigramSymbol[] => [
+      {
+        name: "Geon",
+        korean: "건",
+        symbol: "☰",
+        meaning: "Heaven",
+        icon: "🔥",
+        combatStyle: "Power Strikes",
+        x: window.innerWidth / 2,
+        y: 120,
+        alpha: 0.9,
+      },
+      {
+        name: "Tae",
+        korean: "태",
+        symbol: "☱",
+        meaning: "Lake",
+        icon: "🌊",
+        combatStyle: "Flowing Combos",
+        x: window.innerWidth / 2 + 220,
+        y: 180,
+        alpha: 0.9,
+      },
+      {
+        name: "Li",
+        korean: "리",
+        symbol: "☲",
+        meaning: "Fire",
+        icon: "⚡",
+        combatStyle: "Fast Attacks",
+        x: window.innerWidth / 2 + 280,
+        y: window.innerHeight / 2,
+        alpha: 0.9,
+      },
+      {
+        name: "Jin",
+        korean: "진",
+        symbol: "☳",
+        meaning: "Thunder",
+        icon: "💥",
+        combatStyle: "Explosive Bursts",
+        x: window.innerWidth / 2 + 220,
+        y: window.innerHeight / 2 + 220,
+        alpha: 0.9,
+      },
+      {
+        name: "Son",
+        korean: "손",
+        symbol: "☴",
+        meaning: "Wind",
+        icon: "🌪️",
+        combatStyle: "Continuous Pressure",
+        x: window.innerWidth / 2,
+        y: window.innerHeight - 120,
+        alpha: 0.9,
+      },
+      {
+        name: "Gam",
+        korean: "감",
+        symbol: "☵",
+        meaning: "Water",
+        icon: "🛡️",
+        combatStyle: "Evasion & Counters",
+        x: window.innerWidth / 2 - 220,
+        y: window.innerHeight / 2 + 220,
+        alpha: 0.9,
+      },
+      {
+        name: "Gan",
+        korean: "간",
+        symbol: "☶",
+        meaning: "Mountain",
+        icon: "🗿",
+        combatStyle: "Immovable Defense",
+        x: window.innerWidth / 2 - 280,
+        y: window.innerHeight / 2,
+        alpha: 0.9,
+      },
+      {
+        name: "Gon",
+        korean: "곤",
+        symbol: "☷",
+        meaning: "Earth",
+        icon: "🤜",
+        combatStyle: "Throws & Takedowns",
+        x: window.innerWidth / 2 - 220,
+        y: 180,
+        alpha: 0.9,
+      },
+    ],
+    []
+  );
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -259,48 +301,22 @@ function IntroScreen({
 
   const drawBackground = useCallback((graphics: Graphics) => {
     graphics.clear();
-    // Deep black background
-    graphics.setFillStyle({ color: 0x000000 });
+    graphics.setFillStyle({ color: COLORS.BLACK });
     graphics.rect(0, 0, window.innerWidth, window.innerHeight);
     graphics.fill();
 
-    // Cyan grid pattern
-    graphics.setStrokeStyle({ color: 0x003333, width: 1, alpha: 0.3 });
-    const gridSize = 50;
-    for (let x = 0; x < window.innerWidth; x += gridSize) {
+    graphics.setStrokeStyle({ color: COLORS.GRID_DARK, width: 1, alpha: 0.3 });
+    for (let x = 0; x < window.innerWidth; x += GRID_SIZE) {
       graphics.moveTo(x, 0);
       graphics.lineTo(x, window.innerHeight);
       graphics.stroke();
     }
-    for (let y = 0; y < window.innerHeight; y += gridSize) {
+    for (let y = 0; y < window.innerHeight; y += GRID_SIZE) {
       graphics.moveTo(0, y);
       graphics.lineTo(window.innerWidth, y);
       graphics.stroke();
     }
   }, []);
-
-  const drawCenterCircle = useCallback(
-    (graphics: Graphics) => {
-      graphics.clear();
-
-      // Cyan outer ring
-      graphics.setStrokeStyle({ color: 0x00ffd0, width: 4 });
-      graphics.circle(0, 0, 140);
-      graphics.stroke();
-
-      // Inner cyan ring
-      graphics.setStrokeStyle({ color: 0x00ffd0, width: 2, alpha: 0.7 });
-      graphics.circle(0, 0, 120);
-      graphics.stroke();
-
-      // Pulsing cyan center
-      const pulse = Math.sin(time * 1.5) * 0.4 + 0.6;
-      graphics.setFillStyle({ color: 0x00ffd0, alpha: pulse });
-      graphics.circle(0, 0, 12);
-      graphics.fill();
-    },
-    [time]
-  );
 
   const drawTrigramLines = useCallback(
     (graphics: Graphics) => {
@@ -308,14 +324,12 @@ function IntroScreen({
       trigrams.forEach((trigram) => {
         const centerX = window.innerWidth / 2;
         const centerY = window.innerHeight / 2;
-
-        // Enhanced connecting lines with Korean aesthetic
         const alpha =
           0.15 + Math.sin(time + trigrams.indexOf(trigram) * 0.8) * 0.1;
         const isHovered = hoveredTrigram === trigram.name;
 
         graphics.setStrokeStyle({
-          color: isHovered ? 0x8b0000 : 0x333333,
+          color: isHovered ? COLORS.RED : 0x333333,
           width: isHovered ? 2 : 1,
           alpha: isHovered ? 0.6 : alpha,
         });
@@ -324,14 +338,13 @@ function IntroScreen({
         graphics.lineTo(trigram.x, trigram.y);
         graphics.stroke();
 
-        // Add subtle dots along the line for traditional feel
         if (isHovered) {
           const steps = 5;
           for (let i = 1; i < steps; i++) {
             const t = i / steps;
             const dotX = centerX + (trigram.x - centerX) * t;
             const dotY = centerY + (trigram.y - centerY) * t;
-            graphics.setFillStyle({ color: 0x8b0000, alpha: 0.8 });
+            graphics.setFillStyle({ color: COLORS.RED, alpha: 0.8 });
             graphics.circle(dotX, dotY, 2);
             graphics.fill();
           }
@@ -343,70 +356,95 @@ function IntroScreen({
 
   return (
     <pixiContainer>
-      {/* Enhanced background */}
       <pixiGraphics draw={drawBackground} />
       <pixiGraphics draw={drawTrigramLines} />
 
-      {/* Dark Trigram Logo */}
-      <pixiContainer x={window.innerWidth / 2} y={window.innerHeight / 2 - 250}>
-        <pixiGraphics
-          draw={(g) => {
-            g.clear();
-            // Dark background with deeper panel
-            g.setFillStyle({ color: 0x000a12, alpha: 0.95 });
-            g.roundRect(-270, -70, 540, 140, 20);
-            g.fill();
+      <GameLogo logoTexture={logoTexture} />
+      <GameSubtitle />
+      <CenterCircle time={time} />
+      <TrigramSymbols
+        trigrams={trigrams}
+        hoveredTrigram={hoveredTrigram}
+        onTrigramHover={setHoveredTrigram}
+        audio={audio}
+      />
+      <PhilosophyText />
+      <ControlsText />
+      <MenuButtons
+        selectedOption={selectedOption}
+        time={time}
+        onOptionChange={setSelectedOption}
+        audio={audio}
+      />
+    </pixiContainer>
+  );
+}
 
-            // Cyan glowing border with double-line effect
-            g.setStrokeStyle({ color: 0x00ffd0, width: 3 });
-            g.roundRect(-270, -70, 540, 140, 20);
-            g.stroke();
+// Extracted components
+function GameLogo({
+  logoTexture,
+}: {
+  logoTexture: Texture | null;
+}): JSX.Element {
+  return (
+    <pixiContainer x={window.innerWidth / 2} y={window.innerHeight / 2 - 250}>
+      <pixiGraphics
+        draw={(g) => {
+          g.clear();
+          g.setFillStyle({ color: COLORS.DARK_BLUE, alpha: 0.95 });
+          g.roundRect(-270, -70, 540, 140, 20);
+          g.fill();
 
-            g.setStrokeStyle({ color: 0x00ffd0, width: 1, alpha: 0.7 });
-            g.roundRect(-260, -60, 520, 120, 16);
-            g.stroke();
+          g.setStrokeStyle({ color: COLORS.CYAN, width: 3 });
+          g.roundRect(-270, -70, 540, 140, 20);
+          g.stroke();
 
-            // Add tech-looking diagonal slashes
-            g.setStrokeStyle({ color: 0x00ffd0, width: 1, alpha: 0.4 });
-            g.moveTo(-270, -30);
-            g.lineTo(-220, -70);
-            g.moveTo(270, -30);
-            g.lineTo(220, -70);
-            g.stroke();
-          }}
-        />
+          g.setStrokeStyle({ color: COLORS.CYAN, width: 1, alpha: 0.7 });
+          g.roundRect(-260, -60, 520, 120, 16);
+          g.stroke();
 
-        {logoTexture && (
-          <pixiSprite
-            texture={logoTexture}
-            scale={{ x: 0.35, y: 0.35 }}
-            anchor={{ x: 0.5, y: 0.5 }}
-            y={-10}
-            alpha={0.9}
-          />
-        )}
+          g.setStrokeStyle({ color: COLORS.CYAN, width: 1, alpha: 0.4 });
+          g.moveTo(-270, -30);
+          g.lineTo(-220, -70);
+          g.moveTo(270, -30);
+          g.lineTo(220, -70);
+          g.stroke();
+        }}
+      />
 
-        <pixiText
-          text="🥋 흑괘 무술 도장 🥋"
+      {logoTexture && (
+        <pixiSprite
+          texture={logoTexture}
+          scale={{ x: 0.35, y: 0.35 }}
           anchor={{ x: 0.5, y: 0.5 }}
-          y={40}
-          style={{
-            fontFamily: "Orbitron, Noto Sans KR",
-            fontSize: 28,
-            fill: 0xffffff,
-            fontWeight: "400",
-            ...(true && {
-              dropShadow: {
-                color: 0x00ffd0,
-                blur: 6,
-                distance: 0,
-              },
-            }),
-          }}
+          y={-10}
+          alpha={0.9}
         />
-      </pixiContainer>
+      )}
 
-      {/* Enhanced subtitle with martial arts context */}
+      <pixiText
+        text="🥋 흑괘 무술 도장 🥋"
+        anchor={{ x: 0.5, y: 0.5 }}
+        y={40}
+        style={{
+          fontFamily: "Orbitron, Noto Sans KR",
+          fontSize: 28,
+          fill: COLORS.WHITE,
+          fontWeight: "400",
+          dropShadow: {
+            color: COLORS.CYAN,
+            blur: 6,
+            distance: 0,
+          },
+        }}
+      />
+    </pixiContainer>
+  );
+}
+
+function GameSubtitle(): JSX.Element {
+  return (
+    <>
       <pixiText
         text="🎯 정격자 · ⚔️ 비수 · 🥷 암살자 · 💀 급소격 · 🏯 도장"
         x={window.innerWidth / 2}
@@ -415,7 +453,7 @@ function IntroScreen({
         style={{
           fontFamily: "Noto Sans KR",
           fontSize: 18,
-          fill: 0xffffff,
+          fill: COLORS.WHITE,
           fontWeight: "300",
         }}
       />
@@ -428,118 +466,177 @@ function IntroScreen({
         style={{
           fontFamily: "monospace",
           fontSize: 12,
-          fill: 0x999999,
+          fill: COLORS.GRAY_DARKER,
           letterSpacing: 1,
         }}
       />
+    </>
+  );
+}
 
-      {/* Enhanced center circle */}
-      <pixiContainer x={window.innerWidth / 2} y={window.innerHeight / 2}>
-        <pixiGraphics draw={drawCenterCircle} />
-      </pixiContainer>
+function CenterCircle({ time }: { time: number }): JSX.Element {
+  const drawCenterCircle = useCallback(
+    (graphics: Graphics) => {
+      graphics.clear();
+      graphics.setStrokeStyle({ color: COLORS.CYAN, width: 4 });
+      graphics.circle(0, 0, 140);
+      graphics.stroke();
 
-      {/* Enhanced trigram symbols with combat icons */}
+      graphics.setStrokeStyle({ color: COLORS.CYAN, width: 2, alpha: 0.7 });
+      graphics.circle(0, 0, 120);
+      graphics.stroke();
+
+      const pulse = Math.sin(time * 1.5) * 0.4 + 0.6;
+      graphics.setFillStyle({ color: COLORS.CYAN, alpha: pulse });
+      graphics.circle(0, 0, 12);
+      graphics.fill();
+    },
+    [time]
+  );
+
+  return (
+    <pixiContainer x={window.innerWidth / 2} y={window.innerHeight / 2}>
+      <pixiGraphics draw={drawCenterCircle} />
+    </pixiContainer>
+  );
+}
+
+function TrigramSymbols({
+  trigrams,
+  hoveredTrigram,
+  onTrigramHover,
+  audio,
+}: {
+  trigrams: readonly TrigramSymbol[];
+  hoveredTrigram: string | null;
+  onTrigramHover: (name: string | null) => void;
+  audio: ReturnType<typeof useAudio>;
+}): JSX.Element {
+  return (
+    <>
       {trigrams.map((trigram) => (
-        <pixiContainer
+        <TrigramSymbol
           key={trigram.name}
-          x={trigram.x}
-          y={trigram.y}
-          interactive={true}
-          cursor="pointer"
+          trigram={trigram}
+          isHovered={hoveredTrigram === trigram.name}
           onPointerEnter={() => {
             audio.playSFX("menu_hover");
-            setHoveredTrigram(trigram.name);
+            onTrigramHover(trigram.name);
           }}
-          onPointerLeave={() => setHoveredTrigram(null)}
-        >
-          <pixiGraphics
-            draw={(g) => {
-              g.clear();
-              const isHovered = hoveredTrigram === trigram.name;
-              const scale = isHovered ? 1.2 : 1.0;
-              const alpha = isHovered ? 0.9 : 0.7;
-
-              // Background circle
-              g.setFillStyle({ color: 0x000000, alpha: alpha });
-              g.circle(0, 0, 35 * scale);
-              g.fill();
-
-              // Border
-              g.setStrokeStyle({
-                color: isHovered ? 0x8b0000 : 0x666666,
-                width: isHovered ? 3 : 2,
-              });
-              g.circle(0, 0, 35 * scale);
-              g.stroke();
-            }}
-          />
-
-          <pixiText
-            text={trigram.icon}
-            anchor={{ x: 0.5, y: 0.5 }}
-            y={-15}
-            style={{
-              fontFamily: "serif",
-              fontSize: hoveredTrigram === trigram.name ? 28 : 24,
-              fill: 0xffffff,
-            }}
-          />
-
-          <pixiText
-            text={trigram.symbol}
-            anchor={{ x: 0.5, y: 0.5 }}
-            y={5}
-            style={{
-              fontFamily: "serif",
-              fontSize: hoveredTrigram === trigram.name ? 32 : 24,
-              fill: hoveredTrigram === trigram.name ? 0x8b0000 : 0xffffff,
-              fontWeight: "bold",
-            }}
-          />
-
-          <pixiText
-            text={trigram.korean}
-            y={25}
-            anchor={{ x: 0.5, y: 0.5 }}
-            style={{
-              fontFamily: "Noto Sans KR",
-              fontSize: 14,
-              fill: hoveredTrigram === trigram.name ? 0xffffff : 0xaaaaaa,
-              fontWeight: "400",
-            }}
-          />
-
-          {/* Enhanced hover information */}
-          {hoveredTrigram === trigram.name && (
-            <>
-              <pixiText
-                text={trigram.meaning}
-                y={45}
-                anchor={{ x: 0.5, y: 0.5 }}
-                style={{
-                  fontFamily: "monospace",
-                  fontSize: 10,
-                  fill: 0x888888,
-                  letterSpacing: 1,
-                }}
-              />
-              <pixiText
-                text={trigram.combatStyle}
-                y={60}
-                anchor={{ x: 0.5, y: 0.5 }}
-                style={{
-                  fontFamily: "monospace",
-                  fontSize: 8,
-                  fill: 0x666666,
-                  letterSpacing: 0.5,
-                }}
-              />
-            </>
-          )}
-        </pixiContainer>
+          onPointerLeave={() => onTrigramHover(null)}
+        />
       ))}
+    </>
+  );
+}
 
-      {/* Enhanced philosophy section with icons */}
+function TrigramSymbol({
+  trigram,
+  isHovered,
+  onPointerEnter,
+  onPointerLeave,
+}: {
+  trigram: TrigramSymbol;
+  isHovered: boolean;
+  onPointerEnter: () => void;
+  onPointerLeave: () => void;
+}): JSX.Element {
+  return (
+    <pixiContainer
+      x={trigram.x}
+      y={trigram.y}
+      interactive={true}
+      cursor="pointer"
+      onPointerEnter={onPointerEnter}
+      onPointerLeave={onPointerLeave}
+    >
+      <pixiGraphics
+        draw={(g) => {
+          g.clear();
+          const scale = isHovered ? 1.2 : 1.0;
+          const alpha = isHovered ? 0.9 : 0.7;
+
+          g.setFillStyle({ color: COLORS.BLACK, alpha });
+          g.circle(0, 0, 35 * scale);
+          g.fill();
+
+          g.setStrokeStyle({
+            color: isHovered ? COLORS.RED : COLORS.GRAY_MEDIUM,
+            width: isHovered ? 3 : 2,
+          });
+          g.circle(0, 0, 35 * scale);
+          g.stroke();
+        }}
+      />
+
+      <pixiText
+        text={trigram.icon}
+        anchor={{ x: 0.5, y: 0.5 }}
+        y={-15}
+        style={{
+          fontFamily: "serif",
+          fontSize: isHovered ? 28 : 24,
+          fill: COLORS.WHITE,
+        }}
+      />
+
+      <pixiText
+        text={trigram.symbol}
+        anchor={{ x: 0.5, y: 0.5 }}
+        y={5}
+        style={{
+          fontFamily: "serif",
+          fontSize: isHovered ? 32 : 24,
+          fill: isHovered ? COLORS.RED : COLORS.WHITE,
+          fontWeight: "bold",
+        }}
+      />
+
+      <pixiText
+        text={trigram.korean}
+        y={25}
+        anchor={{ x: 0.5, y: 0.5 }}
+        style={{
+          fontFamily: "Noto Sans KR",
+          fontSize: 14,
+          fill: isHovered ? COLORS.WHITE : 0xaaaaaa,
+          fontWeight: "400",
+        }}
+      />
+
+      {isHovered && (
+        <>
+          <pixiText
+            text={trigram.meaning}
+            y={45}
+            anchor={{ x: 0.5, y: 0.5 }}
+            style={{
+              fontFamily: "monospace",
+              fontSize: 10,
+              fill: COLORS.GRAY_LIGHT,
+              letterSpacing: 1,
+            }}
+          />
+          <pixiText
+            text={trigram.combatStyle}
+            y={60}
+            anchor={{ x: 0.5, y: 0.5 }}
+            style={{
+              fontFamily: "monospace",
+              fontSize: 8,
+              fill: COLORS.GRAY_MEDIUM,
+              letterSpacing: 0.5,
+            }}
+          />
+        </>
+      )}
+    </pixiContainer>
+  );
+}
+
+function PhilosophyText(): JSX.Element {
+  return (
+    <>
       <pixiText
         text="🧘 도장에서 무예는 몸과 마음, 그리고 영혼의 조화이다"
         x={window.innerWidth / 2}
@@ -548,7 +645,7 @@ function IntroScreen({
         style={{
           fontFamily: "Noto Sans KR",
           fontSize: 16,
-          fill: 0x666666,
+          fill: COLORS.GRAY_MEDIUM,
           fontStyle: "italic",
           fontWeight: "300",
         }}
@@ -562,12 +659,17 @@ function IntroScreen({
         style={{
           fontFamily: "serif",
           fontSize: 12,
-          fill: 0x444444,
+          fill: COLORS.GRAY_DARK,
           fontStyle: "italic",
         }}
       />
+    </>
+  );
+}
 
-      {/* Enhanced controls with better iconography */}
+function ControlsText(): JSX.Element {
+  return (
+    <>
       <pixiText
         text="🎮 ← → 또는 A/D 선택 | ⚡ 스페이스/엔터 확인 | 🎯 1-대련, 2-수련"
         x={window.innerWidth / 2}
@@ -589,212 +691,163 @@ function IntroScreen({
         style={{
           fontFamily: "monospace",
           fontSize: 9,
-          fill: 0x444444,
+          fill: COLORS.GRAY_DARK,
           letterSpacing: 1,
         }}
       />
+    </>
+  );
+}
 
-      {/* Enhanced game mode selection with better visual feedback */}
-      <pixiContainer
-        x={window.innerWidth / 2 - 150}
-        y={window.innerHeight / 2 + 180}
-        interactive={true}
-        cursor="pointer"
-        onPointerDown={onStartGame}
-        onPointerEnter={() => {
+function MenuButtons({
+  selectedOption,
+  time,
+  onOptionChange,
+  audio,
+}: {
+  selectedOption: SelectedOption;
+  time: number;
+  onOptionChange: (option: SelectedOption) => void;
+  audio: ReturnType<typeof useAudio>;
+}): JSX.Element {
+  return (
+    <>
+      <MenuButton
+        isSelected={selectedOption === "sparring"}
+        time={time}
+        onSelect={() => {
           audio.playSFX("menu_hover");
-          setSelectedOption("sparring");
+          onOptionChange("sparring");
         }}
-      >
-        <pixiGraphics
-          draw={(g) => {
-            g.clear();
-            const isSelected = selectedOption === "sparring";
-            const pulse = isSelected ? Math.sin(time * 0.1) * 0.2 + 0.8 : 1.0;
+        title="⚔️ 대련 (Sparring)"
+        subtitle="🎯 정밀 전투 (Precision Combat)"
+        keyBinding="[1]"
+      />
 
-            // Enhanced button design
-            g.setFillStyle({ color: 0x000a12, alpha: 0.9 });
-            g.roundRect(-100, -45, 200, 90, 18);
-            g.fill();
-
-            // Gradient-like effect
-            g.setFillStyle({ color: 0x10171e, alpha: 0.7 });
-            g.roundRect(-100, -45, 200, 25, 18);
-            g.fill();
-
-            // Enhanced border
-            g.setStrokeStyle({
-              color: isSelected ? 0x00ffd0 : 0x004455,
-              width: isSelected ? 3 : 2,
-              alpha: pulse,
-            });
-            g.roundRect(-100, -45, 200, 90, 18);
-            g.stroke();
-
-            // Add tech-looking diagonal slash for visual interest
-            g.setStrokeStyle({
-              color: 0x00ffd0,
-              width: 1,
-              alpha: isSelected ? 0.6 : 0.3,
-            });
-            g.moveTo(-100, -25);
-            g.lineTo(-70, -45);
-            g.moveTo(100, -25);
-            g.lineTo(70, -45);
-            g.stroke();
-
-            // Selection glow effect
-            if (isSelected) {
-              g.setStrokeStyle({
-                color: 0x00ffd0,
-                width: 2,
-                alpha: pulse * 0.5,
-              });
-              g.roundRect(-105, -50, 210, 100, 22);
-              g.stroke();
-            }
-          }}
-        />
-        <pixiText
-          text="⚔️ 대련 (Sparring)"
-          anchor={{ x: 0.5, y: 0.5 }}
-          y={-15}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 18,
-            fill: selectedOption === "sparring" ? 0x00ffd0 : 0x7accd4,
-            fontWeight: "bold",
-            ...(selectedOption === "sparring" && {
-              dropShadow: {
-                color: 0x00ffd0,
-                blur: 6,
-                distance: 0,
-              },
-            }),
-          }}
-        />
-        <pixiText
-          text="🎯 정밀 전투 (Precision Combat)"
-          anchor={{ x: 0.5, y: 0.5 }}
-          y={10}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 12,
-            fill: selectedOption === "sparring" ? 0xffffff : 0x888888,
-          }}
-        />
-        <pixiText
-          text="[1]"
-          anchor={{ x: 0.5, y: 0.5 }}
-          y={30}
-          style={{
-            fontFamily: "monospace",
-            fontSize: 10,
-            fill: 0x00ffd0,
-          }}
-          alpha={0.7}
-        />
-      </pixiContainer>
-
-      <pixiContainer
-        x={window.innerWidth / 2 + 150}
-        y={window.innerHeight / 2 + 180}
-        interactive={true}
-        cursor="pointer"
-        onPointerDown={onStartTraining}
-        onPointerEnter={() => {
+      <MenuButton
+        isSelected={selectedOption === "training"}
+        time={time}
+        onSelect={() => {
           audio.playSFX("menu_hover");
-          setSelectedOption("training");
+          onOptionChange("training");
         }}
-      >
-        <pixiGraphics
-          draw={(g) => {
-            g.clear();
-            const isSelected = selectedOption === "training";
-            const pulse = isSelected ? Math.sin(time * 0.1) * 0.2 + 0.8 : 1.0;
+        title="🏃 수련 (Training)"
+        subtitle="🧘 기술 연마 (Skill Development)"
+        keyBinding="[2] [Alt]"
+      />
+    </>
+  );
+}
 
-            // Enhanced training button
-            g.setFillStyle({ color: 0x000a12, alpha: 0.9 });
-            g.roundRect(-100, -45, 200, 90, 18);
-            g.fill();
+function MenuButton({
+  isSelected,
+  time,
+  onSelect,
+  title,
+  subtitle,
+  keyBinding,
+}: MenuButtonProps): JSX.Element {
+  const xPosition = title.includes("대련")
+    ? window.innerWidth / 2 - 150
+    : window.innerWidth / 2 + 150;
 
-            // Gradient-like effect
-            g.setFillStyle({ color: 0x10171e, alpha: 0.7 });
-            g.roundRect(-100, -45, 200, 25, 18);
-            g.fill();
+  const onAction = title.includes("대련")
+    ? () => {} // Will be handled by parent
+    : () => {}; // Will be handled by parent
 
-            // Enhanced border
+  return (
+    <pixiContainer
+      x={xPosition}
+      y={window.innerHeight / 2 + 180}
+      interactive={true}
+      cursor="pointer"
+      onPointerDown={onAction}
+      onPointerEnter={onSelect}
+    >
+      <pixiGraphics
+        draw={(g) => {
+          g.clear();
+          const pulse = isSelected
+            ? Math.sin(time * BUTTON_ANIMATION_SPEED) * 0.2 + 0.8
+            : 1.0;
+
+          g.setFillStyle({ color: COLORS.DARK_BLUE, alpha: 0.9 });
+          g.roundRect(-100, -45, 200, 90, 18);
+          g.fill();
+
+          g.setFillStyle({ color: COLORS.DARK_PANEL, alpha: 0.7 });
+          g.roundRect(-100, -45, 200, 25, 18);
+          g.fill();
+
+          g.setStrokeStyle({
+            color: isSelected ? COLORS.CYAN : COLORS.ACCENT_BLUE,
+            width: isSelected ? 3 : 2,
+            alpha: pulse,
+          });
+          g.roundRect(-100, -45, 200, 90, 18);
+          g.stroke();
+
+          g.setStrokeStyle({
+            color: COLORS.CYAN,
+            width: 1,
+            alpha: isSelected ? 0.6 : 0.3,
+          });
+          g.moveTo(-100, -25);
+          g.lineTo(-70, -45);
+          g.moveTo(100, -25);
+          g.lineTo(70, -45);
+          g.stroke();
+
+          if (isSelected) {
             g.setStrokeStyle({
-              color: isSelected ? 0x00ffd0 : 0x004455,
-              width: isSelected ? 3 : 2,
-              alpha: pulse,
+              color: COLORS.CYAN,
+              width: 2,
+              alpha: pulse * 0.5,
             });
-            g.roundRect(-100, -45, 200, 90, 18);
+            g.roundRect(-105, -50, 210, 100, 22);
             g.stroke();
-
-            // Add tech-looking diagonal slash for visual interest
-            g.setStrokeStyle({
-              color: 0x00ffd0,
-              width: 1,
-              alpha: isSelected ? 0.6 : 0.3,
-            });
-            g.moveTo(-100, -25);
-            g.lineTo(-70, -45);
-            g.moveTo(100, -25);
-            g.lineTo(70, -45);
-            g.stroke();
-
-            if (isSelected) {
-              g.setStrokeStyle({
-                color: 0x00ffd0,
-                width: 2,
-                alpha: pulse * 0.5,
-              });
-              g.roundRect(-105, -50, 210, 100, 22);
-              g.stroke();
-            }
-          }}
-        />
-        <pixiText
-          text="🏃 수련 (Training)"
-          anchor={{ x: 0.5, y: 0.5 }}
-          y={-15}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 18,
-            fill: selectedOption === "training" ? 0x00ffd0 : 0x7accd4,
-            fontWeight: "bold",
-            ...(selectedOption === "training" && {
-              dropShadow: {
-                color: 0x00ffd0,
-                blur: 6,
-                distance: 0,
-              },
-            }),
-          }}
-        />
-        <pixiText
-          text="🧘 기술 연마 (Skill Development)"
-          anchor={{ x: 0.5, y: 0.5 }}
-          y={10}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 12,
-            fill: selectedOption === "training" ? 0xffffff : 0x888888,
-          }}
-        />
-        <pixiText
-          text="[2] [Alt]"
-          anchor={{ x: 0.5, y: 0.5 }}
-          y={30}
-          style={{
-            fontFamily: "monospace",
-            fontSize: 10,
-            fill: 0x00ffd0,
-          }}
-          alpha={0.7}
-        />
-      </pixiContainer>
+          }
+        }}
+      />
+      <pixiText
+        text={title}
+        anchor={{ x: 0.5, y: 0.5 }}
+        y={-15}
+        style={{
+          fontFamily: "Noto Sans KR",
+          fontSize: 18,
+          fill: isSelected ? COLORS.CYAN : COLORS.CYAN_LIGHT,
+          fontWeight: "bold",
+          ...(isSelected && {
+            dropShadow: {
+              color: COLORS.CYAN,
+              blur: 6,
+              distance: 0,
+            },
+          }),
+        }}
+      />
+      <pixiText
+        text={subtitle}
+        anchor={{ x: 0.5, y: 0.5 }}
+        y={10}
+        style={{
+          fontFamily: "Noto Sans KR",
+          fontSize: 12,
+          fill: isSelected ? COLORS.WHITE : COLORS.GRAY_LIGHT,
+        }}
+      />
+      <pixiText
+        text={keyBinding}
+        anchor={{ x: 0.5, y: 0.5 }}
+        y={30}
+        style={{
+          fontFamily: "monospace",
+          fontSize: 10,
+          fill: COLORS.CYAN,
+        }}
+        alpha={0.7}
+      />
     </pixiContainer>
   );
 }
@@ -810,7 +863,7 @@ function TrainingMode(): JSX.Element {
         style={{
           fontFamily: "Noto Sans KR",
           fontSize: 32,
-          fill: 0xffffff,
+          fill: COLORS.WHITE,
           fontWeight: "bold",
         }}
       />
@@ -822,14 +875,14 @@ function TrainingMode(): JSX.Element {
         style={{
           fontFamily: "Noto Sans KR",
           fontSize: 18,
-          fill: 0x999999,
+          fill: COLORS.GRAY_DARKER,
         }}
       />
     </pixiContainer>
   );
 }
 
-function BackButton({ onBack }: { onBack: () => void }): JSX.Element {
+function BackButton({ onBack }: BackButtonProps): JSX.Element {
   const [isHovered, setIsHovered] = useState(false);
   const audio = useAudio();
 
@@ -852,22 +905,19 @@ function BackButton({ onBack }: { onBack: () => void }): JSX.Element {
       <pixiGraphics
         draw={(g) => {
           g.clear();
-          // Cyberpunk back button
-          g.setFillStyle({ color: 0x000a12, alpha: 0.9 });
+          g.setFillStyle({ color: COLORS.DARK_BLUE, alpha: 0.9 });
           g.roundRect(-40, -20, 80, 40, 5);
           g.fill();
 
-          // Border
           g.setStrokeStyle({
-            color: isHovered ? 0x00ffd0 : 0x004455,
+            color: isHovered ? COLORS.CYAN : COLORS.ACCENT_BLUE,
             width: isHovered ? 2 : 1,
             alpha: isHovered ? 0.9 : 0.7,
           });
           g.roundRect(-40, -20, 80, 40, 5);
           g.stroke();
 
-          // Tech accent lines
-          g.setStrokeStyle({ color: 0x00ffd0, width: 1, alpha: 0.4 });
+          g.setStrokeStyle({ color: COLORS.CYAN, width: 1, alpha: 0.4 });
           g.moveTo(-40, -10);
           g.lineTo(-30, -20);
           g.moveTo(40, -10);
@@ -881,10 +931,10 @@ function BackButton({ onBack }: { onBack: () => void }): JSX.Element {
         style={{
           fontFamily: "Noto Sans KR",
           fontSize: 14,
-          fill: isHovered ? 0x00ffd0 : 0xcccccc,
+          fill: isHovered ? COLORS.CYAN : COLORS.GRAY_TEXT,
           ...(isHovered && {
             dropShadow: {
-              color: 0x00ffd0,
+              color: COLORS.CYAN,
               blur: 4,
               distance: 0,
             },
