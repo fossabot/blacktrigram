@@ -1,15 +1,19 @@
 <div align="center">
 
 # 🥋 Black Trigram (흑괘)
-### *무예는 몸과 마음, 그리고 영혼의 조화이다*
-*"Martial arts are the harmony of body, mind, and spirit"*
 
-![Dark Trigram](src/assets/black-trigram.png)
+### _무예는 몸과 마음, 그리고 영혼의 조화이다_
+
+_"Martial arts are the harmony of body, mind, and spirit"_
+
+![Dark Trigram Logo](public/dark-trigram-256.png)
 
 [![License](https://img.shields.io/github/license/Hack23/blacktrigram.svg)](https://github.com/Hack23/blacktrigram/raw/master/LICENSE.md)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Hack23/blacktrigram/badge)](https://scorecard.dev/viewer/?uri=github.com/Hack23/blacktrigram)
 
-*A 2D precision combat game inspired by Korean martial arts philosophy and the I Ching*
+_A 2D precision combat game inspired by Korean martial arts philosophy and the I Ching_
+
+**[🎮 Play Now](https://hack23.github.io/blacktrigram/)** | **[📖 Game Guide](#-game-features)** | **[🔧 Development](#-technical-excellence)**
 
 </div>
 
@@ -26,41 +30,41 @@
 <td align="center" width="25%">
 
 **🎯 정격자**  
-*Jeonggyeokja*  
+_Jeonggyeokja_  
 **Precision Attacker**
 
-*Every strike calculated  
-and deliberate*
+_Every strike calculated  
+and deliberate_
 
 </td>
 <td align="center" width="25%">
 
 **⚔️ 비수**  
-*Bisu*  
+_Bisu_  
 **Lethal Blade**
 
-*Metaphorical lethality  
-in unarmed combat*
+_Metaphorical lethality  
+in unarmed combat_
 
 </td>
 <td align="center" width="25%">
 
 **🥷 암살자**  
-*Amsalja*  
+_Amsalja_  
 **Assassin**
 
-*Focus on finishing  
-techniques*
+_Focus on finishing  
+techniques_
 
 </td>
 <td align="center" width="25%">
 
 **💀 급소격**  
-*Geupsogyeok*  
+_Geupsogyeok_  
 **Vital Point Strike**
 
-*Core combat  
-mechanic*
+_Core combat  
+mechanic_
 
 </td>
 </tr>
@@ -68,40 +72,42 @@ mechanic*
 
 ---
 
-## 🌟 Game Features
+## 🌟 Enhanced Game Features
 
 ### 🔮 Trigram-Based Combat System (팔괘 무술체계)
 
-Master **8 unique fighting philosophies** based on the I Ching trigrams:
+Master **8 unique fighting philosophies** based on the I Ching trigrams with enhanced visual effects:
 
 <div align="center">
 
-| Trigram | Name | Philosophy | Combat Style |
-|:-------:|:----:|:----------:|:------------:|
-| ☰ | **건 (Geon)** - *Heaven* | Pure yang energy | 🔥 Power strikes, guard breaking |
-| ☱ | **태 (Tae)** - *Lake* | Joy and flexibility | 🌊 Flowing combinations |
-| ☲ | **리 (Li)** - *Fire* | Clarity and intensity | ⚡ Fast, precise attacks |
-| ☳ | **진 (Jin)** - *Thunder* | Sudden movement | 💥 Explosive bursts |
-| ☴ | **손 (Son)** - *Wind* | Gentle persistence | 🌪️ Continuous pressure |
-| ☵ | **감 (Gam)** - *Water* | Adaptation and flow | 🛡️ Evasion and counters |
-| ☶ | **간 (Gan)** - *Mountain* | Stillness and endurance | 🗿 Immovable defense |
-| ☷ | **곤 (Gon)** - *Earth* | Receptive yin energy | 🤜 Throws and takedowns |
+| Trigram |           Name            |       Philosophy        |       Combat Style       |         Visual Effects         |
+| :-----: | :-----------------------: | :---------------------: | :----------------------: | :----------------------------: |
+|    ☰    | **건 (Geon)** - _Heaven_  |    Pure yang energy     |     🔥 Power strikes     | Lightning bursts, screen shake |
+|    ☱    |   **태 (Tae)** - _Lake_   |   Joy and flexibility   | 🌊 Flowing combinations  |      Water ripple effects      |
+|    ☲    |   **리 (Li)** - _Fire_    |  Clarity and intensity  | ⚡ Fast, precise attacks |      Fire particle trails      |
+|    ☳    | **진 (Jin)** - _Thunder_  |     Sudden movement     |   💥 Explosive bursts    |      Thunder shock waves       |
+|    ☴    |   **손 (Son)** - _Wind_   |   Gentle persistence    |  🌪️ Continuous pressure  |      Wind spiral effects       |
+|    ☵    |  **감 (Gam)** - _Water_   |   Adaptation and flow   | 🛡️ Evasion and counters  |     Water shield barriers      |
+|    ☶    | **간 (Gan)** - _Mountain_ | Stillness and endurance |   🗿 Immovable defense   |      Stone impact effects      |
+|    ☷    |  **곤 (Gon)** - _Earth_   |  Receptive yin energy   | 🤜 Throws and takedowns  |      Earth shake tremors       |
 
 </div>
 
-### 🎯 Vital Point Targeting System
+### 💥 Enhanced Combat Effects
 
-- **70 Anatomical Targets** across 5 body regions
-- **Precision-based damage** - Perfect hits deal 150% damage
-- **Real martial arts knowledge** - Learn actual vital points
-- **Anatomical mastery** - Unlock new techniques through study
+- **🌟 Particle Systems** - Explosive hit effects with 25+ particles for vital strikes
+- **📺 Screen Shake** - Dynamic camera shake based on impact force
+- **⚡ Lightning Effects** - Electric arcs for critical hits
+- **🎭 Dark Trigram Logo** - Appears on devastating vital point strikes
+- **🔊 Audio-Visual Sync** - Sound effects perfectly timed with visual impacts
+- **🌀 Element-Specific Particles** - Each trigram has unique visual effects
 
-### 🎨 Authentic Korean Aesthetics
+### 🎯 Advanced Vital Point System
 
-- **Traditional Korean art style** with modern 2D animation
-- **Ink brush UI elements** and transitional effects
-- **Korean language integration** with proper martial arts terminology
-- **Cultural authenticity** in philosophy and combat principles
+- **🎪 70 Anatomical Targets** with enhanced visual feedback
+- **💯 Precision-based damage** - Perfect hits trigger spectacular effects
+- **🧠 Real martial arts knowledge** - Learn actual pressure points
+- **🎨 Korean Typography** - Beautiful Korean text integration
 
 ---
 
@@ -111,617 +117,198 @@ Built with modern web technologies for **maximum performance** and **security**:
 
 <div align="center">
 
-### 🎮 Game Engine
+### 🎮 Enhanced Game Engine
+
 ![PixiJS](https://img.shields.io/badge/PixiJS-8.x-ff6b6b?style=for-the-badge&logo=javascript)
 ![React](https://img.shields.io/badge/React-19-61dafb?style=for-the-badge&logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178c6?style=for-the-badge&logo=typescript)
 
-### ⚡ Performance
+### ⚡ Performance Optimized
+
 ![Vite](https://img.shields.io/badge/Vite-Fast-646cff?style=for-the-badge&logo=vite)
 ![WebGL](https://img.shields.io/badge/WebGL-Hardware_Accelerated-990000?style=for-the-badge)
 ![Howler.js](https://img.shields.io/badge/Audio-Howler.js-ff9500?style=for-the-badge)
 
-### 🔒 Security First
-![OSSF](https://img.shields.io/badge/OSSF-Scorecard-4c1?style=for-the-badge)
-![SLSA](https://img.shields.io/badge/SLSA-Compliant-2ea44f?style=for-the-badge)
-![SBOM](https://img.shields.io/badge/SBOM-Generated-orange?style=for-the-badge)
+### 🎨 Visual Effects
+
+![Particles](https://img.shields.io/badge/Particles-Custom_Engine-9c27b0?style=for-the-badge)
+![Shaders](https://img.shields.io/badge/Shaders-WebGL-ff5722?style=for-the-badge)
+![Animation](https://img.shields.io/badge/Animation-60fps-4caf50?style=for-the-badge)
 
 </div>
 
+### 🎨 New UI Components
+
+- **CyberpunkPanel** - Futuristic panels with Korean design elements
+- **CyberpunkButton** - Interactive buttons with hover effects
+- **Enhanced HitEffects** - Spectacular visual feedback system
+- **Texture Loading** - Optimized asset management with caching
+
 ---
 
-## 🎭 Game Modes
+## 🎮 Game Controls
+
+### ⌨️ Keyboard Controls
+
+- **🏃 Movement**: `WASD` or `Arrow Keys`
+- **⚔️ Trigram Techniques**: `1-8` (Number keys)
+- **🛡️ Block**: `Spacebar`
+- **🎯 Quick Attack**: `Mouse Click`
+
+### 🎨 Visual Feedback
+
+- **💥 Hit Effects**: Dynamic particle explosions
+- **📺 Screen Shake**: Impact-based camera movement
+- **⚡ Lightning**: Critical hit visual effects
+- **🏮 Logo Appearance**: Dark Trigram logo on vital strikes
+
+---
+
+## 🎭 Enhanced Game Modes
 
 ### 🏯 수련 모드 (Suryeon Mode) - Training
-- **📚 Vital Point Study** - Learn anatomical targets
-- **⚡ Trigram Practice** - Master individual styles  
-- **🎯 Precision Training** - Improve targeting accuracy
-- **🧘 Breathing Exercises** - Develop rhythm and timing
 
-### ⚔️ 대련 모드 (Daeryeon Mode) - Sparring
-- **🥊 Single Combat** - One-on-one precision duels
-- **🏆 Tournament** - Progressive difficulty challenges
-- **👑 Master Challenges** - Face legendary martial artists
+- **📚 Vital Point Study** - Interactive anatomy lessons
+- **⚡ Trigram Practice** - Master visual effect combos
+- **🎯 Precision Training** - Enhanced targeting system
+- **🧘 Philosophy Study** - Learn I Ching principles
 
-### 📖 철학 모드 (Cheolhak Mode) - Philosophy
-- **📜 I Ching Study** - Learn trigram meanings
-- **🏛️ Historical Lessons** - Korean martial arts heritage
-- **🧘‍♂️ Meditation Practice** - Improve focus and precision
+### ⚔️ 대련 모드 (Daeryeon Mode) - Enhanced Sparring
 
-### 🌙 암살 모드 (Amsal Mode) - Assassination
-- **🤫 Stealth Missions** - Eliminate without detection
-- **💯 One-Strike Challenges** - Perfect precision required
-- **🏞️ Environmental Kills** - Use surroundings tactically
+- **💥 Visual Combat** - Spectacular effect-driven fights
+- **🏆 Tournament** - Progressive visual complexity
+- **👑 Master Challenges** - Epic boss encounters with unique effects
+
+### 🌙 급소격 모드 (Geupsogyeok Mode) - Vital Strike Training
+
+- **🎯 Precision Targeting** - Learn exact vital point locations
+- **💀 One-Shot Challenges** - Perfect accuracy required
+- **🎨 Effect Mastery** - Unlock new visual effects
 
 ---
 
-## 🔒 Security Features
+## 🔧 Development Features
 
-This template implements comprehensive security measures:
+### 🎨 Enhanced Asset Pipeline
 
-- **🛡️ Supply Chain Security** - OSSF Scorecard analysis and dependency review
-- **🔍 Static Analysis** - CodeQL scanning for vulnerabilities
-- **📦 Dependency Protection** - Automated dependency vulnerability checks
-- **🔐 Runner Hardening** - All CI/CD runners are hardened with audit logging
-- **📋 Security Policies** - GitHub security advisories and vulnerability reporting
-- **🏷️ Pinned Dependencies** - All GitHub Actions pinned to specific SHA hashes
-- **📄 SBOM Generation** - Software Bill of Materials for transparency
-- **🔏 Build Attestations** - Cryptographic proof of build integrity
-- **🏆 Artifact Verification** - SLSA-compliant build provenance
-- **🕷️ ZAP Security Scanning** - OWASP ZAP dynamic application security testing
-- **⚡ Lighthouse Performance** - Automated performance and accessibility audits
+```typescript
+// Auto-loading textures with caching
+const { texture, loading, error } = useTexture("/dark-trigram-256.png");
 
-## Features
-
-- ⚡ **Vite** - Fast build tool and dev server
-- ⚛️ **React 19** - Modern React with hooks
-- 🔷 **TypeScript** - Strict typing with latest standards
-- 🧪 **Vitest** - Fast unit testing with coverage
-- 🌲 **Cypress** - Reliable E2E testing
-- 📦 **ESLint** - Code linting with TypeScript rules
-- 🔄 **GitHub Actions** - Automated testing and reporting
-- 🎮 **PixiJS 8.x** - High-performance WebGL renderer for 2D games
-- 🎵 **Howler.js** - Audio library for games
-
-## Development Environment
-
-This template includes a fully configured development environment:
-
-- **🚀 GitHub Codespaces** - Zero-configuration development environment
-- **🤖 GitHub Copilot** - AI-assisted development with code suggestions
-- **💬 Copilot Chat** - In-editor AI assistance for debugging and explanations
-- **🔧 VS Code Extensions** - Pre-configured extensions for game development
-- **🔒 Secure Container** - Hardened development container with security features
-
-### 🚀 Codespaces Setup
-
-This repository is fully configured for GitHub Codespaces, providing:
-
-- **One-click setup** - Start coding immediately with zero configuration
-- **Pre-installed dependencies** - All tools and libraries ready to use
-- **Configured test environment** - Cypress and Vitest ready to run
-- **GitHub Copilot integration** - AI-powered code assistance
-- **Optimized performance** - Container configured for game development
-
-```mermaid
-graph LR
-    A[Developer] -->|Opens in Codespace| B[Container Setup]
-    B -->|Auto-configures| C[Development Environment]
-    C -->|Provides| D[VS Code + Extensions]
-    C -->|Initializes| E[Node.js Environment]
-    C -->|Configures| F[Testing Tools]
-
-    D -->|Includes| G[GitHub Copilot]
-    D -->|Includes| H[ESLint Integration]
-    D -->|Includes| I[Debug Tools]
-
-    E -->|Installs| J[PixiJS 8.x]
-    E -->|Installs| K[React 19]
-    E -->|Installs| L[TypeScript]
-
-    F -->|Prepares| M[Cypress E2E]
-    F -->|Prepares| N[Vitest Unit Tests]
-
-    G -->|Assists with| O[Game Logic]
-    G -->|Suggests| P[Game Components]
-
-    classDef primary fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000
-    classDef tools fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px,color:#000
-    classDef ai fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
-    classDef testing fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,color:#000
-
-    class A,B,C primary
-    class D,E,F tools
-    class G,O,P ai
-    class M,N testing
-    class J,K,L tools
-    class H,I tools
+// Preload game assets
+await preloadGameTextures();
 ```
 
-## Security Workflows
+### 💥 Particle Effect System
 
-```mermaid
-graph TD
-    A[🔒 Code Push/PR] --> B{🛡️ Security Gates}
-
-    B --> |🔍 Code Analysis| C[CodeQL Scanning]
-    B --> |📦 Dependencies| D[Dependency Review]
-    B --> |🏗️ Supply Chain| E[OSSF Scorecard]
-
-    C --> |🚨 Vulnerabilities| F[Security Alerts]
-    D --> |⚠️ Known CVEs| F
-    E --> |📊 Security Score| G[Security Dashboard]
-
-    F --> H[🚫 Block Merge]
-    G --> I[✅ Security Badge]
-
-    subgraph "🔐 Protection Layers"
-        J[Runner Hardening]
-        K[Pinned Actions]
-        L[Audit Logging]
-    end
-
-    subgraph "🧪 Runtime Security Testing"
-        M[🕷️ ZAP DAST Scan]
-        N[⚡ Lighthouse Audit]
-        O[🌐 Live Site Testing]
-    end
-
-    I --> M
-    M --> |🔍 Dynamic Scan| N
-    N --> |📊 Performance Report| O
-
-    %% Styling
-    classDef security fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#000
-    classDef analysis fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px,color:#000
-    classDef protection fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#000
-    classDef alert fill:#fff3e0,stroke:#ef6c00,stroke-width:2px,color:#000
-    classDef runtime fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
-
-    class A,B,H security
-    class C,D,E analysis
-    class J,K,L protection
-    class F,G,I alert
-    class M,N,O runtime
+```typescript
+// Generate hit particles with Korean aesthetics
+const particles = generateHitParticles({
+  count: isVitalHit ? 25 : 12,
+  colors: [CYAN, ORANGE, LIGHTNING_YELLOW],
+  trigram: effect.trigram,
+});
 ```
 
-## Test & Report Workflow
+### 📺 Screen Effects
 
-```mermaid
-graph TD
-    A[🚀 Code Push/PR] --> B{🔍 Prepare Environment}
-
-    B --> |✅ Dependencies| C[🏗️ Build Validation]
-    B --> |✅ Cypress Cache| D[🧪 Unit Tests]
-    B --> |✅ Display Setup| E[🌐 E2E Tests]
-
-    C --> |✅ Build Success| F{📊 Parallel Testing}
-
-    F --> D
-    F --> E
-
-    D --> |📈 Coverage Report| G[📋 Test Reports]
-    E --> |🎬 Videos & Screenshots| G
-
-    G --> H[📤 Artifact Upload]
-    H --> I[✨ Combined Reports]
-
-    %% Styling
-    classDef startEnd fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#000
-    classDef process fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,color:#000
-    classDef test fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px,color:#000
-    classDef report fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
-    classDef artifact fill:#fce4ec,stroke:#880e4f,stroke-width:2px,color:#000
-
-    class A,I startEnd
-    class B,C,F process
-    class D,E test
-    class G,H report
-    class H artifact
+```typescript
+// Dynamic screen shake based on impact
+generateScreenShake({
+  intensity: isVitalHit ? 15 : damage / 2,
+  duration: 300,
+});
 ```
 
-## Quick Start
+---
+
+## 🚀 Quick Start
+
+### 🌐 Play Online
+
+**[🎮 Play Black Trigram Now](https://hack23.github.io/blacktrigram/)**
+
+### 🔧 Local Development
 
 ```bash
-# Using GitHub Codespaces
-# Click "Code" button on repository and select "Open with Codespaces"
+# Clone repository
+git clone https://github.com/Hack23/blacktrigram.git
+cd blacktrigram
 
-# Or local development:
 # Install dependencies
 npm install
 
-# Start development server
+# Start development server with hot reload
 npm run dev
 
-# Build for production
+# Build for production with optimizations
 npm run build
 
-# Run unit tests
+# Run comprehensive test suite
 npm run test
-
-# Run E2E tests
 npm run test:e2e
 ```
 
-## PixiJS 8.x Integration
-
-This template uses PixiJS 8.x for high-performance 2D game rendering:
-
-- Modern WebGL-based rendering
-- Optimized sprite batching
-- Integrated with React via @pixi/react
-- Sound support via @pixi/sound and Howler.js
-- Responsive game canvas
-- Touch and mouse input handling
-
-Example game component:
-
-```tsx
-import { Stage, Sprite, useTick } from "@pixi/react";
-import { useState } from "react";
-
-export function Game() {
-  const [position, setPosition] = useState({ x: 100, y: 100 });
-
-  useTick((delta) => {
-    // Game logic here
-    setPosition((prev) => ({
-      x: prev.x + delta,
-      y: prev.y,
-    }));
-  });
-
-  return (
-    <Stage width={800} height={600} options={{ backgroundColor: 0x1d2230 }}>
-      <Sprite
-        image="/assets/character.png"
-        x={position.x}
-        y={position.y}
-        anchor={{ x: 0.5, y: 0.5 }}
-      />
-    </Stage>
-  );
-}
-```
-
-## Testing
-
-### Unit Tests
-
-- Uses Vitest with jsdom environment
-- Configured for React Testing Library
-- Coverage reports generated automatically
-- Run with: `npm run test`
-
-### E2E Tests
-
-- Uses Cypress for end-to-end testing
-- Starts dev server automatically
-- Screenshots and videos on failure
-- Run with: `npm run test:e2e`
-
-### CI/CD Pipeline
-
-```mermaid
-flowchart LR
-    subgraph "🔧 CI Pipeline"
-        A1[📝 Code Changes] --> A2[🔍 Lint & Type Check]
-        A2 --> A3[🏗️ Build]
-        A3 --> A4[🧪 Test]
-        A4 --> A5[📊 Report]
-    end
-
-    subgraph "🔒 Security Pipeline"
-        S1[🛡️ CodeQL Analysis]
-        S2[📦 Dependency Review]
-        S3[🏆 OSSF Scorecard]
-        S4[🔐 Runner Hardening]
-    end
-
-    subgraph "📈 Test Coverage"
-        B1[Unit Tests<br/>80%+ Coverage]
-        B2[E2E Tests<br/>Critical Flows]
-        B3[Type Safety<br/>Strict Mode]
-    end
-
-    subgraph "🎯 Outputs"
-        C1[📄 Coverage Reports]
-        C2[🎬 Test Videos]
-        C3[📸 Screenshots]
-        C4[📋 JUnit XML]
-        C5[🛡️ Security Reports]
-    end
-
-    A4 --> B1
-    A4 --> B2
-    A4 --> B3
-
-    A1 --> S1
-    A1 --> S2
-    A1 --> S3
-    A1 --> S4
-
-    A5 --> C1
-    A5 --> C2
-    A5 --> C3
-    A5 --> C4
-    S1 --> C5
-    S2 --> C5
-    S3 --> C5
-
-    %% Styling
-    classDef pipeline fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef security fill:#ffebee,stroke:#c62828,stroke-width:2px
-    classDef testing fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
-    classDef output fill:#fff8e1,stroke:#f57c00,stroke-width:2px
-
-    class A1,A2,A3,A4,A5 pipeline
-    class S1,S2,S3,S4 security
-    class B1,B2,B3 testing
-    class C1,C2,C3,C4,C5 output
-```
-
-### Security Workflows
-
-- **CodeQL Analysis**: Automated vulnerability scanning on push/PR
-- **Dependency Review**: Checks for known vulnerabilities in dependencies
-- **OSSF Scorecard**: Supply chain security assessment with public scoring
-- **Runner Hardening**: All CI/CD runners use hardened security policies
-
-## 🚀 Release Management
-
-This template includes a comprehensive, security-first release workflow with automated versioning, security attestations, and deployment.
-
-### Release Flow
-
-```mermaid
-flowchart TD
-    A[🚀 Release Trigger] --> B{📋 Release Type}
-
-    B -->|🏷️ Tag Push| C[🔄 Automatic Release]
-    B -->|⚡ Manual Dispatch| D[📝 Manual Release]
-
-    C --> E[📦 Prepare Phase]
-    D --> E
-
-    E --> F[🏗️ Build & Test]
-    F --> G[🔒 Security Validation]
-
-    G --> H[📄 Generate SBOM]
-    H --> I[🔏 Create Attestations]
-    I --> J[📋 Draft Release Notes]
-
-    J --> K[🌐 Deploy to Pages]
-    K --> L[📢 Publish Release]
-
-    subgraph "🔒 Security Layers"
-        M[SLSA Build Provenance]
-        N[SBOM Attestation]
-        O[Artifact Signing]
-        P[Supply Chain Verification]
-    end
-
-    I --> M
-    I --> N
-    I --> O
-    G --> P
-
-    %% Styling
-    classDef trigger fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    classDef process fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef security fill:#ffebee,stroke:#c62828,stroke-width:2px
-    classDef deploy fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
-
-    class A,B,C,D trigger
-    class E,F,J,K,L process
-    class G,H,I,M,N,O,P security
-```
-
-### 🏷️ Release Types
-
-#### Automatic Releases (Tag-based)
-
-```bash
-# Create and push a tag to trigger automatic release
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-#### Manual Releases (Workflow Dispatch)
-
-- Navigate to **Actions** → **Build, Attest and Release**
-- Click **Run workflow**
-- Specify version (e.g., `v1.0.1`) and pre-release status
-- The workflow handles version bumping and tagging automatically
-
-### 📋 Automated Release Notes
-
-Release notes are automatically generated using semantic labeling:
-
-```mermaid
-graph LR
-    A[🔄 PR Labels] --> B[📝 Release Drafter]
-    B --> C[📊 Categorized Notes]
-
-    subgraph "🏷️ Label Categories"
-        D[🚀 New Features]
-        E[🎮 Game Development]
-        F[🔒 Security & Compliance]
-        G[🐛 Bug Fixes]
-        H[📦 Dependencies]
-        I[🧪 Test Coverage]
-    end
-
-    A --> D
-    A --> E
-    A --> F
-    A --> G
-    A --> H
-    A --> I
-
-    C --> J[📢 GitHub Release]
-
-    classDef labels fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef process fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
-    classDef output fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
-
-    class D,E,F,G,H,I labels
-    class A,B,C process
-    class J output
-```
-
-#### Release Note Categories
-
-- **🚀 New Features** - Major feature additions
-- **🎮 Game Development** - Game logic, graphics, audio improvements
-- **🎨 UI/UX Improvements** - Interface and design updates
-- **🏗️ Infrastructure & Performance** - Build and performance optimizations
-- **🔄 Code Quality & Refactoring** - Code improvements and testing
-- **🔒 Security & Compliance** - Security updates and fixes
-- **📝 Documentation** - Documentation improvements
-- **📦 Dependencies** - Dependency updates
-- **🐛 Bug Fixes** - Bug fixes and patches
-
-### 🔒 Security Attestations & SBOM
-
-#### Software Bill of Materials (SBOM)
-
-Every release includes a comprehensive SBOM in SPDX format:
-
-```json
-{
-  "SPDXID": "SPDXRef-DOCUMENT",
-  "name": "game-v1.0.0",
-  "packages": [
-    {
-      "SPDXID": "SPDXRef-Package-react",
-      "name": "react",
-      "versionInfo": "19.1.0",
-      "licenseConcluded": "MIT"
-    }
-  ]
-}
-```
-
-#### Build Provenance Attestations
-
-SLSA-compliant build attestations provide cryptographic proof:
-
-```json
-{
-  "_type": "https://in-toto.io/Statement/v0.1",
-  "predicateType": "https://slsa.dev/provenance/v0.2",
-  "subject": [
-    {
-      "name": "game-v1.0.0.zip",
-      "digest": {
-        "sha256": "abc123..."
-      }
-    }
-  ],
-  "predicate": {
-    "builder": {
-      "id": "https://github.com/actions/runner"
-    },
-    "buildType": "https://github.com/actions/workflow@v1"
-  }
-}
-```
-
-#### Verification Commands
-
-```bash
-# Verify build provenance
-gh attestation verify game-v1.0.0.zip \
-  --owner Hack23 --repo game
-
-# Verify SBOM attestation
-gh attestation verify game-v1.0.0.zip \
-  --owner Hack23 --repo game \
-  --predicate-type https://spdx.dev/Document
-```
-
-### 📦 Release Artifacts
-
-Each release includes multiple artifacts with full traceability:
-
-```
-📦 Release v1.0.0
-├── 🎮 game-v1.0.0.zip                    # Built application
-├── 📄 game-v1.0.0.spdx.json             # Software Bill of Materials
-├── 🔏 game-v1.0.0.zip.intoto.jsonl      # Build provenance attestation
-└── 📋 game-v1.0.0.spdx.json.intoto.jsonl # SBOM attestation
-```
-
-### 🌐 Deployment Pipeline
-
-```mermaid
-sequenceDiagram
-    participant Dev as 👨‍💻 Developer
-    participant GH as 🐙 GitHub
-    participant CI as 🔄 CI/CD
-    participant Sec as 🔒 Security
-    participant Pages as 🌐 GitHub Pages
-
-    Dev->>GH: 🏷️ Push Tag/Manual Trigger
-    GH->>CI: 🚀 Start Release Workflow
-
-    CI->>CI: 🧪 Run Tests & Build
-    CI->>Sec: 🔍 Security Scans
-    Sec-->>CI: ✅ Security Validated
-
-    CI->>Sec: 📄 Generate SBOM
-    CI->>Sec: 🔏 Create Attestations
-    Sec-->>CI: 📋 Security Artifacts Ready
-
-    CI->>GH: 📝 Draft Release Notes
-    CI->>GH: 📦 Upload Artifacts
-
-    CI->>Pages: 🌐 Deploy Application
-    Pages-->>CI: ✅ Deployment Success
-
-    CI->>GH: 📢 Publish Release
-    GH-->>Dev: 🎉 Release Complete
-```
-
-### 🔐 Security Compliance
-
-#### OSSF Scorecard Integration
-
-- **Automated scoring** of supply chain security practices
-- **Public transparency** with security badge
-- **Continuous monitoring** of security posture
-
-#### Supply Chain Protection
-
-- **Pinned dependencies** - All GitHub Actions pinned to SHA hashes
-- **Dependency scanning** - Automated vulnerability detection
-- **SLSA compliance** - Build integrity and provenance
-- **Signed artifacts** - Cryptographic verification of releases
-
-### 📊 Release Metrics
-
-Track release quality and security with built-in metrics:
-
-- **🔒 Security Score** - OSSF Scorecard rating
-- **📈 Test Coverage** - Unit and E2E test coverage
-- **🏷️ Vulnerability Count** - Known security issues
-- **📦 Dependency Health** - Outdated/vulnerable dependencies
-- **🚀 Build Success Rate** - CI/CD pipeline reliability
-
-## Building Your Game
-
-This template provides a **secure foundation** for game development:
-
-1. Replace the counter example with your game logic
-2. Add game-specific components in `src/components/`
-3. Create game state management (Context API, Zustand, etc.)
-4. Add unit tests for game logic
-5. Create E2E tests for game flows
-6. **Create releases** using the automated workflow
-7. **Monitor security** through OSSF Scorecard and attestations
-8. Deploy using the included **security-hardened** GitHub Actions
-
-All security workflows will automatically protect your game from common vulnerabilities and supply chain attacks, while providing full transparency through SBOM and attestations.
-
-Happy gaming! 🎮🔒
+### 🐳 GitHub Codespaces
+
+1. Click **"Use this template"** or fork the repository
+2. Click **"Code"** → **"Create codespace on main"**
+3. Wait for automatic setup (2-3 minutes)
+4. Run `npm run dev` and start coding!
+
+---
+
+## 🎯 Game Philosophy
+
+> **"흑괘에서 무예는 단순한 싸움이 아니다. 그것은 우주의 조화를 몸으로 표현하는 예술이다."**
+>
+> _"In Black Trigram, martial arts are not mere fighting. They are the art of expressing cosmic harmony through the body."_
+
+### 🔮 The Eight Paths (팔괘도)
+
+Each trigram represents not just a fighting style, but a complete philosophy:
+
+- **☰ Heaven (건)** - Leadership through overwhelming force
+- **☱ Lake (태)** - Joy in fluid, adaptive combat
+- **☲ Fire (리)** - Clarity of purpose in every strike
+- **☳ Thunder (진)** - Decisive action without hesitation
+- **☴ Wind (손)** - Persistent pressure that wears down mountains
+- **☵ Water (감)** - Flowing around obstacles to find weakness
+- **☶ Mountain (간)** - Immovable defense, perfect timing
+- **☷ Earth (곤)** - Receptive power that grounds opponents
+
+---
+
+## 🏆 Achievements & Mastery
+
+### 🎨 Visual Effect Mastery
+
+- **💫 Particle Master** - Execute 100 perfect vital strikes
+- **⚡ Lightning Bringer** - Land 50 critical hits in a row
+- **🌟 Trigram Sage** - Master all 8 visual effect styles
+- **👑 Dark Trigram Legend** - Achieve flawless victory with logo appearance
+
+### 🎯 Combat Excellence
+
+- **🎪 Vital Point Scholar** - Identify all 70 pressure points
+- **🥷 Shadow Strike** - Win without taking damage
+- **🔥 Combo Master** - Chain 20+ techniques seamlessly
+- **🏮 Philosophy Student** - Complete I Ching study mode
+
+---
+
+<div align="center">
+
+## 🌟 Ready to Master the Dark Arts?
+
+**[🎮 Begin Your Journey](https://hack23.github.io/blacktrigram/)**
+
+_Experience the harmony of body, mind, and spectacular visual effects_
+
+---
+
+### Built with ❤️ and ⚡ by the Dark Trigram Team
+
+**🥋 무예의 길을 걸어라 (Walk the Path of Martial Arts) 🥋**
+
+</div>
