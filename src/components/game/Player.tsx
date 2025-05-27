@@ -338,7 +338,7 @@ export function PlayerContainer({
 
   // Enhanced attack execution with audio feedback
   const executeAttack = useCallback(
-    (stance: TrigramStance) => {
+    (stance: TrigramStance): void => {
       if (!gameStarted || attackCooldown > 0) return;
 
       const technique = TRIGRAM_TECHNIQUES[stance];
@@ -346,8 +346,13 @@ export function PlayerContainer({
 
       setPlayerState((prev) => PlayerStateManager.executeAttack(prev, stance));
 
-      // Play attack sound based on damage
+      // Play attack sound based on damage with vital point detection
+      const isVitalPoint = technique.damage > 30;
       audio.playAttackSound(technique.damage);
+
+      if (isVitalPoint) {
+        audio.playHitSound(technique.damage, true);
+      }
 
       const attackX =
         playerState.facing === "right"
@@ -377,7 +382,7 @@ export function PlayerContainer({
       playerState.x,
       playerState.y,
       onAttack,
-      audio, // Added audio dependency
+      audio,
     ]
   );
 
@@ -420,7 +425,7 @@ export function PlayerContainer({
 
   // Enhanced AI behavior with better decision making
   const handleAI = useCallback(
-    (delta: number) => {
+    (delta: number): void => {
       if (!opponentPosition || !gameStarted || isPlayerOne) return;
 
       const distance = AISystem.calculateDistance(
@@ -463,7 +468,7 @@ export function PlayerContainer({
 
   // Enhanced player input handling
   const handlePlayerInput = useCallback(
-    (delta: number) => {
+    (delta: number): void => {
       if (!isPlayerOne) {
         handleAI(delta);
         return;
@@ -480,7 +485,7 @@ export function PlayerContainer({
         ? GAME_BALANCE.BASE_MOVE_SPEED * GAME_BALANCE.BLOCKING_SPEED_MULTIPLIER
         : GAME_BALANCE.BASE_MOVE_SPEED;
 
-      // Movement controls
+      // Movement controls using delta for frame-rate independence
       if (keys.has("KeyA") || keys.has("ArrowLeft")) {
         newX -= moveSpeed * delta;
         newFacing = "left";
@@ -546,19 +551,19 @@ export function PlayerContainer({
   // Enhanced game loop with better performance
   useTick(
     useCallback(
-      (ticker: { deltaTime: number }) => {
+      (ticker: { deltaTime: number }): void => {
         const delta = ticker.deltaTime;
         setAnimationTime((prev) => prev + delta);
 
         if (!gameStarted) return;
 
-        // Update cooldowns
+        // Update cooldowns using delta time
         setAttackCooldown((prev) => Math.max(0, prev - delta));
 
-        // Handle input
+        // Handle input with delta timing
         handlePlayerInput(delta);
 
-        // Update stamina
+        // Update stamina with delta timing
         setPlayerState((prev) => PlayerStateManager.updateStamina(prev, delta));
       },
       [gameStarted, handlePlayerInput]

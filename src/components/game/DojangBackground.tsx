@@ -1,269 +1,279 @@
+import { useState, useEffect, useCallback } from "react";
 import type { JSX } from "react";
 import type { Graphics as PixiGraphics } from "pixi.js";
+import { useTexture } from "../../hooks/useTexture";
+
+// Dark Trigram theme constants with strict typing
+const DARK_TRIGRAM_THEME = {
+  PRIMARY_CYAN: 0x00ffd0,
+  DARK_BG: 0x0a0e12,
+  DARKER_BG: 0x181c20,
+  MEDIUM_BG: 0x23272b,
+  VITAL_ORANGE: 0xff4400,
+  CRITICAL_RED: 0xff3030,
+  WHITE: 0xffffff,
+  GRID_CYAN: 0x003333,
+} as const;
 
 interface DojangBackgroundProps {
   readonly gameTime: number;
 }
 
+interface VitalPoint {
+  readonly id: number;
+  readonly x: number;
+  readonly y: number;
+  readonly damage: number;
+  readonly type: string;
+}
+
+interface TrigramPosition {
+  readonly x: number;
+  readonly y: number;
+  readonly symbol: string;
+  readonly name: string;
+}
+
 export function DojangBackground({
   gameTime,
 }: DojangBackgroundProps): JSX.Element {
-  const drawDojang = (graphics: PixiGraphics): void => {
-    graphics.clear();
+  const [vitalPoints, setVitalPoints] = useState<readonly VitalPoint[]>([]);
+  const { texture: logoTexture } = useTexture("/dark-trigram-256.png");
 
-    // Enhanced traditional Korean dojang with better visual hierarchy
-    graphics.setFillStyle({ color: 0x000000 });
-    graphics.rect(0, 0, window.innerWidth, window.innerHeight);
-    graphics.fill();
+  // Initialize vital points for Korean martial arts atmosphere
+  useEffect(() => {
+    const vitalPointTypes: readonly string[] = [
+      "sternum",
+      "solar_plexus", 
+      "throat",
+      "temples",
+      "pressure_points",
+      "nerve_clusters",
+      "circulation_points",
+      "balance_points",
+    ] as const;
 
-    // Improved animated background particles with icon-like shapes
-    for (let i = 0; i < 15; i++) {
-      const x =
-        (Math.sin(gameTime * 0.01 + i) * 150 + window.innerWidth / 2) %
-        window.innerWidth;
-      const y =
-        (Math.cos(gameTime * 0.008 + i * 0.5) * 150 + window.innerHeight / 2) %
-        window.innerHeight;
-      const alpha = Math.sin(gameTime * 0.02 + i) * 0.08 + 0.08;
-
-      // Create star-like particles representing martial energy
-      graphics.setFillStyle({ color: 0x8b0000, alpha });
-      const size = 3 + Math.sin(gameTime * 0.03 + i) * 2;
-      graphics.circle(x, y, size);
-      graphics.fill();
-
-      // Add cross-shaped energy markers
-      graphics.setStrokeStyle({
-        color: 0xffd700,
-        width: 1,
-        alpha: alpha * 0.6,
+    const newVitalPoints: VitalPoint[] = [];
+    
+    for (let i = 0; i < 12; i++) {
+      const randomIndex = Math.floor(Math.random() * vitalPointTypes.length);
+      const vitalPointType = vitalPointTypes[randomIndex] ?? "pressure_points";
+      
+      newVitalPoints.push({
+        id: i,
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        damage: Math.random() * 50 + 10,
+        type: vitalPointType,
       });
-      graphics.moveTo(x - size, y);
-      graphics.lineTo(x + size, y);
-      graphics.moveTo(x, y - size);
-      graphics.lineTo(x, y + size);
-      graphics.stroke();
     }
+    
+    setVitalPoints(newVitalPoints);
+  }, []);
 
-    // Enhanced traditional Korean flooring with geometric patterns
-    const floorHeight = window.innerHeight * 0.35;
-    graphics.setFillStyle({ color: 0x4a3728 }); // Darker wood tone
-    graphics.rect(
-      0,
-      window.innerHeight - floorHeight,
-      window.innerWidth,
-      floorHeight
-    );
-    graphics.fill();
+  // Enhanced dojang drawing with Korean martial arts elements
+  const drawDojang = useCallback(
+    (graphics: PixiGraphics): void => {
+      graphics.clear();
 
-    // Enhanced wood grain pattern with Korean aesthetic and subtle animation
-    graphics.setStrokeStyle({ color: 0x654321, width: 1, alpha: 0.8 });
-    for (let x = 0; x < window.innerWidth; x += 60) {
-      const wobble = Math.sin(gameTime * 0.01 + x * 0.01) * 2;
-      graphics.moveTo(x + wobble, window.innerHeight - floorHeight);
-      graphics.lineTo(x + wobble, window.innerHeight);
-      graphics.stroke();
+      // Deep black background
+      graphics.setFillStyle({ color: DARK_TRIGRAM_THEME.DARK_BG });
+      graphics.rect(0, 0, window.innerWidth, window.innerHeight);
+      graphics.fill();
 
-      // Add traditional Korean wood joining details with subtle glow
-      graphics.setFillStyle({
-        color: 0x2a1f1a,
-        alpha: 0.6 + Math.sin(gameTime * 0.005 + x) * 0.1,
+      // Subtle animated grid pattern
+      graphics.setStrokeStyle({ 
+        color: DARK_TRIGRAM_THEME.GRID_CYAN, 
+        width: 1, 
+        alpha: 0.03 
       });
-      graphics.rect(
-        x - 2 + wobble,
-        window.innerHeight - floorHeight,
-        4,
-        floorHeight
-      );
-      graphics.fill();
-    }
-
-    // Enhanced fighting arena with iconic Korean border patterns
-    const arenaWidth = Math.min(700, window.innerWidth * 0.8);
-    const arenaHeight = Math.min(400, window.innerHeight * 0.5);
-    const arenaX = (window.innerWidth - arenaWidth) / 2;
-    const arenaY = (window.innerHeight - arenaHeight) / 2;
-
-    // Traditional Korean taeguk-inspired border design
-    const borderPulse = Math.sin(gameTime * 0.02) * 0.2 + 0.8;
-
-    // Outer ceremonial border with traditional patterns
-    graphics.setStrokeStyle({ color: 0x8b0000, width: 8, alpha: borderPulse });
-    graphics.rect(arenaX - 50, arenaY - 40, arenaWidth + 100, arenaHeight + 80);
-    graphics.stroke();
-
-    // Traditional Korean decorative corners (icon-like elements)
-    const cornerPositions: Array<[number, number]> = [
-      [arenaX - 50, arenaY - 40],
-      [arenaX + arenaWidth + 50, arenaY - 40],
-      [arenaX - 50, arenaY + arenaHeight + 40],
-      [arenaX + arenaWidth + 50, arenaY + arenaHeight + 40],
-    ];
-
-    cornerPositions.forEach(([x, y]) => {
-      // Traditional Korean corner decoration (resembling 태극 symbol elements)
-      graphics.setFillStyle({ color: 0xffd700, alpha: borderPulse * 0.8 });
-      graphics.circle(x, y, 12);
-      graphics.fill();
-
-      graphics.setFillStyle({ color: 0x8b0000, alpha: borderPulse });
-      graphics.circle(x + 3, y, 6);
-      graphics.fill();
-    });
-
-    // Enhanced center yin-yang inspired design with iconic elements
-    const centerX = window.innerWidth / 2;
-    const centerY = window.innerHeight / 2;
-
-    // Main ceremonial circle with traditional Korean colors
-    graphics.setStrokeStyle({ color: 0x8b0000, width: 6, alpha: borderPulse });
-    graphics.circle(centerX, centerY, 80 + Math.sin(gameTime * 0.015) * 8);
-    graphics.stroke();
-
-    // Secondary ring with decorative elements
-    graphics.setStrokeStyle({
-      color: 0xffd700,
-      width: 3,
-      alpha: borderPulse * 0.9,
-    });
-    graphics.circle(centerX, centerY, 60 + Math.cos(gameTime * 0.018) * 5);
-    graphics.stroke();
-
-    // Central energy core with pulsing effect
-    const corePulse = Math.sin(gameTime * 0.025) * 0.4 + 0.7;
-    graphics.setFillStyle({ color: 0x8b0000, alpha: corePulse });
-    graphics.circle(centerX, centerY, 12 + Math.sin(gameTime * 0.03) * 3);
-    graphics.fill();
-
-    // Traditional Korean trigram-inspired orbital elements
-    for (let i = 0; i < 8; i++) {
-      const angle = gameTime * 0.008 + (i * Math.PI) / 4;
-      const orbitRadius = 100 + Math.sin(gameTime * 0.01 + i) * 15;
-      const orbX = centerX + Math.cos(angle) * orbitRadius;
-      const orbY = centerY + Math.sin(angle) * orbitRadius;
-
-      // Create trigram-line inspired orbital markers
-      graphics.setStrokeStyle({
-        color: 0xffd700,
-        width: 4,
-        alpha: corePulse * 0.7,
-      });
-      const lineLength = 8;
-      graphics.moveTo(orbX - lineLength, orbY);
-      graphics.lineTo(orbX + lineLength, orbY);
-      graphics.stroke();
-
-      // Add small decorative dots
-      graphics.setFillStyle({ color: 0xffffff, alpha: corePulse * 0.5 });
-      graphics.circle(orbX, orbY - 3, 2);
-      graphics.circle(orbX, orbY + 3, 2);
-      graphics.fill();
-    }
-
-    // Enhanced trigram symbol corners with better iconic representation
-    const enhancedTrigramPositions = [
-      { x: 150, y: 150, symbol: "☰", meaning: "Heaven", color: 0xffd700 },
-      {
-        x: window.innerWidth - 150,
-        y: 150,
-        symbol: "☲",
-        meaning: "Fire",
-        color: 0xff4500,
-      },
-      {
-        x: 150,
-        y: window.innerHeight - 150,
-        symbol: "☷",
-        meaning: "Earth",
-        color: 0x654321,
-      },
-      {
-        x: window.innerWidth - 150,
-        y: window.innerHeight - 150,
-        symbol: "☵",
-        meaning: "Water",
-        color: 0x4169e1,
-      },
-    ];
-
-    enhancedTrigramPositions.forEach(({ x, y, color }, index) => {
-      const symbolPulse =
-        Math.sin(gameTime * 0.02 + (index * Math.PI) / 2) * 0.3 + 0.7;
-
-      // Enhanced trigram symbol background with iconic design
-      graphics.setFillStyle({ color: 0x000000, alpha: 0.8 });
-      graphics.circle(x, y, 35);
-      graphics.fill();
-
-      graphics.setStrokeStyle({ color, width: 3, alpha: symbolPulse });
-      graphics.circle(x, y, 35);
-      graphics.stroke();
-
-      // Inner decorative ring
-      graphics.setStrokeStyle({
-        color: 0xffd700,
-        width: 1,
-        alpha: symbolPulse * 0.6,
-      });
-      graphics.circle(x, y, 25);
-      graphics.stroke();
-
-      // Enhanced energy wisps with more iconic movement
-      for (let j = 0; j < 4; j++) {
-        const wispAngle = gameTime * 0.01 + j * ((Math.PI * 2) / 4);
-        const wispRadius = 45 + Math.sin(gameTime * 0.015 + j) * 8;
-        const wispX = x + Math.cos(wispAngle) * wispRadius;
-        const wispY = y + Math.sin(wispAngle) * wispRadius;
-
-        graphics.setFillStyle({ color, alpha: symbolPulse * 0.4 });
-        graphics.circle(wispX, wispY, 3);
-        graphics.fill();
+      
+      const gridSize = 40;
+      for (let y = 0; y < window.innerHeight; y += gridSize) {
+        graphics.moveTo(0, y);
+        graphics.lineTo(window.innerWidth, y);
+        graphics.stroke();
       }
-    });
+      
+      for (let x = 0; x < window.innerWidth; x += gridSize) {
+        graphics.moveTo(x, 0);
+        graphics.lineTo(x, window.innerHeight);
+        graphics.stroke();
+      }
 
-    // Enhanced atmospheric grid with better visual hierarchy
-    graphics.setStrokeStyle({
-      color: 0x333333,
-      width: 1,
-      alpha: 0.1 + Math.sin(gameTime * 0.005) * 0.05,
-    });
-    const gridSize = 60;
-    for (let x = 0; x < window.innerWidth; x += gridSize) {
-      const lineAlpha = 0.15 + Math.sin(gameTime * 0.003 + x * 0.01) * 0.08;
-      graphics.setStrokeStyle({ color: 0x444444, width: 1, alpha: lineAlpha });
-      graphics.moveTo(x, 0);
-      graphics.lineTo(x, window.innerHeight);
-      graphics.stroke();
-    }
-    for (let y = 0; y < window.innerHeight; y += gridSize) {
-      const lineAlpha = 0.15 + Math.sin(gameTime * 0.003 + y * 0.01) * 0.08;
-      graphics.setStrokeStyle({ color: 0x444444, width: 1, alpha: lineAlpha });
-      graphics.moveTo(0, y);
-      graphics.lineTo(window.innerWidth, y);
-      graphics.stroke();
-    }
+      // Central octagonal dojang platform
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      const radius = Math.min(window.innerWidth, window.innerHeight) * 0.25;
 
-    // Enhanced floating energy motes with iconic shapes
-    for (let i = 0; i < 20; i++) {
-      const moteX =
-        (Math.sin(gameTime * 0.002 + i * 0.8) * window.innerWidth) / 2.5 +
-        window.innerWidth / 2;
-      const moteY =
-        (Math.cos(gameTime * 0.003 + i * 1.2) * window.innerHeight) / 2.5 +
-        window.innerHeight / 2;
-      const moteAlpha = Math.sin(gameTime * 0.02 + i) * 0.2 + 0.2;
-      const moteSize = 2 + Math.sin(gameTime * 0.025 + i * 0.4) * 1;
-
-      // Create diamond-shaped energy motes
-      graphics.setFillStyle({ color: 0xffd700, alpha: moteAlpha });
-      graphics.moveTo(moteX, moteY - moteSize);
-      graphics.lineTo(moteX + moteSize, moteY);
-      graphics.lineTo(moteX, moteY + moteSize);
-      graphics.lineTo(moteX - moteSize, moteY);
-      graphics.lineTo(moteX, moteY - moteSize);
+      // Platform base
+      graphics.setFillStyle({ color: DARK_TRIGRAM_THEME.DARKER_BG });
+      graphics.circle(centerX, centerY, radius);
       graphics.fill();
-    }
-  };
 
-  return <pixiGraphics draw={drawDojang} />;
+      // Traditional Korean octagonal platform outline
+      graphics.setStrokeStyle({ 
+        color: DARK_TRIGRAM_THEME.PRIMARY_CYAN, 
+        width: 2, 
+        alpha: 0.6 
+      });
+      
+      const octagonPoints: Array<{ x: number; y: number }> = [];
+      for (let i = 0; i < 8; i++) {
+        const angle = (i * Math.PI) / 4 - Math.PI / 8;
+        octagonPoints.push({
+          x: centerX + Math.cos(angle) * radius,
+          y: centerY + Math.sin(angle) * radius,
+        });
+      }
+
+      // Draw octagon outline
+      if (octagonPoints.length > 0) {
+        const firstPoint = octagonPoints[0];
+        if (firstPoint) {
+          graphics.moveTo(firstPoint.x, firstPoint.y);
+          for (let i = 1; i < 8; i++) {
+            const point = octagonPoints[i];
+            if (point) {
+              graphics.lineTo(point.x, point.y);
+            }
+          }
+          graphics.closePath();
+          graphics.stroke();
+        }
+      }
+
+      // Pulsing center core with yin-yang inspiration
+      const corePulse = Math.sin(gameTime * 0.05) * 0.3 + 0.7;
+      
+      // Outer glow
+      graphics.setStrokeStyle({
+        color: DARK_TRIGRAM_THEME.PRIMARY_CYAN,
+        width: 3,
+        alpha: corePulse * 0.4,
+      });
+      graphics.circle(centerX, centerY, 30);
+      graphics.stroke();
+
+      // Inner core
+      graphics.setFillStyle({ 
+        color: DARK_TRIGRAM_THEME.PRIMARY_CYAN, 
+        alpha: corePulse * 0.6 
+      });
+      graphics.circle(centerX, centerY, 12);
+      graphics.fill();
+
+      // Central dot (meditation point)
+      graphics.setFillStyle({
+        color: DARK_TRIGRAM_THEME.WHITE,
+        alpha: corePulse * 0.8,
+      });
+      graphics.circle(centerX, centerY, 4);
+      graphics.fill();
+
+      // Dynamic vital point indicators
+      vitalPoints.forEach((point, index) => {
+        const pointPulse = Math.sin(gameTime * 0.01 + index * 0.5) * 0.3 + 0.7;
+        const distFromCenter = Math.sqrt(
+          Math.pow(point.x - centerX, 2) + Math.pow(point.y - centerY, 2)
+        );
+
+        // Only show points outside the main combat area
+        if (distFromCenter < radius - 50) return;
+
+        // Vital point marker
+        graphics.setFillStyle({
+          color: DARK_TRIGRAM_THEME.VITAL_ORANGE,
+          alpha: pointPulse * 0.4,
+        });
+        graphics.circle(point.x, point.y, 3 + pointPulse * 2);
+        graphics.fill();
+
+        // Vital point ring
+        graphics.setStrokeStyle({
+          color: DARK_TRIGRAM_THEME.VITAL_ORANGE,
+          width: 1,
+          alpha: pointPulse * 0.3,
+        });
+        graphics.circle(point.x, point.y, 8 + pointPulse * 3);
+        graphics.stroke();
+      });
+
+      // Traditional Korean dojang boundary markers
+      const trigramPositions: readonly TrigramPosition[] = [
+        { x: window.innerWidth * 0.15, y: window.innerHeight * 0.2, symbol: "☰", name: "Heaven" },
+        { x: window.innerWidth * 0.85, y: window.innerHeight * 0.2, symbol: "☱", name: "Lake" },
+        { x: window.innerWidth * 0.15, y: window.innerHeight * 0.8, symbol: "☲", name: "Fire" },
+        { x: window.innerWidth * 0.85, y: window.innerHeight * 0.8, symbol: "☳", name: "Thunder" },
+      ] as const;
+
+      trigramPositions.forEach((position, index) => {
+        const trigramPulse = Math.sin(gameTime * 0.008 + index * 1.5) * 0.2 + 0.8;
+        
+        // Trigram symbol background
+        graphics.setFillStyle({
+          color: DARK_TRIGRAM_THEME.PRIMARY_CYAN,
+          alpha: trigramPulse * 0.1,
+        });
+        graphics.circle(position.x, position.y, 25);
+        graphics.fill();
+
+        // Trigram symbol border
+        graphics.setStrokeStyle({
+          color: DARK_TRIGRAM_THEME.PRIMARY_CYAN,
+          width: 1,
+          alpha: trigramPulse * 0.3,
+        });
+        graphics.circle(position.x, position.y, 25);
+        graphics.stroke();
+      });
+
+      // Corner accent lines for dojang atmosphere
+      graphics.setStrokeStyle({ 
+        color: DARK_TRIGRAM_THEME.PRIMARY_CYAN, 
+        width: 1, 
+        alpha: 0.3
+      });
+      
+      // Top corners
+      graphics.moveTo(0, 0);
+      graphics.lineTo(50, 0);
+      graphics.moveTo(0, 0);
+      graphics.lineTo(0, 50);
+      graphics.moveTo(window.innerWidth, 0);
+      graphics.lineTo(window.innerWidth - 50, 0);
+      graphics.moveTo(window.innerWidth, 0);
+      graphics.lineTo(window.innerWidth, 50);
+      
+      // Bottom corners
+      graphics.moveTo(0, window.innerHeight);
+      graphics.lineTo(50, window.innerHeight);
+      graphics.moveTo(0, window.innerHeight);
+      graphics.lineTo(0, window.innerHeight - 50);
+      graphics.moveTo(window.innerWidth, window.innerHeight);
+      graphics.lineTo(window.innerWidth - 50, window.innerHeight);
+      graphics.moveTo(window.innerWidth, window.innerHeight);
+      graphics.lineTo(window.innerWidth, window.innerHeight - 50);
+      graphics.stroke();
+    },
+    [gameTime, vitalPoints]
+  );
+
+  return (
+    <pixiContainer>
+      <pixiGraphics draw={drawDojang} />
+    
+      {/* Dark Trigram logo in bottom right corner */}
+      {logoTexture && (
+        <pixiSprite
+          texture={logoTexture}
+          x={window.innerWidth - 50}
+          y={window.innerHeight - 50}
+          scale={{ x: 0.15, y: 0.15 }}
+          anchor={{ x: 0.5, y: 0.5 }}
+          alpha={0.5}
+        />
+      )}
+    </pixiContainer>
+  );
 }

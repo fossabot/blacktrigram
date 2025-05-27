@@ -1,5 +1,7 @@
+import { useState, useEffect } from "react";
 import type { JSX } from "react";
 import type { Graphics as PixiGraphics } from "pixi.js";
+import { useTexture } from "../../hooks/useTexture";
 
 interface GameState {
   readonly player1Health: number;
@@ -25,16 +27,16 @@ const GAME_CONFIG = {
   ARENA_HEIGHT: 600,
 } as const;
 
-const UI_THEME = {
-  TRADITIONAL_RED: 0x8b0000,
-  TRADITIONAL_GOLD: 0xffd700,
-  TRADITIONAL_BLACK: 0x000000,
-  TRADITIONAL_WHITE: 0xffffff,
-  KOREAN_GRAY: 0x666666,
-  ACCENT_BLUE: 0x4a90e2,
-  ENERGY_PURPLE: 0x9370db,
-  HEALTH_GREEN: 0x4caf50,
-  DANGER_RED: 0xff4444,
+const DARK_TRIGRAM_UI_THEME = {
+  PRIMARY_CYAN: 0x00ffd0,
+  DARK_BG: 0x0a0e12,
+  DARKER_BG: 0x181c20,
+  MEDIUM_BG: 0x23272b,
+  VITAL_ORANGE: 0xff4400,
+  CRITICAL_RED: 0xff3030,
+  WHITE: 0xffffff,
+  GRAY: 0x666666,
+  HEALTH_CYAN: 0x00ffd0,
   WARNING_ORANGE: 0xff9800,
 } as const;
 
@@ -106,13 +108,13 @@ function BackgroundOverlay(): JSX.Element {
       draw={(g: PixiGraphics) => {
         g.clear();
         // Traditional Korean pattern background
-        g.setFillStyle({ color: UI_THEME.TRADITIONAL_BLACK, alpha: 0.7 });
+        g.setFillStyle({ color: DARK_TRIGRAM_UI_THEME.DARKER_BG, alpha: 0.7 });
         g.rect(0, 0, GAME_CONFIG.ARENA_WIDTH, GAME_CONFIG.ARENA_HEIGHT);
         g.fill();
 
         // Subtle Korean-inspired border pattern
         g.setStrokeStyle({
-          color: UI_THEME.TRADITIONAL_RED,
+          color: DARK_TRIGRAM_UI_THEME.PRIMARY_CYAN,
           width: 2,
           alpha: 0.3,
         });
@@ -129,63 +131,75 @@ function BackgroundOverlay(): JSX.Element {
 }
 
 function GameTitle(): JSX.Element {
+  const { texture: logoTexture } = useTexture("/dark-trigram-256.png");
+
   return (
     <pixiContainer x={window.innerWidth / 2} y={50}>
-      {/* Enhanced background with iconic elements */}
       <pixiGraphics
         draw={(g: PixiGraphics) => {
           g.clear();
-          // Traditional Korean title background
-          g.setFillStyle({ color: UI_THEME.TRADITIONAL_BLACK, alpha: 0.9 });
-          g.roundRect(-200, -25, 400, 80, 15);
+
+          // Dark background with deeper panel
+          g.setFillStyle({ color: 0x000a12, alpha: 0.95 });
+          g.roundRect(-220, -30, 440, 85, 15);
           g.fill();
 
-          // Decorative border with traditional patterns
-          g.setStrokeStyle({ color: UI_THEME.TRADITIONAL_RED, width: 3 });
-          g.roundRect(-200, -25, 400, 80, 15);
-          g.stroke();
-
-          // Inner golden accent
-          g.setStrokeStyle({ color: UI_THEME.TRADITIONAL_GOLD, width: 1 });
-          g.roundRect(-195, -20, 390, 70, 12);
-          g.stroke();
-
-          // Corner decorative elements (icon-like)
-          const corners: Array<[number, number]> = [
-            [-190, -15],
-            [190, -15],
-            [-190, 45],
-            [190, 45],
-          ];
-          corners.forEach(([x, y]) => {
-            g.setFillStyle({ color: UI_THEME.TRADITIONAL_GOLD, alpha: 0.8 });
-            g.circle(x, y, 4);
-            g.fill();
+          // Cyan glowing border with futuristic style
+          g.setStrokeStyle({
+            color: DARK_TRIGRAM_UI_THEME.PRIMARY_CYAN,
+            width: 3,
           });
+          g.roundRect(-220, -30, 440, 85, 15);
+          g.stroke();
+
+          // Inner glow with tech accent
+          g.setStrokeStyle({
+            color: DARK_TRIGRAM_UI_THEME.PRIMARY_CYAN,
+            width: 1,
+            alpha: 0.7,
+          });
+          g.roundRect(-210, -20, 420, 65, 12);
+          g.stroke();
+
+          // Add tech-looking diagonal slashes
+          g.setStrokeStyle({
+            color: DARK_TRIGRAM_UI_THEME.PRIMARY_CYAN,
+            width: 1,
+            alpha: 0.4,
+          });
+          g.moveTo(-220, 0);
+          g.lineTo(-190, -30);
+          g.moveTo(220, 0);
+          g.lineTo(190, -30);
+          g.stroke();
         }}
       />
 
-      {/* Enhanced title with better typography */}
+      {/* Use the game logo sprite instead of text */}
+      {logoTexture && (
+        <pixiSprite
+          texture={logoTexture}
+          scale={{ x: 0.2, y: 0.2 }}
+          anchor={{ x: 0.5, y: 0.5 }}
+          y={-7}
+          alpha={0.9}
+        />
+      )}
+
       <pixiText
-        text="⚔️ 흑괘 무술 도장 ⚔️"
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 28,
-          fill: UI_THEME.TRADITIONAL_RED,
-          fontWeight: "bold",
-          stroke: { color: UI_THEME.TRADITIONAL_WHITE, width: 1 },
-        }}
-      />
-      <pixiText
-        text="🥋 BLACK TRIGRAM MARTIAL DOJANG 🥋"
+        text="🥋 DARK TRIGRAM MARTIAL DOJANG 🥋"
         y={25}
         anchor={{ x: 0.5, y: 0.5 }}
         style={{
-          fontFamily: "monospace",
+          fontFamily: "Orbitron, monospace",
           fontSize: 14,
-          fill: UI_THEME.TRADITIONAL_GOLD,
+          fill: DARK_TRIGRAM_UI_THEME.WHITE,
           letterSpacing: 1,
+          dropShadow: {
+            color: 0x00ffd0,
+            blur: 4,
+            distance: 0,
+          },
         }}
       />
     </pixiContainer>
@@ -208,90 +222,98 @@ function HealthBar({
 
   return (
     <pixiContainer x={centeredX} y={centeredY}>
-      {/* Enhanced health bar frame with icons */}
       <pixiGraphics
         draw={(g: PixiGraphics) => {
           g.clear();
 
-          // Main frame with gradient-like effect
-          g.setFillStyle({ color: UI_THEME.TRADITIONAL_BLACK, alpha: 0.95 });
+          // Dark frame
+          g.setFillStyle({ color: DARK_TRIGRAM_UI_THEME.DARK_BG, alpha: 0.95 });
           g.roundRect(-10, -10, 240, 80, 12);
           g.fill();
 
-          // Traditional border
-          g.setStrokeStyle({ color: UI_THEME.TRADITIONAL_RED, width: 3 });
+          // Cyan border
+          g.setStrokeStyle({
+            color: DARK_TRIGRAM_UI_THEME.PRIMARY_CYAN,
+            width: 3,
+          });
           g.roundRect(-10, -10, 240, 80, 12);
           g.stroke();
 
-          // Inner accent border
-          g.setStrokeStyle({ color: UI_THEME.TRADITIONAL_GOLD, width: 1 });
+          // Inner glow
+          g.setStrokeStyle({
+            color: DARK_TRIGRAM_UI_THEME.PRIMARY_CYAN,
+            width: 1,
+            alpha: 0.7,
+          });
           g.roundRect(-5, -5, 230, 70, 8);
           g.stroke();
         }}
       />
 
-      {/* Player label with icon */}
       <pixiText
         text={`${COMBAT_ICONS.HEALTH} ${label}`}
         x={10}
         y={5}
         style={{
-          fontFamily: "Noto Sans KR",
+          fontFamily: "Orbitron, Noto Sans KR",
           fontSize: 14,
-          fill: UI_THEME.TRADITIONAL_WHITE,
+          fill: DARK_TRIGRAM_UI_THEME.PRIMARY_CYAN,
           fontWeight: "bold",
+          dropShadow: {
+            color: 0x00ffd0,
+            blur: 4,
+            distance: 0,
+          },
         }}
       />
 
-      {/* Enhanced health bar with better visual feedback */}
       <pixiGraphics
         y={25}
         draw={(g: PixiGraphics) => {
           g.clear();
 
-          // Background with subtle texture
-          g.setFillStyle({ color: 0x2a2a2a });
+          // Dark background
+          g.setFillStyle({ color: DARK_TRIGRAM_UI_THEME.MEDIUM_BG });
           g.roundRect(10, 0, 200, 22, 11);
           g.fill();
 
           // Health fill with dynamic color
           const healthColor =
             health > 60
-              ? UI_THEME.HEALTH_GREEN
+              ? DARK_TRIGRAM_UI_THEME.HEALTH_CYAN
               : health > 30
-              ? UI_THEME.WARNING_ORANGE
-              : UI_THEME.DANGER_RED;
+              ? DARK_TRIGRAM_UI_THEME.WARNING_ORANGE
+              : DARK_TRIGRAM_UI_THEME.CRITICAL_RED;
 
           g.setFillStyle({ color: healthColor });
           g.roundRect(12, 2, health * 1.96, 18, 9);
           g.fill();
 
-          // Health bar shine effect
-          g.setFillStyle({ color: UI_THEME.TRADITIONAL_WHITE, alpha: 0.3 });
-          g.roundRect(12, 2, health * 1.96, 8, 4);
-          g.fill();
-
-          // Border with player-specific color
-          const borderColor = isPlayerOne
-            ? UI_THEME.ACCENT_BLUE
-            : UI_THEME.TRADITIONAL_RED;
-          g.setStrokeStyle({ color: borderColor, width: 2 });
+          // Cyan glow border
+          g.setStrokeStyle({
+            color: DARK_TRIGRAM_UI_THEME.PRIMARY_CYAN,
+            width: 2,
+          });
           g.roundRect(10, 0, 200, 22, 11);
           g.stroke();
         }}
       />
 
-      {/* Health percentage text */}
       <pixiText
         text={`${health}%`}
         x={110}
         y={55}
         anchor={{ x: 0.5, y: 0.5 }}
         style={{
-          fontFamily: "monospace",
+          fontFamily: "Orbitron, monospace",
           fontSize: 12,
-          fill: UI_THEME.TRADITIONAL_WHITE,
+          fill: DARK_TRIGRAM_UI_THEME.WHITE,
           fontWeight: "bold",
+          dropShadow: {
+            color: 0x00ffd0,
+            blur: 2,
+            distance: 0,
+          },
         }}
       />
     </pixiContainer>
@@ -309,19 +331,21 @@ function Timer({ gameState, gameTime }: TimerProps): JSX.Element {
 
   return (
     <pixiContainer x={window.innerWidth / 2} y={140}>
-      {/* Enhanced timer background */}
       <pixiGraphics
         draw={(g: PixiGraphics) => {
           g.clear();
 
           const bgColor = isUrgent
-            ? UI_THEME.DANGER_RED
-            : UI_THEME.TRADITIONAL_BLACK;
+            ? DARK_TRIGRAM_UI_THEME.CRITICAL_RED
+            : DARK_TRIGRAM_UI_THEME.DARK_BG;
           g.setFillStyle({ color: bgColor, alpha: 0.9 });
           g.roundRect(-80, -20, 160, 40, 12);
           g.fill();
 
-          g.setStrokeStyle({ color: UI_THEME.TRADITIONAL_GOLD, width: 2 });
+          g.setStrokeStyle({
+            color: DARK_TRIGRAM_UI_THEME.PRIMARY_CYAN,
+            width: 2,
+          });
           g.roundRect(-80, -20, 160, 40, 12);
           g.stroke();
         }}
@@ -332,13 +356,17 @@ function Timer({ gameState, gameTime }: TimerProps): JSX.Element {
         anchor={{ x: 0.5, y: 0.5 }}
         alpha={pulse}
         style={{
-          fontFamily: "Noto Sans KR",
+          fontFamily: "Orbitron, Noto Sans KR",
           fontSize: isUrgent ? 22 : 20,
           fill: isUrgent
-            ? UI_THEME.TRADITIONAL_WHITE
-            : UI_THEME.TRADITIONAL_GOLD,
+            ? DARK_TRIGRAM_UI_THEME.WHITE
+            : DARK_TRIGRAM_UI_THEME.PRIMARY_CYAN,
           fontWeight: "bold",
-          stroke: { color: UI_THEME.TRADITIONAL_BLACK, width: 2 },
+          dropShadow: {
+            color: 0x00ffd0,
+            blur: 6,
+            distance: 0,
+          },
         }}
       />
     </pixiContainer>
@@ -374,48 +402,48 @@ function ControlLegend({ gameStarted }: { gameStarted: boolean }): JSX.Element {
 
   return (
     <pixiContainer x={50} y={window.innerHeight - 180}>
-      {/* Enhanced control panel */}
       <pixiGraphics
         draw={(g: PixiGraphics) => {
           g.clear();
 
-          // Main panel background
-          g.setFillStyle({ color: UI_THEME.TRADITIONAL_BLACK, alpha: 0.95 });
+          // Dark panel background
+          g.setFillStyle({ color: DARK_TRIGRAM_UI_THEME.DARK_BG, alpha: 0.95 });
           g.roundRect(0, 0, 380, 140, 15);
           g.fill();
 
-          // Traditional Korean border
-          g.setStrokeStyle({ color: UI_THEME.TRADITIONAL_RED, width: 3 });
+          // Cyan border
+          g.setStrokeStyle({
+            color: DARK_TRIGRAM_UI_THEME.PRIMARY_CYAN,
+            width: 3,
+          });
           g.roundRect(0, 0, 380, 140, 15);
           g.stroke();
 
-          // Inner decorative border
-          g.setStrokeStyle({ color: UI_THEME.TRADITIONAL_GOLD, width: 1 });
-          g.roundRect(5, 5, 370, 130, 12);
-          g.stroke();
-
-          // Section dividers
+          // Inner glow
           g.setStrokeStyle({
-            color: UI_THEME.KOREAN_GRAY,
+            color: DARK_TRIGRAM_UI_THEME.PRIMARY_CYAN,
             width: 1,
-            alpha: 0.5,
+            alpha: 0.7,
           });
-          g.moveTo(20, 35);
-          g.lineTo(360, 35);
+          g.roundRect(5, 5, 370, 130, 12);
           g.stroke();
         }}
       />
 
-      {/* Enhanced control labels with icons */}
       <pixiText
         text="🎮 조작법 (Combat Controls)"
         x={20}
         y={20}
         style={{
-          fontFamily: "Noto Sans KR",
+          fontFamily: "Orbitron, Noto Sans KR",
           fontSize: 16,
-          fill: UI_THEME.TRADITIONAL_GOLD,
+          fill: DARK_TRIGRAM_UI_THEME.PRIMARY_CYAN,
           fontWeight: "bold",
+          dropShadow: {
+            color: 0x00ffd0,
+            blur: 4,
+            distance: 0,
+          },
         }}
       />
 
@@ -424,9 +452,14 @@ function ControlLegend({ gameStarted }: { gameStarted: boolean }): JSX.Element {
         x={20}
         y={45}
         style={{
-          fontFamily: "Noto Sans KR",
+          fontFamily: "Orbitron, Noto Sans KR",
           fontSize: 13,
-          fill: UI_THEME.TRADITIONAL_WHITE,
+          fill: DARK_TRIGRAM_UI_THEME.WHITE,
+          dropShadow: {
+            color: 0x00ffd0,
+            blur: 2,
+            distance: 0,
+          },
         }}
       />
 
@@ -435,9 +468,14 @@ function ControlLegend({ gameStarted }: { gameStarted: boolean }): JSX.Element {
         x={20}
         y={65}
         style={{
-          fontFamily: "Noto Sans KR",
+          fontFamily: "Orbitron, Noto Sans KR",
           fontSize: 13,
-          fill: UI_THEME.TRADITIONAL_WHITE,
+          fill: DARK_TRIGRAM_UI_THEME.WHITE,
+          dropShadow: {
+            color: 0x00ffd0,
+            blur: 2,
+            distance: 0,
+          },
         }}
       />
 
@@ -446,9 +484,14 @@ function ControlLegend({ gameStarted }: { gameStarted: boolean }): JSX.Element {
         x={20}
         y={85}
         style={{
-          fontFamily: "Noto Sans KR",
+          fontFamily: "Orbitron, Noto Sans KR",
           fontSize: 13,
-          fill: UI_THEME.TRADITIONAL_WHITE,
+          fill: DARK_TRIGRAM_UI_THEME.WHITE,
+          dropShadow: {
+            color: 0x00ffd0,
+            blur: 2,
+            distance: 0,
+          },
         }}
       />
 
@@ -459,7 +502,7 @@ function ControlLegend({ gameStarted }: { gameStarted: boolean }): JSX.Element {
         style={{
           fontFamily: "Noto Sans KR",
           fontSize: 12,
-          fill: UI_THEME.WARNING_ORANGE,
+          fill: DARK_TRIGRAM_UI_THEME.WARNING_ORANGE,
           fontStyle: "italic",
         }}
       />
@@ -485,12 +528,15 @@ function TrigramDecorations(): JSX.Element {
       <pixiGraphics
         draw={(g: PixiGraphics) => {
           g.clear();
-          g.setFillStyle({ color: UI_THEME.TRADITIONAL_BLACK, alpha: 0.8 });
+          g.setFillStyle({
+            color: DARK_TRIGRAM_UI_THEME.DARKER_BG,
+            alpha: 0.8,
+          });
           g.rect(0, 0, window.innerWidth, 50);
           g.fill();
 
           g.setStrokeStyle({
-            color: UI_THEME.TRADITIONAL_RED,
+            color: DARK_TRIGRAM_UI_THEME.PRIMARY_CYAN,
             width: 2,
             alpha: 0.6,
           });
@@ -506,11 +552,17 @@ function TrigramDecorations(): JSX.Element {
           <pixiGraphics
             draw={(g: PixiGraphics) => {
               g.clear();
-              g.setFillStyle({ color: UI_THEME.TRADITIONAL_RED, alpha: 0.3 });
+              g.setFillStyle({
+                color: DARK_TRIGRAM_UI_THEME.PRIMARY_CYAN,
+                alpha: 0.3,
+              });
               g.circle(0, 0, 20);
               g.fill();
 
-              g.setStrokeStyle({ color: UI_THEME.TRADITIONAL_GOLD, width: 1 });
+              g.setStrokeStyle({
+                color: DARK_TRIGRAM_UI_THEME.PRIMARY_CYAN,
+                width: 1,
+              });
               g.circle(0, 0, 20);
               g.stroke();
             }}
@@ -522,7 +574,7 @@ function TrigramDecorations(): JSX.Element {
             style={{
               fontFamily: "serif",
               fontSize: 14,
-              fill: UI_THEME.TRADITIONAL_WHITE,
+              fill: DARK_TRIGRAM_UI_THEME.WHITE,
             }}
           />
         </pixiContainer>
@@ -540,6 +592,8 @@ function StartButton({
   onStartMatch,
   gameTime,
 }: StartButtonProps): JSX.Element {
+  const [isHovered, setIsHovered] = useState(false);
+
   return (
     <pixiContainer
       x={window.innerWidth / 2}
@@ -547,37 +601,102 @@ function StartButton({
       interactive={true}
       cursor="pointer"
       onPointerDown={onStartMatch}
+      onPointerEnter={() => setIsHovered(true)}
+      onPointerLeave={() => setIsHovered(false)}
     >
       <pixiGraphics
         draw={(g: PixiGraphics) => {
           g.clear();
           const pulse = Math.sin(gameTime * 0.1) * 0.3 + 0.7;
-          g.setFillStyle({ color: 0x8b0000, alpha: pulse });
-          g.roundRect(-120, -40, 240, 80, 15);
+
+          // Cyberpunk-style button with deeper background
+          g.setFillStyle({ color: 0x000a12, alpha: 0.95 });
+          g.roundRect(-140, -50, 280, 100, 15);
           g.fill();
-          g.setStrokeStyle({ color: 0xffffff, width: 3 });
-          g.roundRect(-120, -40, 240, 80, 15);
+
+          // Dynamic border
+          g.setStrokeStyle({
+            color: isHovered ? 0x00ffd0 : 0x005566,
+            width: isHovered ? 3 : 2,
+            alpha: pulse,
+          });
+          g.roundRect(-140, -50, 280, 100, 15);
           g.stroke();
+
+          // Inner tech accent
+          g.setStrokeStyle({
+            color: 0x00ffd0,
+            width: 1,
+            alpha: isHovered ? 0.7 : 0.4,
+          });
+          g.roundRect(-130, -40, 260, 80, 12);
+          g.stroke();
+
+          // Tech accent triangles on corners
+          g.setFillStyle({ color: 0x00ffd0, alpha: isHovered ? 0.7 : 0.4 });
+          g.moveTo(-140, -30);
+          g.lineTo(-120, -50);
+          g.lineTo(-140, -50);
+          g.lineTo(-140, -30);
+          g.fill();
+
+          g.moveTo(140, -30);
+          g.lineTo(120, -50);
+          g.lineTo(140, -50);
+          g.lineTo(140, -30);
+          g.fill();
+
+          g.moveTo(-140, 30);
+          g.lineTo(-120, 50);
+          g.lineTo(-140, 50);
+          g.lineTo(-140, 30);
+          g.fill();
+
+          g.moveTo(140, 30);
+          g.lineTo(120, 50);
+          g.lineTo(140, 50);
+          g.lineTo(140, 30);
+          g.fill();
+
+          // Add pulsing glow effect when hovered
+          if (isHovered) {
+            g.setStrokeStyle({
+              color: 0x00ffd0,
+              width: 2,
+              alpha: pulse * 0.5,
+            });
+            g.roundRect(-150, -60, 300, 120, 20);
+            g.stroke();
+          }
         }}
       />
       <pixiText
         text="대련 시작!"
         anchor={{ x: 0.5, y: 0.5 }}
+        y={-15}
         style={{
           fontFamily: "Noto Sans KR",
-          fontSize: 24,
-          fill: 0xffffff,
+          fontSize: 28,
+          fill: isHovered ? 0x00ffd0 : 0xffffff,
           fontWeight: "bold",
+          ...(isHovered && {
+            dropShadow: {
+              color: 0x00ffd0,
+              blur: 6,
+              distance: 0,
+            },
+          }),
         }}
       />
       <pixiText
         text="Begin Combat"
-        y={25}
+        y={15}
         anchor={{ x: 0.5, y: 0.5 }}
         style={{
-          fontFamily: "monospace",
-          fontSize: 16,
-          fill: 0xcccccc,
+          fontFamily: "Orbitron",
+          fontSize: 18,
+          fill: isHovered ? 0xffffff : 0xaaaaaa,
+          letterSpacing: 2,
         }}
       />
     </pixiContainer>
@@ -593,6 +712,18 @@ function VictoryScreen({
   winner,
   onResetMatch,
 }: VictoryScreenProps): JSX.Element {
+  const [isHovered, setIsHovered] = useState(false);
+  const [time, setTime] = useState<number>(0);
+  const { texture: logoTexture } = useTexture("/dark-trigram-256.png");
+
+  // Add animation timer
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime((t: number) => t + 0.016);
+    }, 16);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <pixiContainer>
       <pixiGraphics
@@ -601,50 +732,129 @@ function VictoryScreen({
           g.setFillStyle({ color: 0x000000, alpha: 0.8 });
           g.rect(0, 0, window.innerWidth, window.innerHeight);
           g.fill();
+
+          // Add cyberpunk scan lines effect
+          g.setStrokeStyle({ color: 0x00ffd0, width: 1, alpha: 0.05 });
+          for (let y = 0; y < window.innerHeight; y += 3) {
+            g.moveTo(0, y);
+            g.lineTo(window.innerWidth, y);
+            g.stroke();
+          }
+
+          // Dynamic energy particles
+          for (let i = 0; i < 20; i++) {
+            const x =
+              (Math.sin(time * 0.01 + i * 0.8) * window.innerWidth) / 2 +
+              window.innerWidth / 2;
+            const y =
+              (Math.cos(time * 0.012 + i * 1.2) * window.innerHeight) / 2 +
+              window.innerHeight / 2;
+            const alpha = Math.sin(time * 0.02 + i) * 0.2 + 0.2;
+
+            g.setFillStyle({ color: 0x00ffd0, alpha });
+            g.circle(x, y, 2 + Math.sin(time * 0.03 + i) * 1);
+            g.fill();
+          }
         }}
       />
+
+      {/* Victory logo */}
+      {logoTexture && (
+        <pixiSprite
+          texture={logoTexture}
+          x={window.innerWidth / 2}
+          y={window.innerHeight / 2 - 130}
+          scale={{ x: 0.3, y: 0.3 }}
+          anchor={{ x: 0.5, y: 0.5 }}
+          alpha={0.9}
+        />
+      )}
 
       <pixiText
         text={`${winner} 승리! (Victory!)`}
         x={window.innerWidth / 2}
-        y={window.innerHeight / 2 - 50}
+        y={window.innerHeight / 2 - 20}
         anchor={{ x: 0.5, y: 0.5 }}
         style={{
           fontFamily: "Noto Sans KR",
           fontSize: 32,
-          fill: 0x8b0000,
+          fill: 0x00ffd0,
           fontWeight: "bold",
+          dropShadow: {
+            color: 0x00ffd0,
+            blur: 10,
+            distance: 0,
+          },
         }}
       />
 
       <pixiText
         text="무예의 도를 완성하였다 (The martial way is complete)"
         x={window.innerWidth / 2}
-        y={window.innerHeight / 2}
+        y={window.innerHeight / 2 + 20}
         anchor={{ x: 0.5, y: 0.5 }}
         style={{
           fontFamily: "Noto Sans KR",
-          fontSize: 16,
+          fontSize: 18,
           fill: 0xffffff,
+          dropShadow: {
+            color: 0x00ffd0,
+            blur: 4,
+            distance: 0,
+          },
         }}
       />
 
       <pixiContainer
         x={window.innerWidth / 2}
-        y={window.innerHeight / 2 + 80}
+        y={window.innerHeight / 2 + 100}
         interactive={true}
         cursor="pointer"
         onPointerDown={onResetMatch}
+        onPointerEnter={() => setIsHovered(true)}
+        onPointerLeave={() => setIsHovered(false)}
       >
         <pixiGraphics
           draw={(g: PixiGraphics) => {
             g.clear();
-            g.setFillStyle({ color: 0x666666 });
-            g.roundRect(-60, -20, 120, 40, 8);
+            const pulse = Math.sin(time * 0.1) * 0.3 + 0.7;
+
+            // Cyberpunk button
+            g.setFillStyle({ color: 0x000a12, alpha: 0.95 });
+            g.roundRect(-80, -25, 160, 50, 10);
             g.fill();
-            g.setStrokeStyle({ color: 0xffffff, width: 2 });
-            g.roundRect(-60, -20, 120, 40, 8);
+
+            g.setStrokeStyle({
+              color: isHovered ? 0x00ffd0 : 0x005566,
+              width: isHovered ? 3 : 2,
+              alpha: pulse,
+            });
+            g.roundRect(-80, -25, 160, 50, 10);
             g.stroke();
+
+            // Tech accent corners
+            g.setFillStyle({ color: 0x00ffd0, alpha: isHovered ? 0.6 : 0.3 });
+            g.moveTo(-80, -15);
+            g.lineTo(-70, -25);
+            g.lineTo(-80, -25);
+            g.lineTo(-80, -15);
+            g.fill();
+
+            g.moveTo(80, -15);
+            g.lineTo(70, -25);
+            g.lineTo(80, -25);
+            g.lineTo(80, -15);
+            g.fill();
+
+            if (isHovered) {
+              g.setStrokeStyle({
+                color: 0x00ffd0,
+                width: 2,
+                alpha: pulse * 0.5,
+              });
+              g.roundRect(-90, -35, 180, 70, 15);
+              g.stroke();
+            }
           }}
         />
         <pixiText
@@ -652,8 +862,15 @@ function VictoryScreen({
           anchor={{ x: 0.5, y: 0.5 }}
           style={{
             fontFamily: "Noto Sans KR",
-            fontSize: 14,
-            fill: 0xffffff,
+            fontSize: 16,
+            fill: isHovered ? 0x00ffd0 : 0xffffff,
+            ...(isHovered && {
+              dropShadow: {
+                color: 0x00ffd0,
+                blur: 4,
+                distance: 0,
+              },
+            }),
           }}
         />
       </pixiContainer>

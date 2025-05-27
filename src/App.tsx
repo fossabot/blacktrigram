@@ -1,16 +1,18 @@
 import { Application, extend } from "@pixi/react";
-import { Container, Graphics, Text } from "pixi.js";
+import { Container, Graphics, Text, Sprite } from "pixi.js";
 import { useState, useEffect, useCallback } from "react";
 import type { JSX } from "react";
 import "./App.css";
 import { GameEngine } from "./components/game/GameEngine";
 import { useAudio } from "./audio/AudioManager";
+import { useTexture } from "./hooks/useTexture";
 
 // Extend @pixi/react with the Pixi components we want to use
 extend({
   Container,
   Graphics,
   Text,
+  Sprite,
 });
 
 type GameMode = "intro" | "game" | "training";
@@ -91,6 +93,8 @@ function IntroScreen({
     "sparring"
   );
   const audio = useAudio();
+  const [initialized, setInitialized] = useState<boolean>(false);
+  const { texture: logoTexture } = useTexture("/dark-trigram-256.png");
 
   // Enhanced trigram positioning with combat style icons
   const trigrams: TrigramSymbol[] = [
@@ -188,12 +192,23 @@ function IntroScreen({
     const interval = setInterval(() => {
       setTime((prev) => prev + 0.016); // ~60fps
     }, 16);
-    return () => clearInterval(interval);
-  }, []);
 
-  // Keyboard controls for intro screen
+    // Initialize controls state to prevent first-time issues
+    if (!initialized) {
+      setInitialized(true);
+    }
+
+    return () => clearInterval(interval);
+  }, [initialized]);
+
+  // Keyboard controls for intro screen with improved initialization
   useEffect(() => {
+    if (!initialized) return;
+
     const handleKeyDown = (event: KeyboardEvent): void => {
+      // Ensure control signals are properly triggered
+      event.preventDefault();
+
       // Navigation controls
       if (event.code === "ArrowLeft" || event.code === "KeyA") {
         audio.playSFX("menu_hover");
@@ -206,7 +221,7 @@ function IntroScreen({
 
       // Action controls
       if (event.code === "Space" || event.code === "Enter") {
-        event.preventDefault();
+        audio.playSFX("menu_select");
         if (selectedOption === "sparring") {
           onStartGame();
         } else {
@@ -216,31 +231,31 @@ function IntroScreen({
 
       // Alternative keys
       if (event.code === "AltLeft" || event.code === "AltRight") {
-        event.preventDefault();
+        audio.playSFX("menu_select");
         onStartTraining();
       }
 
       // Quick start with number keys
       if (event.code === "Digit1") {
+        audio.playSFX("menu_select");
         onStartGame();
       }
       if (event.code === "Digit2") {
+        audio.playSFX("menu_select");
         onStartTraining();
       }
     };
 
-    const handleKeyUp = (): void => {
-      // Key up handler - no state tracking needed for intro screen
-    };
-
     window.addEventListener("keydown", handleKeyDown);
-    window.addEventListener("keyup", handleKeyUp);
+
+    // Ensure app has focus to receive key events
+    window.focus();
+    document.body.click();
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
-      window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [selectedOption, onStartGame, onStartTraining, audio]);
+  }, [selectedOption, onStartGame, onStartTraining, audio, initialized]);
 
   const drawBackground = useCallback((graphics: Graphics) => {
     graphics.clear();
@@ -249,8 +264,8 @@ function IntroScreen({
     graphics.rect(0, 0, window.innerWidth, window.innerHeight);
     graphics.fill();
 
-    // Subtle grid pattern for traditional Korean aesthetic
-    graphics.setStrokeStyle({ color: 0x111111, width: 1, alpha: 0.3 });
+    // Cyan grid pattern
+    graphics.setStrokeStyle({ color: 0x003333, width: 1, alpha: 0.3 });
     const gridSize = 50;
     for (let x = 0; x < window.innerWidth; x += gridSize) {
       graphics.moveTo(x, 0);
@@ -268,30 +283,20 @@ function IntroScreen({
     (graphics: Graphics) => {
       graphics.clear();
 
-      // Outer ring - traditional Korean red (단색)
-      graphics.setStrokeStyle({ color: 0x8b0000, width: 4 });
+      // Cyan outer ring
+      graphics.setStrokeStyle({ color: 0x00ffd0, width: 4 });
       graphics.circle(0, 0, 140);
       graphics.stroke();
 
-      // Middle ring - white for balance
-      graphics.setStrokeStyle({ color: 0xffffff, width: 2 });
+      // Inner cyan ring
+      graphics.setStrokeStyle({ color: 0x00ffd0, width: 2, alpha: 0.7 });
       graphics.circle(0, 0, 120);
       graphics.stroke();
 
-      // Inner ring - darker red
-      graphics.setStrokeStyle({ color: 0x660000, width: 2 });
-      graphics.circle(0, 0, 100);
-      graphics.stroke();
-
-      // Center yin-yang inspired circle - pulsing
+      // Pulsing cyan center
       const pulse = Math.sin(time * 1.5) * 0.4 + 0.6;
-      graphics.setFillStyle({ color: 0x8b0000, alpha: pulse });
+      graphics.setFillStyle({ color: 0x00ffd0, alpha: pulse });
       graphics.circle(0, 0, 12);
-      graphics.fill();
-
-      // Small white dot for balance
-      graphics.setFillStyle({ color: 0xffffff, alpha: pulse });
-      graphics.circle(3, 0, 3);
       graphics.fill();
     },
     [time]
@@ -342,45 +347,61 @@ function IntroScreen({
       <pixiGraphics draw={drawBackground} />
       <pixiGraphics draw={drawTrigramLines} />
 
-      {/* Enhanced main title with iconic elements */}
+      {/* Dark Trigram Logo */}
       <pixiContainer x={window.innerWidth / 2} y={window.innerHeight / 2 - 250}>
         <pixiGraphics
           draw={(g) => {
             g.clear();
-            // Title background with traditional design
-            g.setFillStyle({ color: 0x000000, alpha: 0.8 });
-            g.roundRect(-250, -50, 500, 100, 20);
+            // Dark background with deeper panel
+            g.setFillStyle({ color: 0x000a12, alpha: 0.95 });
+            g.roundRect(-270, -70, 540, 140, 20);
             g.fill();
 
-            // Golden border
-            g.setStrokeStyle({ color: 0xffd700, width: 3 });
-            g.roundRect(-250, -50, 500, 100, 20);
+            // Cyan glowing border with double-line effect
+            g.setStrokeStyle({ color: 0x00ffd0, width: 3 });
+            g.roundRect(-270, -70, 540, 140, 20);
+            g.stroke();
+
+            g.setStrokeStyle({ color: 0x00ffd0, width: 1, alpha: 0.7 });
+            g.roundRect(-260, -60, 520, 120, 16);
+            g.stroke();
+
+            // Add tech-looking diagonal slashes
+            g.setStrokeStyle({ color: 0x00ffd0, width: 1, alpha: 0.4 });
+            g.moveTo(-270, -30);
+            g.lineTo(-220, -70);
+            g.moveTo(270, -30);
+            g.lineTo(220, -70);
             g.stroke();
           }}
         />
 
-        <pixiText
-          text="⚔️ 黑卦 ⚔️"
-          anchor={{ x: 0.5, y: 0.5 }}
-          y={-10}
-          style={{
-            fontFamily: "serif",
-            fontSize: 72,
-            fill: 0xffffff,
-            fontWeight: "bold",
-            stroke: { color: 0x8b0000, width: 3 },
-          }}
-        />
+        {logoTexture && (
+          <pixiSprite
+            texture={logoTexture}
+            scale={{ x: 0.35, y: 0.35 }}
+            anchor={{ x: 0.5, y: 0.5 }}
+            y={-10}
+            alpha={0.9}
+          />
+        )}
 
         <pixiText
           text="🥋 흑괘 무술 도장 🥋"
           anchor={{ x: 0.5, y: 0.5 }}
-          y={25}
+          y={40}
           style={{
-            fontFamily: "Noto Sans KR",
+            fontFamily: "Orbitron, Noto Sans KR",
             fontSize: 28,
-            fill: 0x8b0000,
+            fill: 0xffffff,
             fontWeight: "400",
+            ...(true && {
+              dropShadow: {
+                color: 0x00ffd0,
+                blur: 6,
+                distance: 0,
+              },
+            }),
           }}
         />
       </pixiContainer>
@@ -575,7 +596,7 @@ function IntroScreen({
 
       {/* Enhanced game mode selection with better visual feedback */}
       <pixiContainer
-        x={window.innerWidth / 2 - 120}
+        x={window.innerWidth / 2 - 150}
         y={window.innerHeight / 2 + 180}
         interactive={true}
         cursor="pointer"
@@ -592,31 +613,44 @@ function IntroScreen({
             const pulse = isSelected ? Math.sin(time * 0.1) * 0.2 + 0.8 : 1.0;
 
             // Enhanced button design
-            g.setFillStyle({ color: 0x8b0000, alpha: pulse });
-            g.roundRect(-90, -35, 180, 70, 18);
+            g.setFillStyle({ color: 0x000a12, alpha: 0.9 });
+            g.roundRect(-100, -45, 200, 90, 18);
             g.fill();
 
             // Gradient-like effect
-            g.setFillStyle({ color: 0xff4444, alpha: pulse * 0.3 });
-            g.roundRect(-90, -35, 180, 25, 18);
+            g.setFillStyle({ color: 0x10171e, alpha: 0.7 });
+            g.roundRect(-100, -45, 200, 25, 18);
             g.fill();
 
             // Enhanced border
             g.setStrokeStyle({
-              color: isSelected ? 0xffffff : 0x999999,
-              width: isSelected ? 4 : 3,
+              color: isSelected ? 0x00ffd0 : 0x004455,
+              width: isSelected ? 3 : 2,
+              alpha: pulse,
             });
-            g.roundRect(-90, -35, 180, 70, 18);
+            g.roundRect(-100, -45, 200, 90, 18);
+            g.stroke();
+
+            // Add tech-looking diagonal slash for visual interest
+            g.setStrokeStyle({
+              color: 0x00ffd0,
+              width: 1,
+              alpha: isSelected ? 0.6 : 0.3,
+            });
+            g.moveTo(-100, -25);
+            g.lineTo(-70, -45);
+            g.moveTo(100, -25);
+            g.lineTo(70, -45);
             g.stroke();
 
             // Selection glow effect
             if (isSelected) {
               g.setStrokeStyle({
-                color: 0xffd700,
+                color: 0x00ffd0,
                 width: 2,
-                alpha: pulse * 0.6,
+                alpha: pulse * 0.5,
               });
-              g.roundRect(-95, -40, 190, 80, 22);
+              g.roundRect(-105, -50, 210, 100, 22);
               g.stroke();
             }
           }}
@@ -624,38 +658,46 @@ function IntroScreen({
         <pixiText
           text="⚔️ 대련 (Sparring)"
           anchor={{ x: 0.5, y: 0.5 }}
-          y={-5}
+          y={-15}
           style={{
             fontFamily: "Noto Sans KR",
-            fontSize: 16,
-            fill: selectedOption === "sparring" ? 0xffffff : 0xcccccc,
+            fontSize: 18,
+            fill: selectedOption === "sparring" ? 0x00ffd0 : 0x7accd4,
             fontWeight: "bold",
+            ...(selectedOption === "sparring" && {
+              dropShadow: {
+                color: 0x00ffd0,
+                blur: 6,
+                distance: 0,
+              },
+            }),
           }}
         />
         <pixiText
           text="🎯 정밀 전투 (Precision Combat)"
           anchor={{ x: 0.5, y: 0.5 }}
-          y={12}
+          y={10}
           style={{
             fontFamily: "Noto Sans KR",
-            fontSize: 11,
-            fill: selectedOption === "sparring" ? 0xffd700 : 0x888888,
+            fontSize: 12,
+            fill: selectedOption === "sparring" ? 0xffffff : 0x888888,
           }}
         />
         <pixiText
           text="[1]"
           anchor={{ x: 0.5, y: 0.5 }}
-          y={28}
+          y={30}
           style={{
             fontFamily: "monospace",
             fontSize: 10,
-            fill: 0x999999,
+            fill: 0x00ffd0,
           }}
+          alpha={0.7}
         />
       </pixiContainer>
 
       <pixiContainer
-        x={window.innerWidth / 2 + 120}
+        x={window.innerWidth / 2 + 150}
         y={window.innerHeight / 2 + 180}
         interactive={true}
         cursor="pointer"
@@ -672,29 +714,43 @@ function IntroScreen({
             const pulse = isSelected ? Math.sin(time * 0.1) * 0.2 + 0.8 : 1.0;
 
             // Enhanced training button
-            g.setFillStyle({ color: 0x4a4a4a, alpha: pulse });
-            g.roundRect(-90, -35, 180, 70, 18);
+            g.setFillStyle({ color: 0x000a12, alpha: 0.9 });
+            g.roundRect(-100, -45, 200, 90, 18);
             g.fill();
 
             // Gradient-like effect
-            g.setFillStyle({ color: 0x666666, alpha: pulse * 0.3 });
-            g.roundRect(-90, -35, 180, 25, 18);
+            g.setFillStyle({ color: 0x10171e, alpha: 0.7 });
+            g.roundRect(-100, -45, 200, 25, 18);
             g.fill();
 
+            // Enhanced border
             g.setStrokeStyle({
-              color: isSelected ? 0xffffff : 0x999999,
-              width: isSelected ? 4 : 3,
+              color: isSelected ? 0x00ffd0 : 0x004455,
+              width: isSelected ? 3 : 2,
+              alpha: pulse,
             });
-            g.roundRect(-90, -35, 180, 70, 18);
+            g.roundRect(-100, -45, 200, 90, 18);
+            g.stroke();
+
+            // Add tech-looking diagonal slash for visual interest
+            g.setStrokeStyle({
+              color: 0x00ffd0,
+              width: 1,
+              alpha: isSelected ? 0.6 : 0.3,
+            });
+            g.moveTo(-100, -25);
+            g.lineTo(-70, -45);
+            g.moveTo(100, -25);
+            g.lineTo(70, -45);
             g.stroke();
 
             if (isSelected) {
               g.setStrokeStyle({
-                color: 0x4a90e2,
+                color: 0x00ffd0,
                 width: 2,
-                alpha: pulse * 0.6,
+                alpha: pulse * 0.5,
               });
-              g.roundRect(-95, -40, 190, 80, 22);
+              g.roundRect(-105, -50, 210, 100, 22);
               g.stroke();
             }
           }}
@@ -702,33 +758,41 @@ function IntroScreen({
         <pixiText
           text="🏃 수련 (Training)"
           anchor={{ x: 0.5, y: 0.5 }}
-          y={-5}
+          y={-15}
           style={{
             fontFamily: "Noto Sans KR",
-            fontSize: 16,
-            fill: selectedOption === "training" ? 0xffffff : 0xcccccc,
+            fontSize: 18,
+            fill: selectedOption === "training" ? 0x00ffd0 : 0x7accd4,
             fontWeight: "bold",
+            ...(selectedOption === "training" && {
+              dropShadow: {
+                color: 0x00ffd0,
+                blur: 6,
+                distance: 0,
+              },
+            }),
           }}
         />
         <pixiText
           text="🧘 기술 연마 (Skill Development)"
           anchor={{ x: 0.5, y: 0.5 }}
-          y={12}
+          y={10}
           style={{
             fontFamily: "Noto Sans KR",
-            fontSize: 11,
-            fill: selectedOption === "training" ? 0x4a90e2 : 0x888888,
+            fontSize: 12,
+            fill: selectedOption === "training" ? 0xffffff : 0x888888,
           }}
         />
         <pixiText
           text="[2] [Alt]"
           anchor={{ x: 0.5, y: 0.5 }}
-          y={28}
+          y={30}
           style={{
             fontFamily: "monospace",
             fontSize: 10,
-            fill: 0x999999,
+            fill: 0x00ffd0,
           }}
+          alpha={0.7}
         />
       </pixiContainer>
     </pixiContainer>
@@ -766,6 +830,7 @@ function TrainingMode(): JSX.Element {
 }
 
 function BackButton({ onBack }: { onBack: () => void }): JSX.Element {
+  const [isHovered, setIsHovered] = useState(false);
   const audio = useAudio();
 
   return (
@@ -778,23 +843,52 @@ function BackButton({ onBack }: { onBack: () => void }): JSX.Element {
         audio.playSFX("menu_back");
         onBack();
       }}
-      onPointerEnter={() => audio.playSFX("menu_hover")}
+      onPointerEnter={() => {
+        audio.playSFX("menu_hover");
+        setIsHovered(true);
+      }}
+      onPointerLeave={() => setIsHovered(false)}
     >
       <pixiGraphics
         draw={(g) => {
           g.clear();
-          g.setFillStyle({ color: 0x666666 });
-          g.roundRect(-30, -15, 60, 30, 5);
+          // Cyberpunk back button
+          g.setFillStyle({ color: 0x000a12, alpha: 0.9 });
+          g.roundRect(-40, -20, 80, 40, 5);
           g.fill();
+
+          // Border
+          g.setStrokeStyle({
+            color: isHovered ? 0x00ffd0 : 0x004455,
+            width: isHovered ? 2 : 1,
+            alpha: isHovered ? 0.9 : 0.7,
+          });
+          g.roundRect(-40, -20, 80, 40, 5);
+          g.stroke();
+
+          // Tech accent lines
+          g.setStrokeStyle({ color: 0x00ffd0, width: 1, alpha: 0.4 });
+          g.moveTo(-40, -10);
+          g.lineTo(-30, -20);
+          g.moveTo(40, -10);
+          g.lineTo(30, -20);
+          g.stroke();
         }}
       />
       <pixiText
-        text="뒤로"
+        text="← 뒤로"
         anchor={{ x: 0.5, y: 0.5 }}
         style={{
           fontFamily: "Noto Sans KR",
-          fontSize: 12,
-          fill: 0xffffff,
+          fontSize: 14,
+          fill: isHovered ? 0x00ffd0 : 0xcccccc,
+          ...(isHovered && {
+            dropShadow: {
+              color: 0x00ffd0,
+              blur: 4,
+              distance: 0,
+            },
+          }),
         }}
       />
     </pixiContainer>

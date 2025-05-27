@@ -55,6 +55,7 @@ describe("Black Trigram Game Application", () => {
         Container: expect.any(Function),
         Graphics: expect.any(Function),
         Text: expect.any(Function),
+        Sprite: expect.any(Function),
       });
     });
   });
