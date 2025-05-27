@@ -1,4 +1,5 @@
-import { defineConfig } from "vitest/config";
+/// <reference types="vitest" />
+import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
@@ -10,16 +11,13 @@ export default defineConfig({
     css: true,
     coverage: {
       provider: "v8",
-      reporter: ["text", "json", "html", "lcov"],
+      reporter: ["text", "json", "html"],
       exclude: [
         "node_modules/",
-        "src/test/",
+        "src/test/setup.ts",
         "**/*.d.ts",
-        "cypress/",
+        "**/*.config.*",
         "dist/",
-        ".eslintrc.cjs",
-        "vite.config.ts",
-        "vitest.config.ts",
       ],
       thresholds: {
         global: {
@@ -30,17 +28,5 @@ export default defineConfig({
         },
       },
     },
-  },
-  resolve: {
-    alias: {
-      // Fix react-reconciler module resolution
-      "react-reconciler/constants": "react-reconciler/constants.js",
-    },
-  },
-  optimizeDeps: {
-    include: ["@pixi/react", "pixi.js", "react-reconciler"],
-  },
-  ssr: {
-    noExternal: ["@pixi/react", "pixi.js"],
   },
 });
