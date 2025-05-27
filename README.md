@@ -1,13 +1,159 @@
-# Black Trigram
+<div align="center">
 
-2D action-combat game. Focus 정격자 = "Precision Attacker" , 비수 = "Dagger", 암살자 = "Assassin",급소격 = "Vital Point Strike"
+# 🥋 Black Trigram (흑괘)
+### *무예는 몸과 마음, 그리고 영혼의 조화이다*
+*"Martial arts are the harmony of body, mind, and spirit"*
 
 ![Dark Trigram](src/assets/black-trigram.png)
 
-## Badges
-
 [![License](https://img.shields.io/github/license/Hack23/blacktrigram.svg)](https://github.com/Hack23/blacktrigram/raw/master/LICENSE.md)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Hack23/blacktrigram/badge)](https://scorecard.dev/viewer/?uri=github.com/Hack23/blacktrigram)
+
+*A 2D precision combat game inspired by Korean martial arts philosophy and the I Ching*
+
+</div>
+
+---
+
+## ⚡ Game Overview
+
+**Black Trigram** is a **precision combat experience** that blends traditional Korean martial arts with cutting-edge web technology. Master the dark arts of vital point striking through **eight distinct trigram fighting styles**, each rooted in ancient philosophy yet delivered with modern 2D action.
+
+### 🎯 Core Combat Archetypes
+
+<table>
+<tr>
+<td align="center" width="25%">
+
+**🎯 정격자**  
+*Jeonggyeokja*  
+**Precision Attacker**
+
+*Every strike calculated  
+and deliberate*
+
+</td>
+<td align="center" width="25%">
+
+**⚔️ 비수**  
+*Bisu*  
+**Lethal Blade**
+
+*Metaphorical lethality  
+in unarmed combat*
+
+</td>
+<td align="center" width="25%">
+
+**🥷 암살자**  
+*Amsalja*  
+**Assassin**
+
+*Focus on finishing  
+techniques*
+
+</td>
+<td align="center" width="25%">
+
+**💀 급소격**  
+*Geupsogyeok*  
+**Vital Point Strike**
+
+*Core combat  
+mechanic*
+
+</td>
+</tr>
+</table>
+
+---
+
+## 🌟 Game Features
+
+### 🔮 Trigram-Based Combat System (팔괘 무술체계)
+
+Master **8 unique fighting philosophies** based on the I Ching trigrams:
+
+<div align="center">
+
+| Trigram | Name | Philosophy | Combat Style |
+|:-------:|:----:|:----------:|:------------:|
+| ☰ | **건 (Geon)** - *Heaven* | Pure yang energy | 🔥 Power strikes, guard breaking |
+| ☱ | **태 (Tae)** - *Lake* | Joy and flexibility | 🌊 Flowing combinations |
+| ☲ | **리 (Li)** - *Fire* | Clarity and intensity | ⚡ Fast, precise attacks |
+| ☳ | **진 (Jin)** - *Thunder* | Sudden movement | 💥 Explosive bursts |
+| ☴ | **손 (Son)** - *Wind* | Gentle persistence | 🌪️ Continuous pressure |
+| ☵ | **감 (Gam)** - *Water* | Adaptation and flow | 🛡️ Evasion and counters |
+| ☶ | **간 (Gan)** - *Mountain* | Stillness and endurance | 🗿 Immovable defense |
+| ☷ | **곤 (Gon)** - *Earth* | Receptive yin energy | 🤜 Throws and takedowns |
+
+</div>
+
+### 🎯 Vital Point Targeting System
+
+- **70 Anatomical Targets** across 5 body regions
+- **Precision-based damage** - Perfect hits deal 150% damage
+- **Real martial arts knowledge** - Learn actual vital points
+- **Anatomical mastery** - Unlock new techniques through study
+
+### 🎨 Authentic Korean Aesthetics
+
+- **Traditional Korean art style** with modern 2D animation
+- **Ink brush UI elements** and transitional effects
+- **Korean language integration** with proper martial arts terminology
+- **Cultural authenticity** in philosophy and combat principles
+
+---
+
+## 🚀 Technical Excellence
+
+Built with modern web technologies for **maximum performance** and **security**:
+
+<div align="center">
+
+### 🎮 Game Engine
+![PixiJS](https://img.shields.io/badge/PixiJS-8.x-ff6b6b?style=for-the-badge&logo=javascript)
+![React](https://img.shields.io/badge/React-19-61dafb?style=for-the-badge&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178c6?style=for-the-badge&logo=typescript)
+
+### ⚡ Performance
+![Vite](https://img.shields.io/badge/Vite-Fast-646cff?style=for-the-badge&logo=vite)
+![WebGL](https://img.shields.io/badge/WebGL-Hardware_Accelerated-990000?style=for-the-badge)
+![Howler.js](https://img.shields.io/badge/Audio-Howler.js-ff9500?style=for-the-badge)
+
+### 🔒 Security First
+![OSSF](https://img.shields.io/badge/OSSF-Scorecard-4c1?style=for-the-badge)
+![SLSA](https://img.shields.io/badge/SLSA-Compliant-2ea44f?style=for-the-badge)
+![SBOM](https://img.shields.io/badge/SBOM-Generated-orange?style=for-the-badge)
+
+</div>
+
+---
+
+## 🎭 Game Modes
+
+### 🏯 수련 모드 (Suryeon Mode) - Training
+- **📚 Vital Point Study** - Learn anatomical targets
+- **⚡ Trigram Practice** - Master individual styles  
+- **🎯 Precision Training** - Improve targeting accuracy
+- **🧘 Breathing Exercises** - Develop rhythm and timing
+
+### ⚔️ 대련 모드 (Daeryeon Mode) - Sparring
+- **🥊 Single Combat** - One-on-one precision duels
+- **🏆 Tournament** - Progressive difficulty challenges
+- **👑 Master Challenges** - Face legendary martial artists
+
+### 📖 철학 모드 (Cheolhak Mode) - Philosophy
+- **📜 I Ching Study** - Learn trigram meanings
+- **🏛️ Historical Lessons** - Korean martial arts heritage
+- **🧘‍♂️ Meditation Practice** - Improve focus and precision
+
+### 🌙 암살 모드 (Amsal Mode) - Assassination
+- **🤫 Stealth Missions** - Eliminate without detection
+- **💯 One-Strike Challenges** - Perfect precision required
+- **🏞️ Environmental Kills** - Use surroundings tactically
+
+---
 
 ## 🔒 Security Features
 
