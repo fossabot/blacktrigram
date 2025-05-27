@@ -5,6 +5,7 @@ import { PlayerContainer } from "./Player";
 import { DojangBackground } from "./DojangBackground";
 import { HitEffectsLayer, HitEffect } from "./HitEffectsLayer";
 import { GameUI } from "./GameUI";
+import { useAudio } from "../../audio/AudioManager";
 
 // Centralized game constants
 const GAME_CONFIG = {
@@ -196,6 +197,7 @@ export function GameEngine(): JSX.Element {
   const [combatLog, setCombatLog] = useState<readonly string[]>([]);
   const [hitEffects, setHitEffects] = useState<readonly HitEffect[]>([]);
   const [gameTime, setGameTime] = useState<number>(0);
+  const audio = useAudio();
 
   useTick(
     useCallback((ticker: { deltaTime: number }) => {
@@ -219,7 +221,10 @@ export function GameEngine(): JSX.Element {
       "팔괘 무술로 싸우십시오 (Fight with Eight Trigram techniques)",
       "급소를 노려라! (Target vital points!)",
     ]);
-  }, []);
+
+    // Play match start audio
+    audio.playSFX("match_start");
+  }, [audio]);
 
   const handleAttack = useCallback(
     (params: AttackParams) => {
@@ -235,6 +240,12 @@ export function GameEngine(): JSX.Element {
           GAME_CONFIG.HIT_RANGE
         );
 
+        // Determine if it's a vital point hit based on distance and damage
+        const isVitalPoint = distance < 50 && actualDamage > 25;
+
+        // Play hit sound with vital point detection
+        audio.playHitSound(actualDamage, isVitalPoint);
+
         const hitEffect: HitEffect = {
           id: `hit_${Date.now()}_${Math.random()}`,
           x: defenderPos.x,
@@ -246,20 +257,28 @@ export function GameEngine(): JSX.Element {
         };
 
         setHitEffects((prev) => [...prev, hitEffect]);
-        setGameState((prev) =>
-          GameStateManager.updateHealth(
-            prev,
-            attacker === "player1" ? "player2" : "player1",
-            actualDamage
-          )
+
+        const updatedGameState = GameStateManager.updateHealth(
+          gameState,
+          attacker === "player1" ? "player2" : "player1",
+          actualDamage
         );
+
+        setGameState(updatedGameState);
+
+        // Check for victory and play victory sound
+        const finalState = GameStateManager.checkWinCondition(updatedGameState);
+        if (finalState.winner && !gameState.winner) {
+          audio.playSFX("victory");
+        }
+
         const logMessage = `${CombatSystem.getKoreanTechniqueName(
           technique
-        )} 명중! ${actualDamage} 급소타격 피해`;
+        )} 명중! ${actualDamage} ${isVitalPoint ? "급소" : "일반"}타격 피해`;
         setCombatLog((prev) => [logMessage, ...prev].slice(0, 8));
       }
     },
-    [player1Pos, player2Pos]
+    [player1Pos, player2Pos, gameState, audio]
   );
 
   const resetMatch = useCallback(() => {
@@ -275,7 +294,10 @@ export function GameEngine(): JSX.Element {
     });
     setCombatLog([]);
     setHitEffects([]);
-  }, []);
+
+    // Play menu sound for reset
+    audio.playSFX("menu_select");
+  }, [audio]);
 
   return (
     <pixiContainer>

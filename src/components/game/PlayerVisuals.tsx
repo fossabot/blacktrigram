@@ -374,9 +374,9 @@ function HealthStaminaBars({
         draw={(g: PixiGraphics) => {
           g.clear();
 
-          // Background
+          // Health bar background
           g.setFillStyle({ color: 0x2a2a2a });
-          g.roundRect(-35, -120, 70, 8, 4);
+          g.roundRect(-35, -142, 70, 8, 4);
           g.fill();
 
           // Stamina fill
@@ -414,87 +414,15 @@ function AttackEffect({
           const attackHeight = 30 + technique.damage * 0.8;
           const stanceColor = VISUAL_THEME.ENERGY_COLORS[playerState.stance];
 
-          // Main attack beam
-          g.setFillStyle({
-            color: stanceColor,
-            alpha: attackAlpha * 0.8,
-          });
-
-          const attackX =
-            playerState.facing === "right" ? 35 : -35 - attackWidth;
-          g.rect(attackX, -attackHeight / 2, attackWidth, attackHeight);
+          // Enhanced attack effect with energy burst
+          g.setFillStyle({ color: stanceColor, alpha: attackAlpha * 0.6 });
+          g.ellipse(attackWidth / 2, 0, attackWidth, attackHeight);
           g.fill();
 
-          // Attack core (brighter center)
-          g.setFillStyle({
-            color: VISUAL_THEME.KOREAN_WHITE,
-            alpha: attackAlpha * 0.6,
-          });
-          g.rect(
-            attackX + 5,
-            -attackHeight / 4,
-            attackWidth - 10,
-            attackHeight / 2
-          );
+          // Attack core with pulsing effect
+          g.setFillStyle({ color: 0xffffff, alpha: attackAlpha });
+          g.ellipse(attackWidth / 2, 0, attackWidth * 0.3, attackHeight * 0.5);
           g.fill();
-
-          // Energy particles around attack
-          for (let i = 0; i < 12; i++) {
-            const particleX = attackX + Math.random() * attackWidth;
-            const particleY = -attackHeight / 2 + Math.random() * attackHeight;
-            const particleSize = 1 + Math.random() * 3;
-
-            g.setFillStyle({
-              color:
-                Math.random() > 0.5 ? stanceColor : VISUAL_THEME.KOREAN_WHITE,
-              alpha: attackAlpha * (0.3 + Math.random() * 0.5),
-            });
-            g.circle(particleX, particleY, particleSize);
-            g.fill();
-          }
-
-          // Technique-specific visual effects
-          switch (playerState.stance) {
-            case "li": // Fire - add flame-like effects
-              for (let i = 0; i < 5; i++) {
-                const flameX = attackX + (i * attackWidth) / 5;
-                const flameHeight = 10 + Math.sin(animationTime * 0.5 + i) * 8;
-                g.setFillStyle({ color: 0xff6600, alpha: attackAlpha * 0.4 });
-                g.rect(flameX, -flameHeight, 8, flameHeight * 2);
-                g.fill();
-              }
-              break;
-
-            case "jin": // Thunder - add lightning effects
-              g.setStrokeStyle({
-                color: VISUAL_THEME.KOREAN_WHITE,
-                width: 3,
-                alpha: attackAlpha,
-              });
-              g.moveTo(attackX, -10);
-              g.lineTo(attackX + attackWidth / 3, 5);
-              g.lineTo(attackX + (2 * attackWidth) / 3, -5);
-              g.lineTo(attackX + attackWidth, 10);
-              g.stroke();
-              break;
-
-            case "gam": // Water - add wave effects
-              for (let i = 0; i < 3; i++) {
-                const waveY = -15 + i * 10;
-                g.setStrokeStyle({
-                  color: 0x4169e1,
-                  width: 4,
-                  alpha: attackAlpha * 0.6,
-                });
-                g.moveTo(attackX, waveY);
-                for (let x = 0; x < attackWidth; x += 10) {
-                  const y = waveY + Math.sin((x + animationTime * 50) / 10) * 3;
-                  g.lineTo(attackX + x, y);
-                }
-                g.stroke();
-              }
-              break;
-          }
         }}
       />
 
