@@ -5,7 +5,7 @@ describe("Black Trigram Intro Page E2E", () => {
 
   describe("Initial Page Load", () => {
     it("should display the Black Trigram intro page correctly", () => {
-      // Check page title - updated to match Korean terminology
+      // Check page title - updated to match actual implementation
       cy.title().should(
         "eq",
         "Black Trigram (흑괘) - Korean Martial Arts Dojang"
@@ -103,6 +103,7 @@ describe("Black Trigram Intro Page E2E", () => {
     });
 
     it("should have proper language attributes", () => {
+      // Updated to match the actual lang attribute (English for accessibility)
       cy.get("html").should("have.attr", "lang", "en");
     });
 

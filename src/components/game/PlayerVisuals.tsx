@@ -2,21 +2,38 @@ import type { JSX } from "react";
 import type { Graphics as PixiGraphics } from "pixi.js";
 import type { PlayerState, TrigramStance } from "./Player";
 
-// Enhanced visual theme with cooler effects
+// Enhanced visual theme with more iconic elements
 const VISUAL_THEME = {
   PLAYER_1_COLOR: 0x4a90e2,
   PLAYER_2_COLOR: 0x8b0000,
   TRADITIONAL_GOLD: 0xffd700,
   KOREAN_WHITE: 0xffffff,
+  COMBAT_ICONS: {
+    HEALTH: "❤️",
+    STAMINA: "⚡",
+    ATTACK: "⚔️",
+    DEFENSE: "🛡️",
+    PRECISION: "🎯",
+  },
   ENERGY_COLORS: {
-    geon: 0xffd700, // Gold - Heaven (Lightning energy)
-    tae: 0x87ceeb, // Sky Blue - Lake (Water energy)
-    li: 0xff4500, // Red Orange - Fire (Flame energy)
-    jin: 0x9370db, // Purple - Thunder (Electric energy)
-    son: 0x98fb98, // Pale Green - Wind (Air energy)
-    gam: 0x4169e1, // Royal Blue - Water (Liquid energy)
-    gan: 0x8b4513, // Saddle Brown - Mountain (Earth energy)
-    gon: 0x654321, // Dark Brown - Earth (Stone energy)
+    geon: 0xffd700, // Gold - Heaven (Lightning energy) 🔥
+    tae: 0x87ceeb, // Sky Blue - Lake (Water energy) 🌊
+    li: 0xff4500, // Red Orange - Fire (Flame energy) ⚡
+    jin: 0x9370db, // Purple - Thunder (Electric energy) 💥
+    son: 0x98fb98, // Pale Green - Wind (Air energy) 🌪️
+    gam: 0x4169e1, // Royal Blue - Water (Liquid energy) 🛡️
+    gan: 0x8b4513, // Saddle Brown - Mountain (Earth energy) 🗿
+    gon: 0x654321, // Dark Brown - Earth (Stone energy) 🤜
+  },
+  STANCE_ICONS: {
+    geon: "🔥", // Heaven - Power strikes
+    tae: "🌊", // Lake - Flowing combos
+    li: "⚡", // Fire - Fast attacks
+    jin: "💥", // Thunder - Explosive bursts
+    son: "🌪️", // Wind - Continuous pressure
+    gam: "🛡️", // Water - Evasion and counters
+    gan: "🗿", // Mountain - Immovable defense
+    gon: "🤜", // Earth - Throws and takedowns
   },
 } as const;
 
@@ -235,63 +252,60 @@ function PlayerBody({
 function StanceIndicator({ stance }: { stance: TrigramStance }): JSX.Element {
   return (
     <pixiContainer>
-      {/* Enhanced traditional Korean stance display with cooler effects */}
+      {/* Enhanced stance display with combat icons */}
       <pixiGraphics
         draw={(g: PixiGraphics) => {
           g.clear();
 
-          // Traditional Korean panel with gradient effect
           const stanceColor = VISUAL_THEME.ENERGY_COLORS[stance];
 
-          // Background with glow effect
+          // Main background with enhanced design
           g.setFillStyle({ color: 0x000000, alpha: 0.95 });
-          g.roundRect(-45, -115, 90, 25, 12);
+          g.roundRect(-55, -125, 110, 35, 15);
           g.fill();
 
-          // Glowing border
-          g.setStrokeStyle({
-            color: stanceColor,
-            width: 3,
-            alpha: 0.8,
-          });
-          g.roundRect(-45, -115, 90, 25, 12);
+          // Glowing border with stance-specific color
+          g.setStrokeStyle({ color: stanceColor, width: 3, alpha: 0.9 });
+          g.roundRect(-55, -125, 110, 35, 15);
           g.stroke();
 
-          // Inner glow
+          // Inner glow effect
           g.setStrokeStyle({
             color: VISUAL_THEME.KOREAN_WHITE,
             width: 1,
-            alpha: 0.6,
+            alpha: 0.7,
           });
-          g.roundRect(-42, -112, 84, 19, 10);
+          g.roundRect(-50, -120, 100, 25, 12);
           g.stroke();
 
-          // Corner accent marks with proper destructuring
-          const cornerSize = 4;
+          // Corner energy markers
           const corners: readonly [number, number][] = [
-            [-40, -110],
-            [40, -110],
-            [-40, -95],
-            [40, -95],
+            [-45, -115],
+            [45, -115],
+            [-45, -95],
+            [45, -95],
           ];
           corners.forEach(([x, y]) => {
             g.setFillStyle({ color: stanceColor, alpha: 0.8 });
-            g.circle(x, y, cornerSize);
+            g.circle(x, y, 3);
             g.fill();
           });
         }}
       />
 
+      {/* Combat style icon with trigram symbol */}
       <pixiText
-        text={getTrigramSymbol(stance)}
+        text={`${VISUAL_THEME.STANCE_ICONS[stance]} ${getTrigramSymbol(
+          stance
+        )}`}
         anchor={{ x: 0.5, y: 0.5 }}
-        y={-102}
+        y={-107}
         style={{
           fontFamily: "serif",
-          fontSize: 28,
+          fontSize: 20,
           fill: VISUAL_THEME.KOREAN_WHITE,
           fontWeight: "bold",
-          stroke: { color: VISUAL_THEME.ENERGY_COLORS[stance], width: 2 },
+          stroke: { color: VISUAL_THEME.ENERGY_COLORS[stance], width: 1 },
         }}
       />
     </pixiContainer>
@@ -305,33 +319,74 @@ function HealthStaminaBars({
 }): JSX.Element {
   return (
     <>
-      <pixiGraphics
-        draw={(g: PixiGraphics) => {
-          g.clear();
-          g.setFillStyle({ color: 0x333333 });
-          g.rect(-35, -125, 70, 8);
-          g.fill();
-          g.setFillStyle({
-            color: playerState.health > 30 ? 0x4caf50 : 0xff4444,
-          });
-          g.rect(-35, -125, playerState.health * 0.7, 8);
-          g.fill();
-          g.setStrokeStyle({ color: 0xffffff, width: 1 });
-          g.rect(-35, -125, 70, 8);
-          g.stroke();
+      {/* Enhanced health bar with icon */}
+      <pixiText
+        text={VISUAL_THEME.COMBAT_ICONS.HEALTH}
+        anchor={{ x: 0.5, y: 0.5 }}
+        x={-50}
+        y={-140}
+        style={{
+          fontFamily: "serif",
+          fontSize: 12,
+          fill: 0xffffff,
         }}
       />
       <pixiGraphics
         draw={(g: PixiGraphics) => {
           g.clear();
-          g.setFillStyle({ color: 0x333333 });
-          g.rect(-35, -115, 70, 6);
+
+          // Background
+          g.setFillStyle({ color: 0x2a2a2a });
+          g.roundRect(-35, -135, 70, 10, 5);
           g.fill();
-          g.setFillStyle({ color: 0xffc107 });
-          g.rect(-35, -115, playerState.stamina * 0.7, 6);
+
+          // Health fill with dynamic color
+          const healthColor =
+            playerState.health > 50
+              ? 0x4caf50
+              : playerState.health > 25
+              ? 0xff9800
+              : 0xff4444;
+          g.setFillStyle({ color: healthColor });
+          g.roundRect(-33, -133, playerState.health * 0.66, 6, 3);
           g.fill();
+
+          // Border
           g.setStrokeStyle({ color: 0xffffff, width: 1 });
-          g.rect(-35, -115, 70, 6);
+          g.roundRect(-35, -135, 70, 10, 5);
+          g.stroke();
+        }}
+      />
+
+      {/* Enhanced stamina bar with icon */}
+      <pixiText
+        text={VISUAL_THEME.COMBAT_ICONS.STAMINA}
+        anchor={{ x: 0.5, y: 0.5 }}
+        x={-50}
+        y={-118}
+        style={{
+          fontFamily: "serif",
+          fontSize: 12,
+          fill: 0xffffff,
+        }}
+      />
+      <pixiGraphics
+        draw={(g: PixiGraphics) => {
+          g.clear();
+
+          // Background
+          g.setFillStyle({ color: 0x2a2a2a });
+          g.roundRect(-35, -120, 70, 8, 4);
+          g.fill();
+
+          // Stamina fill
+          g.setFillStyle({ color: 0xffc107 });
+          g.roundRect(-33, -118, playerState.stamina * 0.66, 4, 2);
+          g.fill();
+
+          // Border
+          g.setStrokeStyle({ color: 0xffffff, width: 1 });
+          g.roundRect(-35, -120, 70, 8, 4);
           g.stroke();
         }}
       />

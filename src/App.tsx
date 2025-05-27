@@ -19,6 +19,8 @@ interface TrigramSymbol {
   korean: string;
   symbol: string;
   meaning: string;
+  icon: string;
+  combatStyle: string;
   x: number;
   y: number;
   alpha: number;
@@ -84,15 +86,17 @@ function IntroScreen({
     "sparring"
   );
 
-  // Enhanced trigram positioning in octagon formation for better visual balance
+  // Enhanced trigram positioning with combat style icons
   const trigrams: TrigramSymbol[] = [
     {
       name: "Geon",
       korean: "건",
       symbol: "☰",
       meaning: "Heaven",
+      icon: "🔥",
+      combatStyle: "Power Strikes",
       x: window.innerWidth / 2,
-      y: 100,
+      y: 120,
       alpha: 0.9,
     },
     {
@@ -100,8 +104,10 @@ function IntroScreen({
       korean: "태",
       symbol: "☱",
       meaning: "Lake",
-      x: window.innerWidth / 2 + 200,
-      y: 150,
+      icon: "🌊",
+      combatStyle: "Flowing Combos",
+      x: window.innerWidth / 2 + 220,
+      y: 180,
       alpha: 0.9,
     },
     {
@@ -109,7 +115,9 @@ function IntroScreen({
       korean: "리",
       symbol: "☲",
       meaning: "Fire",
-      x: window.innerWidth / 2 + 250,
+      icon: "⚡",
+      combatStyle: "Fast Attacks",
+      x: window.innerWidth / 2 + 280,
       y: window.innerHeight / 2,
       alpha: 0.9,
     },
@@ -118,8 +126,10 @@ function IntroScreen({
       korean: "진",
       symbol: "☳",
       meaning: "Thunder",
-      x: window.innerWidth / 2 + 200,
-      y: window.innerHeight / 2 + 200,
+      icon: "💥",
+      combatStyle: "Explosive Bursts",
+      x: window.innerWidth / 2 + 220,
+      y: window.innerHeight / 2 + 220,
       alpha: 0.9,
     },
     {
@@ -127,8 +137,10 @@ function IntroScreen({
       korean: "손",
       symbol: "☴",
       meaning: "Wind",
+      icon: "🌪️",
+      combatStyle: "Continuous Pressure",
       x: window.innerWidth / 2,
-      y: window.innerHeight - 100,
+      y: window.innerHeight - 120,
       alpha: 0.9,
     },
     {
@@ -136,8 +148,10 @@ function IntroScreen({
       korean: "감",
       symbol: "☵",
       meaning: "Water",
-      x: window.innerWidth / 2 - 200,
-      y: window.innerHeight / 2 + 200,
+      icon: "🛡️",
+      combatStyle: "Evasion & Counters",
+      x: window.innerWidth / 2 - 220,
+      y: window.innerHeight / 2 + 220,
       alpha: 0.9,
     },
     {
@@ -145,7 +159,9 @@ function IntroScreen({
       korean: "간",
       symbol: "☶",
       meaning: "Mountain",
-      x: window.innerWidth / 2 - 250,
+      icon: "🗿",
+      combatStyle: "Immovable Defense",
+      x: window.innerWidth / 2 - 280,
       y: window.innerHeight / 2,
       alpha: 0.9,
     },
@@ -154,8 +170,10 @@ function IntroScreen({
       korean: "곤",
       symbol: "☷",
       meaning: "Earth",
-      x: window.innerWidth / 2 - 200,
-      y: 150,
+      icon: "🤜",
+      combatStyle: "Throws & Takedowns",
+      x: window.innerWidth / 2 - 220,
+      y: 180,
       alpha: 0.9,
     },
   ];
@@ -295,13 +313,13 @@ function IntroScreen({
 
         // Add subtle dots along the line for traditional feel
         if (isHovered) {
-          const steps = 8;
+          const steps = 5;
           for (let i = 1; i < steps; i++) {
             const t = i / steps;
-            const x = centerX + (trigram.x - centerX) * t;
-            const y = centerY + (trigram.y - centerY) * t;
-            graphics.setFillStyle({ color: 0x8b0000, alpha: 0.4 });
-            graphics.circle(x, y, 1);
+            const dotX = centerX + (trigram.x - centerX) * t;
+            const dotY = centerY + (trigram.y - centerY) * t;
+            graphics.setFillStyle({ color: 0x8b0000, alpha: 0.8 });
+            graphics.circle(dotX, dotY, 2);
             graphics.fill();
           }
         }
@@ -314,50 +332,75 @@ function IntroScreen({
     <pixiContainer>
       {/* Enhanced background */}
       <pixiGraphics draw={drawBackground} />
-
-      {/* Connecting lines */}
       <pixiGraphics draw={drawTrigramLines} />
 
-      {/* Main title - Chinese characters */}
-      <pixiText
-        text="黑卦"
-        x={window.innerWidth / 2}
-        y={window.innerHeight / 2 - 220}
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          fontFamily: "serif",
-          fontSize: 84,
-          fill: 0xffffff,
-          fontWeight: "bold",
-          stroke: 0x8b0000,
-        }}
-      />
+      {/* Enhanced main title with iconic elements */}
+      <pixiContainer x={window.innerWidth / 2} y={window.innerHeight / 2 - 250}>
+        <pixiGraphics
+          draw={(g) => {
+            g.clear();
+            // Title background with traditional design
+            g.setFillStyle({ color: 0x000000, alpha: 0.8 });
+            g.roundRect(-250, -50, 500, 100, 20);
+            g.fill();
 
-      {/* Korean title */}
+            // Golden border
+            g.setStrokeStyle({ color: 0xffd700, width: 3 });
+            g.roundRect(-250, -50, 500, 100, 20);
+            g.stroke();
+          }}
+        />
+
+        <pixiText
+          text="⚔️ 黑卦 ⚔️"
+          anchor={{ x: 0.5, y: 0.5 }}
+          y={-10}
+          style={{
+            fontFamily: "serif",
+            fontSize: 72,
+            fill: 0xffffff,
+            fontWeight: "bold",
+            stroke: { color: 0x8b0000, width: 3 },
+          }}
+        />
+
+        <pixiText
+          text="🥋 흑괘 무술 도장 🥋"
+          anchor={{ x: 0.5, y: 0.5 }}
+          y={25}
+          style={{
+            fontFamily: "Noto Sans KR",
+            fontSize: 28,
+            fill: 0x8b0000,
+            fontWeight: "400",
+          }}
+        />
+      </pixiContainer>
+
+      {/* Enhanced subtitle with martial arts context */}
       <pixiText
-        text="흑괘"
+        text="🎯 정격자 · ⚔️ 비수 · 🥷 암살자 · 💀 급소격 · 🏯 도장"
         x={window.innerWidth / 2}
-        y={window.innerHeight / 2 - 140}
+        y={window.innerHeight / 2 - 120}
         anchor={{ x: 0.5, y: 0.5 }}
         style={{
           fontFamily: "Noto Sans KR",
-          fontSize: 36,
-          fill: 0x8b0000,
-          fontWeight: "400",
+          fontSize: 18,
+          fill: 0xffffff,
+          fontWeight: "300",
         }}
       />
 
-      {/* Subtitle with Korean martial arts terminology */}
       <pixiText
-        text="BLACK TRIGRAM MARTIAL DOJANG"
+        text="🎯 Precision Attacker · ⚔️ Lethal Blade · 🥷 Assassin · 💀 Vital Strike · 🏯 Dojang"
         x={window.innerWidth / 2}
-        y={window.innerHeight / 2 - 100}
+        y={window.innerHeight / 2 - 95}
         anchor={{ x: 0.5, y: 0.5 }}
         style={{
           fontFamily: "monospace",
-          fontSize: 18,
-          fill: 0x666666,
-          letterSpacing: 6,
+          fontSize: 12,
+          fill: 0x999999,
+          letterSpacing: 1,
         }}
       />
 
@@ -366,34 +409,7 @@ function IntroScreen({
         <pixiGraphics draw={drawCenterCircle} />
       </pixiContainer>
 
-      {/* Core concepts with better typography and Korean martial arts terms */}
-      <pixiText
-        text="정격자 · 비수 · 암살자 · 급소격 · 도장"
-        x={window.innerWidth / 2}
-        y={window.innerHeight / 2 + 90}
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 20,
-          fill: 0xffffff,
-          fontWeight: "300",
-        }}
-      />
-
-      <pixiText
-        text="Precision Attacker · Lethal Blade · Assassin · Vital Point Strike · Dojang"
-        x={window.innerWidth / 2}
-        y={window.innerHeight / 2 + 120}
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          fontFamily: "monospace",
-          fontSize: 13,
-          fill: 0x999999,
-          letterSpacing: 1,
-        }}
-      />
-
-      {/* Enhanced trigram symbols */}
+      {/* Enhanced trigram symbols with combat icons */}
       {trigrams.map((trigram) => (
         <pixiContainer
           key={trigram.name}
@@ -404,58 +420,102 @@ function IntroScreen({
           onPointerEnter={() => setHoveredTrigram(trigram.name)}
           onPointerLeave={() => setHoveredTrigram(null)}
         >
-          {/* Trigram symbol with enhanced styling */}
-          <pixiText
-            text={trigram.symbol}
-            anchor={{ x: 0.5, y: 0.5 }}
-            style={{
-              fontFamily: "serif",
-              fontSize: hoveredTrigram === trigram.name ? 42 : 32,
-              fill: hoveredTrigram === trigram.name ? 0x8b0000 : 0xffffff,
-              fontWeight: "bold",
-              stroke: hoveredTrigram === trigram.name ? 0xffffff : 0x000000,
+          <pixiGraphics
+            draw={(g) => {
+              g.clear();
+              const isHovered = hoveredTrigram === trigram.name;
+              const scale = isHovered ? 1.2 : 1.0;
+              const alpha = isHovered ? 0.9 : 0.7;
+
+              // Background circle
+              g.setFillStyle({ color: 0x000000, alpha: alpha });
+              g.circle(0, 0, 35 * scale);
+              g.fill();
+
+              // Border
+              g.setStrokeStyle({
+                color: isHovered ? 0x8b0000 : 0x666666,
+                width: isHovered ? 3 : 2,
+              });
+              g.circle(0, 0, 35 * scale);
+              g.stroke();
             }}
           />
 
-          {/* Korean name with better positioning */}
+          <pixiText
+            text={trigram.icon}
+            anchor={{ x: 0.5, y: 0.5 }}
+            y={-15}
+            style={{
+              fontFamily: "serif",
+              fontSize: hoveredTrigram === trigram.name ? 28 : 24,
+              fill: 0xffffff,
+            }}
+          />
+
+          <pixiText
+            text={trigram.symbol}
+            anchor={{ x: 0.5, y: 0.5 }}
+            y={5}
+            style={{
+              fontFamily: "serif",
+              fontSize: hoveredTrigram === trigram.name ? 32 : 24,
+              fill: hoveredTrigram === trigram.name ? 0x8b0000 : 0xffffff,
+              fontWeight: "bold",
+            }}
+          />
+
           <pixiText
             text={trigram.korean}
-            y={30}
+            y={25}
             anchor={{ x: 0.5, y: 0.5 }}
             style={{
               fontFamily: "Noto Sans KR",
-              fontSize: 16,
+              fontSize: 14,
               fill: hoveredTrigram === trigram.name ? 0xffffff : 0xaaaaaa,
               fontWeight: "400",
             }}
           />
 
-          {/* English meaning with better styling */}
+          {/* Enhanced hover information */}
           {hoveredTrigram === trigram.name && (
-            <pixiText
-              text={trigram.meaning}
-              y={50}
-              anchor={{ x: 0.5, y: 0.5 }}
-              style={{
-                fontFamily: "monospace",
-                fontSize: 11,
-                fill: 0x888888,
-                letterSpacing: 1,
-              }}
-            />
+            <>
+              <pixiText
+                text={trigram.meaning}
+                y={45}
+                anchor={{ x: 0.5, y: 0.5 }}
+                style={{
+                  fontFamily: "monospace",
+                  fontSize: 10,
+                  fill: 0x888888,
+                  letterSpacing: 1,
+                }}
+              />
+              <pixiText
+                text={trigram.combatStyle}
+                y={60}
+                anchor={{ x: 0.5, y: 0.5 }}
+                style={{
+                  fontFamily: "monospace",
+                  fontSize: 8,
+                  fill: 0x666666,
+                  letterSpacing: 0.5,
+                }}
+              />
+            </>
           )}
         </pixiContainer>
       ))}
 
-      {/* Enhanced philosophy quote with Korean martial arts context */}
+      {/* Enhanced philosophy section with icons */}
       <pixiText
-        text="도장에서 무예는 몸과 마음, 그리고 영혼의 조화이다"
+        text="🧘 도장에서 무예는 몸과 마음, 그리고 영혼의 조화이다"
         x={window.innerWidth / 2}
-        y={window.innerHeight - 100}
+        y={window.innerHeight - 120}
         anchor={{ x: 0.5, y: 0.5 }}
         style={{
           fontFamily: "Noto Sans KR",
-          fontSize: 18,
+          fontSize: 16,
           fill: 0x666666,
           fontStyle: "italic",
           fontWeight: "300",
@@ -463,49 +523,49 @@ function IntroScreen({
       />
 
       <pixiText
-        text="In the dojang, martial arts are the harmony of body, mind, and spirit"
+        text="🥋 In the dojang, martial arts are the harmony of body, mind, and spirit"
         x={window.innerWidth / 2}
-        y={window.innerHeight - 70}
+        y={window.innerHeight - 95}
         anchor={{ x: 0.5, y: 0.5 }}
         style={{
           fontFamily: "serif",
-          fontSize: 14,
+          fontSize: 12,
           fill: 0x444444,
           fontStyle: "italic",
         }}
       />
 
-      {/* Controls instructions */}
+      {/* Enhanced controls with better iconography */}
       <pixiText
-        text="← → 방향키 또는 A/D로 선택 | 스페이스/엔터로 확인 | 1-대련, 2-수련"
+        text="🎮 ← → 또는 A/D 선택 | ⚡ 스페이스/엔터 확인 | 🎯 1-대련, 2-수련"
         x={window.innerWidth / 2}
-        y={window.innerHeight - 40}
+        y={window.innerHeight - 60}
         anchor={{ x: 0.5, y: 0.5 }}
         style={{
           fontFamily: "Noto Sans KR",
-          fontSize: 12,
+          fontSize: 11,
           fill: 0x555555,
           letterSpacing: 1,
         }}
       />
 
       <pixiText
-        text="Arrow Keys/A-D to Select | Space/Enter to Confirm | Alt for Training"
+        text="🎮 Arrow Keys/A-D to Select | ⚡ Space/Enter to Confirm | 🏃 Alt for Training"
         x={window.innerWidth / 2}
-        y={window.innerHeight - 20}
+        y={window.innerHeight - 40}
         anchor={{ x: 0.5, y: 0.5 }}
         style={{
           fontFamily: "monospace",
-          fontSize: 10,
+          fontSize: 9,
           fill: 0x444444,
           letterSpacing: 1,
         }}
       />
 
-      {/* Game mode selection with keyboard selection indicator */}
+      {/* Enhanced game mode selection with better visual feedback */}
       <pixiContainer
-        x={window.innerWidth / 2 - 100}
-        y={window.innerHeight / 2 + 150}
+        x={window.innerWidth / 2 - 120}
+        y={window.innerHeight / 2 + 180}
         interactive={true}
         cursor="pointer"
         onPointerDown={onStartGame}
@@ -517,28 +577,40 @@ function IntroScreen({
             const isSelected = selectedOption === "sparring";
             const pulse = isSelected ? Math.sin(time * 0.1) * 0.2 + 0.8 : 1.0;
 
+            // Enhanced button design
             g.setFillStyle({ color: 0x8b0000, alpha: pulse });
-            g.roundRect(-80, -25, 160, 50, 10);
+            g.roundRect(-90, -35, 180, 70, 18);
             g.fill();
 
+            // Gradient-like effect
+            g.setFillStyle({ color: 0xff4444, alpha: pulse * 0.3 });
+            g.roundRect(-90, -35, 180, 25, 18);
+            g.fill();
+
+            // Enhanced border
             g.setStrokeStyle({
               color: isSelected ? 0xffffff : 0x999999,
-              width: isSelected ? 3 : 2,
+              width: isSelected ? 4 : 3,
             });
-            g.roundRect(-80, -25, 160, 50, 10);
+            g.roundRect(-90, -35, 180, 70, 18);
             g.stroke();
 
-            // Selection indicator
+            // Selection glow effect
             if (isSelected) {
-              g.setFillStyle({ color: 0xffffff, alpha: 0.3 });
-              g.roundRect(-85, -30, 170, 60, 12);
-              g.fill();
+              g.setStrokeStyle({
+                color: 0xffd700,
+                width: 2,
+                alpha: pulse * 0.6,
+              });
+              g.roundRect(-95, -40, 190, 80, 22);
+              g.stroke();
             }
           }}
         />
         <pixiText
-          text="대련 (Sparring)"
+          text="⚔️ 대련 (Sparring)"
           anchor={{ x: 0.5, y: 0.5 }}
+          y={-5}
           style={{
             fontFamily: "Noto Sans KR",
             fontSize: 16,
@@ -547,20 +619,30 @@ function IntroScreen({
           }}
         />
         <pixiText
+          text="🎯 정밀 전투 (Precision Combat)"
+          anchor={{ x: 0.5, y: 0.5 }}
+          y={12}
+          style={{
+            fontFamily: "Noto Sans KR",
+            fontSize: 11,
+            fill: selectedOption === "sparring" ? 0xffd700 : 0x888888,
+          }}
+        />
+        <pixiText
           text="[1]"
           anchor={{ x: 0.5, y: 0.5 }}
-          y={20}
+          y={28}
           style={{
             fontFamily: "monospace",
-            fontSize: 12,
+            fontSize: 10,
             fill: 0x999999,
           }}
         />
       </pixiContainer>
 
       <pixiContainer
-        x={window.innerWidth / 2 + 100}
-        y={window.innerHeight / 2 + 150}
+        x={window.innerWidth / 2 + 120}
+        y={window.innerHeight / 2 + 180}
         interactive={true}
         cursor="pointer"
         onPointerDown={onStartTraining}
@@ -572,28 +654,38 @@ function IntroScreen({
             const isSelected = selectedOption === "training";
             const pulse = isSelected ? Math.sin(time * 0.1) * 0.2 + 0.8 : 1.0;
 
+            // Enhanced training button
             g.setFillStyle({ color: 0x4a4a4a, alpha: pulse });
-            g.roundRect(-80, -25, 160, 50, 10);
+            g.roundRect(-90, -35, 180, 70, 18);
+            g.fill();
+
+            // Gradient-like effect
+            g.setFillStyle({ color: 0x666666, alpha: pulse * 0.3 });
+            g.roundRect(-90, -35, 180, 25, 18);
             g.fill();
 
             g.setStrokeStyle({
               color: isSelected ? 0xffffff : 0x999999,
-              width: isSelected ? 3 : 2,
+              width: isSelected ? 4 : 3,
             });
-            g.roundRect(-80, -25, 160, 50, 10);
+            g.roundRect(-90, -35, 180, 70, 18);
             g.stroke();
 
-            // Selection indicator
             if (isSelected) {
-              g.setFillStyle({ color: 0xffffff, alpha: 0.3 });
-              g.roundRect(-85, -30, 170, 60, 12);
-              g.fill();
+              g.setStrokeStyle({
+                color: 0x4a90e2,
+                width: 2,
+                alpha: pulse * 0.6,
+              });
+              g.roundRect(-95, -40, 190, 80, 22);
+              g.stroke();
             }
           }}
         />
         <pixiText
-          text="수련 (Training)"
+          text="🏃 수련 (Training)"
           anchor={{ x: 0.5, y: 0.5 }}
+          y={-5}
           style={{
             fontFamily: "Noto Sans KR",
             fontSize: 16,
@@ -602,12 +694,22 @@ function IntroScreen({
           }}
         />
         <pixiText
+          text="🧘 기술 연마 (Skill Development)"
+          anchor={{ x: 0.5, y: 0.5 }}
+          y={12}
+          style={{
+            fontFamily: "Noto Sans KR",
+            fontSize: 11,
+            fill: selectedOption === "training" ? 0x4a90e2 : 0x888888,
+          }}
+        />
+        <pixiText
           text="[2] [Alt]"
           anchor={{ x: 0.5, y: 0.5 }}
-          y={20}
+          y={28}
           style={{
             fontFamily: "monospace",
-            fontSize: 12,
+            fontSize: 10,
             fill: 0x999999,
           }}
         />
@@ -661,9 +763,6 @@ function BackButton({ onBack }: { onBack: () => void }): JSX.Element {
           g.setFillStyle({ color: 0x666666 });
           g.roundRect(-30, -15, 60, 30, 5);
           g.fill();
-          g.setStrokeStyle({ color: 0xffffff, width: 1 });
-          g.roundRect(-30, -15, 60, 30, 5);
-          g.stroke();
         }}
       />
       <pixiText
