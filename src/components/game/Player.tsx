@@ -2,6 +2,7 @@ import { useTick } from "@pixi/react";
 import { useState, useCallback, useEffect, useMemo } from "react";
 import type { JSX } from "react";
 import { PlayerVisuals } from "./PlayerVisuals";
+import { useAudio } from "../../audio/AudioManager";
 
 // Removed imports of missing modules
 // import type { Graphics as PixiGraphics } from "pixi.js";
@@ -328,13 +329,14 @@ export function PlayerContainer({
   const [animationTime, setAnimationTime] = useState<number>(0);
   const [attackCooldown, setAttackCooldown] = useState<number>(0);
   const [keys, setKeys] = useState<Set<string>>(new Set());
+  const audio = useAudio();
 
   const currentTechnique = useMemo(
     () => TRIGRAM_TECHNIQUES[playerState.stance],
     [playerState.stance]
   );
 
-  // Enhanced attack execution with better error handling
+  // Enhanced attack execution with audio feedback
   const executeAttack = useCallback(
     (stance: TrigramStance) => {
       if (!gameStarted || attackCooldown > 0) return;
@@ -343,6 +345,9 @@ export function PlayerContainer({
       if (playerState.stamina < technique.stamina) return;
 
       setPlayerState((prev) => PlayerStateManager.executeAttack(prev, stance));
+
+      // Play attack sound based on damage
+      audio.playAttackSound(technique.damage);
 
       const attackX =
         playerState.facing === "right"
@@ -372,10 +377,11 @@ export function PlayerContainer({
       playerState.x,
       playerState.y,
       onAttack,
+      audio, // Added audio dependency
     ]
   );
 
-  // Enhanced keyboard input handling
+  // Enhanced keyboard input handling with stance change audio
   useEffect(() => {
     if (!isPlayerOne) return;
 
@@ -383,6 +389,12 @@ export function PlayerContainer({
       if (InputSystem.isGameKey(event.code)) {
         event.preventDefault();
         setKeys((prev) => new Set(prev).add(event.code));
+
+        // Play stance change sound when switching stances
+        const newStance = InputSystem.getStanceFromKey(event.code);
+        if (newStance && newStance !== playerState.stance) {
+          audio.playStanceChangeSound();
+        }
       }
     };
 
@@ -404,7 +416,7 @@ export function PlayerContainer({
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("keyup", handleKeyUp);
     };
-  }, [isPlayerOne]);
+  }, [isPlayerOne, playerState.stance, audio]); // Added audio dependency
 
   // Enhanced AI behavior with better decision making
   const handleAI = useCallback(

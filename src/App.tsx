@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import type { JSX } from "react";
 import "./App.css";
 import { GameEngine } from "./components/game/GameEngine";
+import { useAudio } from "./audio/AudioManager";
 
 // Extend @pixi/react with the Pixi components we want to use
 extend({
@@ -28,16 +29,20 @@ interface TrigramSymbol {
 
 function App(): JSX.Element {
   const [gameMode, setGameMode] = useState<GameMode>("intro");
+  const audio = useAudio();
 
   const startGame = (): void => {
+    audio.playSFX("menu_select");
     setGameMode("game");
   };
 
   const startTraining = (): void => {
+    audio.playSFX("menu_select");
     setGameMode("training");
   };
 
   const returnToIntro = (): void => {
+    audio.playSFX("menu_back");
     setGameMode("intro");
   };
 
@@ -85,6 +90,7 @@ function IntroScreen({
   const [selectedOption, setSelectedOption] = useState<"sparring" | "training">(
     "sparring"
   );
+  const audio = useAudio();
 
   // Enhanced trigram positioning with combat style icons
   const trigrams: TrigramSymbol[] = [
@@ -190,9 +196,11 @@ function IntroScreen({
     const handleKeyDown = (event: KeyboardEvent): void => {
       // Navigation controls
       if (event.code === "ArrowLeft" || event.code === "KeyA") {
+        audio.playSFX("menu_hover");
         setSelectedOption("sparring");
       }
       if (event.code === "ArrowRight" || event.code === "KeyD") {
+        audio.playSFX("menu_hover");
         setSelectedOption("training");
       }
 
@@ -232,7 +240,7 @@ function IntroScreen({
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [selectedOption, onStartGame, onStartTraining]);
+  }, [selectedOption, onStartGame, onStartTraining, audio]);
 
   const drawBackground = useCallback((graphics: Graphics) => {
     graphics.clear();
@@ -417,7 +425,10 @@ function IntroScreen({
           y={trigram.y}
           interactive={true}
           cursor="pointer"
-          onPointerEnter={() => setHoveredTrigram(trigram.name)}
+          onPointerEnter={() => {
+            audio.playSFX("menu_hover");
+            setHoveredTrigram(trigram.name);
+          }}
           onPointerLeave={() => setHoveredTrigram(null)}
         >
           <pixiGraphics
@@ -569,7 +580,10 @@ function IntroScreen({
         interactive={true}
         cursor="pointer"
         onPointerDown={onStartGame}
-        onPointerEnter={() => setSelectedOption("sparring")}
+        onPointerEnter={() => {
+          audio.playSFX("menu_hover");
+          setSelectedOption("sparring");
+        }}
       >
         <pixiGraphics
           draw={(g) => {
@@ -646,7 +660,10 @@ function IntroScreen({
         interactive={true}
         cursor="pointer"
         onPointerDown={onStartTraining}
-        onPointerEnter={() => setSelectedOption("training")}
+        onPointerEnter={() => {
+          audio.playSFX("menu_hover");
+          setSelectedOption("training");
+        }}
       >
         <pixiGraphics
           draw={(g) => {
@@ -749,13 +766,19 @@ function TrainingMode(): JSX.Element {
 }
 
 function BackButton({ onBack }: { onBack: () => void }): JSX.Element {
+  const audio = useAudio();
+
   return (
     <pixiContainer
       x={50}
       y={50}
       interactive={true}
       cursor="pointer"
-      onPointerDown={onBack}
+      onPointerDown={() => {
+        audio.playSFX("menu_back");
+        onBack();
+      }}
+      onPointerEnter={() => audio.playSFX("menu_hover")}
     >
       <pixiGraphics
         draw={(g) => {

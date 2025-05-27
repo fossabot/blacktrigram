@@ -1,11 +1,11 @@
-import { Howl, Howler } from "howler";
-
 // Extend Window interface for webkit audio context
 declare global {
   interface Window {
     webkitAudioContext?: typeof AudioContext;
   }
 }
+
+import { Howl, Howler } from "howler";
 
 // Audio configuration constants
 const AUDIO_CONFIG = {
@@ -444,7 +444,7 @@ class AudioManager {
   private sounds: Map<SoundEffectId, Howl> = new Map();
   private music: Map<MusicTrackId, Howl> = new Map();
   private currentMusic: Howl | null = null;
-  private currentMusicId: MusicTrackId | null = null;
+  private useFallbackSounds: boolean = false;
   private state: AudioState = {
     masterVolume: AUDIO_CONFIG.MASTER_VOLUME,
     sfxVolume: AUDIO_CONFIG.SFX_VOLUME,
@@ -455,7 +455,7 @@ class AudioManager {
   };
 
   private constructor() {
-    this.initializeAudio();
+    this.initializeAudioSystem();
   }
 
   public static getInstance(): AudioManager {
@@ -465,30 +465,24 @@ class AudioManager {
     return AudioManager.instance;
   }
 
-  private async initializeAudio(): Promise<void> {
+  private async initializeAudioSystem(): Promise<void> {
     try {
-      // Set global Howler settings
+      // Initialize Howler with optimal settings
+      Howler.autoUnlock = true;
+      Howler.html5PoolSize = AUDIO_CONFIG.MAX_CONCURRENT_SOUNDS;
+
+      // Set initial volumes
       Howler.volume(this.state.masterVolume);
 
-      // Check for audio context support with proper typing
-      const AudioContextClass =
-        window.AudioContext || window.webkitAudioContext;
-      if (AudioContextClass) {
-        console.log(
-          "🎵 Audio context supported - Initializing Howler.js audio system"
-        );
-      }
-
-      // Initialize sound effects
+      // Initialize sound effects and music
       this.initializeSoundEffects();
-
-      // Initialize music tracks
       this.initializeMusicTracks();
 
       this.state = { ...this.state, isInitialized: true };
       console.log("🎵 AudioManager initialized successfully");
     } catch (error) {
       console.error("❌ Failed to initialize AudioManager:", error);
+      this.useFallbackSounds = true;
     }
   }
 
@@ -502,8 +496,13 @@ class AudioManager {
         sprite: config.sprite,
         onload: () =>
           console.log(`🎵 Loaded SFX: ${id} - ${config.description}`),
-        onloaderror: (id, error) =>
-          console.error(`❌ Failed to load SFX ${id}:`, error),
+        onloaderror: (id, error) => {
+          console.warn(
+            `⚠️ Failed to load SFX ${id}, using fallback sounds:`,
+            error
+          );
+          this.useFallbackSounds = true;
+        },
       });
 
       this.sounds.set(id as SoundEffectId, sound);
@@ -518,14 +517,9 @@ class AudioManager {
         loop: config.loop,
         preload: config.preload,
         onload: () =>
-          console.log(`🎵 Loaded Music: ${id} - ${config.description}`),
-        onloaderror: (id, error) =>
-          console.error(`❌ Failed to load music ${id}:`, error),
-        onend: () => {
-          if (this.currentMusicId === id) {
-            this.currentMusic = null;
-            this.currentMusicId = null;
-          }
+          console.log(`🎶 Loaded Music: ${id} - ${config.description}`),
+        onloaderror: (id, error) => {
+          console.warn(`⚠️ Failed to load music ${id}:`, error);
         },
       });
 
@@ -533,7 +527,7 @@ class AudioManager {
     });
   }
 
-  // Sound effect playback with Korean martial arts context
+  // Single playSFX implementation with fallback support
   public playSFX(
     id: SoundEffectId,
     options?: {
@@ -544,9 +538,16 @@ class AudioManager {
   ): number | null {
     if (this.state.muted || !this.state.isInitialized) return null;
 
+    // Use fallback sounds if original files failed to load
+    if (this.useFallbackSounds) {
+      this.playFallbackSound(id);
+      return null;
+    }
+
     const sound = this.sounds.get(id);
     if (!sound) {
-      console.warn(`🔇 Sound effect not found: ${id}`);
+      console.warn(`🔇 Sound effect not found: ${id}, using fallback`);
+      this.playFallbackSound(id);
       return null;
     }
 
@@ -561,15 +562,101 @@ class AudioManager {
         sound.rate(options.rate, soundId);
       }
 
+      if (options?.delay !== undefined) {
+        setTimeout(() => {
+          if (sound.playing(soundId)) {
+            sound.seek(0, soundId);
+          }
+        }, options.delay);
+      }
+
       return soundId;
     } catch (error) {
       console.error(`❌ Failed to play sound ${id}:`, error);
+      this.playFallbackSound(id);
       return null;
+    }
+  }
+
+  private async playFallbackSound(id: SoundEffectId): Promise<void> {
+    if (this.state.muted) return;
+
+    try {
+      // Dynamic import to avoid unused import error
+      const { defaultSoundGenerator } = await import("./DefaultSoundGenerator");
+
+      switch (id) {
+        case "menu_hover":
+        case "menu_select":
+        case "menu_back":
+          await defaultSoundGenerator.playMenuSound();
+          break;
+        case "match_start":
+          await defaultSoundGenerator.playMatchStartSound();
+          break;
+        case "victory":
+          await defaultSoundGenerator.playVictorySound();
+          break;
+        case "stance_change":
+          await defaultSoundGenerator.playStanceChangeSound();
+          break;
+        case "attack_light":
+        case "attack_medium":
+        case "attack_heavy":
+        case "attack_critical":
+          const damage =
+            id === "attack_critical"
+              ? 40
+              : id === "attack_heavy"
+              ? 30
+              : id === "attack_medium"
+              ? 20
+              : 10;
+          await defaultSoundGenerator.playAttackSound(damage);
+          break;
+        case "hit_light":
+        case "hit_medium":
+        case "hit_heavy":
+        case "hit_critical":
+          const hitDamage =
+            id === "hit_critical"
+              ? 40
+              : id === "hit_heavy"
+              ? 30
+              : id === "hit_medium"
+              ? 20
+              : 10;
+          const isVital = id === "hit_critical";
+          await defaultSoundGenerator.playHitSound(hitDamage, isVital);
+          break;
+        case "combo_buildup":
+        case "combo_finish":
+          const comboLevel = id === "combo_finish" ? 5 : 3;
+          await defaultSoundGenerator.playComboSound(comboLevel);
+          break;
+        default:
+          // Generic fallback
+          await defaultSoundGenerator.playMenuSound();
+      }
+    } catch (error) {
+      console.warn(`Failed to play fallback sound for ${id}:`, error);
     }
   }
 
   // Specialized sound methods for game events
   public playAttackSound(damage: number): void {
+    if (this.useFallbackSounds) {
+      // Dynamic import for fallback
+      import("./DefaultSoundGenerator")
+        .then(({ defaultSoundGenerator }) => {
+          defaultSoundGenerator.playAttackSound(damage);
+        })
+        .catch((error) => {
+          console.warn("Failed to load fallback sound generator:", error);
+        });
+      return;
+    }
+
     if (damage >= 35) {
       this.playSFX("attack_critical");
     } else if (damage >= 25) {
@@ -582,6 +669,18 @@ class AudioManager {
   }
 
   public playHitSound(damage: number, isVitalPoint: boolean = false): void {
+    if (this.useFallbackSounds) {
+      // Dynamic import for fallback
+      import("./DefaultSoundGenerator")
+        .then(({ defaultSoundGenerator }) => {
+          defaultSoundGenerator.playHitSound(damage, isVitalPoint);
+        })
+        .catch((error) => {
+          console.warn("Failed to load fallback sound generator:", error);
+        });
+      return;
+    }
+
     if (isVitalPoint) {
       this.playSFX("hit_critical");
       this.playSFX("perfect_strike", { delay: 100 });
@@ -594,8 +693,19 @@ class AudioManager {
     }
   }
 
-  // Fixed: Removed unused stanceName parameter
   public playStanceChangeSound(): void {
+    if (this.useFallbackSounds) {
+      // Dynamic import for fallback
+      import("./DefaultSoundGenerator")
+        .then(({ defaultSoundGenerator }) => {
+          defaultSoundGenerator.playStanceChangeSound();
+        })
+        .catch((error) => {
+          console.warn("Failed to load fallback sound generator:", error);
+        });
+      return;
+    }
+
     this.playSFX("stance_change");
     // Add slight delay for energy pulse based on trigram
     setTimeout(() => {
@@ -604,6 +714,18 @@ class AudioManager {
   }
 
   public playComboSound(comboCount: number): void {
+    if (this.useFallbackSounds) {
+      // Dynamic import for fallback
+      import("./DefaultSoundGenerator")
+        .then(({ defaultSoundGenerator }) => {
+          defaultSoundGenerator.playComboSound(comboCount);
+        })
+        .catch((error) => {
+          console.warn("Failed to load fallback sound generator:", error);
+        });
+      return;
+    }
+
     if (comboCount >= 5) {
       this.playSFX("combo_finish");
     } else if (comboCount >= 2) {
@@ -615,114 +737,94 @@ class AudioManager {
   public playMusic(id: MusicTrackId, fadeIn: boolean = true): void {
     if (this.state.muted) return;
 
+    // Stop current music if playing
+    if (this.currentMusic) {
+      this.stopMusic(fadeIn);
+    }
+
     const music = this.music.get(id);
     if (!music) {
       console.warn(`🔇 Music track not found: ${id}`);
       return;
     }
 
-    // Stop current music if playing
-    if (this.currentMusic && this.currentMusic.playing()) {
+    try {
       if (fadeIn) {
-        this.currentMusic.fade(
-          this.currentMusic.volume(),
+        music.volume(0);
+        const musicId = music.play();
+        music.fade(
           0,
-          AUDIO_CONFIG.FADE_DURATION
+          this.state.musicVolume,
+          AUDIO_CONFIG.FADE_DURATION,
+          musicId
         );
-        setTimeout(() => {
-          this.currentMusic?.stop();
-          this.startNewMusic(music, id, fadeIn);
-        }, AUDIO_CONFIG.FADE_DURATION);
       } else {
-        this.currentMusic.stop();
-        this.startNewMusic(music, id, fadeIn);
+        music.volume(this.state.musicVolume);
+        music.play();
       }
-    } else {
-      this.startNewMusic(music, id, fadeIn);
+
+      this.currentMusic = music;
+      this.state = { ...this.state, currentMusicTrack: id };
+    } catch (error) {
+      console.error(`❌ Failed to play music ${id}:`, error);
     }
-  }
-
-  private startNewMusic(music: Howl, id: MusicTrackId, fadeIn: boolean): void {
-    this.currentMusic = music;
-    this.currentMusicId = id;
-
-    if (fadeIn) {
-      music.volume(0);
-      music.play();
-      music.fade(
-        0,
-        MUSIC_TRACKS[id].volume * this.state.musicVolume,
-        AUDIO_CONFIG.FADE_DURATION
-      );
-    } else {
-      music.volume(MUSIC_TRACKS[id].volume * this.state.musicVolume);
-      music.play();
-    }
-
-    console.log(`🎵 Playing music: ${id} - ${MUSIC_TRACKS[id].description}`);
   }
 
   public stopMusic(fadeOut: boolean = true): void {
     if (!this.currentMusic) return;
 
-    if (fadeOut) {
-      this.currentMusic.fade(
-        this.currentMusic.volume(),
-        0,
-        AUDIO_CONFIG.FADE_DURATION
-      );
-      setTimeout(() => {
-        this.currentMusic?.stop();
+    try {
+      if (fadeOut) {
+        this.currentMusic.fade(
+          this.state.musicVolume,
+          0,
+          AUDIO_CONFIG.FADE_DURATION
+        );
+        setTimeout(() => {
+          this.currentMusic?.stop();
+          this.currentMusic = null;
+          this.state = { ...this.state, currentMusicTrack: null };
+        }, AUDIO_CONFIG.FADE_DURATION);
+      } else {
+        this.currentMusic.stop();
         this.currentMusic = null;
-        this.currentMusicId = null;
-      }, AUDIO_CONFIG.FADE_DURATION);
-    } else {
-      this.currentMusic.stop();
-      this.currentMusic = null;
-      this.currentMusicId = null;
+        this.state = { ...this.state, currentMusicTrack: null };
+      }
+    } catch (error) {
+      console.error("❌ Failed to stop music:", error);
     }
   }
 
   // Volume and state management
   public setMasterVolume(volume: number): void {
-    this.state = {
-      ...this.state,
-      masterVolume: Math.max(0, Math.min(1, volume)),
-    };
-    Howler.volume(this.state.masterVolume);
+    const clampedVolume = Math.max(0, Math.min(1, volume));
+    this.state = { ...this.state, masterVolume: clampedVolume };
+    Howler.volume(clampedVolume);
   }
 
   public setSFXVolume(volume: number): void {
-    this.state = { ...this.state, sfxVolume: Math.max(0, Math.min(1, volume)) };
+    const clampedVolume = Math.max(0, Math.min(1, volume));
+    this.state = { ...this.state, sfxVolume: clampedVolume };
+
+    // Update all loaded sound effects
     this.sounds.forEach((sound) => {
-      const baseVolume =
-        SOUND_EFFECTS[
-          Object.keys(SOUND_EFFECTS).find(
-            (key) => this.sounds.get(key as SoundEffectId) === sound
-          ) as SoundEffectId
-        ]?.volume || 0.5;
-      sound.volume(baseVolume * this.state.sfxVolume);
+      sound.volume(clampedVolume);
     });
   }
 
   public setMusicVolume(volume: number): void {
-    this.state = {
-      ...this.state,
-      musicVolume: Math.max(0, Math.min(1, volume)),
-    };
-    if (this.currentMusic && this.currentMusicId) {
-      const baseVolume = MUSIC_TRACKS[this.currentMusicId].volume;
-      this.currentMusic.volume(baseVolume * this.state.musicVolume);
+    const clampedVolume = Math.max(0, Math.min(1, volume));
+    this.state = { ...this.state, musicVolume: clampedVolume };
+
+    // Update current music if playing
+    if (this.currentMusic) {
+      this.currentMusic.volume(clampedVolume);
     }
   }
 
   public toggleMute(): void {
     this.state = { ...this.state, muted: !this.state.muted };
-    if (this.state.muted) {
-      Howler.mute(true);
-    } else {
-      Howler.mute(false);
-    }
+    Howler.mute(this.state.muted);
   }
 
   public getState(): AudioState {
@@ -731,12 +833,11 @@ class AudioManager {
 
   // Cleanup
   public cleanup(): void {
+    this.stopMusic(false);
     this.sounds.forEach((sound) => sound.unload());
     this.music.forEach((music) => music.unload());
     this.sounds.clear();
     this.music.clear();
-    this.currentMusic = null;
-    this.currentMusicId = null;
   }
 }
 
@@ -744,20 +845,6 @@ class AudioManager {
 export const audioManager = AudioManager.getInstance();
 
 // React hook for audio management
-export function useAudio() {
-  return {
-    playSFX: audioManager.playSFX.bind(audioManager),
-    playMusic: audioManager.playMusic.bind(audioManager),
-    stopMusic: audioManager.stopMusic.bind(audioManager),
-    playAttackSound: audioManager.playAttackSound.bind(audioManager),
-    playHitSound: audioManager.playHitSound.bind(audioManager),
-    playStanceChangeSound:
-      audioManager.playStanceChangeSound.bind(audioManager),
-    playComboSound: audioManager.playComboSound.bind(audioManager),
-    setMasterVolume: audioManager.setMasterVolume.bind(audioManager),
-    setSFXVolume: audioManager.setSFXVolume.bind(audioManager),
-    setMusicVolume: audioManager.setMusicVolume.bind(audioManager),
-    toggleMute: audioManager.toggleMute.bind(audioManager),
-    getState: audioManager.getState.bind(audioManager),
-  };
+export function useAudio(): AudioManager {
+  return audioManager;
 }

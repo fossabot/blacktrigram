@@ -1,334 +1,370 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-
-// Audio utility functions
-export const AudioUtils = {
-  /**
-   * Clamps a value between min and max
-   */
-  clamp: (value: number, min: number, max: number): number => {
-    return Math.min(Math.max(value, min), max);
-  },
-
-  /**
-   * Calculates volume based on damage for dynamic audio feedback
-   */
-  calculateDamageVolume: (damage: number, baseVolume: number = 0.7): number => {
-    const normalizedDamage = Math.min(damage / 50, 1); // Normalize to 0-1
-    const volumeMultiplier = 0.5 + normalizedDamage * 0.5; // Range: 0.5-1.0
-    return AudioUtils.clamp(baseVolume * volumeMultiplier, 0.1, 1.0);
-  },
-
-  /**
-   * Calculates pitch/rate based on damage for dynamic audio feedback
-   */
-  calculateDamageRate: (damage: number, baseRate: number = 1.0): number => {
-    const normalizedDamage = Math.min(damage / 50, 1);
-    const rateMultiplier = 0.8 + normalizedDamage * 0.6; // Range: 0.8-1.4
-    return AudioUtils.clamp(baseRate * rateMultiplier, 0.5, 2.0);
-  },
-
-  /**
-   * Gets appropriate combo sound based on combo count
-   */
-  getComboSoundName: (comboCount: number): string => {
-    if (comboCount >= 5) return "combo_5";
-    if (comboCount >= 3) return "combo_3";
-    return "combo_2";
-  },
-
-  /**
-   * Checks if browser supports Web Audio API
-   */
-  supportsWebAudio: (): boolean => {
-    return !!(window.AudioContext || (window as any).webkitAudioContext);
-  },
-
-  /**
-   * Checks if browser supports HTML5 Audio
-   */
-  supportsHTML5Audio: (): boolean => {
-    return !!window.Audio;
-  },
-
-  /**
-   * Gets the best audio format supported by the browser
-   */
-  getPreferredAudioFormat: (): "mp3" | "ogg" | "wav" => {
-    const audio = new Audio();
-
-    if (audio.canPlayType('audio/ogg; codecs="vorbis"')) {
-      return "ogg";
-    } else if (audio.canPlayType("audio/mpeg")) {
-      return "mp3";
-    } else {
-      return "wav";
-    }
-  },
-
-  /**
-   * Creates audio source array for Howler.js with fallbacks
-   */
-  createAudioSources: (basePath: string, filename: string): string[] => {
-    return [
-      `${basePath}/${filename}.mp3`,
-      `${basePath}/${filename}.ogg`,
-      `${basePath}/${filename}.wav`,
-    ];
-  },
-
-  /**
-   * Validates audio options
-   */
-  validateAudioOptions: (options: any): boolean => {
-    if (typeof options !== "object" || options === null) return false;
-
-    if (
-      options.volume !== undefined &&
-      (typeof options.volume !== "number" ||
-        options.volume < 0 ||
-        options.volume > 1)
-    ) {
-      return false;
-    }
-
-    if (
-      options.rate !== undefined &&
-      (typeof options.rate !== "number" ||
-        options.rate < 0.1 ||
-        options.rate > 4)
-    ) {
-      return false;
-    }
-
-    if (
-      options.delay !== undefined &&
-      (typeof options.delay !== "number" || options.delay < 0)
-    ) {
-      return false;
-    }
-
-    return true;
-  },
-};
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { AudioUtils } from "../AudioUtils";
 
 // Mock Audio constructor for testing
-const mockAudio = {
+const mockAudioElement = {
   canPlayType: vi.fn(),
-};
+  src: "",
+  preload: "auto",
+  crossOrigin: "anonymous",
+  play: vi.fn().mockResolvedValue(undefined),
+  pause: vi.fn(),
+  load: vi.fn(),
+  currentTime: 0,
+  duration: 0,
+  volume: 1,
+  muted: false,
+  ended: false,
+  paused: true,
+  readyState: 0,
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+  dispatchEvent: vi.fn(),
+} as const;
 
-Object.defineProperty(window, "Audio", {
-  writable: true,
-  value: vi.fn(() => mockAudio),
-});
+// Mock window.Audio constructor
+const MockAudio = vi.fn(() => mockAudioElement);
+
+// Store original values for proper restoration
+const originalAudio = global.Audio;
+const originalWindow = global.window;
 
 describe("AudioUtils", () => {
   beforeEach(() => {
+    // Reset all mocks before each test
     vi.clearAllMocks();
-  });
 
-  describe("clamp", () => {
-    it("should clamp values within range", () => {
-      expect(AudioUtils.clamp(0.5, 0, 1)).toBe(0.5);
-    });
+    // Mock global Audio constructor
+    global.Audio = MockAudio as any;
 
-    it("should clamp values below minimum", () => {
-      expect(AudioUtils.clamp(-0.5, 0, 1)).toBe(0);
-    });
-
-    it("should clamp values above maximum", () => {
-      expect(AudioUtils.clamp(1.5, 0, 1)).toBe(1);
-    });
-
-    it("should handle edge cases", () => {
-      expect(AudioUtils.clamp(0, 0, 1)).toBe(0);
-      expect(AudioUtils.clamp(1, 0, 1)).toBe(1);
+    // Mock window object for browser environment tests
+    Object.defineProperty(global, "window", {
+      value: {
+        Audio: MockAudio,
+      },
+      writable: true,
+      configurable: true,
     });
   });
 
-  describe("calculateDamageVolume", () => {
-    it("should calculate volume based on damage", () => {
-      // Low damage should give lower volume
-      const lowDamageVolume = AudioUtils.calculateDamageVolume(10, 0.7);
-      expect(lowDamageVolume).toBeGreaterThan(0.35);
-      expect(lowDamageVolume).toBeLessThan(0.7);
+  afterEach(() => {
+    // Restore original Audio constructor
+    global.Audio = originalAudio;
 
-      // High damage should give higher volume
-      const highDamageVolume = AudioUtils.calculateDamageVolume(40, 0.7);
-      expect(highDamageVolume).toBeGreaterThan(lowDamageVolume);
-      expect(highDamageVolume).toBeLessThanOrEqual(0.7);
-    });
-
-    it("should respect base volume", () => {
-      const volume1 = AudioUtils.calculateDamageVolume(25, 0.5);
-      const volume2 = AudioUtils.calculateDamageVolume(25, 0.8);
-
-      expect(volume2).toBeGreaterThan(volume1);
-    });
-
-    it("should clamp to valid range", () => {
-      const volume = AudioUtils.calculateDamageVolume(0, 1.0);
-      expect(volume).toBeGreaterThanOrEqual(0.1);
-      expect(volume).toBeLessThanOrEqual(1.0);
-    });
-  });
-
-  describe("calculateDamageRate", () => {
-    it("should calculate rate based on damage", () => {
-      const lowDamageRate = AudioUtils.calculateDamageRate(5, 1.0);
-      const highDamageRate = AudioUtils.calculateDamageRate(45, 1.0);
-
-      expect(highDamageRate).toBeGreaterThan(lowDamageRate);
-    });
-
-    it("should respect base rate", () => {
-      const rate1 = AudioUtils.calculateDamageRate(25, 0.8);
-      const rate2 = AudioUtils.calculateDamageRate(25, 1.2);
-
-      expect(rate2).toBeGreaterThan(rate1);
-    });
-
-    it("should clamp to valid range", () => {
-      const rate = AudioUtils.calculateDamageRate(100, 2.0);
-      expect(rate).toBeGreaterThanOrEqual(0.5);
-      expect(rate).toBeLessThanOrEqual(2.0);
-    });
-  });
-
-  describe("getComboSoundName", () => {
-    it("should return appropriate combo sound names", () => {
-      expect(AudioUtils.getComboSoundName(1)).toBe("combo_2");
-      expect(AudioUtils.getComboSoundName(2)).toBe("combo_2");
-      expect(AudioUtils.getComboSoundName(3)).toBe("combo_3");
-      expect(AudioUtils.getComboSoundName(4)).toBe("combo_3");
-      expect(AudioUtils.getComboSoundName(5)).toBe("combo_5");
-      expect(AudioUtils.getComboSoundName(10)).toBe("combo_5");
-    });
-  });
-
-  describe("supportsWebAudio", () => {
-    it("should detect Web Audio API support", () => {
-      // Mock AudioContext
-      Object.defineProperty(window, "AudioContext", {
+    // Restore original window object
+    if (originalWindow) {
+      global.window = originalWindow;
+    } else {
+      // Only delete if it was originally undefined
+      Object.defineProperty(global, "window", {
+        value: undefined,
         writable: true,
-        value: vi.fn(),
+        configurable: true,
       });
-
-      expect(AudioUtils.supportsWebAudio()).toBe(true);
-
-      // Remove AudioContext but add webkitAudioContext
-      // @ts-expect-error - Testing undefined AudioContext
-      window.AudioContext = undefined;
-      (window as any).webkitAudioContext = vi.fn();
-
-      expect(AudioUtils.supportsWebAudio()).toBe(true);
-
-      // Remove both
-      (window as any).webkitAudioContext = undefined;
-      expect(AudioUtils.supportsWebAudio()).toBe(false);
-    });
-  });
-
-  describe("supportsHTML5Audio", () => {
-    it("should detect HTML5 Audio support", () => {
-      expect(AudioUtils.supportsHTML5Audio()).toBe(true);
-
-      // Mock unsupported browser
-      const originalAudio = window.Audio;
-      // @ts-expect-error - Testing undefined Audio
-      window.Audio = undefined;
-
-      expect(AudioUtils.supportsHTML5Audio()).toBe(false);
-
-      // Restore
-      window.Audio = originalAudio;
-    });
+    }
   });
 
   describe("getPreferredAudioFormat", () => {
-    it("should prefer OGG when supported", () => {
-      mockAudio.canPlayType.mockImplementation((type: string) => {
-        if (type.includes("ogg")) return "probably";
-        if (type.includes("mpeg")) return "maybe";
+    it("should return 'ogg' when browser supports OGG Vorbis", () => {
+      // Arrange
+      mockAudioElement.canPlayType.mockImplementation((type: string) => {
+        if (type === "audio/ogg; codecs=vorbis") return "probably";
         return "";
       });
 
-      expect(AudioUtils.getPreferredAudioFormat()).toBe("ogg");
+      // Act
+      const format = AudioUtils.getPreferredAudioFormat();
+
+      // Assert
+      expect(format).toBe("ogg");
+      expect(mockAudioElement.canPlayType).toHaveBeenCalledWith(
+        "audio/ogg; codecs=vorbis"
+      );
     });
 
-    it("should fallback to MP3 when OGG not supported", () => {
-      mockAudio.canPlayType.mockImplementation((type: string) => {
-        if (type.includes("ogg")) return "";
-        if (type.includes("mpeg")) return "probably";
+    it("should return 'mp3' when browser supports MP3 but not OGG", () => {
+      // Arrange
+      mockAudioElement.canPlayType.mockImplementation((type: string) => {
+        if (type === "audio/ogg; codecs=vorbis") return "";
+        if (type === "audio/mpeg") return "probably";
         return "";
       });
 
-      expect(AudioUtils.getPreferredAudioFormat()).toBe("mp3");
+      // Act
+      const format = AudioUtils.getPreferredAudioFormat();
+
+      // Assert
+      expect(format).toBe("mp3");
+      expect(mockAudioElement.canPlayType).toHaveBeenCalledWith(
+        "audio/ogg; codecs=vorbis"
+      );
+      expect(mockAudioElement.canPlayType).toHaveBeenCalledWith("audio/mpeg");
     });
 
-    it("should fallback to WAV when neither supported", () => {
-      mockAudio.canPlayType.mockReturnValue("");
+    it("should return 'mp3' as fallback when no preferred formats are supported", () => {
+      // Arrange
+      mockAudioElement.canPlayType.mockReturnValue("");
 
-      expect(AudioUtils.getPreferredAudioFormat()).toBe("wav");
+      // Act
+      const format = AudioUtils.getPreferredAudioFormat();
+
+      // Assert
+      expect(format).toBe("mp3"); // Updated to match implementation
+    });
+
+    it("should return 'ogg' when running in non-browser environment (SSR)", () => {
+      // Arrange - Temporarily undefine window
+      Object.defineProperty(global, "window", {
+        value: undefined,
+        writable: true,
+        configurable: true,
+      });
+
+      // Act
+      const format = AudioUtils.getPreferredAudioFormat();
+
+      // Assert
+      expect(format).toBe("ogg");
     });
   });
 
-  describe("createAudioSources", () => {
-    it("should create audio source array with all formats", () => {
-      const sources = AudioUtils.createAudioSources(
-        "/audio/music",
-        "combat_theme"
-      );
+  describe("createAudioElement", () => {
+    it("should create audio element with correct src and preload settings", () => {
+      // Arrange
+      const testSrc = "https://example.com/test-audio.mp3";
 
-      expect(sources).toEqual([
-        "/audio/music/combat_theme.mp3",
-        "/audio/music/combat_theme.ogg",
-        "/audio/music/combat_theme.wav",
-      ]);
+      // Act
+      const audioElement = AudioUtils.createAudioElement(testSrc);
+
+      // Assert
+      expect(MockAudio).toHaveBeenCalledTimes(1);
+      expect(audioElement.src).toBe(testSrc);
+      expect(audioElement.preload).toBe("auto");
+      expect(audioElement.crossOrigin).toBe("anonymous");
     });
 
-    it("should handle different base paths", () => {
-      const sources = AudioUtils.createAudioSources(
-        "/sounds/sfx",
-        "menu_select"
-      );
+    it("should create audio element with Korean martial arts sound file path", () => {
+      // Arrange
+      const koreanAudioSrc = "./assets/audio/sfx/korean_attack_천둥벽력.ogg";
 
-      expect(sources).toEqual([
-        "/sounds/sfx/menu_select.mp3",
-        "/sounds/sfx/menu_select.ogg",
-        "/sounds/sfx/menu_select.wav",
-      ]);
+      // Act
+      const audioElement = AudioUtils.createAudioElement(koreanAudioSrc);
+
+      // Assert
+      expect(audioElement.src).toBe(koreanAudioSrc);
+      expect(audioElement.preload).toBe("auto");
     });
   });
 
-  describe("validateAudioOptions", () => {
-    it("should validate correct options", () => {
-      expect(AudioUtils.validateAudioOptions({})).toBe(true);
-      expect(AudioUtils.validateAudioOptions({ volume: 0.5 })).toBe(true);
-      expect(AudioUtils.validateAudioOptions({ rate: 1.2 })).toBe(true);
-      expect(AudioUtils.validateAudioOptions({ delay: 100 })).toBe(true);
-      expect(
-        AudioUtils.validateAudioOptions({
-          volume: 0.8,
-          rate: 1.5,
-          delay: 200,
-        })
-      ).toBe(true);
+  describe("calculateVolume", () => {
+    it("should return 1.0 when distance is 0 (closest)", () => {
+      // Act
+      const volume = AudioUtils.calculateVolume(0, 100);
+
+      // Assert
+      expect(volume).toBe(1.0);
     });
 
-    it("should reject invalid options", () => {
-      expect(AudioUtils.validateAudioOptions(null)).toBe(false);
-      expect(AudioUtils.validateAudioOptions("invalid")).toBe(false);
-      expect(AudioUtils.validateAudioOptions({ volume: -0.1 })).toBe(false);
-      expect(AudioUtils.validateAudioOptions({ volume: 1.1 })).toBe(false);
-      expect(AudioUtils.validateAudioOptions({ rate: 0.05 })).toBe(false);
-      expect(AudioUtils.validateAudioOptions({ rate: 5 })).toBe(false);
-      expect(AudioUtils.validateAudioOptions({ delay: -10 })).toBe(false);
+    it("should return 0.0 when distance equals maxDistance (furthest)", () => {
+      // Act
+      const volume = AudioUtils.calculateVolume(100, 100);
+
+      // Assert
+      expect(volume).toBe(0.0);
     });
 
-    it("should handle non-number values", () => {
-      expect(AudioUtils.validateAudioOptions({ volume: "loud" })).toBe(false);
-      expect(AudioUtils.validateAudioOptions({ rate: "fast" })).toBe(false);
-      expect(AudioUtils.validateAudioOptions({ delay: "soon" })).toBe(false);
+    it("should return 0.5 when distance is half of maxDistance", () => {
+      // Act
+      const volume = AudioUtils.calculateVolume(50, 100);
+
+      // Assert
+      expect(volume).toBe(0.5);
+    });
+
+    it("should handle Korean martial arts combat distances correctly", () => {
+      // Arrange: Testing typical dojang combat ranges
+      const closeRange = 30; // Close quarter combat
+      const mediumRange = 80; // Medium range techniques
+      const maxRange = 120; // Maximum technique range
+
+      // Act
+      const closeVolume = AudioUtils.calculateVolume(closeRange, maxRange);
+      const mediumVolume = AudioUtils.calculateVolume(mediumRange, maxRange);
+
+      // Assert
+      expect(closeVolume).toBeCloseTo(0.75, 2);
+      expect(mediumVolume).toBeCloseTo(0.333, 2);
+    });
+
+    it("should clamp negative distances to 0 volume", () => {
+      // Act
+      const volume = AudioUtils.calculateVolume(-10, 100);
+
+      // Assert
+      expect(volume).toBe(0);
+    });
+  });
+
+  describe("formatAudioTime", () => {
+    it("should format whole minutes correctly", () => {
+      // Act
+      const formatted = AudioUtils.formatAudioTime(120);
+
+      // Assert
+      expect(formatted).toBe("2:00");
+    });
+
+    it("should format mixed minutes and seconds correctly", () => {
+      // Act
+      const formatted = AudioUtils.formatAudioTime(85);
+
+      // Assert
+      expect(formatted).toBe("1:25");
+    });
+
+    it("should pad single digit seconds with zero", () => {
+      // Act
+      const formatted = AudioUtils.formatAudioTime(65);
+
+      // Assert
+      expect(formatted).toBe("1:05");
+    });
+
+    it("should handle zero seconds", () => {
+      // Act
+      const formatted = AudioUtils.formatAudioTime(0);
+
+      // Assert
+      expect(formatted).toBe("0:00");
+    });
+
+    it("should handle negative values by treating as zero", () => {
+      // Act
+      const formatted = AudioUtils.formatAudioTime(-30);
+
+      // Assert
+      expect(formatted).toBe("0:00");
+    });
+  });
+
+  describe("Korean Martial Arts Specific Tests", () => {
+    it("should calculate appropriate volumes for dojang spatial audio", () => {
+      // Arrange: Korean dojang dimensions (typical training hall)
+      const dorangMaxWidth = 200; // 20 meters
+      const dorangMaxHeight = 150; // 15 meters
+      const maxAudioDistance = Math.sqrt(
+        dorangMaxWidth ** 2 + dorangMaxHeight ** 2
+      );
+
+      // Act: Test different positions in the dojang
+      const centerVolume = AudioUtils.calculateVolume(0, maxAudioDistance);
+      const nearWallVolume = AudioUtils.calculateVolume(100, maxAudioDistance);
+      const farCornerVolume = AudioUtils.calculateVolume(
+        maxAudioDistance,
+        maxAudioDistance
+      );
+
+      // Assert
+      expect(centerVolume).toBe(1.0);
+      expect(nearWallVolume).toBeGreaterThan(0.5);
+      expect(farCornerVolume).toBe(0.0);
+    });
+
+    it("should format Korean martial arts match times correctly", () => {
+      // Arrange: Standard Korean martial arts competition times
+      const roundDuration = 90; // 1.5 minutes per round
+      const breakDuration = 30; // 30 seconds between rounds
+      const totalMatchTime = roundDuration * 3 + breakDuration * 2; // 3 rounds + 2 breaks
+
+      // Act
+      const roundFormatted = AudioUtils.formatAudioTime(roundDuration);
+      const breakFormatted = AudioUtils.formatAudioTime(breakDuration);
+      const totalFormatted = AudioUtils.formatAudioTime(totalMatchTime);
+
+      // Assert
+      expect(roundFormatted).toBe("1:30");
+      expect(breakFormatted).toBe("0:30");
+      expect(totalFormatted).toBe("5:30");
+    });
+
+    it("should validate Korean martial arts audio file paths", () => {
+      // Arrange
+      const validPaths = [
+        "./assets/audio/sfx/천둥벽력_attack.ogg",
+        "./assets/audio/sfx/화염지창_strike.mp3",
+        "./assets/audio/music/도장_background.wav",
+      ];
+
+      const invalidPaths = [
+        "./assets/images/sprite.png",
+        "./assets/data/config.json",
+        "invalid-file",
+      ];
+
+      // Act & Assert
+      validPaths.forEach((path) => {
+        expect(AudioUtils.isValidAudioUrl(path)).toBe(true);
+      });
+
+      invalidPaths.forEach((path) => {
+        expect(AudioUtils.isValidAudioUrl(path)).toBe(false);
+      });
+    });
+
+    it("should generate correct Korean technique audio paths", () => {
+      // Act
+      const attackPath = AudioUtils.generateKoreanTechniqueAudioPath(
+        "천둥벽력",
+        "attack",
+        "ogg"
+      );
+      const hitPath = AudioUtils.generateKoreanTechniqueAudioPath(
+        "화염지창",
+        "hit",
+        "mp3"
+      );
+
+      // Assert
+      expect(attackPath).toBe("./assets/audio/sfx/attack_천둥벽력.ogg");
+      expect(hitPath).toBe("./assets/audio/sfx/hit_화염지창.mp3");
+    });
+
+    it("should calculate technique audio parameters correctly", () => {
+      // Act
+      const lightParams = AudioUtils.calculateTechniqueAudioParams(15, false);
+      const vitalParams = AudioUtils.calculateTechniqueAudioParams(40, true);
+
+      // Assert
+      expect(lightParams.volume).toBeCloseTo(0.39, 2);
+      expect(lightParams.pitch).toBeCloseTo(0.86, 2);
+      expect(vitalParams.pitch).toBe(1.3);
+      expect(vitalParams.duration).toBe(0.3);
+    });
+  });
+
+  describe("Error Handling", () => {
+    it("should handle Audio constructor throwing error gracefully", () => {
+      // Arrange
+      const ThrowingAudio = vi.fn(() => {
+        throw new Error("Audio constructor failed");
+      });
+      global.Audio = ThrowingAudio as any;
+
+      // Act & Assert
+      expect(() => {
+        AudioUtils.createAudioElement("test.mp3");
+      }).toThrow("Audio constructor failed");
+    });
+
+    it("should handle invalid technique names gracefully", () => {
+      // Act
+      const path = AudioUtils.generateKoreanTechniqueAudioPath(
+        "invalid/technique!@#",
+        "attack"
+      );
+
+      // Assert
+      expect(path).toBe("./assets/audio/sfx/attack_invalid_technique___.ogg");
     });
   });
 });
