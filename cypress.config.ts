@@ -37,19 +37,63 @@ export default defineConfig({
       runMode: 1,
       openMode: 0,
     },
-    defaultCommandTimeout: 8000,
+    defaultCommandTimeout: 4000,
     chromeWebSecurity: false,
     video: true,
     videosFolder: "cypress/videos",
     screenshotsFolder: "cypress/screenshots",
     downloadsFolder: "cypress/downloads",
     fixturesFolder: "cypress/fixtures",
-    responseTimeout: 10000,
+    responseTimeout: 5000,
     setupNodeEvents(
       on: Cypress.PluginEvents,
       config: Cypress.PluginConfigOptions
     ): Cypress.PluginConfigOptions {
-      // Add any plugins here if needed
+      // Configure browser launch options for WebGL
+      on("before:browser:launch", (browser, launchOptions) => {
+        // Add flags to improve WebGL performance
+        if (browser.family === "chromium") {
+          launchOptions.args.push("--enable-unsafe-webgl");
+          launchOptions.args.push("--enable-webgl-draft-extensions");
+          launchOptions.args.push("--enable-unsafe-swiftshader");
+          launchOptions.args.push("--disable-web-security");
+          launchOptions.args.push("--disable-features=VizDisplayCompositor");
+
+          // Silence WebGL warnings
+          launchOptions.args.push("--disable-logging");
+          launchOptions.args.push("--silent");
+          launchOptions.args.push("--log-level=3");
+
+          // Performance improvements
+          launchOptions.args.push("--js-flags=--expose-gc");
+          launchOptions.args.push("--disable-dev-shm-usage");
+          launchOptions.args.push("--no-sandbox");
+        }
+        return launchOptions;
+      });
+
+      // Custom task for aborting tests early (fail-fast pattern)
+      let shouldAbortTests = false;
+
+      on("task", {
+        // Task to record test failures
+        recordFailure() {
+          shouldAbortTests = true;
+          return null;
+        },
+
+        // Task to check if we should abort the run
+        shouldAbort() {
+          return shouldAbortTests;
+        },
+
+        // Task to reset the abort flag (for test cleanup)
+        resetAbortFlag() {
+          shouldAbortTests = false;
+          return null;
+        },
+      });
+
       return config;
     },
   },
@@ -58,27 +102,9 @@ export default defineConfig({
       framework: "react",
       bundler: "vite",
     },
+    viewportWidth: 1280,
+    viewportHeight: 720,
     specPattern: "src/**/*.cy.{js,jsx,ts,tsx}",
-    supportFile: "cypress/support/component.ts",
-    setupNodeEvents(on, config) {
-      // implement node event listeners here
-      on("before:browser:launch", (browser, launchOptions) => {
-        if (browser.family === "chromium" && browser.name !== "electron") {
-          // Add flags to suppress WebGL warnings and enable software rendering
-          launchOptions.args.push("--enable-unsafe-swiftshader");
-          launchOptions.args.push("--disable-web-security");
-          launchOptions.args.push("--disable-features=VizDisplayCompositor");
-          launchOptions.args.push("--disable-gpu");
-          launchOptions.args.push("--no-sandbox");
-          launchOptions.args.push("--disable-dev-shm-usage");
-          // Suppress specific WebGL warnings
-          launchOptions.args.push("--disable-logging");
-          launchOptions.args.push("--silent");
-          launchOptions.args.push("--log-level=3");
-        }
-        return launchOptions;
-      });
-    },
-    indexHtmlFile: "cypress/support/component-index.html",
+    experimentalMemoryManagement: true,
   },
 });

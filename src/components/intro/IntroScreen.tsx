@@ -1,36 +1,15 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import type { JSX } from "react";
 import { useAudio } from "../../audio/AudioManager";
 import { useTexture } from "../../hooks/useTexture";
-import type { Texture, Graphics as PixiGraphics } from "pixi.js"; // Ensure Graphics is typed as PixiGraphics
+import type { Graphics as PixiGraphics } from "pixi.js";
 
 // Type definitions
 type SelectedOption = "sparring" | "training";
 
-interface TrigramSymbolDef {
-  readonly name: string;
-  readonly korean: string;
-  readonly symbol: string;
-  readonly meaning: string;
-  readonly icon: string;
-  readonly combatStyle: string;
-  readonly x: number;
-  readonly y: number;
-  readonly alpha: number;
-}
-
 export interface IntroScreenProps {
   readonly onStartGame: () => void;
   readonly onStartTraining: () => void;
-}
-
-interface MenuButtonProps {
-  readonly isSelected: boolean;
-  readonly time: number;
-  readonly onSelect: () => void;
-  readonly title: string;
-  readonly subtitle: string;
-  readonly keyBinding: string;
 }
 
 // Constants
@@ -42,11 +21,10 @@ const COLORS = {
   ACCENT_BLUE: 0x004455,
   GRID_DARK: 0x003333,
   RED: 0x8b0000,
-  GRAY_LIGHT: 0x888888,
   GRAY_MEDIUM: 0x666666,
   GRAY_DARK: 0x444444,
   GRAY_DARKER: 0x999999,
-  GRAY_TEXT: 0xcccccc,
+  GRAY_LIGHT: 0xcccccc, // Added missing color
   CYAN_LIGHT: 0x7accd4,
   DARK_PANEL: 0x10171e,
 } as const;
@@ -58,111 +36,18 @@ export function IntroScreen({
   onStartGame,
   onStartTraining,
 }: IntroScreenProps): JSX.Element {
-  const [hoveredTrigram, setHoveredTrigram] = useState<string | null>(null);
   const [time, setTime] = useState<number>(0);
   const [selectedOption, setSelectedOption] =
     useState<SelectedOption>("sparring");
   const [initialized, setInitialized] = useState<boolean>(false);
   const audio = useAudio();
-  const { texture: logoTexture } = useTexture("/dark-trigram-256.png");
 
-  const trigrams = useMemo(
-    (): readonly TrigramSymbolDef[] => [
-      {
-        name: "Geon",
-        korean: "건",
-        symbol: "☰",
-        meaning: "Heaven",
-        icon: "🔥",
-        combatStyle: "Power Strikes",
-        x: window.innerWidth / 2,
-        y: 120,
-        alpha: 0.9,
-      },
-      {
-        name: "Tae",
-        korean: "태",
-        symbol: "☱",
-        meaning: "Lake",
-        icon: "🌊",
-        combatStyle: "Flowing Combos",
-        x: window.innerWidth / 2 + 220,
-        y: 180,
-        alpha: 0.9,
-      },
-      {
-        name: "Li",
-        korean: "리",
-        symbol: "☲",
-        meaning: "Fire",
-        icon: "⚡",
-        combatStyle: "Fast Attacks",
-        x: window.innerWidth / 2 + 280,
-        y: window.innerHeight / 2,
-        alpha: 0.9,
-      },
-      {
-        name: "Jin",
-        korean: "진",
-        symbol: "☳",
-        meaning: "Thunder",
-        icon: "💥",
-        combatStyle: "Explosive Bursts",
-        x: window.innerWidth / 2 + 220,
-        y: window.innerHeight / 2 + 220,
-        alpha: 0.9,
-      },
-      {
-        name: "Son",
-        korean: "손",
-        symbol: "☴",
-        meaning: "Wind",
-        icon: "🌪️",
-        combatStyle: "Continuous Pressure",
-        x: window.innerWidth / 2,
-        y: window.innerHeight - 120,
-        alpha: 0.9,
-      },
-      {
-        name: "Gam",
-        korean: "감",
-        symbol: "☵",
-        meaning: "Water",
-        icon: "🛡️",
-        combatStyle: "Evasion & Counters",
-        x: window.innerWidth / 2 - 220,
-        y: window.innerHeight / 2 + 220,
-        alpha: 0.9,
-      },
-      {
-        name: "Gan",
-        korean: "간",
-        symbol: "☶",
-        meaning: "Mountain",
-        icon: "🗿",
-        combatStyle: "Immovable Defense",
-        x: window.innerWidth / 2 - 280,
-        y: window.innerHeight / 2,
-        alpha: 0.9,
-      },
-      {
-        name: "Gon",
-        korean: "곤",
-        symbol: "☷",
-        meaning: "Earth",
-        icon: "🤜",
-        combatStyle: "Throws & Takedowns",
-        x: window.innerWidth / 2 - 220,
-        y: 180,
-        alpha: 0.9,
-      },
-    ],
-    []
-  );
+  // Updated to use black-trigram consistently
+  const { texture: logoTexture } = useTexture("/black-trigram-256.png");
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setTime((prev) => prev + 0.016); // ~60fps
+      setTime((prev) => prev + 0.016);
     }, 16);
 
     if (!initialized) {
@@ -239,56 +124,13 @@ export function IntroScreen({
     }
   }, []);
 
-  const drawTrigramLines = useCallback(
-    (graphics: PixiGraphics) => {
-      graphics.clear();
-      trigrams.forEach((trigram) => {
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight / 2;
-        const alpha =
-          0.15 + Math.sin(time + trigrams.indexOf(trigram) * 0.8) * 0.1;
-        const isHovered = hoveredTrigram === trigram.name;
-
-        graphics.setStrokeStyle({
-          color: isHovered ? COLORS.RED : 0x333333,
-          width: isHovered ? 2 : 1,
-          alpha: isHovered ? 0.6 : alpha,
-        });
-
-        graphics.moveTo(centerX, centerY);
-        graphics.lineTo(trigram.x, trigram.y);
-        graphics.stroke();
-
-        if (isHovered) {
-          const steps = 5;
-          for (let i = 1; i < steps; i++) {
-            const t = i / steps;
-            const dotX = centerX + (trigram.x - centerX) * t;
-            const dotY = centerY + (trigram.y - centerY) * t;
-            graphics.setFillStyle({ color: COLORS.RED, alpha: 0.8 });
-            graphics.circle(dotX, dotY, 2);
-            graphics.fill();
-          }
-        }
-      });
-    },
-    [time, trigrams, hoveredTrigram]
-  );
-
   return (
     <pixiContainer>
       <pixiGraphics draw={drawBackground} />
-      <pixiGraphics draw={drawTrigramLines} />
 
-      <GameLogo logoTexture={logoTexture} />
+      <BlackTrigramLogo logoTexture={logoTexture} />
       <GameSubtitle />
-      <CenterCircle time={time} />
-      <TrigramSymbols
-        trigrams={trigrams}
-        hoveredTrigram={hoveredTrigram}
-        onTrigramHover={setHoveredTrigram}
-        audio={audio}
-      />
+      <CenterCircleWithSymbols time={time} />
       <PhilosophyText />
       <ControlsText />
       <MenuButtons
@@ -303,61 +145,72 @@ export function IntroScreen({
   );
 }
 
-function GameLogo({
-  logoTexture,
-}: {
-  logoTexture: Texture | null;
-}): JSX.Element {
+function BlackTrigramLogo({ logoTexture }: { logoTexture: any }): JSX.Element {
   return (
-    <pixiContainer x={window.innerWidth / 2} y={window.innerHeight / 2 - 250}>
+    <pixiContainer x={window.innerWidth / 2} y={window.innerHeight / 2 - 200}>
       <pixiGraphics
         draw={(g: PixiGraphics) => {
           g.clear();
           g.setFillStyle({ color: COLORS.DARK_BLUE, alpha: 0.95 });
-          g.roundRect(-270, -70, 540, 140, 20);
+          g.roundRect(-300, -100, 600, 200, 25);
           g.fill();
 
           g.setStrokeStyle({ color: COLORS.CYAN, width: 3 });
-          g.roundRect(-270, -70, 540, 140, 20);
+          g.roundRect(-300, -100, 600, 200, 25);
           g.stroke();
 
           g.setStrokeStyle({ color: COLORS.CYAN, width: 1, alpha: 0.7 });
-          g.roundRect(-260, -60, 520, 120, 16);
+          g.roundRect(-290, -90, 580, 180, 20);
           g.stroke();
 
+          // Corner accents
           g.setStrokeStyle({ color: COLORS.CYAN, width: 1, alpha: 0.4 });
-          g.moveTo(-270, -30);
-          g.lineTo(-220, -70);
-          g.moveTo(270, -30);
-          g.lineTo(220, -70);
+          g.moveTo(-300, -60);
+          g.lineTo(-250, -100);
+          g.moveTo(300, -60);
+          g.lineTo(250, -100);
           g.stroke();
         }}
       />
 
+      {/* Prominent Black Trigram logo */}
       {logoTexture && (
         <pixiSprite
           texture={logoTexture}
-          scale={{ x: 0.35, y: 0.35 }}
+          scale={{ x: 0.5, y: 0.5 }}
           anchor={{ x: 0.5, y: 0.5 }}
-          y={-10}
+          y={-30}
           alpha={0.9}
         />
       )}
 
+      {/* Updated title to use Black Trigram consistently */}
       <pixiText
         text="🥋 흑괘 무술 도장 🥋"
         anchor={{ x: 0.5, y: 0.5 }}
-        y={40}
+        y={60}
         style={{
           fontFamily: "Orbitron, Noto Sans KR",
-          fontSize: 28,
+          fontSize: 32,
           fill: COLORS.WHITE,
           fontWeight: "400",
           dropShadow: {
             color: COLORS.CYAN,
-            blur: 6,
+            blur: 8,
             distance: 0,
           },
+        }}
+      />
+
+      <pixiText
+        text="BLACK TRIGRAM MARTIAL ARTS DOJANG"
+        anchor={{ x: 0.5, y: 0.5 }}
+        y={85}
+        style={{
+          fontFamily: "Orbitron",
+          fontSize: 16,
+          fill: COLORS.CYAN_LIGHT,
+          letterSpacing: 2,
         }}
       />
     </pixiContainer>
@@ -370,7 +223,7 @@ function GameSubtitle(): JSX.Element {
       <pixiText
         text="🎯 정격자 · ⚔️ 비수 · 🥷 암살자 · 💀 급소격 · 🏯 도장"
         x={window.innerWidth / 2}
-        y={window.innerHeight / 2 - 120}
+        y={window.innerHeight / 2 - 80}
         anchor={{ x: 0.5, y: 0.5 }}
         style={{
           fontFamily: "Noto Sans KR",
@@ -383,7 +236,7 @@ function GameSubtitle(): JSX.Element {
       <pixiText
         text="🎯 Precision Attacker · ⚔️ Lethal Blade · 🥷 Assassin · 💀 Vital Strike · 🏯 Dojang"
         x={window.innerWidth / 2}
-        y={window.innerHeight / 2 - 95}
+        y={window.innerHeight / 2 - 55}
         anchor={{ x: 0.5, y: 0.5 }}
         style={{
           fontFamily: "monospace",
@@ -396,163 +249,82 @@ function GameSubtitle(): JSX.Element {
   );
 }
 
-function CenterCircle({ time }: { time: number }): JSX.Element {
+function CenterCircleWithSymbols({ time }: { time: number }): JSX.Element {
   const drawCenterCircle = useCallback(
     (graphics: PixiGraphics) => {
       graphics.clear();
+      const centerX = 0;
+      const centerY = 0;
+
+      // Main circle
       graphics.setStrokeStyle({ color: COLORS.CYAN, width: 4 });
-      graphics.circle(0, 0, 140);
+      graphics.circle(centerX, centerY, 120);
       graphics.stroke();
 
       graphics.setStrokeStyle({ color: COLORS.CYAN, width: 2, alpha: 0.7 });
-      graphics.circle(0, 0, 120);
+      graphics.circle(centerX, centerY, 100);
       graphics.stroke();
 
+      // Pulsing center
       const pulse = Math.sin(time * 1.5) * 0.4 + 0.6;
       graphics.setFillStyle({ color: COLORS.CYAN, alpha: pulse });
-      graphics.circle(0, 0, 12);
+      graphics.circle(centerX, centerY, 15);
       graphics.fill();
+
+      // 8 trigram symbols around the circle
+      const trigrams = ["☰", "☱", "☲", "☳", "☴", "☵", "☶", "☷"];
+      const radius = 140;
+
+      trigrams.forEach((_, index) => {
+        const angle = (index * Math.PI * 2) / 8 - Math.PI / 2;
+        const x = Math.cos(angle) * radius;
+        const y = Math.sin(angle) * radius;
+
+        const symbolPulse = Math.sin(time * 0.8 + index * 0.5) * 0.3 + 0.7;
+
+        // Symbol background
+        graphics.setFillStyle({ color: COLORS.DARK_BLUE, alpha: 0.8 });
+        graphics.circle(x, y, 25);
+        graphics.fill();
+
+        graphics.setStrokeStyle({
+          color: COLORS.CYAN,
+          width: 1,
+          alpha: symbolPulse,
+        });
+        graphics.circle(x, y, 25);
+        graphics.stroke();
+      });
     },
     [time]
   );
 
   return (
-    <pixiContainer x={window.innerWidth / 2} y={window.innerHeight / 2}>
+    <pixiContainer x={window.innerWidth / 2} y={window.innerHeight / 2 + 50}>
       <pixiGraphics draw={drawCenterCircle} />
-    </pixiContainer>
-  );
-}
 
-function TrigramSymbols({
-  trigrams,
-  hoveredTrigram,
-  onTrigramHover,
-  audio,
-}: {
-  trigrams: readonly TrigramSymbolDef[];
-  hoveredTrigram: string | null;
-  onTrigramHover: (name: string | null) => void;
-  audio: ReturnType<typeof useAudio>;
-}): JSX.Element {
-  return (
-    <>
-      {trigrams.map((trigram) => (
-        <TrigramSymbolDisplay // Renamed to avoid conflict with type
-          key={trigram.name}
-          trigram={trigram}
-          isHovered={hoveredTrigram === trigram.name}
-          onPointerEnter={() => {
-            audio.playSFX("menu_hover");
-            onTrigramHover(trigram.name);
-          }}
-          onPointerLeave={() => onTrigramHover(null)}
-        />
-      ))}
-    </>
-  );
-}
+      {/* Add trigram symbols as text */}
+      {["☰", "☱", "☲", "☳", "☴", "☵", "☶", "☷"].map((symbol, index) => {
+        const angle = (index * Math.PI * 2) / 8 - Math.PI / 2;
+        const x = Math.cos(angle) * 140;
+        const y = Math.sin(angle) * 140;
 
-function TrigramSymbolDisplay({
-  // Renamed from TrigramSymbol
-  trigram,
-  isHovered,
-  onPointerEnter,
-  onPointerLeave,
-}: {
-  trigram: TrigramSymbolDef;
-  isHovered: boolean;
-  onPointerEnter: () => void;
-  onPointerLeave: () => void;
-}): JSX.Element {
-  return (
-    <pixiContainer
-      x={trigram.x}
-      y={trigram.y}
-      interactive={true}
-      cursor="pointer"
-      onPointerEnter={onPointerEnter} // Corrected prop name
-      onPointerLeave={onPointerLeave} // Corrected prop name
-    >
-      <pixiGraphics
-        draw={(g: PixiGraphics) => {
-          g.clear();
-          const scale = isHovered ? 1.2 : 1.0;
-          const alpha = isHovered ? 0.9 : 0.7;
-
-          g.setFillStyle({ color: COLORS.BLACK, alpha });
-          g.circle(0, 0, 35 * scale);
-          g.fill();
-
-          g.setStrokeStyle({
-            color: isHovered ? COLORS.RED : COLORS.GRAY_MEDIUM,
-            width: isHovered ? 3 : 2,
-          });
-          g.circle(0, 0, 35 * scale);
-          g.stroke();
-        }}
-      />
-
-      <pixiText
-        text={trigram.icon}
-        anchor={{ x: 0.5, y: 0.5 }}
-        y={-15}
-        style={{
-          fontFamily: "serif",
-          fontSize: isHovered ? 28 : 24,
-          fill: COLORS.WHITE,
-        }}
-      />
-
-      <pixiText
-        text={trigram.symbol}
-        anchor={{ x: 0.5, y: 0.5 }}
-        y={5}
-        style={{
-          fontFamily: "serif",
-          fontSize: isHovered ? 32 : 24,
-          fill: isHovered ? COLORS.RED : COLORS.WHITE,
-          fontWeight: "bold",
-        }}
-      />
-
-      <pixiText
-        text={trigram.korean}
-        y={25}
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 14,
-          fill: isHovered ? COLORS.WHITE : 0xaaaaaa,
-          fontWeight: "400",
-        }}
-      />
-
-      {isHovered && (
-        <>
+        return (
           <pixiText
-            text={trigram.meaning}
-            y={45}
+            key={index}
+            text={symbol}
+            x={x}
+            y={y}
             anchor={{ x: 0.5, y: 0.5 }}
             style={{
-              fontFamily: "monospace",
-              fontSize: 10,
-              fill: COLORS.GRAY_LIGHT,
-              letterSpacing: 1,
+              fontFamily: "serif",
+              fontSize: 24,
+              fill: COLORS.WHITE,
+              fontWeight: "bold",
             }}
           />
-          <pixiText
-            text={trigram.combatStyle}
-            y={60}
-            anchor={{ x: 0.5, y: 0.5 }}
-            style={{
-              fontFamily: "monospace",
-              fontSize: 8,
-              fill: COLORS.GRAY_MEDIUM,
-              letterSpacing: 0.5,
-            }}
-          />
-        </>
-      )}
+        );
+      })}
     </pixiContainer>
   );
 }
@@ -622,6 +394,16 @@ function ControlsText(): JSX.Element {
   );
 }
 
+// Define the missing interface
+interface MenuButtonProps {
+  readonly isSelected: boolean;
+  readonly time: number;
+  readonly onSelect: () => void;
+  readonly title: string;
+  readonly subtitle: string;
+  readonly keyBinding: string;
+}
+
 interface MenuButtonsProps {
   selectedOption: SelectedOption;
   time: number;
@@ -629,6 +411,10 @@ interface MenuButtonsProps {
   audio: ReturnType<typeof useAudio>;
   onStartGame: () => void; // Added for click handling
   onStartTraining: () => void; // Added for click handling
+}
+
+interface ExtendedMenuButtonProps extends MenuButtonProps {
+  readonly onClickAction: () => void;
 }
 
 function MenuButtons({
@@ -649,7 +435,6 @@ function MenuButtons({
           onOptionChange("sparring");
         }}
         onClickAction={() => {
-          // Added onClickAction
           audio.playSFX("menu_select");
           onStartGame();
         }}
@@ -666,7 +451,6 @@ function MenuButtons({
           onOptionChange("training");
         }}
         onClickAction={() => {
-          // Added onClickAction
           audio.playSFX("menu_select");
           onStartTraining();
         }}
@@ -678,10 +462,6 @@ function MenuButtons({
   );
 }
 
-interface ExtendedMenuButtonProps extends MenuButtonProps {
-  onClickAction: () => void;
-}
-
 function MenuButton({
   isSelected,
   time,
@@ -689,7 +469,7 @@ function MenuButton({
   title,
   subtitle,
   keyBinding,
-  onClickAction, // Added
+  onClickAction,
 }: ExtendedMenuButtonProps): JSX.Element {
   const xPosition = title.includes("대련")
     ? window.innerWidth / 2 - 150

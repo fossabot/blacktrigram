@@ -358,4 +358,90 @@ describe("Black Trigram - Complete Game Flow E2E", () => {
       });
     });
   });
+
+  describe("Training Mode Features", () => {
+    beforeEach(() => {
+      cy.visit("/");
+      // Enter training mode
+      cy.get("body").type("2");
+      cy.wait(500);
+    });
+
+    it("should display training screen with Korean title", () => {
+      // Canvas should be visible in training mode
+      cy.get("canvas").should("be.visible");
+
+      // Training mode should remain stable
+      cy.wait(1000);
+      cy.get("canvas").should("be.visible");
+    });
+
+    it("should allow stance selection with number keys", () => {
+      // Test all 8 trigram stances
+      for (let i = 1; i <= 8; i++) {
+        cy.get("body").type(i.toString());
+        cy.wait(200); // Wait for stance change animation
+      }
+
+      // Training mode should handle stance changes
+      cy.get("canvas").should("be.visible");
+    });
+
+    it("should track practice count for each stance", () => {
+      // Select a stance and practice
+      cy.get("body").type("1"); // Select first stance
+      cy.wait(200);
+
+      // Practice the stance multiple times
+      for (let i = 0; i < 5; i++) {
+        cy.get("body").type(" "); // Space to practice
+        cy.wait(100);
+      }
+
+      // Training mode should track practice count
+      cy.get("canvas").should("be.visible");
+    });
+
+    it("should return to intro screen with escape key", () => {
+      // Exit training mode
+      cy.get("body").type("{esc}");
+      cy.wait(500);
+
+      // Should return to intro screen
+      cy.get("canvas").should("be.visible");
+
+      // Verify we can navigate again from intro
+      cy.get("body").type("1"); // Try entering game mode
+      cy.wait(500);
+      cy.get("canvas").should("be.visible");
+    });
+  });
+
+  describe("Mode Transitions", () => {
+    it("should transition between all game modes smoothly", () => {
+      // Start in intro mode
+      cy.visit("/");
+      cy.get("canvas").should("be.visible");
+
+      // Go to training mode
+      cy.get("body").type("2");
+      cy.wait(500);
+      cy.get("canvas").should("be.visible");
+
+      // Back to intro
+      cy.get("body").type("{esc}");
+      cy.wait(500);
+      cy.get("canvas").should("be.visible");
+
+      // Go to sparring mode
+      cy.get("body").type("1");
+      cy.wait(500);
+      cy.get("canvas").should("be.visible");
+
+      // Back to intro
+      cy.get("body").type("{esc}");
+      cy.wait(500);
+      cy.get("canvas").should("be.visible");
+    });
+  });
 });

@@ -144,13 +144,14 @@ body {
   display: none !important;
 }
 
-/* Korean martial arts theme variables */
+/* Black Trigram theme variables - Updated from Dark Trigram */
 :root {
   --trigram-red: #8b0000;
   --trigram-gold: #ffd700;
   --trigram-black: #000000;
   --trigram-white: #ffffff;
   --dojang-blue: #4a90e2;
+  --black-trigram-cyan: #00ffd0; /* Added for consistency */
 }
 
 /* Performance optimizations for mobile */

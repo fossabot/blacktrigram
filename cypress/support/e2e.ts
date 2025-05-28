@@ -29,3 +29,35 @@ Cypress.on("before:browser:launch", (browser, launchOptions) => {
   }
   return launchOptions;
 });
+
+// Track test failures globally
+let hasTestFailed = false;
+
+// Implement fail-fast behavior using proper Cypress patterns
+Cypress.on("test:after:run", (test) => {
+  if (test.state === "failed") {
+    // Record failure with our custom task
+    cy.task("recordFailure").then(() => {
+      // Set our local variable
+      hasTestFailed = true;
+
+      // Check if we should abort
+      cy.task("shouldAbort").then((shouldAbort) => {
+        if (shouldAbort) {
+          // Use Cypress' supported API to abort tests
+          cy.log("**Test failed, aborting remaining tests**");
+
+          // Force test failure to abort without using unsupported APIs
+          // This approach works with TypeScript
+          expect(shouldAbort).to.equal(
+            false,
+            "Test aborted due to previous failures"
+          );
+        }
+      });
+    });
+  }
+});
+
+// Export the failure state for other modules to use
+export { hasTestFailed };
