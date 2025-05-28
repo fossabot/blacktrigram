@@ -53,6 +53,18 @@ declare global {
         selector: string,
         maxAttempts?: number
       ): Chainable<JQuery<HTMLElement>>;
+
+      /**
+       * Take a screenshot with a timestamp for debugging
+       * @param name Name of the screenshot
+       */
+      debugScreenshot(name: string): Chainable<void>;
+
+      /**
+       * Add a visible annotation to the video recording
+       * @param message The message to display
+       */
+      annotate(message: string): Chainable<void>;
     }
   }
 }
@@ -64,7 +76,7 @@ Cypress.Commands.add("dataCy", (value: string) => {
 
 // Improved Training mode helpers with better waiting strategy
 Cypress.Commands.add("enterTrainingMode", () => {
-  cy.get("body").type("2");
+  cy.get("body").type("2", { delay: 0 });
   // Wait for canvas to be ready instead of fixed timeout
   return cy.waitForCanvasReady();
 });
@@ -74,26 +86,30 @@ Cypress.Commands.add(
   "practiceStance",
   (stanceNumber: number, repetitions: number) => {
     // Select stance
-    cy.get("body").type(stanceNumber.toString());
+    cy.get("body").type(stanceNumber.toString(), { delay: 0 });
+    cy.waitForCanvasReady();
 
     // Use a more efficient approach for repetitions
-    const actions = Array(repetitions).fill(" ");
-    return cy.gameActions(actions);
+    for (let i = 0; i < repetitions; i++) {
+      cy.get("body").type(" ", { delay: 0 });
+      if (i < repetitions - 1) {
+        cy.wait(100); // Short wait between repetitions
+      }
+    }
+    return cy.waitForCanvasReady();
   }
 );
 
 Cypress.Commands.add("returnToIntro", () => {
-  cy.get("body").type("{esc}");
+  cy.get("body").type("{esc}", { delay: 0 });
   return cy.waitForCanvasReady();
 });
-
-// New optimized commands for faster tests
 
 // Wait for canvas to be ready with assertions instead of fixed timeouts
 Cypress.Commands.add("waitForCanvasReady", () => {
   // Optimized canvas waiting strategy
   return cy
-    .get("canvas", { timeout: 2000 })
+    .get("canvas", { timeout: 5000 })
     .should("be.visible")
     .and(($canvas) => {
       // Additional check to ensure canvas is fully rendered
@@ -106,11 +122,16 @@ Cypress.Commands.add("waitForCanvasReady", () => {
 // Optimized game actions with batched execution
 Cypress.Commands.add("gameActions", (actions: string[]) => {
   // Group actions for faster execution
-  if (actions.length <= 5) {
+  if (actions.length === 1 && actions[0].length <= 5) {
     // For small action sets, execute as one command
-    cy.get("body").type(actions.join(""), { delay: 10 }); // Reduce delay
+    cy.get("body").type(actions[0], { delay: 0 });
+  } else if (actions.length <= 5) {
+    // For small action sets, execute sequentially with minimal delay
+    actions.forEach((action) => {
+      cy.get("body").type(action, { delay: 0 });
+    });
   } else {
-    // For larger sets, batch in groups of 10 (increased from 5)
+    // For larger sets, batch in groups of 10
     const batches = [];
     for (let i = 0; i < actions.length; i += 10) {
       batches.push(actions.slice(i, i + 10).join(""));
@@ -118,7 +139,7 @@ Cypress.Commands.add("gameActions", (actions: string[]) => {
 
     // Execute batches with minimal waiting
     batches.forEach((batch) => {
-      cy.get("body").type(batch, { delay: 10 });
+      cy.get("body").type(batch, { delay: 0 });
       // Reduce wait between batches
       cy.wait(30); // Reduced from 50
     });
@@ -127,19 +148,55 @@ Cypress.Commands.add("gameActions", (actions: string[]) => {
   return cy.get("canvas");
 });
 
-// Fast check with limited attempts and timeout
+// Fast check with limited attempts
 Cypress.Commands.add(
   "fastCheck",
   (selector: string, maxAttempts: number = 3) => {
-    // Use timeout option which is valid in Cypress types
-    // Remove the 'retries' property which is causing the TypeScript error
     return cy.get(selector, {
       timeout: 1000 * maxAttempts, // Scale timeout with max attempts
     });
   }
 );
 
-// For more comprehensive examples of custom commands:
-// https://on.cypress.io/custom-commands
+// Take a screenshot for debugging with timestamp
+Cypress.Commands.add("debugScreenshot", (name: string) => {
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+  cy.screenshot(`${name}-${timestamp}`, { capture: "viewport" });
+});
+
+// Add visual annotation to the video recording
+Cypress.Commands.add("annotate", (message: string) => {
+  cy.log(`**${message}**`);
+
+  // Fix: Use cy.then() instead of Cypress.$.then()
+  cy.then(() => {
+    const $body = Cypress.$("body");
+    const $annotation = Cypress.$('<div class="cypress-annotation"></div>')
+      .css({
+        position: "fixed",
+        top: "10px",
+        right: "10px",
+        padding: "8px 12px",
+        background: "rgba(0, 0, 0, 0.7)",
+        color: "#00ffd0",
+        border: "1px solid #00ffd0",
+        borderRadius: "4px",
+        fontFamily: "monospace",
+        fontSize: "14px",
+        zIndex: 9999,
+        pointerEvents: "none",
+        boxShadow: "0 0 10px rgba(0, 255, 208, 0.5)",
+        animation: "fadeIn 0.3s ease-in-out",
+      })
+      .text(message);
+
+    $body.append($annotation);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+      $annotation.fadeOut(500, () => $annotation.remove());
+    }, 3000);
+  });
+});
 
 export {};

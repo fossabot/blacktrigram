@@ -9,38 +9,87 @@
 // Import commands using ES module syntax
 import "./commands";
 
-// You can read more here:
-// https://on.cypress.io/configuration
-
-// Add browser launch configuration
-Cypress.on("before:browser:launch", (browser, launchOptions) => {
-  if (browser.family === "chromium" && browser.name !== "electron") {
-    // Add flags to suppress WebGL warnings and enable software rendering
-    launchOptions.args.push("--enable-unsafe-swiftshader");
-    launchOptions.args.push("--disable-web-security");
-    launchOptions.args.push("--disable-features=VizDisplayCompositor");
-    launchOptions.args.push("--disable-gpu");
-    launchOptions.args.push("--no-sandbox");
-    launchOptions.args.push("--disable-dev-shm-usage");
-    // Suppress specific WebGL warnings
-    launchOptions.args.push("--disable-logging");
-    launchOptions.args.push("--silent");
-    launchOptions.args.push("--log-level=3");
+// Add CSS for animations and annotations
+const style = document.createElement("style");
+style.innerHTML = `
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
-  return launchOptions;
+
+  .cypress-annotation {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #00ffd0;
+    border: 1px solid #00ffd0;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 14px;
+    z-index: 9999;
+    pointer-events: none;
+    box-shadow: 0 0 10px rgba(0, 255, 208, 0.5);
+    animation: fadeIn 0.3s ease-in-out;
+  }
+`;
+document.head.appendChild(style);
+
+// Add type declaration for cleanLog command
+declare global {
+  namespace Cypress {
+    interface Chainable {
+      /**
+       * Custom command to log messages without WebGL warnings
+       * @param message The message to log
+       * @example cy.cleanLog('Testing Korean martial arts interactions')
+       */
+      cleanLog(message: string): Chainable<void>;
+
+      // Add other custom commands types here...
+    }
+  }
+}
+
+// Enhanced WebGL warning suppression
+const suppressWebGLPattern =
+  /(WebGL|GL_|GPU stall|swiftshader|GPU|RENDER WARNING)/i;
+
+// Aggressively silence all WebGL warnings
+Cypress.on("console:log", (message) => {
+  if (suppressWebGLPattern.test(message.message)) {
+    return false;
+  }
+  return true;
 });
 
-// Silence WebGL warnings at the browser console level
-Cypress.on("console:error", (error) => {
-  // Filter out WebGL warnings
-  if (
-    error.message?.includes("WebGL") ||
-    error.message?.includes("GL_INVALID") ||
-    error.message?.includes("GL Driver Message")
-  ) {
-    return false; // Don't log these errors
+Cypress.on("console:info", (message) => {
+  if (suppressWebGLPattern.test(message.message)) {
+    return false;
   }
-  return true; // Log other errors
+  return true;
+});
+
+Cypress.on("console:warn", (message) => {
+  if (suppressWebGLPattern.test(message.message)) {
+    return false;
+  }
+  return true;
+});
+
+// Silence WebGL errors more aggressively
+Cypress.on("console:error", (error) => {
+  if (suppressWebGLPattern.test(error.message || "")) {
+    return false;
+  }
+  return true;
+});
+
+// Create a custom command for logging without WebGL spam
+Cypress.Commands.add("cleanLog", (message: string) => {
+  cy.task("silenceWebGLWarning");
+  cy.log(message);
 });
 
 // Track test failures globally
@@ -60,6 +109,13 @@ Cypress.on("test:after:run", (test) => {
       }
     });
   }
+});
+
+// Speed up tests by setting configuration to abort quickly on failure
+Cypress.on("fail", (error) => {
+  // Clean up the error message by removing WebGL warnings
+  const cleanError = error.message.replace(/WebGL.*\n/g, "");
+  throw new Error(cleanError);
 });
 
 // Export the failure state for other modules to use

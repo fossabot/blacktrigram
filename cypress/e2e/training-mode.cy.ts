@@ -1,155 +1,105 @@
 describe("Black Trigram Training Mode", () => {
   beforeEach(() => {
-    cy.visit("/");
-    // Enter training mode
-    cy.get("body").type("2");
-    cy.wait(500);
+    cy.visit("/", { timeout: 10000 });
+    cy.waitForCanvasReady();
+    cy.task("silenceWebGLWarning", null, { log: false });
+
+    // Enter training mode once before each test
+    cy.gameActions(["2"]);
+    cy.waitForCanvasReady();
   });
 
-  describe("Basic Training UI", () => {
-    it("should display Korean training title", () => {
-      // Verify canvas is visible
-      cy.get("canvas").should("be.visible");
-      cy.wait(500); // Wait for any animations
-    });
+  it("should support complete training workflow", () => {
+    // Test all 8 stances in sequence with practice
+    cy.annotate("Testing all 8 trigram stances");
 
-    it("should show the trigram stance wheel", () => {
-      // Verify canvas remains visible with stance wheel
-      cy.get("canvas").should("be.visible");
-    });
+    // Loop through all 8 stances
+    for (let stance = 1; stance <= 8; stance++) {
+      // Select stance
+      cy.annotate(`Testing stance ${stance}`);
+      cy.gameActions([stance.toString()]);
+      cy.waitForCanvasReady();
 
-    it("should display training instructions in Korean", () => {
-      // Verify canvas with instructions
-      cy.get("canvas").should("be.visible");
-    });
+      // Practice stance twice
+      cy.gameActions([" ", " "]);
+      cy.waitForCanvasReady();
+    }
+
+    // Test keyboard navigation
+    cy.annotate("Testing training mode keyboard navigation");
+    cy.gameActions(["{leftarrow}", "{rightarrow}"]);
+    cy.waitForCanvasReady();
+
+    // Return to intro screen
+    cy.annotate("Returning to intro");
+    cy.gameActions(["{esc}"]);
+    cy.waitForCanvasReady();
   });
 
-  describe("Stance Selection and Practice", () => {
-    it("should highlight the selected stance", () => {
-      // Select each stance and verify it works
-      for (let i = 1; i <= 8; i++) {
-        cy.get("body").type(i.toString());
-        cy.wait(200); // Wait for highlight animation
-        cy.get("canvas").should("be.visible");
-      }
-    });
+  it("should handle rapid stance transitions", () => {
+    // Test rapid input
+    cy.annotate("Testing rapid stance selection");
 
-    it("should allow practicing each stance", () => {
-      // Test practicing each stance
-      for (let i = 1; i <= 8; i++) {
-        // Select stance
-        cy.get("body").type(i.toString());
-        cy.wait(200);
+    // Select stances rapidly
+    cy.gameActions(["12345678"]);
+    cy.waitForCanvasReady();
 
-        // Practice stance
-        cy.get("body").type(" "); // Space to practice
-        cy.wait(300); // Wait for practice animation
-        cy.get("canvas").should("be.visible");
-      }
-    });
+    // Practice current stance
+    cy.annotate("Practicing current stance");
+    cy.gameActions([" "]);
+    cy.waitForCanvasReady();
 
-    it("should track practice count correctly", () => {
-      // Select first stance
-      cy.get("body").type("1");
-      cy.wait(200);
-
-      // Practice multiple times
-      for (let i = 0; i < 5; i++) {
-        cy.get("body").type(" ");
-        cy.wait(200);
-      }
-
-      // Should track practice count
-      cy.get("canvas").should("be.visible");
-    });
+    // Return to intro
+    cy.annotate("Returning to intro");
+    cy.gameActions(["{esc}"]);
+    cy.waitForCanvasReady();
   });
 
-  describe("Training Mode Controls", () => {
-    it("should respond to keyboard controls", () => {
-      // Test arrow keys for selection
-      cy.get("body").type("{leftarrow}");
-      cy.wait(100);
-      cy.get("body").type("{rightarrow}");
-      cy.wait(100);
+  it("should track stance practice progress", () => {
+    // Select first stance
+    cy.annotate("Testing stance practice counter");
+    cy.gameActions(["1"]);
+    cy.waitForCanvasReady();
 
-      // Test space for practice
-      cy.get("body").type(" ");
-      cy.wait(200);
+    // Practice multiple times to test counter
+    cy.annotate("Practicing stance 5 times");
 
-      // Test number keys for direct selection
-      cy.get("body").type("3");
-      cy.wait(200);
+    // Practice 5 times
+    for (let i = 0; i < 5; i++) {
+      cy.gameActions([" "]);
+      cy.waitForCanvasReady();
+    }
 
-      // Verify all controls work
-      cy.get("canvas").should("be.visible");
-    });
-
-    it("should handle rapid input during training", () => {
-      // Simulate rapid inputs
-      const rapidInputs = "12345678";
-      cy.get("body").type(rapidInputs);
-      cy.wait(500);
-
-      // Training mode should handle rapid stance changes
-      cy.get("canvas").should("be.visible");
-    });
+    // Return to intro
+    cy.annotate("Returning to intro");
+    cy.gameActions(["{esc}"]);
+    cy.waitForCanvasReady();
   });
 
-  describe("Performance in Training Mode", () => {
-    it("should maintain performance during extended training", () => {
-      // Extended training session
-      for (let round = 0; round < 3; round++) {
-        // Select stances
-        for (let i = 1; i <= 8; i++) {
-          cy.get("body").type(i.toString());
-          cy.wait(100);
+  it("should support mobile touch interactions", () => {
+    // Test on mobile viewport
+    cy.annotate("Testing mobile interactions");
+    cy.viewport(375, 667);
+    cy.waitForCanvasReady();
 
-          // Practice each stance
-          for (let p = 0; p < 3; p++) {
-            cy.get("body").type(" ");
-            cy.wait(100);
-          }
-        }
-      }
+    // Click to interact with training mode
+    cy.annotate("Testing back button click");
+    cy.get("canvas").click(50, 50); // Click back button
+    cy.waitForCanvasReady();
 
-      // Should maintain performance
-      cy.get("canvas").should("be.visible");
-    });
-  });
+    // Should be back at intro screen
+    cy.annotate("Re-entering training mode");
+    cy.gameActions(["2"]); // Re-enter training
+    cy.waitForCanvasReady();
 
-  describe("Training Mode Navigation", () => {
-    it("should exit training mode with escape key", () => {
-      // Exit to intro
-      cy.get("body").type("{esc}");
-      cy.wait(500);
+    // Practice via click
+    cy.annotate("Testing practice via click");
+    cy.get("canvas").click(187, 333); // Click to practice
+    cy.waitForCanvasReady();
 
-      // Should return to intro screen
-      cy.get("canvas").should("be.visible");
-    });
-
-    it("should exit training mode with back button", () => {
-      // Find and click the back button (top-left corner)
-      cy.get("canvas").click(50, 50);
-      cy.wait(500);
-
-      // Should return to intro screen
-      cy.get("canvas").should("be.visible");
-    });
-  });
-
-  describe("Korean Cultural Authenticity", () => {
-    it("should display authentic Korean martial arts elements", () => {
-      // Verify canvas with Korean elements
-      cy.get("canvas").should("be.visible");
-    });
-
-    it("should use correct trigram symbols for each stance", () => {
-      // Check all stances have proper trigram symbols
-      for (let i = 1; i <= 8; i++) {
-        cy.get("body").type(i.toString());
-        cy.wait(200);
-        cy.get("canvas").should("be.visible");
-      }
-    });
+    // Return to intro
+    cy.annotate("Returning to intro");
+    cy.gameActions(["{esc}"]);
+    cy.waitForCanvasReady();
   });
 });

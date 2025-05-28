@@ -38,77 +38,56 @@ export default defineConfig({
       openMode: 0,
     },
     defaultCommandTimeout: 3000, // Reduced to speed up failures
+    requestTimeout: 3000,
+    responseTimeout: 3000,
     chromeWebSecurity: false,
-    video: process.env.CI ? true : false, // Disable video recording to speed up tests
+    video: true, // Enable video recording for failed tests
+    videoCompression: 32, // Set video compression level
     videosFolder: "cypress/videos",
     screenshotsFolder: "cypress/screenshots",
     downloadsFolder: "cypress/downloads",
     fixturesFolder: "cypress/fixtures",
-    responseTimeout: 3000, // Reduced to speed up response handling
+    experimentalMemoryManagement: true,
+    numTestsKeptInMemory: 1, // Keep only one test in memory for performance
+    experimentalRunAllSpecs: true, // Enable parallel test execution
+    screenshotOnRunFailure: true, // Enable screenshots on failure
     setupNodeEvents(
       on: Cypress.PluginEvents,
       config: Cypress.PluginConfigOptions
     ): Cypress.PluginConfigOptions {
       // Configure browser launch options for WebGL
       on("before:browser:launch", (browser, launchOptions) => {
-        if (browser.name === "electron") {
-          // For Electron, configure flags correctly
-          launchOptions.preferences = {
-            ...launchOptions.preferences,
-            webPreferences: {
-              ...launchOptions.preferences.webPreferences,
-              enableWebGL: true,
-              backgroundThrottling: false,
-            },
-          };
-
-          // Set environment variables to silence WebGL warnings
-          launchOptions.env = {
-            ...launchOptions.env,
-            ELECTRON_ENABLE_LOGGING: false,
-            ELECTRON_ENABLE_STACK_DUMPING: false,
-            NODE_OPTIONS: "--no-warnings",
-          };
-        } else if (browser.family === "chromium") {
-          // For other Chromium browsers
-          launchOptions.args.push("--enable-unsafe-swiftshader");
-          launchOptions.args.push("--disable-web-security");
-          launchOptions.args.push("--disable-features=VizDisplayCompositor");
-          launchOptions.args.push("--disable-gpu-watchdog");
-          launchOptions.args.push("--mute-audio");
-
-          // Silence WebGL warnings
-          launchOptions.args.push("--disable-logging");
-          launchOptions.args.push("--log-level=3");
+        // Add flags to suppress WebGL warnings
+        if (browser.name === "electron" || browser.name === "chrome") {
+          launchOptions.args = [
+            ...(launchOptions.args || []),
+            "--disable-gpu",
+            "--disable-gpu-vsync",
+            "--disable-web-security",
+            "--enable-unsafe-swiftshader",
+            "--ignore-gpu-blacklist",
+            "--disable-site-isolation-trials",
+            "--disable-features=VizDisplayCompositor",
+            "--disable-logging",
+            "--log-level=3",
+            "--mute-audio",
+          ];
         }
 
         return launchOptions;
       });
 
-      // Custom task for aborting tests early (fail-fast pattern)
-      let shouldAbortTests = false;
-
+      // Console filter to silence WebGL warnings
       on("task", {
-        // Task to record test failures
-        recordFailure() {
-          shouldAbortTests = true;
+        // This will be used to silence console logs in tests
+        silenceWebGLWarning: () => {
           return null;
         },
-
-        // Task to check if we should abort the run
-        shouldAbort() {
-          return shouldAbortTests;
-        },
-
-        // Task to reset the abort flag (for test cleanup)
-        resetAbortFlag() {
-          shouldAbortTests = false;
-          return null;
-        },
-
-        // Performance metrics logging
-        logPerfMetrics({ name, duration }) {
+        logPerformance({ name, duration }) {
           console.log(`Performance: ${name} - ${duration}ms`);
+          return null;
+        },
+        recordFailure: () => {
           return null;
         },
       });
