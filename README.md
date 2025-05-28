@@ -5,15 +5,19 @@
 ### _무예는 몸과 마음, 그리고 영혼의 조화이다_
 
 _"Martial arts are the harmony of body, mind, and spirit"_
+**[🎮 Play Now](https://blacktrigram.com/)**
 
 ![Dark Trigram Logo](public/black-trigram.png)
 
+[![GitHub Release](https://img.shields.io/github/v/release/Hack23/blacktrigram)](https://github.com/Hack23/blacktrigram/releases)
 [![License](https://img.shields.io/github/license/Hack23/blacktrigram.svg)](https://github.com/Hack23/blacktrigram/raw/master/LICENSE.md)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Hack23/blacktrigram/badge)](https://scorecard.dev/viewer/?uri=github.com/Hack23/blacktrigram)
+[![SLSA 3](https://slsa.dev/images/gh-badge-level3.svg)](https://github.com/Hack23/blacktrigram/attestations)
+[![Scorecard supply-chain security](https://github.com/Hack23/blacktrigram/actions/workflows/scorecards.yml/badge.svg?branch=main)](https://github.com/Hack23/blacktrigram/actions/workflows/scorecards.yml)
+[![Test & Report](https://github.com/Hack23/blacktrigram/actions/workflows/test-and-report.yml/badge.svg?branch=main)](https://github.com/Hack23/blacktrigram/actions/workflows/test-and-report.yml)
+
 
 _A 2D precision combat game inspired by Korean martial arts philosophy and the I Ching_
-
-**[🎮 Play Now](https://hack23.github.io/blacktrigram/)** | **[📖 Game Guide](#-game-features)** | **[🔧 Development](#-technical-excellence)**
 
 </div>
 
