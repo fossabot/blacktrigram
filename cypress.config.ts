@@ -37,38 +37,51 @@ export default defineConfig({
       runMode: 1,
       openMode: 0,
     },
-    defaultCommandTimeout: 4000,
+    defaultCommandTimeout: 3000, // Reduced to speed up failures
     chromeWebSecurity: false,
-    video: true,
+    video: process.env.CI ? true : false, // Disable video recording to speed up tests
     videosFolder: "cypress/videos",
     screenshotsFolder: "cypress/screenshots",
     downloadsFolder: "cypress/downloads",
     fixturesFolder: "cypress/fixtures",
-    responseTimeout: 5000,
+    responseTimeout: 3000, // Reduced to speed up response handling
     setupNodeEvents(
       on: Cypress.PluginEvents,
       config: Cypress.PluginConfigOptions
     ): Cypress.PluginConfigOptions {
       // Configure browser launch options for WebGL
       on("before:browser:launch", (browser, launchOptions) => {
-        // Add flags to improve WebGL performance
-        if (browser.family === "chromium") {
-          launchOptions.args.push("--enable-unsafe-webgl");
-          launchOptions.args.push("--enable-webgl-draft-extensions");
+        if (browser.name === "electron") {
+          // For Electron, configure flags correctly
+          launchOptions.preferences = {
+            ...launchOptions.preferences,
+            webPreferences: {
+              ...launchOptions.preferences.webPreferences,
+              enableWebGL: true,
+              backgroundThrottling: false,
+            },
+          };
+
+          // Set environment variables to silence WebGL warnings
+          launchOptions.env = {
+            ...launchOptions.env,
+            ELECTRON_ENABLE_LOGGING: false,
+            ELECTRON_ENABLE_STACK_DUMPING: false,
+            NODE_OPTIONS: "--no-warnings",
+          };
+        } else if (browser.family === "chromium") {
+          // For other Chromium browsers
           launchOptions.args.push("--enable-unsafe-swiftshader");
           launchOptions.args.push("--disable-web-security");
           launchOptions.args.push("--disable-features=VizDisplayCompositor");
+          launchOptions.args.push("--disable-gpu-watchdog");
+          launchOptions.args.push("--mute-audio");
 
           // Silence WebGL warnings
           launchOptions.args.push("--disable-logging");
-          launchOptions.args.push("--silent");
           launchOptions.args.push("--log-level=3");
-
-          // Performance improvements
-          launchOptions.args.push("--js-flags=--expose-gc");
-          launchOptions.args.push("--disable-dev-shm-usage");
-          launchOptions.args.push("--no-sandbox");
         }
+
         return launchOptions;
       });
 
@@ -90,6 +103,12 @@ export default defineConfig({
         // Task to reset the abort flag (for test cleanup)
         resetAbortFlag() {
           shouldAbortTests = false;
+          return null;
+        },
+
+        // Performance metrics logging
+        logPerfMetrics({ name, duration }) {
+          console.log(`Performance: ${name} - ${duration}ms`);
           return null;
         },
       });

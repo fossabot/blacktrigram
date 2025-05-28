@@ -91,31 +91,36 @@ Cypress.Commands.add("returnToIntro", () => {
 
 // Wait for canvas to be ready with assertions instead of fixed timeouts
 Cypress.Commands.add("waitForCanvasReady", () => {
-  // Use timeout strategy with assertion rather than cy.wait()
+  // Optimized canvas waiting strategy
   return cy
     .get("canvas", { timeout: 2000 })
     .should("be.visible")
-    .should("have.attr", "style");
+    .and(($canvas) => {
+      // Additional check to ensure canvas is fully rendered
+      const canvas = $canvas[0];
+      expect(canvas.width).to.be.at.least(100);
+      expect(canvas.height).to.be.at.least(100);
+    });
 });
 
-// Optimized game actions
+// Optimized game actions with batched execution
 Cypress.Commands.add("gameActions", (actions: string[]) => {
   // Group actions for faster execution
   if (actions.length <= 5) {
     // For small action sets, execute as one command
-    cy.get("body").type(actions.join(""));
+    cy.get("body").type(actions.join(""), { delay: 10 }); // Reduce delay
   } else {
-    // For larger sets, batch in groups of 5
+    // For larger sets, batch in groups of 10 (increased from 5)
     const batches = [];
-    for (let i = 0; i < actions.length; i += 5) {
-      batches.push(actions.slice(i, i + 5).join(""));
+    for (let i = 0; i < actions.length; i += 10) {
+      batches.push(actions.slice(i, i + 10).join(""));
     }
 
     // Execute batches with minimal waiting
     batches.forEach((batch) => {
-      cy.get("body").type(batch);
-      // Minimal wait between batches
-      cy.wait(50);
+      cy.get("body").type(batch, { delay: 10 });
+      // Reduce wait between batches
+      cy.wait(30); // Reduced from 50
     });
   }
 

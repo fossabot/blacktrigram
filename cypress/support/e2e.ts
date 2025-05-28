@@ -30,31 +30,34 @@ Cypress.on("before:browser:launch", (browser, launchOptions) => {
   return launchOptions;
 });
 
+// Silence WebGL warnings at the browser console level
+Cypress.on("console:error", (error) => {
+  // Filter out WebGL warnings
+  if (
+    error.message?.includes("WebGL") ||
+    error.message?.includes("GL_INVALID") ||
+    error.message?.includes("GL Driver Message")
+  ) {
+    return false; // Don't log these errors
+  }
+  return true; // Log other errors
+});
+
 // Track test failures globally
 let hasTestFailed = false;
 
-// Implement fail-fast behavior using proper Cypress patterns
+// More efficient test abort implementation
 Cypress.on("test:after:run", (test) => {
   if (test.state === "failed") {
     // Record failure with our custom task
     cy.task("recordFailure").then(() => {
-      // Set our local variable
       hasTestFailed = true;
 
-      // Check if we should abort
-      cy.task("shouldAbort").then((shouldAbort) => {
-        if (shouldAbort) {
-          // Use Cypress' supported API to abort tests
-          cy.log("**Test failed, aborting remaining tests**");
-
-          // Force test failure to abort without using unsupported APIs
-          // This approach works with TypeScript
-          expect(shouldAbort).to.equal(
-            false,
-            "Test aborted due to previous failures"
-          );
-        }
-      });
+      // Use custom approach to abort tests that's more efficient
+      if (Cypress.env("FAIL_FAST") !== false) {
+        cy.log("**Test failed, aborting remaining tests**");
+        throw new Error("Aborting due to test failure");
+      }
     });
   }
 });
