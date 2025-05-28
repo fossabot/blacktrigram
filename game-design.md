@@ -2,452 +2,443 @@
 
 ## Executive Summary
 
-**Black Trigram** is a 2D precision combat game inspired by Korean martial arts philosophy and the I Ching (주역). Players embody elite martial artists who master the dark arts of vital point striking, combining deadly precision with philosophical depth rooted in trigram symbolism.
+**Black Trigram** is a **realistic 2D precision combat game** inspired by classic martial arts fighters like **Budokan: The Martial Spirit** and **International Karate+**, reimagined with authentic Korean martial arts and modern combat techniques. Players master traditional vital point striking through precise, physics-based combat that emphasizes **anatomical targeting** and **one-strike effectiveness**.
 
 ### Core Pillars
 
-- **정격자 (Jeonggyeokja)** - Precision Attacker: Every strike must be calculated and deliberate
-- **비수 (Bisu)** - Lethal Blade: Metaphorical lethality in unarmed combat
-- **암살자 (Amsalja)** - Assassin: Focus on finishing techniques over prolonged combat
-- **급소격 (Geupsogyeok)** - Vital Point Strike: Core combat mechanic
+- **정격자 (Jeonggyeokja)** - Precision Striker: Every strike targets anatomical vulnerabilities
+- **비수 (Bisu)** - Lethal Technique: Realistic application of traditional martial arts
+- **암살자 (Amsalja)** - Combat Specialist: Focus on immediate incapacitation
+- **급소격 (Geupsogyeok)** - Vital Point Strike: Authentic pressure point combat
 
 ## Game Overview
 
 ### Genre
 
-2D Action-Combat / Precision Fighter
+2D Realistic Combat Simulator / Traditional Martial Arts Training
 
 ### Platform
 
-Web-based (HTML5/WebGL via PixiJS)
+Web-based (HTML5/WebGL via PixiJS) optimized for authentic 60fps combat physics
 
 ### Target Audience
 
-- Martial arts enthusiasts
-- Precision action game players
-- Players interested in Korean culture and philosophy
+- Fans of realistic combat simulation (Budokan, IK+, Way of the Exploding Fist)
+- Martial arts practitioners seeking authentic technique knowledge
+- Players interested in traditional Korean martial arts techniques
+- Combat enthusiasts wanting precision-based combat gameplay
 
 ### Unique Selling Points
 
-1. **Trigram-based combat system** with 8 distinct fighting styles
-2. **Vital point targeting** requiring anatomical knowledge
-3. **Korean martial arts authenticity** with proper terminology
-4. **Philosophical depth** connecting combat to I Ching principles
-5. **One-hit potential** emphasizing precision over button mashing
+1. **Realistic Combat Physics** - Real body mechanics with authentic combat focus
+2. **Anatomical Precision** - 70 actual vital points for tactical advantage
+3. **Combat Realism** - Blood, bruising, bone impact, realistic physics
+4. **Korean Martial Arts** - Based on traditional techniques and philosophy
+5. **Traditional Knowledge** - Teaches actual pressure points and applications
 
-## Core Mechanics
+## Realistic Combat System
 
-### 1. Trigram Combat System (팔괘 무술체계)
+### Core Body Mechanics
 
-Each of the 8 trigrams represents a unique fighting philosophy and moveset:
+#### Health & Combat System (건강 및 전투 체계)
 
-#### ☰ 건 (Geon) - Heaven/Sky
+```
+COMBAT READINESS:
+■■■■■■■■■■ 100% - Combat ready, full capability
+■■■■■■■■□□  80% - Light damage, reduced capability
+■■■■■■□□□□  60% - Moderate damage, significant impairment
+■■■■□□□□□□  40% - Heavy damage, severe limitation
+■■□□□□□□□□  20% - Critical damage, near incapacitation
+□□□□□□□□□□   0% - Incapacitated/Defeated
+```
 
-- **Philosophy**: Pure yang energy, overwhelming force
-- **Combat Style**: Power strikes, breaking guards
-- **Vital Points**: Solar plexus, sternum
-- **Special**: "천둥벽력" (Thunder Strike) - devastating overhead attacks
+#### Pain Response System (고통 반응 체계)
 
-#### ☱ 태 (Tae) - Lake/Marsh
+- **충격통 (Shock Pain)** - Instant reaction affecting all abilities
+- **누적외상 (Cumulative Trauma)** - Progressive damage impairment
+- **통증과부하 (Pain Overload)** - Complete incapacitation from overwhelming pain
+- **무력화한계 (Incapacitation Threshold)** - Point of complete combat inability
 
-- **Philosophy**: Joy and flexibility, adaptive combat
-- **Combat Style**: Flowing combinations, redirection
-- **Vital Points**: Joints, pressure points
-- **Special**: "유수연타" (Flowing Water Combo) - chain attacks
+#### Balance & Vulnerability (균형 및 취약성)
 
-#### ☲ 리 (Li) - Fire
+```
+COMBAT STATES:
+🟢 준비완료 (READY)     - Perfect combat position, full capability
+🟡 동요상태 (SHAKEN)    - Slightly compromised, reduced accuracy
+🟠 취약상태 (VULNERABLE) - Significantly exposed, high damage window
+🔴 무력상태 (HELPLESS)  - Complete vulnerability, incapacitation opportunity
+```
 
-- **Philosophy**: Clarity and intensity, precise strikes
-- **Combat Style**: Fast, accurate attacks
-- **Vital Points**: Eyes, temples, throat
-- **Special**: "화염지창" (Flame Spear) - penetrating strikes
+#### Consciousness Levels (의식 수준)
 
-#### ☳ 진 (Jin) - Thunder
+- **전투각성 (Combat Alert)** - Full awareness, optimal combat ability
+- **혼란상태 (Disoriented)** - Reduced reaction, vulnerability window
+- **기절직전 (Stunned)** - Severe impairment, incapacitation opportunity
+- **무의식 (Unconscious)** - Complete incapacitation
 
-- **Philosophy**: Sudden movement, shock attacks
-- **Combat Style**: Explosive bursts, stunning moves
-- **Vital Points**: Nervous system points
-- **Special**: "벽력일섬" (Lightning Flash) - instant counters
+### Player Archetypes
 
-#### ☴ 손 (Son) - Wind
+#### 1. 무사 (Musa) - Traditional Warrior
 
-- **Philosophy**: Gentle persistence, wearing down
-- **Combat Style**: Light, continuous pressure
-- **Vital Points**: Breathing points, energy meridians
-- **Special**: "선풍연격" (Whirlwind Barrage) - rapid strikes
+**Background**: Military special forces with traditional martial arts training  
+**Philosophy**: Honor through strength, disciplined combat  
+**Combat Style**: Direct confrontation, overwhelming force  
+**Preferred Trigrams**: ☰ Heaven, ☳ Thunder  
+**Equipment**: Tactical gear with traditional elements
 
-#### ☵ 감 (Gam) - Water
+**Combat Specialization**:
 
-- **Philosophy**: Adaptation and flow, defensive mastery
-- **Combat Style**: Evasion and counter-attacks
-- **Vital Points**: Circulation points
-- **Special**: "수류반격" (Water Return Strike) - perfect counters
+- **관절기법 (Joint Techniques)** - Traditional joint manipulation and control
+- **급소타격 (Vital Point Strikes)** - Military-taught pressure point targeting
+- **제압술 (Submission Techniques)** - Honor-based control methods
 
-#### ☶ 간 (Gan) - Mountain
+**Special Abilities**:
 
-- **Philosophy**: Stillness and endurance, defensive stance
-- **Combat Style**: Solid defense, immovable positions
-- **Vital Points**: Structural weak points
-- **Special**: "반석방어" (Bedrock Defense) - damage reduction
+- **군인정신 (Gunin Jeongsin)** - Military discipline for increased focus
+- **돌격명령 (Dolgyeok Myeongryeong)** - Assault command for team coordination
+- **전투경험 (Jeontu Gyeongheom)** - Combat experience for damage resistance
 
-#### ☷ 곤 (Gon) - Earth
+**Signature Techniques**:
 
-- **Philosophy**: Receptive yin energy, grounding techniques
-- **Combat Style**: Throws, takedowns, ground control
-- **Vital Points**: Balance points, lower body
-- **Special**: "대지포옹" (Earth's Embrace) - grappling finishers
+- **관절꺾기 (Joint Breaking)** - Honorable arm/wrist control for incapacitation
+- **경동맥압박 (Carotid Compression)** - Traditional blood flow restriction
+- **척추타격 (Spinal Strikes)** - Direct force spine-targeting attacks
 
-### 2. Vital Point System (급소 시스템)
+#### 2. 암살자 (Amsalja) - Shadow Assassin
 
-#### Anatomical Targeting
+**Background**: Covert operative specializing in silent takedowns  
+**Philosophy**: Efficiency through invisibility, one perfect strike  
+**Combat Style**: Stealth approaches, instant takedowns  
+**Preferred Trigrams**: ☴ Wind, ☵ Water
 
-Players must learn actual martial arts vital points:
+**Combat Specialization**:
 
-- **머리 (Meori)** - Head: 12 target points
-- **목 (Mok)** - Neck/Throat: 8 target points
-- **몸통 (Momtong)** - Torso: 20 target points
-- **팔 (Pal)** - Arms: 14 target points
-- **다리 (Dari)** - Legs: 16 target points
+- **무성제압 (Silent Takedowns)** - Techniques preventing vocal response
+- **신경파괴 (Nerve Strikes)** - Precise neural disruption for stealth
+- **호흡차단 (Respiratory Attacks)** - Silent breathing and consciousness targeting
 
-#### Strike Precision Mechanics
+**Special Abilities**:
 
-- **Perfect Hit**: Direct vital point contact (150% damage)
-- **Good Hit**: Near vital point (100% damage)
-- **Glancing Blow**: Off-target (50% damage)
-- **Miss**: No contact (0% damage)
+- **그림자술 (Geurimja-sul)** - Shadow techniques for stealth
+- **일격필살 (Ilgyeok Pilsal)** - One-strike incapacitation potential
+- **침묵행보 (Chimmuk Haengbo)** - Silent movement
 
-#### Targeting Interface
+**Signature Techniques**:
 
-- **Precision Cursor**: Cross-hair targeting system
-- **Anatomical Overlay**: Shows vital points during slow-motion
-- **Knowledge System**: Unlocks new vital points through study
+- **경추타격 (Cervical Strikes)** - Silent neck strikes for instant incapacitation
+- **늑간신경 (Intercostal Nerve)** - Hidden rib nerve strikes for paralysis
+- **기도압박 (Tracheal Compression)** - Stealth windpipe control attacks
 
-### 3. Combat Flow
+#### 3. 해커 (Hacker) - Cyber Warrior
 
-#### Initiative System
+**Background**: Digital native with physical combat training  
+**Philosophy**: Information as power, technological advantage  
+**Combat Style**: Environmental manipulation, tech-assisted strikes  
+**Preferred Trigrams**: ☲ Fire, ☱ Lake
 
-Combat begins with **기선제압 (Giseon Jeap)** - seizing the initiative:
+**Combat Specialization**:
 
-1. **Read Phase**: Analyze opponent's stance and trigram
-2. **Approach Phase**: Choose distance and angle
-3. **Strike Phase**: Execute technique with precision timing
-4. **Follow-up Phase**: Capitalize on successful hits or recover from misses
+- **해부학적분석 (Anatomical Analysis)** - Data-driven approach to vital points
+- **생체역학파괴 (Biomechanical Destruction)** - Tech-enhanced body mechanics understanding
+- **체계적제압 (Systematic Incapacitation)** - Algorithm-based damage accumulation
 
-#### Timing Mechanics
+**Special Abilities**:
 
-- **호흡 (Hoheup)** - Breathing rhythm affects precision
-- **간격 (Gangyeok)** - Distance management is crucial
-- **박자 (Bakja)** - Rhythm and timing windows for attacks
+- **전자전 (Jeonja-jeon)** - Electronic warfare for distraction
+- **데이터분석 (Data Bunseok)** - Opponent pattern analysis
+- **시스템해킹 (System Hacking)** - Environmental control
 
-### 4. Character Progression
+**Signature Techniques**:
 
-#### Trigram Mastery Levels
+- **신경절차단 (Nerve Cluster Blocking)** - Tech-analyzed nerve center disruption
+- **혈관압박 (Vascular Compression)** - Calculated blood flow restriction
+- **관절파괴 (Joint Destruction)** - Data-driven joint incapacitation
 
-Each trigram has 5 mastery levels:
+#### 4. 정보요원 (Jeongbo Yowon) - Intelligence Operative
 
-1. **입문 (Ipmun)** - Beginner: Basic techniques
-2. **초급 (Chogeup)** - Novice: Combination attacks
-3. **중급 (Junggeup)** - Intermediate: Advanced techniques
-4. **고급 (Gogeup)** - Advanced: Master techniques
-5. **사범 (Sabeom)** - Master: Secret techniques
+**Background**: Government agent with psychological warfare training  
+**Philosophy**: Knowledge through observation, strategic thinking  
+**Combat Style**: Psychological manipulation, precise timing  
+**Preferred Trigrams**: ☶ Mountain, ☷ Earth
 
-#### Knowledge Acquisition
+**Combat Specialization**:
 
-- **고서 연구 (Goseo Yeongu)** - Ancient text study for new techniques
-- **실전 경험 (Siljeon Gyeongheom)** - Combat experience
-- **명상 수련 (Myeongsang Suryeon)** - Meditation for focus improvement
+- **고통순응 (Pain Compliance)** - Intelligence-based submission through pain
+- **심리적압박 (Psychological Pressure)** - Mental intimidation through technique
+- **정보추출 (Information Extraction)** - Combat methods from interrogation training
 
-## Visual Design
+**Special Abilities**:
 
-### Art Style
+- **심리전 (Simri-jeon)** - Psychological warfare
+- **정보수집 (Jeongbo Sujip)** - Intelligence gathering
+- **전략분석 (Jeonryak Bunseok)** - Strategic analysis
 
-- **Korean Traditional Art** influence with modern 2D animation
-- **Ink Brush Aesthetics** for UI elements and effects
-- **Muted Color Palette** emphasizing blacks, whites, and deep reds
-- **Geometric Trigram Patterns** integrated into environmental design
+**Signature Techniques**:
 
-### Character Design
+- **압점고문 (Pressure Point Control)** - Intelligence-based nerve pressure
+- **심리적위압 (Psychological Intimidation)** - Fear-based tactical intimidation
+- **복종유도 (Submission Induction)** - Strategic pain-based surrender
 
-#### Player Archetypes
+#### 5. 조직폭력배 (Jojik Pokryeokbae) - Organized Crime
 
-1. **정격자 (Jeonggyeokja)** - Precision Attacker
+**Background**: Underground fighter with street-smart brutality  
+**Philosophy**: Survival through ruthlessness, practical violence  
+**Combat Style**: Dirty fighting, improvised weapons  
+**Preferred Trigrams**: ☳ Thunder, ☵ Water
 
-   - Lean, focused appearance
-   - Traditional Korean martial arts uniform (도복)
-   - Minimal, functional design
+**Combat Specialization**:
 
-2. **암살자 (Amsalja)** - Shadow Assassin
+- **환경활용 (Environmental Usage)** - Street-smart use of surroundings as weapons
+- **더러운기법 (Dirty Techniques)** - Brutal eye attacks, groin strikes, hair pulling
+- **생존격투 (Survival Fighting)** - Underground whatever-it-takes combat
 
-   - Dark, flowing garments
-   - Hidden face/mask elements
-   - Emphasis on stealth aesthetics
+**Special Abilities**:
 
-3. **무사 (Musa)** - Traditional Warrior
-   - Classical Korean warrior appearance
-   - Honor-bound visual elements
-   - Traditional weapons as decoration (unused in combat)
+- **거리격투 (Geori Gyeoktu)** - Street fighting techniques
+- **생존본능 (Saengjon Bonneung)** - Survival instincts
+- **조직력 (Jojik-ryeok)** - Gang coordination
 
-### Environment Design
+**Signature Techniques**:
 
-- **전통 무관 (Jeongtong Mugwan)** - Traditional Training Halls
-- **산속 수련장 (Sansok Suryeonjang)** - Mountain Training Grounds
-- **도성 뒷골목 (Doseong Dwitgolmok)** - City Back Alleys
-- **궁궐 비밀실 (Gunggweol Bimil-sil)** - Palace Secret Chambers
+- **눈찌르기 (Eye Strikes)** - Street-brutal blinding attacks
+- **사타구니공격 (Groin Attacks)** - Ruthless incapacitating strikes
+- **목조르기 (Choking)** - Underground strangulation techniques
 
-### UI/UX Design
+### Authentic Trigram Applications
 
-- **한글 Typography** with English subtitles
-- **Trigram Iconography** for navigation and status
-- **Ink Brush Transitions** between screens
-- **Traditional Korean Color Schemes** (오방색 - Five Direction Colors)
+#### ☰ 건 (Geon) - Heaven/Direct Force
 
-## Audio Design
+**Combat Application**: Overwhelming physical power
 
-### Music Style
+- **기법 (Technique)**: Direct bone-striking attacks, structural damage
+- **전투효과 (Combat Effect)**: Fractures, concussions, immediate trauma
+- **음향 (Audio)**: Deep bone impact, crushing contact sounds
 
-- **Traditional Korean Instruments**: 가야금 (Gayageum), 대금 (Daegeum), 장구 (Janggu)
-- **Modern Electronic Fusion** for contemporary feel
-- **Dynamic Scoring** that responds to combat intensity
-- **Trigram-specific Themes** for each fighting style
+#### ☱ 태 (Tae) - Lake/Flowing
 
-### Sound Effects
+**Combat Application**: Fluid redirection techniques
 
-- **Realistic Combat Audio**: Authentic martial arts impact sounds
-- **Environmental Ambience**: Traditional Korean architecture acoustics
-- **Voice Acting**: Korean language with proper martial arts terminology
-- **Breathing Effects**: Emphasis on 호흡 (breathing) in combat
+- **기법 (Technique)**: Joint manipulation, throws
+- **전투효과 (Combat Effect)**: Dislocations, torn ligaments
+- **음향 (Audio)**: Joint popping, ligament stress sounds
+
+#### ☲ 리 (Li) - Fire/Precision
+
+**Combat Application**: Exact vital point targeting
+
+- **기법 (Technique)**: Needle-point accuracy strikes
+- **전투효과 (Combat Effect)**: Nerve damage, temporary paralysis
+- **음향 (Audio)**: Sharp impact, breath disruption
+
+#### ☳ 진 (Jin) - Thunder/Shock
+
+**Combat Application**: Stunning nerve strikes
+
+- **기법 (Technique)**: Electric-like nerve disruption
+- **전투효과 (Combat Effect)**: Temporary paralysis, muscle spasms
+- **음향 (Audio)**: Sharp crack, neural impact
+
+#### ☴ 손 (Son) - Wind/Persistence
+
+**Combat Application**: Continuous pressure techniques
+
+- **기법 (Technique)**: Sustained pressure point attacks
+- **전투효과 (Combat Effect)**: Gradual incapacitation, cumulative pain
+- **음향 (Audio)**: Sustained pressure, grinding contact
+
+#### ☵ 감 (Gam) - Water/Adaptation
+
+**Combat Application**: Counter-grappling, escape techniques
+
+- **기법 (Technique)**: Slippery escapes, flow reversals
+- **전투효과 (Combat Effect)**: Joint strain, ligament damage
+- **음향 (Audio)**: Sliding, escaping friction
+
+#### ☶ 간 (Gan) - Mountain/Defense
+
+**Combat Application**: Immovable defensive positions
+
+- **기법 (Technique)**: Blocking, absorbing, redirecting
+- **전투효과 (Combat Effect)**: Bruising, impact absorption
+- **음향 (Audio)**: Solid blocks, deflection impacts
+
+#### ☷ 곤 (Gon) - Earth/Grounding
+
+**Combat Application**: Takedowns, ground control
+
+- **기법 (Technique)**: Wrestling, ground techniques
+- **전투효과 (Combat Effect)**: Impact trauma, positional control
+- **음향 (Audio)**: Body impact, ground contact
+
+## Realistic Visual & Audio Feedback
+
+### Authentic Combat Effects
+
+#### Blood & Trauma System
+
+- **경상출혈 (Minor Bleeding)** - Small cuts, facial bleeding
+- **중등외상 (Moderate Trauma)** - Deep lacerations, significant bleeding
+- **중상출혈 (Severe Bleeding)** - Heavy bleeding requiring immediate attention
+- **점진적손상 (Progressive Damage)** - Realistic trauma accumulation
+
+#### Realistic Sound Design
+
+- **골절음 (Bone Breaking)** - Authentic bone fracture sounds
+- **타격음 (Flesh Impact)** - Body contact sounds with appropriate intensity
+- **관절음 (Joint Manipulation)** - Realistic joint movement and stress
+- **호흡음 (Breathing Effects)** - Gasping, wheezing, breath disruption
+- **낙하음 (Falling Sounds)** - Body impact with ground contact
+
+#### Body Response Animation
+
+- **통증반응 (Pain Reactions)** - Realistic flinching and protective responses
+- **균형상실 (Balance Loss)** - Authentic stumbling and recovery attempts
+- **무의식상태 (Unconsciousness)** - Proper collapse and incapacitation mechanics
+- **손상적응 (Injury Adaptation)** - Movement changes based on damage
+
+### Anatomical Training
+
+#### Vital Point Education (급소 교육)
+
+- **70+ 급소점 (70+ Vital Points)** with combat explanations
+- **생리학적효과 (Physiological Effects)** - Real consequences of each strike
+- **전투정보 (Combat Information)** - Understanding of technique applications
+- **실전통합 (Combat Integration)** - Practical combat response training
+
+#### Combat Training
+
+- **골격표적 (Skeleton Targeting)** - Show bone structure and vulnerabilities
+- **신경파괴 (Nerve Targeting)** - Display nervous system targets
+- **혈류차단 (Blood Flow Restriction)** - Circulation control points
+- **호흡차단 (Respiratory Control)** - Breathing disruption techniques
+
+## Game Modes (Combat Focus)
+
+### 1. 해부학 연구 (Anatomical Study) - Target Analysis
+
+- **급소학습 (Vital Point Study)** - Learn vital point locations and effects
+- **정밀타격 (Precision Striking)** - Vital point targeting techniques
+- **고급기법 (Advanced Techniques)** - Professional combat applications
+- **실전응용 (Practical Application)** - Combat scenario training
+
+### 2. 무술 기법 (Martial Techniques) - Skill Development
+
+- **기본기 (Fundamentals)** - Basic strikes and positioning
+- **팔괘술 (Trigram Arts)** - Eight trigram combat applications
+- **연계기법 (Combination Techniques)** - Realistic technique chains
+- **정밀술 (Precision Arts)** - Scenario-based combat training
+
+### 3. 실전 훈련 (Combat Training) - Realistic Sparring
+
+- **일대일 (One-on-One)** - Single opponent realistic combat
+- **다대일 (Multiple Opponents)** - Realistic multi-attacker scenarios
+- **환경전투 (Environmental Combat)** - Using surroundings tactically
+- **연속대전 (Continuous Combat)** - Endurance-based realistic combat
+
+### 4. 정신 수양 (Mental Cultivation) - Psychological Training
+
+- **고통내성 (Pain Tolerance)** - Building resistance to pain
+- **정신집중 (Mental Focus)** - Concentration under pressure
+- **공포극복 (Fear Management)** - Dealing with combat stress
+- **의지력 (Willpower)** - Maintaining consciousness under duress
 
 ## Technical Implementation
 
-### PixiJS Architecture
-
-#### Core Game Systems
+### Realistic Physics Engine
 
 ```typescript
-// Game state management using trigram principles
-interface TrigramState {
-  currentTrigram: TrigramType;
-  masteryLevel: number;
-  availableTechniques: Technique[];
-  vitalPointKnowledge: VitalPoint[];
+// Authentic combat mechanics
+interface CombatMechanics {
+  health: number; // 0-100 overall condition
+  pain: number; // Current pain level affecting performance
+  balance: CombatState; // READY | SHAKEN | VULNERABLE | HELPLESS
+  consciousness: number; // 0-100 awareness level
+  bloodLoss: number; // Cumulative bleeding effects
+  stamina: number; // Energy and endurance status
 }
 
-// Combat system with precision mechanics
-interface CombatSystem {
-  targetingPrecision: number;
-  timingWindow: number;
-  breathingRhythm: number;
-  currentStance: StanceType;
+// Real vital point data
+interface VitalPoint {
+  name: string; // Korean and English names
+  location: { x: number; y: number };
+  combatEffect: string; // Actual physiological consequence
+  difficulty: number; // 1-5 precision rating
+  technique: string[]; // Appropriate striking methods
+  recovery: number; // Time to recover from hit
 }
 ```
 
-#### React Component Structure
+### Realistic Combat Calculation
 
-```
-src/
-├── components/
-│   ├── combat/
-│   │   ├── TrigramSelector.tsx
-│   │   ├── VitalPointOverlay.tsx
-│   │   ├── PrecisionCursor.tsx
-│   │   └── CombatInterface.tsx
-│   ├── character/
-│   │   ├── CharacterSelect.tsx
-│   │   ├── TrigramMastery.tsx
-│   │   └── ProgressionTree.tsx
-│   └── ui/
-│       ├── KoreanUI.tsx
-│       ├── TrigramNavigation.tsx
-│       └── TraditionalDialogs.tsx
-├── systems/
-│   ├── CombatEngine.ts
-│   ├── TrigramLogic.ts
-│   ├── VitalPointSystem.ts
-│   └── PrecisionCalculator.ts
-└── assets/
-    ├── characters/
-    ├── environments/
-    ├── ui/
-    └── audio/
+```typescript
+// Authentic combat calculation
+function calculateCombatDamage(
+  strike: StrikeData,
+  target: VitalPoint,
+  force: number,
+  angle: number
+): CombatResult {
+  const accuracy = calculateStrikePrecision(strike, target);
+  const effectiveness = determineCombatEffect(target, force);
+  const consciousness = calculateConsciousnessImpact(target, force);
+
+  return {
+    physicalDamage: effectiveness,
+    painLevel: calculatePainResponse(target, force),
+    balanceEffect: determineCombatImpact(target, angle),
+    consciousnessLoss: consciousness,
+    bleedingAmount: calculateBleeding(target, force),
+    recoveryTime: estimateRecoveryPeriod(target, effectiveness),
+  };
+}
 ```
 
-### Performance Considerations
+## Cultural and Traditional Integration
 
-- **Sprite Batching** for character animations
-- **Texture Atlasing** for UI elements
-- **Audio Optimization** using Howler.js
-- **State Management** with efficient React patterns
+### Korean Martial Arts Authenticity
 
-## Game Modes
+- **전통기법 (Traditional Techniques)** - Based on actual Korean martial arts (태권도, 합기도, 택견, 유술)
+- **정통용어 (Authentic Terminology)** - Traditional Korean names with combat translations
+- **역사적맥락 (Historical Context)** - Real Korean military and martial arts history
+- **철학적기반 (Philosophical Foundation)** - Genuine I Ching principles in combat application
 
-### 1. 수련 모드 (Suryeon Mode) - Training
+### Educational Value
 
-- **Vital Point Study**: Learn anatomical targets
-- **Trigram Practice**: Master individual styles
-- **Precision Training**: Improve targeting accuracy
-- **Breathing Exercises**: Develop rhythm and timing
+- **무술교육 (Martial Education)** - Real anatomy and combat learning
+- **전통사 (Traditional History)** - Korean fighting tradition education
+- **안전의식 (Safety Awareness)** - Understanding technique consequences
+- **응급처치 (First Aid Training)** - Basic medical response to injuries
 
-### 2. 대련 모드 (Daeryeon Mode) - Sparring
+### Traditional Framework
 
-- **Single Combat**: One-on-one precision duels
-- **Tournament**: Progressive difficulty challenges
-- **Master Challenges**: Face legendary martial artists
-
-### 3. 철학 모드 (Cheolhak Mode) - Philosophy
-
-- **I Ching Study**: Learn trigram meanings and applications
-- **Historical Lessons**: Korean martial arts history
-- **Meditation Practice**: Improve focus and precision
-
-### 4. 암살 모드 (Amsal Mode) - Assassination
-
-- **Stealth Missions**: Eliminate targets without detection
-- **One-Strike Challenges**: Perfect precision requirements
-- **Environmental Kills**: Use surroundings tactically
-
-## Progression Systems
-
-### Mastery Paths
-
-1. **Knowledge Acquisition**
-
-   - Study ancient martial arts texts
-   - Learn new vital points
-   - Understand trigram philosophy
-
-2. **Physical Development**
-
-   - Improve strike precision
-   - Develop faster reaction times
-   - Build stamina for extended combat
-
-3. **Spiritual Growth**
-   - Balance yin/yang energies
-   - Achieve mental clarity
-   - Master breath control
-
-### Unlockable Content
-
-- **New Trigram Techniques**: Advanced combinations
-- **Historical Scenarios**: Famous martial arts encounters
-- **Master Costumes**: Traditional Korean martial arts attire
-- **Legendary Opponents**: Face historical martial arts masters
-
-## Cultural Authenticity
-
-### Korean Language Integration
-
-- **Proper Terminology**: Authentic martial arts vocabulary
-- **Cultural Context**: Historical and philosophical background
-- **Respectful Representation**: Accurate portrayal of traditions
-
-### Educational Elements
-
-- **Martial Arts History**: Korean fighting traditions
-- **Philosophical Depth**: I Ching principles in combat
-- **Cultural Values**: Honor, precision, and discipline
-
-## Monetization Strategy
-
-### Base Game
-
-- Complete single-player experience
-- 8 trigram fighting styles
-- Training and sparring modes
-
-### DLC/Expansion Content
-
-- **Historical Campaigns**: Famous Korean martial artists
-- **Advanced Techniques**: Master-level trigram combinations
-- **Customization Packs**: Traditional Korean clothing and accessories
-- **New Environments**: Additional training locations
+- **실전적용 (Practical Application)** - Emphasis on self-defense and sport application
+- **전투인식 (Combat Awareness)** - Clear understanding of technique effects
+- **현실적경고 (Realistic Warnings)** - Proper warnings about real-world application
+- **교육목적 (Educational Purpose)** - Focus on learning traditional martial arts
 
 ## Success Metrics
 
-### Player Engagement
+### Combat Proficiency
 
-- **Precision Improvement**: Track targeting accuracy over time
-- **Trigram Mastery**: Monitor style progression
-- **Cultural Learning**: Test knowledge of Korean martial arts
-- **Retention Rate**: Long-term player engagement
+- **해부학적지식 (Anatomical Knowledge)** - Accurate vital point identification
+- **기법정밀도 (Technique Precision)** - Exact targeting and timing
+- **안전의식 (Safety Awareness)** - Understanding of technique consequences
+- **실전응용 (Combat Application)** - Proper technique execution
 
-### Educational Impact
+### Traditional Achievement
 
-- **Cultural Awareness**: Understanding of Korean traditions
-- **Martial Arts Interest**: Inspiration for real-world practice
-- **Philosophical Growth**: Application of I Ching principles
-
-## Risk Assessment
-
-### Technical Risks
-
-- **Performance Optimization**: Ensuring smooth 60fps gameplay
-- **Cross-platform Compatibility**: Web browser variations
-- **Audio Synchronization**: Precise timing for combat feedback
-
-### Cultural Risks
-
-- **Authenticity Concerns**: Accurate representation of traditions
-- **Language Barriers**: Proper Korean language implementation
-- **Cultural Sensitivity**: Respectful treatment of martial arts heritage
-
-### Market Risks
-
-- **Niche Appeal**: Limited to martial arts enthusiasts
-- **Learning Curve**: Complex mechanics may deter casual players
-- **Competition**: Existing fighting game franchises
-
-## Development Timeline
-
-### Phase 1: Core Systems (Months 1-3)
-
-- Basic combat mechanics
-- Trigram system implementation
-- Vital point targeting
-- Character movement and animation
-
-### Phase 2: Content Creation (Months 4-6)
-
-- 8 trigram fighting styles
-- Training modes
-- Basic AI opponents
-- UI/UX implementation
-
-### Phase 3: Polish & Testing (Months 7-9)
-
-- Audio integration
-- Visual effects
-- Balance testing
-- Cultural authenticity review
-
-### Phase 4: Launch Preparation (Months 10-12)
-
-- Performance optimization
-- Localization
-- Marketing materials
-- Community building
-
-## Post-Launch Support
-
-### Content Updates
-
-- **Monthly Technique Releases**: New trigram combinations
-- **Seasonal Events**: Traditional Korean holidays
-- **Community Challenges**: Precision tournaments
-
-### Community Features
-
-- **Replay Sharing**: Show perfect technique executions
-- **Knowledge Base**: Player-contributed martial arts insights
-- **Cultural Exchange**: Connect with Korean martial arts practitioners
+- **무술이해 (Martial Understanding)** - Comprehension of combat effects
+- **문화학습 (Cultural Learning)** - Korean martial arts knowledge
+- **전투의식 (Combat Consciousness)** - Responsible technique awareness
+- **무예기술 (Martial Skills)** - Practical combat response capability
 
 ---
 
-_"무예는 몸과 마음, 그리고 영혼의 조화이다"_  
-_"Martial arts are the harmony of body, mind, and spirit"_
+_"어둠 속에서 완벽한 일격을 찾아라"_  
+_"In darkness, seek the perfect strike"_
 
 ---
 
-**Game Design Document Version**: 1.0  
+**Game Design Document Version**: 6.0 - **Combat Specialist Focus**  
 **Last Updated**: December 2024  
-**Document Status**: Draft for Development
+**Document Status**: Authentic Korean Martial Arts Training

@@ -2,10 +2,10 @@
 
 # 🥋 Black Trigram (흑괘)
 
-### _무예는 몸과 마음, 그리고 영혼의 조화이다_
+### _어둠의 무예로 완벽한 일격을 추구하라_
 
-_"Martial arts are the harmony of body, mind, and spirit"_
-**[🎮 Play Now](https://blacktrigram.com/)**
+_"Master the dark arts through the pursuit of the perfect strike"_
+**[🎮 Enter the Dojang](https://blacktrigram.com/)**
 
 ![Dark Trigram Logo](public/black-trigram.png)
 
@@ -16,18 +16,17 @@ _"Martial arts are the harmony of body, mind, and spirit"_
 [![Scorecard supply-chain security](https://github.com/Hack23/blacktrigram/actions/workflows/scorecards.yml/badge.svg?branch=main)](https://github.com/Hack23/blacktrigram/actions/workflows/scorecards.yml)
 [![Test & Report](https://github.com/Hack23/blacktrigram/actions/workflows/test-and-report.yml/badge.svg?branch=main)](https://github.com/Hack23/blacktrigram/actions/workflows/test-and-report.yml)
 
-
-_A 2D precision combat game inspired by Korean martial arts philosophy and the I Ching_
+_A realistic 2D precision combat game inspired by Korean martial arts philosophy and the I Ching_
 
 </div>
 
 ---
 
-## ⚡ Game Overview
+## ⚡ Combat Mastery
 
-**Black Trigram** is a **precision combat experience** that blends traditional Korean martial arts with cutting-edge web technology. Master the dark arts of vital point striking through **eight distinct trigram fighting styles**, each rooted in ancient philosophy yet delivered with modern 2D action.
+**Black Trigram** is a **realistic combat simulator** that teaches authentic Korean martial arts through precise anatomical targeting. Master traditional vital point techniques through modern 2D combat mechanics across 5 distinct fighter archetypes.
 
-### 🎯 Core Combat Archetypes
+### 🎯 Combat Disciplines
 
 <table>
 <tr>
@@ -35,29 +34,29 @@ _A 2D precision combat game inspired by Korean martial arts philosophy and the I
 
 **🎯 정격자**  
 _Jeonggyeokja_  
-**Precision Attacker**
+**Precision Striker**
 
-_Every strike calculated  
-and deliberate_
+_Every strike targets  
+anatomical weak points_
 
 </td>
 <td align="center" width="25%">
 
 **⚔️ 비수**  
 _Bisu_  
-**Lethal Blade**
+**Lethal Technique**
 
-_Metaphorical lethality  
-in unarmed combat_
+_Decisive unarmed  
+combat methods_
 
 </td>
 <td align="center" width="25%">
 
 **🥷 암살자**  
 _Amsalja_  
-**Assassin**
+**Shadow Assassin**
 
-_Focus on finishing  
+_Silent takedown  
 techniques_
 
 </td>
@@ -67,8 +66,8 @@ techniques_
 _Geupsogyeok_  
 **Vital Point Strike**
 
-_Core combat  
-mechanic_
+_70 anatomical targets  
+for incapacitation_
 
 </td>
 </tr>
@@ -76,52 +75,68 @@ mechanic_
 
 ---
 
-## 🌟 Enhanced Game Features
+## 🌟 Authentic Combat Features
 
-### 🔮 Trigram-Based Combat System (팔괘 무술체계)
+### 🥋 Player Archetypes
 
-Master **8 unique fighting philosophies** based on the I Ching trigrams with enhanced visual effects:
+Master combat through 5 distinct fighting philosophies:
 
 <div align="center">
 
-| Trigram |           Name            |       Philosophy        |       Combat Style       |         Visual Effects         |
-| :-----: | :-----------------------: | :---------------------: | :----------------------: | :----------------------------: |
-|    ☰    | **건 (Geon)** - _Heaven_  |    Pure yang energy     |     🔥 Power strikes     | Lightning bursts, screen shake |
-|    ☱    |   **태 (Tae)** - _Lake_   |   Joy and flexibility   | 🌊 Flowing combinations  |      Water ripple effects      |
-|    ☲    |   **리 (Li)** - _Fire_    |  Clarity and intensity  | ⚡ Fast, precise attacks |      Fire particle trails      |
-|    ☳    | **진 (Jin)** - _Thunder_  |     Sudden movement     |   💥 Explosive bursts    |      Thunder shock waves       |
-|    ☴    |   **손 (Son)** - _Wind_   |   Gentle persistence    |  🌪️ Continuous pressure  |      Wind spiral effects       |
-|    ☵    |  **감 (Gam)** - _Water_   |   Adaptation and flow   | 🛡️ Evasion and counters  |     Water shield barriers      |
-|    ☶    | **간 (Gan)** - _Mountain_ | Stillness and endurance |   🗿 Immovable defense   |      Stone impact effects      |
-|    ☷    |  **곤 (Gon)** - _Earth_   |  Receptive yin energy   | 🤜 Throws and takedowns  |      Earth shake tremors       |
+| Archetype |                           Name                            |        Combat Philosophy        |                   Special Focus                   |
+| :-------: | :-------------------------------------------------------: | :-----------------------------: | :-----------------------------------------------: |
+|    🏯     |         **무사 (Musa)**<br/>_Traditional Warrior_         |     Honor through strength      |      Military discipline, overwhelming force      |
+|    🥷     |        **암살자 (Amsalja)**<br/>_Shadow Assassin_         | Efficiency through invisibility |       Stealth approaches, instant takedowns       |
+|    💻     |           **해커 (Hacker)**<br/>_Cyber Warrior_           |      Information as power       | Environmental manipulation, tech-assisted strikes |
+|    🕵️     | **정보요원 (Jeongbo Yowon)**<br/>_Intelligence Operative_ |  Knowledge through observation  |    Psychological manipulation, precise timing     |
+|    ⚡     | **조직폭력배 (Jojik Pokryeokbae)**<br/>_Organized Crime_  |  Survival through ruthlessness  |        Dirty fighting, improvised weapons         |
 
 </div>
 
-### 💥 Enhanced Combat Effects
+### 🎯 Anatomical Targeting System
 
-- **🌟 Particle Systems** - Explosive hit effects with 25+ particles for vital strikes
-- **📺 Screen Shake** - Dynamic camera shake based on impact force
-- **⚡ Lightning Effects** - Electric arcs for critical hits
-- **🎭 Dark Trigram Logo** - Appears on devastating vital point strikes
-- **🔊 Audio-Visual Sync** - Sound effects perfectly timed with visual impacts
-- **🌀 Element-Specific Particles** - Each trigram has unique visual effects
+Master **70 authentic vital points** for combat effectiveness:
 
-### 🎯 Advanced Vital Point System
+<div align="center">
 
-- **🎪 70 Anatomical Targets** with enhanced visual feedback
-- **💯 Precision-based damage** - Perfect hits trigger spectacular effects
-- **🧠 Real martial arts knowledge** - Learn actual pressure points
-- **🎨 Korean Typography** - Beautiful Korean text integration
+| Trigram |           Name            |      Combat Focus      |        Combat Effects         |
+| :-----: | :-----------------------: | :--------------------: | :---------------------------: |
+|    ☰    | **건 (Geon)** - _Heaven_  |  Bone-striking force   | Fractures, structural damage  |
+|    ☱    |   **태 (Tae)** - _Lake_   |   Joint manipulation   |  Dislocations, mobility loss  |
+|    ☲    |   **리 (Li)** - _Fire_    | Precise nerve strikes  | Temporary paralysis, numbness |
+|    ☳    | **진 (Jin)** - _Thunder_  |  Stunning techniques   |   Disorientation, knockouts   |
+|    ☴    |   **손 (Son)** - _Wind_   |  Continuous pressure   |    Gradual incapacitation     |
+|    ☵    |  **감 (Gam)** - _Water_   | Blood flow restriction |    Circulation disruption     |
+|    ☶    | **간 (Gan)** - _Mountain_ |   Defensive counters   |    Counter-attacks, blocks    |
+|    ☷    |  **곤 (Gon)** - _Earth_   |   Ground techniques    |       Throws, takedowns       |
+
+</div>
+
+### 💪 Realistic Body Mechanics
+
+- **🩸 Authentic Trauma** - Realistic injury visualization and blood
+- **🦴 Bone Impact Audio** - Genuine bone contact and fracture sounds
+- **🫁 Breathing Disruption** - Respiratory system targeting
+- **⚖️ Balance System** - Realistic stance and momentum physics
+- **🧠 Consciousness States** - Progressive awareness impairment
+- **😵 Pain Response** - Physiological pain affecting performance
+
+### 🎯 Combat Specializations
+
+- **🎯 Anatomical Precision** - 70 target points for tactical advantage
+- **🇰🇷 Traditional Korean Arts** - Authentic techniques from 태권도, 합기도, 택견
+- **⚫ Advanced Techniques** - Professional combat methods from 5 distinct archetypes
+- **🥋 Combat Application** - Real martial arts effectiveness
 
 ---
 
 ## 🚀 Technical Excellence
 
-Built with modern web technologies for **maximum performance** and **security**:
+Built for **combat realism** and **authentic simulation**:
 
 <div align="center">
 
-### 🎮 Enhanced Game Engine
+### 🎮 Combat Physics Engine
 
 ![PixiJS](https://img.shields.io/badge/PixiJS-8.x-ff6b6b?style=for-the-badge&logo=javascript)
 ![React](https://img.shields.io/badge/React-19-61dafb?style=for-the-badge&logo=react)
@@ -141,96 +156,108 @@ Built with modern web technologies for **maximum performance** and **security**:
 
 </div>
 
-### 🎨 New UI Components
+### 🎯 Combat Components
 
-- **CyberpunkPanel** - Futuristic panels with Korean design elements
-- **CyberpunkButton** - Interactive buttons with hover effects
-- **Enhanced HitEffects** - Spectacular visual feedback system
-- **Texture Loading** - Optimized asset management with caching
-
----
-
-## 🎮 Game Controls
-
-### ⌨️ Keyboard Controls
-
-- **🏃 Movement**: `WASD` or `Arrow Keys`
-- **⚔️ Trigram Techniques**: `1-8` (Number keys)
-- **🛡️ Block**: `Spacebar`
-- **🎯 Quick Attack**: `Mouse Click`
-
-### 🎨 Visual Feedback
-
-- **💥 Hit Effects**: Dynamic particle explosions
-- **📺 Screen Shake**: Impact-based camera movement
-- **⚡ Lightning**: Critical hit visual effects
-- **🏮 Logo Appearance**: Dark Trigram logo on vital strikes
+- **VitalPointTargeter** - Interactive anatomical targeting system
+- **CombatTracker** - Real-time damage and status monitoring
+- **TechniqueCalculator** - Precise combat effectiveness calculations
+- **CombatAnalyzer** - Post-match technique analysis
 
 ---
 
-## 🎭 Enhanced Game Modes
+## 🎮 Combat Controls
 
-### 🏯 수련 모드 (Suryeon Mode) - Training
+### ⌨️ Combat Input System
 
-- **📚 Vital Point Study** - Interactive anatomy lessons
-- **⚡ Trigram Practice** - Master visual effect combos
-- **🎯 Precision Training** - Enhanced targeting system
-- **🧘 Philosophy Study** - Learn I Ching principles
+- **🏃 Movement**: `WASD` or `Arrow Keys` - Tactical positioning and footwork
+- **⚔️ Techniques**: `1-8` (Trigram-based combat techniques)
+- **🛡️ Guard**: `Spacebar` - Defensive positioning and blocks
+- **🎯 Vital Strike**: `Mouse` - Targeted vital point attacks
+- **🔄 Archetype Switch**: `Tab` - Change between 5 fighter types
 
-### ⚔️ 대련 모드 (Daeryeon Mode) - Enhanced Sparring
+### 🩸 Combat Feedback
 
-- **💥 Visual Combat** - Spectacular effect-driven fights
-- **🏆 Tournament** - Progressive visual complexity
-- **👑 Master Challenges** - Epic boss encounters with unique effects
+- **💥 Impact Effects**: Bone contact sounds and visual trauma
+- **🩸 Injury System**: Realistic bleeding and damage progression
+- **😵 Incapacitation**: Visual indicators of combat effectiveness
+- **⚖️ Balance**: Physical stance and vulnerability windows
 
-### 🌙 급소격 모드 (Geupsogyeok Mode) - Vital Strike Training
+---
 
-- **🎯 Precision Targeting** - Learn exact vital point locations
-- **💀 One-Shot Challenges** - Perfect accuracy required
-- **🎨 Effect Mastery** - Unlock new visual effects
+## 🎭 Training Modules
+
+### 🎯 해부학 연구 (Anatomical Study)
+
+- **📚 급소학습 (Vital Point Study)** - 70 anatomical target points
+- **🎯 정밀타격 (Precision Striking)** - Accurate targeting techniques
+- **⚫ 고급기법 (Advanced Techniques)** - Professional combat methods
+- **🥋 실전응용 (Practical Application)** - Combat effectiveness training
+
+### ⚔️ 무술 기법 (Martial Techniques)
+
+- **🥋 기본기 (Fundamentals)** - Basic striking and positioning
+- **🔢 팔괘술 (Eight Trigram Arts)** - Traditional Korean combat philosophy
+- **🔗 연계기법 (Combination Techniques)** - Flowing technique sequences
+- **🎯 정밀술 (Precision Arts)** - Exact targeting and timing
+
+### 🥊 실전 훈련 (Combat Training)
+
+- **👤 일대일 (One-on-One)** - Single opponent combat simulation
+- **🏢 환경전투 (Environmental Combat)** - Using surroundings tactically
+- **🧘 정신수양 (Mental Cultivation)** - Psychological combat preparation
+- **🏃 연속대전 (Continuous Combat)** - Multiple opponent scenarios
+
+### 🎭 원형 특화 (Archetype Mastery)
+
+- **🏯 무사도 (Warrior's Way)** - Traditional warrior discipline training
+- **🥷 암영술 (Shadow Arts)** - Stealth and assassination techniques
+- **💻 사이버전 (Cyber Warfare)** - Tech-enhanced combat methods
+- **🕵️ 정보전 (Intelligence Warfare)** - Psychological and strategic combat
+- **⚡ 거리술 (Street Arts)** - Underground survival combat
 
 ---
 
 ## 🔧 Development Features
 
-### 🎨 Enhanced Asset Pipeline
+### 🎯 Anatomical Data Integration
 
 ```typescript
-// Auto-loading textures with caching
-const { texture, loading, error } = useTexture("/dark-trigram-256.png");
-
-// Preload game assets
-await preloadGameTextures();
+// Authentic vital point data with combat applications
+interface VitalPoint {
+  name: { korean: string; english: string; technique: string };
+  location: AnatomicalPosition;
+  effectiveness: CombatEffectiveness;
+  difficulty: PrecisionRequired;
+  method: CombatTechnique[];
+  archetypeBonus: ArchetypeModifier[]; // Special bonuses for different fighter types
+}
 ```
 
-### 💥 Particle Effect System
+### 🩸 Combat Mechanics System
 
 ```typescript
-// Generate hit particles with Korean aesthetics
-const particles = generateHitParticles({
-  count: isVitalHit ? 25 : 12,
-  colors: [CYAN, ORANGE, LIGHTNING_YELLOW],
-  trigram: effect.trigram,
-});
-```
+// Realistic body mechanics for authentic combat
+interface CombatState {
+  health: number; // Physical condition remaining
+  consciousness: number; // Awareness and responsiveness
+  pain: number; // Pain levels affecting performance
+  balance: CombatStability; // Physical stability in combat
+  stamina: number; // Energy and endurance
+  technique: number; // Skill and precision level
+  archetype: PlayerArchetype; // Current fighter specialization
+}
 
-### 📺 Screen Effects
-
-```typescript
-// Dynamic screen shake based on impact
-generateScreenShake({
-  intensity: isVitalHit ? 15 : damage / 2,
-  duration: 300,
-});
+// Player archetype system
+type PlayerArchetype = "musa" | "amsalja" | "hacker" | "jeongbo" | "jojik";
 ```
 
 ---
 
 ## 🚀 Quick Start
 
-### 🌐 Play Online
+### 🌐 Enter the Dojang
 
-**[🎮 Play Black Trigram Now](https://hack23.github.io/blacktrigram/)**
+**[🎮 Begin Combat Training](https://hack23.github.io/blacktrigram/)**
 
 ### 🔧 Local Development
 
@@ -242,77 +269,82 @@ cd blacktrigram
 # Install dependencies
 npm install
 
-# Start development server with hot reload
+# Start combat simulation
 npm run dev
 
-# Build for production with optimizations
+# Build for deployment
 npm run build
 
-# Run comprehensive test suite
+# Run combat testing
 npm run test
-npm run test:e2e
+npm run test:combat
 ```
 
-### 🐳 GitHub Codespaces
-
-1. Click **"Use this template"** or fork the repository
-2. Click **"Code"** → **"Create codespace on main"**
-3. Wait for automatic setup (2-3 minutes)
-4. Run `npm run dev` and start coding!
-
 ---
 
-## 🎯 Game Philosophy
+## 🎯 Combat Philosophy
 
-> **"흑괘에서 무예는 단순한 싸움이 아니다. 그것은 우주의 조화를 몸으로 표현하는 예술이다."**
+> **"어둠 속에서 완벽한 일격을 찾아라"**
 >
-> _"In Black Trigram, martial arts are not mere fighting. They are the art of expressing cosmic harmony through the body."_
+> _"In darkness, seek the perfect strike"_
 
-### 🔮 The Eight Paths (팔괘도)
+### 🎯 Martial Arts Mastery
 
-Each trigram represents not just a fighting style, but a complete philosophy:
+Each technique focuses on:
 
-- **☰ Heaven (건)** - Leadership through overwhelming force
-- **☱ Lake (태)** - Joy in fluid, adaptive combat
-- **☲ Fire (리)** - Clarity of purpose in every strike
-- **☳ Thunder (진)** - Decisive action without hesitation
-- **☴ Wind (손)** - Persistent pressure that wears down mountains
-- **☵ Water (감)** - Flowing around obstacles to find weakness
-- **☶ Mountain (간)** - Immovable defense, perfect timing
-- **☷ Earth (곤)** - Receptive power that grounds opponents
+- **정확한 타격 (Precise Targeting)** - Exact anatomical vulnerable points
+- **최대 효과 (Maximum Effectiveness)** - One-strike incapacitation principles
+- **전투 심리 (Combat Psychology)** - Mental preparation for combat
+- **전통 지식 (Traditional Knowledge)** - Authentic Korean martial arts
+- **원형 특화 (Archetype Specialization)** - Unique approaches per fighter type
+
+### 🇰🇷 Korean Martial Heritage
+
+- **전통 무예 (Traditional Martial Arts)** - Authentic Korean fighting lineages
+- **고전 용어 (Classical Terminology)** - Traditional Korean combat language
+- **주역 철학 (I Ching Philosophy)** - Trigram principles in combat application
+- **무도 문화 (Martial Culture)** - Korean warrior traditions
 
 ---
 
-## 🏆 Achievements & Mastery
+## 🏆 Combat Achievements
 
-### 🎨 Visual Effect Mastery
+### 🎯 Combat Mastery
 
-- **💫 Particle Master** - Execute 100 perfect vital strikes
-- **⚡ Lightning Bringer** - Land 50 critical hits in a row
-- **🌟 Trigram Sage** - Master all 8 visual effect styles
-- **👑 Dark Trigram Legend** - Achieve flawless victory with logo appearance
+- **🎓 급소대가 (Vital Point Master)** - Master all 70 vital target points
+- **🩸 전투전문가 (Combat Expert)** - Understand optimal combat techniques
+- **⚫ 고수 (Advanced Practitioner)** - Complete advanced technique training
+- **🔪 완벽한 무사 (Perfect Warrior)** - Achieve flawless combat records
 
-### 🎯 Combat Excellence
+### 🥋 Martial Proficiency
 
-- **🎪 Vital Point Scholar** - Identify all 70 pressure points
-- **🥷 Shadow Strike** - Win without taking damage
-- **🔥 Combo Master** - Chain 20+ techniques seamlessly
-- **🏮 Philosophy Student** - Complete I Ching study mode
+- **🎯 정밀타격사 (Precision Striker)** - Perfect vital point targeting accuracy
+- **⚖️ 균형대사 (Balance Master)** - Master all stance and movement patterns
+- **🧘 정신수양사 (Mental Cultivator)** - Complete psychological combat training
+- **🇰🇷 무도학자 (Martial Scholar)** - Understand Korean martial arts philosophy
+
+### 🎭 Archetype Mastery
+
+- **🏯 무사완성 (Warrior Perfection)** - Master traditional warrior discipline
+- **🥷 그림자대사 (Shadow Master)** - Perfect stealth and assassination arts
+- **💻 사이버무사 (Cyber Warrior)** - Tech-enhanced combat mastery
+- **🕵️ 정보대가 (Intelligence Master)** - Psychological warfare expertise
+- **⚡ 거리왕 (Street King)** - Underground combat supremacy
 
 ---
 
 <div align="center">
 
-## 🌟 Ready to Master the Dark Arts?
+## 🌟 Ready to Master Korean Martial Arts?
 
-**[🎮 Begin Your Journey](https://hack23.github.io/blacktrigram/)**
+**[🎮 Enter the Dojang](https://hack23.github.io/blacktrigram/)**
 
-_Experience the harmony of body, mind, and spectacular visual effects_
+_Experience authentic Korean combat techniques with anatomical precision across 5 unique fighting archetypes_
 
 ---
 
-### Built with ❤️ and ⚡ by the Dark Trigram Team
+### Built with 🎯 Combat Precision and 🇰🇷 Traditional Authenticity
 
-**🥋 무예의 길을 걸어라 (Walk the Path of Martial Arts) 🥋**
+**🥋 무도의 길을 걸어라 (Walk the Path of Martial Arts) 🥋**
 
 </div>
