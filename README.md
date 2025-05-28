@@ -6,7 +6,7 @@
 
 _"Martial arts are the harmony of body, mind, and spirit"_
 
-![Dark Trigram Logo](public/black-trigram-512.png)
+![Dark Trigram Logo](public/black-trigram.png)
 
 [![License](https://img.shields.io/github/license/Hack23/blacktrigram.svg)](https://github.com/Hack23/blacktrigram/raw/master/LICENSE.md)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Hack23/blacktrigram/badge)](https://scorecard.dev/viewer/?uri=github.com/Hack23/blacktrigram)
