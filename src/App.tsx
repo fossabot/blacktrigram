@@ -1,11 +1,12 @@
 import { Application, extend } from "@pixi/react";
 import { Container, Graphics, Text, Sprite } from "pixi.js";
-import { useState, useCallback } from "react"; // Removed useEffect, useMemo
+import { useState, useCallback } from "react";
 import type { JSX } from "react";
 import "./App.css";
 import { GameEngine } from "./components/game/GameEngine";
 import { useAudio } from "./audio/AudioManager";
-import { IntroScreen } from "./components/intro/IntroScreen.tsx"; // Added .tsx extension
+import { IntroScreen } from "./components/intro/IntroScreen";
+import { TrainingScreen } from "./components/training/TrainingScreen";
 
 // Extend @pixi/react with the Pixi components we want to use
 extend({
@@ -14,6 +15,18 @@ extend({
   Text,
   Sprite,
 });
+
+// Declare the extended components for TypeScript
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      pixiContainer: any;
+      pixiGraphics: any;
+      pixiText: any;
+      pixiSprite: any;
+    }
+  }
+}
 
 // Type definitions
 type GameMode = "intro" | "game" | "training";
@@ -24,14 +37,12 @@ interface BackButtonProps {
 
 // Constants
 const COLORS_APP = {
-  // Renamed to avoid conflict if some colors are kept here
   BLACK: 0x000000,
   WHITE: 0xffffff,
   DARK_BLUE: 0x000a12,
   ACCENT_BLUE: 0x004455,
   GRAY_TEXT: 0xcccccc,
-  CYAN: 0x00ffff, // Added CYAN
-  // Keep only colors used by App, BackButton, TrainingMode
+  CYAN: 0x00ffd0,
 } as const;
 
 function App(): JSX.Element {
@@ -76,43 +87,12 @@ function App(): JSX.Element {
         )}
         {gameMode === "training" && (
           <pixiContainer>
-            <TrainingMode />
+            <TrainingScreen onExit={returnToIntro} />
             <BackButton onBack={returnToIntro} />
           </pixiContainer>
         )}
       </Application>
     </div>
-  );
-}
-
-// TrainingMode component remains the same
-function TrainingMode(): JSX.Element {
-  return (
-    <pixiContainer>
-      <pixiText
-        text="수련 모드 (Training Mode)"
-        x={window.innerWidth / 2}
-        y={window.innerHeight / 2}
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 32,
-          fill: COLORS_APP.WHITE,
-          fontWeight: "bold",
-        }}
-      />
-      <pixiText
-        text="곧 출시됩니다 (Coming Soon)"
-        x={window.innerWidth / 2}
-        y={window.innerHeight / 2 + 50}
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 18,
-          fill: 0x999999, // Example: Using a specific color or from COLORS_APP if defined
-        }}
-      />
-    </pixiContainer>
   );
 }
 
@@ -137,14 +117,14 @@ function BackButton({ onBack }: BackButtonProps): JSX.Element {
       onPointerLeave={() => setIsHovered(false)}
     >
       <pixiGraphics
-        draw={(g) => {
+        draw={(g: any) => {
           g.clear();
           g.setFillStyle({ color: COLORS_APP.DARK_BLUE, alpha: 0.9 });
           g.roundRect(-40, -20, 80, 40, 5);
           g.fill();
 
           g.setStrokeStyle({
-            color: isHovered ? 0x00ffd0 : COLORS_APP.ACCENT_BLUE, // Example: Using specific color or from COLORS_APP
+            color: isHovered ? COLORS_APP.CYAN : COLORS_APP.ACCENT_BLUE,
             width: isHovered ? 2 : 1,
             alpha: isHovered ? 0.9 : 0.7,
           });
@@ -165,10 +145,10 @@ function BackButton({ onBack }: BackButtonProps): JSX.Element {
         style={{
           fontFamily: "Noto Sans KR",
           fontSize: 14,
-          fill: isHovered ? 0x00ffd0 : COLORS_APP.GRAY_TEXT, // Example: Using specific color or from COLORS_APP
+          fill: isHovered ? COLORS_APP.CYAN : COLORS_APP.GRAY_TEXT,
           ...(isHovered && {
             dropShadow: {
-              color: 0x00ffd0, // Example: Using specific color
+              color: COLORS_APP.CYAN,
               blur: 4,
               distance: 0,
             },

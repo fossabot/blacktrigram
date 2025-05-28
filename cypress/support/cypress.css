@@ -1,0 +1,28 @@
+/* Styles for Cypress test annotations */
+.cypress-annotation {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #00ffd0;
+  border: 1px solid #00ffd0;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 14px;
+  z-index: 9999;
+  pointer-events: none;
+  box-shadow: 0 0 10px rgba(0, 255, 208, 0.5);
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

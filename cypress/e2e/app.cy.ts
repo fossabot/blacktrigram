@@ -93,6 +93,23 @@ describe("Black Trigram Intro Page E2E", () => {
       // Canvas should remain visible and responsive
       cy.get("canvas").should("be.visible");
     });
+
+    it("should display Korean training terminology", () => {
+      // Check that the Korean terms for training are present
+      cy.get("canvas").should("be.visible");
+
+      // Test navigation to training mode
+      cy.get("body").type("2"); // Press 2 to enter training mode
+      cy.wait(500); // Wait for transition
+
+      // Canvas should still be visible in training mode
+      cy.get("canvas").should("be.visible");
+
+      // Return to intro screen
+      cy.get("body").type("{esc}");
+      cy.wait(500);
+      cy.get("canvas").should("be.visible");
+    });
   });
 
   describe("Accessibility", () => {

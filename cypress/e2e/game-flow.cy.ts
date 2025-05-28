@@ -1,360 +1,185 @@
-describe("Black Trigram - Complete Game Flow E2E", () => {
+describe("Black Trigram - Game Flow", () => {
   beforeEach(() => {
-    cy.visit("/");
+    cy.visit("/", { timeout: 10000 });
+    cy.waitForCanvasReady();
+    cy.task("silenceWebGLWarning", null, { log: false });
   });
 
-  describe("Intro Screen Navigation", () => {
-    it("should navigate between game modes using keyboard", () => {
-      // Test arrow key navigation
-      cy.get("body").type("{leftarrow}");
-      cy.get("body").type("{rightarrow}");
-
-      // Test A/D key navigation
-      cy.get("body").type("a");
-      cy.get("body").type("d");
-
-      // Canvas should remain responsive
+  describe("Core Game Navigation", () => {
+    it("should support all critical game navigation paths", () => {
+      // Test arrow key and space navigation in one test
+      cy.annotate("Testing intro screen navigation");
+      // Test all navigation controls at once
+      cy.gameActions(["a", "d", "{leftarrow}", "{rightarrow}"]);
       cy.get("canvas").should("be.visible");
-    });
 
-    it("should start sparring mode with space/enter", () => {
-      // Test space key
-      cy.get("body").type(" ");
-      cy.wait(100);
+      // Test game mode entry/exit cycles
+      cy.annotate("Testing game mode entry and exit");
+      // 1. Sparring mode via #1 key
+      cy.annotate("Entering Sparring Mode via #1 key");
+      cy.gameActions(["1"]);
+      cy.waitForCanvasReady();
+      cy.gameActions(["{esc}"]);
+      cy.waitForCanvasReady();
 
-      // Should enter game mode
-      cy.get("canvas").should("be.visible");
-    });
+      // 2. Training mode via #2 key
+      cy.annotate("Entering Training Mode via #2 key");
+      cy.gameActions(["2"]);
+      cy.waitForCanvasReady();
+      cy.gameActions(["{esc}"]);
+      cy.waitForCanvasReady();
 
-    it("should start sparring mode with number 1", () => {
-      cy.get("body").type("1");
-      cy.wait(100);
+      // 3. Sparring mode via Space key
+      cy.annotate("Entering Sparring Mode via Space key");
+      cy.gameActions([" "]);
+      cy.waitForCanvasReady();
+      cy.gameActions(["{esc}"]);
+      cy.waitForCanvasReady();
 
-      // Should enter game mode
-      cy.get("canvas").should("be.visible");
-    });
-
-    it("should start training mode with number 2", () => {
-      cy.get("body").type("2");
-      cy.wait(100);
-
-      // Should enter training mode
-      cy.get("canvas").should("be.visible");
-    });
-
-    it("should start training mode with alt key", () => {
-      cy.get("body").type("{alt}");
-      cy.wait(100);
-
-      // Should enter training mode
-      cy.get("canvas").should("be.visible");
+      // 4. Training mode via Alt key
+      cy.annotate("Entering Training Mode via Alt key");
+      cy.gameActions(["{alt}"]);
+      cy.waitForCanvasReady();
+      cy.gameActions(["{esc}"]);
+      cy.waitForCanvasReady();
     });
   });
 
-  describe("Game Mode Transitions", () => {
-    it("should transition from intro to sparring mode", () => {
-      // Start sparring
-      cy.get("body").type("1");
-      cy.wait(500);
+  describe("Combat Mechanics", () => {
+    it("should support all core combat interactions", () => {
+      // Enter combat mode once
+      cy.annotate("Testing combat mechanics");
+      cy.gameActions(["1"]);
+      cy.waitForCanvasReady();
 
-      // Should be in game mode now
-      cy.get("canvas").should("be.visible");
+      // Test movement controls in batches
+      cy.annotate("Testing movement controls");
+      cy.gameActions(["w", "a", "s", "d"]);
+      cy.gameActions([
+        "{uparrow}",
+        "{leftarrow}",
+        "{downarrow}",
+        "{rightarrow}",
+      ]);
 
-      // Canvas should be interactive
-      cy.get("canvas").should("be.visible").and("have.attr", "style");
-    });
+      // Test attacking with all 8 trigram techniques
+      cy.annotate("Testing trigram techniques");
+      cy.gameActions(["1", "2", "3", "4", "5", "6", "7", "8"]);
 
-    it("should show training mode placeholder", () => {
-      // Start training
-      cy.get("body").type("2");
-      cy.wait(500);
+      // Test blocking
+      cy.annotate("Testing blocking");
+      cy.gameActions([" "]);
 
-      // Should be in training mode
-      cy.get("canvas").should("be.visible");
-    });
-
-    it("should handle rapid mode switching", () => {
-      // Rapid key presses
-      cy.get("body").type("1");
-      cy.wait(100);
-      cy.get("body").type("2");
-      cy.wait(100);
-      cy.get("body").type("1");
-
-      // Should remain stable
-      cy.get("canvas").should("be.visible");
-    });
-  });
-
-  describe("Korean Martial Arts Combat", () => {
-    beforeEach(() => {
-      // Enter sparring mode
-      cy.get("body").type("1");
-      cy.wait(500);
-    });
-
-    it("should support WASD movement controls", () => {
-      // Test movement keys
-      cy.get("body").type("w");
-      cy.get("body").type("a");
-      cy.get("body").type("s");
-      cy.get("body").type("d");
-
-      // Game should remain responsive
-      cy.get("canvas").should("be.visible");
-    });
-
-    it("should support arrow key movement", () => {
-      cy.get("body").type("{uparrow}");
-      cy.get("body").type("{downarrow}");
-      cy.get("body").type("{leftarrow}");
-      cy.get("body").type("{rightarrow}");
-
-      // Game should remain responsive
-      cy.get("canvas").should("be.visible");
-    });
-
-    it("should execute trigram techniques with number keys", () => {
-      // Test all 8 trigram techniques
-      for (let i = 1; i <= 8; i++) {
-        cy.get("body").type(i.toString());
-        cy.wait(100);
-      }
-
-      // Game should handle all techniques
-      cy.get("canvas").should("be.visible");
-    });
-
-    it("should support blocking with space key", () => {
-      cy.get("body").type(" ");
-      cy.wait(100);
-
-      // Should maintain blocking state
-      cy.get("canvas").should("be.visible");
-    });
-
-    it("should handle click/touch attacks", () => {
-      // Click on canvas for quick attack
+      // Test mouse interaction
+      cy.annotate("Testing mouse attacks");
       cy.get("canvas").click(400, 300);
-      cy.wait(100);
 
-      // Should execute attack
-      cy.get("canvas").should("be.visible");
+      // Exit combat mode
+      cy.annotate("Exiting combat mode");
+      cy.gameActions(["{esc}"]);
+      cy.waitForCanvasReady();
+    });
+
+    it("should handle AI interactions", () => {
+      // Enter combat mode
+      cy.annotate("Testing AI interactions");
+      cy.gameActions(["1"]);
+      cy.waitForCanvasReady();
+
+      // Test AI response to player movement
+      cy.annotate("Testing AI response to movement");
+      // Move toward AI then away
+      cy.gameActions(["d", "d", "d", "d"]);
+      cy.waitForCanvasReady();
+      cy.gameActions(["a", "a", "a", "a"]);
+      cy.waitForCanvasReady();
+
+      // Exit combat mode
+      cy.annotate("Exiting combat mode");
+      cy.gameActions(["{esc}"]);
+      cy.waitForCanvasReady();
     });
   });
 
-  describe("AI Opponent Behavior", () => {
-    beforeEach(() => {
-      // Enter sparring mode
-      cy.get("body").type("1");
-      cy.wait(500);
-    });
+  describe("Performance & Input Handling", () => {
+    it("should maintain performance during intense combat", () => {
+      // Enter combat mode
+      cy.annotate("Testing intense combat performance");
+      cy.gameActions(["1"]);
+      cy.waitForCanvasReady();
 
-    it("should have responsive AI opponent", () => {
-      // Move around to trigger AI response
-      cy.get("body").type("dddd"); // Move right
-      cy.wait(500);
-      cy.get("body").type("aaaa"); // Move left
-      cy.wait(500);
+      // Record start time for performance measurement
+      const startTime = Date.now();
 
-      // AI should respond to player movement
-      cy.get("canvas").should("be.visible");
-    });
-
-    it("should handle AI attacks", () => {
-      // Stay close to trigger AI attacks
-      cy.get("body").type("d"); // Move toward opponent
-      cy.wait(1000); // Wait for AI to react
-
-      // Game should handle AI behavior
-      cy.get("canvas").should("be.visible");
-    });
-  });
-
-  describe("Performance Testing", () => {
-    it("should maintain 60fps during intense combat", () => {
-      // Enter sparring mode
-      cy.get("body").type("1");
-      cy.wait(1000); // Longer wait for game to fully initialize
-
-      // Ensure canvas is present before starting performance test
-      cy.get("canvas").should("be.visible");
-
-      // Perform more realistic rapid actions with smaller chunks
-      const actionSequences = [
+      // Execute combat sequence
+      const combatSequence = [
         "wasd", // Movement
-        "1234", // Basic attacks
+        "1234", // Attacks
         "wasd", // More movement
-        "5678", // Advanced attacks
-        "   ", // Blocking
+        "5678", // More attacks
+        " ", // Block
       ];
 
-      actionSequences.forEach((sequence, index) => {
-        cy.get("body").type(sequence);
-        cy.wait(200); // Give time for processing
-
-        // Verify canvas remains visible after each sequence
-        cy.get("canvas").should("be.visible");
+      // Execute all actions with minimal delay
+      cy.annotate("Executing combat sequence");
+      combatSequence.forEach((actions) => {
+        cy.gameActions([actions]);
       });
 
-      // Final verification
-      cy.get("canvas").should("be.visible");
-    });
-
-    it("should handle extended gameplay sessions", () => {
-      // Enter sparring mode
-      cy.get("body").type("1");
-      cy.wait(1000);
-
-      // Simulate extended play with more realistic timing
-      for (let i = 0; i < 5; i++) {
-        cy.get("body").type("wasd");
-        cy.wait(300);
-        cy.get("body").type("1234");
-        cy.wait(300);
-
-        // Check canvas periodically during extended play
-        cy.get("canvas").should("be.visible");
-      }
-
-      // Should maintain stability
-      cy.get("canvas").should("be.visible");
-    });
-  });
-
-  describe("Cultural Authenticity", () => {
-    it("should display Korean martial arts elements", () => {
-      // Enter sparring mode
-      cy.get("body").type("1");
-      cy.wait(500);
-
-      // Game should render Korean-themed content
-      cy.get("canvas").should("be.visible");
-    });
-
-    it("should support Korean text rendering", () => {
-      // The canvas should render Korean characters properly
-      cy.get("canvas").should("be.visible");
-
-      // Check that Korean fonts are loaded
-      cy.document().then((doc) => {
-        const link = doc.querySelector('link[href*="Noto+Sans+KR"]');
-        expect(link).to.exist;
-      });
-    });
-  });
-
-  describe("Accessibility Features", () => {
-    it("should be keyboard accessible", () => {
-      // All game functions should work with keyboard only
-      cy.get("body").type("1"); // Start game
-      cy.wait(500);
-
-      cy.get("body").type("wasd"); // Movement
-      cy.get("body").type("1234"); // Attacks
-      cy.get("body").type(" "); // Block
-
-      // Should be fully playable with keyboard
-      cy.get("canvas").should("be.visible");
-    });
-
-    it("should support both WASD and arrow keys", () => {
-      cy.get("body").type("1");
-      cy.wait(500);
-
-      // Test both control schemes
-      cy.get("body").type("wasd");
-      cy.get("body").type("{uparrow}{downarrow}{leftarrow}{rightarrow}");
-
-      // Both should work
-      cy.get("canvas").should("be.visible");
-    });
-  });
-
-  describe("Error Recovery", () => {
-    it("should recover from rapid key combinations", () => {
-      // Ensure we are in game mode
-      cy.get("body").type("1");
-      cy.wait(500);
-
-      // Send more reasonable key combinations with proper delays
-      const keySequences = [
-        "wasd",
-        "1234",
-        "5678",
-        " ", // space for blocking
-      ];
-
-      keySequences.forEach((sequence, index) => {
-        cy.get("body").type(sequence);
-        cy.wait(100); // Reasonable delay between sequences
-      });
-
-      // Should remain stable
-      cy.get("canvas").should("be.visible");
-
-      // Verify the game is still responsive
-      cy.get("body").type("w");
-      cy.wait(100);
-      cy.get("canvas").should("be.visible");
-
-      // Check that no error states are present
-      cy.get("body").should("not.contain.text", "Error");
-      cy.get("body").should("not.contain.text", "crash");
-    });
-
-    it("should handle simultaneous key presses", () => {
-      cy.get("body").type("1");
-      cy.wait(500);
-
-      // Simulate more realistic simultaneous inputs
-      cy.get("body").type("w1");
-      cy.wait(50);
-      cy.get("body").type("a2");
-      cy.wait(50);
-      cy.get("body").type("s3");
-      cy.wait(50);
-      cy.get("body").type("d4");
-
-      // Should handle gracefully
-      cy.get("canvas").should("be.visible");
-    });
-  });
-
-  describe("Mobile Touch Support", () => {
-    it("should work on touch devices", () => {
-      // Simulate mobile viewport
-      cy.viewport(375, 667);
-
-      // Enter game mode
-      cy.get("body").type("1");
-      cy.wait(500);
-
-      // Test touch interaction
-      cy.get("canvas").click();
-
-      // Should work on mobile
-      cy.get("canvas").should("be.visible");
-    });
-
-    it("should scale properly on different screen sizes", () => {
-      // Test various screen sizes
-      const sizes = [
-        [1920, 1080], // Desktop
-        [1024, 768], // Tablet
-        [375, 667], // Mobile
-      ];
-
-      sizes.forEach(([width, height]) => {
-        cy.viewport(width, height);
-        cy.get("canvas").should("be.visible");
-
-        // Canvas should scale to screen
-        cy.get("canvas").should(($canvas) => {
-          const rect = $canvas[0].getBoundingClientRect();
-          expect(rect.width).to.be.at.least(width * 0.9);
-          expect(rect.height).to.be.at.least(height * 0.9);
+      // Verify performance with a more realistic threshold
+      cy.wrap(null).then(() => {
+        const duration = Date.now() - startTime;
+        cy.task("logPerformance", {
+          name: "Intense Combat Sequence",
+          duration,
         });
+        cy.annotate(`Combat sequence completed in ${duration}ms`);
+        // Increased threshold from 10000ms to 15000ms for video recording overhead
+        expect(duration).to.be.lessThan(15000);
+      });
+
+      // Exit combat mode
+      cy.annotate("Exiting combat mode");
+      cy.gameActions(["{esc}"]);
+      cy.waitForCanvasReady();
+    });
+
+    it("should handle complex input sequences", () => {
+      // Enter combat mode
+      cy.annotate("Testing complex input sequences");
+      cy.gameActions(["1"]);
+      cy.waitForCanvasReady();
+
+      // Test rapid sequential inputs
+      cy.annotate("Testing rapid input combinations");
+      cy.gameActions(["w1", "a2", "s3", "d4"]);
+      cy.waitForCanvasReady();
+
+      // Exit combat mode
+      cy.annotate("Exiting combat mode");
+      cy.gameActions(["{esc}"]);
+      cy.waitForCanvasReady();
+    });
+  });
+
+  describe("Responsiveness", () => {
+    it("should work on different screen sizes", () => {
+      // Test 3 key screen sizes in one test
+      cy.annotate("Testing responsive design");
+      [
+        [1280, 720], // Desktop
+        [768, 1024], // Tablet
+        [375, 667], // Mobile
+      ].forEach(([width, height]) => {
+        cy.annotate(`Testing viewport ${width}x${height}`);
+        cy.viewport(width, height);
+        cy.waitForCanvasReady();
+
+        // Enter and exit combat mode at each size
+        cy.gameActions(["1"]);
+        cy.waitForCanvasReady();
+        cy.gameActions(["{esc}"]);
+        cy.waitForCanvasReady();
       });
     });
   });

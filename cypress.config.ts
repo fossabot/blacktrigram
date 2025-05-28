@@ -37,19 +37,61 @@ export default defineConfig({
       runMode: 1,
       openMode: 0,
     },
-    defaultCommandTimeout: 8000,
+    defaultCommandTimeout: 3000, // Reduced to speed up failures
+    requestTimeout: 3000,
+    responseTimeout: 3000,
     chromeWebSecurity: false,
-    video: true,
+    video: true, // Enable video recording for failed tests
+    videoCompression: 32, // Set video compression level
     videosFolder: "cypress/videos",
     screenshotsFolder: "cypress/screenshots",
     downloadsFolder: "cypress/downloads",
     fixturesFolder: "cypress/fixtures",
-    responseTimeout: 10000,
+    experimentalMemoryManagement: true,
+    numTestsKeptInMemory: 1, // Keep only one test in memory for performance
+    experimentalRunAllSpecs: true, // Enable parallel test execution
+    screenshotOnRunFailure: true, // Enable screenshots on failure
     setupNodeEvents(
       on: Cypress.PluginEvents,
       config: Cypress.PluginConfigOptions
     ): Cypress.PluginConfigOptions {
-      // Add any plugins here if needed
+      // Configure browser launch options for WebGL
+      on("before:browser:launch", (browser, launchOptions) => {
+        // Add flags to suppress WebGL warnings
+        if (browser.name === "electron" || browser.name === "chrome") {
+          launchOptions.args = [
+            ...(launchOptions.args || []),
+            "--disable-gpu",
+            "--disable-gpu-vsync",
+            "--disable-web-security",
+            "--enable-unsafe-swiftshader",
+            "--ignore-gpu-blacklist",
+            "--disable-site-isolation-trials",
+            "--disable-features=VizDisplayCompositor",
+            "--disable-logging",
+            "--log-level=3",
+            "--mute-audio",
+          ];
+        }
+
+        return launchOptions;
+      });
+
+      // Console filter to silence WebGL warnings
+      on("task", {
+        // This will be used to silence console logs in tests
+        silenceWebGLWarning: () => {
+          return null;
+        },
+        logPerformance({ name, duration }) {
+          console.log(`Performance: ${name} - ${duration}ms`);
+          return null;
+        },
+        recordFailure: () => {
+          return null;
+        },
+      });
+
       return config;
     },
   },
@@ -58,27 +100,9 @@ export default defineConfig({
       framework: "react",
       bundler: "vite",
     },
+    viewportWidth: 1280,
+    viewportHeight: 720,
     specPattern: "src/**/*.cy.{js,jsx,ts,tsx}",
-    supportFile: "cypress/support/component.ts",
-    setupNodeEvents(on, config) {
-      // implement node event listeners here
-      on("before:browser:launch", (browser, launchOptions) => {
-        if (browser.family === "chromium" && browser.name !== "electron") {
-          // Add flags to suppress WebGL warnings and enable software rendering
-          launchOptions.args.push("--enable-unsafe-swiftshader");
-          launchOptions.args.push("--disable-web-security");
-          launchOptions.args.push("--disable-features=VizDisplayCompositor");
-          launchOptions.args.push("--disable-gpu");
-          launchOptions.args.push("--no-sandbox");
-          launchOptions.args.push("--disable-dev-shm-usage");
-          // Suppress specific WebGL warnings
-          launchOptions.args.push("--disable-logging");
-          launchOptions.args.push("--silent");
-          launchOptions.args.push("--log-level=3");
-        }
-        return launchOptions;
-      });
-    },
-    indexHtmlFile: "cypress/support/component-index.html",
+    experimentalMemoryManagement: true,
   },
 });
