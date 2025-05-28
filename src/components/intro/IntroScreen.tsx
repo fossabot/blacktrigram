@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import type { JSX } from "react";
 import { useAudio } from "../../audio/AudioManager";
 import { useTexture } from "../../hooks/useTexture";
+import { KoreanHeader } from "../ui/KoreanHeader";
+import { TrigramWheel } from "../ui/TrigramWheel";
 import type { Graphics as PixiGraphics } from "pixi.js";
 
 // Type definitions
@@ -24,12 +26,11 @@ const COLORS = {
   GRAY_MEDIUM: 0x666666,
   GRAY_DARK: 0x444444,
   GRAY_DARKER: 0x999999,
-  GRAY_LIGHT: 0xcccccc, // Added missing color
+  GRAY_LIGHT: 0xcccccc,
   CYAN_LIGHT: 0x7accd4,
   DARK_PANEL: 0x10171e,
 } as const;
 
-const GRID_SIZE = 50;
 const BUTTON_ANIMATION_SPEED = 0.1;
 
 export function IntroScreen({
@@ -42,7 +43,6 @@ export function IntroScreen({
   const [initialized, setInitialized] = useState<boolean>(false);
   const audio = useAudio();
 
-  // Updated to use black-trigram consistently
   const { texture: logoTexture } = useTexture("/black-trigram-256.png");
 
   useEffect(() => {
@@ -105,34 +105,31 @@ export function IntroScreen({
     };
   }, [selectedOption, onStartGame, onStartTraining, audio, initialized]);
 
-  const drawBackground = useCallback((graphics: PixiGraphics) => {
-    graphics.clear();
-    graphics.setFillStyle({ color: COLORS.BLACK });
-    graphics.rect(0, 0, window.innerWidth, window.innerHeight);
-    graphics.fill();
-
-    graphics.setStrokeStyle({ color: COLORS.GRID_DARK, width: 1, alpha: 0.3 });
-    for (let x = 0; x < window.innerWidth; x += GRID_SIZE) {
-      graphics.moveTo(x, 0);
-      graphics.lineTo(x, window.innerHeight);
-      graphics.stroke();
-    }
-    for (let y = 0; y < window.innerHeight; y += GRID_SIZE) {
-      graphics.moveTo(0, y);
-      graphics.lineTo(window.innerWidth, y);
-      graphics.stroke();
-    }
-  }, []);
-
   return (
-    <pixiContainer>
-      <pixiGraphics draw={drawBackground} />
+    <pixiContainer data-testid="intro-screen">
+      <BackgroundGrid time={time} />
 
-      <BlackTrigramLogo logoTexture={logoTexture} />
-      <GameSubtitle />
-      <CenterCircleWithSymbols time={time} />
+      <KoreanHeader
+        koreanTitle="🥋 흑괘 무술 도장 🥋"
+        englishTitle="BLACK TRIGRAM MARTIAL ARTS DOJANG"
+        x={window.innerWidth / 2}
+        y={window.innerHeight / 2 - 200}
+        width={600}
+        height={120}
+      />
+
+      <CombatDisciplines />
+
+      <TrigramWheel
+        selectedStance="geon"
+        onStanceSelect={() => {}}
+        time={time}
+        radius={140}
+      />
+
       <PhilosophyText />
       <ControlsText />
+
       <MenuButtons
         selectedOption={selectedOption}
         time={time}
@@ -141,87 +138,61 @@ export function IntroScreen({
         onStartGame={onStartGame}
         onStartTraining={onStartTraining}
       />
-    </pixiContainer>
-  );
-}
 
-function BlackTrigramLogo({ logoTexture }: { logoTexture: any }): JSX.Element {
-  return (
-    <pixiContainer x={window.innerWidth / 2} y={window.innerHeight / 2 - 200}>
-      <pixiGraphics
-        draw={(g: PixiGraphics) => {
-          g.clear();
-          g.setFillStyle({ color: COLORS.DARK_BLUE, alpha: 0.95 });
-          g.roundRect(-300, -100, 600, 200, 25);
-          g.fill();
-
-          g.setStrokeStyle({ color: COLORS.CYAN, width: 3 });
-          g.roundRect(-300, -100, 600, 200, 25);
-          g.stroke();
-
-          g.setStrokeStyle({ color: COLORS.CYAN, width: 1, alpha: 0.7 });
-          g.roundRect(-290, -90, 580, 180, 20);
-          g.stroke();
-
-          // Corner accents
-          g.setStrokeStyle({ color: COLORS.CYAN, width: 1, alpha: 0.4 });
-          g.moveTo(-300, -60);
-          g.lineTo(-250, -100);
-          g.moveTo(300, -60);
-          g.lineTo(250, -100);
-          g.stroke();
-        }}
-      />
-
-      {/* Prominent Black Trigram logo */}
+      {/* Black Trigram logo */}
       {logoTexture && (
         <pixiSprite
           texture={logoTexture}
-          scale={{ x: 0.5, y: 0.5 }}
+          x={window.innerWidth / 2}
+          y={window.innerHeight / 2 - 150}
+          scale={{ x: 0.4, y: 0.4 }}
           anchor={{ x: 0.5, y: 0.5 }}
-          y={-30}
-          alpha={0.9}
+          alpha={0.8}
+          data-testid="main-logo"
         />
       )}
-
-      {/* Updated title to use Black Trigram consistently */}
-      <pixiText
-        text="🥋 흑괘 무술 도장 🥋"
-        anchor={{ x: 0.5, y: 0.5 }}
-        y={60}
-        style={{
-          fontFamily: "Orbitron, Noto Sans KR",
-          fontSize: 32,
-          fill: COLORS.WHITE,
-          fontWeight: "400",
-          dropShadow: {
-            color: COLORS.CYAN,
-            blur: 8,
-            distance: 0,
-          },
-        }}
-      />
-
-      <pixiText
-        text="BLACK TRIGRAM MARTIAL ARTS DOJANG"
-        anchor={{ x: 0.5, y: 0.5 }}
-        y={85}
-        style={{
-          fontFamily: "Orbitron",
-          fontSize: 16,
-          fill: COLORS.CYAN_LIGHT,
-          letterSpacing: 2,
-        }}
-      />
     </pixiContainer>
   );
 }
 
-function GameSubtitle(): JSX.Element {
+function BackgroundGrid({ time }: { time: number }): JSX.Element {
+  const drawBackground = useCallback(
+    (graphics: PixiGraphics) => {
+      graphics.clear();
+      graphics.setFillStyle({ color: COLORS.BLACK });
+      graphics.rect(0, 0, window.innerWidth, window.innerHeight);
+      graphics.fill();
+
+      // Animated grid with Korean aesthetics
+      graphics.setStrokeStyle({
+        color: COLORS.GRID_DARK,
+        width: 1,
+        alpha: 0.2 + Math.sin(time * 0.01) * 0.1,
+      });
+      const gridSize = 60;
+
+      for (let x = 0; x < window.innerWidth; x += gridSize) {
+        graphics.moveTo(x, 0);
+        graphics.lineTo(x, window.innerHeight);
+        graphics.stroke();
+      }
+      for (let y = 0; y < window.innerHeight; y += gridSize) {
+        graphics.moveTo(0, y);
+        graphics.lineTo(window.innerWidth, y);
+        graphics.stroke();
+      }
+    },
+    [time]
+  );
+
+  return <pixiGraphics draw={drawBackground} data-testid="background-grid" />;
+}
+
+function CombatDisciplines(): JSX.Element {
   return (
     <>
       <pixiText
-        text="🎯 정격자 · ⚔️ 비수 · 🥷 암살자 · 💀 급소격 · 🏯 도장"
+        text="🎯 정격자 · ⚔️ 비수 · 🥷 암살자 · 💀 급소격 · 🏯 무사"
         x={window.innerWidth / 2}
         y={window.innerHeight / 2 - 80}
         anchor={{ x: 0.5, y: 0.5 }}
@@ -229,103 +200,25 @@ function GameSubtitle(): JSX.Element {
           fontFamily: "Noto Sans KR",
           fontSize: 18,
           fill: COLORS.WHITE,
-          fontWeight: "300",
+          fontWeight: "400",
         }}
+        data-testid="combat-disciplines-korean"
       />
 
       <pixiText
-        text="🎯 Precision Attacker · ⚔️ Lethal Blade · 🥷 Assassin · 💀 Vital Strike · 🏯 Dojang"
+        text="🎯 Precision Striker · ⚔️ Lethal Technique · 🥷 Shadow Assassin · 💀 Vital Strike · 🏯 Warrior"
         x={window.innerWidth / 2}
         y={window.innerHeight / 2 - 55}
         anchor={{ x: 0.5, y: 0.5 }}
         style={{
-          fontFamily: "monospace",
+          fontFamily: "Orbitron",
           fontSize: 12,
           fill: COLORS.GRAY_DARKER,
           letterSpacing: 1,
         }}
+        data-testid="combat-disciplines-english"
       />
     </>
-  );
-}
-
-function CenterCircleWithSymbols({ time }: { time: number }): JSX.Element {
-  const drawCenterCircle = useCallback(
-    (graphics: PixiGraphics) => {
-      graphics.clear();
-      const centerX = 0;
-      const centerY = 0;
-
-      // Main circle
-      graphics.setStrokeStyle({ color: COLORS.CYAN, width: 4 });
-      graphics.circle(centerX, centerY, 120);
-      graphics.stroke();
-
-      graphics.setStrokeStyle({ color: COLORS.CYAN, width: 2, alpha: 0.7 });
-      graphics.circle(centerX, centerY, 100);
-      graphics.stroke();
-
-      // Pulsing center
-      const pulse = Math.sin(time * 1.5) * 0.4 + 0.6;
-      graphics.setFillStyle({ color: COLORS.CYAN, alpha: pulse });
-      graphics.circle(centerX, centerY, 15);
-      graphics.fill();
-
-      // 8 trigram symbols around the circle
-      const trigrams = ["☰", "☱", "☲", "☳", "☴", "☵", "☶", "☷"];
-      const radius = 140;
-
-      trigrams.forEach((_, index) => {
-        const angle = (index * Math.PI * 2) / 8 - Math.PI / 2;
-        const x = Math.cos(angle) * radius;
-        const y = Math.sin(angle) * radius;
-
-        const symbolPulse = Math.sin(time * 0.8 + index * 0.5) * 0.3 + 0.7;
-
-        // Symbol background
-        graphics.setFillStyle({ color: COLORS.DARK_BLUE, alpha: 0.8 });
-        graphics.circle(x, y, 25);
-        graphics.fill();
-
-        graphics.setStrokeStyle({
-          color: COLORS.CYAN,
-          width: 1,
-          alpha: symbolPulse,
-        });
-        graphics.circle(x, y, 25);
-        graphics.stroke();
-      });
-    },
-    [time]
-  );
-
-  return (
-    <pixiContainer x={window.innerWidth / 2} y={window.innerHeight / 2 + 50}>
-      <pixiGraphics draw={drawCenterCircle} />
-
-      {/* Add trigram symbols as text */}
-      {["☰", "☱", "☲", "☳", "☴", "☵", "☶", "☷"].map((symbol, index) => {
-        const angle = (index * Math.PI * 2) / 8 - Math.PI / 2;
-        const x = Math.cos(angle) * 140;
-        const y = Math.sin(angle) * 140;
-
-        return (
-          <pixiText
-            key={index}
-            text={symbol}
-            x={x}
-            y={y}
-            anchor={{ x: 0.5, y: 0.5 }}
-            style={{
-              fontFamily: "serif",
-              fontSize: 24,
-              fill: COLORS.WHITE,
-              fontWeight: "bold",
-            }}
-          />
-        );
-      })}
-    </pixiContainer>
   );
 }
 
