@@ -1,44 +1,37 @@
-import React from "react";
-import { Text } from "@pixi/react";
-import type { JSX } from "react";
+import { Text as pixiText } from "@pixi/react";
+import type { ReactElement } from "react";
 
-interface KoreanTextProps {
+export interface KoreanTextProps {
   readonly text: string;
-  readonly fontSize?: number;
-  readonly color?: number;
   readonly x?: number;
   readonly y?: number;
   readonly anchor?: { x: number; y: number };
-  readonly maxWidth?: number;
-  readonly align?: "left" | "center" | "right";
+  readonly style?: {
+    readonly fontFamily?: string;
+    readonly fontSize?: number;
+    readonly fill?: number;
+    readonly fontWeight?: string;
+    readonly fontStyle?: string;
+    readonly letterSpacing?: number;
+  };
 }
 
 export function KoreanText({
   text,
-  fontSize = 16,
-  color = 0xffffff,
   x = 0,
   y = 0,
   anchor = { x: 0, y: 0 },
-  maxWidth,
-  align = "left",
-}: KoreanTextProps): JSX.Element {
+  style = {},
+}: KoreanTextProps): ReactElement {
+  const defaultStyle = {
+    fontFamily: "Noto Sans KR",
+    fontSize: 16,
+    fill: 0xffffff,
+    ...style,
+  };
+
   return (
-    <Text
-      text={text}
-      x={x}
-      y={y}
-      anchor={anchor}
-      style={{
-        fontFamily: "Noto Sans KR",
-        fontSize,
-        fill: color,
-        align,
-        wordWrap: maxWidth ? true : false,
-        wordWrapWidth: maxWidth || 0,
-        lineHeight: fontSize * 1.2,
-      }}
-    />
+    <pixiText text={text} x={x} y={y} anchor={anchor} style={defaultStyle} />
   );
 }
 

@@ -1,31 +1,25 @@
-import React, { useCallback } from "react";
-import { Graphics } from "@pixi/react";
-import type { JSX } from "react";
-import { KOREAN_COLORS } from "../../../types";
+import { useCallback } from "react";
+import type { Graphics as PixiGraphics } from "pixi.js";
 
-export interface BackgroundGridProps {
+interface BackgroundGridProps {
   readonly width: number;
   readonly height: number;
   readonly gridSize?: number;
-  readonly opacity?: number;
+  readonly color?: number;
+  readonly alpha?: number;
 }
 
 export function BackgroundGrid({
   width,
   height,
   gridSize = 50,
-  opacity = 0.1,
+  color = 0x333333,
+  alpha = 0.1,
 }: BackgroundGridProps): JSX.Element {
   const drawGrid = useCallback(
-    (g: any) => {
+    (g: PixiGraphics) => {
       g.clear();
-
-      // Set grid line style
-      g.setStrokeStyle({
-        color: KOREAN_COLORS.CYAN,
-        width: 1,
-        alpha: opacity,
-      });
+      g.setStrokeStyle({ color, width: 1, alpha });
 
       // Draw vertical lines
       for (let x = 0; x <= width; x += gridSize) {
@@ -40,34 +34,9 @@ export function BackgroundGrid({
       }
 
       g.stroke();
-
-      // Add subtle Korean pattern elements
-      g.setStrokeStyle({
-        color: KOREAN_COLORS.GOLD,
-        width: 2,
-        alpha: opacity * 0.5,
-      });
-
-      // Draw traditional Korean corner decorations
-      const cornerSize = 20;
-      const corners = [
-        { x: 0, y: 0 },
-        { x: width - cornerSize, y: 0 },
-        { x: 0, y: height - cornerSize },
-        { x: width - cornerSize, y: height - cornerSize },
-      ];
-
-      corners.forEach((corner) => {
-        // Traditional Korean corner pattern
-        g.moveTo(corner.x, corner.y + cornerSize);
-        g.lineTo(corner.x, corner.y);
-        g.lineTo(corner.x + cornerSize, corner.y);
-      });
-
-      g.stroke();
     },
-    [width, height, gridSize, opacity]
+    [width, height, gridSize, color, alpha]
   );
 
-  return <Graphics draw={drawGrid} />;
+  return <pixiGraphics draw={drawGrid} />;
 }

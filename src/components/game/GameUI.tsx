@@ -1,267 +1,241 @@
-import React from "react";
+import React, { useCallback } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
-import { useCallback } from "react";
-import type { JSX } from "react";
-import type { GameState, TrigramStance } from "../../types/GameTypes";
-import { KOREAN_COLORS } from "../../types";
+import type { GameState, TrigramStance } from "../../types";
+import type { Graphics as PixiGraphics } from "pixi.js";
 
 export interface GameUIProps {
   readonly gameState: GameState;
-  readonly onStanceChange: (playerId: string, stance: TrigramStance) => void;
+  readonly gameTime: number;
+  readonly combatLog: readonly string[];
+  readonly onStartMatch: () => void;
+  readonly onResetMatch: () => void;
+  readonly onStanceChange: (stance: TrigramStance) => void;
   readonly onTogglePause: () => void;
 }
 
 export function GameUI({
   gameState,
-  onStanceChange,
-  onTogglePause,
+  gameTime,
+  combatLog,
+  onStartMatch,
+  onResetMatch,
 }: GameUIProps): JSX.Element {
-  const player1 = gameState.players.player1;
-  const player2 = gameState.players.player2;
+  const player1 = gameState.players[0];
+  const player2 = gameState.players[1];
 
-  // Draw health bar
+  const formatTime = useCallback((seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  }, []);
+
+  const formatHealth = useCallback(
+    (health: number, maxHealth: number): string => {
+      const percentage = Math.round((health / maxHealth) * 100);
+      return `${health}/${maxHealth} (${percentage}%)`;
+    },
+    []
+  );
+
   const drawHealthBar = useCallback(
     (
-      g: any,
+      g: PixiGraphics,
       health: number,
       maxHealth: number,
-      x: number,
-      y: number,
-      width: number
+      width: number,
+      isPlayer2: boolean = false
     ) => {
-      const healthRatio = health / maxHealth;
-
       g.clear();
 
       // Background
-      g.setFillStyle({ color: KOREAN_COLORS.GRAY_DARK, alpha: 0.8 });
-      g.rect(x, y, width, 20);
+      g.setFillStyle({ color: 0x330000, alpha: 0.8 });
+      g.rect(0, 0, width, 20);
       g.fill();
 
       // Health fill
-      const healthColor =
-        healthRatio > 0.6
-          ? KOREAN_COLORS.CYAN
-          : healthRatio > 0.3
-          ? 0xffff00
-          : KOREAN_COLORS.RED;
+      const healthPercent = Math.max(0, health / maxHealth);
+      const healthWidth = width * healthPercent;
+
+      let healthColor: number;
+      if (healthPercent > 0.6) {
+        healthColor = 0x00ff00; // Green
+      } else if (healthPercent > 0.3) {
+        healthColor = 0xffff00; // Yellow
+      } else {
+        healthColor = 0xff0000; // Red
+      }
 
       g.setFillStyle({ color: healthColor, alpha: 0.9 });
-      g.rect(x + 2, y + 2, (width - 4) * healthRatio, 16);
+      if (isPlayer2) {
+        // Player 2 health bar fills from right to left
+        g.rect(width - healthWidth, 0, healthWidth, 20);
+      } else {
+        // Player 1 health bar fills from left to right
+        g.rect(0, 0, healthWidth, 20);
+      }
       g.fill();
 
       // Border
-      g.setStrokeStyle({ color: KOREAN_COLORS.GOLD, width: 2 });
-      g.rect(x, y, width, 20);
+      g.setStrokeStyle({ color: 0xffffff, width: 2, alpha: 0.7 });
+      g.rect(0, 0, width, 20);
       g.stroke();
     },
     []
   );
 
-  // Draw stamina bar
   const drawStaminaBar = useCallback(
-    (
-      g: any,
-      stamina: number,
-      maxStamina: number,
-      x: number,
-      y: number,
-      width: number
-    ) => {
-      const staminaRatio = stamina / maxStamina;
-
+    (g: PixiGraphics, stamina: number, maxStamina: number, width: number) => {
       g.clear();
 
       // Background
-      g.setFillStyle({ color: KOREAN_COLORS.GRAY_DARK, alpha: 0.6 });
-      g.rect(x, y, width, 12);
+      g.setFillStyle({ color: 0x001133, alpha: 0.8 });
+      g.rect(0, 0, width, 12);
       g.fill();
 
       // Stamina fill
-      g.setFillStyle({ color: 0x98fb98, alpha: 0.8 });
-      g.rect(x + 1, y + 1, (width - 2) * staminaRatio, 10);
+      const staminaPercent = Math.max(0, stamina / maxStamina);
+      const staminaWidth = width * staminaPercent;
+
+      g.setFillStyle({ color: 0x00ffff, alpha: 0.8 });
+      g.rect(0, 0, staminaWidth, 12);
       g.fill();
 
       // Border
-      g.setStrokeStyle({ color: 0x98fb98, width: 1 });
-      g.rect(x, y, width, 12);
+      g.setStrokeStyle({ color: 0x00ffff, width: 1, alpha: 0.5 });
+      g.rect(0, 0, width, 12);
       g.stroke();
     },
     []
   );
 
-  // Format time display
-  const formatTime = (timeMs: number): string => {
-    const minutes = Math.floor(timeMs / 60000);
-    const seconds = Math.floor((timeMs % 60000) / 1000);
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  };
-
   return (
     <Container>
-      {/* Player 1 UI (Left side) */}
-      <Container x={20} y={20}>
-        {/* Player 1 name */}
-        <Text
-          text="플레이어 1 (Player 1)"
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 16,
-            fill: KOREAN_COLORS.CYAN,
-            fontWeight: "bold",
-          }}
-        />
-
-        {/* Health bar */}
+      {/* Player 1 Health Bar */}
+      <Container x={50} y={50}>
         <Graphics
-          draw={(g: any) =>
-            drawHealthBar(g, player1.health, player1.maxHealth, 0, 25, 200)
+          draw={(g: PixiGraphics) =>
+            drawHealthBar(g, player1.health, player1.maxHealth, 300)
           }
         />
         <Text
-          text={`${Math.ceil(player1.health)}/${player1.maxHealth}`}
-          x={100}
-          y={32}
-          anchor={{ x: 0.5, y: 0.5 }}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 12,
-            fill: KOREAN_COLORS.WHITE,
-            fontWeight: "bold",
-          }}
-        />
-
-        {/* Stamina bar */}
-        <Graphics
-          draw={(g: any) =>
-            drawStaminaBar(g, player1.stamina, player1.maxStamina, 0, 50, 200)
-          }
-        />
-
-        {/* Current stance */}
-        <Text
-          text={`자세: ${player1.currentStance.toUpperCase()}`}
-          y={70}
+          text={`Player 1: ${formatHealth(player1.health, player1.maxHealth)}`}
+          x={0}
+          y={-25}
           style={{
             fontFamily: "Noto Sans KR",
             fontSize: 14,
-            fill: KOREAN_COLORS.GOLD,
-            fontWeight: "500",
+            fill: 0xffffff,
           }}
         />
       </Container>
 
-      {/* Player 2 UI (Right side) */}
-      <Container x={580} y={20}>
-        {/* Player 2 name */}
-        <Text
-          text="플레이어 2 (Player 2)"
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 16,
-            fill: KOREAN_COLORS.RED,
-            fontWeight: "bold",
-          }}
-        />
-
-        {/* Health bar */}
+      {/* Player 2 Health Bar */}
+      <Container x={window.innerWidth - 350} y={50}>
         <Graphics
-          draw={(g: any) =>
-            drawHealthBar(g, player2.health, player2.maxHealth, 0, 25, 200)
+          draw={(g: PixiGraphics) =>
+            drawHealthBar(g, player2.health, player2.maxHealth, 300, true)
           }
         />
         <Text
-          text={`${Math.ceil(player2.health)}/${player2.maxHealth}`}
-          x={100}
-          y={32}
-          anchor={{ x: 0.5, y: 0.5 }}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 12,
-            fill: KOREAN_COLORS.WHITE,
-            fontWeight: "bold",
-          }}
-        />
-
-        {/* Stamina bar */}
-        <Graphics
-          draw={(g: any) =>
-            drawStaminaBar(g, player2.stamina, player2.maxStamina, 0, 50, 200)
-          }
-        />
-
-        {/* Current stance */}
-        <Text
-          text={`자세: ${player2.currentStance.toUpperCase()}`}
-          y={70}
+          text={`Player 2: ${formatHealth(player2.health, player2.maxHealth)}`}
+          x={300}
+          y={-25}
+          anchor={{ x: 1, y: 0 }}
           style={{
             fontFamily: "Noto Sans KR",
             fontSize: 14,
-            fill: KOREAN_COLORS.GOLD,
-            fontWeight: "500",
+            fill: 0xffffff,
           }}
         />
       </Container>
 
-      {/* Center UI */}
-      <Container x={400} y={20}>
-        {/* Timer */}
+      {/* Player 1 Stamina Bar */}
+      <Container x={50} y={85}>
+        <Graphics
+          draw={(g: PixiGraphics) =>
+            drawStaminaBar(g, player1.stamina, player1.maxStamina, 300)
+          }
+        />
+      </Container>
+
+      {/* Player 2 Stamina Bar */}
+      <Container x={window.innerWidth - 350} y={85}>
+        <Graphics
+          draw={(g: PixiGraphics) =>
+            drawStaminaBar(g, player2.stamina, player2.maxStamina, 300)
+          }
+        />
+      </Container>
+
+      {/* Game Time */}
+      <Container x={window.innerWidth / 2} y={50}>
         <Text
-          text={formatTime(gameState.combat.timeRemaining)}
-          anchor={{ x: 0.5, y: 0 }}
+          text={formatTime(gameTime)}
+          anchor={{ x: 0.5, y: 0.5 }}
           style={{
             fontFamily: "Noto Sans KR",
             fontSize: 24,
-            fill: KOREAN_COLORS.GOLD,
+            fill: 0xffd700,
             fontWeight: "bold",
-            dropShadow: {
-              color: KOREAN_COLORS.BLACK,
-              blur: 2,
-              distance: 1,
-            },
           }}
         />
+      </Container>
 
-        {/* Round indicator */}
+      {/* Round Display */}
+      <Container x={window.innerWidth / 2} y={80}>
         <Text
-          text={`라운드 ${gameState.combat.round}`}
-          anchor={{ x: 0.5, y: 0 }}
-          y={30}
+          text={`라운드 ${gameState.currentRound}`}
+          anchor={{ x: 0.5, y: 0.5 }}
           style={{
             fontFamily: "Noto Sans KR",
             fontSize: 16,
-            fill: KOREAN_COLORS.CYAN,
-            fontWeight: "500",
+            fill: 0xffffff,
           }}
         />
+      </Container>
 
-        {/* Pause indicator */}
-        {gameState.paused && (
+      {/* Pause Indicator */}
+      {gameState.isPaused && (
+        <Container x={window.innerWidth / 2} y={window.innerHeight / 2}>
+          <Graphics
+            draw={(g: PixiGraphics) => {
+              g.clear();
+              g.setFillStyle({ color: 0x000000, alpha: 0.7 });
+              g.rect(-200, -50, 400, 100);
+              g.fill();
+
+              g.setStrokeStyle({ color: 0xffd700, width: 2 });
+              g.rect(-200, -50, 400, 100);
+              g.stroke();
+            }}
+          />
           <Text
             text="일시정지 (PAUSED)"
-            anchor={{ x: 0.5, y: 0 }}
-            y={60}
+            anchor={{ x: 0.5, y: 0.5 }}
             style={{
               fontFamily: "Noto Sans KR",
-              fontSize: 18,
-              fill: KOREAN_COLORS.RED,
+              fontSize: 32,
+              fill: 0xffd700,
               fontWeight: "bold",
             }}
           />
-        )}
-      </Container>
+        </Container>
+      )}
 
-      {/* Controls help */}
-      <Container x={20} y={550}>
-        <Text
-          text="조작법: 1-8 (팔괘), WASD (이동), SPACE (공격), SHIFT (방어), P (정지)"
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 12,
-            fill: KOREAN_COLORS.GRAY_LIGHT,
-            fontWeight: "300",
-          }}
-        />
+      {/* Combat Log */}
+      <Container x={50} y={window.innerHeight - 200}>
+        {combatLog.slice(-5).map((logEntry, index) => (
+          <Text
+            key={index}
+            text={logEntry}
+            y={index * 20}
+            style={{
+              fontFamily: "Noto Sans KR",
+              fontSize: 12,
+              fill: 0xcccccc,
+            }}
+          />
+        ))}
       </Container>
     </Container>
   );

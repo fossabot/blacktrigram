@@ -1,92 +1,67 @@
-import { useState } from "react";
 import type { JSX } from "react";
 import { BaseButton } from "../../ui/base/BaseButton";
-import { KoreanText } from "../../ui/base/KoreanText";
-import type { GameMode } from "../../../types";
-import { useAudio } from "../../../audio/AudioManager";
+
+interface MenuSectionProps {
+  readonly x: number;
+  readonly y: number;
+  readonly onGameSelect: () => void;
+  readonly onTrainingSelect: () => void;
+  readonly selectedOption: string | null;
+}
 
 interface MenuOption {
-  readonly id: GameMode;
+  readonly id: string;
   readonly korean: string;
   readonly english: string;
-  readonly subtitle: string;
   readonly keyBinding: string;
-  readonly action: () => void;
 }
 
-export interface MenuSectionProps {
-  readonly selectedOption: GameMode;
-  readonly onOptionSelect: (option: GameMode) => void;
-  readonly onStartGame: () => void;
-  readonly onStartTraining: () => void;
-}
+const MENU_OPTIONS: MenuOption[] = [
+  {
+    id: "game",
+    korean: "대련",
+    english: "Combat",
+    keyBinding: "1",
+  },
+  {
+    id: "training",
+    korean: "수련",
+    english: "Training",
+    keyBinding: "2",
+  },
+];
 
 export function MenuSection({
+  x,
+  y,
+  onGameSelect,
+  onTrainingSelect,
   selectedOption,
-  onOptionSelect,
-  onStartGame,
-  onStartTraining,
 }: MenuSectionProps): JSX.Element {
-  const audio = useAudio();
-
-  const menuOptions: readonly MenuOption[] = [
-    {
-      id: "game",
-      korean: "⚔️ 대련",
-      english: "Sparring",
-      subtitle: "🎯 정밀 전투 (Precision Combat)",
-      keyBinding: "[1]",
-      action: onStartGame,
-    },
-    {
-      id: "training",
-      korean: "🏃 수련",
-      english: "Training",
-      subtitle: "🧘 기술 연마 (Skill Development)",
-      keyBinding: "[2] [Alt]",
-      action: onStartTraining,
-    },
-  ] as const;
+  const handleOptionSelect = (optionId: string): void => {
+    if (optionId === "game") {
+      onGameSelect();
+    } else if (optionId === "training") {
+      onTrainingSelect();
+    }
+  };
 
   return (
-    <pixiContainer x={window.innerWidth / 2} y={window.innerHeight / 2 + 180}>
-      {menuOptions.map((option, index) => {
-        const xOffset = (index - 0.5) * 300;
-        const isSelected = selectedOption === option.id;
-
-        return (
-          <pixiContainer key={option.id} x={xOffset} y={0}>
-            <BaseButton
-              width={200}
-              height={90}
-              label={`${option.korean} (${option.english})`}
-              isSelected={isSelected}
-              onSelect={() => {
-                audio.playSFX("menu_hover");
-                onOptionSelect(option.id);
-              }}
-              onActivate={() => {
-                audio.playSFX("menu_select");
-                option.action();
-              }}
-              keyBinding={option.keyBinding}
-              showKeyBinding={true}
-            />
-
-            <pixiText
-              text={option.subtitle}
-              x={0}
-              y={50}
-              anchor={{ x: 0.5, y: 0.5 }}
-              style={{
-                fontFamily: "Noto Sans KR",
-                fontSize: 12,
-                fill: isSelected ? 0xffffff : 0xcccccc,
-              }}
-            />
-          </pixiContainer>
-        );
-      })}
+    <pixiContainer x={x} y={y}>
+      {MENU_OPTIONS.map((option, index) => (
+        <pixiContainer key={option.id} y={index * 60}>
+          <BaseButton
+            key={option.id}
+            width={300}
+            height={50}
+            text={`${option.korean} (${option.english})`}
+            onSelect={() => handleOptionSelect(option.id)}
+            onActivate={() => handleOptionSelect(option.id)}
+            keyBinding={option.keyBinding}
+            showKeyBinding={true}
+          />
+        </pixiContainer>
+      ))}
     </pixiContainer>
   );
 }

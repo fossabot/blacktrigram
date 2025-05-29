@@ -1,4 +1,14 @@
+import { TRIGRAM_DATA } from "../../types";
 import type { TrigramStance, StatusEffect } from "../../types/GameTypes";
+
+export interface KoreanTrigramCulture {
+  readonly korean: string;
+  readonly philosophy: string;
+  readonly application: string;
+  readonly element: string;
+  readonly virtue: string;
+  readonly description: string;
+}
 
 /**
  * KoreanCulture - Cultural and philosophical context for Korean martial arts
@@ -345,4 +355,240 @@ export class KoreanCulture {
     const technique = techniques.find((t) => t.id === techniqueId);
     return technique?.korean || "알 수 없는 기술";
   }
+
+  /**
+   * Get Korean stance name
+   */
+  public static getStanceKoreanName(stance: TrigramStance): string {
+    const culture = this.getStanceCulture(stance);
+    return culture ? `${culture.korean} (${culture.element})` : stance;
+  }
+
+  /**
+   * Get trigram symbol
+   */
+  public static getTrigramSymbol(stance: TrigramStance): string {
+    const symbols: Record<TrigramStance, string> = {
+      geon: "☰",
+      tae: "☱",
+      li: "☲",
+      jin: "☳",
+      son: "☴",
+      gam: "☵",
+      gan: "☶",
+      gon: "☷",
+    };
+    return symbols[stance] || "?";
+  }
+
+  /**
+   * Get element name
+   */
+  public static getElementName(stance: TrigramStance): string {
+    const culture = this.getStanceCulture(stance);
+    return culture?.element || stance;
+  }
+
+  /**
+   * Validate Korean text
+   */
+  public static isValidKoreanText(text: string): boolean {
+    const koreanRegex = /[\uAC00-\uD7AF\u1100-\u11FF\u3130-\u318F]/;
+    return koreanRegex.test(text);
+  }
+
+  /**
+   * Format technique name with Korean and English
+   */
+  public static formatTechniqueName(korean: string, english: string): string {
+    return `${korean} (${english})`;
+  }
+
+  /**
+   * Get formatted cultural name with proper null checking
+   */
+  public static getFormattedCulturalName(stance: TrigramStance): string {
+    const culture = this.getStanceCulture(stance);
+    if (!culture) {
+      return stance;
+    }
+    // Fix: Ensure we always return a string
+    return `${culture.korean} (${culture.element})`;
+  }
+
+  /**
+   * Get cultural information for a trigram stance
+   */
+  public static getCultureInfo(
+    stance: TrigramStance
+  ): KoreanTrigramCulture | null {
+    return KOREAN_TRIGRAM_CULTURE[stance] || null;
+  }
+
+  /**
+   * Get Korean name for trigram
+   */
+  public static getKoreanName(stance: TrigramStance): string {
+    const culture = KOREAN_TRIGRAM_CULTURE[stance];
+    return culture?.korean || `Unknown stance: ${stance}`;
+  }
+
+  /**
+   * Get philosophy description
+   */
+  public static getPhilosophy(stance: TrigramStance): string {
+    const culture = KOREAN_TRIGRAM_CULTURE[stance];
+    return culture?.philosophy || `Unknown philosophy for stance: ${stance}`;
+  }
+
+  /**
+   * Get element association
+   */
+  public static getElement(stance: TrigramStance): string {
+    const culture = KOREAN_TRIGRAM_CULTURE[stance];
+    return culture?.element || "Unknown element";
+  }
+
+  /**
+   * Get virtue/character trait
+   */
+  public static getVirtue(stance: TrigramStance): string {
+    const culture = KOREAN_TRIGRAM_CULTURE[stance];
+    return culture?.virtue || "Unknown virtue";
+  }
+
+  /**
+   * Get combat application
+   */
+  public static getApplication(stance: TrigramStance): string {
+    const culture = KOREAN_TRIGRAM_CULTURE[stance];
+    return culture?.application || "Unknown application";
+  }
+
+  /**
+   * Get formatted description for UI display
+   */
+  public static getFormattedDescription(stance: TrigramStance): string {
+    const culture = KOREAN_TRIGRAM_CULTURE[stance];
+    if (!culture) {
+      return `Unknown trigram stance: ${stance}`;
+    }
+
+    return `${culture.korean}\n${culture.philosophy}\n\n적용: ${culture.application}\n속성: ${culture.element}\n덕목: ${culture.virtue}`;
+  }
+
+  /**
+   * Get all available stances with their Korean names
+   */
+  public static getAllStances(): Array<{
+    stance: TrigramStance;
+    korean: string;
+    element: string;
+  }> {
+    return Object.entries(KOREAN_TRIGRAM_CULTURE).map(([stance, culture]) => ({
+      stance: stance as TrigramStance,
+      korean: culture.korean,
+      element: culture.element,
+    }));
+  }
 }
+
+// Update interface to match actual usage
+export interface KoreanTrigramCulture {
+  readonly korean: string;
+  readonly philosophy: string;
+  readonly application: string;
+  readonly element: string;
+  readonly virtue: string;
+  readonly description: string;
+}
+
+// Update data structure to include descriptions
+const KOREAN_TRIGRAM_CULTURE: Record<TrigramStance, KoreanTrigramCulture> = {
+  geon: {
+    korean: "건 (乾)",
+    philosophy: "하늘의 창조력과 무한한 잠재력",
+    application: "리더십과 창의적 사고를 통한 문제 해결",
+    element: "천 (天)",
+    virtue: "건실함",
+    description: "하늘처럼 높고 강한 괘. 창조와 리더십의 원동력.",
+  },
+  tae: {
+    korean: "태 (兌)",
+    philosophy: "기쁨과 소통을 통한 조화",
+    application: "대화와 협력을 통한 갈등 해소",
+    element: "택 (澤)",
+    virtue: "기쁨",
+    description: "호수처럼 기쁘고 유연한 괘. 소통과 조화의 지혜.",
+  },
+  li: {
+    korean: "리 (離)",
+    philosophy: "밝은 지혜와 통찰력",
+    application: "명확한 판단과 올바른 방향 제시",
+    element: "화 (火)",
+    virtue: "지혜",
+    description: "불처럼 밝고 열정적인 괘. 지혜와 통찰의 빛.",
+  },
+  jin: {
+    korean: "진 (震)",
+    philosophy: "역동적 에너지와 변화의 힘",
+    application: "적극적 행동과 새로운 시작",
+    element: "뇌 (雷)",
+    virtue: "용기",
+    description: "천둥처럼 역동적이고 움직이는 괘. 행동과 발전의 에너지.",
+  },
+  son: {
+    korean: "손 (巽)",
+    philosophy: "부드러운 침투와 순응",
+    application: "점진적 변화와 유연한 적응",
+    element: "풍 (風)",
+    virtue: "겸손",
+    description: "바람처럼 부드럽고 스며드는 괘. 순응과 침투의 힘.",
+  },
+  gam: {
+    korean: "감 (坎)",
+    philosophy: "흐르는 물의 인내와 지속",
+    application: "어려움 극복과 꾸준한 노력",
+    element: "수 (水)",
+    virtue: "인내",
+    description: "물처럼 흐르고 적응하는 괘. 인내와 지속의 덕목.",
+  },
+  gan: {
+    korean: "간 (艮)",
+    philosophy: "산의 고요함과 성찰",
+    application: "신중한 판단과 내적 성장",
+    element: "산 (山)",
+    virtue: "신중함",
+    description: "산처럼 견고하고 안정된 괘. 신중함과 성찰을 통한 불동의 힘.",
+  },
+  gon: {
+    korean: "곤 (坤)",
+    philosophy: "대지의 포용력과 양육",
+    application: "포용과 지원을 통한 성장 도움",
+    element: "지 (地)",
+    virtue: "순종",
+    description: "땅처럼 포용하고 기르는 괘. 순종과 양육의 어머니.",
+  },
+};
+
+export function getTrigramCulture(
+  stance: TrigramStance
+): KoreanTrigramCulture | null {
+  return KOREAN_TRIGRAM_CULTURE[stance] || null;
+}
+
+export function getTrigramDescription(stance: TrigramStance): string {
+  const data = TRIGRAM_DATA[stance];
+  return data?.philosophy || "Unknown trigram philosophy";
+}
+
+export function getTrigramPhilosophy(stance: TrigramStance): string {
+  const data = TRIGRAM_DATA[stance];
+  if (!data) {
+    return "Ancient wisdom guides the warrior's path";
+  }
+
+  return data.philosophy || "Balance and harmony lead to victory";
+}
+
+// Remove unused KOREAN_TRIGRAM_WISDOM

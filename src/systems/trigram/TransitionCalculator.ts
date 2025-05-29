@@ -1,5 +1,15 @@
-import type { TrigramStance } from "../../types/GameTypes";
+import type { TrigramStance } from "../../types";
 import { StanceManager, STANCE_ORDER } from "./StanceManager";
+
+// Define local TransitionRecommendation interface since it's not exported from types
+interface TransitionRecommendation {
+  readonly fromStance: TrigramStance;
+  readonly toStance: TrigramStance;
+  readonly effectiveness: number;
+  readonly tacticalAdvantage: string;
+  readonly priority: number; // Changed from string to number
+  readonly reasoning: string;
+}
 
 /**
  * TransitionCalculator - Handles advanced trigram stance transitions
@@ -464,12 +474,104 @@ export class TransitionCalculator {
     return Math.max(0.1, Math.min(0.99, successRate));
   }
 
-  // Fix the missing method for backward compatibility
-  public static calculateTransitionCost(
+  /**
+   * Calculate transition efficiency considering cost, distance, and player state
+   */
+  public static analyzeTransitionEfficiency(
     fromStance: TrigramStance,
     toStance: TrigramStance
   ): number {
-    const metrics = this.calculateTransitionMetrics(fromStance, toStance);
-    return metrics.energyCost; // Use energyCost instead of cost
+    // Calculate transition cost based on trigram relationships
+    const costMetrics = this.calculateTransitionCost(fromStance, toStance);
+
+    // Return efficiency as a number between 0 and 1
+    return Math.max(0, Math.min(1, 1 - costMetrics / 100));
+  }
+
+  private static calculateTransitionCost(
+    fromStance: TrigramStance,
+    toStance: TrigramStance
+  ): number {
+    if (fromStance === toStance) return 0;
+
+    // Base cost calculation
+    const baseCost = 20;
+    const stanceComplexity = this.getStanceComplexity(toStance);
+
+    return baseCost + stanceComplexity * 10;
+  }
+
+  private static getStanceComplexity(stance: TrigramStance): number {
+    const complexities: Record<TrigramStance, number> = {
+      geon: 8, // Heaven - most complex
+      tae: 3, // Lake - simple
+      li: 5, // Fire - moderate
+      jin: 6, // Thunder - moderate-high
+      son: 4, // Wind - simple-moderate
+      gam: 7, // Water - high
+      gan: 5, // Mountain - moderate
+      gon: 2, // Earth - simplest
+    };
+    return complexities[stance] || 5;
+  }
+
+  /**
+   * Get optimal transitions for a stance considering player and opponent state
+   */
+  public static getOptimalTransitions(
+    currentStance: TrigramStance
+  ): TransitionRecommendation[] {
+    const allStances: TrigramStance[] = [
+      "geon",
+      "tae",
+      "li",
+      "jin",
+      "son",
+      "gam",
+      "gan",
+      "gon",
+    ];
+
+    const transitions = allStances
+      .filter((stance) => stance !== currentStance)
+      .map((targetStance) => {
+        const efficiency = this.analyzeTransitionEfficiency(
+          currentStance,
+          targetStance
+        );
+
+        return {
+          fromStance: currentStance,
+          toStance: targetStance,
+          effectiveness: efficiency,
+          tacticalAdvantage: this.getTacticalAdvantage(targetStance),
+          priority: efficiency > 0.7 ? 3 : efficiency > 0.4 ? 2 : 1, // Changed to number
+          reasoning: this.getTransitionReasoning(currentStance, targetStance),
+        };
+      })
+      .sort((a, b) => b.effectiveness - a.effectiveness);
+
+    return transitions.slice(0, 3);
+  }
+
+  private static getTacticalAdvantage(stance: TrigramStance): string {
+    const advantages: Record<TrigramStance, string> = {
+      geon: "Superior offensive power",
+      tae: "Enhanced flexibility",
+      li: "Explosive striking",
+      jin: "Lightning speed",
+      son: "Evasive mobility",
+      gam: "Defensive flow",
+      gan: "Immovable defense",
+      gon: "Grounding stability",
+    };
+    return advantages[stance] || "Balanced approach";
+  }
+
+  private static getTransitionReasoning(
+    from: TrigramStance,
+    to: TrigramStance
+  ): string {
+    return `Transition from ${from} to ${to} offers complementary trigram energies`;
   }
 }

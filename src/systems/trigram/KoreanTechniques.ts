@@ -217,27 +217,6 @@ export const KOREAN_TECHNIQUES: Record<string, KoreanTechnique> = {
 };
 
 /**
- * Get technique by trigram stance
- */
-export function getTechniqueByStance(
-  stance: TrigramStance
-): KoreanTechnique | null {
-  const technique = Object.values(KOREAN_TECHNIQUES).find(
-    (t) => t.stance === stance
-  );
-  return technique || null;
-}
-
-/**
- * Get all techniques for a specific stance (allows for multiple techniques per stance)
- */
-export function getTechniquesForStance(
-  stance: TrigramStance
-): readonly KoreanTechnique[] {
-  return Object.values(KOREAN_TECHNIQUES).filter((t) => t.stance === stance);
-}
-
-/**
  * Validate technique data integrity
  */
 export function validateTechnique(technique: KoreanTechnique): boolean {
@@ -280,6 +259,63 @@ export function validateTechnique(technique: KoreanTechnique): boolean {
   }
 
   return true;
+}
+
+/**
+ * Validate Korean technique structure
+ */
+export function validateKoreanTechnique(
+  technique: Partial<KoreanTechnique>
+): boolean {
+  if (!technique.id || typeof technique.id !== "string") return false;
+  if (!technique.korean || typeof technique.korean !== "string") return false;
+  if (!technique.english || typeof technique.english !== "string") return false;
+  if (typeof technique.damage !== "number" || technique.damage <= 0)
+    return false;
+  if (
+    typeof technique.accuracy !== "number" ||
+    technique.accuracy <= 0 ||
+    technique.accuracy > 1
+  )
+    return false;
+  if (typeof technique.range !== "number" || technique.range <= 0) return false;
+  if (typeof technique.staminaCost !== "number" || technique.staminaCost < 0)
+    return false;
+  return true;
+}
+
+/**
+ * Get techniques by stance with proper type safety
+ */
+export function getTechniquesByStance(
+  stance: TrigramStance
+): KoreanTechnique[] {
+  if (!Array.isArray(KOREAN_TECHNIQUES)) {
+    console.error("KOREAN_TECHNIQUES is not an array");
+    return [];
+  }
+
+  return KOREAN_TECHNIQUES.filter(
+    (technique: KoreanTechnique) => technique.stance === stance
+  );
+}
+
+/**
+ * Get technique by stance (returns first match)
+ */
+export function getTechniqueByStance(
+  stance: TrigramStance
+): KoreanTechnique | null {
+  if (!Array.isArray(KOREAN_TECHNIQUES)) {
+    console.error("KOREAN_TECHNIQUES is not an array");
+    return null;
+  }
+
+  return (
+    KOREAN_TECHNIQUES.find(
+      (technique: KoreanTechnique) => technique.stance === stance
+    ) || null
+  );
 }
 
 /**

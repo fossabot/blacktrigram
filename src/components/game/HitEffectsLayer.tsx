@@ -1,96 +1,91 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { Container, Graphics } from "@pixi/react";
-import type { JSX } from "react";
-import type { Vector2D } from "../../types/GameTypes";
-import { Particle } from "pixi.js";
-import { useTexture } from "../../hooks/useTexture";
-
-// Dark Trigram theme constants
-const DARK_TRIGRAM_THEME = {
-  PRIMARY_CYAN: 0x00ffd0,
-  VITAL_ORANGE: 0xff4400,
-  CRITICAL_RED: 0xff3030,
-  WHITE: 0xffffff,
-  DARK_BG: 0x0a0e12,
-  ENERGY_BLUE: 0x4169e1,
-  LIGHTNING_YELLOW: 0xffd700,
-} as const;
-
-export interface HitEffect {
-  readonly id: string;
-  readonly position: Vector2D;
-  readonly type: string;
-  readonly intensity: number;
-  readonly timestamp: number;
-}
+import { useCallback, useEffect, useState } from "react";
+import type { HitEffect } from "../../types";
+import type { Graphics as PixiGraphics } from "pixi.js";
 
 export interface HitEffectsLayerProps {
   readonly effects: readonly HitEffect[];
+}
+
+interface Particle {
+  readonly x: number;
+  readonly y: number;
+  readonly vx: number;
+  readonly vy: number;
+  readonly life: number;
+  readonly maxLife: number;
+  readonly color: number;
+  readonly size: number;
+}
+
+interface ScreenShake {
+  readonly intensity: number;
+  readonly duration: number;
+  readonly timeRemaining: number;
 }
 
 export function HitEffectsLayer({
   effects,
 }: HitEffectsLayerProps): JSX.Element {
   const [particles, setParticles] = useState<readonly Particle[]>([]);
-  const [screenShake, setScreenShake] = useState({ x: 0, y: 0, intensity: 0 });
-  const { texture: logoTexture } = useTexture("/dark-trigram-256.png");
+  const [screenShake, setScreenShake] = useState<ScreenShake | null>(null);
 
-  // Generate explosive particles for vital hits
+  // Generate particles for hit effects
   const generateHitParticles = useCallback((effect: HitEffect): Particle[] => {
-    const particleCount = effect.isVitalHit ? 25 : 12;
-    const particles: Particle[] = [];
+    const particleCount = effect.type === "critical" ? 25 : 12;
+    const newParticles: Particle[] = [];
 
     for (let i = 0; i < particleCount; i++) {
-      const angle = (Math.PI * 2 * i) / particleCount;
-      const speed = effect.isVitalHit
-        ? 3 + Math.random() * 2
-        : 1.5 + Math.random();
-      const life = 60 + Math.random() * 30;
+      const angle = (Math.PI * 2 * i) / particleCount + Math.random() * 0.5;
+      const speed =
+        effect.type === "critical"
+          ? 3 + Math.random() * 4
+          : 2 + Math.random() * 2;
 
-      particles.push({
-        id: `particle_${effect.id}_${i}`,
-        x: effect.x,
-        y: effect.y,
+      newParticles.push({
+        x: effect.position.x,
+        y: effect.position.y,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
-        life,
-        maxLife: life,
-        color: effect.isVitalHit
-          ? DARK_TRIGRAM_THEME.VITAL_ORANGE
-          : DARK_TRIGRAM_THEME.PRIMARY_CYAN,
-        size: effect.isVitalHit ? 4 : 2,
+        life: 30,
+        maxLife: 30,
+        color:
+          effect.type === "critical"
+            ? 0xff0080
+            : effect.type === "heavy"
+            ? 0xff4500
+            : 0xffffff,
+        size: effect.type === "critical" ? 4 : 2,
       });
     }
 
-    return particles;
+    return newParticles;
   }, []);
 
-  // Generate screen shake for powerful hits
+  // Generate screen shake for hit effects
   const generateScreenShake = useCallback((effect: HitEffect): void => {
-    const intensity = effect.isVitalHit ? 15 : Math.min(effect.damage / 2, 8);
+    const intensity =
+      effect.type === "critical" ? 15 : Math.min(effect.damage / 2, 8);
+
     setScreenShake({
-      x: (Math.random() - 0.5) * intensity,
-      y: (Math.random() - 0.5) * intensity,
       intensity,
+      duration: 10,
+      timeRemaining: 10,
     });
   }, []);
 
-  // Handle new hit effects
+  // Process new effects
   useEffect(() => {
-    hitEffects.forEach((effect) => {
-      // Generate particles for new effects
-      if (effect.life === effect.maxLife) {
-        const newParticles = generateHitParticles(effect);
-        setParticles((prev) => [...prev, ...newParticles]);
-        generateScreenShake(effect);
-      }
-    });
-  }, [hitEffects, generateHitParticles, generateScreenShake]);
+    effects.forEach((effect) => {
+      const newParticles = generateHitParticles(effect);
+      setParticles((prev) => [...prev, ...newParticles]);
 
-  // Update particles and screen shake
+      generateScreenShake(effect);
+    });
+  }, [effects, generateHitParticles, generateScreenShake]);
+
+  // Update particles
   useEffect(() => {
-    const interval = setInterval(() => {
-      // Update particles
+    const updateInterval = setInterval(() => {
       setParticles((prev) =>
         prev
           .map((particle) => ({
@@ -104,15 +99,14 @@ export function HitEffectsLayer({
           .filter((particle) => particle.life > 0)
       );
 
-      // Decay screen shake
-      setScreenShake((prev) => ({
-        x: prev.x * 0.9,
-        y: prev.y * 0.9,
-        intensity: prev.intensity * 0.9,
-      }));
-    }, 16); // ~60fps
+      setScreenShake((prev) =>
+        prev && prev.timeRemaining > 0
+          ? { ...prev, timeRemaining: prev.timeRemaining - 1 }
+          : null
+      );
+    }, 16);
 
-    return () => clearInterval(interval);
+    return () => clearInterval(updateInterval);
   }, []);
 
   const drawParticles = useCallback(
@@ -123,331 +117,134 @@ export function HitEffectsLayer({
         const alpha = particle.life / particle.maxLife;
         const size = particle.size * alpha;
 
-        // Energy particles with glow effect
-        g.setFillStyle({ color: particle.color, alpha: alpha * 0.8 });
+        g.setFillStyle({ color: particle.color, alpha });
         g.circle(particle.x, particle.y, size);
-        g.fill();
-
-        // Outer glow
-        g.setFillStyle({ color: particle.color, alpha: alpha * 0.3 });
-        g.circle(particle.x, particle.y, size * 2);
         g.fill();
       });
     },
     [particles]
   );
 
-  const drawEffect = useCallback(
-    (effect: HitEffect) => (g: any) => {
-      const age = Date.now() - effect.timestamp;
-      const maxAge = 1000; // 1 second
-      const progress = Math.min(age / maxAge, 1);
-      const alpha = 1 - progress;
+  const getShakeOffset = useCallback((): { x: number; y: number } => {
+    if (!screenShake) return { x: 0, y: 0 };
 
-      if (alpha <= 0) return;
+    const intensity =
+      screenShake.intensity *
+      (screenShake.timeRemaining / screenShake.duration);
+    return {
+      x: (Math.random() - 0.5) * intensity,
+      y: (Math.random() - 0.5) * intensity,
+    };
+  }, [screenShake]);
 
-      g.clear();
-
-      const radius = 20 + progress * 30;
-      const color = effect.type === "critical" ? 0xff1493 : 0xffff00;
-
-      // Outer ring
-      g.setStrokeStyle({
-        color,
-        width: 4 * effect.intensity,
-        alpha: alpha * 0.8,
-      });
-      g.circle(0, 0, radius);
-      g.stroke();
-
-      // Inner flash
-      g.setFillStyle({ color, alpha: alpha * 0.4 });
-      g.circle(0, 0, radius * 0.5);
-      g.fill();
-
-      // Spark effects for critical hits
-      if (effect.type === "critical") {
-        for (let i = 0; i < 8; i++) {
-          const angle = (i / 8) * Math.PI * 2;
-          const sparkLength = 15 + progress * 25;
-          const x1 = Math.cos(angle) * radius * 0.8;
-          const y1 = Math.sin(angle) * radius * 0.8;
-          const x2 = Math.cos(angle) * (radius * 0.8 + sparkLength);
-          const y2 = Math.sin(angle) * (radius * 0.8 + sparkLength);
-
-          g.setStrokeStyle({
-            color: 0xffffff,
-            width: 2,
-            alpha: alpha * 0.9,
-          });
-          g.moveTo(x1, y1);
-          g.lineTo(x2, y2);
-          g.stroke();
-        }
-      }
-    },
-    []
-  );
+  const shakeOffset = getShakeOffset();
 
   return (
-    <pixiContainer x={screenShake.x} y={screenShake.y}>
+    <pixiContainer x={shakeOffset.x} y={shakeOffset.y}>
       {/* Particle effects */}
       <pixiGraphics draw={drawParticles} />
 
-      {/* Enhanced hit effects with Korean aesthetics */}
-      {hitEffects.map((effect) => {
-        const alpha = effect.life / effect.maxLife;
-        const scale = 1 + (1 - alpha) * 0.8;
-        const isVitalHit = effect.damage > 25;
+      {/* Hit effect visualization */}
+      {effects.map((effect, index) => {
+        const effectAlpha = 1.0;
+        const effectScale = effect.type === "critical" ? 1.5 : 1.0;
 
         return (
-          <pixiContainer key={effect.id} x={effect.x} y={effect.y}>
-            {/* Background explosion ring for vital hits */}
-            {isVitalHit && (
+          <pixiContainer
+            key={index}
+            x={effect.position.x}
+            y={effect.position.y}
+            scale={{ x: effectScale, y: effectScale }}
+          >
+            {/* Impact flash */}
+            <pixiGraphics
+              draw={(g: PixiGraphics) => {
+                g.clear();
+
+                const flashColor =
+                  effect.type === "critical"
+                    ? 0xff0080
+                    : effect.type === "heavy"
+                    ? 0xff4500
+                    : 0xffffff;
+
+                g.setFillStyle({ color: flashColor, alpha: effectAlpha * 0.6 });
+                g.circle(0, 0, 20);
+                g.fill();
+
+                g.setStrokeStyle({
+                  color: flashColor,
+                  width: 3,
+                  alpha: effectAlpha,
+                });
+                g.circle(0, 0, 30);
+                g.stroke();
+              }}
+            />
+
+            {/* Damage text */}
+            <pixiText
+              text={`${effect.damage}`}
+              anchor={{ x: 0.5, y: 0.5 }}
+              y={-40}
+              style={{
+                fontFamily: "Noto Sans KR",
+                fontSize: effect.type === "critical" ? 24 : 18,
+                fill: effect.type === "critical" ? 0xff0080 : 0xffffff,
+                fontWeight: "bold",
+              }}
+            />
+
+            {/* Critical hit indicator */}
+            {effect.type === "critical" && (
               <pixiGraphics
                 draw={(g: PixiGraphics) => {
                   g.clear();
-                  const ringSize = (1 - alpha) * 100;
 
-                  // Outer explosion ring
-                  g.setStrokeStyle({
-                    color: DARK_TRIGRAM_THEME.VITAL_ORANGE,
-                    width: 3,
-                    alpha: alpha * 0.6,
-                  });
-                  g.circle(0, 0, ringSize);
-                  g.stroke();
+                  // Draw energy burst lines
+                  for (let i = 0; i < 8; i++) {
+                    const angle = (Math.PI * 2 * i) / 8;
+                    const startX = Math.cos(angle) * 25;
+                    const startY = Math.sin(angle) * 25;
+                    const endX = Math.cos(angle) * 45;
+                    const endY = Math.sin(angle) * 45;
 
-                  // Inner energy ring
-                  g.setStrokeStyle({
-                    color: DARK_TRIGRAM_THEME.LIGHTNING_YELLOW,
-                    width: 1,
-                    alpha: alpha * 0.8,
-                  });
-                  g.circle(0, 0, ringSize * 0.7);
-                  g.stroke();
-
-                  // Lightning effect for vital hits
-                  if (alpha > 0.7) {
-                    for (let i = 0; i < 8; i++) {
-                      const angle = (Math.PI * 2 * i) / 8;
-                      const length = 30 + Math.random() * 20;
-                      g.setStrokeStyle({
-                        color: DARK_TRIGRAM_THEME.LIGHTNING_YELLOW,
-                        width: 2,
-                        alpha: alpha * 0.5,
-                      });
-                      g.moveTo(0, 0);
-                      g.lineTo(
-                        Math.cos(angle) * length + (Math.random() - 0.5) * 10,
-                        Math.sin(angle) * length + (Math.random() - 0.5) * 10
-                      );
-                      g.stroke();
-                    }
+                    g.setStrokeStyle({
+                      color: 0xff0080,
+                      width: 2,
+                      alpha: effectAlpha,
+                    });
+                    g.moveTo(startX, startY);
+                    g.lineTo(endX, endY);
+                    g.stroke();
                   }
                 }}
               />
             )}
 
-            {/* Dark Trigram logo for critical hits */}
-            {isVitalHit && logoTexture && alpha > 0.5 && (
-              <pixiSprite
-                texture={logoTexture}
-                anchor={{ x: 0.5, y: 0.5 }}
-                scale={{ x: 0.15 * scale, y: 0.15 * scale }}
-                alpha={alpha * 0.7}
-                y={-80}
-              />
-            )}
-
-            {/* Enhanced damage number with Korean style */}
-            <pixiContainer>
-              <pixiGraphics
-                draw={(g: PixiGraphics) => {
-                  g.clear();
-                  // Background panel for damage number
-                  g.setFillStyle({
-                    color: DARK_TRIGRAM_THEME.DARK_BG,
-                    alpha: alpha * 0.8,
-                  });
-                  g.roundRect(-40, -15, 80, 30, 8);
-                  g.fill();
-
-                  // Border with trigram colors
-                  g.setStrokeStyle({
-                    color: isVitalHit
-                      ? DARK_TRIGRAM_THEME.VITAL_ORANGE
-                      : DARK_TRIGRAM_THEME.PRIMARY_CYAN,
-                    width: 2,
-                    alpha: alpha,
-                  });
-                  g.roundRect(-40, -15, 80, 30, 8);
-                  g.stroke();
-                }}
-              />
-
+            {/* Hit type indicator */}
+            {effect.type !== "normal" && (
               <pixiText
-                text={`${effect.damage}`}
+                text={
+                  effect.type === "critical"
+                    ? "급소!"
+                    : effect.type === "heavy"
+                    ? "강타!"
+                    : "명중!"
+                }
                 anchor={{ x: 0.5, y: 0.5 }}
-                scale={{ x: scale, y: scale }}
-                alpha={alpha}
-                style={{
-                  fontFamily: "Orbitron, Noto Sans KR",
-                  fontSize: isVitalHit ? 32 : 24,
-                  fill: isVitalHit
-                    ? DARK_TRIGRAM_THEME.VITAL_ORANGE
-                    : DARK_TRIGRAM_THEME.PRIMARY_CYAN,
-                  fontWeight: "bold",
-                  stroke: { color: DARK_TRIGRAM_THEME.DARK_BG, width: 3 },
-                  dropShadow: {
-                    color: isVitalHit
-                      ? DARK_TRIGRAM_THEME.VITAL_ORANGE
-                      : DARK_TRIGRAM_THEME.PRIMARY_CYAN,
-                    blur: 8,
-                    distance: 0,
-                  },
-                }}
-              />
-            </pixiContainer>
-
-            {/* Vital hit indicator with Korean text and effects */}
-            {isVitalHit && (
-              <pixiContainer y={-50}>
-                <pixiGraphics
-                  draw={(g: PixiGraphics) => {
-                    g.clear();
-                    // Energy burst background
-                    g.setFillStyle({
-                      color: DARK_TRIGRAM_THEME.VITAL_ORANGE,
-                      alpha: alpha * 0.3,
-                    });
-                    g.roundRect(-60, -20, 120, 40, 12);
-                    g.fill();
-
-                    // Pulsing border
-                    g.setStrokeStyle({
-                      color: DARK_TRIGRAM_THEME.WHITE,
-                      width: 2,
-                      alpha: alpha * 0.9,
-                    });
-                    g.roundRect(-60, -20, 120, 40, 12);
-                    g.stroke();
-                  }}
-                />
-
-                <pixiText
-                  text="급소격!"
-                  anchor={{ x: 0.5, y: 0.5 }}
-                  scale={{ x: scale * 0.8, y: scale * 0.8 }}
-                  alpha={alpha}
-                  style={{
-                    fontFamily: "Noto Sans KR",
-                    fontSize: 20,
-                    fill: DARK_TRIGRAM_THEME.WHITE,
-                    fontWeight: "bold",
-                    dropShadow: {
-                      color: DARK_TRIGRAM_THEME.VITAL_ORANGE,
-                      blur: 6,
-                      distance: 0,
-                    },
-                  }}
-                />
-              </pixiContainer>
-            )}
-
-            {/* Technique name with enhanced Korean typography */}
-            <pixiContainer y={40}>
-              <pixiGraphics
-                draw={(g: PixiGraphics) => {
-                  g.clear();
-                  // Traditional Korean panel background
-                  g.setFillStyle({ color: 0x000000, alpha: alpha * 0.7 });
-                  g.roundRect(-80, -12, 160, 24, 6);
-                  g.fill();
-
-                  // Traditional red border
-                  g.setStrokeStyle({
-                    color: 0x8b0000,
-                    width: 1,
-                    alpha: alpha * 0.8,
-                  });
-                  g.roundRect(-80, -12, 160, 24, 6);
-                  g.stroke();
-                }}
-              />
-
-              <pixiText
-                text={effect.technique}
-                anchor={{ x: 0.5, y: 0.5 }}
-                scale={{ x: scale * 0.7, y: scale * 0.7 }}
-                alpha={alpha * 0.9}
+                y={-60}
                 style={{
                   fontFamily: "Noto Sans KR",
                   fontSize: 14,
-                  fill: DARK_TRIGRAM_THEME.WHITE,
-                  fontWeight: "400",
-                  dropShadow: {
-                    color: 0x8b0000,
-                    blur: 3,
-                    distance: 0,
-                  },
+                  fill: 0xffd700,
+                  fontWeight: "bold",
                 }}
               />
-            </pixiContainer>
-
-            {/* Trigram symbol for technique classification */}
-            {effect.trigram && (
-              <pixiContainer y={-100}>
-                <pixiGraphics
-                  draw={(g: PixiGraphics) => {
-                    g.clear();
-                    // Circular background for trigram
-                    g.setFillStyle({
-                      color: DARK_TRIGRAM_THEME.PRIMARY_CYAN,
-                      alpha: alpha * 0.2,
-                    });
-                    g.circle(0, 0, 25);
-                    g.fill();
-
-                    g.setStrokeStyle({
-                      color: DARK_TRIGRAM_THEME.PRIMARY_CYAN,
-                      width: 2,
-                      alpha: alpha * 0.6,
-                    });
-                    g.circle(0, 0, 25);
-                    g.stroke();
-                  }}
-                />
-
-                <pixiText
-                  text={effect.trigram}
-                  anchor={{ x: 0.5, y: 0.5 }}
-                  scale={{ x: scale, y: scale }}
-                  alpha={alpha * 0.8}
-                  style={{
-                    fontFamily: "serif",
-                    fontSize: 28,
-                    fill: DARK_TRIGRAM_THEME.WHITE,
-                    fontWeight: "bold",
-                  }}
-                />
-              </pixiContainer>
             )}
           </pixiContainer>
         );
       })}
-
-      <Container>
-        {effects.map((effect) => (
-          <Container
-            key={effect.id}
-            x={effect.position.x}
-            y={effect.position.y}
-          >
-            <Graphics draw={drawEffect(effect)} />
-          </Container>
-        ))}
-      </Container>
     </pixiContainer>
   );
 }

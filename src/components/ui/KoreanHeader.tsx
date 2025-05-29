@@ -67,15 +67,17 @@ export function KoreanHeader({
       <KoreanText
         text={title}
         anchor={{ x: 0.5, y: 0.5 }}
-        y={subtitle ? -8 : 0}
         style={{
+          fontFamily: "Noto Sans KR",
           fontSize: 24,
           fill: KOREAN_COLORS.GOLD,
           fontWeight: "bold",
           dropShadow: {
-            color: KOREAN_COLORS.BLACK,
-            blur: 4,
-            distance: 2,
+            color: 0x000000,
+            blur: 8,
+            distance: 4,
+            alpha: 0.8,
+            angle: Math.PI / 4,
           },
         }}
       />

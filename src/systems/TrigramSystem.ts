@@ -1,18 +1,16 @@
-import type { KoreanTechnique, TrigramStance } from "../types/GameTypes";
-import type { TransitionPath, TransitionMetrics } from "../types/GameTypes";
-import {
-  KOREAN_TECHNIQUES,
-  getTechniqueByStance,
-} from "./trigram/KoreanTechniques";
-import { StanceManager } from "./trigram/StanceManager";
 import { TrigramCalculator } from "./trigram/TrigramCalculator";
-import { TransitionCalculator } from "./trigram/TransitionCalculator";
 import { KoreanCulture } from "./trigram/KoreanCulture";
+import {
+  type PlayerState,
+  type KoreanTechnique,
+  type TrigramStance,
+  type TransitionMetrics,
+  type TransitionPath,
+  KOREAN_TECHNIQUES,
+} from "../types";
+import { getTechniqueByStance } from "./trigram/KoreanTechniques";
+import { StanceManager } from "./trigram/StanceManager";
 
-/**
- * TrigramSystem - Main coordinator for Korean martial arts trigram system
- * Provides a unified interface to all trigram-related functionality
- */
 export class TrigramSystem {
   // Re-export techniques for backward compatibility
   public static readonly TECHNIQUES = KOREAN_TECHNIQUES;
@@ -230,22 +228,34 @@ export class TrigramSystem {
    * Get comprehensive stance statistics
    */
   public static getStanceStats(stance: TrigramStance): {
-    damage: number;
-    defense: number;
+    power: number;
     speed: number;
-    evasion: number;
+    defense: number;
+    flexibility: number;
     overall: number;
   } {
     return TrigramCalculator.getStanceStats(stance);
   }
 
-  /**
-   * Get formatted stance display name
-   */
-  public static getStanceDisplayName(stance: TrigramStance): string {
-    // Use available method from KoreanCulture
-    const culture = KoreanCulture.getStanceCulture(stance);
-    return `${culture.name} (${culture.element})`;
+  public static calculateCombatEffectiveness(
+    player: PlayerState,
+    technique: KoreanTechnique,
+    opponentStance: TrigramStance
+  ): number {
+    const stanceMultiplier = TrigramCalculator.calculateDamageMultiplier(
+      technique.stance,
+      opponentStance
+    );
+
+    const staminaFactor = player.stamina / player.maxStamina;
+    const kiFactor = player.ki / player.maxKi;
+
+    return Math.min(100, stanceMultiplier * staminaFactor * kiFactor * 100);
+  }
+
+  public static getStanceCulture(stance: TrigramStance): string {
+    const culture = KoreanCulture.getTrigramDescription(stance);
+    return culture || `Unknown stance: ${stance}`;
   }
 
   /**
@@ -279,18 +289,61 @@ export class TrigramSystem {
     const stanceData = TRIGRAM_STANCES[stance];
     return stanceData ? stanceData.effectiveness : 1.0;
   }
+
+  /**
+   * Gets Korean name for stance with proper null checking
+   */
+  public static getStanceKoreanName(stance: TrigramStance): string {
+    const culture = KoreanCulture.getStanceCulture(stance);
+    // Fix: Use korean property instead of non-existent name property
+    return culture ? `${culture.korean} (${culture.element})` : stance;
+  }
+
+  public static formatCultureDescription(stance: TrigramStance): string {
+    const culture = KoreanCulture.getCultureInfo(stance);
+    if (!culture) {
+      return `Unknown stance: ${stance}`;
+    }
+
+    // Fix property access - use korean instead of name
+    return `${culture.korean} (${culture.element})`;
+  }
+
+  public static getCultureInfo(stance: TrigramStance): string {
+    const culture = KoreanCulture.getCultureInfo(stance);
+    if (!culture) {
+      return `Unknown stance: ${stance}`;
+    }
+
+    return `${culture.korean} - ${culture.philosophy}`;
+  }
 }
 
 // Export all sub-components for direct access if needed
-export { KOREAN_TECHNIQUES } from "./trigram/KoreanTechniques";
-export { StanceManager } from "./trigram/StanceManager";
-export { TrigramCalculator } from "./trigram/TrigramCalculator";
-export { TransitionCalculator } from "./trigram/TransitionCalculator";
-export {
-  KoreanCulture,
-  TRIGRAM_SYMBOLS,
-  TRIGRAM_ELEMENTS,
-} from "./trigram/KoreanCulture";
+export { TrigramCalculator, StanceManager, KoreanCulture, KOREAN_TECHNIQUES };
+
+// Add these constants if they don't exist in KoreanCulture
+export const TRIGRAM_SYMBOLS = {
+  geon: "☰", // Heaven
+  tae: "☱", // Lake
+  li: "☲", // Fire
+  jin: "☳", // Thunder
+  son: "☴", // Wind
+  gam: "☵", // Water
+  gan: "☶", // Mountain
+  gon: "☷", // Earth
+} as const;
+
+export const TRIGRAM_ELEMENTS = {
+  geon: "천", // Heaven
+  tae: "택", // Lake
+  li: "화", // Fire
+  jin: "뢰", // Thunder
+  son: "풍", // Wind
+  gam: "수", // Water
+  gan: "산", // Mountain
+  gon: "지", // Earth
+} as const;
 
 // Define stance data structure
 interface StanceData {
@@ -359,26 +412,3 @@ const TRIGRAM_STANCES: Record<TrigramStance, StanceData> = {
     effectiveness: 1.0,
   },
 };
-
-// Export additional constants
-export const TRIGRAM_SYMBOLS = {
-  geon: "☰", // Heaven
-  tae: "☱", // Lake
-  li: "☲", // Fire
-  jin: "☳", // Thunder
-  son: "☴", // Wind
-  gam: "☵", // Water
-  gan: "☶", // Mountain
-  gon: "☷", // Earth
-} as const;
-
-export const TRIGRAM_ELEMENTS = {
-  geon: "천", // Heaven
-  tae: "택", // Lake
-  li: "화", // Fire
-  jin: "뢰", // Thunder
-  son: "풍", // Wind
-  gam: "수", // Water
-  gan: "산", // Mountain
-  gon: "지", // Earth
-} as const;

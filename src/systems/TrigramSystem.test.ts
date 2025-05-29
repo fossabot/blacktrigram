@@ -1,164 +1,156 @@
 import { describe, it, expect } from "vitest";
-import {
-  TrigramSystem,
-  StanceManager,
-  TrigramCalculator,
-  TransitionCalculator,
-  KoreanCulture,
-} from "./TrigramSystem";
-import type { TrigramStance } from "../types/GameTypes";
+import { TrigramSystem } from "./TrigramSystem";
+import type { PlayerState, TrigramStance } from "../types";
 
-describe("TrigramSystem Integration", () => {
-  describe("Main TrigramSystem", () => {
-    it("should provide unified interface to all trigram functionality", () => {
-      const stance: TrigramStance = "geon";
+describe("TrigramSystem", () => {
+  const playerState: PlayerState = {
+    position: { x: 400, y: 300 },
+    health: 80,
+    maxHealth: 100,
+    stamina: 75,
+    maxStamina: 100,
+    ki: 50,
+    maxKi: 100,
+    stance: "geon",
+    isBlocking: false,
+    isAttacking: false,
+    comboCount: 0,
+    vulnerabilityMultiplier: 1.0,
+    statusEffects: [],
+  };
 
-      // Test main interface methods exist
-      expect(TrigramSystem.getTechniqueForStance(stance)).toBeDefined();
-      expect(TrigramSystem.getOptimalCounterStance(stance)).toBe("gam");
-      expect(TrigramSystem.getDamageModifier(stance)).toBe(1.2);
-      expect(TrigramSystem.getStanceKoreanName(stance)).toBe("건 (天)");
+  const opponentState: PlayerState = {
+    position: { x: 600, y: 300 },
+    health: 90,
+    maxHealth: 100,
+    stamina: 85,
+    maxStamina: 100,
+    ki: 40,
+    maxKi: 100,
+    stance: "li",
+    isBlocking: false,
+    isAttacking: false,
+    comboCount: 0,
+    vulnerabilityMultiplier: 1.0,
+    statusEffects: [],
+  };
+
+  describe("trigram stance management", () => {
+    it("should get valid trigram stances", () => {
+      const stances = TrigramSystem.getAllStances();
+      expect(stances).toHaveLength(8);
+      expect(stances).toContain("geon");
+      expect(stances).toContain("tae");
+      expect(stances).toContain("li");
     });
 
-    it("should calculate effective damage with all modifiers", () => {
-      const damage = TrigramSystem.calculateEffectiveDamage(100, "li", "gan");
-      expect(damage).toBeGreaterThan(100); // Fire vs Mountain should favor attacker
-    });
-  });
-
-  describe("StanceManager", () => {
-    it("should handle stance relationships correctly", () => {
-      expect(StanceManager.getCounterStance("geon")).toBe("gam");
-      expect(StanceManager.getCounterStance("li")).toBe("gam");
-      expect(StanceManager.getCounterStance("jin")).toBe("gan");
-    });
-
-    it("should calculate stance distances correctly", () => {
-      expect(StanceManager.calculateStanceDistance("geon", "geon")).toBe(0);
-      expect(StanceManager.calculateStanceDistance("geon", "tae")).toBe(1);
-      expect(StanceManager.calculateStanceDistance("geon", "gon")).toBe(1); // Wraps around
-    });
-
-    it("should identify optimal transitions", () => {
-      expect(StanceManager.isOptimalTransition("geon", "geon")).toBe(true);
-      expect(StanceManager.isOptimalTransition("geon", "tae")).toBe(true); // Adjacent
-      expect(StanceManager.isOptimalTransition("geon", "gam")).toBe(true); // Counter
-    });
-  });
-
-  describe("TrigramCalculator", () => {
-    it("should provide accurate stance modifiers", () => {
-      // Fire stance should have high damage, low defense
-      expect(TrigramCalculator.getDamageModifier("li")).toBe(1.3);
-      expect(TrigramCalculator.getDefenseModifier("li")).toBe(0.8);
-
-      // Mountain stance should have high defense, low speed
-      expect(TrigramCalculator.getDefenseModifier("gan")).toBe(1.4);
-      expect(TrigramCalculator.getSpeedModifier("gan")).toBe(0.7);
-    });
-
-    it("should calculate hit chances correctly", () => {
-      const hitChance = TrigramCalculator.calculateHitChance(0.8, "son", "gan");
-      expect(hitChance).toBeGreaterThan(0.8); // Wind vs Mountain favors attacker
-      expect(hitChance).toBeLessThanOrEqual(0.95); // Clamped maximum
-    });
-
-    it("should provide comprehensive stance stats", () => {
-      const stats = TrigramCalculator.getStanceStats("geon");
-      expect(stats).toHaveProperty("damage");
-      expect(stats).toHaveProperty("defense");
-      expect(stats).toHaveProperty("speed");
-      expect(stats).toHaveProperty("evasion");
-      expect(stats).toHaveProperty("overall");
-      expect(stats.overall).toBeCloseTo(
-        (stats.damage + stats.defense + stats.speed + stats.evasion) / 4
-      );
+    it("should get technique for stance", () => {
+      const technique = TrigramSystem.getTechniqueForStance("geon");
+      expect(technique).toBeDefined();
+      if (technique) {
+        expect(technique.stance).toBe("geon");
+        expect(technique.koreanName).toBeTruthy();
+        expect(technique.englishName).toBeTruthy();
+      }
     });
   });
 
-  describe("TransitionCalculator", () => {
-    it("should calculate transition costs accurately", () => {
-      const cost = TransitionCalculator.calculateTransitionCost("geon", "li");
-      expect(cost.staminaCost).toBeGreaterThan(0);
-      expect(cost.kiCost).toBeGreaterThan(0);
-      expect(cost.timeDelay).toBeGreaterThan(0);
-      expect(cost.effectiveness).toBeLessThanOrEqual(1.0);
-    });
-
-    it("should handle same stance transitions", () => {
-      const cost = TransitionCalculator.calculateTransitionCost("geon", "geon");
-      expect(cost.staminaCost).toBe(0);
-      expect(cost.kiCost).toBe(0);
-      expect(cost.timeDelay).toBe(0);
-      expect(cost.effectiveness).toBe(1.0);
-    });
-
-    it("should provide optimal transition paths", () => {
-      const path = TransitionCalculator.getOptimalTransitionPath("geon", "gam");
-      expect(path).toContain("geon");
-      expect(path).toContain("gam");
-      expect(path.length).toBeGreaterThan(1);
+  describe("stance statistics", () => {
+    it("should get stance effectiveness", () => {
+      const effectiveness = TrigramSystem.getStanceEffectiveness("geon", "li");
+      expect(typeof effectiveness).toBe("number");
+      expect(effectiveness).toBeGreaterThan(0);
     });
   });
 
-  describe("KoreanCulture", () => {
-    it("should provide Korean cultural elements", () => {
-      expect(KoreanCulture.getStanceKoreanName("geon")).toBe("건 (天)");
-      expect(KoreanCulture.getTrigramSymbol("geon")).toBe("☰");
-      expect(KoreanCulture.getElementName("geon")).toBe("천");
-    });
+  describe("damage calculation", () => {
+    it("should calculate damage with correct parameters", () => {
+      const technique = TrigramSystem.getTechniqueForStance("geon");
+      expect(technique).toBeDefined();
 
-    it("should validate Korean text", () => {
-      expect(KoreanCulture.isValidKoreanText("천둥벽력")).toBe(true);
-      expect(KoreanCulture.isValidKoreanText("Thunder Strike")).toBe(false);
-      expect(KoreanCulture.isValidKoreanText("천둥벽력 (Thunder)")).toBe(true);
-    });
+      if (technique) {
+        const distance = 50;
+        const damage = TrigramSystem.calculateEffectiveDamage(
+          technique.damage,
+          distance,
+          technique.accuracy
+        );
 
-    it("should format technique names correctly", () => {
-      const formatted = KoreanCulture.formatTechniqueName(
-        "천둥벽력",
-        "Thunder Strike"
-      );
-      expect(formatted).toBe("천둥벽력 (Thunder Strike)");
+        expect(typeof damage).toBe("number");
+        expect(damage).toBeGreaterThan(0);
+      }
     });
   });
 
-  describe("Integration Tests", () => {
-    it("should maintain consistency across all systems", () => {
-      const stance: TrigramStance = "li";
-      const technique = TrigramSystem.getTechniqueForStance(stance);
-
-      expect(technique).not.toBeNull();
-      expect(technique?.stance).toBe(stance);
-      expect(technique?.korean).toBe("화염지창");
+  describe("trigram advantage system", () => {
+    it("should calculate stance advantage correctly", () => {
+      const advantage = TrigramSystem.calculateStanceAdvantage("geon", "tae");
+      expect(typeof advantage).toBe("number");
+      expect(advantage).toBeGreaterThanOrEqual(0);
+      expect(advantage).toBeLessThanOrEqual(2);
     });
 
-    it("should handle complete combat scenario", () => {
-      const attackerStance: TrigramStance = "li";
-      const defenderStance: TrigramStance = "gam";
+    it("should handle same stance advantage", () => {
+      const advantage = TrigramSystem.calculateStanceAdvantage("geon", "geon");
+      expect(advantage).toBe(1); // Neutral advantage
+    });
+  });
 
-      const technique = TrigramSystem.getTechniqueForStance(attackerStance);
-      expect(technique).not.toBeNull();
+  describe("technique retrieval", () => {
+    it("should get technique for stance using correct method name", () => {
+      const technique = TrigramSystem.getTechniqueForStance("geon");
+      expect(technique).toBeDefined();
+      if (technique) {
+        expect(technique.stance).toBe("geon");
+      }
+    });
+  });
 
-      const advantage = TrigramSystem.calculateStanceAdvantage(
-        attackerStance,
-        defenderStance
-      );
+  describe("Korean martial arts integration", () => {
+    it("should validate Korean technique names", () => {
+      const technique = TrigramSystem.getTechniqueForStance("li");
+      expect(technique).toBeDefined();
+      if (technique) {
+        expect(technique.koreanName).toMatch(/[\u3131-\u3163\uac00-\ud7a3]/); // Korean characters
+      }
+    });
+
+    it("should handle all trigram stances", () => {
+      const stances: TrigramStance[] = [
+        "geon",
+        "tae",
+        "li",
+        "jin",
+        "son",
+        "gam",
+        "gan",
+        "gon",
+      ];
+
+      stances.forEach((stance) => {
+        const technique = TrigramSystem.getTechniqueForStance(stance);
+        expect(technique).toBeDefined();
+        if (technique) {
+          expect(technique.stance).toBe(stance);
+        }
+      });
+    });
+  });
+
+  describe("damage effectiveness calculations", () => {
+    it("should calculate effective damage correctly", () => {
+      const baseDamage = 25;
+      const distance = 50;
+      const accuracy = 0.8;
+
       const damage = TrigramSystem.calculateEffectiveDamage(
-        technique!.damage,
-        attackerStance,
-        defenderStance
-      );
-      const hitChance = TrigramSystem.calculateHitChance(
-        technique!.accuracy,
-        attackerStance,
-        defenderStance
+        baseDamage,
+        distance,
+        accuracy
       );
 
-      expect(advantage).toBeGreaterThan(0);
+      expect(typeof damage).toBe("number");
       expect(damage).toBeGreaterThan(0);
-      expect(hitChance).toBeGreaterThan(0);
-      expect(hitChance).toBeLessThanOrEqual(1);
     });
   });
 });

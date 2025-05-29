@@ -121,32 +121,16 @@ export interface KoreanTechnique {
 
 // Combat result interfaces
 export interface AttackResult {
-  readonly damage: number;
   readonly hit: boolean;
-  readonly critical: boolean;
+  readonly damage: number;
+  readonly knockback?: Vector2D;
+  readonly accuracy: number;
   readonly blocked: boolean;
+  readonly critical: boolean;
   readonly statusEffects: StatusEffect[];
-  readonly force: Vector2D;
-  readonly technique: {
-    readonly id: string;
-    readonly korean: string;
-    readonly english: string;
-    readonly damage: number;
-    readonly range: number;
-    readonly accuracy: number;
-    readonly speed: number;
-    readonly staminaCost: number;
-    readonly kiCost: number;
-    readonly vitalPointMultiplier: number;
-    readonly stance: TrigramStance;
-    readonly description: string;
-    readonly effects: StatusEffect[];
-  };
-  readonly attacker: string;
-  readonly timestamp: number;
-  readonly success: boolean;
-  readonly reason?: string;
   readonly vitalPointHit?: VitalPointHit;
+  readonly comboMultiplier: number;
+  readonly description: string;
 }
 
 export interface BlockResult {
@@ -171,10 +155,9 @@ export type VitalPointCategory =
   | "torso"
   | "arms"
   | "legs"
-  | "hands"
-  | "feet"
   | "critical"
-  | "consciousness"; // Added for consciousness category
+  | "major"
+  | "minor";
 
 // Update VitalPoint interface to match usage
 export interface VitalPoint {
@@ -182,35 +165,37 @@ export interface VitalPoint {
   readonly korean: string;
   readonly english: string;
   readonly region: string;
-  readonly category: VitalPointCategory;
-  readonly coordinates: Vector2D;
-  readonly difficulty: number;
+  readonly coordinates: Position;
   readonly vulnerability: number;
+  readonly category: VitalPointCategory;
+  readonly difficulty: number;
   readonly effects: readonly StatusEffect[];
   readonly description: string;
-  // Optional properties for backward compatibility
-  readonly x?: number;
-  readonly y?: number;
-  readonly radius?: number;
 }
 
 // Player state management
 export interface PlayerState {
   readonly id: string;
+  readonly position: Position;
+  readonly stance: TrigramStance;
   readonly health: number;
   readonly maxHealth: number;
   readonly stamina: number;
   readonly maxStamina: number;
   readonly ki: number;
   readonly maxKi: number;
-  readonly stance: TrigramStance;
-  readonly position: Vector2D;
-  readonly isAttacking: boolean;
   readonly isBlocking: boolean;
-  readonly isStunned: boolean;
+  readonly isDodging: boolean;
+  readonly isAttacking: boolean;
+  readonly comboCount: number;
   readonly statusEffects: readonly StatusEffect[];
-  readonly lastAttackTime: number; // Add missing property
-  readonly comboCount: number; // Add missing property
+
+  // Add missing properties for complete compatibility
+  readonly isStunned?: boolean;
+  readonly lastAttackTime?: number;
+  readonly skill?: number;
+  readonly attack?: number;
+  readonly defense?: number;
 }
 
 // Combat system types
@@ -358,14 +343,11 @@ export type ReadonlyDeep<T> = {
 
 // Update VitalPointHit interface
 export interface VitalPointHit {
-  readonly hit: boolean;
-  readonly vitalPointId: string;
-  readonly multiplier: number;
-  readonly statusEffects: readonly StatusEffect[];
-  readonly effectiveness?: number;
-  readonly description?: string;
-  readonly finalDamage?: number;
-  readonly vitalPoint?: string; // Make optional for flexibility
+  readonly vitalPoint: VitalPoint;
+  readonly damage: number;
+  readonly effectiveness: number;
+  readonly description: string;
+  readonly effects: readonly StatusEffect[];
 }
 
 // Add missing TransitionMetrics type

@@ -1,193 +1,187 @@
-import React, { useCallback, useState } from "react";
-import { Container, Graphics, Text, useTick } from "@pixi/react";
-import type { JSX } from "react";
-import type { PlayerState, Vector2D } from "../../types/GameTypes";
+import { useCallback, useState } from "react";
+import type { PlayerState, TrigramStance } from "../../types";
 import { TrigramSystem } from "../../systems/TrigramSystem";
-import { TRIGRAM_DATA } from "../../types";
+import { TRIGRAM_DATA } from "../../systems/trigram/KoreanCulture";
+import type { Graphics as PixiGraphics, Ticker } from "pixi.js";
 
 export interface PlayerProps {
   readonly playerState: PlayerState;
-  readonly isPlayerOne: boolean;
-  readonly opponentPosition: Vector2D;
+  readonly opponentPosition: { x: number; y: number };
+  readonly onStateChange?: (newState: Partial<PlayerState>) => void;
 }
 
 export function Player({
   playerState,
-  isPlayerOne,
-  opponentPosition,
+  onStateChange,
 }: PlayerProps): JSX.Element {
-  const [animationTime, setAnimationTime] = useState(0);
+  const [animationTime, setAnimationTime] = useState<number>(0);
 
-  useTick(
-    useCallback((delta: number) => {
-      setAnimationTime((prev) => prev + delta * 0.1);
-    }, [])
-  );
+  // Use proper ticker callback with Ticker parameter
+  const tickerCallback = useCallback((ticker: Ticker) => {
+    setAnimationTime((prev) => prev + ticker.deltaTime * 0.1);
+  }, []);
 
-  const trigramData = TRIGRAM_DATA[playerState.currentStance];
-  const stanceColor = TrigramSystem.getTrigramColor(playerState.currentStance);
+  // Get trigram data safely
+  const trigramData = TRIGRAM_DATA[playerState.stance as TrigramStance];
+  const stanceColor = trigramData?.color || 0xffffff;
 
   const drawPlayer = useCallback(
-    (g: any) => {
+    (g: PixiGraphics) => {
       g.clear();
 
-      // Player body (simplified martial artist silhouette)
-      const bodyColor = isPlayerOne ? 0xffffff : 0xcccccc;
-      const alpha = playerState.isStunned ? 0.6 : 1.0;
+      // Draw martial artist figure
+      const headRadius = 12;
+      const bodyHeight = 40;
+      const bodyWidth = 20;
 
-      // Main body
-      g.setFillStyle({ color: bodyColor, alpha });
-      g.ellipse(0, -40, 15, 30);
-      g.fill();
+      // Determine if player is moving based on animation
+      const isMoving = Math.sin(animationTime) > 0.5;
+      const legSpread = isMoving ? 15 : 8;
 
       // Head
-      g.circle(0, -75, 12);
+      g.setFillStyle({ color: 0xffdbac }); // Skin tone
+      g.circle(0, -bodyHeight - headRadius, headRadius);
       g.fill();
 
-      // Arms
-      const armOffset = playerState.isAttacking ? 20 : 10;
-      g.rect(-25, -60, armOffset, 8);
-      g.rect(25 - armOffset, -60, armOffset, 8);
-      g.fill();
-
-      // Legs
-      const legSpread = Math.abs(playerState.velocity.x) > 10 ? 15 : 8;
-      g.rect(-legSpread, -10, 8, 25);
-      g.rect(legSpread - 8, -10, 8, 25);
-      g.fill();
-
-      // Stance aura
-      if (playerState.currentStance) {
-        const auraAlpha = Math.sin(animationTime) * 0.3 + 0.4;
-        const auraRadius = 45 + Math.sin(animationTime * 2) * 5;
-
+      // Body (Korean martial arts uniform - dobok)
+      if (playerState.stance) {
+        // Draw stance-specific aura
+        const auraIntensity = Math.sin(animationTime * 2) * 0.3 + 0.7;
         g.setStrokeStyle({
           color: stanceColor,
           width: 3,
-          alpha: auraAlpha,
+          alpha: auraIntensity * 0.5,
         });
-        g.circle(0, -40, auraRadius);
+        g.circle(0, -bodyHeight / 2, 35);
         g.stroke();
+
+        // Draw attacking effect if attacking
+        if (playerState.isAttacking) {
+          const attackDirection = 1; // Default to right-facing
+
+          g.setStrokeStyle({ color: stanceColor, width: 4, alpha: 0.8 });
+          g.moveTo(bodyWidth / 2, -bodyHeight / 2);
+          g.lineTo(bodyWidth / 2 + 30 * attackDirection, -bodyHeight / 2);
+          g.stroke();
+
+          // Attack impact effect
+          g.setFillStyle({ color: stanceColor, alpha: 0.6 });
+          g.circle(bodyWidth / 2 + 25 * attackDirection, -bodyHeight / 2, 8);
+          g.fill();
+        }
       }
 
-      // Attack effect
-      if (playerState.isAttacking) {
-        const attackDirection = playerState.facing === "right" ? 1 : -1;
-        g.setStrokeStyle({ color: 0xffff00, width: 4, alpha: 0.8 });
-        g.moveTo(attackDirection * 15, -50);
-        g.lineTo(attackDirection * 40, -45);
-        g.stroke();
-      }
+      // White martial arts uniform
+      g.setFillStyle({ color: 0xffffff });
+      g.rect(-bodyWidth / 2, -bodyHeight, bodyWidth, bodyHeight);
+      g.fill();
 
-      // Block effect
-      if (playerState.isBlocking) {
-        g.setStrokeStyle({ color: 0x00ffff, width: 6, alpha: 0.7 });
-        g.arc(0, -40, 35, -Math.PI / 4, Math.PI / 4);
-        g.stroke();
-      }
+      // Belt (colored based on skill level)
+      const beltColor =
+        playerState.health > 80
+          ? 0x8b0000 // Red for high health
+          : playerState.health > 40
+          ? 0xffd700 // Gold for medium
+          : 0x8b4513; // Brown for low
+      g.setFillStyle({ color: beltColor });
+      g.rect(-bodyWidth / 2 - 2, -bodyHeight / 3, bodyWidth + 4, 6);
+      g.fill();
+
+      // Arms
+      g.setStrokeStyle({ color: 0xffdbac, width: 6 });
+      g.moveTo(-bodyWidth / 2, -bodyHeight * 0.7);
+      g.lineTo(-bodyWidth - 8, -bodyHeight * 0.4);
+      g.moveTo(bodyWidth / 2, -bodyHeight * 0.7);
+      g.lineTo(bodyWidth + 8, -bodyHeight * 0.4);
+      g.stroke();
+
+      // Legs
+      g.moveTo(-bodyWidth / 4, 0);
+      g.lineTo(-legSpread, bodyHeight);
+      g.moveTo(bodyWidth / 4, 0);
+      g.lineTo(legSpread, bodyHeight);
+      g.stroke();
 
       // Health indicator
-      const healthRatio = playerState.health / playerState.maxHealth;
-      if (healthRatio < 0.3) {
-        // Low health warning effect
-        const warningAlpha = Math.sin(animationTime * 4) * 0.5 + 0.5;
-        g.setFillStyle({ color: 0xff0000, alpha: warningAlpha * 0.3 });
-        g.circle(0, -40, 50);
+      if (playerState.health < playerState.maxHealth) {
+        const healthPercent = playerState.health / playerState.maxHealth;
+
+        // Health bar background
+        g.setFillStyle({ color: 0x330000, alpha: 0.8 });
+        g.rect(-25, -bodyHeight - 30, 50, 5);
+        g.fill();
+
+        // Health bar fill
+        const healthColor =
+          healthPercent > 0.6
+            ? 0x00ff00
+            : healthPercent > 0.3
+            ? 0xffff00
+            : 0xff0000;
+        g.setFillStyle({ color: healthColor });
+        g.rect(-25, -bodyHeight - 30, 50 * healthPercent, 5);
         g.fill();
       }
     },
     [
-      playerState.currentStance,
+      animationTime,
+      playerState.stance,
       playerState.isAttacking,
-      playerState.isBlocking,
-      playerState.isStunned,
-      playerState.facing,
       playerState.health,
       playerState.maxHealth,
-      playerState.velocity,
-      isPlayerOne,
       stanceColor,
-      animationTime,
     ]
   );
 
   return (
-    <Container
+    <pixiContainer
       x={playerState.position.x}
       y={playerState.position.y}
-      scale={playerState.facing === "left" ? { x: -1, y: 1 } : { x: 1, y: 1 }}
+      // Remove scale flipping for now to avoid complexity
+      scale={{ x: 1, y: 1 }}
     >
-      {/* Main player visual */}
-      <Graphics draw={drawPlayer} />
+      {/* Main player graphics */}
+      <pixiGraphics draw={drawPlayer} />
 
-      {/* Trigram symbol above player */}
-      <Text
-        text={trigramData.symbol}
+      {/* Player stance indicator */}
+      <pixiText
+        text={trigramData?.korean || ""}
         anchor={{ x: 0.5, y: 0.5 }}
-        x={0}
-        y={-120}
-        style={{
-          fontFamily: "serif",
-          fontSize: 24,
-          fill: stanceColor,
-          fontWeight: "bold",
-          dropShadow: {
-            color: 0x000000,
-            blur: 2,
-            distance: 1,
-          },
-        }}
-      />
-
-      {/* Korean stance name */}
-      <Text
-        text={`${trigramData.koreanName} (${trigramData.englishName})`}
-        anchor={{ x: 0.5, y: 0.5 }}
-        x={0}
-        y={-140}
+        y={-80}
         style={{
           fontFamily: "Noto Sans KR",
-          fontSize: 12,
-          fill: 0xffd700,
-          fontWeight: "400",
+          fontSize: 14,
+          fill: stanceColor,
+          fontWeight: "bold",
         }}
       />
 
-      {/* Combo counter */}
-      {playerState.comboCount > 1 && (
-        <Text
-          text={`${playerState.comboCount} HIT COMBO!`}
-          anchor={{ x: 0.5, y: 0.5 }}
-          x={0}
-          y={-160}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 14,
-            fill: 0xff1493,
-            fontWeight: "bold",
-          }}
-        />
-      )}
+      {/* Trigram symbol */}
+      <pixiText
+        text={trigramData?.symbol || ""}
+        anchor={{ x: 0.5, y: 0.5 }}
+        y={-95}
+        style={{
+          fontFamily: "serif",
+          fontSize: 18,
+          fill: 0xffffff,
+        }}
+      />
 
-      {/* Status effects indicators */}
-      {playerState.activeEffects.map((effect, index) => (
-        <Text
-          key={`${effect.type}_${index}`}
-          text={effect.type.toUpperCase()}
+      {/* Status effects display */}
+      {playerState.statusEffects.map((effect, index) => (
+        <pixiText
+          key={index}
+          text={`${effect.type}: ${effect.duration}`}
           anchor={{ x: 0.5, y: 0.5 }}
-          x={0}
-          y={30 + index * 15}
+          y={60 + index * 15}
           style={{
             fontFamily: "Noto Sans KR",
             fontSize: 10,
-            fill: 0xff4500,
-            fontWeight: "bold",
+            fill: 0xffd700,
           }}
         />
       ))}
-    </Container>
+    </pixiContainer>
   );
 }
-
-// Export for backward compatibility
-export const PlayerContainer = Player;
