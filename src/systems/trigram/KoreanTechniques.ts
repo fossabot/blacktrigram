@@ -1,4 +1,5 @@
-import type { TrigramStance } from "../../types";
+import type { TrigramStance, KoreanTechnique } from "../../types";
+import { TRIGRAM_DATA } from "../../types";
 
 interface KoreanTechnique {
   readonly name: string;
@@ -79,6 +80,32 @@ export class KoreanTechniques {
   public static getKoreanName(stance: TrigramStance): string {
     return KOREAN_TECHNIQUES[stance].name;
   }
+}
+
+// Add the missing function that systems are trying to import
+export function getTechniqueByStance(stance: TrigramStance): KoreanTechnique {
+  const trigramData = TRIGRAM_DATA[stance];
+  if (!trigramData) {
+    throw new Error(`Unknown trigram stance: ${stance}`);
+  }
+  return trigramData.technique;
+}
+
+// Export techniques for external access
+export function getAllTechniques(): KoreanTechnique[] {
+  return Object.values(TRIGRAM_DATA).map((trigram) => trigram.technique);
+}
+
+export function getTechniqueByName(name: string): KoreanTechnique | null {
+  for (const trigram of Object.values(TRIGRAM_DATA)) {
+    if (
+      trigram.technique.name === name ||
+      trigram.technique.koreanName === name
+    ) {
+      return trigram.technique;
+    }
+  }
+  return null;
 }
 
 // Export both names to satisfy different import patterns

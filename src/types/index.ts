@@ -1,280 +1,64 @@
 // Central type exports for Korean martial arts game
 
-import { AnatomicalRegion } from "./GameTypes";
+// Core Korean martial arts game types
+export type TrigramStance =
+  | "geon"
+  | "tae"
+  | "li"
+  | "jin"
+  | "son"
+  | "gam"
+  | "gan"
+  | "gon";
 
-// Re-export all game types
-export * from "./GameTypes";
-
-// Trigram data with authentic Korean martial arts information
-export const TRIGRAM_DATA = {
-  geon: {
-    korean: "건괘",
-    english: "Heaven",
-    symbol: "☰",
-    color: 0xffd700,
-    philosophy: "Creative force - overwhelming power and righteous strength",
-  },
-  tae: {
-    korean: "태괘",
-    english: "Lake",
-    symbol: "☱",
-    color: 0x87ceeb,
-    philosophy: "Joyful expression - flowing adaptation and graceful movement",
-  },
-  li: {
-    korean: "리괘",
-    english: "Fire",
-    symbol: "☲",
-    color: 0xff4500,
-    philosophy: "Brilliant illumination - rapid strikes that cling to targets",
-  },
-  jin: {
-    korean: "진괘",
-    english: "Thunder",
-    symbol: "☳",
-    color: 0x9370db,
-    philosophy: "Arousing power - sudden overwhelming force that awakens",
-  },
-  son: {
-    korean: "손괘",
-    english: "Wind",
-    symbol: "☴",
-    color: 0x98fb98,
-    philosophy:
-      "Gentle penetration - persistent pressure that wears down resistance",
-  },
-  gam: {
-    korean: "감괘",
-    english: "Water",
-    symbol: "☵",
-    color: 0x4169e1,
-    philosophy:
-      "Abysmal depth - flowing around obstacles to find the deepest path",
-  },
-  gan: {
-    korean: "간괘",
-    english: "Mountain",
-    symbol: "☶",
-    color: 0x8b4513,
-    philosophy:
-      "Keeping still - unmovable stability waiting for the perfect moment",
-  },
-  gon: {
-    korean: "곤괘",
-    english: "Earth",
-    symbol: "☷",
-    color: 0x654321,
-    philosophy:
-      "Receptive foundation - balanced nurturing that supports all growth",
-  },
-} as const;
-
-// Korean martial arts constants
-export const KOREAN_MARTIAL_ARTS = {
-  DOJANG_NAME: "흑괘 무술 도장",
-  MASTER_TITLE: "사범님",
-  STUDENT_TITLE: "제자",
-  BOW_COMMAND: "경례",
-  BEGIN_COMMAND: "시작",
-  STOP_COMMAND: "그만",
-  VICTORY: "승리",
-  DEFEAT: "패배",
-  DRAW: "무승부",
-} as const;
-
-// Game configuration constants
-export const GAME_CONFIG = {
-  CANVAS_WIDTH: 1920,
-  CANVAS_HEIGHT: 1080,
-  TARGET_FPS: 60,
-  MAX_PLAYERS: 2,
-  ROUND_DURATION: 90, // seconds
-  MAX_ROUNDS: 3,
-  VITAL_POINT_COUNT: 70,
-  TRIGRAM_COUNT: 8,
-} as const;
-
-// Audio configuration
-export const AUDIO_CONFIG = {
-  MASTER_VOLUME: 0.8,
-  SFX_VOLUME: 0.7,
-  MUSIC_VOLUME: 0.5,
-  FADE_DURATION: 1000,
-} as const;
-
-// Korean color scheme constants
-export const KOREAN_COLORS = {
-  RED: 0x8b0000, // Traditional Korean red
-  GOLD: 0xffd700, // Golden yellow for highlights
-  BLACK: 0x000000, // Deep black background
-  WHITE: 0xffffff, // Pure white for contrast
-  CYAN: 0x00ffd0, // Cyberpunk accent color
-  BLUE: 0x4a90e2, // Dojang blue
-  GRAY_DARK: 0x2c3e50, // Dark gray for UI
-  GRAY_LIGHT: 0xbdc3c7, // Light gray for text
-  GREEN: 0x27ae60, // Health/stamina green
-  ORANGE: 0xe67e22, // Warning/energy orange
-  PURPLE: 0x9b59b6, // Ki/spiritual energy
-} as const;
-
-// Korean technique database with authentic names
-export const KOREAN_TECHNIQUES = {
-  // Heaven (건) techniques - Direct force
-  thunder_strike: {
-    id: "thunder_strike",
-    koreanName: "천둥벽력",
-    englishName: "Thunder Strike",
-    stance: "geon" as const,
-    damage: 28,
-    range: 80,
-    accuracy: 85,
-    stamina: 25,
-    kiCost: 20,
-    speed: 0.8,
-    vitalPointMultiplier: 1.5,
-    description: "A devastating overhead strike channeling heaven's power",
-    philosophy:
-      "Pure creative force manifesting as overwhelming physical power",
-  },
-
-  // Lake (태) techniques - Flowing redirection
-  flowing_combo: {
-    id: "flowing_combo",
-    koreanName: "유수연타",
-    englishName: "Flowing Combo",
-    stance: "tae" as const,
-    damage: 18,
-    range: 70,
-    accuracy: 90,
-    stamina: 20,
-    kiCost: 15,
-    speed: 1.2,
-    vitalPointMultiplier: 1.2,
-    description: "Multiple fluid strikes that redirect and overwhelm",
-    philosophy:
-      "Joy in movement - flowing like water through opponent's defenses",
-  },
-
-  // Fire (리) techniques - Precision targeting
-  flame_spear: {
-    id: "flame_spear",
-    koreanName: "화염지창",
-    englishName: "Flame Spear",
-    stance: "li" as const,
-    damage: 35,
-    range: 90,
-    accuracy: 95,
-    stamina: 30,
-    kiCost: 25,
-    speed: 0.7,
-    vitalPointMultiplier: 2.0,
-    description: "Precise thrust targeting vital points with fire's clarity",
-    philosophy: "Illuminating precision - seeing through to the vital core",
-  },
-
-  // Thunder (진) techniques - Shocking power
-  lightning_flash: {
-    id: "lightning_flash",
-    koreanName: "벽력일섬",
-    englishName: "Lightning Flash",
-    stance: "jin" as const,
-    damage: 40,
-    range: 85,
-    accuracy: 80,
-    stamina: 35,
-    kiCost: 30,
-    speed: 0.6,
-    vitalPointMultiplier: 1.8,
-    description: "Explosive technique that stuns and devastates",
-    philosophy: "Sudden arousal - shocking the opponent into submission",
-  },
-
-  // Wind (손) techniques - Persistent pressure
-  whirlwind: {
-    id: "whirlwind",
-    koreanName: "선풍연격",
-    englishName: "Whirlwind",
-    stance: "son" as const,
-    damage: 15,
-    range: 75,
-    accuracy: 95,
-    stamina: 15,
-    kiCost: 10,
-    speed: 1.5,
-    vitalPointMultiplier: 1.1,
-    description: "Continuous spinning attacks that build momentum",
-    philosophy: "Gentle persistence - wearing down through constant pressure",
-  },
-
-  // Water (감) techniques - Adaptive flow
-  counter_strike: {
-    id: "counter_strike",
-    koreanName: "수류반격",
-    englishName: "Counter Strike",
-    stance: "gam" as const,
-    damage: 25,
-    range: 60,
-    accuracy: 85,
-    stamina: 20,
-    kiCost: 18,
-    speed: 1.0,
-    vitalPointMultiplier: 1.6,
-    description: "Defensive technique that turns opponent's force against them",
-    philosophy: "Abysmal depth - finding the hidden path to victory",
-  },
-
-  // Mountain (간) techniques - Defensive stance
-  mountain_defense: {
-    id: "mountain_defense",
-    koreanName: "반석방어",
-    englishName: "Mountain Defense",
-    stance: "gan" as const,
-    damage: 12,
-    range: 50,
-    accuracy: 70,
-    stamina: 10,
-    kiCost: 5,
-    speed: 0.9,
-    vitalPointMultiplier: 0.8,
-    description: "Solid blocking technique that absorbs and deflects",
-    philosophy: "Keeping still - immovable mountain that endures all storms",
-  },
-
-  // Earth (곤) techniques - Grounding control
-  earth_grapple: {
-    id: "earth_grapple",
-    koreanName: "대지포옹",
-    englishName: "Earth Grappling",
-    stance: "gon" as const,
-    damage: 30,
-    range: 65,
-    accuracy: 75,
-    stamina: 28,
-    kiCost: 22,
-    speed: 0.8,
-    vitalPointMultiplier: 1.3,
-    description: "Grounding technique that brings opponent to earth",
-    philosophy:
-      "Receptive strength - embracing and controlling through yielding",
-  },
-} as const;
-
-// Progress tracking interface
-export interface ProgressTrackerProps {
-  readonly label: string;
-  readonly current: number;
-  readonly maximum: number;
-  readonly currentStance?: TrigramStance;
-  readonly progress?: number;
-  readonly onProgressChange?: (progress: number) => void;
+// Position and movement types
+export interface Position {
+  readonly x: number;
+  readonly y: number;
 }
 
-// Enhanced VitalPoint interface with required properties
+export interface Velocity {
+  readonly x: number;
+  readonly y: number;
+}
+
+// Anatomical regions - single source of truth
+export type AnatomicalRegion =
+  | "head"
+  | "neck"
+  | "chest"
+  | "abdomen"
+  | "arms"
+  | "legs";
+export type VitalPointCategory = "primary" | "secondary" | "tertiary";
+
+// Korean technique definitions - UNIFIED
+export interface KoreanTechnique {
+  readonly name: string;
+  readonly stance: TrigramStance;
+  readonly damage: number;
+  readonly range: number;
+  readonly kiCost: number;
+  readonly staminaCost: number;
+  readonly accuracy: number;
+  readonly description: {
+    readonly korean: string;
+    readonly english: string;
+  };
+  readonly koreanName: string;
+  readonly englishName: string;
+}
+
+// Vital point and damage system types
 export interface VitalPoint {
   readonly id: string;
   readonly korean: string;
   readonly english: string;
   readonly region: AnatomicalRegion;
+  readonly anatomicalRegion?: AnatomicalRegion; // Optional alias for compatibility
+  readonly position: Position;
+  readonly category: VitalPointCategory;
+  readonly difficulty: number;
   readonly bounds: {
     readonly x: number;
     readonly y: number;
@@ -290,33 +74,344 @@ export interface VitalPoint {
     readonly korean: string;
     readonly english: string;
   };
+  readonly effects?: StatusEffect[];
 }
 
-// Enhanced DamageResult to include all expected properties
+export interface VitalPointHit {
+  readonly hit: boolean;
+  readonly region?: AnatomicalRegion;
+  readonly damage: number;
+  readonly stunning: number;
+  readonly critical: boolean;
+  readonly effects?: StatusEffect[];
+  readonly description?: string;
+  readonly vitalPoint?: VitalPoint;
+  readonly effectiveness?: number;
+}
+
 export interface DamageResult {
   readonly damage: number;
-  readonly multiplier: number;
+  readonly type: "light" | "medium" | "heavy" | "critical";
+  readonly blocked: boolean;
   readonly critical: boolean;
-  readonly effectType: "normal" | "critical" | "vital_point" | "blocked";
-  readonly stunDuration?: number;
-  readonly knockback?: number;
+  readonly description: string;
+  readonly korean: string;
+  readonly bonus?: number;
+  readonly meridianMultiplier?: number;
+  readonly multiplier?: number;
 }
 
-// Add missing VitalPointCategory type
-export type VitalPointCategory = "primary" | "secondary" | "tertiary";
+// Status effects for Korean martial arts
+export interface StatusEffect {
+  readonly id: string;
+  readonly name: string;
+  readonly korean: string;
+  readonly type: string;
+  readonly intensity: number;
+  readonly duration: number;
+  readonly effects: {
+    readonly healthReduction?: number;
+    readonly staminaReduction?: number;
+    readonly speedMultiplier?: number;
+    readonly damageMultiplier?: number;
+  };
+}
 
-// Add missing AnatomicalRegion type with all required regions
-export type AnatomicalRegion =
-  | "head"
-  | "neck"
-  | "chest"
-  | "abdomen"
-  | "arms"
-  | "legs";
+// Hit effects for visual feedback
+export interface HitEffect {
+  readonly id: string;
+  readonly position: Position;
+  readonly type: "light" | "medium" | "heavy" | "critical" | "block";
+  readonly damage: number;
+  readonly startTime: number;
+  readonly duration: number;
+  readonly korean?: string;
+}
 
-// Export type helpers
-export type KoreanTechniqueId = keyof typeof KOREAN_TECHNIQUES;
-export type TrigramStance = keyof typeof TRIGRAM_DATA;
+// Player state definition - COMPLETE
+export interface PlayerState {
+  readonly playerId: string;
+  readonly position: Position;
+  readonly velocity: Velocity;
+  readonly health: number;
+  readonly maxHealth: number;
+  readonly stamina: number;
+  readonly maxStamina: number;
+  readonly ki: number;
+  readonly maxKi: number;
+  readonly stance: TrigramStance;
+  readonly isAttacking: boolean;
+  readonly isBlocking: boolean;
+  readonly isMoving: boolean;
+  readonly facing: "left" | "right";
+  readonly lastDamageTaken: number;
+  readonly activeEffects: StatusEffect[];
+  readonly comboCount: number;
+  readonly effectiveRange?: number;
+}
 
-// Re-export all game types for easier imports
-export * from "./GameTypes";
+// Attack and combat result types
+export interface AttackResult {
+  readonly hit: boolean;
+  readonly damage: number;
+  readonly blocked: boolean;
+  readonly critical: boolean;
+  readonly accuracy: number;
+  readonly comboMultiplier: number;
+  readonly vitalPointHit?: VitalPointHit;
+  readonly statusEffects: StatusEffect[];
+  readonly description: string;
+}
+
+// Game state types
+export type GamePhase = "preparation" | "combat" | "victory" | "defeat";
+
+export interface GameState {
+  readonly players: [PlayerState, PlayerState];
+  readonly currentRound: number;
+  readonly timeRemaining: number;
+  readonly winner: number | null;
+  readonly isPaused: boolean;
+  readonly phase: GamePhase;
+}
+
+// Combat log entry
+export interface CombatLogEntry {
+  readonly timestamp: number;
+  readonly action: string;
+  readonly player: number;
+  readonly damage?: number;
+  readonly technique?: string;
+  readonly korean?: string;
+}
+
+// Transition metrics for trigram stance changes - COMPLETE
+export interface TransitionMetrics {
+  readonly kiCost: number;
+  readonly time: number;
+  readonly effectiveness: number;
+  readonly staminaCost?: number;
+  readonly stamina?: number; // Alias for compatibility
+}
+
+// Transition path type
+export interface TransitionPath {
+  readonly from: TrigramStance;
+  readonly to: TrigramStance;
+  readonly difficulty: number;
+  readonly culturalHarmony: number;
+}
+
+// Component prop types
+export interface ProgressTrackerProps {
+  readonly label: string;
+  readonly current: number;
+  readonly maximum: number;
+  readonly currentStance?: TrigramStance;
+}
+
+// Trigram data structure
+export interface TrigramData {
+  readonly korean: string;
+  readonly english: string;
+  readonly element: string;
+  readonly direction: string;
+  readonly philosophy: string;
+  readonly symbol: string;
+  readonly technique: KoreanTechnique;
+}
+
+export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
+  geon: {
+    korean: "건",
+    english: "Heaven",
+    element: "Metal",
+    direction: "Northwest",
+    philosophy: "창조와 권위의 힘 (Creative and authoritative power)",
+    symbol: "☰",
+    technique: {
+      name: "천둥벽력",
+      stance: "geon",
+      damage: 28,
+      range: 60,
+      kiCost: 15,
+      staminaCost: 10,
+      accuracy: 0.85,
+      description: {
+        korean: "하늘의 우뢰같은 강력한 일격",
+        english: "Thunderous strike from heaven",
+      },
+      koreanName: "천둥벽력",
+      englishName: "Thunder Strike",
+    },
+  },
+  tae: {
+    korean: "태",
+    english: "Lake",
+    element: "Metal",
+    direction: "West",
+    philosophy: "기쁨과 만족의 표현 (Expression of joy and satisfaction)",
+    symbol: "☱",
+    technique: {
+      name: "유수연타",
+      stance: "tae",
+      damage: 18,
+      range: 50,
+      kiCost: 12,
+      staminaCost: 8,
+      accuracy: 0.9,
+      description: {
+        korean: "호수의 물결처럼 연속적인 타격",
+        english: "Continuous strikes like lake waves",
+      },
+      koreanName: "유수연타",
+      englishName: "Flowing Combo",
+    },
+  },
+  li: {
+    korean: "리",
+    english: "Fire",
+    element: "Fire",
+    direction: "South",
+    philosophy: "명료함과 지혜의 빛 (Light of clarity and wisdom)",
+    symbol: "☲",
+    technique: {
+      name: "화염지창",
+      stance: "li",
+      damage: 35,
+      range: 70,
+      kiCost: 20,
+      staminaCost: 15,
+      accuracy: 0.8,
+      description: {
+        korean: "불꽃처럼 맹렬한 찌르기",
+        english: "Fierce thrust like flame",
+      },
+      koreanName: "화염지창",
+      englishName: "Flame Spear",
+    },
+  },
+  jin: {
+    korean: "진",
+    english: "Thunder",
+    element: "Wood",
+    direction: "East",
+    philosophy: "움직임과 각성의 에너지 (Energy of movement and awakening)",
+    symbol: "☳",
+    technique: {
+      name: "벽력일섬",
+      stance: "jin",
+      damage: 40,
+      range: 55,
+      kiCost: 25,
+      staminaCost: 18,
+      accuracy: 0.75,
+      description: {
+        korean: "번개처럼 빠른 일격",
+        english: "Lightning-fast strike",
+      },
+      koreanName: "벽력일섬",
+      englishName: "Lightning Flash",
+    },
+  },
+  son: {
+    korean: "손",
+    english: "Wind",
+    element: "Wood",
+    direction: "Southeast",
+    philosophy: "순응과 침투의 힘 (Power of yielding and penetration)",
+    symbol: "☴",
+    technique: {
+      name: "선풍연격",
+      stance: "son",
+      damage: 15,
+      range: 80,
+      kiCost: 10,
+      staminaCost: 6,
+      accuracy: 0.95,
+      description: {
+        korean: "바람처럼 가벼운 연속 공격",
+        english: "Light continuous attacks like wind",
+      },
+      koreanName: "선풍연격",
+      englishName: "Whirlwind Strikes",
+    },
+  },
+  gam: {
+    korean: "감",
+    english: "Water",
+    element: "Water",
+    direction: "North",
+    philosophy: "위험과 심연의 지혜 (Wisdom of danger and abyss)",
+    symbol: "☵",
+    technique: {
+      name: "수류반격",
+      stance: "gam",
+      damage: 25,
+      range: 45,
+      kiCost: 18,
+      staminaCost: 12,
+      accuracy: 0.88,
+      description: {
+        korean: "물의 흐름을 따른 반격",
+        english: "Counterattack following water's flow",
+      },
+      koreanName: "수류반격",
+      englishName: "Water Counter",
+    },
+  },
+  gan: {
+    korean: "간",
+    english: "Mountain",
+    element: "Earth",
+    direction: "Northeast",
+    philosophy: "정지와 명상의 안정 (Stability of stillness and meditation)",
+    symbol: "☶",
+    technique: {
+      name: "반석방어",
+      stance: "gan",
+      damage: 12,
+      range: 30,
+      kiCost: 8,
+      staminaCost: 5,
+      accuracy: 0.98,
+      description: {
+        korean: "산처럼 견고한 방어",
+        english: "Solid defense like mountain",
+      },
+      koreanName: "반석방어",
+      englishName: "Mountain Defense",
+    },
+  },
+  gon: {
+    korean: "곤",
+    english: "Earth",
+    element: "Earth",
+    direction: "Southwest",
+    philosophy: "수용과 양육의 덕 (Virtue of receptivity and nurturing)",
+    symbol: "☷",
+    technique: {
+      name: "대지포옹",
+      stance: "gon",
+      damage: 30,
+      range: 40,
+      kiCost: 22,
+      staminaCost: 16,
+      accuracy: 0.82,
+      description: {
+        korean: "대지의 포용력으로 제압",
+        english: "Subduing with earth's embrace",
+      },
+      koreanName: "대지포옹",
+      englishName: "Earth Embrace",
+    },
+  },
+};
+
+// Export the techniques as a mapped object for easy access
+export const KOREAN_TECHNIQUES: Record<string, KoreanTechnique> = Object.values(
+  TRIGRAM_DATA
+).reduce((acc, trigram) => {
+  acc[trigram.technique.name] = trigram.technique;
+  return acc;
+}, {} as Record<string, KoreanTechnique>);

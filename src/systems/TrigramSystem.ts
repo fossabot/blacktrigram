@@ -1,14 +1,16 @@
-import { TrigramCalculator } from "./trigram/TrigramCalculator";
-import { KoreanCulture } from "./trigram/KoreanCulture";
-import {
-  type PlayerState,
-  type KoreanTechnique,
-  type TrigramStance,
-  type TransitionMetrics,
-  type TransitionPath,
+import type {
+  TrigramStance,
+  PlayerState,
+  KoreanTechnique,
+  AttackResult,
+  TransitionMetrics,
+  TransitionPath,
   KOREAN_TECHNIQUES,
 } from "../types";
+import { TRIGRAM_DATA } from "../types";
 import { getTechniqueByStance } from "./trigram/KoreanTechniques";
+import { KoreanCulture } from "./trigram/KoreanCulture";
+import { TrigramCalculator } from "./trigram/TrigramCalculator";
 import { StanceManager } from "./trigram/StanceManager";
 
 export class TrigramSystem {
@@ -36,9 +38,10 @@ export class TrigramSystem {
   /**
    * Calculate stance transition cost
    */
-  public calculateTransitionCost(
+  public static calculateTransitionCost(
     fromStance: TrigramStance,
-    toStance: TrigramStance
+    toStance: TrigramStance,
+    playerState: PlayerState
   ): TransitionMetrics {
     if (fromStance === toStance) {
       return {
@@ -285,37 +288,111 @@ export class TrigramSystem {
     return ["geon", "tae", "li", "jin", "son", "gam", "gan", "gon"];
   }
 
-  public getStanceEffectiveness(stance: TrigramStance): number {
-    const stanceData = TRIGRAM_STANCES[stance];
-    return stanceData ? stanceData.effectiveness : 1.0;
+  // Fix method signatures to match usage
+  public static getStanceEffectiveness(
+    attackerStance: TrigramStance,
+    defenderStance: TrigramStance
+  ): number {
+    // Implementation for stance effectiveness calculation
+    const stanceMatrix: Record<TrigramStance, Record<TrigramStance, number>> = {
+      geon: {
+        geon: 1.0,
+        tae: 1.2,
+        li: 0.8,
+        jin: 1.1,
+        son: 0.9,
+        gam: 1.3,
+        gan: 0.7,
+        gon: 1.0,
+      },
+      tae: {
+        geon: 0.8,
+        tae: 1.0,
+        li: 1.2,
+        jin: 0.9,
+        son: 1.1,
+        gam: 0.7,
+        gan: 1.3,
+        gon: 1.0,
+      },
+      li: {
+        geon: 1.2,
+        tae: 0.8,
+        li: 1.0,
+        jin: 1.3,
+        son: 0.7,
+        gam: 1.0,
+        gan: 0.9,
+        gon: 1.1,
+      },
+      jin: {
+        geon: 0.9,
+        tae: 1.1,
+        li: 0.7,
+        jin: 1.0,
+        son: 1.2,
+        gam: 0.8,
+        gan: 1.0,
+        gon: 1.3,
+      },
+      son: {
+        geon: 1.1,
+        tae: 0.9,
+        li: 1.3,
+        jin: 0.8,
+        son: 1.0,
+        gam: 1.2,
+        gan: 0.7,
+        gon: 1.0,
+      },
+      gam: {
+        geon: 0.7,
+        tae: 1.3,
+        li: 1.0,
+        jin: 1.2,
+        son: 0.8,
+        gam: 1.0,
+        gan: 1.1,
+        gon: 0.9,
+      },
+      gan: {
+        geon: 1.3,
+        tae: 0.7,
+        li: 1.1,
+        jin: 1.0,
+        son: 1.2,
+        gam: 0.9,
+        gan: 1.0,
+        gon: 0.8,
+      },
+      gon: {
+        geon: 1.0,
+        tae: 1.0,
+        li: 0.9,
+        jin: 0.7,
+        son: 1.0,
+        gam: 1.1,
+        gon: 1.2,
+        gon: 1.0,
+      },
+    };
+
+    return stanceMatrix[attackerStance]?.[defenderStance] ?? 1.0;
   }
 
   /**
-   * Gets Korean name for stance with proper null checking
+   * Fix calculateDamage signature to accept 3 parameters
    */
-  public static getStanceKoreanName(stance: TrigramStance): string {
-    const culture = KoreanCulture.getStanceCulture(stance);
-    // Fix: Use korean property instead of non-existent name property
-    return culture ? `${culture.korean} (${culture.element})` : stance;
-  }
+  public static calculateDamage(
+    technique: KoreanTechnique,
+    distance: number,
+    stanceAdvantage: number
+  ): number {
+    const baseDamage = technique.damage;
+    const distanceMultiplier = Math.max(0.1, 1.0 - distance / technique.range);
+    const finalDamage = baseDamage * distanceMultiplier * stanceAdvantage;
 
-  public static formatCultureDescription(stance: TrigramStance): string {
-    const culture = KoreanCulture.getCultureInfo(stance);
-    if (!culture) {
-      return `Unknown stance: ${stance}`;
-    }
-
-    // Fix property access - use korean instead of name
-    return `${culture.korean} (${culture.element})`;
-  }
-
-  public static getCultureInfo(stance: TrigramStance): string {
-    const culture = KoreanCulture.getCultureInfo(stance);
-    if (!culture) {
-      return `Unknown stance: ${stance}`;
-    }
-
-    return `${culture.korean} - ${culture.philosophy}`;
+    return Math.round(Math.max(1, finalDamage));
   }
 }
 
