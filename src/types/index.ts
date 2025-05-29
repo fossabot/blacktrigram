@@ -1,6 +1,5 @@
-// Central type exports for Korean martial arts game
+// Core Korean martial arts game types - UNIFIED SOURCE OF TRUTH
 
-// Core Korean martial arts game types
 export type TrigramStance =
   | "geon"
   | "tae"
@@ -22,7 +21,7 @@ export interface Velocity {
   readonly y: number;
 }
 
-// Anatomical regions - single source of truth
+// Anatomical regions and vital points - SINGLE DEFINITION
 export type AnatomicalRegion =
   | "head"
   | "neck"
@@ -49,14 +48,30 @@ export interface KoreanTechnique {
   readonly englishName: string;
 }
 
-// Vital point and damage system types
+// Status effects - UNIFIED
+export interface StatusEffect {
+  readonly id: string;
+  readonly name: string;
+  readonly korean: string;
+  readonly type: "damage" | "healing" | "debuff" | "buff" | "stun";
+  readonly intensity: number;
+  readonly duration: number;
+  readonly effects: {
+    readonly healthReduction?: number;
+    readonly staminaReduction?: number;
+    readonly speedMultiplier?: number;
+    readonly damageMultiplier?: number;
+  };
+}
+
+// Vital point system - UNIFIED
 export interface VitalPoint {
   readonly id: string;
   readonly korean: string;
   readonly english: string;
   readonly region: AnatomicalRegion;
-  readonly anatomicalRegion?: AnatomicalRegion; // Optional alias for compatibility
   readonly position: Position;
+  readonly coordinates: Position; // For GameTypes compatibility
   readonly category: VitalPointCategory;
   readonly difficulty: number;
   readonly bounds: {
@@ -84,37 +99,9 @@ export interface VitalPointHit {
   readonly stunning: number;
   readonly critical: boolean;
   readonly effects?: StatusEffect[];
-  readonly description?: string;
+  readonly description: string; // Made required for consistency
   readonly vitalPoint?: VitalPoint;
   readonly effectiveness?: number;
-}
-
-export interface DamageResult {
-  readonly damage: number;
-  readonly type: "light" | "medium" | "heavy" | "critical";
-  readonly blocked: boolean;
-  readonly critical: boolean;
-  readonly description: string;
-  readonly korean: string;
-  readonly bonus?: number;
-  readonly meridianMultiplier?: number;
-  readonly multiplier?: number;
-}
-
-// Status effects for Korean martial arts
-export interface StatusEffect {
-  readonly id: string;
-  readonly name: string;
-  readonly korean: string;
-  readonly type: string;
-  readonly intensity: number;
-  readonly duration: number;
-  readonly effects: {
-    readonly healthReduction?: number;
-    readonly staminaReduction?: number;
-    readonly speedMultiplier?: number;
-    readonly damageMultiplier?: number;
-  };
 }
 
 // Hit effects for visual feedback
@@ -128,7 +115,7 @@ export interface HitEffect {
   readonly korean?: string;
 }
 
-// Player state definition - COMPLETE
+// Player state - COMPLETE AND UNIFIED
 export interface PlayerState {
   readonly playerId: string;
   readonly position: Position;
@@ -147,10 +134,35 @@ export interface PlayerState {
   readonly lastDamageTaken: number;
   readonly activeEffects: StatusEffect[];
   readonly comboCount: number;
-  readonly effectiveRange?: number;
 }
 
-// Attack and combat result types
+// Transition metrics - UNIFIED
+export interface TransitionMetrics {
+  readonly kiCost: number;
+  readonly time: number;
+  readonly effectiveness: number;
+  readonly staminaCost: number;
+}
+
+// Transition path
+export interface TransitionPath {
+  readonly from: TrigramStance;
+  readonly to: TrigramStance;
+  readonly difficulty: number;
+  readonly culturalHarmony: number;
+}
+
+// Damage result - UNIFIED
+export interface DamageResult {
+  readonly damage: number;
+  readonly type: "light" | "medium" | "heavy" | "critical";
+  readonly blocked: boolean;
+  readonly critical: boolean;
+  readonly description: string;
+  readonly korean: string;
+}
+
+// Attack result - UNIFIED
 export interface AttackResult {
   readonly hit: boolean;
   readonly damage: number;
@@ -175,33 +187,6 @@ export interface GameState {
   readonly phase: GamePhase;
 }
 
-// Combat log entry
-export interface CombatLogEntry {
-  readonly timestamp: number;
-  readonly action: string;
-  readonly player: number;
-  readonly damage?: number;
-  readonly technique?: string;
-  readonly korean?: string;
-}
-
-// Transition metrics for trigram stance changes - COMPLETE
-export interface TransitionMetrics {
-  readonly kiCost: number;
-  readonly time: number;
-  readonly effectiveness: number;
-  readonly staminaCost?: number;
-  readonly stamina?: number; // Alias for compatibility
-}
-
-// Transition path type
-export interface TransitionPath {
-  readonly from: TrigramStance;
-  readonly to: TrigramStance;
-  readonly difficulty: number;
-  readonly culturalHarmony: number;
-}
-
 // Component prop types
 export interface ProgressTrackerProps {
   readonly label: string;
@@ -210,7 +195,17 @@ export interface ProgressTrackerProps {
   readonly currentStance?: TrigramStance;
 }
 
-// Trigram data structure
+// TrigramWheel props
+export interface TrigramWheelProps {
+  readonly selectedStance: TrigramStance;
+  readonly onStanceChange: (stance: TrigramStance) => void;
+  readonly x?: number;
+  readonly y?: number;
+  readonly radius?: number;
+  readonly interactive?: boolean;
+}
+
+// Trigram data with colors
 export interface TrigramData {
   readonly korean: string;
   readonly english: string;
@@ -218,9 +213,22 @@ export interface TrigramData {
   readonly direction: string;
   readonly philosophy: string;
   readonly symbol: string;
+  readonly color: number;
   readonly technique: KoreanTechnique;
 }
 
+// Korean color scheme
+export const KOREAN_COLORS = {
+  TRADITIONAL_RED: 0x8b0000,
+  GOLD: 0xffd700,
+  BLACK: 0x000000,
+  WHITE: 0xffffff,
+  DOJANG_BLUE: 0x4a90e2,
+  CYAN: 0x00ffd0,
+  GRAY_LIGHT: 0xcccccc,
+} as const;
+
+// Trigram data with complete information
 export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
   geon: {
     korean: "건",
@@ -229,6 +237,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     direction: "Northwest",
     philosophy: "창조와 권위의 힘 (Creative and authoritative power)",
     symbol: "☰",
+    color: KOREAN_COLORS.GOLD,
     technique: {
       name: "천둥벽력",
       stance: "geon",
@@ -252,6 +261,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     direction: "West",
     philosophy: "기쁨과 만족의 표현 (Expression of joy and satisfaction)",
     symbol: "☱",
+    color: 0x87ceeb,
     technique: {
       name: "유수연타",
       stance: "tae",
@@ -275,6 +285,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     direction: "South",
     philosophy: "명료함과 지혜의 빛 (Light of clarity and wisdom)",
     symbol: "☲",
+    color: 0xff4500,
     technique: {
       name: "화염지창",
       stance: "li",
@@ -298,6 +309,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     direction: "East",
     philosophy: "움직임과 각성의 에너지 (Energy of movement and awakening)",
     symbol: "☳",
+    color: 0x9370db,
     technique: {
       name: "벽력일섬",
       stance: "jin",
@@ -321,6 +333,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     direction: "Southeast",
     philosophy: "순응과 침투의 힘 (Power of yielding and penetration)",
     symbol: "☴",
+    color: 0x98fb98,
     technique: {
       name: "선풍연격",
       stance: "son",
@@ -344,6 +357,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     direction: "North",
     philosophy: "위험과 심연의 지혜 (Wisdom of danger and abyss)",
     symbol: "☵",
+    color: 0x4169e1,
     technique: {
       name: "수류반격",
       stance: "gam",
@@ -367,6 +381,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     direction: "Northeast",
     philosophy: "정지와 명상의 안정 (Stability of stillness and meditation)",
     symbol: "☶",
+    color: 0x8b4513,
     technique: {
       name: "반석방어",
       stance: "gan",
@@ -390,6 +405,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     direction: "Southwest",
     philosophy: "수용과 양육의 덕 (Virtue of receptivity and nurturing)",
     symbol: "☷",
+    color: 0x654321,
     technique: {
       name: "대지포옹",
       stance: "gon",
@@ -408,10 +424,36 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
   },
 };
 
-// Export the techniques as a mapped object for easy access
+// Export techniques map for easy access
 export const KOREAN_TECHNIQUES: Record<string, KoreanTechnique> = Object.values(
   TRIGRAM_DATA
 ).reduce((acc, trigram) => {
   acc[trigram.technique.name] = trigram.technique;
   return acc;
 }, {} as Record<string, KoreanTechnique>);
+
+// Utility function to create complete PlayerState
+export function createPlayerState(
+  overrides: Partial<PlayerState> = {}
+): PlayerState {
+  return {
+    playerId: "player1",
+    position: { x: 400, y: 300 },
+    velocity: { x: 0, y: 0 },
+    health: 100,
+    maxHealth: 100,
+    stamina: 100,
+    maxStamina: 100,
+    ki: 50,
+    maxKi: 100,
+    stance: "geon",
+    isAttacking: false,
+    isBlocking: false,
+    isMoving: false,
+    facing: "right",
+    lastDamageTaken: 0,
+    activeEffects: [],
+    comboCount: 0,
+    ...overrides,
+  };
+}

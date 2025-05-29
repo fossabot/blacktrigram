@@ -1,175 +1,128 @@
 import { useState, useCallback } from "react";
-import type { JSX } from "react";
-import { KoreanHeader } from "../ui/KoreanHeader";
-import { ControlsSection } from "./components/ControlsSection";
-import { PhilosophySection } from "./components/PhilosophySection";
+import { Container, Graphics, Text } from "@pixi/react";
+import type { Graphics as PixiGraphics } from "pixi.js";
+import { KOREAN_COLORS } from "../../types";
 
 interface IntroScreenProps {
   readonly onStartGame: () => void;
   readonly onStartTraining: () => void;
 }
 
-// Korean color constants with all required colors
-const KOREAN_COLORS = {
-  RED: 0x8b0000,
-  GOLD: 0xffd700,
-  BLACK: 0x000000,
-  WHITE: 0xffffff,
-  CYAN: 0x00ffd0,
-  BLUE: 0x4a90e2,
-  GRAY_DARK: 0x2c2c2c,
-  GRAY_LIGHT: 0xbdbdbd,
-  GREEN: 0x27a844,
-  ORANGE: 0xe67e22,
-  PURPLE: 0x9b59b6,
-  ACCENT_BLUE: 0x004455,
-  DARK_BLUE: 0x000a12,
-  GRAY_MEDIUM: 0x6c757d,
-} as const;
-
-type MenuOption = "game" | "training" | null;
-
 export function IntroScreen({
   onStartGame,
   onStartTraining,
 }: IntroScreenProps): JSX.Element {
-  const [selectedOption, setSelectedOption] = useState<MenuOption>(null);
+  const [selectedOption, setSelectedOption] = useState<number>(0);
 
-  const handleStartGame = useCallback(() => {
-    onStartGame();
-  }, [onStartGame]);
+  const drawBackground = useCallback(
+    (g: PixiGraphics) => {
+      g.clear();
+      // Traditional Korean dojang background
+      g.setFillStyle({ color: KOREAN_COLORS.BLACK });
+      g.rect(0, 0, window.innerWidth, window.innerHeight);
+      g.fill();
 
-  const handleStartTraining = useCallback(() => {
-    onStartTraining();
-  }, [onStartTraining]);
+      // Add traditional Korean design elements
+      g.setStrokeStyle({ color: KOREAN_COLORS.GOLD, width: 3, alpha: 0.7 });
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+
+      // Draw trigram circle
+      g.circle(centerX, centerY - 100, 80);
+      g.stroke();
+    },
+    [setSelectedOption]
+  );
 
   return (
-    <pixiContainer x={0} y={0}>
-      {/* Background gradient */}
-      <pixiGraphics
-        draw={(g: any) => {
-          g.clear();
-          g.setFillStyle({ color: KOREAN_COLORS.BLACK });
-          g.rect(0, 0, window.innerWidth, window.innerHeight);
-          g.fill();
+    <Container>
+      <Graphics draw={drawBackground} />
 
-          // Traditional Korean pattern overlay
-          g.setFillStyle({ color: KOREAN_COLORS.RED, alpha: 0.1 });
-          for (let i = 0; i < 8; i++) {
-            const x = (window.innerWidth / 8) * i;
-            g.rect(x, 0, 2, window.innerHeight);
-            g.fill();
-          }
+      <Text
+        text="흑괘 무술 도장"
+        x={window.innerWidth / 2}
+        y={window.innerHeight / 2 - 200}
+        anchor={{ x: 0.5, y: 0.5 }}
+        style={{
+          fontFamily: "Noto Sans KR",
+          fontSize: 48,
+          fill: KOREAN_COLORS.GOLD,
+          fontWeight: "bold",
         }}
       />
 
-      {/* Header with Korean dojang name */}
-      <KoreanHeader
-        title="흑괘 무술 도장"
-        subtitle="Black Trigram Martial Arts"
-        showLogo={true}
+      <Text
+        text="Black Trigram Martial Arts"
+        x={window.innerWidth / 2}
+        y={window.innerHeight / 2 - 150}
+        anchor={{ x: 0.5, y: 0.5 }}
+        style={{
+          fontFamily: "Noto Sans KR",
+          fontSize: 24,
+          fill: KOREAN_COLORS.WHITE,
+        }}
       />
 
-      {/* Menu options */}
-      <pixiContainer x={window.innerWidth / 2} y={window.innerHeight / 2}>
-        <pixiGraphics
-          draw={(g: any) => {
+      <Container
+        x={window.innerWidth / 2}
+        y={window.innerHeight / 2 + 50}
+        interactive={true}
+        onPointerDown={onStartGame}
+      >
+        <Graphics
+          draw={(g: PixiGraphics) => {
             g.clear();
-            g.setFillStyle({ color: KOREAN_COLORS.DARK_BLUE, alpha: 0.8 });
-            g.roundRect(-200, -80, 400, 160, 10);
-            g.fill();
-
-            g.setStrokeStyle({
-              color: KOREAN_COLORS.GOLD,
-              width: 2,
-              alpha: 0.6,
+            g.setFillStyle({
+              color: KOREAN_COLORS.TRADITIONAL_RED,
+              alpha: 0.8,
             });
-            g.roundRect(-200, -80, 400, 160, 10);
+            g.roundRect(-100, -25, 200, 50, 10);
+            g.fill();
+            g.setStrokeStyle({ color: KOREAN_COLORS.GOLD, width: 2 });
+            g.roundRect(-100, -25, 200, 50, 10);
             g.stroke();
           }}
         />
-
-        {/* Game mode button */}
-        <pixiContainer
-          y={-30}
-          interactive={true}
-          cursor="pointer"
-          onPointerDown={handleStartGame}
-          onPointerEnter={() => {
-            setSelectedOption("game");
+        <Text
+          text="대전 시작 (Start Combat)"
+          anchor={{ x: 0.5, y: 0.5 }}
+          style={{
+            fontFamily: "Noto Sans KR",
+            fontSize: 18,
+            fill: KOREAN_COLORS.WHITE,
+            fontWeight: "bold",
           }}
-          onPointerLeave={() => setSelectedOption(null)}
-        >
-          <pixiGraphics
-            draw={(g: any) => {
-              g.clear();
-              const isSelected = selectedOption === "game";
-              g.setFillStyle({
-                color: isSelected
-                  ? KOREAN_COLORS.RED
-                  : KOREAN_COLORS.ACCENT_BLUE,
-                alpha: 0.8,
-              });
-              g.roundRect(-150, -20, 300, 40, 5);
-              g.fill();
-            }}
-          />
-          <pixiText
-            text="1. 대련 모드 (Combat Mode)"
-            anchor={{ x: 0.5, y: 0.5 }}
-            style={{
-              fontFamily: "Noto Sans KR",
-              fontSize: 18,
-              fill: KOREAN_COLORS.WHITE,
-              fontWeight: "bold",
-            }}
-          />
-        </pixiContainer>
+        />
+      </Container>
 
-        {/* Training mode button */}
-        <pixiContainer
-          y={30}
-          interactive={true}
-          cursor="pointer"
-          onPointerDown={handleStartTraining}
-          onPointerEnter={() => {
-            setSelectedOption("training");
-          }}
-          onPointerLeave={() => setSelectedOption(null)}
-        >
-          <pixiGraphics
-            draw={(g: any) => {
-              g.clear();
-              const isSelected = selectedOption === "training";
-              g.setFillStyle({
-                color: isSelected
-                  ? KOREAN_COLORS.RED
-                  : KOREAN_COLORS.ACCENT_BLUE,
-                alpha: 0.8,
-              });
-              g.roundRect(-150, -20, 300, 40, 5);
-              g.fill();
-            }}
-          />
-          <pixiText
-            text="2. 수련 모드 (Training Mode)"
-            anchor={{ x: 0.5, y: 0.5 }}
-            style={{
-              fontFamily: "Noto Sans KR",
-              fontSize: 18,
-              fill: KOREAN_COLORS.WHITE,
-              fontWeight: "bold",
-            }}
-          />
-        </pixiContainer>
-      </pixiContainer>
-
-      {/* Philosophy and controls sections */}
-      <PhilosophySection
+      <Container
         x={window.innerWidth / 2}
-        y={window.innerHeight - 200}
-      />
-      <ControlsSection x={window.innerWidth / 2} y={window.innerHeight - 80} />
-    </pixiContainer>
+        y={window.innerHeight / 2 + 120}
+        interactive={true}
+        onPointerDown={onStartTraining}
+      >
+        <Graphics
+          draw={(g: PixiGraphics) => {
+            g.clear();
+            g.setFillStyle({ color: KOREAN_COLORS.DOJANG_BLUE, alpha: 0.8 });
+            g.roundRect(-100, -25, 200, 50, 10);
+            g.fill();
+            g.setStrokeStyle({ color: KOREAN_COLORS.GOLD, width: 2 });
+            g.roundRect(-100, -25, 200, 50, 10);
+            g.stroke();
+          }}
+        />
+        <Text
+          text="수련 (Training)"
+          anchor={{ x: 0.5, y: 0.5 }}
+          style={{
+            fontFamily: "Noto Sans KR",
+            fontSize: 18,
+            fill: KOREAN_COLORS.WHITE,
+            fontWeight: "bold",
+          }}
+        />
+      </Container>
+    </Container>
   );
 }

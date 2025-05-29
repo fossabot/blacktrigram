@@ -294,4 +294,80 @@ export class CombatSystem {
       ? `${technique.korean} (${technique.english})`
       : techniqueId;
   }
+
+  public static calculateTechniqueDamage(
+    technique: string,
+    distance: number,
+    playerHealth: number
+  ): number {
+    // Use proper technique lookup with error handling
+    const techniqueData = Object.values(KOREAN_TECHNIQUES).find(
+      (trigram) => trigram.technique.name === technique
+    );
+
+    if (!techniqueData) {
+      console.warn(`Unknown technique: ${technique}`);
+      return 0;
+    }
+
+    // ...existing calculation logic...
+    const baseDamage = techniqueData.technique.damage;
+    const distanceMultiplier = Math.max(0.1, 1 - distance / 200);
+
+    return Math.round(baseDamage * distanceMultiplier);
+  }
+
+  public executeAttack(
+    attackerId: string,
+    technique: string,
+    targetX: number,
+    targetY: number
+  ): AttackResult {
+    // Find technique data properly
+    const techniqueData = Object.values(KOREAN_TECHNIQUES).find(
+      (trigram) => trigram.technique.name === technique
+    );
+
+    if (!techniqueData) {
+      return {
+        hit: false,
+        damage: 0,
+        blocked: false,
+        critical: false,
+        accuracy: 0,
+        comboMultiplier: 1,
+        statusEffects: [],
+        description: "Unknown technique",
+      };
+    }
+
+    // Calculate damage with proper typing
+    const baseDamage = techniqueData.technique.damage;
+    const distance = Math.sqrt(targetX * targetX + targetY * targetY);
+
+    // Check for vital point hit
+    const vitalPointHit = this.vitalPointSystem.detectVitalPointHit(
+      targetX,
+      targetY,
+      baseDamage
+    );
+
+    const statusEffects: StatusEffect[] = [];
+    if (vitalPointHit.hit && vitalPointHit.effects) {
+      statusEffects.push(...vitalPointHit.effects);
+    }
+
+    return {
+      hit: true,
+      damage: vitalPointHit.damage || baseDamage,
+      blocked: false,
+      critical: vitalPointHit.critical,
+      accuracy: techniqueData.technique.accuracy,
+      comboMultiplier: 1,
+      vitalPointHit,
+      statusEffects,
+      description:
+        vitalPointHit.description || techniqueData.technique.description.korean,
+    };
+  }
 }

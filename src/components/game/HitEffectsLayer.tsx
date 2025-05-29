@@ -3,7 +3,7 @@ import type { HitEffect } from "../../types";
 import type { Graphics as PixiGraphics } from "pixi.js";
 
 export interface HitEffectsLayerProps {
-  readonly effects: readonly HitEffect[];
+  readonly effects: HitEffect[]; // Fixed prop name
 }
 
 interface Particle {
@@ -139,112 +139,116 @@ export function HitEffectsLayer({
 
   const shakeOffset = getShakeOffset();
 
+  const renderHitEffect = useCallback(
+    (effect: HitEffect) => {
+      const effectAlpha = 1.0;
+      const effectScale = effect.type === "critical" ? 1.5 : 1.0;
+
+      return (
+        <pixiContainer
+          x={effect.position.x}
+          y={effect.position.y}
+          scale={{ x: effectScale, y: effectScale }}
+        >
+          {/* Impact flash */}
+          <pixiGraphics
+            draw={(g: PixiGraphics) => {
+              g.clear();
+
+              const flashColor =
+                effect.type === "critical"
+                  ? 0xff0080
+                  : effect.type === "heavy"
+                  ? 0xff4500
+                  : 0xffffff;
+
+              g.setFillStyle({ color: flashColor, alpha: effectAlpha * 0.6 });
+              g.circle(0, 0, 20);
+              g.fill();
+
+              g.setStrokeStyle({
+                color: flashColor,
+                width: 3,
+                alpha: effectAlpha,
+              });
+              g.circle(0, 0, 30);
+              g.stroke();
+            }}
+          />
+
+          {/* Damage text */}
+          <pixiText
+            text={`${effect.damage}`}
+            anchor={{ x: 0.5, y: 0.5 }}
+            y={-40}
+            style={{
+              fontFamily: "Noto Sans KR",
+              fontSize: effect.type === "critical" ? 24 : 18,
+              fill: effect.type === "critical" ? 0xff0080 : 0xffffff,
+              fontWeight: "bold",
+            }}
+          />
+
+          {/* Critical hit indicator */}
+          {effect.type === "critical" && (
+            <pixiGraphics
+              draw={(g: PixiGraphics) => {
+                g.clear();
+
+                // Draw energy burst lines
+                for (let i = 0; i < 8; i++) {
+                  const angle = (Math.PI * 2 * i) / 8;
+                  const startX = Math.cos(angle) * 25;
+                  const startY = Math.sin(angle) * 25;
+                  const endX = Math.cos(angle) * 45;
+                  const endY = Math.sin(angle) * 45;
+
+                  g.setStrokeStyle({
+                    color: 0xff0080,
+                    width: 2,
+                    alpha: effectAlpha,
+                  });
+                  g.moveTo(startX, startY);
+                  g.lineTo(endX, endY);
+                  g.stroke();
+                }
+              }}
+            />
+          )}
+
+          {/* Hit type indicator */}
+          {effect.type !== "light" && (
+            <pixiText
+              text={
+                effect.type === "critical"
+                  ? "급소!"
+                  : effect.type === "heavy"
+                  ? "강타!"
+                  : "명중!"
+              }
+              anchor={{ x: 0.5, y: 0.5 }}
+              y={-60}
+              style={{
+                fontFamily: "Noto Sans KR",
+                fontSize: 14,
+                fill: 0xffd700,
+                fontWeight: "bold",
+              }}
+            />
+          )}
+        </pixiContainer>
+      );
+    },
+    [effects]
+  );
+
   return (
     <pixiContainer x={shakeOffset.x} y={shakeOffset.y}>
       {/* Particle effects */}
       <pixiGraphics draw={drawParticles} />
 
       {/* Hit effect visualization */}
-      {effects.map((effect, index) => {
-        const effectAlpha = 1.0;
-        const effectScale = effect.type === "critical" ? 1.5 : 1.0;
-
-        return (
-          <pixiContainer
-            key={index}
-            x={effect.position.x}
-            y={effect.position.y}
-            scale={{ x: effectScale, y: effectScale }}
-          >
-            {/* Impact flash */}
-            <pixiGraphics
-              draw={(g: PixiGraphics) => {
-                g.clear();
-
-                const flashColor =
-                  effect.type === "critical"
-                    ? 0xff0080
-                    : effect.type === "heavy"
-                    ? 0xff4500
-                    : 0xffffff;
-
-                g.setFillStyle({ color: flashColor, alpha: effectAlpha * 0.6 });
-                g.circle(0, 0, 20);
-                g.fill();
-
-                g.setStrokeStyle({
-                  color: flashColor,
-                  width: 3,
-                  alpha: effectAlpha,
-                });
-                g.circle(0, 0, 30);
-                g.stroke();
-              }}
-            />
-
-            {/* Damage text */}
-            <pixiText
-              text={`${effect.damage}`}
-              anchor={{ x: 0.5, y: 0.5 }}
-              y={-40}
-              style={{
-                fontFamily: "Noto Sans KR",
-                fontSize: effect.type === "critical" ? 24 : 18,
-                fill: effect.type === "critical" ? 0xff0080 : 0xffffff,
-                fontWeight: "bold",
-              }}
-            />
-
-            {/* Critical hit indicator */}
-            {effect.type === "critical" && (
-              <pixiGraphics
-                draw={(g: PixiGraphics) => {
-                  g.clear();
-
-                  // Draw energy burst lines
-                  for (let i = 0; i < 8; i++) {
-                    const angle = (Math.PI * 2 * i) / 8;
-                    const startX = Math.cos(angle) * 25;
-                    const startY = Math.sin(angle) * 25;
-                    const endX = Math.cos(angle) * 45;
-                    const endY = Math.sin(angle) * 45;
-
-                    g.setStrokeStyle({
-                      color: 0xff0080,
-                      width: 2,
-                      alpha: effectAlpha,
-                    });
-                    g.moveTo(startX, startY);
-                    g.lineTo(endX, endY);
-                    g.stroke();
-                  }
-                }}
-              />
-            )}
-
-            {/* Hit type indicator */}
-            {effect.type !== "normal" && (
-              <pixiText
-                text={
-                  effect.type === "critical"
-                    ? "급소!"
-                    : effect.type === "heavy"
-                    ? "강타!"
-                    : "명중!"
-                }
-                anchor={{ x: 0.5, y: 0.5 }}
-                y={-60}
-                style={{
-                  fontFamily: "Noto Sans KR",
-                  fontSize: 14,
-                  fill: 0xffd700,
-                  fontWeight: "bold",
-                }}
-              />
-            )}
-          </pixiContainer>
-        );
-      })}
+      {effects.map((effect, index) => renderHitEffect(effect))}
     </pixiContainer>
   );
 }

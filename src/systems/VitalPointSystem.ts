@@ -3,83 +3,110 @@ import type {
   VitalPoint,
   VitalPointHit,
   VitalPointCategory,
-} from "../types/index";
+  Position,
+  StatusEffect,
+} from "../types";
 
-// Use explicit type assertion to resolve import conflicts
-type MainAnatomicalRegion = AnatomicalRegion;
-
-const VITAL_POINTS_DATA: Record<MainAnatomicalRegion, VitalPoint> = {
+// Complete VITAL_POINTS_DATA with all required properties
+const VITAL_POINTS_DATA: Record<string, VitalPoint> = {
   head: {
     id: "head_vital",
     korean: "머리",
     english: "Head",
-    region: "head" as MainAnatomicalRegion,
+    region: "head" as AnatomicalRegion,
+    position: { x: 0, y: 0 },
+    coordinates: { x: 0, y: 0 }, // For compatibility
+    category: "primary" as VitalPointCategory,
+    difficulty: 0.8,
     bounds: { x: 0, y: 0, width: 40, height: 40 },
-    vulnerability: { damage: 2.0, stunning: 1.5, criticalChance: 0.8 },
-    description: {
-      korean: "급소 - 머리 부위",
-      english: "Vital point - Head region",
-    },
+    vulnerability: { damage: 2.0, stunning: 0.9, criticalChance: 0.3 },
+    description: { korean: "머리 급소", english: "Head vital point" },
+    effects: [],
   },
   neck: {
     id: "neck_vital",
     korean: "목",
     english: "Neck",
-    region: "neck" as MainAnatomicalRegion,
+    region: "neck" as AnatomicalRegion,
+    position: { x: 0, y: 0 },
+    coordinates: { x: 0, y: 0 }, // For compatibility
+    category: "primary" as VitalPointCategory,
+    difficulty: 0.7,
     bounds: { x: 0, y: 40, width: 30, height: 20 },
     vulnerability: { damage: 2.5, stunning: 2.0, criticalChance: 0.9 },
     description: {
       korean: "급소 - 목 부위",
       english: "Vital point - Neck region",
     },
+    effects: [],
   },
   chest: {
     id: "chest_vital",
     korean: "가슴",
     english: "Chest",
-    region: "chest" as MainAnatomicalRegion,
+    region: "chest" as AnatomicalRegion,
+    position: { x: 0, y: 0 },
+    coordinates: { x: 0, y: 0 }, // For compatibility
+    category: "primary" as VitalPointCategory,
+    difficulty: 0.6,
     bounds: { x: 0, y: 60, width: 60, height: 50 },
     vulnerability: { damage: 1.8, stunning: 1.2, criticalChance: 0.7 },
     description: {
       korean: "급소 - 가슴 부위",
       english: "Vital point - Chest region",
     },
+    effects: [],
   },
   abdomen: {
     id: "abdomen_vital",
     korean: "복부",
     english: "Abdomen",
-    region: "abdomen" as MainAnatomicalRegion,
+    region: "abdomen" as AnatomicalRegion,
+    position: { x: 0, y: 0 },
+    coordinates: { x: 0, y: 0 }, // For compatibility
+    category: "secondary" as VitalPointCategory,
+    difficulty: 0.5,
     bounds: { x: 0, y: 110, width: 50, height: 40 },
     vulnerability: { damage: 2.2, stunning: 1.8, criticalChance: 0.8 },
     description: {
       korean: "급소 - 복부 부위",
       english: "Vital point - Abdomen region",
     },
+    effects: [],
   },
   arms: {
     id: "arms_vital",
     korean: "팔",
     english: "Arms",
-    region: "arms" as MainAnatomicalRegion,
+    region: "arms" as AnatomicalRegion,
+    position: { x: 0, y: 0 },
+    coordinates: { x: 0, y: 0 }, // For compatibility
+    category: "secondary" as VitalPointCategory,
+    difficulty: 0.4,
     bounds: { x: 60, y: 60, width: 30, height: 60 },
     vulnerability: { damage: 1.3, stunning: 0.8, criticalChance: 0.4 },
     description: {
       korean: "급소 - 팔 부위",
       english: "Vital point - Arms region",
     },
+    effects: [],
   },
   legs: {
     id: "legs_vital",
     korean: "다리",
     english: "Legs",
-    region: "legs" as MainAnatomicalRegion,
+    region: "legs" as AnatomicalRegion,
+    position: { x: 0, y: 0 },
+    coordinates: { x: 0, y: 0 }, // For compatibility
+    category: "tertiary" as VitalPointCategory,
+    difficulty: 0.3,
     bounds: { x: 0, y: 150, width: 40, height: 80 },
     vulnerability: { damage: 1.4, stunning: 1.0, criticalChance: 0.5 },
     description: {
       korean: "급소 - 다리 부위",
       english: "Vital point - Legs region",
     },
+    effects: [],
   },
 } as const;
 
@@ -126,7 +153,7 @@ export class VitalPointSystem {
           description,
           vitalPoint,
           effectiveness: 1.0 - distance / this.config.maxHitDistance,
-          effects: vitalPoint.effects,
+          effects: vitalPoint.effects || [],
         };
       }
     }
@@ -162,9 +189,12 @@ export class VitalPointSystem {
     return this.getAllVitalPoints();
   }
 
-  public getState(): { vitalPointsHit: number; config: typeof this.config } {
+  public getState(): {
+    vitalPointsHit: number;
+    config: (typeof this)["config"];
+  } {
     return {
-      vitalPointsHit: 0, // Could track this in real implementation
+      vitalPointsHit: 0,
       config: this.config,
     };
   }
@@ -178,8 +208,8 @@ export class VitalPointSystem {
     Object.assign(this.config as any, newConfig);
   }
 
-  public getVitalPointStats(): Record<string, unknown> {
-    return this.getVitalPointsStats();
+  public getVitalPointsStats(): Record<string, unknown> {
+    return this.getVitalPointStats();
   }
 
   public getRegionsForCategory(

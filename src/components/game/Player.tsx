@@ -1,25 +1,28 @@
-import { useState, useCallback } from "react";
-import { useTick, type Ticker } from "@pixi/react";
+import { useCallback, useState } from "react";
+import { useTick } from "@pixi/react";
 import type { PlayerState, Position, TrigramStance } from "../../types";
 import { PlayerVisuals } from "./PlayerVisuals";
 
-export interface PlayerProps {
+interface PlayerProps {
   readonly playerState: PlayerState;
   readonly opponentPosition: Position;
-  readonly onStateChange?: (newState: Partial<PlayerState>) => void;
+  readonly onAttack?: (damage: number, technique: string) => void;
+  readonly onStanceChange?: (stance: TrigramStance) => void;
 }
 
 export function Player({
   playerState,
   opponentPosition,
-}: PlayerProps): React.JSX.Element {
+  onAttack,
+  onStanceChange,
+}: PlayerProps): JSX.Element {
   const [animationTime, setAnimationTime] = useState<number>(0);
 
-  const tickerCallback = useCallback((ticker: Ticker) => {
-    setAnimationTime((prev) => prev + ticker.deltaTime);
-  }, []);
-
-  useTick(tickerCallback);
+  useTick(
+    useCallback((ticker) => {
+      setAnimationTime((prev) => prev + ticker.deltaTime * 0.016); // Convert to seconds
+    }, [])
+  );
 
   return (
     <PlayerVisuals

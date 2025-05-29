@@ -1,19 +1,28 @@
 import { Text as pixiText } from "@pixi/react";
 import type { ReactElement } from "react";
+import type { TextStyle } from "pixi.js";
 
 export interface KoreanTextProps {
   readonly text: string;
   readonly x?: number;
   readonly y?: number;
   readonly anchor?: { x: number; y: number };
-  readonly style?: {
-    readonly fontFamily?: string;
-    readonly fontSize?: number;
-    readonly fill?: number;
-    readonly fontWeight?: string;
-    readonly fontStyle?: string;
-    readonly letterSpacing?: number;
-  };
+  readonly fontSize?: number;
+  readonly fill?: number;
+  readonly fontWeight?:
+    | "normal"
+    | "bold"
+    | "100"
+    | "200"
+    | "300"
+    | "400"
+    | "500"
+    | "600"
+    | "700"
+    | "800"
+    | "900";
+  readonly fontStyle?: "normal" | "italic" | "oblique";
+  readonly letterSpacing?: number;
 }
 
 export function KoreanText({
@@ -21,13 +30,19 @@ export function KoreanText({
   x = 0,
   y = 0,
   anchor = { x: 0, y: 0 },
-  style = {},
+  fontSize = 16,
+  fill = 0xffffff,
+  fontWeight = "normal",
+  fontStyle = "normal",
+  letterSpacing = 0,
 }: KoreanTextProps): ReactElement {
-  const defaultStyle = {
+  const defaultStyle: Partial<TextStyle> = {
     fontFamily: "Noto Sans KR",
-    fontSize: 16,
-    fill: 0xffffff,
-    ...style,
+    fontSize,
+    fill,
+    fontWeight,
+    fontStyle,
+    letterSpacing,
   };
 
   return (

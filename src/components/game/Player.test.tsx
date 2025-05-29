@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { Player } from "./Player";
 import type { PlayerState, Vector2D } from "../../types/GameTypes";
+import { createPlayerState } from "../../types";
 
 // Mock the audio system
 vi.mock("../../audio/AudioManager", () => ({
@@ -13,32 +14,16 @@ vi.mock("../../audio/AudioManager", () => ({
   }),
 }));
 
-const createMockPlayerState = (
-  overrides?: Partial<PlayerState>
-): PlayerState => ({
-  id: "player1",
-  position: { x: 200, y: 300 },
-  velocity: { x: 0, y: 0 },
-  facing: "right",
-  currentStance: "geon",
-  health: 100,
-  maxHealth: 100,
-  stamina: 100,
-  maxStamina: 100,
-  ki: 50,
-  maxKi: 100,
-  isAttacking: false,
-  isBlocking: false,
-  isStunned: false,
-  comboCount: 0,
-  activeEffects: [],
-  masteredTechniques: [],
-  ...overrides,
-});
-
 const mockOpponentPosition: Vector2D = { x: 600, y: 300 };
 
 describe("Player Component", () => {
+  // Use unified helper function
+  const createMockPlayerState = (
+    overrides: Partial<PlayerState> = {}
+  ): PlayerState => {
+    return createPlayerState(overrides);
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
   });

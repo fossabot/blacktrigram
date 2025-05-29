@@ -1,22 +1,20 @@
 /**
- * Default Sound Generator for Korean Martial Arts Game
- * Provides fallback audio generation when sound files are not available
+ * DefaultSoundGenerator - Procedural audio generation for Korean martial arts game
+ * Provides fallback sounds when audio assets are not available
  */
 
-export class DefaultSoundGenerator {
-  private static audioContext: AudioContext | null = null;
+class DefaultSoundGenerator {
+  private audioContext: AudioContext | null = null;
 
-  private static getAudioContext(): AudioContext {
+  private getAudioContext(): AudioContext {
     if (!this.audioContext) {
-      // Use proper fallback for AudioContext
-      const AudioContextClass =
-        window.AudioContext || (window as any).webkitAudioContext;
-      this.audioContext = new AudioContextClass();
+      this.audioContext = new (window.AudioContext ||
+        (window as any).webkitAudioContext)();
     }
     return this.audioContext;
   }
 
-  private static async generateTone(
+  private async playTone(
     frequency: number,
     duration: number,
     type: OscillatorType = "sine",
@@ -24,12 +22,6 @@ export class DefaultSoundGenerator {
   ): Promise<void> {
     try {
       const ctx = this.getAudioContext();
-
-      // Resume context if suspended
-      if (ctx.state === "suspended") {
-        await ctx.resume();
-      }
-
       const oscillator = ctx.createOscillator();
       const gainNode = ctx.createGain();
 
@@ -49,7 +41,7 @@ export class DefaultSoundGenerator {
       oscillator.start(ctx.currentTime);
       oscillator.stop(ctx.currentTime + duration);
 
-      return new Promise((resolve) => {
+      return new Promise<void>((resolve) => {
         oscillator.onended = () => resolve();
       });
     } catch (error) {
@@ -57,49 +49,52 @@ export class DefaultSoundGenerator {
     }
   }
 
-  public static async playAttackSound(damage: number): Promise<void> {
-    const baseFreq = 200 + damage * 8;
-    const duration = 0.1 + damage * 0.003;
-    await this.generateTone(baseFreq, duration, "square", 0.4);
+  public async playMenuSound(): Promise<void> {
+    await this.playTone(800, 0.1, "sine", 0.2);
   }
 
-  public static async playHitSound(
+  public async playMatchStartSound(): Promise<void> {
+    await this.playTone(600, 0.3, "triangle", 0.4);
+  }
+
+  public async playVictorySound(): Promise<void> {
+    // Victory fanfare sequence
+    await this.playTone(523, 0.2, "sine", 0.3); // C
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    await this.playTone(659, 0.2, "sine", 0.3); // E
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    await this.playTone(784, 0.4, "sine", 0.4); // G
+  }
+
+  public async playAttackSound(damage: number): Promise<void> {
+    const baseFreq = 200 + damage * 10;
+    const duration = 0.1 + damage * 0.005;
+    await this.playTone(baseFreq, duration, "square", 0.4);
+  }
+
+  public async playHitSound(
     damage: number,
     isVitalPoint: boolean = false
   ): Promise<void> {
-    const freq = isVitalPoint ? 800 : 300 + damage * 5;
-    const duration = isVitalPoint ? 0.3 : 0.15;
-    await this.generateTone(freq, duration, "sawtooth", 0.35);
+    const freq = isVitalPoint ? 150 + damage * 8 : 150 + damage * 5;
+    const duration = isVitalPoint ? 0.25 : 0.15;
+    await this.playTone(freq, duration, "sawtooth", 0.3);
   }
 
-  public static async playMenuSound(): Promise<void> {
-    await this.generateTone(800, 0.1, "sine", 0.2);
+  public async playStanceChangeSound(): Promise<void> {
+    await this.playTone(600, 0.2, "sine", 0.25);
+    setTimeout(async () => {
+      await this.playTone(400, 0.1, "triangle", 0.15);
+    }, 100);
   }
 
-  public static async playMatchStartSound(): Promise<void> {
-    await this.generateTone(1000, 0.5, "triangle", 0.4);
-  }
-
-  public static async playVictorySound(): Promise<void> {
-    // Play ascending victory chord
-    await this.generateTone(523, 0.3, "sine", 0.3); // C
-    setTimeout(() => this.generateTone(659, 0.3, "sine", 0.3), 150); // E
-    setTimeout(() => this.generateTone(784, 0.5, "sine", 0.4), 300); // G
-  }
-
-  public static async playStanceChangeSound(): Promise<void> {
-    await this.generateTone(600, 0.2, "sine", 0.25);
-    setTimeout(() => this.generateTone(400, 0.1, "triangle", 0.15), 100);
-  }
-
-  public static async playComboSound(count: number): Promise<void> {
+  public async playComboSound(count: number): Promise<void> {
     for (let i = 0; i < Math.min(count, 5); i++) {
-      setTimeout(() => {
-        this.generateTone(500 + i * 100, 0.08, "square", 0.2);
+      setTimeout(async () => {
+        await this.playTone(500 + i * 100, 0.08, "square", 0.2);
       }, i * 50);
     }
   }
 }
 
-// Export default instance
-export const defaultSoundGenerator = DefaultSoundGenerator;
+export const defaultSoundGenerator = new DefaultSoundGenerator();

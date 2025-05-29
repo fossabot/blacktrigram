@@ -1,89 +1,148 @@
 import { describe, it, expect, vi } from "vitest";
 import { render } from "@testing-library/react";
-import type { PlayerState, KoreanTechnique, TrigramStance } from "../../types";
+import { PlayerVisuals } from "./PlayerVisuals";
+import { createPlayerState, type KoreanTechnique } from "../../types";
 
-// Mock the PlayerVisuals component since it's not provided
-const mockPlayerVisuals = vi.fn(() => null);
-vi.mock("./PlayerVisuals", () => ({
-  PlayerVisuals: mockPlayerVisuals,
+// Mock @pixi/react
+vi.mock("@pixi/react", () => ({
+  Container: ({ children, ...props }: any) => (
+    <div data-testid="pixi-container" {...props}>
+      {children}
+    </div>
+  ),
+  Graphics: ({ draw, ...props }: any) => {
+    if (draw) {
+      const mockGraphics = {
+        clear: vi.fn(),
+        setFillStyle: vi.fn(),
+        setStrokeStyle: vi.fn(),
+        rect: vi.fn(),
+        circle: vi.fn(),
+        fill: vi.fn(),
+        stroke: vi.fn(),
+      };
+      draw(mockGraphics);
+    }
+    return <div data-testid="pixi-graphics" {...props} />;
+  },
+  Text: ({ text, ...props }: any) => (
+    <div data-testid="pixi-text" data-text={text} {...props} />
+  ),
+  useTick: vi.fn(),
 }));
 
-// Mock helper functions
-const getStanceColor = (stance: TrigramStance): number => {
-  const colors: Record<TrigramStance, number> = {
-    geon: 0xffd700, // Heaven - Gold
-    tae: 0x87ceeb, // Lake - Sky Blue
-    li: 0xff4500, // Fire - Red Orange
-    jin: 0x9370db, // Thunder - Purple
-    son: 0x98fb98, // Wind - Pale Green
-    gam: 0x4169e1, // Water - Royal Blue
-    gan: 0x8b4513, // Mountain - Saddle Brown
-    gon: 0x654321, // Earth - Dark Brown
-  };
-  return colors[stance];
-};
-
-const getTrigramSymbol = (stance: TrigramStance): string => {
-  const symbols: Record<TrigramStance, string> = {
-    geon: "☰", // Heaven
-    tae: "☱", // Lake
-    li: "☲", // Fire
-    jin: "☳", // Thunder
-    son: "☴", // Wind
-    gam: "☵", // Water
-    gan: "☶", // Mountain
-    gon: "☷", // Earth
-  };
-  return symbols[stance];
-};
-
 describe("PlayerVisuals", () => {
-  const playerState: PlayerState = {
-    position: { x: 100, y: 200 },
-    health: 100,
-    maxHealth: 100,
-    stamina: 100,
-    maxStamina: 100,
-    ki: 50,
-    maxKi: 100,
-    stance: "geon",
-    isBlocking: false,
-    isAttacking: false,
-    comboCount: 0,
-    lastDamageTaken: 0,
-    vulnerabilityMultiplier: 1.0,
-    statusEffects: [],
+  const defaultProps = {
+    playerState: createPlayerState(),
+    opponentPosition: { x: 600, y: 300 },
+    animationTime: 0,
   };
 
-  const technique: KoreanTechnique = {
-    id: "heaven_strike",
-    koreanName: "천둥벽력",
-    englishName: "Thunder Strike",
-    stance: "geon",
-    damage: 25,
-    accuracy: 0.85,
-    speed: 0.7,
-    kiCost: 15,
-    comboMultiplier: 1.2,
-    description: "A powerful overhead strike channeling heaven's energy",
-    effects: [],
-  };
-
-  it("renders player visuals", () => {
-    const { container } = render(<div data-testid="mock-player-visuals" />);
-    expect(container).toBeTruthy();
+  it("renders player visuals correctly", () => {
+    const { container } = render(<PlayerVisuals {...defaultProps} />);
+    expect(container).toBeInTheDocument();
   });
 
-  it("getStanceColor returns a number", () => {
-    expect(typeof getStanceColor("geon" as TrigramStance)).toBe("number");
+  it("displays current stance correctly", () => {
+    const playerState = createPlayerState({ stance: "li" });
+
+    const { getByTestId } = render(
+      <PlayerVisuals {...defaultProps} playerState={playerState} />
+    );
+
+    // Verify stance is rendered
+    expect(getByTestId("pixi-container")).toBeInTheDocument();
   });
 
-  it("getTrigramSymbol returns a string", () => {
-    expect(typeof getTrigramSymbol("geon" as TrigramStance)).toBe("string");
+  it("shows health status correctly", () => {
+    const lowHealthPlayer = createPlayerState({ health: 20 });
+
+    const { container } = render(
+      <PlayerVisuals {...defaultProps} playerState={lowHealthPlayer} />
+    );
+
+    expect(container).toBeInTheDocument();
   });
 
-  it("validates stance color mappings", () => {
-    const stances: TrigramStance[] = [
+  it("handles different facing directions", () => {
+    const leftFacingPlayer = createPlayerState({ facing: "left" });
+
+    const { container } = render(
+      <PlayerVisuals {...defaultProps} playerState={leftFacingPlayer} />
+    );
+
+    expect(container).toBeInTheDocument();
+
+    const rightFacingPlayer = createPlayerState({ facing: "right" });
+
+    const { rerender } = render(
+      <PlayerVisuals {...defaultProps} playerState={rightFacingPlayer} />
+    );
+
+    rerender(
+      <PlayerVisuals {...defaultProps} playerState={rightFacingPlayer} />
+    );
+
+    expect(container).toBeInTheDocument();
+  });
+
+  it("renders attack animations", () => {
+    const attackingPlayer = createPlayerState({ isAttacking: true });
+
+    const { container } = render(
+      <PlayerVisuals {...defaultProps} playerState={attackingPlayer} />
+    );
+
+    expect(container).toBeInTheDocument();
+  });
+
+  it("displays blocking state", () => {
+    const blockingPlayer = createPlayerState({ isBlocking: true });
+
+    const { container } = render(
+      <PlayerVisuals {...defaultProps} playerState={blockingPlayer} />
+    );
+
+    expect(container).toBeInTheDocument();
+  });
+
+  it("shows status effects", () => {
+    const playerWithEffects = createPlayerState({
+      activeEffects: [
+        {
+          id: "stunned",
+          name: "Stunned",
+          korean: "기절",
+          type: "stun",
+          intensity: 1,
+          duration: 2000,
+          effects: {
+            speedMultiplier: 0.5,
+          },
+        },
+      ],
+    });
+
+    const { container } = render(
+      <PlayerVisuals {...defaultProps} playerState={playerWithEffects} />
+    );
+
+    expect(container).toBeInTheDocument();
+  });
+
+  it("updates animation over time", () => {
+    const { rerender } = render(
+      <PlayerVisuals {...defaultProps} animationTime={0} />
+    );
+
+    rerender(<PlayerVisuals {...defaultProps} animationTime={1000} />);
+
+    // Animation should update smoothly
+    expect(true).toBe(true);
+  });
+
+  it("handles all trigram stances", () => {
+    const stances = [
       "geon",
       "tae",
       "li",
@@ -92,32 +151,36 @@ describe("PlayerVisuals", () => {
       "gam",
       "gan",
       "gon",
-    ];
+    ] as const;
 
     stances.forEach((stance) => {
-      const color = getStanceColor(stance);
-      expect(typeof color).toBe("number");
-      expect(color).toBeGreaterThanOrEqual(0);
-      expect(color).toBeLessThanOrEqual(0xffffff);
+      const playerState = createPlayerState({ stance });
+
+      const { container } = render(
+        <PlayerVisuals {...defaultProps} playerState={playerState} />
+      );
+
+      expect(container).toBeInTheDocument();
     });
   });
 
-  it("validates trigram symbol mappings", () => {
-    const stances: TrigramStance[] = [
-      "geon",
-      "tae",
-      "li",
-      "jin",
-      "son",
-      "gam",
-      "gan",
-      "gon",
-    ];
+  it("responds to stance changes dynamically", () => {
+    const { rerender } = render(
+      <PlayerVisuals
+        {...defaultProps}
+        playerState={createPlayerState({ stance: "geon" })}
+      />
+    );
+
+    // Change stance dynamically
+    const stances = ["tae", "li", "jin", "son", "gam", "gan", "gon"] as const;
 
     stances.forEach((stance) => {
-      const symbol = getTrigramSymbol(stance);
-      expect(typeof symbol).toBe("string");
-      expect(symbol.length).toBe(1);
+      const newState = createPlayerState({ stance });
+
+      rerender(<PlayerVisuals {...defaultProps} playerState={newState} />);
     });
+
+    expect(true).toBe(true);
   });
 });

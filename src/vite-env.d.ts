@@ -10,9 +10,6 @@ declare global {
       pixiText: any;
       pixiSprite: any;
     }
-
-    // Use React's JSX.Element
-    type Element = React.ReactElement<any, any> | null;
   }
 }
 

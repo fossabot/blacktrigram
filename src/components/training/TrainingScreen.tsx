@@ -1,142 +1,117 @@
 import { useState, useCallback } from "react";
-import type { JSX } from "react";
-import type { TrigramStance } from "../../types";
+import { Container, Graphics, Text } from "@pixi/react";
+import type { Graphics as PixiGraphics } from "pixi.js";
+import { KOREAN_COLORS, TRIGRAM_DATA, type TrigramStance } from "../../types";
 
 interface TrainingScreenProps {
   readonly onExit: () => void;
 }
 
-const TRIGRAM_STANCES: TrigramStance[] = [
-  "geon",
-  "tae",
-  "li",
-  "jin",
-  "son",
-  "gam",
-  "gan",
-  "gon",
-];
-
-const KOREAN_COLORS = {
-  BLACK: 0x000000,
-  WHITE: 0xffffff,
-  GOLD: 0xffd700,
-  RED: 0x8b0000,
-  BLUE: 0x4a90e2,
-} as const;
-
-export function TrainingScreen({
-  onExit: _,
-}: TrainingScreenProps): JSX.Element {
-  // Using underscore to indicate intentionally unused parameter
+export function TrainingScreen({ onExit }: TrainingScreenProps): JSX.Element {
   const [selectedStance, setSelectedStance] = useState<TrigramStance>("geon");
-  const [practiceCount, setPracticeCount] = useState<
-    Record<TrigramStance, number>
-  >({
-    geon: 0,
-    tae: 0,
-    li: 0,
-    jin: 0,
-    son: 0,
-    gam: 0,
-    gan: 0,
-    gon: 0,
-  });
 
-  const handleStanceSelect = useCallback((stance: TrigramStance) => {
-    setSelectedStance(stance);
-    setPracticeCount((prev) => ({
-      ...prev,
-      [stance]: prev[stance] + 1,
-    }));
+  const drawBackground = useCallback((g: PixiGraphics) => {
+    g.clear();
+    g.setFillStyle({ color: KOREAN_COLORS.BLACK });
+    g.rect(0, 0, window.innerWidth, window.innerHeight);
+    g.fill();
+
+    // Training dojang elements
+    g.setStrokeStyle({
+      color: KOREAN_COLORS.DOJANG_BLUE,
+      width: 2,
+      alpha: 0.6,
+    });
+    g.rect(50, 50, window.innerWidth - 100, window.innerHeight - 100);
+    g.stroke();
   }, []);
 
   return (
-    <pixiContainer x={0} y={0}>
-      {/* Background */}
-      <pixiGraphics
-        draw={(g: any) => {
-          g.clear();
-          g.setFillStyle({ color: KOREAN_COLORS.BLACK });
-          g.rect(0, 0, window.innerWidth, window.innerHeight);
-          g.fill();
+    <Container>
+      <Graphics draw={drawBackground} />
+
+      <Text
+        text="수련장 (Training Hall)"
+        x={window.innerWidth / 2}
+        y={100}
+        anchor={{ x: 0.5, y: 0.5 }}
+        style={{
+          fontFamily: "Noto Sans KR",
+          fontSize: 36,
+          fill: KOREAN_COLORS.GOLD,
+          fontWeight: "bold",
         }}
       />
 
-      {/* Training header */}
-      <pixiContainer x={window.innerWidth / 2} y={100}>
-        <pixiText
-          text="수련 모드 (Training Mode)"
-          anchor={{ x: 0.5, y: 0.5 }}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 36,
-            fill: KOREAN_COLORS.GOLD,
-            fontWeight: "bold",
-          }}
-        />
-      </pixiContainer>
+      <Text
+        text={`현재 자세: ${TRIGRAM_DATA[selectedStance].korean} (${TRIGRAM_DATA[selectedStance].english})`}
+        x={window.innerWidth / 2}
+        y={200}
+        anchor={{ x: 0.5, y: 0.5 }}
+        style={{
+          fontFamily: "Noto Sans KR",
+          fontSize: 24,
+          fill: KOREAN_COLORS.WHITE,
+        }}
+      />
 
-      {/* Trigram stance grid */}
-      <pixiContainer x={window.innerWidth / 2} y={window.innerHeight / 2}>
-        {TRIGRAM_STANCES.map((stance, index) => {
-          const angle = (index / TRIGRAM_STANCES.length) * Math.PI * 2;
-          const radius = 200;
-          const x = Math.cos(angle) * radius;
-          const y = Math.sin(angle) * radius;
+      <Text
+        text={TRIGRAM_DATA[selectedStance].philosophy}
+        x={window.innerWidth / 2}
+        y={250}
+        anchor={{ x: 0.5, y: 0.5 }}
+        style={{
+          fontFamily: "Noto Sans KR",
+          fontSize: 16,
+          fill: KOREAN_COLORS.CYAN,
+        }}
+      />
 
-          return (
-            <pixiContainer
-              key={stance}
-              x={x}
-              y={y}
-              interactive={true}
-              cursor="pointer"
-              onPointerDown={() => handleStanceSelect(stance)}
-            >
-              <pixiGraphics
-                draw={(g: any) => {
-                  g.clear();
-                  const isSelected = selectedStance === stance;
-                  g.setFillStyle({
-                    color: isSelected ? KOREAN_COLORS.RED : KOREAN_COLORS.BLUE,
-                    alpha: 0.8,
-                  });
-                  g.circle(0, 0, 40);
-                  g.fill();
+      {/* Stance selector grid */}
+      {Object.entries(TRIGRAM_DATA).map(([stance, data], index) => {
+        const col = index % 4;
+        const row = Math.floor(index / 4);
+        const x = window.innerWidth / 2 - 150 + col * 100;
+        const y = 350 + row * 80;
 
-                  g.setStrokeStyle({
-                    color: KOREAN_COLORS.GOLD,
-                    width: 2,
-                  });
-                  g.circle(0, 0, 40);
-                  g.stroke();
-                }}
-              />
-              <pixiText
-                text={stance.toUpperCase()}
-                anchor={{ x: 0.5, y: 0.5 }}
-                style={{
-                  fontFamily: "Noto Sans KR",
-                  fontSize: 14,
-                  fill: KOREAN_COLORS.WHITE,
-                  fontWeight: "bold",
-                }}
-              />
-              <pixiText
-                text={`${practiceCount[stance]}`}
-                anchor={{ x: 0.5, y: 0.5 }}
-                y={60}
-                style={{
-                  fontFamily: "Arial",
-                  fontSize: 12,
-                  fill: KOREAN_COLORS.GOLD,
-                }}
-              />
-            </pixiContainer>
-          );
-        })}
-      </pixiContainer>
-    </pixiContainer>
+        return (
+          <Container
+            key={stance}
+            x={x}
+            y={y}
+            interactive={true}
+            onPointerDown={() => setSelectedStance(stance as TrigramStance)}
+          >
+            <Graphics
+              draw={(g: PixiGraphics) => {
+                g.clear();
+                const isSelected = stance === selectedStance;
+                g.setFillStyle({
+                  color: isSelected ? data.color : KOREAN_COLORS.BLACK,
+                  alpha: isSelected ? 0.8 : 0.3,
+                });
+                g.circle(0, 0, 30);
+                g.fill();
+                g.setStrokeStyle({
+                  color: data.color,
+                  width: isSelected ? 3 : 1,
+                });
+                g.circle(0, 0, 30);
+                g.stroke();
+              }}
+            />
+            <Text
+              text={data.symbol}
+              anchor={{ x: 0.5, y: 0.5 }}
+              style={{
+                fontFamily: "serif",
+                fontSize: 24,
+                fill: KOREAN_COLORS.WHITE,
+              }}
+            />
+          </Container>
+        );
+      })}
+    </Container>
   );
 }
