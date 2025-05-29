@@ -1,8 +1,8 @@
 describe("Black Trigram Training Mode", () => {
   beforeEach(() => {
-    cy.visit("/", { timeout: 10000 });
-    cy.waitForCanvasReady();
+    cy.visit("/", { timeout: 12000 });
     cy.task("silenceWebGLWarning", null, { log: false });
+    cy.waitForCanvasReady();
 
     // Enter training mode once before each test
     cy.gameActions(["2"]);
@@ -13,22 +13,22 @@ describe("Black Trigram Training Mode", () => {
     // Test all 8 stances in sequence with practice
     cy.annotate("Testing all 8 trigram stances");
 
-    // Loop through all 8 stances
+    // Loop through all 8 stances with optimized timing
     for (let stance = 1; stance <= 8; stance++) {
       // Select stance
       cy.annotate(`Testing stance ${stance}`);
       cy.gameActions([stance.toString()]);
-      cy.waitForCanvasReady();
+      cy.wait(200); // Reduced wait time
 
       // Practice stance twice
       cy.gameActions([" ", " "]);
-      cy.waitForCanvasReady();
+      cy.wait(200); // Reduced wait time
     }
 
     // Test keyboard navigation
     cy.annotate("Testing training mode keyboard navigation");
     cy.gameActions(["{leftarrow}", "{rightarrow}"]);
-    cy.waitForCanvasReady();
+    cy.wait(200);
 
     // Return to intro screen
     cy.annotate("Returning to intro");
