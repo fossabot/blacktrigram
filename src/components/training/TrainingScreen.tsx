@@ -25,7 +25,10 @@ const KOREAN_COLORS = {
   BLUE: 0x4a90e2,
 } as const;
 
-export function TrainingScreen({ onExit }: TrainingScreenProps): JSX.Element {
+export function TrainingScreen({
+  onExit: _,
+}: TrainingScreenProps): JSX.Element {
+  // Using underscore to indicate intentionally unused parameter
   const [selectedStance, setSelectedStance] = useState<TrigramStance>("geon");
   const [practiceCount, setPracticeCount] = useState<
     Record<TrigramStance, number>

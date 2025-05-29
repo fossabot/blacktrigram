@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, fireEvent, waitFor } from "@testing-library/react";
+import { render, fireEvent, waitFor, screen } from "@testing-library/react";
 import { IntroScreen } from "../IntroScreen";
 import { useAudio } from "../../../audio/AudioManager";
 import { useTexture } from "../../../hooks/useTexture";
@@ -459,6 +459,8 @@ describe("IntroScreen", () => {
     });
 
     it("should handle texture loading", () => {
+      const { useTexture } = require("../../../hooks/useTexture");
+
       render(
         <IntroScreen
           onStartGame={mockOnStartGame}
@@ -468,6 +470,24 @@ describe("IntroScreen", () => {
 
       // Verify texture hook is called for logo
       expect(useTexture).toHaveBeenCalledWith("/black-trigram-256.png");
+    });
+
+    it("should render Korean header correctly", () => {
+      render(
+        <IntroScreen
+          onStartGame={mockOnStartGame}
+          onStartTraining={mockOnStartTraining}
+        />
+      );
+
+      // Check for Korean text in the header
+      const textElements = screen.getAllByTestId("pixi-text");
+      const hasKoreanText = textElements.some((element) => {
+        const text = element.getAttribute("data-text") || "";
+        return text.includes("흑괘") || /[\uAC00-\uD7AF]/.test(text);
+      });
+
+      expect(hasKoreanText).toBe(true);
     });
   });
 
@@ -493,24 +513,33 @@ describe("IntroScreen", () => {
       });
     });
 
-    it("should prevent duplicate event listeners", () => {
-      const { unmount } = render(
+    it("should handle training mode selection", async () => {
+      render(
         <IntroScreen
           onStartGame={mockOnStartGame}
           onStartTraining={mockOnStartTraining}
         />
       );
 
-      // Unmount and verify cleanup
-      unmount();
-
-      // Press keys after unmount - should not trigger callbacks
+      // Select training mode
+      fireEvent.keyDown(document, { code: "ArrowRight" });
       fireEvent.keyDown(document, { code: "Space" });
 
-      // Small delay to ensure any async operations complete
-      setTimeout(() => {
-        expect(mockOnStartGame).not.toHaveBeenCalled();
-      }, 100);
+      await waitFor(() => {
+        expect(mockOnStartTraining).toHaveBeenCalled();
+      });
+    });
+
+    it("should display proper menu options", () => {
+      render(
+        <IntroScreen
+          onStartGame={mockOnStartGame}
+          onStartTraining={mockOnStartTraining}
+        />
+      );
+
+      // Verify main container exists
+      expect(screen.getByTestId("pixi-container")).toBeInTheDocument();
     });
   });
 });

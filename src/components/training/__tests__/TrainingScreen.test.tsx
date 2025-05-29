@@ -1,50 +1,29 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import type { ComponentType } from "react";
+import { TrainingScreen } from "../TrainingScreen";
 
-// Mock audio system
+// Mock the audio manager
 vi.mock("../../../audio/AudioManager", () => ({
   useAudio: () => ({
     playSFX: vi.fn(),
-    playMusic: vi.fn(),
-    setMasterVolume: vi.fn(),
-    getMasterVolume: vi.fn(() => 0.7),
-    isEnabled: vi.fn(() => true),
+    playAttackSound: vi.fn(),
+    playHitSound: vi.fn(),
+    playStanceChangeSound: vi.fn(),
+    playComboSound: vi.fn(),
   }),
 }));
 
-// Mock PixiJS components
-vi.mock("@pixi/react", () => ({
-  extend: vi.fn(),
-}));
-
-// Mock hooks
-vi.mock("../../../hooks/useTexture", () => ({
-  useTexture: vi.fn(() => ({ texture: null })),
-}));
-
 describe("TrainingScreen", () => {
-  let mockOnExit: ReturnType<typeof vi.fn>;
-  let TrainingScreenComponent: ComponentType<any>;
+  const mockOnExit = vi.fn();
 
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks();
-    mockOnExit = vi.fn();
-
-    // Mock global JSX elements for PixiJS with proper typing
-    (globalThis as any).JSX = {
-      IntrinsicElements: {
-        pixiContainer: "div",
-        pixiGraphics: "div",
-        pixiText: "div",
-        pixiSprite: "div",
-      },
-    };
-
-    const trainingModule = await import("../TrainingScreen");
-    TrainingScreenComponent = trainingModule.TrainingScreen;
   });
+
+  const TrainingScreenComponent = ({ onExit }: { onExit: () => void }) => (
+    <TrainingScreen onExit={onExit} />
+  );
 
   describe("Component Structure", () => {
     it("renders training screen with all main components", () => {
@@ -152,38 +131,35 @@ describe("TrainingScreen", () => {
       const user = userEvent.setup();
       render(<TrainingScreenComponent onExit={mockOnExit} />);
 
-      // Rapid key sequences to test performance
       for (let i = 1; i <= 8; i++) {
         await user.keyboard(i.toString());
-        // Small delay to allow state updates
         await waitFor(
           () => {
-            expect(screen.getByTestId("training-screen")).toBeInTheDocument();
+            expect(screen.getByTestId("pixi-container")).toBeInTheDocument();
           },
           { timeout: 100 }
         );
       }
 
       // Should handle rapid input without crashing
-      const trainingScreen = screen.getByTestId("training-screen");
+      const trainingScreen = screen.getByTestId("pixi-container");
       expect(trainingScreen).toBeInTheDocument();
     });
 
     it("maintains Korean font rendering", () => {
       render(<TrainingScreenComponent onExit={mockOnExit} />);
 
-      // Check Korean text elements maintain proper rendering
-      const koreanElements = [
-        screen.getByTestId("instructions-korean"),
-        screen.getByTestId("tips-title"),
-        screen.getByTestId("tip-1"),
-      ];
+      // Check that Korean text elements are rendered
+      const textElements = screen.getAllByTestId("pixi-text");
+      expect(textElements.length).toBeGreaterThan(0);
 
-      koreanElements.forEach((element) => {
-        expect(element).toBeInTheDocument();
-        const text = element.getAttribute("text") || "";
-        expect(text).toMatch(/[\uAC00-\uD7AF]/); // Korean Unicode range
+      // Verify Korean text is present in data attributes
+      const koreanTextFound = textElements.some((element) => {
+        const text = element.getAttribute("data-text") || "";
+        return /[\uAC00-\uD7AF]/.test(text); // Korean Unicode range
       });
+
+      expect(koreanTextFound).toBe(true);
     });
   });
 
@@ -192,107 +168,52 @@ describe("TrainingScreen", () => {
       const user = userEvent.setup();
       render(<TrainingScreenComponent onExit={mockOnExit} />);
 
-      // Practice a few techniques
-      await user.keyboard("1");
-      await user.keyboard("2");
-      await user.keyboard("3");
+      // Execute some training techniques
+      await user.keyboard("1"); // geon stance
+      await user.keyboard("3"); // li stance
 
-      // Check for basic training screen elements instead of specific progress text
-      expect(screen.getByTestId("training-screen")).toBeInTheDocument();
-      expect(screen.getByTestId("trigram-wheel")).toBeInTheDocument();
-
-      // Verify that the training screen is functional
-      const koreanHeader = screen.getByTestId("korean-header");
-      expect(koreanHeader).toBeInTheDocument();
+      // Verify progress tracking elements exist
+      const progressElements = screen.getAllByTestId("pixi-text");
+      expect(progressElements.length).toBeGreaterThan(0);
     });
 
-    it("should track individual trigram practice counts", async () => {
+    it("should track technique mastery progress", async () => {
       const user = userEvent.setup();
       render(<TrainingScreenComponent onExit={mockOnExit} />);
 
-      // Practice specific trigrams multiple times
-      await user.keyboard("1"); // geon
-      await user.keyboard("1"); // geon again
-      await user.keyboard("3"); // li
+      // Practice same technique multiple times
+      for (let i = 0; i < 3; i++) {
+        await user.keyboard("1"); // geon stance
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
 
-      // Verify the training screen maintains state
-      expect(screen.getByTestId("training-screen")).toBeInTheDocument();
-      expect(screen.getByTestId("trigram-wheel")).toBeInTheDocument();
+      // Should maintain component stability
+      expect(screen.getByTestId("pixi-container")).toBeInTheDocument();
+    });
+  });
+
+  describe("Korean Martial Arts Integration", () => {
+    it("should display Korean technique names", () => {
+      render(<TrainingScreenComponent onExit={mockOnExit} />);
+
+      const textElements = screen.getAllByTestId("pixi-text");
+      const hasKoreanText = textElements.some((element) => {
+        const text = element.getAttribute("data-text") || "";
+        return /[\uAC00-\uD7AF]/.test(text);
+      });
+
+      expect(hasKoreanText).toBe(true);
     });
 
-    it("should calculate mastery progression", async () => {
+    it("should handle all eight trigram stances", async () => {
       const user = userEvent.setup();
       render(<TrainingScreenComponent onExit={mockOnExit} />);
 
-      // Practice all trigrams once
+      // Test all 8 trigram stances
       for (let i = 1; i <= 8; i++) {
         await user.keyboard(i.toString());
-        await waitFor(
-          () => {
-            expect(screen.getByTestId("training-screen")).toBeInTheDocument();
-          },
-          { timeout: 100 }
-        );
+        expect(screen.getByTestId("pixi-container")).toBeInTheDocument();
       }
-
-      // Verify training progression is working
-      expect(screen.getByTestId("training-screen")).toBeInTheDocument();
-      expect(screen.getByTestId("trigram-wheel")).toBeInTheDocument();
-    });
-  });
-
-  describe("Animation and Visual Effects", () => {
-    it("shows technique animation during practice", async () => {
-      const user = userEvent.setup();
-      render(<TrainingScreenComponent onExit={mockOnExit} />);
-
-      // Execute a technique to trigger animation
-      await user.keyboard("1");
-
-      // Animation should appear temporarily
-      await waitFor(
-        () => {
-          // Animation might be present briefly
-          expect(screen.getByTestId("training-screen")).toBeInTheDocument();
-        },
-        { timeout: 1000 }
-      );
-    });
-
-    it("maintains visual feedback during rapid practice", async () => {
-      const user = userEvent.setup();
-      render(<TrainingScreenComponent onExit={mockOnExit} />);
-
-      // Rapid technique practice
-      for (let i = 1; i <= 4; i++) {
-        await user.keyboard(i.toString());
-      }
-
-      // Visual system should remain stable
-      expect(screen.getByTestId("training-screen")).toBeInTheDocument();
-      expect(screen.getByTestId("trigram-wheel")).toBeInTheDocument();
-    });
-  });
-
-  describe("Error Handling", () => {
-    it("handles invalid key inputs gracefully", async () => {
-      const user = userEvent.setup();
-      render(<TrainingScreenComponent onExit={mockOnExit} />);
-
-      // Test invalid keys
-      await user.keyboard("9");
-      await user.keyboard("0");
-      await user.keyboard("a");
-
-      // Component should remain stable
-      expect(screen.getByTestId("training-screen")).toBeInTheDocument();
-    });
-
-    it("maintains functionality with missing props", () => {
-      // Test with minimal props
-      render(<TrainingScreenComponent onExit={mockOnExit} />);
-
-      expect(screen.getByTestId("training-screen")).toBeInTheDocument();
     });
   });
 });

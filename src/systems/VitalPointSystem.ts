@@ -1,387 +1,235 @@
 import type {
+  AnatomicalRegion,
   VitalPoint,
   DamageResult,
   VitalPointCategory,
-  StatusEffect,
-  VitalPointHit,
-  AnatomicalRegion,
-} from "../types/GameTypes";
-import {
-  ANATOMICAL_REGIONS,
-  getVitalPointsByCategory,
-} from "./vitalpoint/AnatomicalRegions";
-import { KOREAN_VITAL_POINTS } from "./vitalpoint/KoreanVitalPoints";
-import type { MasteryLevel } from "../types";
-import { KoreanDamageCalculator } from "./vitalpoint/DamageCalculator";
+  TrigramStance,
+} from "../types";
 
-/**
- * Korean Martial Arts Vital Point System (급소술 시스템)
- * Comprehensive vital point detection, damage calculation, and effect management
- */
-
-interface VitalPointSystemConfig {
-  readonly enabled: boolean;
-  readonly precisionThreshold: number;
-  readonly debugging: boolean;
-  readonly maxHitDistance: number;
-  readonly damageMultiplier: number;
-  readonly effectDuration: number;
-}
-
-const DEFAULT_CONFIG: VitalPointSystemConfig = {
-  enabled: true,
-  precisionThreshold: 0.7,
-  debugging: false,
-  maxHitDistance: 50,
-  damageMultiplier: 1.5,
-  effectDuration: 3000,
-};
+// Comprehensive vital point data with all required properties
+const VITAL_POINTS_DATA: Record<AnatomicalRegion, VitalPoint> = {
+  head: {
+    id: "head_vital",
+    korean: "머리",
+    english: "Head",
+    region: "head" as AnatomicalRegion,
+    bounds: { x: 0, y: 0, width: 40, height: 40 },
+    vulnerability: { damage: 2.0, stunning: 1.5, criticalChance: 0.8 },
+    description: {
+      korean: "급소 - 머리 부위",
+      english: "Vital point - Head region",
+    },
+  },
+  neck: {
+    id: "neck_vital",
+    korean: "목",
+    english: "Neck",
+    region: "neck" as AnatomicalRegion,
+    bounds: { x: 0, y: 40, width: 30, height: 20 },
+    vulnerability: { damage: 2.5, stunning: 2.0, criticalChance: 0.9 },
+    description: {
+      korean: "급소 - 목 부위",
+      english: "Vital point - Neck region",
+    },
+  },
+  chest: {
+    id: "chest_vital",
+    korean: "가슴",
+    english: "Chest",
+    region: "chest" as AnatomicalRegion,
+    bounds: { x: 0, y: 60, width: 60, height: 50 },
+    vulnerability: { damage: 1.8, stunning: 1.2, criticalChance: 0.7 },
+    description: {
+      korean: "급소 - 가슴 부위",
+      english: "Vital point - Chest region",
+    },
+  },
+  abdomen: {
+    id: "abdomen_vital",
+    korean: "복부",
+    english: "Abdomen",
+    region: "abdomen" as AnatomicalRegion,
+    bounds: { x: 0, y: 110, width: 50, height: 40 },
+    vulnerability: { damage: 2.2, stunning: 1.8, criticalChance: 0.8 },
+    description: {
+      korean: "급소 - 복부 부위",
+      english: "Vital point - Abdomen region",
+    },
+  },
+  arms: {
+    id: "arms_vital",
+    korean: "팔",
+    english: "Arms",
+    region: "arms" as AnatomicalRegion,
+    bounds: { x: 60, y: 60, width: 30, height: 60 },
+    vulnerability: { damage: 1.3, stunning: 0.8, criticalChance: 0.4 },
+    description: {
+      korean: "급소 - 팔 부위",
+      english: "Vital point - Arms region",
+    },
+  },
+  legs: {
+    id: "legs_vital",
+    korean: "다리",
+    english: "Legs",
+    region: "legs" as AnatomicalRegion,
+    bounds: { x: 0, y: 150, width: 40, height: 80 },
+    vulnerability: { damage: 1.4, stunning: 1.0, criticalChance: 0.5 },
+    description: {
+      korean: "급소 - 다리 부위",
+      english: "Vital point - Legs region",
+    },
+  },
+} as const;
 
 export class VitalPointSystem {
-  private static instance: VitalPointSystem; // Fix: add static instance property
-  private config: VitalPointSystemConfig;
-  private activeEffectsMap: Map<string, StatusEffect[]> = new Map();
+  private readonly vitalPoints: Map<AnatomicalRegion, VitalPoint>;
 
-  constructor(config: Partial<VitalPointSystemConfig> = {}) {
-    this.config = { ...DEFAULT_CONFIG, ...config };
-  }
-
-  public static getInstance(
-    config: Partial<VitalPointSystemConfig> = {}
-  ): VitalPointSystem {
-    if (!VitalPointSystem.instance) {
-      VitalPointSystem.instance = new VitalPointSystem(config);
-    }
-    return VitalPointSystem.instance;
-  }
-
-  /**
-   * Detect vital point hit (renamed from checkVitalPointHit)
-   */
-  public detectVitalPointHit(
-    x: number,
-    y: number,
-    technique: string
-  ): VitalPointHit | null {
-    if (!this.config.enabled) return null;
-
-    const nearbyPoints = this.findNearbyVitalPoints(x, y);
-    if (nearbyPoints.length === 0) return null;
-
-    const closestPoint = nearbyPoints[0];
-    if (!closestPoint) return null;
-
-    const distance = this.calculateDistance(
-      { x, y },
-      { x: closestPoint.bounds?.x || 0, y: closestPoint.bounds?.y || 0 },
-      closestPoint,
-      technique
+  constructor() {
+    this.vitalPoints = new Map(
+      Object.entries(VITAL_POINTS_DATA) as [AnatomicalRegion, VitalPoint][]
     );
-
-    if (distance > this.config.maxHitDistance) return null;
-
-    const effectiveness = this.calculateEffectiveness(distance, technique);
-    if (effectiveness < this.config.precisionThreshold) return null;
-
-    return {
-      vitalPoint: this.convertToGameVitalPoint(closestPoint),
-      damage: this.config.damageMultiplier * effectiveness,
-      effectiveness,
-      description: `${closestPoint.korean} 급소 공격`,
-      effects: this.processVitalPointEffects(closestPoint, effectiveness),
-    };
   }
 
-  private findNearbyVitalPoints(x: number, y: number): AnatomicalRegion[] {
-    if (!Array.isArray(ANATOMICAL_REGIONS)) {
-      console.warn("ANATOMICAL_REGIONS is not an array, returning empty array");
-      return [];
-    }
-
-    return ANATOMICAL_REGIONS.filter((region) => {
-      if (!region.bounds) return false;
-
-      const { x: regionX, y: regionY, width, height } = region.bounds;
-      return (
-        x >= regionX &&
-        x <= regionX + width &&
-        y >= regionY &&
-        y <= regionY + height
+  public detectVitalPointHit(x: number, y: number, radius: number): boolean {
+    for (const vitalPoint of this.vitalPoints.values()) {
+      const distance = Math.sqrt(
+        Math.pow(x - (vitalPoint.bounds.x + vitalPoint.bounds.width / 2), 2) +
+          Math.pow(y - (vitalPoint.bounds.y + vitalPoint.bounds.height / 2), 2)
       );
-    });
-  }
 
-  private calculateDistance(
-    point1: { x: number; y: number },
-    point2: { x: number; y: number },
-    vitalPoint: AnatomicalRegion,
-    technique: string
-  ): number {
-    const dx = point2.x - point1.x;
-    const dy = point2.y - point1.y;
-    return Math.sqrt(dx * dx + dy * dy);
-  }
-
-  private calculateEffectiveness(
-    distance: number,
-    _technique: string // Mark unused parameter
-  ): number {
-    // Calculate effectiveness based on distance
-    const maxDistance = this.config.maxHitDistance;
-    const distanceRatio = 1 - distance / maxDistance;
-
-    return Math.max(0, distanceRatio);
-  }
-
-  private convertToGameVitalPoint(point: AnatomicalRegion): VitalPoint {
-    return {
-      id: point.id,
-      korean: point.korean,
-      english: point.english,
-      region: point.korean,
-      coordinates: {
-        x: point.bounds?.x || 0,
-        y: point.bounds?.y || 0,
-      },
-      vulnerability: point.vulnerability || 1.0,
-      category: this.mapRegionCategory(point),
-      difficulty: point.vulnerability || 1.0,
-      effects: [],
-      description: point.description || "",
-    };
-  }
-
-  private mapRegionCategory(point: AnatomicalRegion): VitalPointCategory {
-    if (point.vulnerability && point.vulnerability >= 0.8) return "critical";
-    if (point.vulnerability && point.vulnerability >= 0.5) return "major";
-    return "minor";
-  }
-
-  private processVitalPointEffects(
-    _vitalPoint: AnatomicalRegion, // Mark unused parameter
-    effectiveness: number
-  ): StatusEffect[] {
-    const effects: StatusEffect[] = [];
-
-    // Add effects based on effectiveness
-    if (effectiveness > 0.8) {
-      effects.push({
-        type: "stun",
-        duration: 2000,
-        intensity: effectiveness,
-        description: "급소 타격으로 인한 기절",
-      });
+      if (
+        distance <=
+        radius + Math.max(vitalPoint.bounds.width, vitalPoint.bounds.height) / 2
+      ) {
+        return true;
+      }
     }
-
-    return effects;
+    return false;
   }
 
-  // Add missing method implementations
-  public getState(): any {
-    return {
-      config: this.config,
-      activeEffects: this.activeEffectsMap,
-    };
+  public getVitalPointAt(x: number, y: number): VitalPoint | null {
+    for (const vitalPoint of this.vitalPoints.values()) {
+      if (
+        x >= vitalPoint.bounds.x &&
+        x <= vitalPoint.bounds.x + vitalPoint.bounds.width &&
+        y >= vitalPoint.bounds.y &&
+        y <= vitalPoint.bounds.y + vitalPoint.bounds.height
+      ) {
+        return vitalPoint;
+      }
+    }
+    return null;
   }
 
-  public clearEffects(): void {
-    this.activeEffectsMap.clear();
-  }
-
-  public updateConfig(newConfig: Partial<VitalPointSystemConfig>): void {
-    this.config = { ...this.config, ...newConfig };
-  }
-
-  // Add other required methods
-  public getActiveEffects(playerId: string): StatusEffect[] {
-    return this.activeEffectsMap.get(playerId) || [];
-  }
-
-  public addActiveEffects(playerId: string, effects: StatusEffect[]): void {
-    const existing = this.activeEffectsMap.get(playerId) || [];
-    this.activeEffectsMap.set(playerId, [...existing, ...effects]);
-  }
-
-  public clearActiveEffects(): void {
-    this.activeEffectsMap.clear();
-  }
-
-  /**
-   * Get hit history for analysis
-   */
-  public getHitHistory(): readonly VitalPointHit[] {
-    return []; // No direct hit history tracking in this version
+  public getVitalPointByRegion(region: AnatomicalRegion): VitalPoint | null {
+    return this.vitalPoints.get(region) || null;
   }
 
   public calculateVitalPointDamage(
     baseDamage: number,
-    vitalPoint: AnatomicalRegion,
-    technique: string
+    region: AnatomicalRegion
   ): DamageResult {
-    // Implementation
-    return {
-      base: baseDamage,
-      multiplier: 1.5,
-      critical: true,
-      effectType: "vital_point",
-    };
-  }
+    const vitalPoint = this.vitalPoints.get(region);
 
-  private calculateAdvancedDamage(baseDamage: number): DamageResult {
-    return {
-      base: Math.round(baseDamage * 1.3),
-      multiplier: 1.3,
-      critical: false,
-      effectType: "normal",
-    };
-  }
+    if (!vitalPoint) {
+      return {
+        damage: baseDamage,
+        multiplier: 1.0,
+        critical: false,
+        effectType: "normal",
+      };
+    }
 
-  public getVitalPointByRegion(regionName: string): VitalPoint | null {
-    const allPoints = this.getAllVitalPoints();
-    return (
-      allPoints.find(
-        (point) =>
-          point.id === regionName ||
-          point.korean.includes(regionName) ||
-          point.english.toLowerCase().includes(regionName.toLowerCase())
-      ) || null
+    const finalDamage = Math.round(
+      baseDamage * vitalPoint.vulnerability.damage
     );
+    const isCritical = Math.random() < vitalPoint.vulnerability.criticalChance;
+
+    return {
+      damage: isCritical ? Math.round(finalDamage * 1.5) : finalDamage,
+      multiplier: vitalPoint.vulnerability.damage,
+      critical: isCritical,
+      effectType: isCritical ? "critical" : "vital_point",
+      stunDuration: vitalPoint.vulnerability.stunning * 1000, // Convert to milliseconds
+    };
+  }
+
+  public getVitalPointsStats(): Record<string, unknown> {
+    const stats: Record<string, unknown> = {};
+
+    for (const [region, vitalPoint] of this.vitalPoints.entries()) {
+      stats[region] = {
+        damageMultiplier: vitalPoint.vulnerability.damage,
+        stunMultiplier: vitalPoint.vulnerability.stunning,
+        criticalChance: vitalPoint.vulnerability.criticalChance,
+        area: vitalPoint.bounds.width * vitalPoint.bounds.height,
+        korean: vitalPoint.korean,
+        english: vitalPoint.english,
+      };
+    }
+
+    return stats;
   }
 
   public getAllVitalPoints(): VitalPoint[] {
-    // Return mock vital points for testing
-    return [
-      {
-        id: "temple",
-        korean: "태양혈",
-        english: "Temple",
-        category: "head",
-        difficulty: 0.7,
-        damage: 1.5,
-        description: "Critical pressure point",
-      },
-    ];
+    return Array.from(this.vitalPoints.values());
   }
 
-  // Fix category counts to match actual VitalPointCategory
-  public getVitalPointCategoryCounts(): Record<VitalPointCategory, number> {
-    const categoryCounts: Record<VitalPointCategory, number> = {
-      head: 0,
-      torso: 0,
-      arms: 0,
-      legs: 0,
-      major: 0,
-      critical: 0,
-      minor: 0,
-    };
-
-    const allPoints = this.getAllVitalPoints();
-
-    allPoints.forEach((point: VitalPoint) => {
-      if (point.category in categoryCounts) {
-        categoryCounts[point.category]++;
-      }
-    });
-
-    return categoryCounts;
-  }
-
-  public getMasteryVitalPoints(): Record<VitalPointCategory, number> {
-    return this.getVitalPointCategoryCounts();
-  }
-
-  public getVitalPointsByCategory(
+  public getRegionsForCategory(
     category: VitalPointCategory
-  ): readonly VitalPoint[] {
-    const allPoints = this.getAllVitalPoints();
-    return allPoints.filter((point) => point.category === category);
+  ): AnatomicalRegion[] {
+    const categoryMap: Record<VitalPointCategory, AnatomicalRegion[]> = {
+      primary: ["head", "neck", "chest"],
+      secondary: ["abdomen", "arms"],
+      tertiary: ["legs"],
+    };
+
+    return categoryMap[category] || [];
   }
 
-  public calculateVitalPointMultiplier(
-    _vitalPoint: AnatomicalRegion,
-    _technique: string
+  public calculateDamageWithVitalPoint(
+    baseDamage: number,
+    hitX: number,
+    hitY: number,
+    stance: TrigramStance
   ): DamageResult {
-    const baseDamage = 15;
+    const vitalPoint = this.getVitalPointAt(hitX, hitY);
 
-    return {
-      damage: Math.round(baseDamage * 1.3),
-    };
-  }
-
-  public calculateDamage(damage: number): DamageResult {
-    return {
-      damage: Math.round(damage * 1.2),
-    };
-  }
-
-  public getCategorySpecialization(): Record<VitalPointCategory, number> {
-    const categoryCounts: Record<VitalPointCategory, number> = {
-      critical: 0,
-      major: 0,
-      minor: 0,
-      head: 0,
-      torso: 0,
-      arms: 0,
-      legs: 0,
-    };
-
-    // Mock implementation
-    return categoryCounts;
-  }
-
-  public getMasteryDistribution(): Record<VitalPointCategory, number> {
-    const categoryCounts: Record<VitalPointCategory, number> = {
-      critical: 0,
-      major: 0,
-      minor: 0,
-      head: 0,
-      torso: 0,
-      arms: 0,
-      legs: 0,
-    };
-
-    // Mock implementation
-    return categoryCounts;
-  }
-
-  /**
-   * Reset system state
-   */
-  public reset(): void {
-    this.activeEffectsMap.clear();
-  }
-
-  // Add missing methods for test compatibility
-  public getAvailableVitalPoints(): readonly VitalPoint[] {
-    if (!Array.isArray(ANATOMICAL_REGIONS)) {
-      return [];
+    if (!vitalPoint) {
+      return {
+        damage: baseDamage,
+        multiplier: 1.0,
+        critical: false,
+        effectType: "normal",
+      };
     }
 
-    return ANATOMICAL_REGIONS.map((region) =>
-      this.convertToGameVitalPoint(region)
-    );
-  }
-
-  public getVitalPointsStats(): Record<VitalPointCategory, number> {
-    const categoryCounts: Record<VitalPointCategory, number> = {
-      head: 0,
-      torso: 0,
-      arms: 0,
-      legs: 0,
-      major: 0,
-      critical: 0,
-      minor: 0,
+    // Stance-specific bonuses for vital point hits
+    const stanceMultipliers: Record<TrigramStance, number> = {
+      geon: 1.2, // Heaven - divine precision
+      tae: 1.0, // Lake - balanced
+      li: 1.3, // Fire - explosive damage
+      jin: 1.1, // Thunder - shocking strikes
+      son: 1.0, // Wind - swift but not devastating
+      gam: 1.2, // Water - flowing precision
+      gan: 0.9, // Mountain - defensive stance
+      gon: 1.1, // Earth - grounded power
     };
 
-    // Mock implementation
-    return categoryCounts;
+    const stanceMultiplier = stanceMultipliers[stance];
+    const vitalMultiplier = vitalPoint.vulnerability.damage;
+    const totalMultiplier = stanceMultiplier * vitalMultiplier;
+
+    const finalDamage = Math.round(baseDamage * totalMultiplier);
+    const isCritical = Math.random() < vitalPoint.vulnerability.criticalChance;
+
+    return {
+      damage: isCritical ? Math.round(finalDamage * 1.5) : finalDamage,
+      multiplier: totalMultiplier,
+      critical: isCritical,
+      effectType: isCritical ? "critical" : "vital_point",
+      stunDuration: vitalPoint.vulnerability.stunning * 1000,
+    };
   }
 }
-
-// Export what's available
-export {
-  ANATOMICAL_REGIONS,
-  KOREAN_VITAL_POINTS,
-  getVitalPointsByCategory as getVitalPointsByMastery,
-  KoreanDamageCalculator,
-};

@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { KoreanTechniques } from "./KoreanTechniques";
+import type { TrigramStance } from "../../types";
 
 describe("KoreanTechniques", () => {
   describe("trigram technique generation", () => {

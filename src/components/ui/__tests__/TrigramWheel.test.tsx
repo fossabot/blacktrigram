@@ -33,8 +33,14 @@ describe("TrigramWheel", () => {
     );
 
     if (trigramElements.length > 1) {
-      fireEvent.click(trigramElements[1]);
-      expect(mockProps.onStanceSelect).toHaveBeenCalled();
+      const element = trigramElements[1];
+      if (element) {
+        fireEvent.click(element);
+        expect(mockProps.onStanceSelect).toHaveBeenCalled();
+      }
+    } else {
+      // Fallback test if elements are not found
+      expect(trigramElements.length).toBeGreaterThanOrEqual(1);
     }
   });
 

@@ -1,5 +1,7 @@
 // Central type exports for Korean martial arts game
 
+import { AnatomicalRegion } from "./GameTypes";
+
 // Re-export all game types
 export * from "./GameTypes";
 
@@ -256,6 +258,61 @@ export const KOREAN_TECHNIQUES = {
       "Receptive strength - embracing and controlling through yielding",
   },
 } as const;
+
+// Progress tracking interface
+export interface ProgressTrackerProps {
+  readonly label: string;
+  readonly current: number;
+  readonly maximum: number;
+  readonly currentStance?: TrigramStance;
+  readonly progress?: number;
+  readonly onProgressChange?: (progress: number) => void;
+}
+
+// Enhanced VitalPoint interface with required properties
+export interface VitalPoint {
+  readonly id: string;
+  readonly korean: string;
+  readonly english: string;
+  readonly region: AnatomicalRegion;
+  readonly bounds: {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+  };
+  readonly vulnerability: {
+    readonly damage: number;
+    readonly stunning: number;
+    readonly criticalChance: number;
+  };
+  readonly description: {
+    readonly korean: string;
+    readonly english: string;
+  };
+}
+
+// Enhanced DamageResult to include all expected properties
+export interface DamageResult {
+  readonly damage: number;
+  readonly multiplier: number;
+  readonly critical: boolean;
+  readonly effectType: "normal" | "critical" | "vital_point" | "blocked";
+  readonly stunDuration?: number;
+  readonly knockback?: number;
+}
+
+// Add missing VitalPointCategory type
+export type VitalPointCategory = "primary" | "secondary" | "tertiary";
+
+// Add missing AnatomicalRegion type with all required regions
+export type AnatomicalRegion =
+  | "head"
+  | "neck"
+  | "chest"
+  | "abdomen"
+  | "arms"
+  | "legs";
 
 // Export type helpers
 export type KoreanTechniqueId = keyof typeof KOREAN_TECHNIQUES;

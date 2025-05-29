@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import type { JSX } from "react";
 import { KoreanHeader } from "../ui/KoreanHeader";
-import { BackgroundGrid } from "../ui/base/BackgroundGrid";
 import { ControlsSection } from "./components/ControlsSection";
 import { PhilosophySection } from "./components/PhilosophySection";
 
@@ -65,7 +64,11 @@ export function IntroScreen({
       />
 
       {/* Header with Korean dojang name */}
-      <KoreanHeader />
+      <KoreanHeader
+        title="흑괘 무술 도장"
+        subtitle="Black Trigram Martial Arts"
+        showLogo={true}
+      />
 
       {/* Menu options */}
       <pixiContainer x={window.innerWidth / 2} y={window.innerHeight / 2}>
