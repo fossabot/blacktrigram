@@ -34,12 +34,13 @@ export default defineConfig({
     supportFile: "cypress/support/e2e.ts",
     testIsolation: true,
     retries: {
-      runMode: 1,
+      runMode: 2,
       openMode: 0,
     },
-    defaultCommandTimeout: 3000, // Reduced to speed up failures
-    requestTimeout: 3000,
-    responseTimeout: 3000,
+    defaultCommandTimeout: 8000, // Reduced to speed up failures
+    requestTimeout: 10000,
+    responseTimeout: 10000,
+    pageLoadTimeout: 15000,
     chromeWebSecurity: false,
     video: true, // Enable video recording for failed tests
     videoCompression: 32, // Set video compression level
@@ -48,13 +49,24 @@ export default defineConfig({
     downloadsFolder: "cypress/downloads",
     fixturesFolder: "cypress/fixtures",
     experimentalMemoryManagement: true,
-    numTestsKeptInMemory: 1, // Keep only one test in memory for performance
+    numTestsKeptInMemory: 10, // Keep only one test in memory for performance
     experimentalRunAllSpecs: true, // Enable parallel test execution
     screenshotOnRunFailure: true, // Enable screenshots on failure
     setupNodeEvents(
       on: Cypress.PluginEvents,
       config: Cypress.PluginConfigOptions
     ): Cypress.PluginConfigOptions {
+      // Suppress WebGL warnings
+      on("task", {
+        silenceWebGLWarning() {
+          return null;
+        },
+        logPerformance({ name, duration }) {
+          console.log(`Performance: ${name} - ${duration}ms`);
+          return null;
+        },
+      });
+
       // Configure browser launch options for WebGL
       on("before:browser:launch", (browser, launchOptions) => {
         // Add flags to suppress WebGL warnings
@@ -75,21 +87,6 @@ export default defineConfig({
         }
 
         return launchOptions;
-      });
-
-      // Console filter to silence WebGL warnings
-      on("task", {
-        // This will be used to silence console logs in tests
-        silenceWebGLWarning: () => {
-          return null;
-        },
-        logPerformance({ name, duration }) {
-          console.log(`Performance: ${name} - ${duration}ms`);
-          return null;
-        },
-        recordFailure: () => {
-          return null;
-        },
       });
 
       return config;

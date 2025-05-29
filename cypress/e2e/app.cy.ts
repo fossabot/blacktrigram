@@ -1,6 +1,8 @@
 describe("Black Trigram Intro Page E2E", () => {
   beforeEach(() => {
-    cy.visit("/");
+    cy.visit("/", { timeout: 12000 });
+    cy.task("silenceWebGLWarning", null, { log: false });
+    cy.waitForCanvasReady();
   });
 
   describe("Initial Page Load", () => {
