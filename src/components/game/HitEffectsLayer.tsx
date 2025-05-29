@@ -1,6 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import { Container, Graphics } from "@pixi/react";
 import type { JSX } from "react";
-import type { Graphics as PixiGraphics } from "pixi.js";
+import type { Vector2D } from "../../types/GameTypes";
+import { Particle } from "pixi.js";
 import { useTexture } from "../../hooks/useTexture";
 
 // Dark Trigram theme constants
@@ -16,34 +18,18 @@ const DARK_TRIGRAM_THEME = {
 
 export interface HitEffect {
   readonly id: string;
-  readonly x: number;
-  readonly y: number;
-  readonly damage: number;
-  readonly technique: string;
-  readonly life: number;
-  readonly maxLife: number;
-  readonly isVitalHit?: boolean;
-  readonly trigram?: string;
+  readonly position: Vector2D;
+  readonly type: string;
+  readonly intensity: number;
+  readonly timestamp: number;
 }
 
-interface HitEffectsLayerProps {
-  readonly hitEffects: readonly HitEffect[];
-}
-
-interface Particle {
-  readonly id: string;
-  readonly x: number;
-  readonly y: number;
-  readonly vx: number;
-  readonly vy: number;
-  readonly life: number;
-  readonly maxLife: number;
-  readonly color: number;
-  readonly size: number;
+export interface HitEffectsLayerProps {
+  readonly effects: readonly HitEffect[];
 }
 
 export function HitEffectsLayer({
-  hitEffects,
+  effects,
 }: HitEffectsLayerProps): JSX.Element {
   const [particles, setParticles] = useState<readonly Particle[]>([]);
   const [screenShake, setScreenShake] = useState({ x: 0, y: 0, intensity: 0 });
@@ -149,6 +135,58 @@ export function HitEffectsLayer({
       });
     },
     [particles]
+  );
+
+  const drawEffect = useCallback(
+    (effect: HitEffect) => (g: any) => {
+      const age = Date.now() - effect.timestamp;
+      const maxAge = 1000; // 1 second
+      const progress = Math.min(age / maxAge, 1);
+      const alpha = 1 - progress;
+
+      if (alpha <= 0) return;
+
+      g.clear();
+
+      const radius = 20 + progress * 30;
+      const color = effect.type === "critical" ? 0xff1493 : 0xffff00;
+
+      // Outer ring
+      g.setStrokeStyle({
+        color,
+        width: 4 * effect.intensity,
+        alpha: alpha * 0.8,
+      });
+      g.circle(0, 0, radius);
+      g.stroke();
+
+      // Inner flash
+      g.setFillStyle({ color, alpha: alpha * 0.4 });
+      g.circle(0, 0, radius * 0.5);
+      g.fill();
+
+      // Spark effects for critical hits
+      if (effect.type === "critical") {
+        for (let i = 0; i < 8; i++) {
+          const angle = (i / 8) * Math.PI * 2;
+          const sparkLength = 15 + progress * 25;
+          const x1 = Math.cos(angle) * radius * 0.8;
+          const y1 = Math.sin(angle) * radius * 0.8;
+          const x2 = Math.cos(angle) * (radius * 0.8 + sparkLength);
+          const y2 = Math.sin(angle) * (radius * 0.8 + sparkLength);
+
+          g.setStrokeStyle({
+            color: 0xffffff,
+            width: 2,
+            alpha: alpha * 0.9,
+          });
+          g.moveTo(x1, y1);
+          g.lineTo(x2, y2);
+          g.stroke();
+        }
+      }
+    },
+    []
   );
 
   return (
@@ -398,6 +436,18 @@ export function HitEffectsLayer({
           </pixiContainer>
         );
       })}
+
+      <Container>
+        {effects.map((effect) => (
+          <Container
+            key={effect.id}
+            x={effect.position.x}
+            y={effect.position.y}
+          >
+            <Graphics draw={drawEffect(effect)} />
+          </Container>
+        ))}
+      </Container>
     </pixiContainer>
   );
 }

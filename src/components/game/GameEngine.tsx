@@ -1,519 +1,526 @@
-import { useTick } from "@pixi/react";
-import { useState, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { Stage, Container, useTick, extend } from "@pixi/react";
+import { Graphics, Text as PixiText } from "pixi.js";
 import type { JSX } from "react";
-import { PlayerContainer } from "./Player";
-import { DojangBackground } from "./DojangBackground";
-import { HitEffectsLayer, HitEffect } from "./HitEffectsLayer";
-import { GameUI } from "./GameUI";
+import type {
+  GameState,
+  PlayerState,
+  TrigramStance,
+  KoreanTechnique,
+  Vector2D,
+  CombatEvent,
+  AttackData,
+} from "../../types/GameTypes";
+import { CombatSystem } from "../../systems/CombatSystem";
+import { VitalPointSystem } from "../../systems/VitalPointSystem";
+import { TrigramSystem } from "../../systems/TrigramSystem";
 import { useAudio } from "../../audio/AudioManager";
+import { Player } from "./Player";
+import { GameUI } from "./GameUI";
+import { HitEffectsLayer } from "./HitEffectsLayer";
+import { DojangBackground } from "./DojangBackground";
 
-// Centralized game constants
-const GAME_CONFIG = {
-  ARENA_WIDTH: 800,
-  ARENA_HEIGHT: 600,
-  HEALTH_MAX: 100,
-  ROUND_TIME: 90,
-  HIT_RANGE: 100,
-  EFFECT_LIFETIME: 120,
-} as const;
+// Extend PIXI components for use in JSX
+extend({ Graphics, Text: PixiText });
 
-interface GameState {
-  readonly player1Health: number;
-  readonly player2Health: number;
-  readonly roundTime: number;
-  readonly round: number;
-  readonly winner: string | null;
-  readonly isPaused: boolean;
-  readonly matchStarted: boolean;
-  readonly gamePhase: "preparation" | "combat" | "victory";
+export interface GameEngineProps {
+  readonly onGameStateChange?: (state: GameState) => void;
+  readonly onCombatEvent?: (event: CombatEvent) => void;
 }
 
-interface PlayerPosition {
-  readonly x: number;
-  readonly y: number;
-}
+const INITIAL_PLAYER_STATE: Omit<PlayerState, "id"> = {
+  position: { x: 0, y: 0 },
+  velocity: { x: 0, y: 0 },
+  facing: "right",
+  currentStance: "geon",
+  health: 100,
+  maxHealth: 100,
+  stamina: 100,
+  maxStamina: 100,
+  ki: 50,
+  maxKi: 100,
+  isAttacking: false,
+  isBlocking: false,
+  isStunned: false,
+  comboCount: 0,
+  activeEffects: [],
+  masteredTechniques: [],
+};
 
-interface AttackParams {
-  readonly attacker: "player1" | "player2";
-  readonly technique: string;
-  readonly damage: number;
-  readonly position: PlayerPosition;
-}
-
-// Combat system with Korean martial arts mechanics
-class CombatSystem {
-  private static readonly TECHNIQUE_DAMAGES: Readonly<Record<string, number>> =
-    {
-      천둥벽력: 28, // Heaven - Thunder Strike
-      유수연타: 18, // Lake - Flowing Combo
-      화염지창: 35, // Fire - Flame Spear
-      벽력일섬: 40, // Thunder - Lightning Flash
-      선풍연격: 15, // Wind - Whirlwind
-      수류반격: 25, // Water - Counter Strike
-      반석방어: 12, // Mountain - Defense
-      대지포옹: 30, // Earth - Grappling
-    } as const;
-
-  private static readonly TECHNIQUE_TRANSLATIONS: Readonly<
-    Record<string, string>
-  > = {
-    천둥벽력: "천둥벽력 (Thunder Strike)",
-    유수연타: "유수연타 (Flowing Combo)",
-    화염지창: "화염지창 (Flame Spear)",
-    벽력일섬: "벽력일섬 (Lightning Flash)",
-    선풍연격: "선풍연격 (Whirlwind Strike)",
-    수류반격: "수류반격 (Water Counter)",
-    반석방어: "반석방어 (Mountain Defense)",
-    대지포옹: "대지포옹 (Earth Grapple)",
-  } as const;
-
-  static calculateDamage(
-    technique: string,
-    distance: number,
-    maxRange: number
-  ): number {
-    const baseDamage = this.TECHNIQUE_DAMAGES[technique] ?? 15;
-    const precisionMultiplier = Math.max(0.5, 1.2 - distance / maxRange);
-    const variance = 0.8 + Math.random() * 0.4;
-
-    return Math.floor(baseDamage * precisionMultiplier * variance);
-  }
-
-  static getKoreanTechniqueName(technique: string): string {
-    return this.TECHNIQUE_TRANSLATIONS[technique] ?? technique;
-  }
-
-  static calculateDistance(pos1: PlayerPosition, pos2: PlayerPosition): number {
-    return Math.sqrt(
-      Math.pow(pos1.x - pos2.x, 2) + Math.pow(pos1.y - pos2.y, 2)
-    );
-  }
-
-  static isWithinHitRange(distance: number): boolean {
-    return distance <= GAME_CONFIG.HIT_RANGE;
-  }
-}
-
-// Game state management with immutable updates
-class GameStateManager {
-  static createInitialState(): GameState {
-    return {
-      player1Health: GAME_CONFIG.HEALTH_MAX,
-      player2Health: GAME_CONFIG.HEALTH_MAX,
-      roundTime: GAME_CONFIG.ROUND_TIME,
+export function GameEngine({
+  onGameStateChange,
+  onCombatEvent,
+}: GameEngineProps): JSX.Element {
+  // Core game state
+  const [gameState, setGameState] = useState<GameState>({
+    mode: "training",
+    players: {
+      player1: {
+        ...INITIAL_PLAYER_STATE,
+        id: "player1",
+        position: { x: 200, y: 300 },
+      },
+      player2: {
+        ...INITIAL_PLAYER_STATE,
+        id: "player2",
+        position: { x: 600, y: 300 },
+        facing: "left",
+      },
+    },
+    combat: {
+      isActive: false,
+      timeRemaining: 180000, // 3 minutes
       round: 1,
-      winner: null,
-      isPaused: false,
       matchStarted: false,
-      gamePhase: "preparation",
-    };
-  }
-
-  static updateHealth(
-    state: GameState,
-    player: "player1" | "player2",
-    damage: number
-  ): GameState {
-    const healthKey = player === "player1" ? "player1Health" : "player2Health";
-    const newHealth = Math.max(0, state[healthKey] - damage);
-
-    return {
-      ...state,
-      [healthKey]: newHealth,
-    };
-  }
-
-  static updateTimer(state: GameState, deltaTime: number): GameState {
-    if (state.gamePhase !== "combat" || state.isPaused || state.winner) {
-      return state;
-    }
-
-    const newTime = Math.max(0, state.roundTime - deltaTime / 60);
-
-    if (newTime <= 0) {
-      return {
-        ...state,
-        roundTime: 0,
-        winner: "Time Out",
-        gamePhase: "victory",
-      };
-    }
-
-    return { ...state, roundTime: newTime };
-  }
-
-  static checkWinCondition(state: GameState): GameState {
-    if (state.winner || state.gamePhase === "victory") {
-      return state;
-    }
-
-    let winner: string | null = null;
-
-    if (state.player1Health <= 0) {
-      winner =
-        "Player 2 승리! 완벽한 급소 공격! (Perfect Vital Strike Victory!)";
-    } else if (state.player2Health <= 0) {
-      winner = "Player 1 승리! 무술의 달인! (Martial Arts Master Victory!)";
-    }
-
-    if (winner) {
-      return {
-        ...state,
-        winner,
-        gamePhase: "victory",
-      };
-    }
-
-    return state;
-  }
-
-  static startMatch(state: GameState): GameState {
-    return {
-      ...state,
-      matchStarted: true,
-      isPaused: false,
-      gamePhase: "combat",
-    };
-  }
-
-  static resetMatch(): GameState {
-    return this.createInitialState();
-  }
-}
-
-export function GameEngine(): JSX.Element {
-  const [gameState, setGameState] = useState<GameState>(
-    GameStateManager.createInitialState()
-  );
-  // Center players in the middle of the screen
-  const [player1Pos, setPlayer1Pos] = useState<PlayerPosition>({
-    x: window.innerWidth / 2 - 150,
-    y: window.innerHeight / 2,
+      winner: null,
+      combatMode: "training",
+    },
+    camera: {
+      position: { x: 400, y: 300 },
+      zoom: 1.0,
+      shake: 0,
+      target: { x: 400, y: 300 },
+    },
+    environment: {
+      dojangType: "traditional",
+      lighting: "day",
+      weather: "clear",
+      temperature: 20,
+    },
+    ui: {
+      showHealthBars: true,
+      showStaminaBars: true,
+      showKiBars: true,
+      showVitalPoints: false,
+      showTechniqueNames: true,
+      showComboCounter: true,
+      debugMode: false,
+    },
+    time: 0,
+    paused: false,
   });
-  const [player2Pos, setPlayer2Pos] = useState<PlayerPosition>({
-    x: window.innerWidth / 2 + 150,
-    y: window.innerHeight / 2,
-  });
-  const [combatLog, setCombatLog] = useState<readonly string[]>([]);
-  const [hitEffects, setHitEffects] = useState<readonly HitEffect[]>([]);
-  const [gameTime, setGameTime] = useState<number>(0);
+
   const audio = useAudio();
+  const gameLoop = useRef<number>(0);
+  const lastAttackTime = useRef<Record<string, number>>({});
+  const hitEffects = useRef<
+    Array<{
+      id: string;
+      position: Vector2D;
+      type: string;
+      intensity: number;
+      timestamp: number;
+    }>
+  >([]);
 
+  // Game loop using PIXI's useTick
   useTick(
-    useCallback((ticker: { deltaTime: number }) => {
-      const delta = ticker.deltaTime;
-      setGameTime((prev) => prev + delta);
+    useCallback(
+      (delta: number) => {
+        if (gameState.paused) return;
 
-      setGameState((prev) => GameStateManager.updateTimer(prev, delta));
-      setHitEffects((prev) =>
-        prev
-          .map((effect) => ({ ...effect, life: effect.life - delta }))
-          .filter((effect) => effect.life > 0)
-      );
-      setGameState((prev) => GameStateManager.checkWinCondition(prev));
-    }, [])
+        const deltaTime = delta * 16.67; // Convert to milliseconds
+        updateGameState(deltaTime);
+        updatePhysics(deltaTime);
+        updateCombat(deltaTime);
+        updateEffects(deltaTime);
+      },
+      [gameState.paused]
+    )
   );
 
-  const startMatch = useCallback(() => {
-    setGameState(GameStateManager.startMatch);
-    setCombatLog([
-      "경기 시작! (Match Start!)",
-      "팔괘 무술로 싸우십시오 (Fight with Eight Trigram techniques)",
-      "급소를 노려라! (Target vital points!)",
-    ]);
+  // Input handling for Korean martial arts controls
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (gameState.paused) return;
 
-    // Play match start audio
-    audio.playSFX("match_start");
-  }, [audio]);
+      const key = event.key.toLowerCase();
 
-  const handleAttack = useCallback(
-    (params: AttackParams) => {
-      const { attacker, technique, position } = params;
-      const defenderPos = attacker === "player1" ? player2Pos : player1Pos;
+      // Trigram stance changes (1-8 keys)
+      const stanceNumber = parseInt(key);
+      if (stanceNumber >= 1 && stanceNumber <= 8) {
+        const newStance = TrigramSystem.getStanceByNumber(stanceNumber);
+        if (newStance) {
+          changePlayerStance("player1", newStance);
+        }
+        return;
+      }
 
-      const distance = CombatSystem.calculateDistance(position, defenderPos);
+      // Combat controls
+      switch (key) {
+        case " ": // Space - Attack
+          executeAttack("player1");
+          break;
+        case "shift":
+          toggleBlock("player1", true);
+          break;
+        case "a":
+        case "arrowleft":
+          movePlayer("player1", { x: -1, y: 0 });
+          break;
+        case "d":
+        case "arrowright":
+          movePlayer("player1", { x: 1, y: 0 });
+          break;
+        case "w":
+        case "arrowup":
+          movePlayer("player1", { x: 0, y: -1 });
+          break;
+        case "s":
+        case "arrowdown":
+          movePlayer("player1", { x: 0, y: 1 });
+          break;
+        case "p":
+          togglePause();
+          break;
+      }
+    };
 
-      if (CombatSystem.isWithinHitRange(distance)) {
-        const actualDamage = CombatSystem.calculateDamage(
-          technique,
-          distance,
-          GAME_CONFIG.HIT_RANGE
-        );
+    const handleKeyUp = (event: KeyboardEvent) => {
+      if (event.key.toLowerCase() === "shift") {
+        toggleBlock("player1", false);
+      }
+    };
 
-        // Determine if it's a vital point hit based on distance and damage
-        const isVitalPoint = distance < 50 && actualDamage > 25;
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
 
-        // Play hit sound with vital point detection
-        audio.playHitSound(actualDamage, isVitalPoint);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [gameState.paused]);
 
-        const hitEffect: HitEffect = {
-          id: `hit_${Date.now()}_${Math.random()}`,
-          x: defenderPos.x,
-          y: defenderPos.y - 50,
-          damage: actualDamage,
-          technique,
-          life: GAME_CONFIG.EFFECT_LIFETIME,
-          maxLife: GAME_CONFIG.EFFECT_LIFETIME,
+  // Game state update functions
+  const updateGameState = useCallback((deltaTime: number) => {
+    setGameState((prev) => ({
+      ...prev,
+      time: prev.time + deltaTime,
+      combat: {
+        ...prev.combat,
+        timeRemaining: prev.combat.isActive
+          ? Math.max(0, prev.combat.timeRemaining - deltaTime)
+          : prev.combat.timeRemaining,
+      },
+    }));
+  }, []);
+
+  const updatePhysics = useCallback((deltaTime: number) => {
+    setGameState((prev) => {
+      const updatedPlayers = { ...prev.players };
+
+      Object.keys(updatedPlayers).forEach((playerId) => {
+        const player = updatedPlayers[playerId as keyof typeof updatedPlayers];
+
+        // Apply velocity
+        const newPosition = {
+          x: player.position.x + player.velocity.x * deltaTime * 0.01,
+          y: player.position.y + player.velocity.y * deltaTime * 0.01,
         };
 
-        setHitEffects((prev) => [...prev, hitEffect]);
+        // Apply friction
+        const newVelocity = {
+          x: player.velocity.x * 0.95,
+          y: player.velocity.y * 0.95,
+        };
 
-        const updatedGameState = GameStateManager.updateHealth(
-          gameState,
-          attacker === "player1" ? "player2" : "player1",
-          actualDamage
+        // Boundary constraints
+        newPosition.x = Math.max(50, Math.min(750, newPosition.x));
+        newPosition.y = Math.max(200, Math.min(400, newPosition.y));
+
+        updatedPlayers[playerId as keyof typeof updatedPlayers] = {
+          ...player,
+          position: newPosition,
+          velocity: newVelocity,
+        };
+      });
+
+      return { ...prev, players: updatedPlayers };
+    });
+  }, []);
+
+  const updateCombat = useCallback((deltaTime: number) => {
+    setGameState((prev) => {
+      const updatedPlayers = { ...prev.players };
+
+      Object.keys(updatedPlayers).forEach((playerId) => {
+        const player = updatedPlayers[playerId as keyof typeof updatedPlayers];
+
+        // Update vital point effects
+        const updatedPlayer = VitalPointSystem.updateVitalPointEffects(
+          player,
+          deltaTime
         );
 
-        setGameState(updatedGameState);
+        // Regenerate stamina and ki
+        const kiRegenRate = TrigramSystem.getKiRegenRate(player.currentStance);
+        updatedPlayer.stamina = Math.min(
+          player.maxStamina,
+          player.stamina + 0.5 * deltaTime * 0.01
+        );
+        updatedPlayer.ki = Math.min(
+          player.maxKi,
+          player.ki + kiRegenRate * deltaTime * 0.01
+        );
 
-        // Check for victory and play victory sound
-        const finalState = GameStateManager.checkWinCondition(updatedGameState);
-        if (finalState.winner && !gameState.winner) {
-          audio.playSFX("victory");
+        updatedPlayers[playerId as keyof typeof updatedPlayers] = updatedPlayer;
+      });
+
+      return { ...prev, players: updatedPlayers };
+    });
+  }, []);
+
+  const updateEffects = useCallback((deltaTime: number) => {
+    const currentTime = Date.now();
+    hitEffects.current = hitEffects.current.filter(
+      (effect) => currentTime - effect.timestamp < 1000
+    );
+  }, []);
+
+  // Combat actions
+  const executeAttack = useCallback(
+    (playerId: string) => {
+      const player =
+        gameState.players[playerId as keyof typeof gameState.players];
+      if (
+        !player ||
+        player.isAttacking ||
+        player.isStunned ||
+        player.stamina < 10
+      )
+        return;
+
+      const opponentId = playerId === "player1" ? "player2" : "player1";
+      const opponent =
+        gameState.players[opponentId as keyof typeof gameState.players];
+
+      // Get current technique for player's stance
+      const techniques = TrigramSystem.getTechniquesForStance(
+        player.currentStance
+      );
+      const technique = techniques[0]; // Use first technique for now
+
+      if (!technique) return;
+
+      // Calculate attack position
+      const attackDirection = player.facing === "right" ? 1 : -1;
+      const attackPosition = {
+        x: player.position.x + attackDirection * technique.range * 0.5,
+        y: player.position.y,
+      };
+
+      // Process attack
+      const attackData = CombatSystem.processAttack(
+        player,
+        opponent,
+        technique,
+        attackPosition
+      );
+
+      if (attackData) {
+        // Play attack sound
+        audio.playAttackSound(attackData.damage);
+
+        // Check for block
+        const blockResult = CombatSystem.processBlock(opponent, attackData);
+
+        if (blockResult.blocked) {
+          audio.playSFX("block_success");
+        } else {
+          // Apply damage
+          const updatedOpponent = CombatSystem.applyDamage(
+            opponent,
+            attackData,
+            blockResult.damageReduced
+          );
+
+          // Play hit sound
+          audio.playHitSound(attackData.damage, attackData.isVitalPoint);
+
+          // Update combo
+          const newCombo = CombatSystem.checkCombo(
+            player,
+            technique,
+            lastAttackTime.current[playerId] || 0
+          );
+          if (newCombo > 1) {
+            audio.playComboSound(newCombo);
+          }
+
+          // Add hit effect
+          hitEffects.current.push({
+            id: `hit_${Date.now()}`,
+            position: attackData.hitPosition,
+            type: attackData.isVitalPoint ? "critical" : "normal",
+            intensity: attackData.damage / 40,
+            timestamp: Date.now(),
+          });
+
+          // Update game state
+          setGameState((prev) => ({
+            ...prev,
+            players: {
+              ...prev.players,
+              [playerId]: {
+                ...player,
+                isAttacking: true,
+                comboCount: newCombo,
+              },
+              [opponentId]: updatedOpponent,
+            },
+          }));
+
+          // Generate combat events
+          const events = CombatSystem.generateCombatEvents(
+            attackData,
+            opponent,
+            blockResult.blocked
+          );
+          events.forEach((event) => onCombatEvent?.(event as CombatEvent));
         }
 
-        const logMessage = `${CombatSystem.getKoreanTechniqueName(
-          technique
-        )} 명중! ${actualDamage} ${isVitalPoint ? "급소" : "일반"}타격 피해`;
-        setCombatLog((prev) => [logMessage, ...prev].slice(0, 8));
+        lastAttackTime.current[playerId] = Date.now();
+
+        // Reset attack state after animation
+        setTimeout(() => {
+          setGameState((prev) => ({
+            ...prev,
+            players: {
+              ...prev.players,
+              [playerId]: {
+                ...prev.players[playerId as keyof typeof prev.players],
+                isAttacking: false,
+              },
+            },
+          }));
+        }, 300);
       }
     },
-    [player1Pos, player2Pos, gameState, audio]
+    [gameState.players, audio, onCombatEvent]
   );
 
-  const resetMatch = useCallback(() => {
-    setGameState(GameStateManager.resetMatch());
-    // Reset to centered positions
-    setPlayer1Pos({
-      x: window.innerWidth / 2 - 150,
-      y: window.innerHeight / 2,
-    });
-    setPlayer2Pos({
-      x: window.innerWidth / 2 + 150,
-      y: window.innerHeight / 2,
-    });
-    setCombatLog([]);
-    setHitEffects([]);
+  const changePlayerStance = useCallback(
+    (playerId: string, newStance: TrigramStance) => {
+      const player =
+        gameState.players[playerId as keyof typeof gameState.players];
+      if (!player || player.isAttacking) return;
 
-    // Play menu sound for reset
-    audio.playSFX("menu_select");
-  }, [audio]);
+      audio.playStanceChangeSound();
 
-  return (
-    <pixiContainer>
-      <DojangBackground gameTime={gameTime} />
+      setGameState((prev) => ({
+        ...prev,
+        players: {
+          ...prev.players,
+          [playerId]: { ...player, currentStance: newStance },
+        },
+      }));
 
-      {/* Tutorial overlay when game hasn't started */}
-      {!gameState.matchStarted && <TutorialOverlay />}
-
-      <PlayerContainer
-        x={player1Pos.x}
-        y={player1Pos.y}
-        isPlayerOne={true}
-        onAttack={(technique, damage, position) =>
-          handleAttack({ attacker: "player1", technique, damage, position })
-        }
-        onMove={setPlayer1Pos}
-        opponentPosition={player2Pos}
-        gameStarted={gameState.matchStarted}
-      />
-      <PlayerContainer
-        x={player2Pos.x}
-        y={player2Pos.y}
-        isPlayerOne={false}
-        onAttack={(technique, damage, position) =>
-          handleAttack({ attacker: "player2", technique, damage, position })
-        }
-        onMove={setPlayer2Pos}
-        opponentPosition={player1Pos}
-        gameStarted={gameState.matchStarted}
-      />
-      <HitEffectsLayer hitEffects={hitEffects} />
-      <GameUI
-        gameState={gameState}
-        gameTime={gameTime}
-        combatLog={combatLog}
-        onStartMatch={startMatch}
-        onResetMatch={resetMatch}
-      />
-    </pixiContainer>
+      onCombatEvent?.({
+        type: "stance_change",
+        player: playerId as any,
+        from: player.currentStance,
+        to: newStance,
+        timestamp: Date.now(),
+      });
+    },
+    [gameState.players, audio, onCombatEvent]
   );
-}
 
-// New tutorial overlay component
-function TutorialOverlay(): JSX.Element {
+  const movePlayer = useCallback(
+    (playerId: string, direction: Vector2D) => {
+      const player =
+        gameState.players[playerId as keyof typeof gameState.players];
+      if (!player || player.isAttacking || player.isStunned) return;
+
+      const moveSpeed = 200; // pixels per second
+      const newVelocity = {
+        x: direction.x * moveSpeed,
+        y: direction.y * moveSpeed,
+      };
+
+      // Update facing direction
+      const newFacing =
+        direction.x > 0 ? "right" : direction.x < 0 ? "left" : player.facing;
+
+      setGameState((prev) => ({
+        ...prev,
+        players: {
+          ...prev.players,
+          [playerId]: {
+            ...player,
+            velocity: newVelocity,
+            facing: newFacing,
+          },
+        },
+      }));
+    },
+    [gameState.players]
+  );
+
+  const toggleBlock = useCallback((playerId: string, blocking: boolean) => {
+    setGameState((prev) => ({
+      ...prev,
+      players: {
+        ...prev.players,
+        [playerId]: {
+          ...prev.players[playerId as keyof typeof prev.players],
+          isBlocking: blocking,
+        },
+      },
+    }));
+  }, []);
+
+  const togglePause = useCallback(() => {
+    setGameState((prev) => ({ ...prev, paused: !prev.paused }));
+  }, []);
+
+  // Notify parent of game state changes
+  useEffect(() => {
+    onGameStateChange?.(gameState);
+  }, [gameState, onGameStateChange]);
+
   return (
-    <pixiContainer>
-      {/* Semi-transparent background */}
-      <pixiGraphics
-        draw={(g) => {
-          g.clear();
-          g.setFillStyle({ color: 0x000000, alpha: 0.8 });
-          g.rect(0, 0, window.innerWidth, window.innerHeight);
-          g.fill();
-        }}
-      />
-
-      {/* Main tutorial panel - centered */}
-      <pixiContainer x={window.innerWidth / 2} y={window.innerHeight / 2}>
-        <pixiGraphics
-          draw={(g) => {
-            g.clear();
-            // Tutorial panel background
-            g.setFillStyle({ color: 0x1a1a1a, alpha: 0.95 });
-            g.roundRect(-300, -200, 600, 400, 20);
-            g.fill();
-
-            // Traditional Korean border
-            g.setStrokeStyle({ color: 0x8b0000, width: 3 });
-            g.roundRect(-300, -200, 600, 400, 20);
-            g.stroke();
-
-            // Inner accent border
-            g.setStrokeStyle({ color: 0xffd700, width: 1 });
-            g.roundRect(-290, -190, 580, 380, 15);
-            g.stroke();
-          }}
+    <Stage
+      width={800}
+      height={600}
+      options={{
+        backgroundColor: 0x1a1a1a,
+        antialias: true,
+        resolution: window.devicePixelRatio || 1,
+      }}
+    >
+      <Container>
+        {/* Background */}
+        <DojangBackground
+          variant={gameState.environment.dojangType}
+          lighting={gameState.environment.lighting}
         />
 
-        {/* Tutorial title */}
-        <pixiText
-          text="흑괘 무술 대련"
-          y={-160}
-          anchor={{ x: 0.5, y: 0.5 }}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 28,
-            fill: 0x8b0000,
-            fontWeight: "bold",
-          }}
+        {/* Players */}
+        <Player
+          playerState={gameState.players.player1}
+          isPlayerOne={true}
+          opponentPosition={gameState.players.player2.position}
         />
 
-        <pixiText
-          text="BLACK TRIGRAM MARTIAL COMBAT"
-          y={-130}
-          anchor={{ x: 0.5, y: 0.5 }}
-          style={{
-            fontFamily: "monospace",
-            fontSize: 14,
-            fill: 0xffd700,
-            letterSpacing: 2,
-          }}
+        <Player
+          playerState={gameState.players.player2}
+          isPlayerOne={false}
+          opponentPosition={gameState.players.player1.position}
         />
 
-        {/* Controls section */}
-        <pixiText
-          text="조작법 (Controls)"
-          y={-80}
-          anchor={{ x: 0.5, y: 0.5 }}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 20,
-            fill: 0xffd700,
-            fontWeight: "bold",
-          }}
-        />
+        {/* Hit Effects */}
+        <HitEffectsLayer effects={hitEffects.current} />
 
-        {/* Movement controls */}
-        <pixiText
-          text="이동 (Movement): WASD 또는 방향키"
-          x={-150}
-          y={-40}
-          anchor={{ x: 0, y: 0.5 }}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 16,
-            fill: 0xffffff,
-          }}
+        {/* UI */}
+        <GameUI
+          gameState={gameState}
+          onStanceChange={(playerId, stance) =>
+            changePlayerStance(playerId, stance)
+          }
+          onTogglePause={togglePause}
         />
-
-        {/* Attack controls */}
-        <pixiText
-          text="팔괘 기술 (Trigram Techniques): 1-8 번호키"
-          x={-150}
-          y={-10}
-          anchor={{ x: 0, y: 0.5 }}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 16,
-            fill: 0xffffff,
-          }}
-        />
-
-        {/* Block controls */}
-        <pixiText
-          text="방어 (Block): 스페이스바"
-          x={-150}
-          y={20}
-          anchor={{ x: 0, y: 0.5 }}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 16,
-            fill: 0xffffff,
-          }}
-        />
-
-        {/* Quick attack */}
-        <pixiText
-          text="급공 (Quick Attack): 마우스 클릭"
-          x={-150}
-          y={50}
-          anchor={{ x: 0, y: 0.5 }}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 16,
-            fill: 0xffffff,
-          }}
-        />
-
-        {/* Objective */}
-        <pixiText
-          text="목표: 상대의 체력을 0으로 만드세요!"
-          y={90}
-          anchor={{ x: 0.5, y: 0.5 }}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 18,
-            fill: 0x8b0000,
-            fontWeight: "bold",
-          }}
-        />
-
-        <pixiText
-          text="Objective: Reduce opponent's health to zero!"
-          y={115}
-          anchor={{ x: 0.5, y: 0.5 }}
-          style={{
-            fontFamily: "monospace",
-            fontSize: 14,
-            fill: 0xffd700,
-          }}
-        />
-
-        {/* Start instruction */}
-        <pixiText
-          text="아무 키나 누르거나 클릭하여 시작하세요"
-          y={160}
-          anchor={{ x: 0.5, y: 0.5 }}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 16,
-            fill: 0xffffff,
-            fontWeight: "bold",
-          }}
-        />
-
-        <pixiText
-          text="Press any key or click to start combat"
-          y={185}
-          anchor={{ x: 0.5, y: 0.5 }}
-          style={{
-            fontFamily: "monospace",
-            fontSize: 12,
-            fill: 0xcccccc,
-          }}
-        />
-      </pixiContainer>
-    </pixiContainer>
+      </Container>
+    </Stage>
   );
 }

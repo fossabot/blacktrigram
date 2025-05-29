@@ -1,204 +1,160 @@
 /**
- * Default sound generator for testing when actual audio files are not available
- * Uses Web Audio API to create simple synthesized sounds for Korean martial arts
+ * DefaultSoundGenerator - Fallback sound generation for Korean martial arts game
+ * Uses Web Audio API to create procedural sounds when asset files are unavailable
  */
 
-interface SoundParams {
-  readonly frequency: number;
-  readonly duration: number;
-  readonly type: OscillatorType;
-  readonly volume: number;
-  readonly envelope?: {
-    readonly attack: number;
-    readonly decay: number;
-    readonly sustain: number;
-    readonly release: number;
-  };
-}
-
 export class DefaultSoundGenerator {
-  private audioContext: AudioContext | null = null;
-  private isInitialized: boolean = false;
+  private static audioContext: AudioContext | null = null;
 
-  constructor() {
-    this.initializeAudioContext();
-  }
-
-  private initializeAudioContext(): void {
-    try {
-      const AudioContextClass =
-        window.AudioContext || (window as any).webkitAudioContext;
-      if (AudioContextClass) {
-        this.audioContext = new AudioContextClass();
-        this.isInitialized = true;
-      }
-    } catch (error) {
-      console.warn("Web Audio API not supported:", error);
-      this.isInitialized = false;
-    }
-  }
-
-  private async resumeAudioContext(): Promise<void> {
-    if (this.audioContext?.state === "suspended") {
+  private static getAudioContext(): AudioContext | null {
+    if (!this.audioContext) {
       try {
-        await this.audioContext.resume();
+        this.audioContext = new (window.AudioContext ||
+          (window as any).webkitAudioContext)();
       } catch (error) {
-        console.warn("Failed to resume audio context:", error);
+        console.warn("AudioContext not available:", error);
+        return null;
       }
     }
+    return this.audioContext;
   }
 
-  public async playTone(params: SoundParams): Promise<void> {
-    if (!this.audioContext || !this.isInitialized) return;
+  /**
+   * Generate a simple tone for Korean martial arts sound effects
+   */
+  private static async generateTone(
+    frequency: number,
+    duration: number,
+    type: OscillatorType = "sine",
+    volume: number = 0.3
+  ): Promise<void> {
+    const ctx = this.getAudioContext();
+    if (!ctx) return;
 
-    try {
-      await this.resumeAudioContext();
+    return new Promise((resolve) => {
+      try {
+        const oscillator = ctx.createOscillator();
+        const gainNode = ctx.createGain();
 
-      const oscillator = this.audioContext.createOscillator();
-      const gainNode = this.audioContext.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(ctx.destination);
 
-      oscillator.connect(gainNode);
-      gainNode.connect(this.audioContext.destination);
+        oscillator.frequency.setValueAtTime(frequency, ctx.currentTime);
+        oscillator.type = type;
 
-      // Set oscillator properties
-      oscillator.type = params.type;
-      oscillator.frequency.setValueAtTime(
-        params.frequency,
-        this.audioContext.currentTime
-      );
+        gainNode.gain.setValueAtTime(0, ctx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(
+          0.001,
+          ctx.currentTime + duration
+        );
 
-      // Set envelope
-      const {
-        attack = 0.01,
-        decay = 0.1,
-        sustain = 0.7,
-        release = 0.3,
-      } = params.envelope || {};
-      const now = this.audioContext.currentTime;
+        oscillator.start(ctx.currentTime);
+        oscillator.stop(ctx.currentTime + duration);
 
-      gainNode.gain.setValueAtTime(0, now);
-      gainNode.gain.linearRampToValueAtTime(params.volume, now + attack);
-      gainNode.gain.linearRampToValueAtTime(
-        params.volume * sustain,
-        now + attack + decay
-      );
-      gainNode.gain.setValueAtTime(
-        params.volume * sustain,
-        now + params.duration - release
-      );
-      gainNode.gain.linearRampToValueAtTime(0, now + params.duration);
-
-      oscillator.start(now);
-      oscillator.stop(now + params.duration);
-    } catch (error) {
-      console.warn("Failed to play tone:", error);
-    }
-  }
-
-  // Korean martial arts themed sounds
-  public async playAttackSound(damage: number): Promise<void> {
-    const intensity = Math.min(damage / 40, 1);
-    await this.playTone({
-      frequency: 200 + intensity * 300, // Higher pitch for stronger attacks
-      duration: 0.15,
-      type: "sawtooth",
-      volume: 0.3 + intensity * 0.4,
-      envelope: { attack: 0.005, decay: 0.05, sustain: 0.8, release: 0.1 },
+        oscillator.onended = () => resolve();
+      } catch (error) {
+        console.warn("Failed to generate tone:", error);
+        resolve();
+      }
     });
   }
 
-  public async playHitSound(
+  /**
+   * Generate Korean martial arts menu sounds
+   */
+  public static async playMenuSound(): Promise<void> {
+    await this.generateTone(800, 0.1, "sine", 0.2);
+  }
+
+  /**
+   * Generate match start sound with traditional Korean feel
+   */
+  public static async playMatchStartSound(): Promise<void> {
+    // Simulate a temple bell strike
+    await this.generateTone(400, 0.8, "sine", 0.4);
+    setTimeout(async () => {
+      await this.generateTone(200, 0.5, "triangle", 0.2);
+    }, 200);
+  }
+
+  /**
+   * Generate victory sound for Korean martial arts
+   */
+  public static async playVictorySound(): Promise<void> {
+    // Rising triumphant tones
+    const notes = [440, 550, 660, 880]; // A major chord progression
+    for (let i = 0; i < notes.length; i++) {
+      setTimeout(async () => {
+        await this.generateTone(notes[i], 0.3, "triangle", 0.3);
+      }, i * 150);
+    }
+  }
+
+  /**
+   * Generate stance change sound for trigram transitions
+   */
+  public static async playStanceChangeSound(): Promise<void> {
+    await this.generateTone(600, 0.2, "sine", 0.25);
+    setTimeout(async () => {
+      await this.generateTone(400, 0.15, "triangle", 0.15);
+    }, 100);
+  }
+
+  /**
+   * Generate attack sound based on Korean martial arts damage
+   */
+  public static async playAttackSound(damage: number): Promise<void> {
+    const baseFreq = 200 + damage * 8;
+    const duration = 0.1 + damage * 0.004;
+    const volume = Math.min(0.4, 0.2 + damage * 0.005);
+
+    await this.generateTone(baseFreq, duration, "square", volume);
+  }
+
+  /**
+   * Generate hit sound for Korean martial arts impacts
+   */
+  public static async playHitSound(
     damage: number,
     isVitalPoint: boolean = false
   ): Promise<void> {
+    const freq = isVitalPoint ? 800 : 150 + damage * 5;
+    const duration = isVitalPoint ? 0.25 : 0.15;
+    const volume = Math.min(0.5, 0.2 + damage * 0.006);
+
+    await this.generateTone(freq, duration, "sawtooth", volume);
+
     if (isVitalPoint) {
-      // Sharp, high-pitched critical hit
-      await this.playTone({
-        frequency: 800,
-        duration: 0.2,
-        type: "square",
-        volume: 0.6,
-        envelope: { attack: 0.001, decay: 0.02, sustain: 0.9, release: 0.177 },
-      });
-    } else {
-      const intensity = Math.min(damage / 30, 1);
-      await this.playTone({
-        frequency: 150 + intensity * 200,
-        duration: 0.12,
-        type: "triangle",
-        volume: 0.4 + intensity * 0.3,
-        envelope: { attack: 0.01, decay: 0.03, sustain: 0.7, release: 0.08 },
-      });
+      // Add a higher pitch resonance for vital point hits
+      setTimeout(async () => {
+        await this.generateTone(1200, 0.1, "sine", 0.2);
+      }, 50);
     }
   }
 
-  public async playStanceChangeSound(): Promise<void> {
-    // Smooth transition sound
-    await this.playTone({
-      frequency: 440,
-      duration: 0.25,
-      type: "sine",
-      volume: 0.3,
-      envelope: { attack: 0.05, decay: 0.1, sustain: 0.6, release: 0.1 },
-    });
-  }
+  /**
+   * Generate combo sound for Korean martial arts combinations
+   */
+  public static async playComboSound(comboCount: number): Promise<void> {
+    const maxSounds = Math.min(comboCount, 5);
 
-  public async playComboSound(comboCount: number): Promise<void> {
-    const pitch = 300 + comboCount * 50;
-    await this.playTone({
-      frequency: pitch,
-      duration: 0.1,
-      type: "square",
-      volume: Math.min(0.2 + comboCount * 0.1, 0.7),
-      envelope: { attack: 0.01, decay: 0.02, sustain: 0.8, release: 0.067 },
-    });
-  }
-
-  public async playMenuSound(): Promise<void> {
-    await this.playTone({
-      frequency: 523, // C5 note
-      duration: 0.1,
-      type: "sine",
-      volume: 0.3,
-      envelope: { attack: 0.01, decay: 0.02, sustain: 0.7, release: 0.067 },
-    });
-  }
-
-  public async playMatchStartSound(): Promise<void> {
-    // Traditional bell-like sound
-    await this.playTone({
-      frequency: 660,
-      duration: 1.0,
-      type: "sine",
-      volume: 0.5,
-      envelope: { attack: 0.01, decay: 0.3, sustain: 0.5, release: 0.69 },
-    });
-  }
-
-  public async playVictorySound(): Promise<void> {
-    // Rising victory melody
-    const notes = [523, 659, 784]; // C, E, G
-    for (let i = 0; i < notes.length; i++) {
-      setTimeout(() => {
-        this.playTone({
-          frequency: notes[i]!,
-          duration: 0.3,
-          type: "sine",
-          volume: 0.4,
-          envelope: { attack: 0.05, decay: 0.1, sustain: 0.8, release: 0.15 },
-        });
-      }, i * 200);
+    for (let i = 0; i < maxSounds; i++) {
+      setTimeout(async () => {
+        const freq = 500 + i * 100;
+        const volume = 0.15 + i * 0.05;
+        await this.generateTone(freq, 0.08, "square", volume);
+      }, i * 60);
     }
-  }
 
-  public cleanup(): void {
-    if (this.audioContext) {
-      this.audioContext.close();
-      this.audioContext = null;
-      this.isInitialized = false;
+    // Final flourish for high combos
+    if (comboCount >= 5) {
+      setTimeout(async () => {
+        await this.generateTone(1000, 0.2, "triangle", 0.3);
+      }, maxSounds * 60 + 100);
     }
   }
 }
 
-// Export singleton instance for easy access
+// Export singleton instance
 export const defaultSoundGenerator = new DefaultSoundGenerator();

@@ -1,151 +1,111 @@
+import React, { useCallback } from "react";
+import { Container, Graphics } from "@pixi/react";
 import type { JSX } from "react";
-import type { Graphics as PixiGraphics } from "pixi.js";
+import { KoreanText } from "./base/KoreanText";
+import { KOREAN_COLORS } from "../../types";
 
-export type TrigramStance =
-  | "geon"
-  | "tae"
-  | "li"
-  | "jin"
-  | "son"
-  | "gam"
-  | "gan"
-  | "gon";
-
-interface ProgressTrackerProps {
-  readonly practiceCount: Record<TrigramStance, number>;
-  readonly totalPractices: number;
-  readonly currentStance: TrigramStance;
+export interface ProgressTrackerProps {
+  readonly label: string;
+  readonly current: number;
+  readonly maximum: number;
+  readonly x?: number;
+  readonly y?: number;
+  readonly width?: number;
+  readonly height?: number;
+  readonly color?: number;
+  readonly showPercentage?: boolean;
 }
 
-const COLORS = {
-  CYAN: 0x00ffd0,
-  WHITE: 0xffffff,
-  DARK_BLUE: 0x000a12,
-  VITAL_ORANGE: 0xff7700,
-  GRAY_MEDIUM: 0x666666,
-} as const;
-
 export function ProgressTracker({
-  practiceCount,
-  totalPractices,
-  currentStance,
+  label,
+  current,
+  maximum,
+  x = 0,
+  y = 0,
+  width = 200,
+  height = 20,
+  color = KOREAN_COLORS.CYAN,
+  showPercentage = true,
 }: ProgressTrackerProps): JSX.Element {
-  const completedStances = Object.values(practiceCount).filter(
-    (count) => count >= 10
-  ).length;
-  const overallProgress = Math.round((completedStances / 8) * 100);
+  const progress = Math.max(0, Math.min(1, current / maximum));
+  const percentage = Math.round(progress * 100);
+
+  const drawProgressBar = useCallback(
+    (g: any) => {
+      g.clear();
+
+      // Background
+      g.setFillStyle({ color: KOREAN_COLORS.GRAY_DARK, alpha: 0.8 });
+      g.roundRect(0, 0, width, height, height / 2);
+      g.fill();
+
+      // Border
+      g.setStrokeStyle({ color: KOREAN_COLORS.WHITE, width: 1, alpha: 0.3 });
+      g.roundRect(0, 0, width, height, height / 2);
+      g.stroke();
+
+      // Progress fill
+      if (progress > 0) {
+        const fillWidth = width * progress;
+        g.setFillStyle({ color, alpha: 0.8 });
+        g.roundRect(0, 0, fillWidth, height, height / 2);
+        g.fill();
+
+        // Progress highlight
+        g.setStrokeStyle({ color, width: 1, alpha: 0.6 });
+        g.roundRect(0, 0, fillWidth, height, height / 2);
+        g.stroke();
+      }
+
+      // Warning state for low values
+      if (progress < 0.25) {
+        g.setStrokeStyle({ color: KOREAN_COLORS.RED, width: 2, alpha: 0.8 });
+        g.roundRect(-1, -1, width + 2, height + 2, height / 2);
+        g.stroke();
+      }
+    },
+    [width, height, progress, color]
+  );
 
   return (
-    <pixiContainer
-      x={window.innerWidth - 250}
-      y={200}
-      data-testid="progress-tracker"
-    >
-      {/* Background panel */}
-      <pixiGraphics
-        draw={(g: PixiGraphics) => {
-          g.clear();
-          g.setFillStyle({ color: COLORS.DARK_BLUE, alpha: 0.8 });
-          g.roundRect(-10, -10, 220, 150, 10);
-          g.fill();
-
-          g.setStrokeStyle({ color: COLORS.CYAN, width: 2, alpha: 0.6 });
-          g.roundRect(-10, -10, 220, 150, 10);
-          g.stroke();
+    <Container x={x} y={y}>
+      <KoreanText
+        text={label}
+        y={-25}
+        style={{
+          fontSize: 12,
+          fill: KOREAN_COLORS.WHITE,
+          fontWeight: "400",
         }}
-        data-testid="progress-background"
       />
 
-      {/* Title */}
-      <pixiText
-        text="수련 진행도"
+      <Graphics draw={drawProgressBar} />
+
+      {showPercentage && (
+        <KoreanText
+          text={`${current}/${maximum}`}
+          x={width + 10}
+          y={height / 2}
+          anchor={{ x: 0, y: 0.5 }}
+          style={{
+            fontSize: 11,
+            fill: KOREAN_COLORS.GRAY_LIGHT,
+            fontWeight: "300",
+          }}
+        />
+      )}
+
+      <KoreanText
+        text={`${percentage}%`}
+        x={width / 2}
+        y={height / 2}
         anchor={{ x: 0.5, y: 0.5 }}
-        x={100}
-        y={10}
         style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 16,
-          fill: COLORS.CYAN,
+          fontSize: 10,
+          fill: progress > 0.5 ? KOREAN_COLORS.BLACK : KOREAN_COLORS.WHITE,
           fontWeight: "bold",
         }}
-        data-testid="progress-title"
       />
-
-      {/* Current stance */}
-      <pixiText
-        text={`현재 자세: ${currentStance.toUpperCase()}`}
-        anchor={{ x: 0, y: 0.5 }}
-        x={10}
-        y={40}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 12,
-          fill: COLORS.WHITE,
-        }}
-        data-testid="current-stance"
-      />
-
-      {/* Total practices */}
-      <pixiText
-        text={`총 연습: ${totalPractices}회`}
-        anchor={{ x: 0, y: 0.5 }}
-        x={10}
-        y={60}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 12,
-          fill: COLORS.WHITE,
-        }}
-        data-testid="total-practices"
-      />
-
-      {/* Overall progress */}
-      <pixiText
-        text={`전체 진행도: ${overallProgress}%`}
-        anchor={{ x: 0, y: 0.5 }}
-        x={10}
-        y={80}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 12,
-          fill: COLORS.VITAL_ORANGE,
-          fontWeight: "bold",
-        }}
-        data-testid="progress-percentage"
-      />
-
-      {/* Mastery indicator */}
-      <pixiText
-        text={`숙련된 자세: ${completedStances}/8`}
-        anchor={{ x: 0, y: 0.5 }}
-        x={10}
-        y={100}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 12,
-          fill: COLORS.WHITE,
-        }}
-        data-testid="mastery-count"
-      />
-
-      {/* Progress bar */}
-      <pixiGraphics
-        draw={(g: PixiGraphics) => {
-          g.clear();
-
-          // Background bar
-          g.setFillStyle({ color: COLORS.GRAY_MEDIUM, alpha: 0.3 });
-          g.roundRect(10, 115, 180, 8, 4);
-          g.fill();
-
-          // Progress bar
-          const progressWidth = (overallProgress / 100) * 180;
-          g.setFillStyle({ color: COLORS.CYAN, alpha: 0.8 });
-          g.roundRect(10, 115, progressWidth, 8, 4);
-          g.fill();
-        }}
-        data-testid="progress-bar"
-      />
-    </pixiContainer>
+    </Container>
   );
 }
