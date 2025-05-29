@@ -1,14 +1,14 @@
-import { VitalPointSystem } from "./VitalPointSystem";
-import { KOREAN_TECHNIQUES } from "./trigram/KoreanTechniques";
 import type {
   PlayerState,
   AttackResult,
-  Vector2D,
-  Position,
-  StatusEffect,
   VitalPointHit,
+  StatusEffect,
   KoreanTechnique,
-} from "../types/GameTypes";
+  Position,
+} from "../types";
+import { TRIGRAM_DATA, KOREAN_TECHNIQUES } from "../types";
+import { Vector2D } from "../types/GameTypes";
+import { VitalPointSystem } from "./VitalPointSystem";
 
 export class CombatSystem {
   private static readonly BASE_ACCURACY = 0.8;
@@ -300,10 +300,8 @@ export class CombatSystem {
     distance: number,
     playerHealth: number
   ): number {
-    // Use proper technique lookup with error handling
-    const techniqueData = Object.values(KOREAN_TECHNIQUES).find(
-      (trigram) => trigram.technique.name === technique
-    );
+    // Find technique in KOREAN_TECHNIQUES with proper error handling
+    const techniqueData = KOREAN_TECHNIQUES[technique];
 
     if (!techniqueData) {
       console.warn(`Unknown technique: ${technique}`);
@@ -311,7 +309,7 @@ export class CombatSystem {
     }
 
     // ...existing calculation logic...
-    const baseDamage = techniqueData.technique.damage;
+    const baseDamage = techniqueData.damage;
     const distanceMultiplier = Math.max(0.1, 1 - distance / 200);
 
     return Math.round(baseDamage * distanceMultiplier);
@@ -324,9 +322,7 @@ export class CombatSystem {
     targetY: number
   ): AttackResult {
     // Find technique data properly
-    const techniqueData = Object.values(KOREAN_TECHNIQUES).find(
-      (trigram) => trigram.technique.name === technique
-    );
+    const techniqueData = KOREAN_TECHNIQUES[technique];
 
     if (!techniqueData) {
       return {
@@ -342,14 +338,14 @@ export class CombatSystem {
     }
 
     // Calculate damage with proper typing
-    const baseDamage = techniqueData.technique.damage;
+    const baseDamage = techniqueData.damage;
     const distance = Math.sqrt(targetX * targetX + targetY * targetY);
 
-    // Check for vital point hit
+    // Check for vital point hit with correct parameter types
     const vitalPointHit = this.vitalPointSystem.detectVitalPointHit(
       targetX,
       targetY,
-      baseDamage
+      baseDamage // Pass damage as number, not technique name
     );
 
     const statusEffects: StatusEffect[] = [];
@@ -362,12 +358,29 @@ export class CombatSystem {
       damage: vitalPointHit.damage || baseDamage,
       blocked: false,
       critical: vitalPointHit.critical,
-      accuracy: techniqueData.technique.accuracy,
+      accuracy: techniqueData.accuracy,
       comboMultiplier: 1,
       vitalPointHit,
       statusEffects,
       description:
-        vitalPointHit.description || techniqueData.technique.description.korean,
+        vitalPointHit.description || techniqueData.description.korean,
     };
   }
+
+  private checkVitalPointHit(
+    x: number,
+    y: number,
+    damage: number
+  ): VitalPointHit {
+    return this.vitalPointSystem.detectVitalPointHit(x, y, damage);
+  }
+
+  public static getKoreanTechniqueName(techniqueId: string): string {
+    const technique = KOREAN_TECHNIQUES[techniqueId];
+    return technique
+      ? `${technique.name} (${technique.englishName})`
+      : techniqueId;
+  }
+
+  // ...rest of existing methods with proper type handling...
 }

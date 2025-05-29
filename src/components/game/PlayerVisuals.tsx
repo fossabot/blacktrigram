@@ -1,46 +1,37 @@
 import { useCallback } from "react";
-import { useTick, type Ticker } from "@pixi/react";
 import type { Graphics as PixiGraphics } from "pixi.js";
 import type { PlayerState, Position, TrigramStance } from "../../types";
+import { TRIGRAM_DATA } from "../../types";
 
 interface PlayerVisualsProps {
   readonly playerState: PlayerState;
   readonly opponentPosition: Position;
   readonly animationTime: number;
+  readonly onAttack?: (damage: number, technique: string) => void;
+  readonly onStanceChange?: (stance: TrigramStance) => void;
 }
 
 export function PlayerVisuals({
   playerState,
-  opponentPosition,
   animationTime,
-}: PlayerVisualsProps): React.JSX.Element {
-  // Animation logic
-  const currentAnimation = playerState.isAttacking
-    ? "attacking"
-    : playerState.isBlocking
-    ? "blocking"
-    : playerState.isMoving
-    ? "moving"
-    : "idle";
-
-  // Drawing callback for player visualization
+  onAttack,
+}: PlayerVisualsProps): JSX.Element {
   const drawPlayer = useCallback(
     (g: PixiGraphics) => {
       g.clear();
 
-      // Draw player body (Korean martial arts uniform - dobok)
+      // Traditional Korean martial arts uniform (dobok)
       g.setFillStyle({ color: 0xffffff, alpha: 0.9 });
       g.rect(-25, -90, 50, 90);
       g.fill();
 
-      // Draw belt based on experience level
-      const beltColor = 0x8b0000; // Red belt for master level
-      g.setFillStyle({ color: beltColor });
+      // Belt color indicating mastery level
+      g.setFillStyle({ color: 0x8b0000 }); // Red belt for master
       g.rect(-27, -25, 54, 10);
       g.fill();
 
-      // Draw stance-specific aura
-      if (playerState.isAttacking || playerState.ki > playerState.maxKi * 0.8) {
+      // Stance-specific energy aura
+      if (playerState.isAttacking) {
         const stanceColors: Record<TrigramStance, number> = {
           geon: 0xffd700, // Gold - Heaven
           tae: 0x87ceeb, // Sky Blue - Lake
@@ -62,52 +53,65 @@ export function PlayerVisuals({
         g.stroke();
       }
 
-      // Add animation effects
-      const armOffset = currentAnimation === "attacking" ? 20 : 10;
+      // Health indicator
+      const healthRatio = playerState.health / playerState.maxHealth;
+      g.setFillStyle({
+        color:
+          healthRatio > 0.5
+            ? 0x00ff00
+            : healthRatio > 0.25
+            ? 0xffff00
+            : 0xff0000,
+      });
+      g.rect(-30, -110, 60 * healthRatio, 5);
+      g.fill();
 
-      // Draw arms with animation
-      g.setFillStyle({ color: 0xffdbac }); // Skin tone
-      g.rect(-35, -60, 15, 40); // Left arm
-      g.rect(
-        20 + (currentAnimation === "attacking" ? armOffset : 0),
-        -60,
-        15,
-        40
-      ); // Right arm
+      // Stance indicator symbol
+      g.setFillStyle({ color: TRIGRAM_DATA[playerState.stance].color });
+      g.circle(0, -120, 15);
       g.fill();
     },
-    [playerState, animationTime, currentAnimation]
+    [playerState, animationTime]
   );
 
+  const executeKoreanTechnique = useCallback(() => {
+    const technique = TRIGRAM_DATA[playerState.stance].technique;
+    onAttack?.(technique.damage, technique.name);
+  }, [playerState.stance, onAttack]);
+
   return (
-    <pixiContainer x={playerState.position.x} y={playerState.position.y}>
+    <pixiContainer
+      x={playerState.position.x}
+      y={playerState.position.y}
+      interactive={true}
+      onPointerDown={executeKoreanTechnique}
+    >
       <pixiGraphics draw={drawPlayer} />
 
-      {/* Health indicator */}
+      {/* Korean technique name display */}
       <pixiText
-        text={`${Math.round(playerState.health)}/${playerState.maxHealth}`}
-        anchor={{ x: 0.5, y: 0.5 }}
-        y={-120}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 12,
-          fill:
-            playerState.health > playerState.maxHealth * 0.3
-              ? 0x00ff00
-              : 0xff0000,
-        }}
-      />
-
-      {/* Korean stance display */}
-      <pixiText
-        text={`${playerState.stance.toUpperCase()}`}
+        text={`${
+          TRIGRAM_DATA[playerState.stance].technique.name
+        } (${playerState.stance.toUpperCase()})`}
         anchor={{ x: 0.5, y: 0.5 }}
         y={-140}
         style={{
           fontFamily: "Noto Sans KR",
-          fontSize: 14,
+          fontSize: 16,
           fill: 0xffd700,
           fontWeight: "bold",
+        }}
+      />
+
+      {/* Trigram symbol */}
+      <pixiText
+        text={TRIGRAM_DATA[playerState.stance].symbol}
+        anchor={{ x: 0.5, y: 0.5 }}
+        y={-120}
+        style={{
+          fontFamily: "serif",
+          fontSize: 24,
+          fill: 0xffffff,
         }}
       />
     </pixiContainer>

@@ -97,7 +97,7 @@ export function TrigramWheel({
             style={{
               fontFamily: "Noto Sans KR",
               fontSize: 12,
-              fill: KOREAN_COLORS.GRAY_LIGHT,
+              fill: KOREAN_COLORS.WHITE,
             }}
           />
 

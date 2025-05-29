@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 import { useTick } from "@pixi/react";
+import type { Ticker } from "pixi.js";
 import type { PlayerState, Position, TrigramStance } from "../../types";
 import { PlayerVisuals } from "./PlayerVisuals";
 
@@ -19,9 +20,23 @@ export function Player({
   const [animationTime, setAnimationTime] = useState<number>(0);
 
   useTick(
-    useCallback((ticker) => {
+    useCallback((ticker: Ticker) => {
       setAnimationTime((prev) => prev + ticker.deltaTime * 0.016); // Convert to seconds
     }, [])
+  );
+
+  const handleAttack = useCallback(
+    (damage: number, technique: string) => {
+      onAttack?.(damage, technique);
+    },
+    [onAttack]
+  );
+
+  const handleStanceChange = useCallback(
+    (stance: TrigramStance) => {
+      onStanceChange?.(stance);
+    },
+    [onStanceChange]
   );
 
   return (
@@ -29,6 +44,8 @@ export function Player({
       playerState={playerState}
       opponentPosition={opponentPosition}
       animationTime={animationTime}
+      onAttack={handleAttack}
+      onStanceChange={handleStanceChange}
     />
   );
 }

@@ -1,24 +1,40 @@
 /**
- * DefaultSoundGenerator - Procedural audio generation for Korean martial arts game
- * Provides fallback sounds when audio assets are not available
+ * DefaultSoundGenerator - Fallback sound generation for Korean martial arts game
+ * Creates procedural audio when real sound assets are unavailable
  */
 
-class DefaultSoundGenerator {
-  private audioContext: AudioContext | null = null;
+export class DefaultSoundGenerator {
+  private static audioContext: AudioContext | null = null;
 
-  private getAudioContext(): AudioContext {
+  private static getAudioContext(): AudioContext {
     if (!this.audioContext) {
-      this.audioContext = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
+      try {
+        this.audioContext = new (window.AudioContext ||
+          (window as any).webkitAudioContext)();
+
+        // Resume context if suspended (browser autoplay policy)
+        if (this.audioContext.state === "suspended") {
+          this.audioContext.resume().catch(console.warn);
+        }
+      } catch (error) {
+        console.warn("Failed to create AudioContext:", error);
+        throw new Error("Web Audio API not supported");
+      }
     }
     return this.audioContext;
   }
 
-  private async playTone(
+  private static async generateTone(
     frequency: number,
     duration: number,
     type: OscillatorType = "sine",
-    volume: number = 0.3
+    volume: number = 0.3,
+    envelope?: {
+      attack: number;
+      decay: number;
+      sustain: number;
+      release: number;
+    }
   ): Promise<void> {
     try {
       const ctx = this.getAudioContext();
@@ -31,12 +47,31 @@ class DefaultSoundGenerator {
       oscillator.frequency.setValueAtTime(frequency, ctx.currentTime);
       oscillator.type = type;
 
-      gainNode.gain.setValueAtTime(0, ctx.currentTime);
-      gainNode.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.01);
-      gainNode.gain.exponentialRampToValueAtTime(
-        0.001,
-        ctx.currentTime + duration
-      );
+      // Apply ADSR envelope if provided
+      if (envelope) {
+        const { attack, decay, sustain, release } = envelope;
+        const sustainLevel = volume * sustain;
+
+        gainNode.gain.setValueAtTime(0, ctx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(volume, ctx.currentTime + attack);
+        gainNode.gain.linearRampToValueAtTime(
+          sustainLevel,
+          ctx.currentTime + attack + decay
+        );
+        gainNode.gain.linearRampToValueAtTime(
+          sustainLevel,
+          ctx.currentTime + duration - release
+        );
+        gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
+      } else {
+        // Simple envelope
+        gainNode.gain.setValueAtTime(0, ctx.currentTime);
+        gainNode.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(
+          0.001,
+          ctx.currentTime + duration
+        );
+      }
 
       oscillator.start(ctx.currentTime);
       oscillator.stop(ctx.currentTime + duration);
@@ -49,52 +84,88 @@ class DefaultSoundGenerator {
     }
   }
 
-  public async playMenuSound(): Promise<void> {
-    await this.playTone(800, 0.1, "sine", 0.2);
+  public static async playMenuSound(): Promise<void> {
+    await this.generateTone(800, 0.1, "sine", 0.2);
   }
 
-  public async playMatchStartSound(): Promise<void> {
-    await this.playTone(600, 0.3, "triangle", 0.4);
+  public static async playMatchStartSound(): Promise<void> {
+    // Temple bell simulation - fundamental + harmonics
+    await Promise.all([
+      this.generateTone(200, 1.0, "sine", 0.4),
+      this.generateTone(400, 0.8, "sine", 0.2),
+      this.generateTone(800, 0.6, "sine", 0.1),
+    ]);
   }
 
-  public async playVictorySound(): Promise<void> {
-    // Victory fanfare sequence
-    await this.playTone(523, 0.2, "sine", 0.3); // C
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    await this.playTone(659, 0.2, "sine", 0.3); // E
-    await new Promise((resolve) => setTimeout(resolve, 100));
-    await this.playTone(784, 0.4, "sine", 0.4); // G
+  public static async playVictorySound(): Promise<void> {
+    // Ascending chord progression
+    const notes = [262, 330, 392, 523]; // C, E, G, C (octave)
+    for (let i = 0; i < notes.length; i++) {
+      setTimeout(async () => {
+        await this.generateTone(notes[i], 0.3, "triangle", 0.3);
+      }, i * 150);
+    }
   }
 
-  public async playAttackSound(damage: number): Promise<void> {
-    const baseFreq = 200 + damage * 10;
-    const duration = 0.1 + damage * 0.005;
-    await this.playTone(baseFreq, duration, "square", 0.4);
-  }
+  public static async playStanceChangeSound(): Promise<void> {
+    // Zen-like sound transition
+    await this.generateTone(600, 0.2, "sine", 0.25, {
+      attack: 0.05,
+      decay: 0.1,
+      sustain: 0.7,
+      release: 0.05,
+    });
 
-  public async playHitSound(
-    damage: number,
-    isVitalPoint: boolean = false
-  ): Promise<void> {
-    const freq = isVitalPoint ? 150 + damage * 8 : 150 + damage * 5;
-    const duration = isVitalPoint ? 0.25 : 0.15;
-    await this.playTone(freq, duration, "sawtooth", 0.3);
-  }
-
-  public async playStanceChangeSound(): Promise<void> {
-    await this.playTone(600, 0.2, "sine", 0.25);
     setTimeout(async () => {
-      await this.playTone(400, 0.1, "triangle", 0.15);
+      await this.generateTone(400, 0.1, "triangle", 0.15);
     }, 100);
   }
 
-  public async playComboSound(count: number): Promise<void> {
-    for (let i = 0; i < Math.min(count, 5); i++) {
+  public static async playAttackSound(damage: number): Promise<void> {
+    const baseFreq = 200 + damage * 8;
+    const duration = 0.08 + damage * 0.003;
+    const volume = Math.min(0.6, 0.2 + damage * 0.01);
+
+    await this.generateTone(baseFreq, duration, "sawtooth", volume, {
+      attack: 0.01,
+      decay: 0.02,
+      sustain: 0.8,
+      release: 0.05,
+    });
+  }
+
+  public static async playHitSound(
+    damage: number,
+    isVitalPoint: boolean = false
+  ): Promise<void> {
+    const freq = isVitalPoint ? 300 + damage * 15 : 150 + damage * 5;
+    const duration = isVitalPoint ? 0.2 : 0.12;
+    const volume = Math.min(0.5, 0.2 + damage * 0.008);
+
+    if (isVitalPoint) {
+      // Sharp, piercing sound for vital point hits
+      await this.generateTone(freq, duration, "square", volume, {
+        attack: 0.005,
+        decay: 0.05,
+        sustain: 0.6,
+        release: 0.135,
+      });
+    } else {
+      await this.generateTone(freq, duration, "sawtooth", volume);
+    }
+  }
+
+  public static async playComboSound(comboCount: number): Promise<void> {
+    // Rising pitch sequence for combo hits
+    for (let i = 0; i < Math.min(comboCount, 5); i++) {
       setTimeout(async () => {
-        await this.playTone(500 + i * 100, 0.08, "square", 0.2);
-      }, i * 50);
+        const freq = 400 + i * 100;
+        const volume = Math.min(0.4, 0.1 + i * 0.05);
+        await this.generateTone(freq, 0.08, "triangle", volume);
+      }, i * 80);
     }
   }
 }
 
-export const defaultSoundGenerator = new DefaultSoundGenerator();
+// Export singleton instance
+export const defaultSoundGenerator = DefaultSoundGenerator;

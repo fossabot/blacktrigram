@@ -1,133 +1,148 @@
 import type {
-  AnatomicalRegion,
   VitalPoint,
   VitalPointHit,
+  AnatomicalRegion,
   VitalPointCategory,
-  Position,
-  StatusEffect,
 } from "../types";
 
-// Complete VITAL_POINTS_DATA with all required properties
-const VITAL_POINTS_DATA: Record<string, VitalPoint> = {
-  head: {
-    id: "head_vital",
-    korean: "머리",
-    english: "Head",
-    region: "head" as AnatomicalRegion,
-    position: { x: 0, y: 0 },
-    coordinates: { x: 0, y: 0 }, // For compatibility
-    category: "primary" as VitalPointCategory,
-    difficulty: 0.8,
-    bounds: { x: 0, y: 0, width: 40, height: 40 },
-    vulnerability: { damage: 2.0, stunning: 0.9, criticalChance: 0.3 },
-    description: { korean: "머리 급소", english: "Head vital point" },
-    effects: [],
-  },
-  neck: {
-    id: "neck_vital",
-    korean: "목",
-    english: "Neck",
-    region: "neck" as AnatomicalRegion,
-    position: { x: 0, y: 0 },
-    coordinates: { x: 0, y: 0 }, // For compatibility
-    category: "primary" as VitalPointCategory,
-    difficulty: 0.7,
-    bounds: { x: 0, y: 40, width: 30, height: 20 },
-    vulnerability: { damage: 2.5, stunning: 2.0, criticalChance: 0.9 },
-    description: {
-      korean: "급소 - 목 부위",
-      english: "Vital point - Neck region",
-    },
-    effects: [],
-  },
-  chest: {
-    id: "chest_vital",
-    korean: "가슴",
-    english: "Chest",
-    region: "chest" as AnatomicalRegion,
-    position: { x: 0, y: 0 },
-    coordinates: { x: 0, y: 0 }, // For compatibility
-    category: "primary" as VitalPointCategory,
-    difficulty: 0.6,
-    bounds: { x: 0, y: 60, width: 60, height: 50 },
-    vulnerability: { damage: 1.8, stunning: 1.2, criticalChance: 0.7 },
-    description: {
-      korean: "급소 - 가슴 부위",
-      english: "Vital point - Chest region",
-    },
-    effects: [],
-  },
-  abdomen: {
-    id: "abdomen_vital",
-    korean: "복부",
-    english: "Abdomen",
-    region: "abdomen" as AnatomicalRegion,
-    position: { x: 0, y: 0 },
-    coordinates: { x: 0, y: 0 }, // For compatibility
-    category: "secondary" as VitalPointCategory,
-    difficulty: 0.5,
-    bounds: { x: 0, y: 110, width: 50, height: 40 },
-    vulnerability: { damage: 2.2, stunning: 1.8, criticalChance: 0.8 },
-    description: {
-      korean: "급소 - 복부 부위",
-      english: "Vital point - Abdomen region",
-    },
-    effects: [],
-  },
-  arms: {
-    id: "arms_vital",
-    korean: "팔",
-    english: "Arms",
-    region: "arms" as AnatomicalRegion,
-    position: { x: 0, y: 0 },
-    coordinates: { x: 0, y: 0 }, // For compatibility
-    category: "secondary" as VitalPointCategory,
-    difficulty: 0.4,
-    bounds: { x: 60, y: 60, width: 30, height: 60 },
-    vulnerability: { damage: 1.3, stunning: 0.8, criticalChance: 0.4 },
-    description: {
-      korean: "급소 - 팔 부위",
-      english: "Vital point - Arms region",
-    },
-    effects: [],
-  },
-  legs: {
-    id: "legs_vital",
-    korean: "다리",
-    english: "Legs",
-    region: "legs" as AnatomicalRegion,
-    position: { x: 0, y: 0 },
-    coordinates: { x: 0, y: 0 }, // For compatibility
-    category: "tertiary" as VitalPointCategory,
-    difficulty: 0.3,
-    bounds: { x: 0, y: 150, width: 40, height: 80 },
-    vulnerability: { damage: 1.4, stunning: 1.0, criticalChance: 0.5 },
-    description: {
-      korean: "급소 - 다리 부위",
-      english: "Vital point - Legs region",
-    },
-    effects: [],
-  },
-} as const;
+interface VitalPointSystemConfig {
+  readonly detectionRadius: number;
+  readonly vitalPointMultiplier: number;
+  readonly accuracyThreshold: number;
+}
+
+interface VitalPointSystemState {
+  readonly vitalPointsHit: number;
+  readonly totalHits: number;
+  readonly sessionStartTime: number;
+}
 
 export class VitalPointSystem {
-  private readonly config: {
-    readonly maxHitDistance: number;
-    readonly precisionThreshold: number;
-    readonly debugging: boolean;
-  };
+  private readonly config: VitalPointSystemConfig;
+  private readonly state: VitalPointSystemState;
+  private readonly vitalPoints: VitalPoint[];
 
-  constructor(config?: {
-    maxHitDistance?: number;
-    precisionThreshold?: number;
-    debugging?: boolean;
-    enabled?: boolean; // Accept but ignore for backward compatibility
-  }) {
+  constructor(config?: Partial<VitalPointSystemConfig>) {
     this.config = {
-      maxHitDistance: config?.maxHitDistance ?? 30,
-      precisionThreshold: config?.precisionThreshold ?? 0.8,
-      debugging: config?.debugging ?? false,
+      detectionRadius: 30,
+      vitalPointMultiplier: 1.5,
+      accuracyThreshold: 0.8,
+      ...config,
     };
+
+    this.state = {
+      vitalPointsHit: 0,
+      totalHits: 0,
+      sessionStartTime: Date.now(),
+    };
+
+    this.vitalPoints = this.initializeKoreanVitalPoints();
+  }
+
+  private initializeKoreanVitalPoints(): VitalPoint[] {
+    // Traditional Korean martial arts vital points (급소)
+    return [
+      {
+        id: "head_crown",
+        korean: "백회혈",
+        english: "Crown Point",
+        region: "head",
+        position: { x: 0, y: -100 },
+        coordinates: { x: 0, y: -100 },
+        category: "primary",
+        difficulty: 0.9,
+        bounds: { x: -10, y: -110, width: 20, height: 20 },
+        vulnerability: {
+          damage: 150,
+          stunning: 80,
+          criticalChance: 0.9,
+        },
+        description: {
+          korean: "정수리 급소점 - 매우 위험한 부위",
+          english: "Crown vital point - extremely dangerous area",
+        },
+      },
+      {
+        id: "neck_side",
+        korean: "경동맥",
+        english: "Carotid Artery",
+        region: "neck",
+        position: { x: 15, y: -80 },
+        coordinates: { x: 15, y: -80 },
+        category: "primary",
+        difficulty: 0.8,
+        bounds: { x: 10, y: -90, width: 10, height: 20 },
+        vulnerability: {
+          damage: 130,
+          stunning: 70,
+          criticalChance: 0.8,
+        },
+        description: {
+          korean: "목 옆 급소 - 의식 잃을 수 있음",
+          english: "Neck side vital point - can cause unconsciousness",
+        },
+      },
+      {
+        id: "solar_plexus",
+        korean: "명치",
+        english: "Solar Plexus",
+        region: "chest",
+        position: { x: 0, y: -40 },
+        coordinates: { x: 0, y: -40 },
+        category: "secondary",
+        difficulty: 0.6,
+        bounds: { x: -15, y: -50, width: 30, height: 20 },
+        vulnerability: {
+          damage: 120,
+          stunning: 60,
+          criticalChance: 0.7,
+        },
+        description: {
+          korean: "명치 급소 - 호흡곤란 유발",
+          english: "Solar plexus - causes breathing difficulty",
+        },
+      },
+      {
+        id: "liver_point",
+        korean: "간장혈",
+        english: "Liver Point",
+        region: "abdomen",
+        position: { x: 20, y: -20 },
+        coordinates: { x: 20, y: -20 },
+        category: "secondary",
+        difficulty: 0.7,
+        bounds: { x: 15, y: -30, width: 15, height: 20 },
+        vulnerability: {
+          damage: 110,
+          stunning: 50,
+          criticalChance: 0.6,
+        },
+        description: {
+          korean: "간장 급소 - 내장 손상 위험",
+          english: "Liver vital point - risk of internal damage",
+        },
+      },
+      {
+        id: "knee_joint",
+        korean: "슬관절",
+        english: "Knee Joint",
+        region: "legs",
+        position: { x: 0, y: 60 },
+        coordinates: { x: 0, y: 60 },
+        category: "tertiary",
+        difficulty: 0.5,
+        bounds: { x: -10, y: 50, width: 20, height: 20 },
+        vulnerability: {
+          damage: 90,
+          stunning: 30,
+          criticalChance: 0.4,
+        },
+        description: {
+          korean: "무릎 관절 - 이동 능력 제한",
+          english: "Knee joint - limits mobility",
+        },
+      },
+    ];
   }
 
   public detectVitalPointHit(
@@ -135,92 +150,98 @@ export class VitalPointSystem {
     y: number,
     damage: number
   ): VitalPointHit {
-    for (const vitalPoint of Object.values(VITAL_POINTS_DATA)) {
-      const distance = this.calculateDistance(x, y, vitalPoint.bounds);
+    const hitPoint = { x, y };
 
-      if (distance <= this.config.maxHitDistance) {
-        const critical = distance <= this.config.maxHitDistance * 0.5;
-        const description = critical
-          ? vitalPoint.description.korean
-          : "일반 타격";
+    // Find the closest vital point within detection radius
+    let closestVitalPoint: VitalPoint | null = null;
+    let minDistance = Infinity;
 
-        return {
-          hit: true,
-          region: vitalPoint.region,
-          damage: damage * vitalPoint.vulnerability.damage,
-          stunning: vitalPoint.vulnerability.stunning,
-          critical,
-          description,
-          vitalPoint,
-          effectiveness: 1.0 - distance / this.config.maxHitDistance,
-          effects: vitalPoint.effects || [],
-        };
+    for (const vitalPoint of this.vitalPoints) {
+      const distance = this.calculateDistance(hitPoint, vitalPoint.position);
+
+      if (distance <= this.config.detectionRadius && distance < minDistance) {
+        minDistance = distance;
+        closestVitalPoint = vitalPoint;
       }
     }
 
+    if (!closestVitalPoint) {
+      return {
+        hit: false,
+        damage,
+        stunning: 0,
+        critical: false,
+        description: "Normal hit - no vital point struck",
+      };
+    }
+
+    // Calculate enhanced damage based on vital point
+    const enhancedDamage = Math.round(
+      damage *
+        (closestVitalPoint.vulnerability.damage / 100) *
+        this.config.vitalPointMultiplier
+    );
+
+    const region = this.detectAnatomicalRegion(x, y);
+    const critical =
+      Math.random() < closestVitalPoint.vulnerability.criticalChance;
+
     return {
-      hit: false,
-      damage: 0,
-      stunning: 0,
-      critical: false,
-      description: "빗나감",
+      hit: true,
+      region,
+      damage: enhancedDamage,
+      stunning: closestVitalPoint.vulnerability.stunning,
+      critical,
+      description: `${closestVitalPoint.korean} - ${closestVitalPoint.description.korean}`,
+      vitalPoint: closestVitalPoint,
+      effectiveness: closestVitalPoint.vulnerability.damage,
     };
   }
 
   private calculateDistance(
-    x: number,
-    y: number,
-    bounds: { x: number; y: number; width: number; height: number }
+    point1: { x: number; y: number },
+    point2: { x: number; y: number }
   ): number {
-    const centerX = bounds.x + bounds.width / 2;
-    const centerY = bounds.y + bounds.height / 2;
-    return Math.sqrt((x - centerX) ** 2 + (y - centerY) ** 2);
+    const dx = point1.x - point2.x;
+    const dy = point1.y - point2.y;
+    return Math.sqrt(dx * dx + dy * dy);
   }
 
-  public getAllVitalPoints(): VitalPoint[] {
-    return Object.values(VITAL_POINTS_DATA);
+  private detectAnatomicalRegion(
+    x: number,
+    y: number
+  ): AnatomicalRegion | undefined {
+    // Simple anatomical region detection based on coordinates
+    if (y < -70) return "head";
+    if (y < -50) return "neck";
+    if (y < -10) return "chest";
+    if (y < 30) return "abdomen";
+    if (Math.abs(x) > 30) return "arms";
+    return "legs";
   }
 
-  public getVitalPointByRegion(region: AnatomicalRegion): VitalPoint | null {
-    return VITAL_POINTS_DATA[region] || null;
+  private getVitalPointByRegion(region: AnatomicalRegion): VitalPoint | null {
+    return this.vitalPoints.find((vp) => vp.region === region) || null;
   }
 
-  public getAvailableVitalPoints(): VitalPoint[] {
-    return this.getAllVitalPoints();
-  }
-
-  public getState(): {
-    vitalPointsHit: number;
-    config: (typeof this)["config"];
-  } {
+  public getVitalPointsStats(): Record<string, unknown> {
     return {
-      vitalPointsHit: 0,
+      totalVitalPoints: this.vitalPoints.length,
+      vitalPointsHit: this.state.vitalPointsHit,
+      totalHits: this.state.totalHits,
+      accuracy:
+        this.state.totalHits > 0
+          ? this.state.vitalPointsHit / this.state.totalHits
+          : 0,
       config: this.config,
     };
   }
 
-  public clearEffects(): void {
-    // Implementation for clearing effects
+  public getVitalPointsByCategory(category: VitalPointCategory): VitalPoint[] {
+    return this.vitalPoints.filter((vp) => vp.category === category);
   }
 
-  public updateConfig(newConfig: Partial<typeof this.config>): void {
-    // Update configuration
-    Object.assign(this.config as any, newConfig);
-  }
-
-  public getVitalPointsStats(): Record<string, unknown> {
-    return this.getVitalPointStats();
-  }
-
-  public getRegionsForCategory(
-    category: VitalPointCategory
-  ): AnatomicalRegion[] {
-    const categoryMap: Record<VitalPointCategory, AnatomicalRegion[]> = {
-      primary: ["head", "neck", "chest"],
-      secondary: ["abdomen", "arms"],
-      tertiary: ["legs"],
-    };
-
-    return categoryMap[category] || [];
+  public getAllVitalPoints(): readonly VitalPoint[] {
+    return [...this.vitalPoints];
   }
 }

@@ -9,7 +9,6 @@ describe("ProgressTracker", () => {
     current: 65,
     maximum: 100,
     currentStance: "geon" as TrigramStance,
-    onProgressChange: vi.fn(),
   };
 
   it("should render progress tracker", () => {
@@ -43,5 +42,39 @@ describe("ProgressTracker", () => {
 
     rerender(<ProgressTracker {...mockProps} current={85} />);
     expect(container).toBeInTheDocument();
+  });
+
+  it("should handle Korean text properly", () => {
+    const koreanProps = {
+      ...mockProps,
+      label: "수련 진도",
+    };
+
+    const { container } = render(<ProgressTracker {...koreanProps} />);
+    expect(container).toBeInTheDocument();
+  });
+
+  it("should handle all trigram stances", () => {
+    const stances: TrigramStance[] = [
+      "geon",
+      "tae",
+      "li",
+      "jin",
+      "son",
+      "gam",
+      "gan",
+      "gon",
+    ];
+
+    stances.forEach((stance) => {
+      const { unmount } = render(
+        <ProgressTracker {...mockProps} currentStance={stance} />
+      );
+
+      expect(
+        document.querySelector('[data-testid="pixi-container"]')
+      ).toBeInTheDocument();
+      unmount();
+    });
   });
 });
