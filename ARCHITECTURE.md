@@ -1,429 +1,352 @@
-# 🏗️ Black Trigram (흑괘) Architecture
+# Black Trigram (흑괘) - Technical Architecture
 
-This document provides a comprehensive view of the Black Trigram Korean Martial Arts game architecture using the C4 model, illustrating how components interact to deliver an authentic combat simulation experience.
+## 🏗️ System Architecture Overview
 
-## 📚 Complete Architecture Documentation Map
+### Cyberpunk Tech Stack
 
-<div class="documentation-map">
+- **Frontend**: React 18 + TypeScript + Vite
+- **Graphics Engine**: PixiJS 8 with @pixi/react
+- **Audio Engine**: Howler.js with Web Audio API
+- **State Management**: Zustand + React Context
+- **Testing**: Vitest + React Testing Library + Cypress
+- **Build Tools**: Vite + ESBuild for optimal performance
 
-### Current Architecture
+## 🎯 SWOT Analysis
 
-| Document                            | Focus       | Description                               |
-| ----------------------------------- | ----------- | ----------------------------------------- |
-| **[Architecture](ARCHITECTURE.md)** | 🏗️ C4 Model | C4 model showing system structure         |
-| **[Mindmap](mindmap.md)**           | 🧠 Concepts | Visual concept map of Korean martial arts |
-| **[Game Design](game-design.md)**   | 🎮 Design   | Korean martial arts game mechanics        |
-| **[README](README.md)**             | 📖 Overview | Project overview and setup guide          |
+### 💪 Strengths
 
-### Technical Components
+#### Technical Strengths
 
-| Document                                      | Focus        | Description                        |
-| --------------------------------------------- | ------------ | ---------------------------------- |
-| **[Audio System](src/audio/)**                | 🔊 Audio     | Damage-based audio feedback system |
-| **[Game Engine](src/components/game/)**       | ⚙️ Engine    | Core combat physics and game loop  |
-| **[UI Components](src/components/ui/)**       | 🎨 Interface | Korean-themed UI components        |
-| **[Training Mode](src/components/training/)** | 🥋 Training  | Trigram stance practice system     |
+- **Modern TypeScript Stack**: Type-safe development with excellent developer experience
+- **High-Performance Graphics**: PixiJS WebGL rendering for 60+ FPS gameplay
+- **Cross-Platform Compatibility**: Web-based deployment across all devices
+- **Modular Architecture**: Clean separation of concerns with reusable components
+- **Comprehensive Testing**: Unit, integration, and E2E test coverage
+- **Korean Cultural Authenticity**: Proper language support and cultural representation
 
-### Testing & Quality
+#### Gameplay Strengths
 
-| Document                         | Focus          | Description                       |
-| -------------------------------- | -------------- | --------------------------------- |
-| **[Testing Strategy](cypress/)** | 🧪 Testing     | E2E and component testing         |
-| **Performance**                  | ⚡ Performance | 60fps optimization and monitoring |
-| **[Code Quality](src/types/)**   | 📝 Types       | TypeScript strict typing          |
+- **Unique Combat System**: Anatomically accurate vital point targeting
+- **Educational Value**: Real Korean martial arts and I Ching philosophy
+- **Precision-Based Skill**: Rewards accuracy and knowledge over button mashing
+- **Progressive Learning**: Structured advancement through traditional martial arts
 
-</div>
+#### Market Strengths
 
-## 🧠 Conceptual Overview
+- **Niche Market Leadership**: No direct competitors in cyberpunk Korean martial arts
+- **Accessibility**: Free-to-play web game with no installation barriers
+- **Cultural Bridge**: Introduces Korean culture to global gaming audience
+- **Educational Tie-ins**: Potential partnerships with martial arts schools
 
-For a comprehensive visual overview of the Korean martial arts concepts, combat mechanics, and technical architecture, see the **[Mindmap Documentation](mindmap.md)** which provides an interactive concept map covering:
+### ⚠️ Weaknesses
 
-- **Korean Philosophy & Heritage** - I Ching principles and traditional martial arts
-- **Five Fighter Archetypes** - From traditional warriors to modern specialists
-- **Eight Trigram Combat System** - Traditional techniques with modern physics
-- **Realistic Combat Mechanics** - 70 vital points and authentic body mechanics
-- **Cultural Authenticity Framework** - Korean language, design, and historical accuracy
+#### Technical Weaknesses
 
-## 🌐 System Context
+- **Browser Dependency**: Performance limited by browser capabilities
+- **Audio File Size**: High-quality Korean audio assets increase load times
+- **WebGL Requirements**: Excludes older devices without hardware acceleration
+- **Single Platform**: Web-only limits monetization opportunities
 
-Black Trigram operates as a web-based Korean martial arts combat simulator, emphasizing authentic traditional techniques and cultural authenticity.
+#### Gameplay Weaknesses
 
-```mermaid
-C4Context
-  title System Context Diagram for Black Trigram (흑괘)
+- **Learning Curve**: Complex vital point system may intimidate casual players
+- **Cultural Barrier**: Korean terminology may confuse non-Korean speakers
+- **Limited Content**: Focused scope may reduce replay value
+- **Niche Appeal**: Martial arts theme limits broad market appeal
 
-  Person(player, "Player", "Practices Korean martial arts through trigram-based combat")
-  Person(martialArtist, "Martial Arts Enthusiast", "Learns traditional Korean techniques and philosophy")
-  Person(gameDevs, "Game Developers", "Develops and maintains the combat simulation")
+#### Development Weaknesses
 
-  System(blackTrigram, "Black Trigram (흑괘)", "Korean martial arts combat simulator with trigram-based fighting system")
+- **Small Team**: Limited resources for content creation and marketing
+- **Cultural Sensitivity**: Risk of misrepresenting Korean culture
+- **Asset Dependency**: Requires high-quality Korean audio and visual assets
+- **Localization Complexity**: Proper Korean-English translation challenges
 
-  System_Ext(webBrowser, "Web Browser", "Chrome, Firefox, Safari with WebGL support")
-  System_Ext(audioSystem, "Browser Audio API", "Howler.js-based damage-aware audio feedback")
-  System_Ext(inputDevices, "Input Devices", "Keyboard, mouse, and gamepad for combat controls")
+### 🌟 Opportunities
 
-  Rel(player, blackTrigram, "Practices Korean martial arts combat")
-  Rel(martialArtist, blackTrigram, "Studies traditional trigram techniques")
-  Rel(gameDevs, blackTrigram, "Develops and maintains")
+#### Market Opportunities
 
-  Rel(blackTrigram, webBrowser, "Runs in")
-  Rel(blackTrigram, audioSystem, "Provides immersive audio through")
-  Rel(blackTrigram, inputDevices, "Receives combat input from")
+- **Growing Interest in Korean Culture**: K-pop, K-dramas driving cultural curiosity
+- **Educational Gaming Trend**: Increased demand for learning-based games
+- **Martial Arts Popularity**: Growing interest in traditional fighting arts
+- **Cyberpunk Renaissance**: Renewed interest in cyberpunk aesthetics
+- **Mobile Gaming Growth**: Potential for mobile-optimized versions
 
-  UpdateLayoutConfig($c4ShapeInRow="2", $c4BoundaryInRow="1")
-```
+#### Technical Opportunities
 
-## 🏢 Container View
+- **PWA Capabilities**: Progressive web app for native-like mobile experience
+- **VR/AR Integration**: Future expansion into immersive technologies
+- **AI Enhancement**: Machine learning for adaptive difficulty and training
+- **Blockchain Integration**: NFT achievements and competitive tournaments
+- **Cross-Platform Expansion**: Native mobile and desktop versions
 
-Black Trigram consists of several specialized containers delivering authentic Korean martial arts combat simulation.
+#### Content Opportunities
 
-```mermaid
-C4Container
-    title Container Diagram - Black Trigram (흑괘)
+- **Community-Generated Content**: User-created training scenarios
+- **Educational Partnerships**: Collaboration with martial arts institutions
+- **Cultural Expansion**: Other Asian martial arts traditions
+- **Competitive Scene**: Online tournaments and ranking systems
+- **Streaming Integration**: Twitch/YouTube content creation features
 
-    Person(player, "Player", "Practices Korean martial arts combat")
+### ⚡ Threats
 
-    System_Boundary(blackTrigram, "Black Trigram (흑괘)") {
-        Container(gameClient, "Game Client", "React 19, PixiJS 8, TypeScript", "Korean martial arts combat simulation with 60fps physics")
-        Container(audioEngine, "Audio Engine", "Howler.js, Web Audio API", "Damage-based audio feedback with Korean martial arts themes")
-        Container(gameAssets, "Game Assets", "Static Files", "Korean fonts, trigram symbols, martial arts audio, textures")
-        Container(combatEngine, "Combat Engine", "PixiJS, TypeScript", "Real-time martial arts physics with vital point targeting")
-    }
+#### Market Threats
 
-    System_Ext(webGL, "WebGL", "Hardware-accelerated rendering for 60fps combat")
+- **AAA Competition**: Large studios creating competing martial arts games
+- **Cultural Appropriation Concerns**: Criticism for non-Korean team developing Korean game
+- **Platform Changes**: Browser security updates breaking game functionality
+- **Mobile Shift**: Continued move away from web gaming to mobile apps
 
-    Rel(player, gameClient, "Practices trigram techniques through")
-    Rel(gameClient, audioEngine, "Triggers damage-based audio")
-    Rel(gameClient, gameAssets, "Loads Korean cultural assets")
-    Rel(gameClient, combatEngine, "Executes martial arts physics")
-    Rel(combatEngine, webGL, "Renders through")
+#### Technical Threats
 
-    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
-```
+- **Browser Fragmentation**: Different performance across browsers
+- **Web Standards Changes**: Breaking changes in WebGL or Audio APIs
+- **Performance Expectations**: Rising user expectations for mobile-like performance
+- **Ad Blocker Impact**: Potential revenue model disruption
 
-## 🧩 Component View - Game Client
+#### Business Threats
 
-The game client orchestrates Korean martial arts combat through specialized React components integrated with PixiJS.
+- **Monetization Challenges**: Difficulty generating revenue from web games
+- **Copyright Issues**: Potential claims over traditional Korean martial arts representation
+- **Team Scaling**: Challenges hiring developers with Korean cultural knowledge
+- **Market Saturation**: Oversupply of indie fighting games
 
-```mermaid
-C4Component
-    title Component Diagram - Game Client
-
-    Container_Boundary(gameClient, "Game Client") {
-        Component(app, "App", "React 19, TypeScript", "Main application orchestrating game modes")
-
-        Component(introScreen, "IntroScreen", "React, PixiJS", "Korean dojang intro with trigram wheel")
-        Component(gameEngine, "GameEngine", "React, PixiJS", "Core combat engine with realistic physics")
-        Component(trainingScreen, "TrainingScreen", "React, PixiJS", "Trigram stance practice system")
-
-        Component(playerSystem, "PlayerSystem", "PixiJS, TypeScript", "Korean martial artist with trigram techniques")
-        Component(combatSystem, "CombatSystem", "TypeScript", "Authentic Korean combat calculations")
-        Component(audioManager, "AudioManager", "Howler.js, TypeScript", "Damage-aware audio with Korean themes")
-
-        Component(uiComponents, "UI Components", "React, PixiJS", "Korean-themed interface components")
-        Component(koreanAssets, "Korean Assets", "Fonts, Symbols", "Traditional Korean cultural elements")
-    }
-
-    Rel(app, introScreen, "Manages navigation to")
-    Rel(app, gameEngine, "Manages navigation to")
-    Rel(app, trainingScreen, "Manages navigation to")
-
-    Rel(gameEngine, playerSystem, "Orchestrates")
-    Rel(gameEngine, combatSystem, "Uses for calculations")
-    Rel(gameEngine, audioManager, "Triggers damage-based audio")
-
-    Rel(playerSystem, combatSystem, "Executes techniques through")
-    Rel(combatSystem, audioManager, "Provides damage data to")
-
-    Rel(introScreen, uiComponents, "Displays Korean UI through")
-    Rel(trainingScreen, uiComponents, "Displays practice UI through")
-    Rel(gameEngine, uiComponents, "Displays combat UI through")
-
-    Rel(uiComponents, koreanAssets, "Loads cultural elements from")
-
-    UpdateLayoutConfig($c4ShapeInRow="4", $c4BoundaryInRow="1")
-```
-
-## ⚔️ Combat System Component Details
-
-This diagram shows the detailed structure of the Korean martial arts combat system:
+## 🎮 Enhanced Combat System Architecture
 
 ```mermaid
-C4Component
-    title Component Diagram - Combat Engine
+graph TB
+    subgraph "Combat Engine Core"
+        CE[Combat Engine] --> TCS[Trigram Combat System]
+        CE --> VPS[Vital Point System]
+        CE --> DCS[Damage Calculation System]
+        CE --> AIS[AI System]
+    end
 
-    Container_Boundary(combatEngine, "Combat Engine") {
-        Component(gameStateManager, "GameStateManager", "TypeScript", "Immutable game state with Korean martial arts rules")
-        Component(combatSystem, "CombatSystem", "TypeScript", "Korean technique damage calculations with vital points")
-        Component(playerStateManager, "PlayerStateManager", "TypeScript", "Trigram stance and health management")
+    subgraph "Trigram System"
+        TCS --> SM[Stance Manager]
+        TCS --> TC[Transition Calculator]
+        TCS --> KC[Korean Culture Integration]
 
-        Component(trigramTechniques, "TrigramTechniques", "TypeScript", "8 traditional Korean fighting techniques")
-        Component(vitalPointSystem, "VitalPointSystem", "TypeScript", "70 anatomical vital points for precision combat")
-        Component(physicsEngine, "PhysicsEngine", "PixiJS, TypeScript", "Realistic combat physics at 60fps")
+        SM --> S1[건 Heaven]
+        SM --> S2[곤 Earth]
+        SM --> S3[진 Thunder]
+        SM --> S4[손 Wind]
+        SM --> S5[감 Water]
+        SM --> S6[리 Fire]
+        SM --> S7[간 Mountain]
+        SM --> S8[태 Lake]
+    end
 
-        Component(aiSystem, "AISystem", "TypeScript", "Korean martial arts AI with stance-based behavior")
-        Component(inputSystem, "InputSystem", "TypeScript", "Korean keyboard layout support (1-8 for trigrams)")
-    }
+    subgraph "Vital Point Targeting"
+        VPS --> AR[Anatomical Regions]
+        VPS --> HD[Hit Detection]
+        VPS --> DC[Damage Calculator]
 
-    Container_Boundary(visualization, "Visualization Layer") {
-        Component(playerVisuals, "PlayerVisuals", "PixiJS, React", "Korean martial artist visualization")
-        Component(hitEffects, "HitEffectsLayer", "PixiJS", "Traditional Korean combat effects")
-        Component(dojangBackground, "DojangBackground", "PixiJS", "Authentic Korean dojang environment")
-        Component(gameUI, "GameUI", "PixiJS, React", "Korean-themed combat interface")
-    }
+        AR --> VP1[Critical Points - 2.5x]
+        AR --> VP2[Secondary Points - 1.8x]
+        AR --> VP3[Standard Points - 1.2x]
+    end
 
-    Rel(gameStateManager, combatSystem, "Manages combat through")
-    Rel(gameStateManager, playerStateManager, "Coordinates with")
+    subgraph "Audio-Visual Feedback"
+        CE --> AM[Audio Manager]
+        CE --> VFX[Visual Effects]
 
-    Rel(combatSystem, trigramTechniques, "Calculates damage using")
-    Rel(combatSystem, vitalPointSystem, "Targets precision points through")
-    Rel(combatSystem, physicsEngine, "Executes realistic physics via")
+        AM --> SFX[Korean SFX]
+        AM --> Music[Traditional Music]
 
-    Rel(playerStateManager, aiSystem, "Provides AI state to")
-    Rel(playerStateManager, inputSystem, "Receives player input from")
+        VFX --> Particles[Energy Particles]
+        VFX --> UI[Cyberpunk UI]
+    end
 
-    Rel(physicsEngine, playerVisuals, "Renders movement through")
-    Rel(combatSystem, hitEffects, "Triggers Korean effects via")
-    Rel(gameStateManager, gameUI, "Updates interface through")
+    subgraph "Player Input"
+        PI[Player Input] --> KM[Keyboard/Mouse]
+        PI --> Touch[Touch Controls]
+        PI --> Gamepad[Controller Support]
 
-    UpdateLayoutConfig($c4ShapeInRow="4", $c4BoundaryInRow="1")
+        KM --> Movement[WASD Movement]
+        KM --> Stances[1-8 Stance Keys]
+        KM --> Target[Mouse Targeting]
+    end
+
+    PI --> CE
+    CE --> Renderer[PixiJS Renderer]
+
+    style CE fill:#00ffd0,stroke:#fff,color:#000
+    style TCS fill:#ffd700,stroke:#fff,color:#000
+    style VPS fill:#ff6b6b,stroke:#fff,color:#000
 ```
 
-## 🎵 Audio System Architecture
-
-This diagram illustrates the damage-based audio system with Korean martial arts themes:
+### Combat Flow Architecture
 
 ```mermaid
-C4Component
-    title Component Diagram - Audio Engine
+sequenceDiagram
+    participant Player
+    participant Input System
+    participant Combat Engine
+    participant Trigram System
+    participant Vital Point System
+    participant Audio Manager
+    participant Renderer
 
-    Container_Boundary(audioEngine, "Audio Engine") {
-        Component(audioManager, "AudioManager", "Howler.js, TypeScript", "Central audio coordination with damage awareness")
-        Component(sfxEngine, "SFXEngine", "Web Audio API", "Dynamic sound effects based on combat damage")
-        Component(musicManager, "MusicManager", "Howler.js", "Korean martial arts themed background music")
-        Component(spatialAudio, "SpatialAudio", "Web Audio API", "3D positioned audio for dojang immersion")
-    }
+    Player->>Input System: Press stance key (1-8)
+    Input System->>Combat Engine: Stance change request
+    Combat Engine->>Trigram System: Calculate transition
+    Trigram System->>Trigram System: Validate transition cost
+    Trigram System-->>Combat Engine: Transition result
+    Combat Engine->>Audio Manager: Play stance change sound
+    Combat Engine->>Renderer: Update stance visuals
 
-    Container_Boundary(audioAssets, "Audio Assets") {
-        Component(koreanThemes, "Korean Themes", "Audio Files", "Traditional Korean martial arts music")
-        Component(combatSounds, "Combat Sounds", "Audio Files", "Damage-scaled attack and impact sounds")
-        Component(stanceSounds, "Stance Sounds", "Audio Files", "Trigram stance change audio feedback")
-        Component(uiSounds, "UI Sounds", "Audio Files", "Korean-themed menu and interface sounds")
-    }
-
-    Container_Boundary(damageSystem, "Damage-Based Audio") {
-        Component(damageAnalyzer, "DamageAnalyzer", "TypeScript", "Analyzes combat damage for audio scaling")
-        Component(vitalPointAudio, "VitalPointAudio", "TypeScript", "Specialized audio for vital point hits")
-        Component(comboAudio, "ComboAudio", "TypeScript", "Progressive audio for technique combinations")
-    }
-
-    Rel(audioManager, sfxEngine, "Coordinates effects through")
-    Rel(audioManager, musicManager, "Manages themes via")
-    Rel(audioManager, spatialAudio, "Positions dojang audio through")
-
-    Rel(sfxEngine, combatSounds, "Loads damage-scaled sounds from")
-    Rel(musicManager, koreanThemes, "Plays traditional music from")
-    Rel(audioManager, stanceSounds, "Triggers stance audio from")
-    Rel(audioManager, uiSounds, "Plays interface sounds from")
-
-    Rel(audioManager, damageAnalyzer, "Receives damage data from")
-    Rel(damageAnalyzer, vitalPointAudio, "Triggers specialized audio via")
-    Rel(damageAnalyzer, comboAudio, "Manages combination audio through")
-
-    UpdateLayoutConfig($c4ShapeInRow="4", $c4BoundaryInRow="1")
+    Player->>Input System: Click to attack
+    Input System->>Combat Engine: Attack at coordinates
+    Combat Engine->>Vital Point System: Check hit detection
+    Vital Point System->>Vital Point System: Calculate precision
+    Vital Point System-->>Combat Engine: Hit result + multiplier
+    Combat Engine->>Combat Engine: Calculate final damage
+    Combat Engine->>Audio Manager: Play impact sound
+    Combat Engine->>Renderer: Show damage effects
 ```
 
-## 🥋 Training System Architecture
-
-This diagram shows the Korean martial arts training and education system:
+### System Integration Architecture
 
 ```mermaid
-C4Component
-    title Component Diagram - Training System
+graph LR
+    subgraph "Frontend Layer"
+        React[React Components]
+        PixiJS[PixiJS Graphics]
+        Audio[Howler.js Audio]
+    end
 
-    Container_Boundary(trainingSystem, "Training System") {
-        Component(trigramWheel, "TrigramWheel", "React, PixiJS", "Interactive 8-trigram selection interface")
-        Component(stancePractice, "StancePractice", "TypeScript", "Individual trigram stance practice tracking")
-        Component(progressTracker, "ProgressTracker", "React, PixiJS", "Korean martial arts progression monitoring")
-        Component(techniqueLibrary, "TechniqueLibrary", "TypeScript", "Traditional Korean technique database")
-    }
+    subgraph "Game Logic Layer"
+        GameEngine[Game Engine]
+        CombatSystem[Combat System]
+        PlayerState[Player State]
+        AISystem[AI System]
+    end
 
-    Container_Boundary(educationalContent, "Educational Content") {
-        Component(koreanTerminology, "KoreanTerminology", "TypeScript", "Authentic Korean martial arts terms")
-        Component(philosophySystem, "PhilosophySystem", "TypeScript", "I Ching trigram philosophy integration")
-        Component(culturalContext, "CulturalContext", "TypeScript", "Korean martial arts history and tradition")
-    }
+    subgraph "Data Layer"
+        KoreanTechniques[Korean Techniques DB]
+        VitalPoints[Vital Points DB]
+        TrigramData[Trigram Philosophy]
+        AudioAssets[Korean Audio Assets]
+    end
 
-    Container_Boundary(practiceAI, "Practice AI") {
-        Component(formCorrection, "FormCorrection", "TypeScript", "AI-guided stance and technique correction")
-        Component(adaptiveDifficulty, "AdaptiveDifficulty", "TypeScript", "Personalized training progression")
-        Component(masterGuidance, "MasterGuidance", "TypeScript", "Simulated Korean martial arts master guidance")
-    }
+    React --> GameEngine
+    PixiJS --> GameEngine
+    Audio --> GameEngine
 
-    Rel(trigramWheel, stancePractice, "Initiates practice for")
-    Rel(stancePractice, progressTracker, "Reports progress to")
-    Rel(stancePractice, techniqueLibrary, "References techniques from")
+    GameEngine --> CombatSystem
+    GameEngine --> PlayerState
+    GameEngine --> AISystem
 
-    Rel(techniqueLibrary, koreanTerminology, "Uses authentic terms from")
-    Rel(trigramWheel, philosophySystem, "Displays philosophy through")
-    Rel(progressTracker, culturalContext, "Provides cultural context via")
+    CombatSystem --> KoreanTechniques
+    CombatSystem --> VitalPoints
+    CombatSystem --> TrigramData
 
-    Rel(stancePractice, formCorrection, "Receives guidance from")
-    Rel(progressTracker, adaptiveDifficulty, "Adjusts difficulty through")
-    Rel(formCorrection, masterGuidance, "Provides master-level feedback via")
+    Audio --> AudioAssets
 
-    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
+    style GameEngine fill:#00ffd0,stroke:#fff,color:#000
+    style CombatSystem fill:#ffd700,stroke:#fff,color:#000
 ```
 
-## 🎨 Korean UI Component System
+## 🛡️ Security & Performance Architecture
 
-This diagram illustrates the Korean-themed user interface components:
+### Performance Optimization Strategy
 
 ```mermaid
-C4Component
-    title Component Diagram - Korean UI Components
+graph TD
+    subgraph "Performance Monitoring"
+        PM[Performance Monitor] --> FPS[FPS Tracking]
+        PM --> Memory[Memory Usage]
+        PM --> Audio[Audio Performance]
+    end
 
-    Container_Boundary(koreanUI, "Korean UI Components") {
-        Component(koreanHeader, "KoreanHeader", "React, PixiJS", "Traditional Korean header with dual language support")
-        Component(trigramWheel, "TrigramWheel", "React, PixiJS", "8-trigram circular selection interface")
-        Component(progressTracker, "ProgressTracker", "React, PixiJS", "Korean martial arts progress visualization")
-        Component(dojangBackground, "DojangBackground", "PixiJS", "Authentic Korean dojang training environment")
-    }
+    subgraph "Optimization Techniques"
+        OT[Optimization Engine] --> ObjectPooling[Object Pooling]
+        OT --> AssetCaching[Asset Caching]
+        OT --> LazyLoading[Lazy Loading]
+        OT --> AudioOptimization[Audio Compression]
+    end
 
-    Container_Boundary(culturalAssets, "Cultural Assets") {
-        Component(koreanFonts, "Korean Fonts", "Noto Sans KR", "Authentic Korean typography")
-        Component(trigramSymbols, "Trigram Symbols", "Unicode Symbols", "Traditional I Ching trigram symbols")
-        Component(koreanColors, "Korean Colors", "CSS Variables", "Traditional Korean color palette")
-        Component(dojanElements, "Dojang Elements", "SVG/PNG", "Traditional Korean training hall elements")
-    }
+    subgraph "Fallback Systems"
+        FS[Fallback Manager] --> LowQuality[Low Quality Mode]
+        FS --> ProcAudio[Procedural Audio]
+        FS --> SimpleGraphics[Simple Graphics]
+    end
 
-    Container_Boundary(theming, "Theming System") {
-        Component(darkTrigram, "DarkTrigram Theme", "CSS/TypeScript", "Dark Korean martial arts aesthetic")
-        Component(colorConstants, "Color Constants", "TypeScript", "Korean red, gold, black, cyan color scheme")
-        Component(responsiveDesign, "Responsive Design", "CSS", "Mobile-optimized Korean interface")
-    }
+    PM --> OT
+    OT --> FS
 
-    Rel(koreanHeader, koreanFonts, "Renders Korean text with")
-    Rel(trigramWheel, trigramSymbols, "Displays traditional symbols from")
-    Rel(progressTracker, koreanColors, "Uses traditional colors from")
-    Rel(dojangBackground, dojanElements, "Renders training environment with")
-
-    Rel(koreanHeader, darkTrigram, "Applies theme via")
-    Rel(trigramWheel, colorConstants, "Uses color scheme from")
-    Rel(progressTracker, responsiveDesign, "Adapts layout through")
-
-    UpdateLayoutConfig($c4ShapeInRow="3", $c4BoundaryInRow="1")
+    style PM fill:#4ecdc4,stroke:#fff,color:#000
+    style OT fill:#45b7d1,stroke:#fff,color:#000
+    style FS fill:#f9ca24,stroke:#fff,color:#000
 ```
 
-## 📊 Key Architecture Decisions
+## 📊 Development Roadmap
 
-### Architecture Decision Records
+### Phase 1: Foundation (MVP)
 
-| ID      | Decision                     | Rationale                                                                  |
-| ------- | ---------------------------- | -------------------------------------------------------------------------- |
-| ADR-001 | PixiJS + React Integration   | Enables 60fps WebGL-accelerated combat with React component architecture   |
-| ADR-002 | Korean Cultural Authenticity | Ensures genuine Korean martial arts representation with proper terminology |
-| ADR-003 | Damage-Based Audio System    | Provides immersive combat feedback scaled to actual damage calculations    |
-| ADR-004 | 8-Trigram Fighting System    | Authentic I Ching-based martial arts with traditional Korean techniques    |
-| ADR-005 | Vital Point Targeting        | Realistic anatomical precision combat with 70 documented vital points      |
-| ADR-006 | Strict TypeScript + Vitest   | Ensures code quality and reliable combat physics calculations              |
-| ADR-007 | Mobile-First Responsive      | Korean martial arts accessible on all devices with touch controls          |
+- [ ] Core combat system with 8 trigram stances
+- [ ] Basic vital point targeting (20 points)
+- [ ] Korean audio integration
+- [ ] Training mode with tutorials
+- [ ] Cyberpunk visual theme implementation
 
-### Key Quality Attributes
+### Phase 2: Enhancement
 
-| Quality Attribute     | Support in Current Architecture                                                |
-| --------------------- | ------------------------------------------------------------------------------ |
-| Performance           | 60fps guaranteed through PixiJS WebGL acceleration and optimized game loop     |
-| Cultural Authenticity | Korean fonts, terminology, colors, and traditional martial arts techniques     |
-| Immersion             | Damage-based audio, realistic physics, and authentic Korean dojang environment |
-| Accessibility         | Responsive design, keyboard navigation, and dual-language support              |
-| Maintainability       | Strict TypeScript, component architecture, and comprehensive testing           |
-| Extensibility         | Modular combat system allowing additional techniques and training modes        |
+- [ ] Full vital point system (70 points)
+- [ ] Advanced AI opponents
+- [ ] Cultural philosophy integration
+- [ ] Performance optimization
+- [ ] Mobile responsiveness
 
-## 🔍 Business View of Architecture
+### Phase 3: Expansion
 
-### Stakeholder Alignment
+- [ ] Multiplayer capabilities
+- [ ] Tournament system
+- [ ] Community features
+- [ ] Advanced graphics effects
+- [ ] VR compatibility preparation
 
-```mermaid
-flowchart TD
-    GE[Game Engine] --- P[Players]
+### Phase 4: Platform Growth
 
-    TS[Training System] --- MA[Martial Arts Students]
+- [ ] Progressive Web App deployment
+- [ ] Mobile app versions
+- [ ] Educational partnerships
+- [ ] Competitive gaming integration
+- [ ] Content creator tools
 
-    AS[Audio System] --- GE_USERS[Game Enthusiasts]
+## 🎯 Success Metrics & KPIs
 
-    KUI[Korean UI] --- KC[Korean Culture Enthusiasts]
+### Technical Metrics
 
-    CS[Combat System] --- CF[Combat Fighters]
+- **Performance**: 60+ FPS on 90% of target devices
+- **Load Time**: <3 seconds initial load
+- **Crash Rate**: <1% of all sessions
+- **Browser Compatibility**: 95% of modern browsers
 
-    VS[Vital Point System] --- ME[Medical/Educational Users]
+### User Engagement Metrics
 
-    classDef stakeholder fill:#f1c40f,stroke:#f39c12,stroke-width:2px,color:black
-    classDef system fill:#3498db,stroke:#2980b9,stroke-width:2px,color:white
+- **Session Duration**: 15+ minutes average
+- **Return Rate**: 60% within 7 days
+- **Tutorial Completion**: 70% finish basic training
+- **Cultural Learning**: 25% engage with philosophy content
 
-    class P,MA,GE_USERS,KC,CF,ME stakeholder
-    class GE,TS,AS,KUI,CS,VS system
-```
+### Business Metrics
 
-### Educational Value Map
+- **User Acquisition**: 10,000 monthly active users in Year 1
+- **Conversion Rate**: 5% to premium features
+- **Community Growth**: 1,000 active community members
+- **Educational Partnerships**: 5 martial arts institutions
 
-```mermaid
-flowchart TD
-    KMA[Korean Martial Arts] -->|teaches| TT[Traditional Techniques]
-    KMA -->|teaches| CP[Cultural Philosophy]
-    KMA -->|teaches| AA[Anatomical Awareness]
+---
 
-    TT -->|through| TS[8 Trigram Stances]
-    CP -->|through| IC[I Ching Principles]
-    AA -->|through| VP[70 Vital Points]
+## 🏛️ Traditional Architecture (Reference)
 
-    TS & IC & VP -->|create| EV[Educational Value]
+_Original architecture approach focusing on traditional martial arts simulation without cyberpunk enhancements._
 
-    EV -->|delivers| MA[Martial Arts Education]
-    EV -->|delivers| CH[Cultural Heritage]
-    EV -->|delivers| SA[Self-Awareness]
-    EV -->|delivers| PR[Precision Training]
-    EV -->|delivers| TA[Traditional Authenticity]
+### Classic System Design
 
-    classDef input fill:#3498db,stroke:#2980b9,stroke-width:2px,color:white
-    classDef process fill:#9b59b6,stroke:#8e44ad,stroke-width:2px,color:white
-    classDef output fill:#16a085,stroke:#1abc9c,stroke-width:2px,color:white
-    classDef value fill:#e74c3c,stroke:#c0392b,stroke-width:2px,color:white
-    classDef benefit fill:#f1c40f,stroke:#f39c12,stroke-width:2px,color:black
-
-    class KMA input
-    class TT,CP,AA process
-    class TS,IC,VP output
-    class EV value
-    class MA,CH,SA,PR,TA benefit
-```
-
-## Current Architecture Constraints
-
-1. **Client-Side Only**: No server-side multiplayer or cloud save functionality
-2. **Static Korean Content**: Pre-defined techniques without custom martial arts style creation
-3. **WebGL Requirement**: Requires modern browser with WebGL support for optimal performance
-4. **Single Player Focus**: No multi-player sparring or collaborative training features
-5. **Fixed Technique Set**: 8 traditional trigram techniques without expansion capabilities
-6. **Browser Audio Limitations**: Audio feedback limited by Web Audio API capabilities
-
-## Performance Targets
-
-| Metric             | Target        | Current Architecture Support               |
-| ------------------ | ------------- | ------------------------------------------ |
-| Frame Rate         | 60fps steady  | PixiJS WebGL acceleration                  |
-| Load Time          | <3 seconds    | Asset preloading and optimization          |
-| Memory Usage       | <100MB        | Efficient PixiJS resource management       |
-| Audio Latency      | <20ms         | Howler.js with Web Audio API               |
-| Input Response     | <16ms         | Direct keyboard/mouse handling             |
-| Mobile Performance | 30fps minimum | Responsive design with performance scaling |
-
-## Cultural Authenticity Requirements
-
-| Aspect             | Implementation                             | Verification                          |
-| ------------------ | ------------------------------------------ | ------------------------------------- |
-| Korean Language    | Noto Sans KR fonts, authentic terminology  | Native speaker review                 |
-| Trigram Philosophy | Authentic I Ching trigram meanings         | Traditional martial arts consultation |
-| Combat Techniques  | Based on traditional Korean martial arts   | Historical accuracy verification      |
-| Visual Design      | Traditional Korean dojang aesthetics       | Cultural design review                |
-| Audio Themes       | Korean martial arts music and sound design | Cultural audio authenticity           |
+- Pure martial arts focus without cyberpunk elements
+- Traditional UI with earth tones and classical typography
+- Historically accurate Korean martial arts representation
+- Educational emphasis over entertainment value
+- Simple, clean architecture prioritizing cultural authenticity

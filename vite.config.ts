@@ -22,6 +22,11 @@ export default defineConfig(({ command }) => ({
       output: {
         manualChunks: {
           pixi: ["pixi.js", "@pixi/react"],
+          audio: ["howler"],
+          korean: [
+            "./src/systems/trigram/KoreanTechniques",
+            "./src/systems/vitalpoint/KoreanVitalPoints",
+          ],
         },
       },
     },
@@ -36,6 +41,12 @@ export default defineConfig(({ command }) => ({
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html", "lcov"],
+      include: [
+        "src/systems/**/*.ts",
+        "src/components/**/*.{ts,tsx}",
+        "src/audio/**/*.ts",
+        "src/hooks/**/*.ts",
+      ],
       exclude: [
         "node_modules/",
         "src/test/",
@@ -44,13 +55,24 @@ export default defineConfig(({ command }) => ({
         "dist/",
         "coverage/",
         "cypress/",
+        "**/placeholder-sounds.ts",
+        "**/DefaultSoundGenerator.ts",
+        "**/__tests__/**",
+        "**/mocks/**",
       ],
       thresholds: {
         global: {
-          branches: 80,
-          functions: 80,
-          lines: 80,
-          statements: 80,
+          branches: 85,
+          functions: 85,
+          lines: 85,
+          statements: 85,
+        },
+        // Critical Korean martial arts systems
+        "src/systems/": {
+          branches: 90,
+          functions: 92,
+          lines: 90,
+          statements: 90,
         },
       },
     },
