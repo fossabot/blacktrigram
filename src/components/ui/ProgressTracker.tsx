@@ -7,7 +7,7 @@ export function ProgressTracker({
   current,
   maximum,
   currentStance,
-}: ProgressTrackerProps): JSX.Element {
+}: ProgressTrackerProps): React.JSX.Element {
   const progress = maximum > 0 ? Math.min(100, (current / maximum) * 100) : 0;
 
   const drawProgressBar = useCallback(

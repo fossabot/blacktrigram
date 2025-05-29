@@ -1,12 +1,14 @@
 import type {
-  AnatomicalRegion,
+  AnatomicalRegion as MainAnatomicalRegion,
   VitalPoint,
   DamageResult,
   VitalPointCategory,
   TrigramStance,
-} from "../types";
+} from "../types/index";
 
-// Comprehensive vital point data with all required properties
+// Use explicit type assertion to resolve import conflicts
+type AnatomicalRegion = MainAnatomicalRegion;
+
 const VITAL_POINTS_DATA: Record<AnatomicalRegion, VitalPoint> = {
   head: {
     id: "head_vital",

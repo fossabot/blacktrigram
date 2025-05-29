@@ -579,10 +579,7 @@ export function getTrigramCulture(
 
 export function getTrigramDescription(stance: TrigramStance): string {
   const data = TRIGRAM_DATA[stance];
-  if (!data?.philosophy) {
-    return `Unknown philosophy for ${stance}`;
-  }
-  return data.philosophy;
+  return data?.philosophy ?? `Unknown philosophy for ${stance}`;
 }
 
 export function getTrigramPhilosophy(stance: TrigramStance): string {

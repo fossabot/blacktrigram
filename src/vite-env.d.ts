@@ -1,13 +1,28 @@
 /// <reference types="vite/client" />
 
-// PixiJS React component declarations
-declare namespace JSX {
+// Extend global JSX namespace for PixiJS React components
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      pixiContainer: any;
+      pixiGraphics: any;
+      pixiText: any;
+      pixiSprite: any;
+    }
+  }
+}
+
+// Also export JSX namespace for direct imports
+export namespace JSX {
   interface IntrinsicElements {
     pixiContainer: any;
     pixiGraphics: any;
     pixiText: any;
     pixiSprite: any;
   }
+
+  // Add Element interface
+  interface Element extends React.ReactElement<any, any> {}
 }
 
 // Game asset type declarations

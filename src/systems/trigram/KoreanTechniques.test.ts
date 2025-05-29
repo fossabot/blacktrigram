@@ -1,41 +1,19 @@
 import { describe, it, expect } from "vitest";
 import { KoreanTechniques } from "./KoreanTechniques";
-import type { TrigramStance } from "../../types";
 
 describe("KoreanTechniques", () => {
-  describe("trigram technique generation", () => {
-    it("should generate technique for geon trigram", () => {
-      const geonTechnique = KoreanTechniques.getTechniqueForStance("geon");
+  describe("getTechniqueForStance", () => {
+    it("should return technique for valid stance", () => {
+      const technique = KoreanTechniques.getTechniqueForStance("geon");
 
-      expect(geonTechnique).toBeDefined();
-      expect(geonTechnique.name).toBeDefined();
-      expect(geonTechnique.damage).toBeGreaterThan(0);
+      expect(technique).toBeDefined();
+      expect(technique.name).toBe("천둥벽력");
+      expect(technique.damage).toBe(28);
+      expect(technique.range).toBe(60);
+      expect(technique.kiCost).toBe(15);
     });
 
-    it("should generate technique for li trigram", () => {
-      const liTechnique = KoreanTechniques.getTechniqueForStance("li");
-
-      expect(liTechnique).toBeDefined();
-      expect(liTechnique.name).toBeDefined();
-    });
-
-    it("should generate technique for gam trigram", () => {
-      const gamTechnique = KoreanTechniques.getTechniqueForStance("gam");
-
-      expect(gamTechnique).toBeDefined();
-      expect(gamTechnique.name).toBeDefined();
-    });
-
-    it("should generate technique for gan trigram", () => {
-      const ganTechnique = KoreanTechniques.getTechniqueForStance("gan");
-
-      expect(ganTechnique).toBeDefined();
-      expect(ganTechnique.name).toBeDefined();
-    });
-  });
-
-  describe("technique validation", () => {
-    it("should validate all trigram stances", () => {
+    it("should return techniques for all valid stances", () => {
       const stances = [
         "geon",
         "tae",
@@ -50,13 +28,24 @@ describe("KoreanTechniques", () => {
       stances.forEach((stance) => {
         const technique = KoreanTechniques.getTechniqueForStance(stance);
         expect(technique).toBeDefined();
+        expect(technique.name).toBeDefined();
+        expect(typeof technique.name).toBe("string");
         expect(technique.damage).toBeGreaterThan(0);
         expect(technique.range).toBeGreaterThan(0);
+        expect(technique.kiCost).toBeGreaterThan(0);
       });
     });
+  });
 
-    it("should have unique techniques for each stance", () => {
-      const stances = [
+  describe("getAllTechniques", () => {
+    it("should return all eight techniques", () => {
+      const allTechniques = KoreanTechniques.getAllTechniques();
+      expect(Object.keys(allTechniques)).toHaveLength(8);
+    });
+
+    it("should include all required stances", () => {
+      const allTechniques = KoreanTechniques.getAllTechniques();
+      const expectedStances = [
         "geon",
         "tae",
         "li",
@@ -65,27 +54,61 @@ describe("KoreanTechniques", () => {
         "gam",
         "gan",
         "gon",
-      ] as const;
-      const techniques = stances.map((stance) =>
-        KoreanTechniques.getTechniqueForStance(stance)
-      );
+      ];
 
-      // Check that techniques have different properties
-      for (let i = 0; i < techniques.length; i++) {
-        for (let j = i + 1; j < techniques.length; j++) {
-          expect(techniques[i].name).not.toBe(techniques[j].name);
-        }
-      }
+      expectedStances.forEach((stance) => {
+        expect(
+          allTechniques[stance as keyof typeof allTechniques]
+        ).toBeDefined();
+      });
+    });
+  });
+
+  describe("getKoreanName", () => {
+    it("should return Korean technique names", () => {
+      const koreanName = KoreanTechniques.getKoreanName("geon");
+      expect(koreanName).toBe("천둥벽력");
     });
 
-    it("should contain Korean characters in technique names", () => {
-      const stances = ["geon", "tae", "li", "jin"] as const;
+    it("should return valid Korean names for all stances", () => {
+      const expectedNames = {
+        geon: "천둥벽력",
+        tae: "유수연타",
+        li: "화염지창",
+        jin: "벽력일섬",
+        son: "선풍연격",
+        gam: "수류반격",
+        gan: "반석방어",
+        gon: "대지포옹",
+      };
 
-      stances.forEach((stance) => {
-        const technique = KoreanTechniques.getTechniqueForStance(stance);
-        expect(technique.name).toBeDefined();
-        expect(technique.name.length).toBeGreaterThan(0);
-        expect(technique.name).toMatch(/[\u3131-\u3163\uac00-\ud7a3]/);
+      Object.entries(expectedNames).forEach(([stance, expectedName]) => {
+        const actualName = KoreanTechniques.getKoreanName(stance as any);
+        expect(actualName).toBe(expectedName);
+      });
+    });
+  });
+
+  describe("Korean technique properties", () => {
+    it("should have appropriate damage ranges for different technique types", () => {
+      const geon = KoreanTechniques.getTechniqueForStance("geon");
+      const gon = KoreanTechniques.getTechniqueForStance("gon");
+
+      // Heaven (geon) should be powerful but balanced
+      expect(geon.damage).toBeGreaterThanOrEqual(25);
+      expect(geon.damage).toBeLessThanOrEqual(35);
+
+      // Earth (gon) should be strong grappling
+      expect(gon.damage).toBeGreaterThanOrEqual(25);
+      expect(gon.damage).toBeLessThanOrEqual(35);
+    });
+
+    it("should have balanced ki costs", () => {
+      const allTechniques = KoreanTechniques.getAllTechniques();
+
+      Object.values(allTechniques).forEach((technique) => {
+        expect(technique.kiCost).toBeGreaterThanOrEqual(10);
+        expect(technique.kiCost).toBeLessThanOrEqual(25);
       });
     });
   });

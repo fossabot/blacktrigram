@@ -212,8 +212,18 @@ describe("TrainingScreen", () => {
       // Test all 8 trigram stances
       for (let i = 1; i <= 8; i++) {
         await user.keyboard(i.toString());
-        expect(screen.getByTestId("pixi-container")).toBeInTheDocument();
+
+        // Verify component remains stable after each stance change
+        await waitFor(() => {
+          expect(screen.getByTestId("pixi-container")).toBeInTheDocument();
+        });
+
+        // Small delay between stance changes
+        await new Promise((resolve) => setTimeout(resolve, 50));
       }
+
+      // Final verification
+      expect(screen.getByTestId("pixi-container")).toBeInTheDocument();
     });
   });
 });
