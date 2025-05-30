@@ -1,53 +1,38 @@
-import { Text as pixiText } from "@pixi/react";
-import type { ReactElement } from "react";
-import type { TextStyle } from "pixi.js";
+import { Text as PixiText } from "@pixi/react";
+import React from "react";
+import type {
+  ITextStyle as PixiTextStyle,
+  TextProps as PixiReactTextProps,
+} from "@pixi/react"; // Correct imports
 
-export interface KoreanTextProps {
+interface KoreanTextProps extends Omit<PixiReactTextProps, "style"> {
   readonly text: string;
+  readonly style?: Partial<PixiTextStyle>;
   readonly x?: number;
   readonly y?: number;
-  readonly anchor?: { x: number; y: number };
-  readonly fontSize?: number;
-  readonly fill?: number;
-  readonly fontWeight?:
-    | "normal"
-    | "bold"
-    | "100"
-    | "200"
-    | "300"
-    | "400"
-    | "500"
-    | "600"
-    | "700"
-    | "800"
-    | "900";
-  readonly fontStyle?: "normal" | "italic" | "oblique";
-  readonly letterSpacing?: number;
+  readonly anchor?: number | { x: number; y: number };
 }
+
+const defaultKoreanTextStyle: Partial<PixiTextStyle> = {
+  fontFamily: "Noto Sans KR, Arial, sans-serif",
+  fontSize: 16,
+  fill: 0xffffff,
+  align: "left",
+  wordWrap: true,
+  wordWrapWidth: 400, // Default wrap width
+};
 
 export function KoreanText({
   text,
-  x = 0,
-  y = 0,
-  anchor = { x: 0, y: 0 },
-  fontSize = 16,
-  fill = 0xffffff,
-  fontWeight = "normal",
-  fontStyle = "normal",
-  letterSpacing = 0,
-}: KoreanTextProps): ReactElement {
-  const defaultStyle: Partial<TextStyle> = {
-    fontFamily: "Noto Sans KR",
-    fontSize,
-    fill,
-    fontWeight,
-    fontStyle,
-    letterSpacing,
-  };
+  style,
+  ...rest
+}: KoreanTextProps): React.JSX.Element {
+  const mergedStyle: Partial<PixiTextStyle> = {
+    ...defaultKoreanTextStyle,
+    ...style,
+  }; // Ensure mergedStyle is Partial<PixiTextStyle>
 
-  return (
-    <pixiText text={text} x={x} y={y} anchor={anchor} style={defaultStyle} />
-  );
+  return <PixiText text={text} style={mergedStyle} {...rest} />;
 }
 
 // Helper function to validate Korean text

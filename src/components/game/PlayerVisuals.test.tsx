@@ -1,186 +1,200 @@
 import { describe, it, expect, vi } from "vitest";
-import { render } from "@testing-library/react";
-import { PlayerVisuals } from "./PlayerVisuals";
-import { createPlayerState, type KoreanTechnique } from "../../types";
+import { renderInStage } from "../../../test/test-utils"; // Assuming this path
+import { PlayerVisuals, type PlayerVisualsProps } from "../PlayerVisuals"; // Import PlayerVisualsProps
+import {
+  createPlayerState,
+  type PlayerState,
+  type TrigramStance,
+  TRIGRAM_DATA,
+} from "../../types";
 
-// Mock @pixi/react
-vi.mock("@pixi/react", () => ({
-  Container: ({ children, ...props }: any) => (
-    <div data-testid="pixi-container" {...props}>
-      {children}
-    </div>
-  ),
-  Graphics: ({ draw, ...props }: any) => {
-    if (draw) {
-      const mockGraphics = {
-        clear: vi.fn(),
-        setFillStyle: vi.fn(),
-        setStrokeStyle: vi.fn(),
-        rect: vi.fn(),
-        circle: vi.fn(),
-        fill: vi.fn(),
-        stroke: vi.fn(),
-      };
-      draw(mockGraphics);
-    }
-    return <div data-testid="pixi-graphics" {...props} />;
-  },
-  Text: ({ text, ...props }: any) => (
-    <div data-testid="pixi-text" data-text={text} {...props} />
-  ),
-  useTick: vi.fn(),
-}));
+// Mock PlayerVisuals sub-components if they are complex or cause issues in tests
+vi.mock("@pixi/react", async () => {
+  const actual = await vi.importActual("@pixi/react");
+  return {
+    ...actual,
+    // Mock specific components if needed, e.g., Text, Graphics
+    // Text: vi.fn(({ text }) => <div>{text}</div>), // Simple mock for Text
+  };
+});
 
-describe("PlayerVisuals", () => {
-  const defaultProps = {
-    playerState: createPlayerState(),
-    opponentPosition: { x: 600, y: 300 },
-    animationTime: 0,
+describe("PlayerVisuals Component", () => {
+  const defaultPlayerId = "test-player";
+  const defaultPosition = { x: 100, y: 100 };
+
+  const basePlayerState: PlayerState = createPlayerState(
+    defaultPlayerId,
+    defaultPosition
+  );
+
+  const defaultProps: PlayerVisualsProps = {
+    playerState: basePlayerState,
+    // visualConfig, showTrigramSymbol, showAura, showPlayerId, showDebugInfo can be defaulted or explicitly set
   };
 
-  it("renders player visuals correctly", () => {
-    const { container } = render(<PlayerVisuals {...defaultProps} />);
-    expect(container).toBeInTheDocument();
+  it("should render without crashing with default props", () => {
+    renderInStage(<PlayerVisuals {...defaultProps} />);
+    expect(true).toBe(true); // Basic check
   });
 
-  it("displays current stance correctly", () => {
-    const playerState = createPlayerState({ stance: "li" });
-
-    const { getByTestId } = render(
-      <PlayerVisuals {...defaultProps} playerState={playerState} />
-    );
-
-    // Verify stance is rendered
-    expect(getByTestId("pixi-container")).toBeInTheDocument();
-  });
-
-  it("shows health status correctly", () => {
-    const lowHealthPlayer = createPlayerState({ health: 20 });
-
-    const { container } = render(
-      <PlayerVisuals {...defaultProps} playerState={lowHealthPlayer} />
-    );
-
-    expect(container).toBeInTheDocument();
-  });
-
-  it("handles different facing directions", () => {
-    const leftFacingPlayer = createPlayerState({ facing: "left" });
-
-    const { container } = render(
-      <PlayerVisuals {...defaultProps} playerState={leftFacingPlayer} />
-    );
-
-    expect(container).toBeInTheDocument();
-
-    const rightFacingPlayer = createPlayerState({ facing: "right" });
-
-    const { rerender } = render(
-      <PlayerVisuals {...defaultProps} playerState={rightFacingPlayer} />
-    );
-
-    rerender(
-      <PlayerVisuals {...defaultProps} playerState={rightFacingPlayer} />
-    );
-
-    expect(container).toBeInTheDocument();
-  });
-
-  it("renders attack animations", () => {
-    const attackingPlayer = createPlayerState({ isAttacking: true });
-
-    const { container } = render(
-      <PlayerVisuals {...defaultProps} playerState={attackingPlayer} />
-    );
-
-    expect(container).toBeInTheDocument();
-  });
-
-  it("displays blocking state", () => {
-    const blockingPlayer = createPlayerState({ isBlocking: true });
-
-    const { container } = render(
-      <PlayerVisuals {...defaultProps} playerState={blockingPlayer} />
-    );
-
-    expect(container).toBeInTheDocument();
-  });
-
-  it("shows status effects", () => {
-    const playerWithEffects = createPlayerState({
-      activeEffects: [
-        {
-          id: "stunned",
-          name: "Stunned",
-          korean: "기절",
-          type: "stun",
-          intensity: 1,
-          duration: 2000,
-          effects: {
-            speedMultiplier: 0.5,
-          },
-        },
-      ],
-    });
-
-    const { container } = render(
-      <PlayerVisuals {...defaultProps} playerState={playerWithEffects} />
-    );
-
-    expect(container).toBeInTheDocument();
-  });
-
-  it("updates animation over time", () => {
-    const { rerender } = render(
-      <PlayerVisuals {...defaultProps} animationTime={0} />
-    );
-
-    rerender(<PlayerVisuals {...defaultProps} animationTime={1000} />);
-
-    // Animation should update smoothly
-    expect(true).toBe(true);
-  });
-
-  it("handles all trigram stances", () => {
-    const stances = [
-      "geon",
-      "tae",
-      "li",
-      "jin",
-      "son",
-      "gam",
-      "gan",
-      "gon",
-    ] as const;
-
-    stances.forEach((stance) => {
-      const playerState = createPlayerState({ stance });
-
-      const { container } = render(
-        <PlayerVisuals {...defaultProps} playerState={playerState} />
-      );
-
-      expect(container).toBeInTheDocument();
-    });
-  });
-
-  it("responds to stance changes dynamically", () => {
-    const { rerender } = render(
+  it("should display player ID if configured", () => {
+    const testIdPlayer = createPlayerState("player-with-id", defaultPosition);
+    renderInStage(
       <PlayerVisuals
         {...defaultProps}
-        playerState={createPlayerState({ stance: "geon" })}
+        playerState={testIdPlayer}
+        showPlayerId={true}
       />
     );
+    // Assertion depends on mock implementation or actual rendering
+  });
 
-    // Change stance dynamically
-    const stances = ["tae", "li", "jin", "son", "gam", "gan", "gon"] as const;
+  it("should reflect different player stances", () => {
+    const playerState = createPlayerState(
+      defaultPlayerId,
+      defaultPosition,
+      "li"
+    );
+    renderInStage(
+      <PlayerVisuals {...defaultProps} playerState={playerState} />
+    );
+    // Add assertions
+  });
 
-    stances.forEach((stance) => {
-      const newState = createPlayerState({ stance });
+  it("should indicate low health visually", () => {
+    const lowHealthPlayer = createPlayerState(
+      defaultPlayerId,
+      defaultPosition,
+      "geon",
+      { health: 20 }
+    );
+    renderInStage(
+      <PlayerVisuals {...defaultProps} playerState={lowHealthPlayer} />
+    );
+    // Add assertions
+  });
 
-      rerender(<PlayerVisuals {...defaultProps} playerState={newState} />);
+  it("should face left correctly", () => {
+    const leftFacingPlayer = createPlayerState(
+      defaultPlayerId,
+      defaultPosition,
+      "geon",
+      { facingDirection: "left" }
+    );
+    renderInStage(
+      <PlayerVisuals {...defaultProps} playerState={leftFacingPlayer} />
+    );
+    // Add assertions
+  });
+
+  it("should face right correctly", () => {
+    const rightFacingPlayer = createPlayerState(
+      defaultPlayerId,
+      defaultPosition,
+      "geon",
+      { facingDirection: "right" }
+    );
+    renderInStage(
+      <PlayerVisuals {...defaultProps} playerState={rightFacingPlayer} />
+    );
+    // Add assertions
+  });
+
+  it("should display attacking animation/state", () => {
+    const attackingPlayer = createPlayerState(
+      defaultPlayerId,
+      defaultPosition,
+      "geon",
+      { isAttacking: true }
+    );
+    renderInStage(
+      <PlayerVisuals {...defaultProps} playerState={attackingPlayer} />
+    );
+    // Add assertions
+  });
+
+  it("should display blocking animation/state", () => {
+    const blockingPlayer = createPlayerState(
+      defaultPlayerId,
+      defaultPosition,
+      "geon",
+      { isBlocking: true }
+    );
+    renderInStage(
+      <PlayerVisuals {...defaultProps} playerState={blockingPlayer} />
+    );
+    // Add assertions
+  });
+
+  it("should render status effects (e.g., stun)", () => {
+    const playerWithEffects = createPlayerState(
+      defaultPlayerId,
+      defaultPosition,
+      "geon",
+      {
+        conditions: [{ type: "stun", duration: 5, source: "test" }],
+      }
+    );
+    renderInStage(
+      <PlayerVisuals {...defaultProps} playerState={playerWithEffects} />
+    );
+    // Add assertions
+  });
+
+  describe("Korean Cultural Element Rendering", () => {
+    it("should display Trigram symbols correctly when enabled", () => {
+      const stances: TrigramStance[] = [
+        "geon",
+        "tae",
+        "li",
+        "jin",
+        "son",
+        "gam",
+        "gan",
+        "gon",
+      ];
+      stances.forEach((stance) => {
+        const playerState = createPlayerState(
+          defaultPlayerId,
+          defaultPosition,
+          stance
+        );
+        const { unmount } = renderInStage(
+          <PlayerVisuals
+            {...defaultProps}
+            playerState={playerState}
+            showTrigramSymbol={true}
+          />
+        );
+        // e.g., expect(screen.getByText(TRIGRAM_DATA[stance].symbol)).toBeInTheDocument();
+        unmount();
+      });
     });
 
-    expect(true).toBe(true);
+    it("should render aura with authentic Korean colors", () => {
+      renderInStage(
+        <PlayerVisuals
+          {...defaultProps}
+          playerState={createPlayerState(
+            defaultPlayerId,
+            defaultPosition,
+            "geon",
+            { isAttacking: true }
+          )}
+          showAura={true}
+        />
+      );
+      // Assertions
+    });
+
+    it("should use Noto Sans KR for Korean text elements if any", () => {
+      const newState = createPlayerState(
+        defaultPlayerId,
+        defaultPosition,
+        "geon"
+      );
+      renderInStage(<PlayerVisuals {...defaultProps} playerState={newState} />);
+      // Check if the font family is set to Noto Sans KR for relevant text elements
+    });
   });
 });

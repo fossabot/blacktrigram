@@ -1,54 +1,18 @@
-import type { StatusEffect } from "../../types/GameTypes";
-import { ANATOMICAL_REGIONS, type VitalPoint } from "./AnatomicalRegions";
+import type {
+  StatusEffect,
+  VitalPoint, // Imported from types/index.ts
+  EnergyMeridian, // Assuming these are now in types/index.ts
+  ElementalRelations, // Assuming these are now in types/index.ts
+  KoreanAnatomicalZone, // Assuming these are now in types/index.ts
+  Position, // Assuming Position is defined in types/index.ts
+} from "../../types"; // Changed import path
+import { ANATOMICAL_REGIONS_DATA as ANATOMICAL_REGIONS } from "./AnatomicalRegions"; // Use renamed const
 
 /**
  * Korean Martial Arts Anatomy System
  * Traditional Korean medical knowledge applied to vital point targeting
  * Based on TCM meridian theory and Korean martial arts philosophy
  */
-
-// Define missing interfaces for Korean anatomy system
-interface EnergyMeridian {
-  readonly id: string;
-  readonly korean: string;
-  readonly english: string;
-  readonly element: string;
-  readonly startPoint: { x: number; y: number };
-  readonly endPoint: { x: number; y: number };
-  readonly vitalPoints: readonly string[];
-  readonly energy: "yin" | "yang";
-  readonly description: string;
-  readonly traditionalName: string;
-}
-
-interface ElementalRelations {
-  readonly element: string;
-  readonly generative: string; // Element that generates this one
-  readonly destructive: string; // Element that destroys this one
-  readonly supports: readonly string[]; // Elements this one supports
-  readonly weakens: readonly string[]; // Elements this one weakens
-  readonly emotion: string;
-  readonly organ: string;
-  readonly season: string;
-  readonly direction: string;
-}
-
-interface KoreanAnatomicalZone {
-  readonly id: string;
-  readonly korean: string;
-  readonly english: string;
-  readonly boundaries: {
-    readonly top: number;
-    readonly bottom: number;
-    readonly left: number;
-    readonly right: number;
-  };
-  readonly vulnerability: number;
-  readonly meridians: readonly string[];
-  readonly vitalPoints: readonly string[];
-  readonly traditionalImportance: number;
-  readonly description: string;
-}
 
 class KoreanAnatomySystem {
   // Korean meridian system based on traditional medicine
@@ -334,14 +298,17 @@ class KoreanAnatomySystem {
   public static findOptimalVitalPoints(
     attackerElement: string
   ): readonly VitalPoint[] {
+    // Returns imported VitalPoint
     const elementalRelation = this.ELEMENTAL_SYSTEM[attackerElement];
     if (!elementalRelation) return [];
 
-    const optimalPoints: VitalPoint[] = [];
+    const optimalPoints: VitalPoint[] = []; // Uses imported VitalPoint
 
     // Find points that exploit elemental weaknesses
     Object.values(ANATOMICAL_REGIONS).forEach(() => {
       // Implementation for finding optimal points
+      // This logic would iterate KOREAN_VITAL_POINTS from AnatomicalRegions.ts
+      // and check their properties against elementalRelation.
     });
 
     return optimalPoints;
@@ -397,21 +364,23 @@ class KoreanAnatomySystem {
     meridianId: string,
     disruptionLevel: number
   ): readonly StatusEffect[] {
+    // Returns imported StatusEffect
     const meridian = this.KOREAN_MERIDIANS[meridianId];
     if (!meridian) return [];
 
-    const effects: StatusEffect[] = [];
-    const intensity = Math.min(1.0, disruptionLevel);
+    const effects: StatusEffect[] = []; // Uses imported StatusEffect
+    const intensity = Math.min(1.0, disruptionLevel); // intensity is used here, but StatusEffect uses magnitude
     const baseDuration = 3000;
 
     // Element-specific effects
+    // These need to use 'magnitude' instead of 'intensity'
     switch (meridian.element) {
       case "metal":
         if (disruptionLevel > 0.5) {
           effects.push({
             type: "stamina_drain",
             duration: baseDuration * intensity,
-            intensity: intensity * 0.6,
+            magnitude: intensity * 0.6, // Changed from intensity
             source: "meridian_disruption",
           });
         }
@@ -422,7 +391,7 @@ class KoreanAnatomySystem {
           effects.push({
             type: "vital_weakness",
             duration: baseDuration * intensity,
-            intensity: intensity * 0.7,
+            magnitude: intensity * 0.7, // Changed from intensity
             source: "meridian_disruption",
           });
         }
@@ -433,7 +402,7 @@ class KoreanAnatomySystem {
           effects.push({
             type: "vital_stunning",
             duration: baseDuration * intensity * 0.5,
-            intensity: intensity * 0.8,
+            magnitude: intensity * 0.8, // Changed from intensity
             source: "meridian_disruption",
           });
         }
@@ -444,7 +413,7 @@ class KoreanAnatomySystem {
           effects.push({
             type: "damage_vulnerability",
             duration: baseDuration * intensity,
-            intensity: intensity * 0.5,
+            magnitude: intensity * 0.5, // Changed from intensity
             source: "meridian_disruption",
           });
         }
@@ -455,7 +424,7 @@ class KoreanAnatomySystem {
           effects.push({
             type: "vital_paralysis",
             duration: baseDuration * intensity * 0.7,
-            intensity: intensity * 0.6,
+            magnitude: intensity * 0.6, // Changed from intensity
             source: "meridian_disruption",
           });
         }
@@ -490,4 +459,3 @@ class KoreanAnatomySystem {
 
 // Export the class as KoreanAnatomy to match existing imports
 export const KoreanAnatomy = KoreanAnatomySystem;
-export type { EnergyMeridian, ElementalRelations, KoreanAnatomicalZone };

@@ -5,7 +5,9 @@ import type { GameState, PlayerState } from "../../types";
 
 describe("GameUI", () => {
   const mockPlayerState: PlayerState = {
-    position: { x: 400, y: 300 },
+    playerId: "player1",
+    position: { x: 100, y: 300 },
+    velocity: { x: 0, y: 0 },
     health: 100,
     maxHealth: 100,
     stamina: 100,
@@ -14,9 +16,13 @@ describe("GameUI", () => {
     maxKi: 100,
     stance: "geon",
     isBlocking: false,
+    isMoving: false,
     isAttacking: false,
+    facing: "right",
+    targetId: null,
     comboCount: 0,
-    statusEffects: [],
+    lastHitTime: 0,
+    conditions: [],
   };
 
   const mockGameState: GameState = {
@@ -54,7 +60,7 @@ describe("GameUI", () => {
   });
 
   it("should handle game state updates", () => {
-    const { rerender } = render(<GameUI {...mockProps} />);
+    const { container, rerender } = render(<GameUI {...mockProps} />);
 
     const updatedState: GameState = {
       ...mockGameState,

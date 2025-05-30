@@ -1,254 +1,134 @@
-import { useCallback, useEffect, useState } from "react";
-import type { HitEffect } from "../../types";
-import type { Graphics as PixiGraphics } from "pixi.js";
+import React, { useState, useEffect, useCallback } from "react";
+import { Container, Graphics, Text, useTick } from "@pixi/react";
+import type { CombatEvent, Position } from "../../types";
+import { KOREAN_COLORS } from "../../types";
+import type { Graphics as PixiGraphics, Ticker } from "pixi.js";
 
-export interface HitEffectsLayerProps {
-  readonly effects: HitEffect[]; // Fixed prop name
+interface HitEffect {
+  id: string;
+  position: Position;
+  text: string;
+  color: number;
+  life: number;
+  type: "damage" | "crit" | "block" | "miss" | "technique";
+  timestamp: number; // Added timestamp
+  techniqueName?: string; // Added techniqueName
+  damageAmount?: number; // Added damageAmount
 }
 
-interface Particle {
-  readonly x: number;
-  readonly y: number;
-  readonly vx: number;
-  readonly vy: number;
-  readonly life: number;
-  readonly maxLife: number;
-  readonly color: number;
-  readonly size: number;
-}
-
-interface ScreenShake {
-  readonly intensity: number;
-  readonly duration: number;
-  readonly timeRemaining: number;
-}
+const EFFECT_LIFE_TIME = 60; // frames (approx 1 second at 60fps)
 
 export function HitEffectsLayer({
-  effects,
-}: HitEffectsLayerProps): JSX.Element {
-  const [particles, setParticles] = useState<readonly Particle[]>([]);
-  const [screenShake, setScreenShake] = useState<ScreenShake | null>(null);
+  combatEvents,
+}: {
+  readonly combatEvents: CombatEvent[];
+}): React.JSX.Element {
+  const [effects, setEffects] = useState<HitEffect[]>([]);
+  const lastEvent =
+    combatEvents.length > 0 ? combatEvents[combatEvents.length - 1] : undefined;
 
-  // Generate particles for hit effects
-  const generateHitParticles = useCallback((effect: HitEffect): Particle[] => {
-    const particleCount = effect.type === "critical" ? 25 : 12;
-    const newParticles: Particle[] = [];
+  useEffect(() => {
+    if (!lastEvent || !lastEvent.attackerId) return; // Ensure lastEvent and attackerId exist
 
-    for (let i = 0; i < particleCount; i++) {
-      const angle = (Math.PI * 2 * i) / particleCount + Math.random() * 0.5;
-      const speed =
-        effect.type === "critical"
-          ? 3 + Math.random() * 4
-          : 2 + Math.random() * 2;
+    const attackerPosition = {
+      x: Math.random() * 700 + 50,
+      y: Math.random() * 200 + 350,
+    }; // Placeholder position
 
-      newParticles.push({
-        x: effect.position.x,
-        y: effect.position.y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        life: 30,
-        maxLife: 30,
-        color:
-          effect.type === "critical"
-            ? 0xff0080
-            : effect.type === "heavy"
-            ? 0xff4500
-            : 0xffffff,
-        size: effect.type === "critical" ? 4 : 2,
-      });
+    let newEffect: HitEffect | null = null;
+
+    if (lastEvent.type === "attack_result") {
+      const damage = lastEvent.damage !== undefined ? lastEvent.damage : 0;
+      const isCrit = "isCritical" in lastEvent ? lastEvent.isCritical : false; // Check for isCritical
+
+      newEffect = {
+        id: `${Date.now()}-${Math.random()}`,
+        position: attackerPosition, // Position should ideally come from defender
+        text: isCrit ? `치명타! ${damage}` : `${damage}`,
+        color: isCrit
+          ? KOREAN_COLORS.CRITICAL_RED
+          : KOREAN_COLORS.DAMAGE_YELLOW,
+        life: EFFECT_LIFE_TIME,
+        type: isCrit ? "crit" : "damage",
+        timestamp: lastEvent.timestamp, // Use timestamp from CombatEvent
+        damageAmount: damage, // Add damageAmount
+        techniqueName: lastEvent.technique, // Use technique from CombatEvent
+      };
+    } else if (lastEvent.type === "action_fail") {
+      // Could add an effect for failed actions
     }
 
-    return newParticles;
-  }, []);
+    if (newEffect) {
+      setEffects((prevEffects) =>
+        [...prevEffects, newEffect as HitEffect].slice(-10)
+      ); // Keep last 10 effects
+    }
+  }, [lastEvent]); // Depend on lastEvent
 
-  // Generate screen shake for hit effects
-  const generateScreenShake = useCallback((effect: HitEffect): void => {
-    const intensity =
-      effect.type === "critical" ? 15 : Math.min(effect.damage / 2, 8);
-
-    setScreenShake({
-      intensity,
-      duration: 10,
-      timeRemaining: 10,
-    });
-  }, []);
-
-  // Process new effects
-  useEffect(() => {
-    effects.forEach((effect) => {
-      const newParticles = generateHitParticles(effect);
-      setParticles((prev) => [...prev, ...newParticles]);
-
-      generateScreenShake(effect);
-    });
-  }, [effects, generateHitParticles, generateScreenShake]);
-
-  // Update particles
-  useEffect(() => {
-    const updateInterval = setInterval(() => {
-      setParticles((prev) =>
-        prev
-          .map((particle) => ({
-            ...particle,
-            x: particle.x + particle.vx,
-            y: particle.y + particle.vy,
-            vx: particle.vx * 0.98, // Air resistance
-            vy: particle.vy * 0.98 + 0.1, // Gravity
-            life: particle.life - 1,
-          }))
-          .filter((particle) => particle.life > 0)
+  useTick(
+    useCallback((delta: number, _ticker: Ticker) => {
+      setEffects((prevEffects) =>
+        prevEffects
+          .map((effect) => ({ ...effect, life: effect.life - delta }))
+          .filter((effect) => effect.life > 0)
       );
-
-      setScreenShake((prev) =>
-        prev && prev.timeRemaining > 0
-          ? { ...prev, timeRemaining: prev.timeRemaining - 1 }
-          : null
-      );
-    }, 16);
-
-    return () => clearInterval(updateInterval);
-  }, []);
-
-  const drawParticles = useCallback(
-    (g: PixiGraphics) => {
-      g.clear();
-
-      particles.forEach((particle) => {
-        const alpha = particle.life / particle.maxLife;
-        const size = particle.size * alpha;
-
-        g.setFillStyle({ color: particle.color, alpha });
-        g.circle(particle.x, particle.y, size);
-        g.fill();
-      });
-    },
-    [particles]
+    }, [])
   );
 
-  const getShakeOffset = useCallback((): { x: number; y: number } => {
-    if (!screenShake) return { x: 0, y: 0 };
+  const drawEffect = useCallback((g: PixiGraphics, effect: HitEffect) => {
+    g.clear();
+    const alpha =
+      EFFECT_LIFE_TIME > 0 ? Math.max(0, effect.life / EFFECT_LIFE_TIME) : 1; // Ensure EFFECT_LIFE_TIME is not zero
 
-    const intensity =
-      screenShake.intensity *
-      (screenShake.timeRemaining / screenShake.duration);
-    return {
-      x: (Math.random() - 0.5) * intensity,
-      y: (Math.random() - 0.5) * intensity,
-    };
-  }, [screenShake]);
+    if (effect.type === "damage" || effect.type === "crit") {
+      // Floating damage text
+    } else if (effect.type === "technique" && effect.techniqueName) {
+      // Display technique name
+    }
+    // Other effect types like block, miss can be drawn here
+  }, []);
 
-  const shakeOffset = getShakeOffset();
-
-  const renderHitEffect = useCallback(
-    (effect: HitEffect) => {
-      const effectAlpha = 1.0;
-      const effectScale = effect.type === "critical" ? 1.5 : 1.0;
-
-      return (
-        <pixiContainer
+  return (
+    <Container>
+      {effects.map((effect) => (
+        <Container
+          key={effect.id}
           x={effect.position.x}
-          y={effect.position.y}
-          scale={{ x: effectScale, y: effectScale }}
+          y={effect.position.y - (EFFECT_LIFE_TIME - effect.life)}
         >
-          {/* Impact flash */}
-          <pixiGraphics
-            draw={(g: PixiGraphics) => {
-              g.clear();
-
-              const flashColor =
-                effect.type === "critical"
-                  ? 0xff0080
-                  : effect.type === "heavy"
-                  ? 0xff4500
-                  : 0xffffff;
-
-              g.setFillStyle({ color: flashColor, alpha: effectAlpha * 0.6 });
-              g.circle(0, 0, 20);
-              g.fill();
-
-              g.setStrokeStyle({
-                color: flashColor,
-                width: 3,
-                alpha: effectAlpha,
-              });
-              g.circle(0, 0, 30);
-              g.stroke();
-            }}
-          />
-
-          {/* Damage text */}
-          <pixiText
-            text={`${effect.damage}`}
-            anchor={{ x: 0.5, y: 0.5 }}
-            y={-40}
+          <Text
+            text={effect.text}
+            anchor={0.5}
             style={{
               fontFamily: "Noto Sans KR",
-              fontSize: effect.type === "critical" ? 24 : 18,
-              fill: effect.type === "critical" ? 0xff0080 : 0xffffff,
-              fontWeight: "bold",
+              fontSize: effect.type === "crit" ? 24 : 18,
+              fill: effect.color,
+              stroke: KOREAN_COLORS.BLACK,
+              strokeThickness: 2,
+              fontWeight: effect.type === "crit" ? "bold" : "normal",
+              alpha:
+                EFFECT_LIFE_TIME > 0
+                  ? Math.max(0, effect.life / EFFECT_LIFE_TIME)
+                  : 1,
             }}
           />
-
-          {/* Critical hit indicator */}
-          {effect.type === "critical" && (
-            <pixiGraphics
-              draw={(g: PixiGraphics) => {
-                g.clear();
-
-                // Draw energy burst lines
-                for (let i = 0; i < 8; i++) {
-                  const angle = (Math.PI * 2 * i) / 8;
-                  const startX = Math.cos(angle) * 25;
-                  const startY = Math.sin(angle) * 25;
-                  const endX = Math.cos(angle) * 45;
-                  const endY = Math.sin(angle) * 45;
-
-                  g.setStrokeStyle({
-                    color: 0xff0080,
-                    width: 2,
-                    alpha: effectAlpha,
-                  });
-                  g.moveTo(startX, startY);
-                  g.lineTo(endX, endY);
-                  g.stroke();
-                }
-              }}
-            />
-          )}
-
-          {/* Hit type indicator */}
-          {effect.type !== "light" && (
-            <pixiText
-              text={
-                effect.type === "critical"
-                  ? "급소!"
-                  : effect.type === "heavy"
-                  ? "강타!"
-                  : "명중!"
-              }
-              anchor={{ x: 0.5, y: 0.5 }}
-              y={-60}
+          {effect.type === "technique" && effect.techniqueName && (
+            <Text
+              text={effect.techniqueName} // Use techniqueName
+              anchor={{ x: 0.5, y: 1.2 }} // Position below damage/crit text
               style={{
                 fontFamily: "Noto Sans KR",
                 fontSize: 14,
-                fill: 0xffd700,
-                fontWeight: "bold",
+                fill: KOREAN_COLORS.WHITE,
+                alpha:
+                  EFFECT_LIFE_TIME > 0
+                    ? Math.max(0, effect.life / EFFECT_LIFE_TIME)
+                    : 1,
               }}
             />
           )}
-        </pixiContainer>
-      );
-    },
-    [effects]
-  );
-
-  return (
-    <pixiContainer x={shakeOffset.x} y={shakeOffset.y}>
-      {/* Particle effects */}
-      <pixiGraphics draw={drawParticles} />
-
-      {/* Hit effect visualization */}
-      {effects.map((effect, index) => renderHitEffect(effect))}
-    </pixiContainer>
+        </Container>
+      ))}
+    </Container>
   );
 }

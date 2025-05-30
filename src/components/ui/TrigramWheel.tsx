@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import type { Graphics as PixiGraphics } from "pixi.js";
 import type { TrigramStance, TrigramWheelProps } from "../../types";
 import { TRIGRAM_DATA, KOREAN_COLORS } from "../../types";
@@ -9,7 +9,7 @@ export function TrigramWheel({
   x = 0,
   y = 0,
   radius = 120,
-}: TrigramWheelProps): JSX.Element {
+}: TrigramWheelProps): React.JSX.Element {
   const [hoveredStance, setHoveredStance] = useState<TrigramStance | null>(
     null
   );

@@ -11,9 +11,13 @@ vi.mock("../../../audio/AudioManager", () => ({
 }));
 
 describe("TrigramWheel", () => {
+  const mockOnStanceSelect = vi.fn();
+  const mockOnStanceChange = vi.fn(); // Mock for onStanceChange
+
   const mockProps = {
     selectedStance: "geon" as TrigramStance,
-    onStanceSelect: vi.fn(),
+    onStanceSelect: mockOnStanceSelect,
+    onStanceChange: mockOnStanceChange, // Add missing prop
     isEnabled: true,
   };
 

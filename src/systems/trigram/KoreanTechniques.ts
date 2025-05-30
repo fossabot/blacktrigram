@@ -1,111 +1,112 @@
-import type { TrigramStance, KoreanTechnique } from "../../types";
-import { TRIGRAM_DATA } from "../../types";
-
-interface KoreanTechnique {
-  readonly name: string;
-  readonly damage: number;
-  readonly range: number;
-  readonly kiCost: number;
-  readonly description: string;
-}
-
-const KOREAN_TECHNIQUES: Record<TrigramStance, KoreanTechnique> = {
-  geon: {
-    name: "천둥벽력",
-    damage: 28,
-    range: 60,
-    kiCost: 15,
-    description: "Heaven's Thunder Strike - Divine power from above",
-  },
-  tae: {
-    name: "유수연타",
-    damage: 18,
-    range: 45,
-    kiCost: 10,
-    description: "Lake's Flowing Combo - Gentle yet persistent",
-  },
-  li: {
-    name: "화염지창",
-    damage: 35,
-    range: 55,
-    kiCost: 20,
-    description: "Fire Spear - Explosive piercing attack",
-  },
-  jin: {
-    name: "벽력일섬",
-    damage: 40,
-    range: 50,
-    kiCost: 25,
-    description: "Thunder Flash - Lightning-fast strike",
-  },
-  son: {
-    name: "선풍연격",
-    damage: 15,
-    range: 70,
-    kiCost: 8,
-    description: "Wind Whirlwind - Swift successive strikes",
-  },
-  gam: {
-    name: "수류반격",
-    damage: 25,
-    range: 40,
-    kiCost: 12,
-    description: "Water Counter - Flowing defensive strike",
-  },
-  gan: {
-    name: "반석방어",
-    damage: 12,
-    range: 30,
-    kiCost: 5,
-    description: "Mountain Defense - Immovable protection",
-  },
-  gon: {
-    name: "대지포옹",
-    damage: 30,
-    range: 35,
-    kiCost: 18,
-    description: "Earth Embrace - Grounding grappling technique",
-  },
-};
+import type {
+  TrigramStance,
+  KoreanTechnique as ImportedKoreanTechnique,
+  TrigramData,
+  KoreanTechnique,
+} from "../../types"; // Use alias for imported type
+import { TRIGRAM_DATA } from "../../types"; // Ensure TRIGRAM_DATA is imported if used directly
 
 export class KoreanTechniques {
-  public static getTechniqueForStance(stance: TrigramStance): KoreanTechnique {
-    return KOREAN_TECHNIQUES[stance];
+  public static getTechniqueForStance(
+    stance: TrigramStance
+  ): ImportedKoreanTechnique {
+    const trigramData = TRIGRAM_DATA[stance];
+    if (!trigramData || !trigramData.technique) {
+      throw new Error(`Technique for stance ${stance} not found.`);
+    }
+    return trigramData.technique as ImportedKoreanTechnique;
   }
 
-  public static getAllTechniques(): Record<TrigramStance, KoreanTechnique> {
-    return { ...KOREAN_TECHNIQUES };
+  public static getAllTechniques(): ImportedKoreanTechnique[] {
+    return Object.values(TRIGRAM_DATA).map(
+      (trigram) => trigram.technique as ImportedKoreanTechnique
+    );
   }
 
   public static getKoreanName(stance: TrigramStance): string {
-    return KOREAN_TECHNIQUES[stance].name;
+    return TRIGRAM_DATA[stance].name;
   }
 }
 
 // Add the missing function that systems are trying to import
-export function getTechniqueByStance(stance: TrigramStance): KoreanTechnique {
+export function getTechniqueByStance(
+  stance: TrigramStance
+): ImportedKoreanTechnique {
   const trigramData = TRIGRAM_DATA[stance];
-  if (!trigramData) {
-    throw new Error(`Unknown trigram stance: ${stance}`);
+  if (!trigramData || !trigramData.technique) {
+    // Fallback or default technique if specific one not found
+    // This should ideally not happen if TRIGRAM_DATA is complete
+    throw new Error(
+      `Technique for stance ${stance} not found in TRIGRAM_DATA.`
+    );
   }
   return trigramData.technique;
 }
 
 // Export techniques for external access
-export function getAllTechniques(): KoreanTechnique[] {
-  return Object.values(TRIGRAM_DATA).map((trigram) => trigram.technique);
+export function getAllTechniques(): ImportedKoreanTechnique[] {
+  return Object.values(TRIGRAM_DATA).map(
+    (trigram) => trigram.technique as ImportedKoreanTechnique
+  );
 }
 
-export function getTechniqueByName(name: string): KoreanTechnique | null {
-  for (const trigram of Object.values(TRIGRAM_DATA)) {
-    if (
-      trigram.technique.name === name ||
-      trigram.technique.koreanName === name
-    ) {
-      return trigram.technique;
+export function getTechniquesByElement(
+  element: string
+): ImportedKoreanTechnique[] {
+  return Object.values(TRIGRAM_DATA)
+    .filter((trigram) => trigram.element === element)
+    .map((trigram) => trigram.technique as ImportedKoreanTechnique);
+}
+
+export function getTechniqueByName(name: string): KoreanTechnique | undefined {
+  for (const stance in TRIGRAM_DATA) {
+    const data = TRIGRAM_DATA[stance as TrigramStance];
+    if (data.technique.name === name || data.technique.koreanName === name) {
+      return data.technique;
     }
   }
-  return null;
+  return undefined;
+}
+
+export function getTechniquesByStance(
+  stance: TrigramStance
+): KoreanTechnique[] {
+  const data = TRIGRAM_DATA[stance];
+  // Assuming a stance might have multiple techniques in the future,
+  // for now, it's just one.
+  return data ? [data.technique] : [];
+}
+
+export function getAllTechniqueNames(): string[] {
+  const names: string[] = [];
+  for (const stance in TRIGRAM_DATA) {
+    const data = TRIGRAM_DATA[stance as TrigramStance];
+    names.push(data.technique.name);
+  }
+  return names;
+}
+
+export function getTrigramDataForTechnique(
+  techniqueName: string
+): TrigramData | undefined {
+  for (const stance in TRIGRAM_DATA) {
+    const data = TRIGRAM_DATA[stance as TrigramStance];
+    if (
+      data.technique.name === techniqueName ||
+      data.technique.koreanName === techniqueName
+    ) {
+      return data;
+    }
+  }
+  return undefined;
+}
+
+// Add this function if it was intended from the error:
+// "Property 'name' does not exist on type 'TrigramData'."
+// This implies a direct access like TRIGRAM_DATA[stance].name was attempted somewhere.
+// If it's about the stance name itself:
+export function getStanceName(stance: TrigramStance): string {
+  return TRIGRAM_DATA[stance].englishName; // Use englishName or koreanName
 }
 
 // Export both names to satisfy different import patterns

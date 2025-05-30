@@ -1,26 +1,36 @@
 import { useCallback } from "react";
 import type { TrigramStance, ProgressTrackerProps } from "../../types";
-import type { Graphics as PixiGraphics } from "pixi.js";
+import { TRIGRAM_DATA, KOREAN_COLORS } from "../../types";
+import type {
+  Graphics as PixiGraphics,
+  TextStyle as PixiTextStyle,
+} from "pixi.js";
+import { Container, Graphics, Text } from "@pixi/react";
+
+const PROGRESS_BAR_HEIGHT = 20; // Define height as a constant
 
 export function ProgressTracker({
   label,
   current,
   maximum,
   currentStance,
-}: ProgressTrackerProps): React.JSX.Element {
+  x = 0, // Default position props
+  y = 0,
+}: ProgressTrackerProps & { x?: number; y?: number }): React.JSX.Element {
+  // Add x, y to props
   const progress = maximum > 0 ? Math.min(100, (current / maximum) * 100) : 0;
 
   const drawProgressBar = useCallback(
     (g: PixiGraphics) => {
       g.clear();
 
-      const width = 300;
-      const height = 20;
-      const progressWidth = (width * progress) / 100;
+      const width = 200;
+      const height = PROGRESS_BAR_HEIGHT; // Use constant
+      const progressWidth = (width * current) / maximum; // Use current and maximum directly
 
-      g.setFillStyle({ color: 0x333333, alpha: 0.8 });
-      g.rect(0, 0, width, height);
-      g.fill();
+      g.beginFill(0x333333, 0.8);
+      g.drawRect(0, 0, width, height);
+      g.endFill();
 
       const stanceColors: Record<TrigramStance, number> = {
         geon: 0xffd700,
@@ -35,49 +45,61 @@ export function ProgressTracker({
 
       const fillColor = currentStance ? stanceColors[currentStance] : 0x00ff00;
 
-      g.setFillStyle({ color: fillColor, alpha: 0.8 });
-      g.rect(0, 0, progressWidth, height);
-      g.fill();
+      g.beginFill(fillColor, 0.9); // Slightly more opaque
+      g.drawRect(0, 0, progressWidth, height);
+      g.endFill();
 
-      g.setStrokeStyle({ color: 0xffffff, width: 2, alpha: 0.7 });
-      g.rect(0, 0, width, height);
-      g.stroke();
+      g.lineStyle(1, 0xffffff, 0.7); // Thinner border
+      g.drawRect(0, 0, width, height);
     },
-    [progress, currentStance]
+    [current, maximum, currentStance]
   );
 
+  const labelStyle: Partial<PixiTextStyle> = {
+    fontFamily: "Noto Sans KR",
+    fontSize: 14,
+    fill: 0xffffff,
+  };
+
+  const progressTextStyle: Partial<PixiTextStyle> = {
+    fontFamily: "Noto Sans KR",
+    fontSize: 12,
+    fill: 0xcccccc,
+  };
+
+  const stanceTextStyle: Partial<PixiTextStyle> = {
+    fontFamily: "Noto Sans KR",
+    fontSize: 10,
+    fill: 0xffd700,
+  };
+
   return (
-    <pixiContainer>
-      <pixiText
+    <Container x={x} y={y} data-testid="pixi-container">
+      <Text
         text={label}
-        y={-25}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 14,
-          fill: 0xffffff,
-        }}
+        y={-18} // Adjusted position
+        style={labelStyle as PixiTextStyle}
       />
-      <pixiGraphics draw={drawProgressBar} />
-      <pixiText
+      <Graphics draw={drawProgressBar} y={0} />
+      <Text
         text={`${current}/${maximum} (${Math.round(progress)}%)`}
-        y={25}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 12,
-          fill: 0xcccccc,
-        }}
+        y={PROGRESS_BAR_HEIGHT + 5} // Position below bar using constant
+        x={100} // Centered on bar
+        anchor={{ x: 0.5, y: 0 }}
+        style={progressTextStyle as Partial<PixiTextStyle>} // Cast style
       />
       {currentStance && (
-        <pixiText
-          text={`현재 자세: ${currentStance.toUpperCase()}`}
-          y={45}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 10,
-            fill: 0xffd700,
-          }}
+        <Text
+          text={`자세: ${
+            TRIGRAM_DATA[currentStance]?.koreanName ||
+            currentStance.toUpperCase()
+          }`}
+          y={PROGRESS_BAR_HEIGHT + 25} // Position further below using constant
+          x={100}
+          anchor={{ x: 0.5, y: 0 }}
+          style={stanceTextStyle as Partial<PixiTextStyle>} // Cast style
         />
       )}
-    </pixiContainer>
+    </Container>
   );
 }

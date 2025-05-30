@@ -1,491 +1,125 @@
 import type {
   TrigramStance,
-  PlayerState,
   KoreanTechnique,
-  AttackResult,
+  TrigramData,
   TransitionMetrics,
   TransitionPath,
-  KOREAN_TECHNIQUES,
+  KiFlowFactors,
 } from "../types";
-import { TRIGRAM_DATA } from "../types";
-import { getTechniqueByStance } from "./trigram/KoreanTechniques";
-import { KoreanCulture } from "./trigram/KoreanCulture";
-import { TrigramCalculator } from "./trigram/TrigramCalculator";
-import { StanceManager } from "./trigram/StanceManager";
+import {
+  TRIGRAM_DATA,
+  STANCE_EFFECTIVENESS_MATRIX,
+  TRIGRAM_STANCES_ORDER,
+} from "../types";
 
-export class TrigramSystem {
-  // Re-export techniques for backward compatibility
-  public static readonly TECHNIQUES = KOREAN_TECHNIQUES;
+export const TrigramSystem = {
+  TRIGRAM_DATA,
+  STANCE_EFFECTIVENESS_MATRIX,
+  TRIGRAM_STANCES_ORDER,
 
-  /**
-   * Get technique for a specific stance
-   */
-  public static getTechniqueForStance(
-    stance: TrigramStance
-  ): KoreanTechnique | null {
-    return getTechniqueByStance(stance);
-  }
+  getTrigramData(stance: TrigramStance): TrigramData {
+    return TRIGRAM_DATA[stance];
+  },
 
-  /**
-   * Get optimal counter stance for opponent
-   */
-  public static getOptimalCounterStance(
-    opponentStance: TrigramStance
-  ): TrigramStance {
-    return StanceManager.getCounterStance(opponentStance);
-  }
+  getTechniqueForStance(stance: TrigramStance): KoreanTechnique | null {
+    const technique = TRIGRAM_DATA[stance]?.technique;
+    return technique || null; // Ensure it returns null if undefined
+  },
 
-  /**
-   * Calculate stance transition cost
-   */
-  public static calculateTransitionCost(
+  calculateStanceAdvantage(
+    attackerStance: TrigramStance,
+    defenderStance: TrigramStance
+  ): number {
+    return (
+      TrigramSystem.STANCE_EFFECTIVENESS_MATRIX[attackerStance]?.[
+        defenderStance
+      ] || 1.0
+    );
+  },
+
+  getKiRegenRate(stance: TrigramStance, baseRate: number = 0.5): number {
+    // Example: Geon has higher Ki regen
+    const stanceModifier = stance === "geon" ? 1.5 : 1.0;
+    return baseRate * stanceModifier;
+  },
+
+  calculateKiFlow(
+    // playerState: PlayerState, // Removed unused parameter
     fromStance: TrigramStance,
     toStance: TrigramStance,
-    playerState: PlayerState
+    factors: KiFlowFactors
+  ): number {
+    const fromData = TRIGRAM_DATA[fromStance];
+    const toData = TRIGRAM_DATA[toStance];
+    let flow = factors.baseRate;
+    if (fromData.element === toData.element) {
+      flow *= 1.2; // Bonus for same element transition
+    }
+    flow *= factors.playerLevelModifier * factors.stanceAffinity;
+    // Use kiRecovery and kiConsumption if they are part of factors
+    flow += (factors.kiRecovery || 0) - (factors.kiConsumption || 0);
+    return flow;
+  },
+
+  calculateTransitionCost(
+    fromStance: TrigramStance,
+    toStance: TrigramStance,
+    playerMaxKi: number // playerMaxKi might not be directly used if costs are fixed
   ): TransitionMetrics {
     if (fromStance === toStance) {
-      return {
-        staminaCost: 0,
-        kiCost: 0,
-        timeDelay: 0,
-        effectiveness: 1.0,
-      };
+      return { kiCost: 0, staminaCost: 0, time: 0, effectiveness: 1 };
     }
-
-    // Calculate transition distance and costs
-    const stanceOrder: TrigramStance[] = [
-      "geon",
-      "tae",
-      "li",
-      "jin",
-      "son",
-      "gam",
-      "gan",
-      "gon",
-    ];
-    const fromIndex = stanceOrder.indexOf(fromStance);
-    const toIndex = stanceOrder.indexOf(toStance);
-
-    const distance = Math.min(
-      Math.abs(toIndex - fromIndex),
-      stanceOrder.length - Math.abs(toIndex - fromIndex)
-    );
-
-    const baseCost = distance * 5;
-    const baseTime = distance * 100; // milliseconds
-
+    const fromData = TRIGRAM_DATA[fromStance];
+    const toData = TRIGRAM_DATA[toStance];
+    // Example cost calculation
+    const orderDiff = Math.abs(fromData.order - toData.order);
+    const kiCost = orderDiff * 5 + playerMaxKi * 0.02; // Base cost + percentage of max Ki
+    const staminaCost = orderDiff * 3;
+    const timeDelay = orderDiff * 0.1; // seconds
     return {
-      staminaCost: baseCost,
-      kiCost: Math.floor(baseCost * 0.6),
-      timeDelay: baseTime,
-      effectiveness: Math.max(0.5, 1 - distance * 0.1),
+      kiCost: kiCost,
+      staminaCost: staminaCost,
+      time: timeDelay,
+      effectiveness: 1 - orderDiff * 0.05, // Less effective for distant transitions
     };
-  }
+  },
 
-  public getOptimalTransitionPath(
+  findOptimalTransitionPath(
     fromStance: TrigramStance,
-    toStance: TrigramStance
+    toStance: TrigramStance,
+    playerMaxKi: number
   ): TransitionPath {
-    const stanceOrder: TrigramStance[] = [
-      "geon",
-      "tae",
-      "li",
-      "jin",
-      "son",
-      "gam",
-      "gan",
-      "gon",
-    ];
-    const fromIndex = stanceOrder.indexOf(fromStance);
-    const toIndex = stanceOrder.indexOf(toStance);
-
-    if (fromIndex === -1 || toIndex === -1) {
-      return { stances: [fromStance, toStance], totalCost: Infinity };
+    // Placeholder for actual pathfinding logic
+    if (fromStance === toStance) {
+      return { path: [fromStance], totalKiCost: 0, totalStaminaCost: 0 };
     }
-
-    // Calculate both clockwise and counterclockwise paths
-    const clockwisePath: TrigramStance[] = [fromStance];
-    const counterclockwisePath: TrigramStance[] = [fromStance];
-
-    // Build clockwise path
-    let currentIndex = fromIndex;
-    while (currentIndex !== toIndex) {
-      currentIndex = (currentIndex + 1) % stanceOrder.length;
-      clockwisePath.push(stanceOrder[currentIndex]!);
-    }
-
-    // Build counterclockwise path
-    currentIndex = fromIndex;
-    while (currentIndex !== toIndex) {
-      currentIndex =
-        (currentIndex - 1 + stanceOrder.length) % stanceOrder.length;
-      counterclockwisePath.push(stanceOrder[currentIndex]!);
-    }
-
-    // Choose the shorter path
-    const optimalPath =
-      clockwisePath.length <= counterclockwisePath.length
-        ? clockwisePath
-        : counterclockwisePath;
-
-    const totalCost = (optimalPath.length - 1) * 5; // Base cost per transition
-
+    // Simplified: direct path
+    const directCost = TrigramSystem.calculateTransitionCost(
+      fromStance,
+      toStance,
+      playerMaxKi
+    );
     return {
-      stances: optimalPath,
-      totalCost,
+      path: [fromStance, toStance],
+      totalKiCost: directCost.kiCost,
+      totalStaminaCost: directCost.staminaCost,
     };
-  }
+  },
 
-  /**
-   * Calculate stance advantage in combat
-   */
-  public static calculateStanceAdvantage(
-    attackerStance: TrigramStance,
-    defenderStance: TrigramStance
-  ): number {
-    return StanceManager.calculateStanceAdvantage(
-      attackerStance,
-      defenderStance
-    );
-  }
-
-  /**
-   * Get damage modifier for stance
-   */
-  public static getDamageModifier(stance: TrigramStance): number {
-    const stanceData = TRIGRAM_STANCES[stance];
-    return stanceData?.damage || 1.0;
-  }
-
-  /**
-   * Get defense modifier for stance
-   */
-  public static getDefenseModifier(stance: TrigramStance): number {
-    const stanceData = TRIGRAM_STANCES[stance];
-    return stanceData?.defense || 1.0;
-  }
-
-  /**
-   * Get speed modifier for stance
-   */
-  public static getSpeedModifier(stance: TrigramStance): number {
-    const stanceData = TRIGRAM_STANCES[stance];
-    return stanceData?.speed || 1.0;
-  }
-
-  /**
-   * Get stance philosophy description
-   */
-  public static getStancePhilosophy(stance: TrigramStance): string {
-    // Use getStanceCulture instead of getStancePhilosophy
-    const culture = KoreanCulture.getStanceCulture(stance);
-    return culture.philosophy;
-  }
-
-  /**
-   * Calculate effective damage with all modifiers
-   */
-  public static calculateEffectiveDamage(
-    baseDamage: number,
-    attackerStance: TrigramStance,
-    defenderStance: TrigramStance
-  ): number {
-    const stanceAdvantage = this.calculateStanceAdvantage(
-      attackerStance,
-      defenderStance
-    );
-    return TrigramCalculator.calculateEffectiveDamage(
-      baseDamage,
-      attackerStance,
-      defenderStance,
-      stanceAdvantage
-    );
-  }
-
-  /**
-   * Calculate hit chance with stance modifiers
-   */
-  public static calculateHitChance(
-    attackerStance: TrigramStance,
-    defenderStance: TrigramStance,
-    baseAccuracy: number
-  ): number {
-    return TrigramCalculator.calculateHitChance(
-      attackerStance,
-      defenderStance,
-      baseAccuracy
-    );
-  }
-
-  /**
-   * Check if stance transition is optimal
-   */
-  public static isOptimalTransition(
-    fromStance: TrigramStance,
-    toStance: TrigramStance
-  ): boolean {
-    return StanceManager.isOptimalTransition(fromStance, toStance);
-  }
-
-  /**
-   * Get comprehensive stance statistics
-   */
-  public static getStanceStats(stance: TrigramStance): {
-    power: number;
-    speed: number;
-    defense: number;
-    flexibility: number;
-    overall: number;
-  } {
-    return TrigramCalculator.getStanceStats(stance);
-  }
-
-  public static calculateCombatEffectiveness(
-    player: PlayerState,
-    technique: KoreanTechnique,
-    opponentStance: TrigramStance
-  ): number {
-    const stanceMultiplier = TrigramCalculator.calculateDamageMultiplier(
-      technique.stance,
-      opponentStance
-    );
-
-    const staminaFactor = player.stamina / player.maxStamina;
-    const kiFactor = player.ki / player.maxKi;
-
-    return Math.min(100, stanceMultiplier * staminaFactor * kiFactor * 100);
-  }
-
-  public static getStanceCulture(stance: TrigramStance): string {
-    const culture = KoreanCulture.getTrigramDescription(stance);
-    return culture || `Unknown stance: ${stance}`;
-  }
-
-  /**
-   * Validate if a technique can be performed in current stance
-   */
-  public static canPerformTechnique(
-    technique: KoreanTechnique,
-    currentStance: TrigramStance,
-    stamina: number,
-    ki: number
-  ): boolean {
-    return (
-      stamina >= technique.staminaCost &&
-      ki >= technique.kiCost &&
-      (technique.stance === currentStance ||
-        TrigramCalculator.calculateStanceSynergy(
-          technique.stance,
-          currentStance
-        ) >= 0.9)
-    );
-  }
-
-  /**
-   * Get all available stances in transition order
-   */
-  public static getAllStances(): readonly TrigramStance[] {
-    return ["geon", "tae", "li", "jin", "son", "gam", "gan", "gon"];
-  }
-
-  // Fix method signatures to match usage
-  public static getStanceEffectiveness(
-    attackerStance: TrigramStance,
-    defenderStance: TrigramStance
-  ): number {
-    // Implementation for stance effectiveness calculation
-    const stanceMatrix: Record<TrigramStance, Record<TrigramStance, number>> = {
-      geon: {
-        geon: 1.0,
-        tae: 1.2,
-        li: 0.8,
-        jin: 1.1,
-        son: 0.9,
-        gam: 1.3,
-        gan: 0.7,
-        gon: 1.0,
-      },
-      tae: {
-        geon: 0.8,
-        tae: 1.0,
-        li: 1.2,
-        jin: 0.9,
-        son: 1.1,
-        gam: 0.7,
-        gan: 1.3,
-        gon: 1.0,
-      },
-      li: {
-        geon: 1.2,
-        tae: 0.8,
-        li: 1.0,
-        jin: 1.3,
-        son: 0.7,
-        gam: 1.0,
-        gan: 0.9,
-        gon: 1.1,
-      },
-      jin: {
-        geon: 0.9,
-        tae: 1.1,
-        li: 0.7,
-        jin: 1.0,
-        son: 1.2,
-        gam: 0.8,
-        gan: 1.0,
-        gon: 1.3,
-      },
-      son: {
-        geon: 1.1,
-        tae: 0.9,
-        li: 1.3,
-        jin: 0.8,
-        son: 1.0,
-        gam: 1.2,
-        gan: 0.7,
-        gon: 1.0,
-      },
-      gam: {
-        geon: 0.7,
-        tae: 1.3,
-        li: 1.0,
-        jin: 1.2,
-        son: 0.8,
-        gam: 1.0,
-        gan: 1.1,
-        gon: 0.9,
-      },
-      gan: {
-        geon: 1.3,
-        tae: 0.7,
-        li: 1.1,
-        jin: 1.0,
-        son: 1.2,
-        gam: 0.9,
-        gan: 1.0,
-        gon: 0.8,
-      },
-      gon: {
-        geon: 1.0,
-        tae: 1.0,
-        li: 0.9,
-        jin: 0.7,
-        son: 1.0,
-        gam: 1.1,
-        gon: 1.2,
-        gon: 1.0,
-      },
-    };
-
-    return stanceMatrix[attackerStance]?.[defenderStance] ?? 1.0;
-  }
-
-  /**
-   * Fix calculateDamage signature to accept 3 parameters
-   */
-  public static calculateDamage(
+  calculateDamage(
     technique: KoreanTechnique,
     distance: number,
     stanceAdvantage: number
   ): number {
-    const baseDamage = technique.damage;
-    const distanceMultiplier = Math.max(0.1, 1.0 - distance / technique.range);
-    const finalDamage = baseDamage * distanceMultiplier * stanceAdvantage;
-
-    return Math.round(Math.max(1, finalDamage));
-  }
-}
-
-// Export all sub-components for direct access if needed
-export { TrigramCalculator, StanceManager, KoreanCulture, KOREAN_TECHNIQUES };
-
-// Add these constants if they don't exist in KoreanCulture
-export const TRIGRAM_SYMBOLS = {
-  geon: "☰", // Heaven
-  tae: "☱", // Lake
-  li: "☲", // Fire
-  jin: "☳", // Thunder
-  son: "☴", // Wind
-  gam: "☵", // Water
-  gan: "☶", // Mountain
-  gon: "☷", // Earth
-} as const;
-
-export const TRIGRAM_ELEMENTS = {
-  geon: "천", // Heaven
-  tae: "택", // Lake
-  li: "화", // Fire
-  jin: "뢰", // Thunder
-  son: "풍", // Wind
-  gam: "수", // Water
-  gan: "산", // Mountain
-  gon: "지", // Earth
-} as const;
-
-// Define stance data structure
-interface StanceData {
-  readonly damage: number;
-  readonly defense: number;
-  readonly speed: number;
-  readonly energy: number;
-  readonly effectiveness: number;
-}
-
-const TRIGRAM_STANCES: Record<TrigramStance, StanceData> = {
-  geon: {
-    damage: 1.2,
-    defense: 1.0,
-    speed: 1.0,
-    energy: 1.1,
-    effectiveness: 1.1,
-  },
-  tae: {
-    damage: 1.0,
-    defense: 1.1,
-    speed: 1.1,
-    energy: 1.0,
-    effectiveness: 1.0,
-  },
-  li: {
-    damage: 1.3,
-    defense: 0.8,
-    speed: 1.2,
-    energy: 1.2,
-    effectiveness: 1.2,
-  },
-  jin: {
-    damage: 1.1,
-    defense: 0.9,
-    speed: 1.3,
-    energy: 1.1,
-    effectiveness: 1.1,
-  },
-  son: {
-    damage: 0.9,
-    defense: 1.2,
-    speed: 1.4,
-    energy: 0.9,
-    effectiveness: 1.1,
-  },
-  gam: {
-    damage: 1.0,
-    defense: 1.1,
-    speed: 1.1,
-    energy: 1.0,
-    effectiveness: 1.0,
-  },
-  gan: {
-    damage: 0.8,
-    defense: 1.4,
-    speed: 0.7,
-    energy: 0.8,
-    effectiveness: 0.9,
-  },
-  gon: {
-    damage: 1.1,
-    defense: 1.2,
-    speed: 0.8,
-    energy: 1.0,
-    effectiveness: 1.0,
+    let damage = technique.damage * stanceAdvantage;
+    // Apply range modifier (example: damage decreases with distance beyond optimal range)
+    const optimalRange = technique.range * 0.75;
+    if (distance > optimalRange) {
+      damage *= Math.max(
+        0.3,
+        1 - (distance - optimalRange) / (technique.range * 2)
+      );
+    }
+    return Math.max(0, damage);
   },
 };

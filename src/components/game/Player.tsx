@@ -1,51 +1,95 @@
-import { useCallback, useState } from "react";
-import { useTick } from "@pixi/react";
-import type { Ticker } from "pixi.js";
-import type { PlayerState, Position, TrigramStance } from "../../types";
-import { PlayerVisuals } from "./PlayerVisuals";
+import React, { useState, useCallback } from "react";
+import { Container, Graphics, Text, useTick } from "@pixi/react";
+import type { PlayerState, TrigramStance, TrigramData } from "../../types"; // Removed Position, PlayerAction
+import { KOREAN_COLORS, TRIGRAM_DATA } from "../../types";
+// import { PlayerVisuals } from '../PlayerVisuals'; // Assuming this will be created
+import type { Graphics as PixiGraphics, Ticker } from "pixi.js"; // Added Ticker for useTick type
 
-interface PlayerProps {
+// Define PlayerProps directly or ensure it's correctly exported if from another file
+export interface PlayerProps {
   readonly playerState: PlayerState;
-  readonly opponentPosition: Position;
-  readonly onAttack?: (damage: number, technique: string) => void;
-  readonly onStanceChange?: (stance: TrigramStance) => void;
+  readonly onAction: (action: { type: string; techniqueName?: string }) => void;
+  readonly onStanceChange: (stance: TrigramStance) => void;
 }
 
 export function Player({
   playerState,
-  opponentPosition,
-  onAttack,
-  onStanceChange,
-}: PlayerProps): JSX.Element {
-  const [animationTime, setAnimationTime] = useState<number>(0);
+  onAction,
+  onStanceChange, // This prop is part of the component's API, usage is up to the parent
+}: PlayerProps): React.JSX.Element {
+  const { x, y } = playerState.position;
+  const currentStanceData: TrigramData = TRIGRAM_DATA[playerState.stance];
+
+  const [animationTime, setAnimationTime] = useState(0);
 
   useTick(
-    useCallback((ticker: Ticker) => {
-      setAnimationTime((prev) => prev + ticker.deltaTime * 0.016); // Convert to seconds
+    useCallback((delta: number, _ticker: Ticker) => {
+      // Corrected signature: delta is number
+      setAnimationTime((prev) => prev + delta);
     }, [])
   );
 
-  const handleAttack = useCallback(
-    (damage: number, technique: string) => {
-      onAttack?.(damage, technique);
-    },
-    [onAttack]
-  );
+  const handleAttack = useCallback(() => {
+    if (!playerState.isAttacking && playerState.stamina > 10) {
+      // Example condition
+      onAction({
+        type: "attack",
+        techniqueName: currentStanceData.technique.name,
+      });
+    }
+  }, [playerState, onAction, currentStanceData]);
 
-  const handleStanceChange = useCallback(
-    (stance: TrigramStance) => {
-      onStanceChange?.(stance);
+  // Example drawing logic, replace with PlayerVisuals or more complex graphics
+  const drawPlayer = useCallback(
+    (g: PixiGraphics) => {
+      g.clear();
+      g.beginFill(
+        playerState.playerId === "Player1"
+          ? KOREAN_COLORS.DOJANG_BLUE
+          : KOREAN_COLORS.TRADITIONAL_RED
+      );
+      g.drawCircle(0, 0, 30); // Simple circle representation
+      g.endFill();
+
+      // Aura for attacking state
+      if (playerState.isAttacking) {
+        // Assuming currentStanceData.color is a hex string like "#RRGGBB"
+        const colorString = String(currentStanceData.color); // Ensure it's a string
+        const auraColor = parseInt(
+          colorString.startsWith("#") ? colorString.slice(1) : colorString,
+          16
+        );
+        g.lineStyle(4, auraColor, Math.sin(animationTime * 0.2) * 0.5 + 0.5);
+        g.drawCircle(0, 0, 35 + Math.sin(animationTime * 0.2) * 5);
+      }
     },
-    [onStanceChange]
+    [playerState, currentStanceData, animationTime]
   );
 
   return (
-    <PlayerVisuals
-      playerState={playerState}
-      opponentPosition={opponentPosition}
-      animationTime={animationTime}
-      onAttack={handleAttack}
-      onStanceChange={handleStanceChange}
-    />
+    <Container x={x} y={y} interactive={true} pointertap={handleAttack}>
+      <Graphics draw={drawPlayer} />
+      {/* <PlayerVisuals playerState={playerState} visualState={visualState} /> */}
+      <Text
+        text={currentStanceData.koreanName} // Accessing koreanName directly
+        anchor={{ x: 0.5, y: 0.5 }}
+        y={-45}
+        style={{
+          fontFamily: "Noto Sans KR",
+          fontSize: 14,
+          fill: KOREAN_COLORS.WHITE,
+        }}
+      />
+      <Text
+        text={currentStanceData.symbol}
+        anchor={{ x: 0.5, y: 0.5 }}
+        y={-65}
+        style={{
+          fontFamily: "serif",
+          fontSize: 20,
+          fill: currentStanceData.color,
+        }}
+      />
+    </Container>
   );
 }

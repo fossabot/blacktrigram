@@ -1,4 +1,11 @@
-import type { StatusEffect } from "../../types/GameTypes";
+import type {
+  StatusEffect,
+  VitalPoint,
+  AnatomicalRegion,
+  VitalPointCategory,
+  Position, // Assuming Position is defined in types/index.ts
+  AnatomicalRegionIdentifier, // If needed for mapping KOREAN_VITAL_POINTS anatomicalRegion
+} from "../../types"; // Changed import path
 
 /**
  * Korean Martial Arts Anatomical Regions System
@@ -6,43 +13,8 @@ import type { StatusEffect } from "../../types/GameTypes";
  * Implements authentic pressure point locations and effects
  */
 
-// Define missing types locally until they're added to GameTypes
-interface VitalPoint {
-  readonly id: string;
-  readonly korean: string;
-  readonly english: string;
-  readonly anatomicalRegion: string;
-  readonly position: { x: number; y: number };
-  readonly category: VitalPointCategory;
-  readonly difficulty: number;
-  readonly damage: number;
-  readonly effects: readonly StatusEffect[];
-  readonly description: string;
-  readonly traditionalName: string;
-  readonly koreanTechnique: string;
-}
-
-interface AnatomicalRegion {
-  readonly id: string;
-  readonly korean: string;
-  readonly english: string;
-  readonly bounds: { x: number; y: number; width: number; height: number };
-  readonly vulnerability: number;
-  readonly description: string;
-  readonly traditionalName: string;
-}
-
-type VitalPointCategory =
-  | "consciousness"
-  | "circulation"
-  | "breathing"
-  | "nerve"
-  | "energy"
-  | "balance"
-  | "joint";
-
 // Korean anatomical region definitions with traditional terminology
-export const ANATOMICAL_REGIONS: Record<string, AnatomicalRegion> = {
+export const ANATOMICAL_REGIONS_DATA: Record<string, AnatomicalRegion> = {
   head: {
     id: "head",
     korean: "머리",
@@ -51,6 +23,7 @@ export const ANATOMICAL_REGIONS: Record<string, AnatomicalRegion> = {
     vulnerability: 1.8,
     description: "Critical region containing vital consciousness points",
     traditionalName: "두부 급소 (Head Vital Points)",
+    category: "consciousness",
   },
 
   neck: {
@@ -61,6 +34,7 @@ export const ANATOMICAL_REGIONS: Record<string, AnatomicalRegion> = {
     vulnerability: 2.0,
     description: "Most vulnerable region with major arteries and nerves",
     traditionalName: "경부 급소 (Neck Vital Points)",
+    category: "circulation",
   },
 
   chest: {
@@ -71,6 +45,7 @@ export const ANATOMICAL_REGIONS: Record<string, AnatomicalRegion> = {
     vulnerability: 1.4,
     description: "Heart and lung pressure points",
     traditionalName: "흉부 급소 (Chest Vital Points)",
+    category: "breathing",
   },
 
   abdomen: {
@@ -81,6 +56,7 @@ export const ANATOMICAL_REGIONS: Record<string, AnatomicalRegion> = {
     vulnerability: 1.6,
     description: "Digestive and energy center points",
     traditionalName: "복부 급소 (Abdominal Vital Points)",
+    category: "energy",
   },
 
   arms: {
@@ -91,6 +67,7 @@ export const ANATOMICAL_REGIONS: Record<string, AnatomicalRegion> = {
     vulnerability: 1.0,
     description: "Nerve clusters and joint manipulation points",
     traditionalName: "상지 급소 (Upper Limb Vital Points)",
+    category: "nerve",
   },
 
   legs: {
@@ -101,348 +78,370 @@ export const ANATOMICAL_REGIONS: Record<string, AnatomicalRegion> = {
     vulnerability: 0.8,
     description: "Foundation and mobility pressure points",
     traditionalName: "하지 급소 (Lower Limb Vital Points)",
+    category: "balance",
   },
 };
 
 // Traditional Korean vital points with authentic names and effects
+// Ensure this VitalPoint structure matches the one in types/index.ts
 export const KOREAN_VITAL_POINTS: Record<string, VitalPoint> = {
   // Head region vital points (두부 급소)
   baihui: {
     id: "baihui",
-    korean: "백회",
-    english: "Crown Point",
-    anatomicalRegion: "head",
+    name: { korean: "백회", english: "Crown Point" }, // Changed to object
+    koreanName: "백회", // Direct access
+    region: "head" as AnatomicalRegionIdentifier, // Changed from anatomicalRegion
     position: { x: 50, y: 20 },
     category: "consciousness",
     difficulty: 0.9,
-    damage: 45,
+    damageMultiplier: 1.5, // Assuming 'damage' was a flat bonus, now a multiplier
+    // Or it needs to be handled differently if it's base damage for the VP attack
     effects: [
       {
         type: "vital_stunning",
         duration: 3000,
-        intensity: 0.8,
+        magnitude: 0.8, // Changed from intensity
         source: "vital_point",
       },
       {
         type: "ki_boost",
         duration: 2000,
-        intensity: 0.6,
+        magnitude: 0.6, // Changed from intensity
         source: "vital_point",
       },
     ],
-    description: "Top of head - disrupts consciousness and energy flow",
-    traditionalName: "백회혈 (Baihui Point)",
-    koreanTechnique: "정수리 급소",
-  },
+    description: {
+      korean: "머리 꼭대기 - 의식과 에너지 흐름을 방해합니다.",
+      english: "Top of head - disrupts consciousness and energy flow",
+    },
+  } as VitalPoint, // Added 'as VitalPoint' for stricter checking during transition
 
   taiyang: {
     id: "taiyang",
-    korean: "태양",
-    english: "Temple",
-    anatomicalRegion: "head",
+    name: { korean: "태양", english: "Temple" },
+    koreanName: "태양",
+    region: "head" as AnatomicalRegionIdentifier,
     position: { x: 85, y: 40 },
     category: "nerve",
     difficulty: 0.7,
-    damage: 40,
+    damageMultiplier: 1.4,
     effects: [
       {
         type: "vital_stunning",
         duration: 2500,
-        intensity: 0.7,
+        magnitude: 0.7, // Changed from intensity
         source: "vital_point",
       },
       {
         type: "vital_paralysis",
         duration: 1500,
-        intensity: 0.5,
+        magnitude: 0.5, // Changed from intensity
         source: "vital_point",
       },
     ],
-    description: "Temporal region - causes disorientation",
-    traditionalName: "태양혈 (Taiyang Point)",
-    koreanTechnique: "관자놀이 급소",
-  },
+    description: {
+      korean: "관자놀이 부위 - 방향 감각을 상실시킵니다.",
+      english: "Temporal region - causes disorientation",
+    },
+  } as VitalPoint,
 
   yintang: {
     id: "yintang",
-    korean: "인당",
-    english: "Third Eye",
-    anatomicalRegion: "head",
+    name: { korean: "인당", english: "Third Eye" },
+    koreanName: "인당",
+    region: "head" as AnatomicalRegionIdentifier,
     position: { x: 50, y: 60 },
     category: "consciousness",
     difficulty: 0.8,
-    damage: 35,
+    damageMultiplier: 1.3,
     effects: [
       {
         type: "vital_stunning",
         duration: 2000,
-        intensity: 0.6,
+        magnitude: 0.6, // Changed from intensity
         source: "vital_point",
       },
     ],
-    description: "Between eyebrows - disrupts mental focus",
-    traditionalName: "인당혈 (Yintang Point)",
-    koreanTechnique: "미간 급소",
-  },
+    description: {
+      korean: "눈썹 사이 - 정신 집중을 방해합니다.",
+      english: "Between eyebrows - disrupts mental focus",
+    },
+  } as VitalPoint,
 
   // Neck region vital points (경부 급소)
   renying: {
     id: "renying",
-    korean: "인영",
-    english: "Carotid",
-    anatomicalRegion: "neck",
+    name: { korean: "인영", english: "Carotid" },
+    koreanName: "인영",
+    region: "neck" as AnatomicalRegionIdentifier,
     position: { x: 35, y: 135 },
     category: "circulation",
     difficulty: 0.6,
-    damage: 50,
+    damageMultiplier: 1.8, // High multiplier for carotid
     effects: [
       {
         type: "vital_weakness",
         duration: 4000,
-        intensity: 0.8,
+        magnitude: 0.8, // Changed from intensity
         source: "vital_point",
       },
       {
         type: "vital_stunning",
         duration: 2000,
-        intensity: 0.6,
+        magnitude: 0.6, // Changed from intensity
         source: "vital_point",
       },
     ],
-    description: "Carotid artery - restricts blood flow to brain",
-    traditionalName: "인영혈 (Renying Point)",
-    koreanTechnique: "목동맥 급소",
-  },
+    description: {
+      korean: "경동맥 - 뇌로 가는 혈류를 제한합니다.",
+      english: "Carotid artery - restricts blood flow to brain",
+    },
+  } as VitalPoint,
 
   tiantu: {
     id: "tiantu",
-    korean: "천돌",
-    english: "Throat Hollow",
-    anatomicalRegion: "neck",
+    name: { korean: "천돌", english: "Throat Hollow" },
+    koreanName: "천돌",
+    region: "neck" as AnatomicalRegionIdentifier,
     position: { x: 50, y: 150 },
     category: "breathing",
     difficulty: 0.7,
-    damage: 48,
+    damageMultiplier: 1.7,
     effects: [
       {
-        type: "vital_paralysis",
+        type: "vital_paralysis", // Consider specific "choking" or "breathless" type
         duration: 3000,
-        intensity: 0.7,
+        magnitude: 0.7, // Changed from intensity
         source: "vital_point",
       },
       {
         type: "stamina_drain",
         duration: 5000,
-        intensity: 0.6,
+        magnitude: 0.6, // Changed from intensity
         source: "vital_point",
       },
     ],
-    description: "Throat depression - disrupts breathing",
-    traditionalName: "천돌혈 (Tiantu Point)",
-    koreanTechnique: "목구멍 급소",
-  },
+    description: {
+      korean: "목젖 아래 오목한 곳 - 호흡을 방해합니다.",
+      english: "Throat depression - disrupts breathing",
+    },
+  } as VitalPoint,
 
   // Chest region vital points (흉부 급소)
   tanzhong: {
     id: "tanzhong",
-    korean: "단중",
-    english: "Chest Center",
-    anatomicalRegion: "chest",
+    name: { korean: "단중", english: "Chest Center" },
+    koreanName: "단중",
+    region: "chest" as AnatomicalRegionIdentifier,
     position: { x: 50, y: 220 },
     category: "breathing",
     difficulty: 0.5,
-    damage: 35,
+    damageMultiplier: 1.35,
     effects: [
       {
         type: "stamina_drain",
         duration: 4000,
-        intensity: 0.5,
+        magnitude: 0.5, // Changed from intensity
         source: "vital_point",
       },
     ],
-    description: "Center of chest - affects breathing and heart rhythm",
-    traditionalName: "단중혈 (Tanzhong Point)",
-    koreanTechnique: "가슴 중앙 급소",
-  },
+    description: {
+      korean: "가슴 중앙 - 호흡과 심장 박동에 영향을 줍니다.",
+      english: "Center of chest - affects breathing and heart rhythm",
+    },
+  } as VitalPoint,
 
   rugen: {
     id: "rugen",
-    korean: "유근",
-    english: "Nipple",
-    anatomicalRegion: "chest",
-    position: { x: 30, y: 200 },
+    name: { korean: "유근", english: "Nipple Root" }, // English name adjusted
+    koreanName: "유근",
+    region: "chest" as AnatomicalRegionIdentifier,
+    position: { x: 30, y: 200 }, // Adjust position if it's below nipple
     category: "nerve",
     difficulty: 0.6,
-    damage: 30,
+    damageMultiplier: 1.3,
     effects: [
       {
         type: "vital_weakness",
         duration: 3000,
-        intensity: 0.4,
+        magnitude: 0.4, // Changed from intensity
         source: "vital_point",
       },
     ],
-    description: "Nipple area - nerve cluster concentration",
-    traditionalName: "유근혈 (Rugen Point)",
-    koreanTechnique: "젖꼭지 급소",
-  },
+    description: {
+      korean: "젖꼭지 부위 - 신경 다발 집중 부위.",
+      english: "Nipple area - nerve cluster concentration",
+    },
+  } as VitalPoint,
 
   // Abdominal region vital points (복부 급소)
   qihai: {
     id: "qihai",
-    korean: "기해",
-    english: "Sea of Ki",
-    anatomicalRegion: "abdomen",
+    name: { korean: "기해", english: "Sea of Ki" },
+    koreanName: "기해",
+    region: "abdomen" as AnatomicalRegionIdentifier, // Changed to use AnatomicalRegionIdentifier
     position: { x: 50, y: 340 },
     category: "energy",
     difficulty: 0.4,
-    damage: 42,
+    damageMultiplier: 1.4,
     effects: [
       {
-        type: "ki_boost",
+        type: "ki_disruption", // Changed from ki_boost with negative magnitude
         duration: 3000,
-        intensity: -0.6, // Negative ki boost = ki drain
+        magnitude: 0.6,
         source: "vital_point",
       },
       {
         type: "vital_weakness",
         duration: 4000,
-        intensity: 0.5,
+        magnitude: 0.5, // Changed from intensity
         source: "vital_point",
       },
     ],
-    description: "Energy center - disrupts internal power",
-    traditionalName: "기해혈 (Qihai Point)",
-    koreanTechnique: "기의 바다 급소",
-  },
+    description: {
+      korean: "에너지 중심 - 내부 기운을 방해합니다.",
+      english: "Energy center - disrupts internal power",
+    },
+  } as VitalPoint,
 
   zhongwan: {
     id: "zhongwan",
-    korean: "중완",
-    english: "Solar Plexus",
-    anatomicalRegion: "abdomen",
+    name: { korean: "중완", english: "Solar Plexus" },
+    koreanName: "중완",
+    region: "abdomen" as AnatomicalRegionIdentifier,
     position: { x: 50, y: 280 },
-    category: "breathing",
-    difficulty: 0.3,
-    damage: 38,
+    category: "breathing", // Also nerve related
+    difficulty: 0.3, // Often considered easier to hit but very effective
+    damageMultiplier: 1.6, // High impact
     effects: [
       {
-        type: "stamina_drain",
+        type: "stamina_drain", // Or "winded"
         duration: 4000,
-        intensity: 0.6,
+        magnitude: 0.6, // Changed from intensity
         source: "vital_point",
       },
       {
         type: "vital_weakness",
         duration: 3000,
-        intensity: 0.5,
+        magnitude: 0.5, // Changed from intensity
         source: "vital_point",
       },
     ],
-    description: "Solar plexus - winds opponent",
-    traditionalName: "중완혈 (Zhongwan Point)",
-    koreanTechnique: "명치 급소",
-  },
+    description: {
+      korean: "명치 - 상대방의 숨을 막히게 합니다.",
+      english: "Solar plexus - winds opponent",
+    },
+  } as VitalPoint,
 
   // Arm vital points (상지 급소)
   jianjing: {
     id: "jianjing",
-    korean: "견정",
-    english: "Shoulder Well",
-    anatomicalRegion: "arms",
-    position: { x: 20, y: 180 },
+    name: { korean: "견정", english: "Shoulder Well" },
+    koreanName: "견정",
+    region: "arms" as AnatomicalRegionIdentifier, // Or more specific like "shoulder"
+    position: { x: 20, y: 180 }, // Relative to arm/shoulder
     category: "nerve",
     difficulty: 0.5,
-    damage: 25,
+    damageMultiplier: 1.2,
     effects: [
       {
-        type: "vital_paralysis",
+        type: "vital_paralysis", // Temporary arm paralysis/numbness
         duration: 2000,
-        intensity: 0.4,
+        magnitude: 0.4, // Changed from intensity
         source: "vital_point",
       },
     ],
-    description: "Shoulder nerve cluster - causes arm numbness",
-    traditionalName: "견정혈 (Jianjing Point)",
-    koreanTechnique: "어깨 급소",
-  },
+    description: {
+      korean: "어깨 신경 다발 - 팔의 마비를 유발합니다.",
+      english: "Shoulder nerve cluster - causes arm numbness",
+    },
+  } as VitalPoint,
 
   quchi: {
     id: "quchi",
-    korean: "곡지",
-    english: "Elbow Pool",
-    anatomicalRegion: "arms",
-    position: { x: 0, y: 280 },
-    category: "joint",
+    name: { korean: "곡지", english: "Elbow Pool" },
+    koreanName: "곡지",
+    region: "arms" as AnatomicalRegionIdentifier, // Or "elbow"
+    position: { x: 0, y: 280 }, // Relative to arm
+    category: "joint", // Also nerve
     difficulty: 0.4,
-    damage: 22,
+    damageMultiplier: 1.15,
     effects: [
       {
-        type: "vital_weakness",
+        type: "vital_weakness", // Weakens grip or arm strength
         duration: 2500,
-        intensity: 0.3,
+        magnitude: 0.3, // Changed from intensity
         source: "vital_point",
       },
     ],
-    description: "Elbow joint - affects arm mobility",
-    traditionalName: "곡지혈 (Quchi Point)",
-    koreanTechnique: "팔꿈치 급소",
-  },
+    description: {
+      korean: "팔꿈치 관절 - 팔의 움직임에 영향을 줍니다.",
+      english: "Elbow joint - affects arm mobility",
+    },
+  } as VitalPoint,
 
   // Leg vital points (하지 급소)
   zusanli: {
     id: "zusanli",
-    korean: "족삼리",
-    english: "Leg Three Miles",
-    anatomicalRegion: "legs",
-    position: { x: 40, y: 520 },
-    category: "energy",
+    name: { korean: "족삼리", english: "Leg Three Miles" },
+    koreanName: "족삼리",
+    region: "legs" as AnatomicalRegionIdentifier,
+    position: { x: 40, y: 520 }, // Relative to leg
+    category: "energy", // Also muscle/nerve
     difficulty: 0.3,
-    damage: 20,
+    damageMultiplier: 1.1,
     effects: [
       {
-        type: "stamina_drain",
+        type: "stamina_drain", // Or "slow"
         duration: 3000,
-        intensity: 0.4,
+        magnitude: 0.4, // Changed from intensity
         source: "vital_point",
       },
     ],
-    description: "Lower leg energy point - affects stamina",
-    traditionalName: "족삼리혈 (Zusanli Point)",
-    koreanTechnique: "정강이 급소",
-  },
+    description: {
+      korean: "하퇴 에너지 포인트 - 체력에 영향을 줍니다.",
+      english: "Lower leg energy point - affects stamina",
+    },
+  } as VitalPoint,
 
   yongquan: {
     id: "yongquan",
-    korean: "용천",
-    english: "Bubbling Spring",
-    anatomicalRegion: "legs",
-    position: { x: 50, y: 680 },
-    category: "balance",
-    difficulty: 0.6,
-    damage: 18,
+    name: { korean: "용천", english: "Bubbling Spring" },
+    koreanName: "용천",
+    region: "legs" as AnatomicalRegionIdentifier, // Or "foot"
+    position: { x: 50, y: 680 }, // Relative to foot
+    category: "balance", // Also energy grounding
+    difficulty: 0.6, // Hard to hit effectively
+    damageMultiplier: 1.25,
     effects: [
       {
-        type: "vital_weakness",
+        type: "vital_weakness", // Affects stability
         duration: 2000,
-        intensity: 0.3,
+        magnitude: 0.3, // Changed from intensity
+        source: "vital_point",
+      },
+      {
+        type: "slow", // Added effect
+        duration: 1500,
+        magnitude: 0.5,
         source: "vital_point",
       },
     ],
-    description: "Sole of foot - affects balance and grounding",
-    traditionalName: "용천혈 (Yongquan Point)",
-    koreanTechnique: "발바닥 급소",
-  },
+    description: {
+      korean: "발바닥 - 균형과 접지력에 영향을 줍니다.",
+      english: "Sole of foot - affects balance and grounding",
+    },
+  } as VitalPoint,
 };
 
 /**
  * Get all vital points within a specific anatomical region
  */
 export function getVitalPointsInRegion(
-  regionId: string
+  regionId: AnatomicalRegionIdentifier // Changed type
 ): readonly VitalPoint[] {
   return Object.values(KOREAN_VITAL_POINTS).filter(
-    (point) => point.anatomicalRegion === regionId
+    (point) => point.region === regionId
   );
 }
 
@@ -461,7 +460,7 @@ export function getVitalPointsByCategory(
  * Calculate vulnerability multiplier for a region
  */
 export function getRegionVulnerability(regionId: string): number {
-  const region = ANATOMICAL_REGIONS[regionId];
+  const region = ANATOMICAL_REGIONS_DATA[regionId];
   return region?.vulnerability ?? 1.0;
 }
 
@@ -469,7 +468,7 @@ export function getRegionVulnerability(regionId: string): number {
  * Get traditional Korean name for anatomical region
  */
 export function getTraditionalRegionName(regionId: string): string {
-  const region = ANATOMICAL_REGIONS[regionId];
+  const region = ANATOMICAL_REGIONS_DATA[regionId]; // Use renamed const
   return region?.traditionalName ?? regionId;
 }
 
@@ -480,8 +479,8 @@ export function isPositionInRegion(
   position: { readonly x: number; readonly y: number },
   regionId: string
 ): boolean {
-  const region = ANATOMICAL_REGIONS[regionId];
-  if (!region) return false;
+  const region = ANATOMICAL_REGIONS_DATA[regionId]; // Use renamed const
+  if (!region || !region.bounds) return false; // Check for bounds
 
   const { bounds } = region;
   return (
@@ -525,13 +524,20 @@ export function calculateVitalPointDamage(
   baseDamage: number,
   accuracy: number
 ): number {
-  const difficultyModifier = 1 + vitalPoint.difficulty * 0.5;
+  const difficultyModifier = 1 + (vitalPoint.difficulty || 0.5) * 0.5; // Use difficulty from VitalPoint
   const accuracyModifier = Math.min(accuracy, 1.0);
 
+  // Assuming vitalPoint.damageMultiplier is the intended property
+  const vpBaseDamageContribution =
+    baseDamage * (vitalPoint.damageMultiplier - 1); // Additional damage from VP
+
   return Math.round(
-    (baseDamage + vitalPoint.damage) * difficultyModifier * accuracyModifier
+    (baseDamage + vpBaseDamageContribution) *
+      difficultyModifier *
+      accuracyModifier
   );
 }
 
 // Export types for use in other files
-export type { VitalPoint, AnatomicalRegion, VitalPointCategory };
+// These are now imported from types/index.ts, so local export is not needed.
+// export type { VitalPoint, AnatomicalRegion, VitalPointCategory };

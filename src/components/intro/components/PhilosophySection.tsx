@@ -1,44 +1,59 @@
-import type { JSX } from "react";
+import React from "react";
+// import { Container } from "@pixi/react"; // Assuming Container is used
 import { KoreanText } from "../../ui/base/KoreanText";
-
-const KOREAN_COLORS = {
-  GRAY_MEDIUM: 0x6c757d,
-  GRAY_DARK: 0x2c2c2c,
-} as const;
+import { KOREAN_COLORS } from "../../../types";
+import type { TextStyle } from "pixi.js";
 
 interface PhilosophySectionProps {
-  readonly x: number;
-  readonly y: number;
+  readonly onBack: () => void; // Keep if it will be used, otherwise remove
 }
 
-export function PhilosophySection({
-  x,
-  y,
-}: PhilosophySectionProps): JSX.Element {
+export function PhilosophySection({}: /* onBack, */ // Commented out if not used
+PhilosophySectionProps): React.JSX.Element {
   return (
-    <pixiContainer x={x} y={y}>
+    <>
       <KoreanText
-        text="🧘 도장에서 무예는 몸과 마음, 그리고 영혼의 조화이다"
+        text="팔괘 철학 (Trigram Philosophy)"
         anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 18,
-          fill: KOREAN_COLORS.GRAY_MEDIUM,
-          fontStyle: "italic",
-          fontWeight: "300",
-        }}
+        style={
+          {
+            fontFamily: "Noto Sans KR, Arial, sans-serif",
+            fontSize: 32,
+            fill: KOREAN_COLORS.GOLD, // Corrected casing
+            fontStyle: "italic",
+            fontWeight: "bold",
+          } as Partial<TextStyle>
+        }
       />
       <KoreanText
-        text="In the dojang, martial arts are the harmony of body, mind, and spirit"
+        text="각 괘는 우주의 근본적인 힘을 나타냅니다..."
         anchor={{ x: 0.5, y: 0.5 }}
-        y={35}
-        style={{
-          fontFamily: "Arial",
-          fontSize: 14,
-          fill: KOREAN_COLORS.GRAY_DARK,
-          fontStyle: "italic",
-        }}
+        y={80}
+        style={
+          {
+            fontFamily: "Noto Sans KR, Arial, sans-serif",
+            fontSize: 18,
+            fill: KOREAN_COLORS.LIGHT_GREY, // Corrected casing, ensure LIGHT_GREY is in KOREAN_COLORS
+            // wordWrap: true, // wordWrap is a PIXI.TextStyle property
+            // wordWrapWidth: 700, // Example width
+          } as Partial<TextStyle>
+        }
       />
-    </pixiContainer>
+      {/* ... other philosophy text ... */}
+      <KoreanText
+        text="뒤로가기 (Back)"
+        anchor={{ x: 0.5, y: 0.5 }}
+        y={250}
+        style={
+          {
+            fontFamily: "Noto Sans KR, Arial, sans-serif",
+            fontSize: 24,
+            fill: KOREAN_COLORS.YELLOW, // Corrected casing, ensure YELLOW is in KOREAN_COLORS
+          } as Partial<TextStyle>
+        }
+        // interactive={true} // Removed
+        // pointertap={onBack} // Removed, if onBack is unused or handle click differently
+      />
+    </>
   );
 }

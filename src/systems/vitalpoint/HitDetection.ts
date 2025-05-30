@@ -1,8 +1,16 @@
-import type { StatusEffect } from "../../types/GameTypes";
+import type {
+  StatusEffect,
+  VitalPoint,
+  AttackType, // Assuming AttackType is defined in types/index.ts
+  HitResult as ConsolidatedHitResult, // Alias to avoid conflict if local HitResult is kept temporarily
+  HitDetectionParams, // Assuming HitDetectionParams is defined in types/index.ts
+  CollisionZone, // Assuming CollisionZone is defined in types/index.ts
+  Position, // Assuming Position is defined in types/index.ts
+} from "../../types"; // Changed import path
 import {
   calculateVitalPointDamage,
   getClosestVitalPoint,
-  type VitalPoint,
+  // type VitalPoint, // Already imported
 } from "./AnatomicalRegions";
 
 /**
@@ -10,42 +18,27 @@ import {
  * Implements precise vital point targeting with traditional Korean martial arts principles
  */
 
-// Define missing types locally
-type AttackType =
-  | "punch"
-  | "kick"
-  | "elbow"
-  | "knee"
-  | "grapple"
-  | "throw"
-  | "pressure_point"
-  | "combination";
+// Local types AttackType, HitResult, HitDetectionParams, CollisionZone removed or to be aligned with imported ones.
+// For now, we assume they are defined in types/index.ts or we use the imported ones.
+// If HitResult here is very specific and different, it might need to remain local or be a new type in types/index.ts
+
+// Using the imported HitResult type (aliased as ConsolidatedHitResult if local one is kept for comparison)
+// For this refactor, let's assume the local HitResult is the one to use or be merged.
+// If types/index.ts has a HitResult, it needs to be compatible.
+// For now, I'll keep the local HitResult definition if it's substantially different
+// and assume it will be reconciled later or moved to types/index.ts.
+// The provided types/index.ts does not have a HitResult that matches this one.
+// It has AttackResult. This HitResult is specific to this system.
 
 interface HitResult {
+  // This local HitResult is specific to this system's return value.
   readonly hit: boolean;
   readonly damage: number;
-  readonly vitalPoint: VitalPoint | null;
-  readonly effects: readonly StatusEffect[];
+  readonly vitalPoint: VitalPoint | null; // Uses the imported VitalPoint
+  readonly effects: readonly StatusEffect[]; // Uses the imported StatusEffect
   readonly hitType: "normal" | "vital" | "critical" | "miss";
   readonly description: string;
   readonly accuracy?: number;
-}
-
-interface HitDetectionParams {
-  readonly attackPosition: { x: number; y: number };
-  readonly attackType: AttackType;
-  readonly accuracy: number;
-  readonly baseDamage: number;
-  readonly attackerSkill: number;
-  readonly defenderGuard: number;
-}
-
-interface CollisionZone {
-  readonly center: { x: number; y: number };
-  readonly radius: number;
-  readonly shape: "circle" | "rectangle";
-  readonly width?: number;
-  readonly height?: number;
 }
 
 /**
@@ -111,15 +104,16 @@ export class HitDetectionSystem {
         baseDamage,
         effectiveAccuracy
       );
-      effects = [...vitalPoint.effects];
+      effects = vitalPoint.effects ? [...vitalPoint.effects] : []; // Ensure effects is an array
       hitType = "vital";
-      description = `Vital point struck: ${vitalPoint.korean} (${vitalPoint.english})`;
+      description = `Vital point struck: ${vitalPoint.koreanName} (${vitalPoint.name.english})`; // Access name parts
 
       // Check for critical hit on high-difficulty vital points
-      if (vitalPoint.difficulty >= 0.8 && effectiveAccuracy >= 0.9) {
+      if ((vitalPoint.difficulty ?? 0) >= 0.8 && effectiveAccuracy >= 0.9) {
+        // Use difficulty from VitalPoint
         hitType = "critical";
         finalDamage = Math.round(finalDamage * 1.5);
-        description = `Critical vital strike: ${vitalPoint.korean}!`;
+        description = `Critical vital strike: ${vitalPoint.koreanName}!`; // Access koreanName
       }
     }
 
@@ -150,7 +144,7 @@ export class HitDetectionSystem {
    */
   private static isVitalPointHit(
     attackPosition: { x: number; y: number },
-    vitalPoint: VitalPoint,
+    vitalPoint: VitalPoint, // Uses imported VitalPoint
     accuracy: number
   ): boolean {
     const distance = this.calculateDistance(
@@ -160,7 +154,7 @@ export class HitDetectionSystem {
 
     // Smaller tolerance for more difficult vital points
     const effectiveTolerance =
-      this.HIT_TOLERANCE * (1 - vitalPoint.difficulty * 0.5);
+      this.HIT_TOLERANCE * (1 - (vitalPoint.difficulty ?? 0.5) * 0.5); // Use difficulty from VitalPoint
 
     // Accuracy affects hit tolerance
     const adjustedTolerance = effectiveTolerance * (0.5 + accuracy * 0.5);
@@ -342,9 +336,10 @@ export function detectQuickHit(
   damage: number,
   accuracy: number = 0.8
 ): HitResult {
+  // Returns local HitResult
   return HitDetectionSystem.detectHit({
     attackPosition: attackPos,
-    attackType: "punch",
+    attackType: "punch", // AttackType should be from types/index.ts
     accuracy,
     baseDamage: damage,
     attackerSkill: 0.5,
@@ -361,8 +356,10 @@ export function detectKoreanTechniqueHit(
   damage: number,
   accuracy: number
 ): HitResult {
+  // Returns local HitResult
   // Map Korean techniques to attack types
   const techniqueToAttackType: Record<string, AttackType> = {
+    // AttackType from types/index.ts
     천둥벽력: "punch",
     유수연타: "combination",
     화염지창: "pressure_point",
@@ -385,5 +382,5 @@ export function detectKoreanTechniqueHit(
   });
 }
 
-// Export types for use in other files
-export type { HitResult, AttackType, HitDetectionParams, CollisionZone };
+// Export types for use in other files - these are specific to this module or should be moved to types/index.ts
+// export type { HitResult, AttackType, HitDetectionParams, CollisionZone };

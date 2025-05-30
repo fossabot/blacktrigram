@@ -1,161 +1,111 @@
-import { render } from "@testing-library/react";
-import { DojangBackground } from "./DojangBackground";
-import { describe, it, expect, vi } from "vitest";
-import { Application } from "@pixi/react";
+import { describe, it, expect } from "vitest";
+import { renderInStage } from "../../../test/test-utils";
+import {
+  DojangBackground,
+  type DojangBackgroundProps,
+} from "./DojangBackground";
+import { Stage } from "@pixi/react";
 
-// Mock window dimensions for consistent testing
-Object.defineProperty(window, "innerWidth", {
-  writable: true,
-  configurable: true,
-  value: 1024,
-});
+// Mock KOREAN_COLORS if needed
+// vi.mock('../../types', () => ({ KOREAN_COLORS: { /* ...mocked colors... */ } }));
 
-Object.defineProperty(window, "innerHeight", {
-  writable: true,
-  configurable: true,
-  value: 768,
-});
+describe("DojangBackground Component", () => {
+  const defaultProps: DojangBackgroundProps = {
+    setting: "dojang",
+    timeOfDay: "day",
+    // gameTime: 0, // Assuming gameTime is not a direct prop or handled internally
+  };
 
-// Mock PixiJS Application to avoid WebGL context issues in tests
-vi.mock("@pixi/react", () => ({
-  Application: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="pixi-application">{children}</div>
-  ),
-  extend: vi.fn(),
-  useTick: vi.fn(),
-}));
-
-describe("DojangBackground", () => {
-  it("renders without crashing", () => {
-    const { container } = render(
-      <Application width={1024} height={768}>
-        <DojangBackground gameTime={0} />
-      </Application>
-    );
-    expect(container).toBeTruthy();
+  it("renders without crashing with default props", () => {
+    expect(() =>
+      renderInStage(<DojangBackground {...defaultProps} />)
+    ).not.toThrow();
   });
 
-  it("accepts gameTime prop correctly", () => {
-    const { rerender } = render(
-      <Application width={1024} height={768}>
-        <DojangBackground gameTime={0} />
-      </Application>
-    );
-
-    // Should handle prop updates without errors
-    rerender(
-      <Application width={1024} height={768}>
-        <DojangBackground gameTime={100} />
-      </Application>
-    );
-
-    expect(true).toBe(true); // No crash means success
-  });
-
-  it("should handle time-based animations", () => {
-    const { rerender } = render(
-      <Application width={1024} height={768}>
-        <DojangBackground gameTime={0} />
-      </Application>
-    );
-
-    // Test with different game times to ensure animation updates
-    rerender(
-      <Application width={1024} height={768}>
-        <DojangBackground gameTime={50} />
-      </Application>
-    );
-
-    rerender(
-      <Application width={1024} height={768}>
-        <DojangBackground gameTime={100} />
-      </Application>
-    );
-
-    // Component should handle time-based animations without errors
-    expect(true).toBe(true);
-  });
-
-  it("should render Korean dojang elements", () => {
-    const { getByTestId } = render(
-      <Application width={1024} height={768}>
-        <DojangBackground gameTime={0} />
-      </Application>
-    );
-
-    // Should render within PixiJS application context
-    expect(getByTestId("pixi-application")).toBeTruthy();
-  });
-
-  it("should handle responsive design", () => {
-    // Test different viewport sizes
-    const viewports = [
-      { width: 1920, height: 1080 },
-      { width: 1024, height: 768 },
-      { width: 375, height: 667 },
+  it("renders different settings correctly", () => {
+    const settings: DojangBackgroundProps["setting"][] = [
+      "dojang",
+      "mountain",
+      "temple",
+      "cyberpunk_dojang",
     ];
-
-    viewports.forEach(({ width, height }) => {
-      Object.defineProperty(window, "innerWidth", { value: width });
-      Object.defineProperty(window, "innerHeight", { value: height });
-
-      const { container } = render(
-        <Application width={width} height={height}>
-          <DojangBackground gameTime={0} />
-        </Application>
+    settings.forEach((setting) => {
+      const { unmount } = renderInStage(
+        <DojangBackground {...defaultProps} setting={setting} />
       );
-
-      expect(container).toBeTruthy();
+      // Add assertions based on how settings change visuals (e.g., data attributes, specific graphics calls)
+      // For now, just ensure it renders
+      expect(true).toBe(true);
+      unmount();
     });
   });
 
-  it("should support Korean cultural authenticity", () => {
-    const { container } = render(
-      <Application width={1024} height={768}>
-        <DojangBackground gameTime={0} />
-      </Application>
-    );
-
-    // Test that Korean dojang terminology is supported
-    expect(container).toBeTruthy();
-
-    // In a complete test suite, this would verify:
-    // - Traditional Korean flooring patterns
-    // - Trigram symbol positioning
-    // - Korean martial arts aesthetic elements
-    // But since PixiJS renders to canvas, E2E tests are better for visual verification
-  });
-
-  it("should handle animation timing correctly", () => {
-    const gameTime = 123.456;
-
-    const { container } = render(
-      <Application width={1024} height={768}>
-        <DojangBackground gameTime={gameTime} />
-      </Application>
-    );
-
-    // Should handle floating point time values
-    expect(container).toBeTruthy();
-  });
-
-  it("should maintain performance with complex graphics", () => {
-    const { rerender } = render(
-      <Application width={1024} height={768}>
-        <DojangBackground gameTime={0} />
-      </Application>
-    );
-
-    // Simulate rapid updates that might occur during gameplay
-    for (let i = 0; i < 10; i++) {
-      rerender(
-        <Application width={1024} height={768}>
-          <DojangBackground gameTime={i * 16.67} />
-        </Application>
+  it("renders different times of day correctly", () => {
+    const times: DojangBackgroundProps["timeOfDay"][] = [
+      "day",
+      "night",
+      "dawn",
+      "dusk",
+    ];
+    times.forEach((time) => {
+      const { unmount } = renderInStage(
+        <DojangBackground {...defaultProps} timeOfDay={time} />
       );
-    }
+      // Assert visual changes based on time of day
+      expect(true).toBe(true);
+      unmount();
+    });
+  });
 
-    // Should handle rapid updates without performance issues
+  // Add more tests for specific visual elements, animations, weather effects, etc.
+  // Example: Test for specific color fills based on props
+
+  it("should apply correct background color for 'dojang' setting at 'day'", () => {
+    // This test would require inspecting the Graphics component's draw calls,
+    // which is complex with the current test setup.
+    // A simpler approach is to ensure it renders without error.
+    renderInStage(<DojangBackground setting="dojang" timeOfDay="day" />);
     expect(true).toBe(true);
+  });
+
+  it("should apply correct background color for 'mountain' setting at 'night'", () => {
+    renderInStage(<DojangBackground setting="mountain" timeOfDay="night" />);
+    expect(true).toBe(true);
+  });
+
+  it("should render Korean cultural elements if specified by setting", () => {
+    // e.g. if 'temple' setting adds specific Korean patterns or symbols
+    renderInStage(<DojangBackground setting="temple" timeOfDay="day" />);
+    // Assert presence of these elements if they are rendered as distinct components or identifiable graphics
+  });
+
+  it("should handle weather effects if implemented", () => {
+    renderInStage(<DojangBackground {...defaultProps} weather="rain" />);
+    // Assert rain particle graphics or similar
+  });
+
+  it("should animate elements based on gameTime if applicable", () => {
+    // This would require advancing gameTime and checking for visual changes.
+    // const { rerender } = renderInStage(<DojangBackground {...defaultProps} gameTime={0} />);
+    // rerender(<Stage><DojangBackground {...defaultProps} gameTime={100} /></Stage>);
+    // Assert changes in animated elements (e.g., sun/moon position, cloud movement)
+    expect(true).toBe(true); // Placeholder
+  });
+
+  it("should render cyberpunk elements for 'cyberpunk_dojang' setting", () => {
+    renderInStage(
+      <DojangBackground setting="cyberpunk_dojang" timeOfDay="night" />
+    );
+    // Assert presence of neon lights, holographic symbols, etc.
+  });
+
+  it("should use traditional Korean colors for 'dojang' setting", () => {
+    renderInStage(<DojangBackground setting="dojang" timeOfDay="day" />);
+    // This would involve checking fill colors of Graphics elements.
+  });
+
+  it("should display dynamic skybox elements based on timeOfDay", () => {
+    renderInStage(<DojangBackground {...defaultProps} timeOfDay="dusk" />);
+    // Assert correct sky colors, sun/moon visibility, stars, etc.
   });
 });

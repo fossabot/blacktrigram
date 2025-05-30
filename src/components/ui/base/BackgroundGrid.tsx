@@ -1,4 +1,5 @@
-import { useCallback } from "react";
+import React, { useCallback } from "react";
+import { Graphics } from "@pixi/react";
 import type { Graphics as PixiGraphics } from "pixi.js";
 
 interface BackgroundGridProps {
@@ -13,30 +14,25 @@ export function BackgroundGrid({
   width,
   height,
   gridSize = 50,
-  color = 0x333333,
-  alpha = 0.1,
-}: BackgroundGridProps): JSX.Element {
+  color = 0xcccccc,
+  alpha = 0.2,
+}: BackgroundGridProps): React.JSX.Element {
   const drawGrid = useCallback(
     (g: PixiGraphics) => {
       g.clear();
-      g.setStrokeStyle({ color, width: 1, alpha });
+      g.lineStyle(1, color, alpha);
 
-      // Draw vertical lines
-      for (let x = 0; x <= width; x += gridSize) {
-        g.moveTo(x, 0);
-        g.lineTo(x, height);
+      for (let i = 0; i < width; i += gridSize) {
+        g.moveTo(i, 0);
+        g.lineTo(i, height);
       }
-
-      // Draw horizontal lines
-      for (let y = 0; y <= height; y += gridSize) {
-        g.moveTo(0, y);
-        g.lineTo(width, y);
+      for (let j = 0; j < height; j += gridSize) {
+        g.moveTo(0, j);
+        g.lineTo(width, j);
       }
-
-      g.stroke();
     },
     [width, height, gridSize, color, alpha]
   );
 
-  return <pixiGraphics draw={drawGrid} />;
+  return <Graphics draw={drawGrid} />;
 }
