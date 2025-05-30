@@ -1,8 +1,7 @@
 import type {
-  TrigramStance,
   PlayerState,
   TransitionMetrics,
-  KiFlowFactors,
+  TrigramStance,
 } from "../../types";
 import { TRIGRAM_DATA, STANCE_EFFECTIVENESS_MATRIX } from "../../types"; // Fix: Import from types
 import { TransitionCalculator } from "./TransitionCalculator";
@@ -212,12 +211,11 @@ export class StanceManager {
     // Calculate transition costs
     const currentTime = Date.now();
 
-    // Fix: Remove timeInStance from TransitionCalculator factors
+    // Fix: Remove invalid timeInStance property
     const transitionMetrics = TransitionCalculator.calculateTransition(
       player.stance,
       targetStance,
       {
-        // Fix: Only pass defined values to avoid exactOptionalPropertyTypes issues
         playerLevelModifier: 1.0 + (player.ki / player.maxKi) * 0.2,
         stanceAffinity: 1.0,
       }

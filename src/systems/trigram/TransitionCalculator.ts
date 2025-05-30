@@ -229,7 +229,10 @@ export class TransitionCalculator {
       // Fix: Check if intermediateEntry exists and has valid stance
       if (intermediateEntry && intermediateEntry[0]) {
         const intermediateStance = intermediateEntry[0] as TrigramStance;
-        stances.push(intermediateStance);
+        // Additional validation
+        if (intermediateStance && TRIGRAM_DATA[intermediateStance]) {
+          stances.push(intermediateStance);
+        }
       }
     }
 
@@ -248,13 +251,25 @@ export class TransitionCalculator {
   ): number {
     let totalCost = 0;
 
-    for (let i = 0; i < path.length - 1; i++) {
-      const transition = this.calculateTransition(
-        path[i],
-        path[i + 1],
-        factors
-      );
-      totalCost += transition.staminaCost + transition.kiCost;
+    // Fix: Validate path elements before using
+    const validatedPath = path.filter(
+      (stance): stance is TrigramStance =>
+        stance !== undefined && TRIGRAM_DATA[stance] !== undefined
+    );
+
+    if (validatedPath.length === 0) {
+      validatedPath.push(fromStance, toStance);
+    }
+
+    for (let i = 0; i < validatedPath.length - 1; i++) {
+      const from = validatedPath[i];
+      const to = validatedPath[i + 1];
+
+      // Fix: Ensure both stances are valid
+      if (from && to) {
+        const segmentMetrics = this.calculateTransition(from, to, factors);
+        totalCost += segmentMetrics.staminaCost + segmentMetrics.kiCost;
+      }
     }
 
     return totalCost;

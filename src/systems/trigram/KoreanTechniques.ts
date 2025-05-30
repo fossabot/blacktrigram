@@ -717,9 +717,13 @@ export class KoreanTechniquesManager {
   /**
    * Get counter-technique recommendations
    */
-  public static getCounterTechniques(opponentTechnique: string): string[] {
-    const technique = KOREAN_TECHNIQUES_DATABASE[opponentTechnique];
-    return technique?.counterTechniques || [];
+  public static getCounterTechniques(
+    techniqueName: string
+    // Fix: Remove unused parameter
+  ): string[] {
+    const technique = this.getAdvancedTechnique(techniqueName);
+    // Fix: Convert readonly array to mutable array
+    return technique?.counterTechniques ? [...technique.counterTechniques] : [];
   }
 
   /**
