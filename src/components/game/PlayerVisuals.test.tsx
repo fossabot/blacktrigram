@@ -7,10 +7,9 @@ import { createPlayerState } from "../../types";
 // Mock PlayerVisuals component with all expected props
 const PlayerVisuals = ({
   playerState: _playerState, // Prefix with underscore to mark as intentionally unused
-  showPlayerId,
-  showTrigramSymbol,
-  showAura,
-  ...otherProps
+  showPlayerId: _showPlayerId, // Prefix unused parameters
+  showTrigramSymbol: _showTrigramSymbol,
+  showAura: _showAura,
 }: {
   playerState: PlayerState;
   showPlayerId?: boolean;
