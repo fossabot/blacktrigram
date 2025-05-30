@@ -1,6 +1,6 @@
 import type {
   Graphics,
-  Container,
+  Container as PixiContainer,
   Text,
   Sprite,
   Texture,
@@ -81,7 +81,7 @@ declare module "@pixi/react" {
     interactive?: boolean;
     cursor?: string;
     pivot?: { x: number; y: number };
-    anchor?: number | { x: number; y: number }; // Fix anchor type
+    anchor?: number | { x: number; y: number };
 
     // Text-specific props
     text: string;
@@ -100,7 +100,7 @@ declare module "@pixi/react" {
     [key: string]: any;
   }
 
-  // Component exports
+  // Component exports - using the actual @pixi/react exports
   export const Container: React.FC<ContainerProps>;
   export const Graphics: React.FC<GraphicsProps>;
   export const Text: React.FC<TextProps>;
@@ -115,19 +115,6 @@ declare module "@pixi/react" {
 // Only declare the module for react-reconciler constants fix
 declare module "react-reconciler/constants" {
   export * from "react-reconciler/constants.js";
-}
-
-// Extend TextStyle to support alpha property for compatibility
-declare module "pixi.js" {
-  interface TextStyle {
-    alpha?: number;
-    strokeThickness?: number; // Add missing property
-  }
-
-  interface TextStyleOptions {
-    alpha?: number;
-    strokeThickness?: number; // Add missing property
-  }
 }
 
 export {}; // namespace declaration

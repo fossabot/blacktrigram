@@ -49,6 +49,7 @@ vi.mock("@pixi/react", async () => {
           fill: vi.fn(),
           stroke: vi.fn(),
           closePath: vi.fn(),
+          lineStyle: vi.fn(), // Add missing lineStyle method
         };
         try {
           draw(mockGraphics);

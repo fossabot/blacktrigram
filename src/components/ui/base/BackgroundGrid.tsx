@@ -20,7 +20,7 @@ export function BackgroundGrid({
   const drawGrid = useCallback(
     (g: PixiGraphics) => {
       g.clear();
-      g.lineStyle(1, color, alpha);
+      g.setStrokeStyle({ color, width: 1, alpha });
 
       for (let i = 0; i < width; i += gridSize) {
         g.moveTo(i, 0);
@@ -30,6 +30,7 @@ export function BackgroundGrid({
         g.moveTo(0, j);
         g.lineTo(width, j);
       }
+      g.stroke();
     },
     [width, height, gridSize, color, alpha]
   );

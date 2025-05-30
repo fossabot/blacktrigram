@@ -1,5 +1,4 @@
-import { Application, extend } from "@pixi/react";
-import { Container, Graphics, Text, Sprite } from "pixi.js";
+import { Stage } from "@pixi/react";
 import { useState, useCallback } from "react";
 import type { JSX } from "react";
 import "./App.css";
@@ -7,26 +6,6 @@ import { GameEngine } from "./components/game/GameEngine";
 import { useAudio } from "./audio/AudioManager";
 import { IntroScreen } from "./components/intro/IntroScreen";
 import { TrainingScreen } from "./components/training/TrainingScreen";
-
-// Extend @pixi/react with the Pixi components we want to use
-extend({
-  Container,
-  Graphics,
-  Text,
-  Sprite,
-});
-
-// Declare the extended components for TypeScript
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      pixiContainer: any;
-      pixiGraphics: any;
-      pixiText: any;
-      pixiSprite: any;
-    }
-  }
-}
 
 // Type definitions
 type GameMode = "intro" | "game" | "training";
@@ -66,7 +45,7 @@ function App(): JSX.Element {
 
   return (
     <div className="app-container">
-      <Application
+      <Stage
         width={window.innerWidth}
         height={window.innerHeight}
         backgroundColor={COLORS_APP.BLACK}
@@ -91,7 +70,7 @@ function App(): JSX.Element {
             <BackButton onBack={returnToIntro} />
           </pixiContainer>
         )}
-      </Application>
+      </Stage>
     </div>
   );
 }

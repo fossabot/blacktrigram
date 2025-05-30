@@ -204,8 +204,10 @@ export function GameUI({
             fill: KOREAN_COLORS.GOLD,
             fontSize: 48,
             fontFamily: "Noto Sans KR",
-            stroke: KOREAN_COLORS.BLACK,
-            strokeThickness: 4,
+            stroke: {
+              color: KOREAN_COLORS.BLACK,
+              width: 4,
+            },
           }}
         />
       )}
@@ -223,8 +225,10 @@ export function GameUI({
               fill: KOREAN_COLORS.GOLD,
               fontSize: 48,
               fontFamily: "Noto Sans KR",
-              stroke: KOREAN_COLORS.BLACK,
-              strokeThickness: 4,
+              stroke: {
+                color: KOREAN_COLORS.BLACK,
+                width: 4,
+              },
             }}
           />
         )}
@@ -238,8 +242,10 @@ export function GameUI({
             fill: KOREAN_COLORS.GOLD,
             fontSize: 48,
             fontFamily: "Noto Sans KR",
-            stroke: KOREAN_COLORS.BLACK,
-            strokeThickness: 4,
+            stroke: {
+              color: KOREAN_COLORS.BLACK,
+              width: 4,
+            },
           }}
         />
       )}

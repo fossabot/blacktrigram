@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from "react";
+import { Container, Graphics, Text } from "@pixi/react";
 import type { Graphics as PixiGraphics } from "pixi.js";
 import type { TrigramStance, TrigramWheelProps } from "../../types";
 import { TRIGRAM_DATA, KOREAN_COLORS } from "../../types";
@@ -19,11 +20,20 @@ export function TrigramWheel({
       g.clear();
 
       // Draw central circle
-      g.setFillStyle({ color: KOREAN_COLORS.BLACK, alpha: 0.8 });
+      const blackColor =
+        typeof KOREAN_COLORS.BLACK === "string"
+          ? parseInt(KOREAN_COLORS.BLACK.replace("#", ""), 16)
+          : KOREAN_COLORS.BLACK;
+      const goldColor =
+        typeof KOREAN_COLORS.GOLD === "string"
+          ? parseInt(KOREAN_COLORS.GOLD.replace("#", ""), 16)
+          : KOREAN_COLORS.GOLD;
+
+      g.setFillStyle({ color: blackColor, alpha: 0.8 });
       g.circle(0, 0, radius * 0.3);
       g.fill();
 
-      g.setStrokeStyle({ color: KOREAN_COLORS.GOLD, width: 2 });
+      g.setStrokeStyle({ color: goldColor, width: 2 });
       g.circle(0, 0, radius * 0.3);
       g.stroke();
     },
@@ -43,13 +53,19 @@ export function TrigramWheel({
 
       g.clear();
 
+      // Convert color string to number if needed
+      const stanceColor =
+        typeof trigramData.color === "string"
+          ? parseInt(trigramData.color.replace("#", ""), 16)
+          : trigramData.color;
+
       // Button background
-      g.setFillStyle({ color: trigramData.color, alpha: alpha * 0.3 });
+      g.setFillStyle({ color: stanceColor, alpha: alpha * 0.3 });
       g.circle(buttonX, buttonY, 30);
       g.fill();
 
       g.setStrokeStyle({
-        color: trigramData.color,
+        color: stanceColor,
         width: isSelected ? 3 : 2,
         alpha: alpha,
       });
@@ -60,24 +76,24 @@ export function TrigramWheel({
   );
 
   return (
-    <pixiContainer x={x} y={y}>
-      <pixiGraphics draw={drawWheel} />
+    <Container x={x} y={y}>
+      <Graphics draw={drawWheel} />
 
       {Object.entries(TRIGRAM_DATA).map(([stance, trigramData], index) => (
-        <pixiContainer
+        <Container
           key={stance}
           interactive={true}
           onPointerDown={() => onStanceChange(stance as TrigramStance)}
           onPointerEnter={() => setHoveredStance(stance as TrigramStance)}
           onPointerLeave={() => setHoveredStance(null)}
         >
-          <pixiGraphics
+          <Graphics
             draw={(g: PixiGraphics) =>
               drawStanceButton(g, stance as TrigramStance, index)
             }
           />
 
-          <pixiText
+          <Text
             text={trigramData.symbol}
             anchor={{ x: 0.5, y: 0.5 }}
             x={Math.cos((index / 8) * Math.PI * 2 - Math.PI / 2) * radius}
@@ -89,7 +105,7 @@ export function TrigramWheel({
             }}
           />
 
-          <pixiText
+          <Text
             text={`${index + 1}`}
             anchor={{ x: 0.5, y: 0.5 }}
             x={Math.cos((index / 8) * Math.PI * 2 - Math.PI / 2) * radius}
@@ -101,7 +117,7 @@ export function TrigramWheel({
             }}
           />
 
-          <pixiText
+          <Text
             text={trigramData.korean}
             anchor={{ x: 0.5, y: 0.5 }}
             x={Math.cos((index / 8) * Math.PI * 2 - Math.PI / 2) * radius}
@@ -112,11 +128,11 @@ export function TrigramWheel({
               fill: trigramData.color,
             }}
           />
-        </pixiContainer>
+        </Container>
       ))}
 
       {/* Center display */}
-      <pixiText
+      <Text
         text={TRIGRAM_DATA[selectedStance].symbol}
         anchor={{ x: 0.5, y: 0.5 }}
         style={{
@@ -126,7 +142,7 @@ export function TrigramWheel({
         }}
       />
 
-      <pixiText
+      <Text
         text={TRIGRAM_DATA[selectedStance].english}
         anchor={{ x: 0.5, y: 0.5 }}
         y={25}
@@ -136,6 +152,6 @@ export function TrigramWheel({
           fill: KOREAN_COLORS.WHITE,
         }}
       />
-    </pixiContainer>
+    </Container>
   );
 }

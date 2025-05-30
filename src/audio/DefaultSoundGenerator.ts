@@ -98,14 +98,16 @@ export class DefaultSoundGenerator {
   }
 
   public static async playVictorySound(): Promise<void> {
-    // Ascending chord progression - filter out undefined values
-    const notes = [262, 330, 392, 523].filter(
-      (note): note is number => note !== undefined
-    );
+    // Ascending chord progression with proper type checking
+    const notes = [262, 330, 392, 523];
+
     for (let i = 0; i < notes.length; i++) {
-      setTimeout(async () => {
-        await this.generateTone(notes[i], 0.3, "triangle", 0.3);
-      }, i * 150);
+      const note = notes[i];
+      if (note !== undefined) {
+        setTimeout(async () => {
+          await this.generateTone(note, 0.3, "triangle", 0.3);
+        }, i * 150);
+      }
     }
   }
 
