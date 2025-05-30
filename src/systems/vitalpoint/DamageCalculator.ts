@@ -54,16 +54,16 @@ export class KoreanDamageCalculator {
 
     if (vitalPoint) {
       hitVitalPointNameObj = vitalPoint.name;
-      hitVitalPointKoreanName = vitalPoint.koreanName;
+      hitVitalPointKoreanName = vitalPoint.koreanName; // This is string
       vitalPointBonus = (vitalPoint.damageMultiplier - 1) * baseDamage;
-      // meridianMultiplier = getMeridianMultiplier(vitalPoint.meridian); // Assuming getMeridianMultiplier exists
+      // meridianMultiplier = getMeridianMultiplier(vitalPoint.meridian);
 
       finalDamageType = KoreanDamageCalculator.determineDamageType(
         baseDamage,
         precision,
         vitalPoint
       );
-      descriptionMessage = hitVitalPointKoreanName
+      descriptionMessage = hitVitalPointKoreanName // This is string
         ? `${hitVitalPointKoreanName} - ${damageDescriptions[finalDamageType]}`
         : damageDescriptions[finalDamageType];
     } else {
@@ -78,8 +78,7 @@ export class KoreanDamageCalculator {
       (baseDamage + vitalPointBonus) * meridianMultiplier
     );
 
-    // Initialize with properties that are always present or have defaults
-    const resultCore = {
+    const result: DamageResult = {
       damage: totalDamage,
       baseDamage: baseDamage,
       isCritical: finalDamageType === "critical",
@@ -90,7 +89,7 @@ export class KoreanDamageCalculator {
             damage: totalDamage,
             critical: finalDamageType === "critical",
             description: descriptionMessage,
-            // Ensure all required VitalPointHit properties are set
+            effectiveness: precision,
           } as VitalPointHit)
         : null,
       modifiers: [],
@@ -100,16 +99,11 @@ export class KoreanDamageCalculator {
       damageType: finalDamageType,
     };
 
-    // Conditionally add optional properties
-    const result: DamageResult = { ...resultCore };
-
+    // Explicitly assign optional properties if they are defined
     if (hitVitalPointKoreanName !== undefined) {
       result.koreanName = hitVitalPointKoreanName;
     }
     if (hitVitalPointNameObj !== undefined) {
-      // DamageResult.vitalPointName can be string | { english: string; korean: string }
-      // Assigning the object directly if that's the intended structure.
-      // If only the English string is needed and vitalPointName is string only: result.vitalPointName = hitVitalPointNameObj.english;
       result.vitalPointName = hitVitalPointNameObj;
     }
 
@@ -145,18 +139,8 @@ export class KoreanDamageCalculator {
   ): DamageResult {
     // Returns imported DamageResult
     const basePower = technique.damage;
-    const rangeMultiplier = Math.max(
-      0.5,
-      1 - Math.abs(distance - technique.range * 0.5) / (technique.range * 1.5)
-    );
-    const baseDmg = basePower * precision * rangeMultiplier;
-    const damageType = KoreanDamageCalculator.determineDamageType(
-      baseDmg,
-      precision,
-      null
-    );
+    const rangeMultiplier = Math.max(baseDmg, precision, null);
 
-    // Ensure all required fields of DamageResult are present
     const result: DamageResult = {
       damage: Math.round(baseDmg),
       baseDamage: baseDmg,
@@ -165,9 +149,10 @@ export class KoreanDamageCalculator {
       modifiers: [],
       description: "기본 계산된 손상", // Default description
       damageType: damageType,
-      koreanName: "기본 계산", // Default Korean name
-      // vitalPointName, vitalPointBonus, meridianMultiplier can be omitted if truly optional
-      // and not applicable here, or set to default/null values.
+      // koreanName is optional, so it can be omitted if not applicable
+      // vitalPointName is optional
+      // vitalPointBonus is optional
+      // meridianMultiplier is optional
     };
     return result;
   }
@@ -233,30 +218,46 @@ export function calculateBaseDamage(
 
   // Apply critical hit if applicable
   const techniqueCritChance = technique.critChance ?? 0.1;
-  if (vitalPointHit?.critical || Math.random() < techniqueCritChance) {
+  const isCritical =
+    vitalPointHit?.critical || Math.random() < techniqueCritChance;
+  if (isCritical) {
     finalDamage *= modifiers.critMultiplier;
     modifiers.messages.push("Critical Hit!");
   }
 
   finalDamage = Math.round(finalDamage);
 
-  const hitVitalPointKoreanName = vitalPointHit?.vitalPoint?.koreanName ?? "";
-  const hitVitalPointNameEnglish =
-    vitalPointHit?.vitalPoint?.name?.english ?? ""; // Example of accessing english name
+  const hitVitalPointKoreanName = vitalPointHit?.vitalPoint?.koreanName;
+  const hitVitalPointNameEnglish = vitalPointHit?.vitalPoint?.name?.english;
 
   // Ensure the description uses a string, e.g., from vitalPoint.koreanName or vitalPoint.name.korean
-  const description = hitVitalPointKoreanName
-    ? `Hit ${hitVitalPointKoreanName} (${hitVitalPointNameEnglish})`
-    : "Hit";
+  let description = "Hit";
+  if (hitVitalPointKoreanName) {
+    description = `Hit ${hitVitalPointKoreanName}`;
+    if (hitVitalPointNameEnglish) {
+      description += ` (${hitVitalPointNameEnglish})`;
+    }
+  }
 
-  return {
+  const result: DamageResult = {
     damage: finalDamage,
-    baseDamage: baseDamageValue, // Included baseDamage as per updated DamageResult
-    isCritical: vitalPointHit?.critical || false,
+    baseDamage: baseDamageValue,
+    isCritical: isCritical,
     vitalPointHit: vitalPointHit,
     modifiers: modifiers.messages,
     description: description,
   };
+
+  // Conditionally add optional properties
+  if (hitVitalPointKoreanName) {
+    result.koreanName = hitVitalPointKoreanName;
+  }
+  if (vitalPointHit?.vitalPoint?.name) {
+    result.vitalPointName = vitalPointHit.vitalPoint.name;
+  }
+  // vitalPointBonus and meridianMultiplier can be added if calculated and applicable
+
+  return result;
 }
 
 export function calculateDamageModifiers(

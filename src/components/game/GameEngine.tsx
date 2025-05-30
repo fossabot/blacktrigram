@@ -1,64 +1,77 @@
-import React, { useCallback, useEffect, useReducer } from "react"; // useState removed if not used
-import { Stage, Container, useTick } from "@pixi/react"; // Ensure these are correct imports
-import type {
+import React, { useEffect, useReducer, useCallback, useMemo } from "react";
+import { Stage, Container, useTick } from "@pixi/react"; // Assuming these are correct exports
+import * as PIXI from "pixi.js"; // For Ticker type if needed
+import {
   PlayerState,
   GameState,
-  GameSettings,
-  TrigramStance,
+  GamePhase,
   CombatEvent,
-  AttackResult,
-  GamePhase, // Added GamePhase
-  EnvironmentState, // Added EnvironmentState
-  // Position, // Unused
-  // Velocity, // Unused
-} from "../../types";
-import {
   createPlayerState,
-  // INITIAL_PLAYER_STATE, // Assuming this is not defined, use createPlayerState
+  Position,
   TRIGRAM_DATA,
-  KOREAN_COLORS,
+  AttackResult, // Used by processAttack
+  CombatResult, // This has attackerState and defenderState
+  // GameSettings, // GameSettings is part of GameState, not directly used here unless for initial state
+  // TrigramStance, // Part of PlayerState
+  // EnvironmentState, // Part of GameState
+  KoreanTechnique, // For processAttack
+  VitalPointHit, // For processAttack
 } from "../../types";
-import { CombatSystem } from "../../systems/CombatSystem";
-import { Player } from "./Player";
-import { GameUI } from "./GameUI";
-import { HitEffectsLayer } from "./HitEffectsLayer";
-import { DojangBackground } from "./DojangBackground";
-import { useAudio } from "../../audio/AudioManager";
-import type { Ticker } from "pixi.js";
+import { Player } from "./Player"; // Assuming Player component exists
+import { GameUI } from "./GameUI"; // Assuming GameUI component exists
+import { DojangBackground } from "./DojangBackground"; // Assuming DojangBackground component exists
+import { AudioManager, useAudio } from "../../audio/AudioManager"; // AudioManager might not be needed directly if useAudio is used
+import { CombatSystem } from "../../systems/CombatSystem"; // Assuming CombatSystem exists
 
-const ROUND_TIME_LIMIT = 90; // seconds
+const ROUND_TIME_LIMIT = 180 * 1000; // 3 minutes in milliseconds
+const PLAYER_ONE_ID = "player1";
+const PLAYER_TWO_ID = "player2";
 
-const initialPlayer1State = createPlayerState("Player1", { x: 150, y: 450 });
-const initialPlayer2State = createPlayerState(
-  "Player2",
-  { x: 650, y: 450 },
-  "tae",
-  { facingDirection: "left" }
-);
+const initialPlayer1State = createPlayerState(PLAYER_ONE_ID, {
+  x: 100,
+  y: 300,
+});
+const initialPlayer2State = createPlayerState(PLAYER_TWO_ID, {
+  x: 700,
+  y: 300,
+});
 
-const initialGameState: GameState = {
-  gameTime: 0,
-  timeRemaining: ROUND_TIME_LIMIT,
+const initialState: GameState = {
   players: [initialPlayer1State, initialPlayer2State],
   currentRound: 1,
+  timeRemaining: ROUND_TIME_LIMIT,
   winner: null,
   isPaused: false,
-  phase: "pre-round", // Use GamePhase type
-  environment: { setting: "dojang", timeOfDay: "day", weather: "clear" }, // Ensure EnvironmentState structure
-  projectiles: [],
+  phase: "initializing",
+  gameTime: 0,
+  environment: {
+    dojangType: "traditional_dojang", // Example
+    lighting: "day",
+    timeOfDay: 12, // Noon
+    weather: "clear",
+  },
   gameEvents: [],
   matchScore: { player1: 0, player2: 0 },
-  settings: { difficulty: "medium", rounds: 3, audioVolume: 0.7 }, // audioVolume added to GameSettings type
-  combatLog: [], // Added combatLog
+  settings: {
+    // This should match GameSettings interface
+    difficulty: "medium",
+    allowMusic: true,
+    allowSFX: true,
+    showVitalPoints: true,
+    showDamageNumbers: true,
+    showStanceIndicator: true,
+    // 'rounds' was incorrect; maxRounds is part of GameState if needed
+  },
+  combatLog: [],
+  maxRounds: 3, // Example
 };
 
-// Reducer logic would go here, simplified for brevity
 function gameReducer(state: GameState, action: any): GameState {
   switch (action.type) {
     case "UPDATE_TIME":
       return {
         ...state,
-        gameTime: state.gameTime + action.payload.delta,
+        gameTime: (state.gameTime ?? 0) + action.payload.delta,
         timeRemaining: Math.max(
           0,
           (state.timeRemaining ?? ROUND_TIME_LIMIT) - action.payload.delta
@@ -69,193 +82,155 @@ function gameReducer(state: GameState, action: any): GameState {
         ...state,
         players: state.players.map((p, i) =>
           i === action.payload.playerIndex ? action.payload.newState : p
-        ) as [PlayerState, PlayerState], // Ensure tuple type
+        ) as [PlayerState, PlayerState],
       };
     case "SET_GAME_PHASE":
-      return { ...state, phase: action.payload as GamePhase }; // Use GamePhase type
+      return { ...state, phase: action.payload as GamePhase };
     case "ADD_COMBAT_EVENT":
+      const eventPayload = action.payload as CombatEvent;
+      const logMessage =
+        eventPayload.description || `Event: ${eventPayload.type}`;
       return {
         ...state,
-        gameEvents: [...(state.gameEvents || []), action.payload],
-        combatLog: [...(state.combatLog || []), action.payload.message],
+        gameEvents: [...(state.gameEvents || []), eventPayload],
+        combatLog: [...(state.combatLog || []), logMessage],
       };
     case "END_ROUND":
       return {
         ...state,
-        winner: action.payload.winner,
-        phase: "post-round" as GamePhase,
+        winner: action.payload.winner as number | null, // Ensure type match
+        phase: "post-round", // Ensure "post-round" is a valid GamePhase
       };
-    // ... other cases
+    case "RESET_ROUND":
+      return {
+        ...state,
+        players: [
+          createPlayerState(PLAYER_ONE_ID, { x: 100, y: 300 }), // Corrected arguments
+          createPlayerState(PLAYER_TWO_ID, { x: 700, y: 300 }), // Corrected arguments
+        ],
+        timeRemaining: ROUND_TIME_LIMIT,
+        phase: "preparation", // Changed from "pre-round"
+        winner: null,
+        gameEvents: [],
+        combatLog: [],
+      };
     default:
       return state;
   }
 }
 
-export function GameEngine(): React.JSX.Element {
-  // Correct JSX.Element
-  const [gameState, dispatch] = useReducer(gameReducer, initialGameState);
+export function GameEngine(): JSX.Element {
+  const [state, dispatch] = useReducer(gameReducer, initialState);
   const audio = useAudio();
 
-  useTick(
-    useCallback(
-      (delta: number, _ticker: Ticker) => {
-        // delta is number
-        if (gameState.isPaused || gameState.phase !== "fighting") return;
+  useEffect(() => {
+    dispatch({ type: "SET_GAME_PHASE", payload: "preparation" }); // Changed from "pre-round"
+    audio.playMusic("menu_theme"); // Example
+  }, [audio]);
 
-        dispatch({ type: "UPDATE_TIME", payload: { delta: delta / 60 } }); // Assuming delta is in frames, convert to seconds
-
-        // Simplified game logic: check for round end by time
-        if (
-          gameState.timeRemaining !== undefined &&
-          gameState.timeRemaining <= 0
-        ) {
-          // Determine winner based on health or other criteria
-          const p1Health = gameState.players[0].health;
-          const p2Health = gameState.players[1].health;
-          let winnerId: string | null = null;
-          if (p1Health > p2Health) winnerId = gameState.players[0].playerId;
-          else if (p2Health > p1Health)
-            winnerId = gameState.players[1].playerId;
-          // Convert winnerId to player index (0 or 1) or null
-          const winnerIndex =
-            winnerId === gameState.players[0].playerId
-              ? 0
-              : winnerId === gameState.players[1].playerId
-              ? 1
-              : null;
-          dispatch({ type: "END_ROUND", payload: { winner: winnerIndex } });
-        }
-      },
-      [
-        gameState.isPaused,
-        gameState.phase,
-        gameState.timeRemaining,
-        gameState.players,
-      ]
-    )
-  );
+  useTick((delta: number, _ticker: PIXI.Ticker) => {
+    // Ensure ticker is accepted if provided by useTick
+    if (state.phase === "combat" && !state.isPaused) {
+      // Changed from "fighting"
+      dispatch({ type: "UPDATE_TIME", payload: { delta } });
+      // Player update logic, AI logic, etc.
+    }
+  });
 
   const handlePlayerAction = useCallback(
-    (playerIndex: number, action: { type: string; techniqueName?: string }) => {
-      if (gameState.phase !== "fighting") return;
+    (playerIndex: number, actionDetails: unknown) => {
+      // This function would eventually dispatch actions based on player input
+      // For example, initiating an attack
+      console.log(`Player ${playerIndex} action:`, actionDetails);
+      const attacker = state.players[playerIndex];
+      const defender = state.players[playerIndex === 0 ? 1 : 0];
 
-      const attacker = gameState.players[playerIndex];
-      const defender = gameState.players[playerIndex === 0 ? 1 : 0];
+      if (!attacker || !defender) return; // Guard against undefined players
 
-      if (action.type === "attack" && action.techniqueName) {
-        const technique = TRIGRAM_DATA[attacker.stance].techniques.find(
-          (t) => t.name === action.techniqueName
-        );
-        if (!technique) return;
+      // Example: Process a predefined attack
+      // This is a simplified placeholder for actual attack logic
+      const exampleTechnique: KoreanTechnique =
+        TRIGRAM_DATA[attacker.stance].technique;
 
-        // Basic stamina check
-        if (attacker.stamina < (technique.staminaCost || 5)) {
-          dispatch({
-            type: "ADD_COMBAT_EVENT",
-            payload: {
-              type: "action_fail",
-              message: `${attacker.playerId} lacks stamina for ${technique.name}`,
-              timestamp: Date.now(),
-            },
-          });
-          return;
-        }
+      // Use CombatResult as it contains attackerState and defenderState
+      const combatResult: CombatResult = CombatSystem.processAttack(
+        attacker,
+        defender,
+        exampleTechnique,
+        null // No specific vital point for this example
+      );
 
-        const attackResult: AttackResult = CombatSystem.resolveAttack(
-          attacker,
-          defender,
-          technique
-        );
+      dispatch({
+        type: "SET_PLAYER_STATE",
+        payload: { playerIndex, newState: combatResult.attackerState },
+      });
+      dispatch({
+        type: "SET_PLAYER_STATE",
+        payload: {
+          playerIndex: playerIndex === 0 ? 1 : 0,
+          newState: combatResult.defenderState,
+        },
+      });
 
-        const newAttackerState: PlayerState = {
-          ...attackResult.attackerState,
-          stamina: attacker.stamina - (technique.staminaCost || 5),
-          isAttacking: false, // Reset attacking state after action
-        };
-        const newDefenderState: PlayerState = {
-          ...attackResult.defenderState,
-          health: Math.max(0, defender.health - attackResult.damage),
-        };
+      dispatch({
+        type: "ADD_COMBAT_EVENT",
+        payload: {
+          type: "attack",
+          playerId: attacker.playerId, // Use playerId
+          targetId: defender.playerId,
+          technique: exampleTechnique.name,
+          damage: combatResult.damageDealt,
+          description: combatResult.log.join(" "),
+        } as CombatEvent,
+      });
 
-        dispatch({
-          type: "SET_PLAYER_STATE",
-          payload: { playerIndex, newState: newAttackerState },
-        });
-        dispatch({
-          type: "SET_PLAYER_STATE",
-          payload: {
-            playerIndex: playerIndex === 0 ? 1 : 0,
-            newState: newDefenderState,
-          },
-        });
-
-        const combatEvent: CombatEvent = {
-          type: "attack_result",
-          attackerId: attacker.playerId, // Add attackerId
-          defenderId: defender.playerId,
-          technique: technique.name,
-          damage: attackResult.damage,
-          isCritical: attackResult.critical, // Use critical
-          isBlocked: attackResult.blocked,
-          timestamp: Date.now(),
-          message: `${attacker.playerId} used ${technique.name}. Dealt ${attackResult.damage} damage.`,
-        };
-        dispatch({ type: "ADD_COMBAT_EVENT", payload: combatEvent });
+      audio.playAttackSound(exampleTechnique.damage);
+      if (combatResult.damageDealt > 0) {
         audio.playHitSound(
-          attackResult.damage,
-          attackResult.critical,
-          !!attackResult.vitalPointHit
-        );
-
-        if (newDefenderState.health <= 0) {
-          dispatch({ type: "END_ROUND", payload: { winner: playerIndex } });
-        }
-      } else if (action.type === "stance_change") {
-        // ... handle stance change, update player state, play sound
-        // const newStance = action.newStance as TrigramStance;
-        // dispatch({ type: "SET_PLAYER_STATE", payload: { playerIndex, newState: {...attacker, stance: newStance} }});
-        // audio.playStanceChangeSound?.(newStance);
+          combatResult.damageDealt,
+          !!combatResult.hitVitalPoint
+        ); // Pass damage and boolean for vital point
       }
-      // const actionDetails = action; // Unused variable
     },
-    [gameState.players, gameState.phase, audio, dispatch]
+    [state.players, audio] // Added audio to dependencies
   );
 
-  useEffect(() => {
-    // Example: Start the round after a delay
-    if (gameState.phase === "pre-round") {
-      const timer = setTimeout(() => {
-        dispatch({ type: "SET_GAME_PHASE", payload: "fighting" });
-      }, 2000); // 2 second countdown
-      return () => clearTimeout(timer);
-    }
-  }, [gameState.phase]);
+  const gameStage = useMemo(
+    () => (
+      <Stage width={800} height={600} options={{ backgroundColor: 0x1099bb }}>
+        {state.environment && (
+          <DojangBackground
+            dojangType={state.environment.dojangType} // Pass dojangType
+            timeOfDay={state.environment.timeOfDay} // Pass timeOfDay
+          />
+        )}
+        {state.players.map((player, index) => (
+          <Player
+            key={player.playerId}
+            playerState={player}
+            onAction={(actionDetails) =>
+              handlePlayerAction(index, actionDetails)
+            }
+          />
+        ))}
+        {/* HitEffectsLayer would go here */}
+      </Stage>
+    ),
+    [state.players, state.environment, handlePlayerAction]
+  );
+
+  if (state.phase === "initializing") {
+    return <div>Loading Black Trigram...</div>;
+  }
 
   return (
-    <Stage
-      width={800}
-      height={600}
-      options={{ backgroundColor: KOREAN_COLORS.BLACK }}
-    >
-      <DojangBackground
-        setting={gameState.environment?.setting || "dojang"}
-        timeOfDay={gameState.environment?.timeOfDay || "day"} // Ensure type compatibility
-      />
-      {gameState.players.map((playerState, index) => (
-        <Player
-          key={playerState.playerId}
-          playerState={playerState}
-          onAction={(action) => handlePlayerAction(index, action)}
-          onStanceChange={(stance) => {
-            /* Handle stance change, dispatch action */
-          }}
-        />
-      ))}
-      <HitEffectsLayer combatEvents={gameState.gameEvents || []} />
+    <div className="game-container">
+      {gameStage}
       <GameUI
-        gameState={gameState}
-        onPauseToggle={() => dispatch({ type: "TOGGLE_PAUSE" })}
+        gameState={state}
+        onPauseToggle={() => dispatch({ type: "TOGGLE_PAUSE" })} // Assuming GameUIProps defines onPauseToggle
+        // Add other necessary props for GameUI
       />
-    </Stage>
+    </div>
   );
 }

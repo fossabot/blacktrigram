@@ -18,10 +18,14 @@ export interface Position {
 }
 
 export interface Velocity {
+  // Ensure Velocity is defined
   readonly x: number;
   readonly y: number;
   readonly z?: number;
 }
+
+// Vector2D alias for consistency with GameTypes.ts or other modules
+export type Vector2D = Position;
 
 // Define ConditionType (formerly StatusEffectType from GameTypes.ts)
 export type ConditionType =
@@ -55,13 +59,23 @@ export type ConditionType =
   | "dizzy" // From KoreanVitalPoints.ts (example)
   | "winded"; // From KoreanVitalPoints.ts (example)
 
+// Define StatusEffectSource (moved from GameTypes.ts)
+export type StatusEffectSource =
+  | "vital_point"
+  | "technique"
+  | "stance"
+  | "combo"
+  | "meridian_disruption"
+  | "meridian_strike"
+  | "perfect_technique";
+
 // Status effects - UNIFIED
 export interface StatusEffect {
   type: ConditionType | string;
   duration: number;
   magnitude?: number; // Standardized from 'intensity'
   chance?: number;
-  source?: string; // e.g., 'vital_point', 'technique'
+  source?: StatusEffectSource | string; // Updated to use StatusEffectSource
   description?: string;
 }
 
@@ -216,7 +230,7 @@ export interface Condition {
 export interface PlayerState {
   readonly playerId: string;
   readonly position: Position;
-  readonly velocity: Velocity;
+  readonly velocity: Velocity; // Make sure Velocity is found
   readonly health: number;
   readonly maxHealth: number;
   readonly stamina: number;
@@ -286,6 +300,10 @@ export interface AttackResult {
   readonly statusEffectsApplied?: StatusEffect[]; // Renamed from statusEffects for clarity
   readonly description: string;
   readonly knockback?: Position; // Using Position for Vector2D (From GameTypes.ts)
+  // If GameEngine.processAttack is meant to update player states directly,
+  // consider if it should return a structure more like CombatResult,
+  // or if GameEngine should use CombatResult type for its return.
+  // For now, assuming AttackResult is as defined. GameEngine might need to use CombatResult.
 }
 
 export interface BlockResult {
@@ -299,16 +317,17 @@ export interface BlockResult {
 
 export type GamePhase =
   | "initializing"
-  | "preparation"
-  | "combat"
+  | "preparation" // "pre-round" can map to this
+  | "combat" // "fighting" can map to this
   | "victory"
   | "defeat"
   | "paused"
   | "intro" // Added for completeness
-  | "training"; // Added for completeness
+  | "training" // Added for completeness
+  | "post-round"; // Added to support "post-round" phase from GameEngine
 
 export interface EnvironmentState {
-  readonly dojangType: string;
+  readonly dojangType: string; // This seems to be what GameEngine's 'setting' refers to
   readonly lighting: "day" | "night" | "dusk" | "dawn";
   readonly timeOfDay: number;
   readonly weather: "clear" | "rain" | "snow" | "fog";
@@ -341,14 +360,15 @@ export type CombatEventType =
 export interface BaseCombatEvent {
   readonly type: CombatEventType | string;
   readonly timestamp?: number;
-  readonly technique?: string | KoreanTechnique; // Changed to allow KoreanTechnique for AttackEvent override
+  readonly technique?: string | KoreanTechnique;
   readonly damage?: number;
   readonly isVitalPoint?: boolean;
   readonly stance?: TrigramStance;
   readonly comboCount?: number;
-  readonly playerId?: string;
+  readonly playerId?: string; // Used for attacker/defender ID
   readonly targetId?: string;
   readonly position?: Position;
+  readonly description?: string;
 }
 
 export interface AttackEvent extends BaseCombatEvent {
@@ -417,17 +437,17 @@ export interface GameState {
   readonly players: [PlayerState, PlayerState];
   readonly currentRound: number;
   readonly timeRemaining?: number;
-  readonly winner?: number | null; // Player index or null
+  readonly winner?: number | null; // Player index (0 or 1) or null
   readonly isPaused: boolean;
   readonly phase: GamePhase;
   readonly gameTime?: number;
   readonly environment?: EnvironmentState;
   readonly projectiles?: unknown[];
   readonly gameEvents?: CombatEvent[];
-  readonly matchScore?: { player1: number; player2: number };
+  readonly matchScore?: { player1: number; player2: number }; // Ensure this matches GameEngine
   readonly settings?: GameSettings;
-  readonly combatLog?: string[]; // For storing textual descriptions of events
-  readonly maxRounds?: number; // From GameTypes.ts GameState
+  readonly combatLog?: string[];
+  readonly maxRounds?: number;
 }
 
 export interface ProgressTrackerProps {
@@ -583,7 +603,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     element: "Fire",
     description: "불꽃처럼 맹렬한 찌르기 (Fierce thrust like flame)",
     philosophy: "명료함과 지혜의 빛 (Light of clarity and wisdom)",
-    color: KOREAN_COLORS.Red, // Now correctly assigns a string
+    color: KOREAN_COLORS.Red,
     technique: {
       id: "li_flame_spear",
       name: "화염지창",
@@ -593,8 +613,8 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
         korean: "불꽃처럼 맹렬한 찌르기",
         english: "Fierce thrust like flame",
       },
-      damage: 35, // This is a number
-      range: 70, // Longer range
+      damage: 35,
+      range: 70,
       accuracy: 0.8,
       speed: 0.9, // Slower but powerful
       kiCost: 20,
@@ -1012,3 +1032,8 @@ export interface CollisionZone {
   readonly width?: number;
   readonly height?: number;
 }
+
+// Utility type ReadonlyDeep (moved from GameTypes.ts if it was there)
+export type ReadonlyDeep<T> = {
+  readonly [P in keyof T]: T[P] extends object ? ReadonlyDeep<T[P]> : T[P];
+};
