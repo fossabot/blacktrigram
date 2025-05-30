@@ -1,10 +1,12 @@
 import type {
+  KiFlowFactors,
   PlayerState,
   TransitionMetrics,
   TrigramStance,
 } from "../../types";
 import { TRIGRAM_DATA, STANCE_EFFECTIVENESS_MATRIX } from "../../types"; // Fix: Import from types
 import { TransitionCalculator } from "./TransitionCalculator";
+import { TrigramCalculator } from "./TrigramCalculator";
 
 /**
  * Korean Martial Arts Stance Management System
@@ -488,14 +490,26 @@ export class StanceManager {
   }
 
   /**
-   * Calculate ki flow rate for current stance
+   * Calculate ki flow based on current stance and factors
    */
-  private calculateKiFlow(playerId: string, stance: TrigramStance): number {
-    const baseFlow = TRIGRAM_DATA[stance].kiRegenRate || 1.0;
-    const mastery = this.getStanceMastery(playerId, stance);
-    const masteryBonus = mastery * 0.5;
+  private calculateKiFlow(
+    stance: TrigramStance,
+    timeInStance: number,
+    playerLevel: number
+  ): number {
+    const stanceData = TRIGRAM_DATA[stance];
+    const baseKiRegen = stanceData.kiRegenRate || 1.0;
 
-    return baseFlow + masteryBonus;
+    // Create factors object with proper typing
+    const factors: KiFlowFactors = {
+      playerLevelModifier: 1.0 + playerLevel * 0.1,
+      stanceAffinity: this.getStanceAffinity(stance),
+      timeInStance: timeInStance, // This should now be valid with updated types
+      kiRecovery: baseKiRegen,
+      kiConsumption: 1.0,
+    };
+
+    return TrigramCalculator.calculateKiFlow(stance, factors);
   }
 
   /**

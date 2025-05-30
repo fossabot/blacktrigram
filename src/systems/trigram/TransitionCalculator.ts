@@ -374,4 +374,55 @@ export class TransitionCalculator {
     const transition = this.TRANSITION_MATRIX[from]?.[to];
     return transition?.effectiveness ?? 0.5;
   }
+
+  /**
+   * Calculate transition timing for frame-perfect execution
+   */
+  public static calculateTransitionTiming(
+    from: TrigramStance,
+    to: TrigramStance,
+    playerSkill: number = 0.5
+  ): {
+    readonly frameWindow: number;
+    readonly perfectTiming: number;
+    readonly difficulty: number;
+    readonly description: string;
+  } {
+    const distance = this.getStanceDistance(from, to);
+    const baseFrameWindow = 30; // 30 frames base window
+
+    // Adjust frame window based on distance and skill
+    const frameWindow = Math.round(
+      baseFrameWindow * (1 + distance * 0.5) * (1 - playerSkill * 0.3)
+    );
+    const perfectTiming = Math.round(frameWindow * 0.3); // Perfect timing is 30% into the window
+    const difficulty = distance * (1 - playerSkill * 0.5);
+
+    const description = `Transition from ${TRIGRAM_DATA[from].korean} to ${TRIGRAM_DATA[to].korean}`;
+
+    return {
+      frameWindow,
+      perfectTiming,
+      difficulty,
+      description,
+    };
+  }
+
+  /**
+   * Get the distance between two stances on the trigram wheel
+   */
+  private static getStanceDistance(
+    from: TrigramStance,
+    to: TrigramStance
+  ): number {
+    const fromOrder = TRIGRAM_DATA[from].order;
+    const toOrder = TRIGRAM_DATA[to].order;
+    const directDistance = Math.abs(fromOrder - toOrder);
+
+    // Consider circular distance around the trigram wheel (8 positions)
+    const circularDistance = Math.min(directDistance, 8 - directDistance);
+
+    // Return normalized distance (0-1 range)
+    return circularDistance / 4;
+  }
 }

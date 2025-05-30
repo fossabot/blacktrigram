@@ -1,6 +1,8 @@
 import type {
   TrigramStance,
   TransitionMetrics,
+  TransitionPath,
+  KiFlowFactors,
   PlayerState,
 } from "../../types";
 import {
@@ -10,65 +12,14 @@ import {
 } from "../../types";
 
 /**
- * Korean Martial Arts Trigram Calculator
- * Advanced calculations for Korean martial arts based on I-Ching trigram philosophy
- * Integrates traditional Korean martial principles with modern combat mechanics
+ * Korean Trigram Calculator - Advanced Stance Mechanics
+ * Based on I-Ching philosophy and Korean martial arts principles
  */
 
-export interface TrigramRelationship {
-  readonly harmonious: boolean;
-  readonly conflicting: boolean;
-  readonly complementary: boolean;
-  readonly advantage: number;
-  readonly description: { korean: string; english: string };
-}
-
-export interface TrigramFlow {
-  readonly sourceStance: TrigramStance;
-  readonly targetStance: TrigramStance;
-  readonly kiCost: number;
-  readonly efficiency: number;
-  readonly timeRequired: number;
-  readonly difficulty: number;
-  readonly description: string;
-}
-
-export interface ElementalHarmony {
-  readonly element1: string;
-  readonly element2: string;
-  readonly harmonyLevel: number;
-  readonly flowDirection: "generating" | "destructive" | "neutral";
-  readonly koreanTerm: string;
-  readonly effects: readonly string[];
-}
-
 export class TrigramCalculator {
-  private static readonly ELEMENTAL_CYCLES = {
-    generating: {
-      // 상생 (Sang-saeng) - Generating cycle
-      Heaven: "Fire",
-      Fire: "Earth",
-      Earth: "Metal",
-      Metal: "Water",
-      Water: "Heaven",
-      Lake: "Wind",
-      Wind: "Thunder",
-      Thunder: "Mountain",
-      Mountain: "Lake",
-    },
-    destructive: {
-      // 상극 (Sang-geuk) - Destructive cycle
-      Heaven: "Earth",
-      Earth: "Water",
-      Water: "Fire",
-      Fire: "Metal",
-      Metal: "Heaven",
-      Lake: "Mountain",
-      Mountain: "Thunder",
-      Thunder: "Wind",
-      Wind: "Lake",
-    },
-  } as const;
+  private static readonly TRANSITION_BASE_COST = 5;
+  private static readonly KI_FLOW_EFFICIENCY = 0.8;
+  private static readonly ELEMENTAL_MULTIPLIER = 1.2;
 
   /**
    * Calculate relationship between two trigram stances
@@ -76,7 +27,13 @@ export class TrigramCalculator {
   public static calculateTrigramRelationship(
     stance1: TrigramStance,
     stance2: TrigramStance
-  ): TrigramRelationship {
+  ): {
+    harmonious: boolean;
+    conflicting: boolean;
+    complementary: boolean;
+    advantage: number;
+    description: { korean: string; english: string };
+  } {
     const data1 = TRIGRAM_DATA[stance1];
     const data2 = TRIGRAM_DATA[stance2];
 
@@ -120,7 +77,14 @@ export class TrigramCalculator {
   public static calculateElementalHarmony(
     element1: string,
     element2: string
-  ): ElementalHarmony {
+  ): {
+    element1: string;
+    element2: string;
+    harmonyLevel: number;
+    flowDirection: "generating" | "destructive" | "neutral";
+    koreanTerm: string;
+    effects: readonly string[];
+  } {
     if (element1 === element2) {
       return {
         element1,
@@ -472,6 +436,236 @@ export class TrigramCalculator {
   }
 
   /**
+   * Calculate optimal stance recommendation based on situation
+   */
+  public static calculateOptimalStance(
+    currentStance: TrigramStance,
+    opponentStance: TrigramStance,
+    playerKi: number,
+    playerStamina: number,
+    situation: "offense" | "defense" | "balance" = "balance"
+  ): TrigramStance {
+    // Remove unused variable warnings by using parameters
+    const kiEfficiency = Math.min(1.0, playerKi / 50); // Use playerKi
+    const staminaEfficiency = Math.min(1.0, playerStamina / 100); // Use playerStamina
+
+    const allStances: TrigramStance[] = [
+      "geon",
+      "tae",
+      "li",
+      "jin",
+      "son",
+      "gam",
+      "gan",
+      "gon",
+    ];
+
+    let bestStance: TrigramStance = currentStance;
+    let bestScore = 0;
+
+    allStances.forEach((stance) => {
+      if (stance === currentStance) return;
+
+      const effectiveness = STANCE_EFFECTIVENESS_MATRIX[stance][opponentStance];
+      const transition = this.calculateTransitionMetrics(currentStance, stance);
+
+      // Calculate score based on situation
+      let score = effectiveness;
+
+      if (situation === "offense") {
+        score *= TRIGRAM_DATA[stance].damageModifier || 1.0;
+      } else if (situation === "defense") {
+        score *= TRIGRAM_DATA[stance].defenseModifier || 1.0;
+      }
+
+      // Apply efficiency modifiers
+      score *= kiEfficiency * staminaEfficiency;
+
+      // Penalize high-cost transitions
+      score *= Math.max(0.5, 1.0 - transition.staminaCost / 20);
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestStance = stance;
+      }
+    });
+
+    return bestStance;
+  }
+
+  /**
+   * Calculate elemental advantage between stances
+   */
+  public static calculateElementalAdvantage(
+    attackerStance: TrigramStance,
+    defenderStance: TrigramStance
+  ): number {
+    const attackerElement = TRIGRAM_DATA[attackerStance].element;
+    const defenderElement = TRIGRAM_DATA[defenderStance].element;
+
+    // Traditional five-element theory relationships
+    const elementAdvantages: Record<string, string[]> = {
+      Heaven: ["Earth", "Mountain"],
+      Lake: ["Fire", "Thunder"],
+      Fire: ["Metal", "Wind"],
+      Thunder: ["Earth", "Mountain"],
+      Wind: ["Earth", "Lake"],
+      Water: ["Fire", "Thunder"],
+      Mountain: ["Water", "Wind"],
+      Earth: ["Water", "Lake"],
+    };
+
+    if (elementAdvantages[attackerElement]?.includes(defenderElement)) {
+      return this.ELEMENTAL_MULTIPLIER;
+    } else if (elementAdvantages[defenderElement]?.includes(attackerElement)) {
+      return 1.0 / this.ELEMENTAL_MULTIPLIER;
+    }
+
+    return 1.0;
+  }
+
+  /**
+   * Enhanced stance effectiveness calculation
+   */
+  public static calculateEnhancedStanceEffectiveness(
+    attackerStance: TrigramStance,
+    defenderStance: TrigramStance,
+    playerFactors?: KiFlowFactors
+  ): number {
+    const baseEffectiveness =
+      STANCE_EFFECTIVENESS_MATRIX[attackerStance][defenderStance];
+    const elementalAdvantage = this.calculateElementalAdvantage(
+      attackerStance,
+      defenderStance
+    ); // Use elementalAdvantage
+
+    let finalEffectiveness = baseEffectiveness * elementalAdvantage;
+
+    // Apply player factors if provided
+    if (playerFactors) {
+      if (playerFactors.stanceAffinity) {
+        finalEffectiveness *= playerFactors.stanceAffinity;
+      }
+      if (playerFactors.playerLevelModifier) {
+        finalEffectiveness *= playerFactors.playerLevelModifier;
+      }
+    }
+
+    return Math.max(0.5, Math.min(2.0, finalEffectiveness));
+  }
+
+  /**
+   * Find optimal transition path with validation
+   */
+  public static findOptimalTransition(
+    from: TrigramStance,
+    to: TrigramStance,
+    playerKi: number,
+    playerStamina: number
+  ): TransitionPath {
+    // Ensure from and to are defined
+    if (!from || !to) {
+      return {
+        path: [],
+        totalCost: Infinity,
+        success: false,
+        description: "Invalid stance parameters",
+      };
+    }
+
+    // Direct transition if same stance
+    if (from === to) {
+      return {
+        path: [from],
+        totalCost: 0,
+        success: true,
+        description: "Already in target stance",
+      };
+    }
+
+    // Get direct transition cost
+    const directTransition = this.calculateTransitionMetrics(from, to);
+
+    // Check if player has enough resources for direct transition
+    if (
+      playerKi >= directTransition.kiCost &&
+      playerStamina >= directTransition.staminaCost
+    ) {
+      return {
+        path: [from, to],
+        totalCost: directTransition.kiCost + directTransition.staminaCost,
+        success: true,
+        from,
+        to,
+        totalKiCost: directTransition.kiCost,
+        totalStaminaCost: directTransition.staminaCost,
+        description: `Direct transition from ${TRIGRAM_DATA[from].korean} to ${TRIGRAM_DATA[to].korean}`,
+      };
+    }
+
+    // If direct transition not possible, find intermediate path
+    const allStances: TrigramStance[] = [
+      "geon",
+      "tae",
+      "li",
+      "jin",
+      "son",
+      "gam",
+      "gan",
+      "gon",
+    ];
+
+    let bestPath: TransitionPath = {
+      path: [],
+      totalCost: Infinity,
+      success: false,
+      description: "No viable path found",
+    };
+
+    // Try single intermediate stance
+    allStances.forEach((intermediate) => {
+      if (intermediate === from || intermediate === to) return;
+
+      const firstTransition = this.calculateTransitionMetrics(
+        from,
+        intermediate
+      );
+      const secondTransition = this.calculateTransitionMetrics(
+        intermediate,
+        to
+      );
+
+      const totalKiCost = firstTransition.kiCost + secondTransition.kiCost;
+      const totalStaminaCost =
+        firstTransition.staminaCost + secondTransition.staminaCost;
+      const totalCost = totalKiCost + totalStaminaCost;
+
+      if (
+        totalKiCost <= playerKi &&
+        totalStaminaCost <= playerStamina &&
+        totalCost < bestPath.totalCost
+      ) {
+        bestPath = {
+          path: [from, intermediate, to],
+          totalCost,
+          success: true,
+          from,
+          to,
+          totalKiCost,
+          totalStaminaCost,
+          efficiency:
+            directTransition.effectiveness /
+            (totalCost /
+              (directTransition.kiCost + directTransition.staminaCost)),
+          description: `Path via ${TRIGRAM_DATA[intermediate].korean}`,
+        };
+      }
+    });
+
+    return bestPath;
+  }
+
+  /**
    * Calculate order distance in trigram wheel
    */
   private static calculateOrderDistance(
@@ -484,27 +678,20 @@ export class TrigramCalculator {
   }
 
   /**
-   * Calculate transition difficulty
+   * Calculate transition difficulty (used internally)
    */
   private static calculateTransitionDifficulty(
     from: TrigramStance,
     to: TrigramStance
   ): number {
-    const orderDistance = this.calculateOrderDistance(
-      TRIGRAM_DATA[from].order,
-      TRIGRAM_DATA[to].order
-    );
+    const fromOrder = TRIGRAM_DATA[from].order;
+    const toOrder = TRIGRAM_DATA[to].order;
+    const distance = Math.abs(fromOrder - toOrder);
 
-    const elementalHarmony = this.calculateElementalHarmony(
-      TRIGRAM_DATA[from].element,
-      TRIGRAM_DATA[to].element
-    );
+    // Circular distance (since trigrams form a wheel)
+    const circularDistance = Math.min(distance, 8 - distance);
 
-    // Difficulty ranges from 0.1 (very easy) to 1.0 (very hard)
-    const baseDifficulty = orderDistance / 4; // 0 to 1
-    const harmonyAdjustment = (1 - elementalHarmony.harmonyLevel) * 0.3;
-
-    return Math.max(0.1, Math.min(1.0, baseDifficulty + harmonyAdjustment));
+    return Math.max(0.5, circularDistance / 4);
   }
 
   /**
