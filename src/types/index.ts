@@ -207,7 +207,7 @@ export interface KiFlowFactors {
   readonly stanceAffinity?: number;
   readonly kiRecovery?: number;
   readonly kiConsumption?: number;
-  readonly timeInStance?: number;
+  readonly timeInStance?: number; // Add missing property
 }
 
 export interface CollisionZone {
@@ -698,14 +698,15 @@ export interface PlayerState {
   isMoving: boolean;
   stamina: number;
   maxStamina: number;
-  lastStanceChangeTime?: number;
-  targetId?: string | null;
+  // Fix: Make optional properties properly optional with undefined union types
+  lastStanceChangeTime?: number | undefined;
+  targetId?: string | null | undefined;
   conditions: Condition[];
-  facing?: "left" | "right";
-  lastDamageTaken?: number;
-  comboCount?: number;
-  lastHitTime?: number;
-  visible?: boolean; // Add missing visible property
+  facing?: "left" | "right" | undefined;
+  lastDamageTaken?: number | undefined;
+  comboCount?: number | undefined;
+  lastHitTime?: number | undefined;
+  visible?: boolean | undefined;
 }
 
 export interface TrigramWheelProps {
@@ -784,28 +785,53 @@ export interface TrilingualName {
   readonly chinese?: string;
 }
 
-// Helper function for creating player state
+// Helper function for creating player state - FIXED for exactOptionalPropertyTypes
 export function createPlayerState(
   id: string,
   position: Position,
   stance: TrigramStance = "geon",
-  overrides: Partial<PlayerState> = {}
+  overrides: Partial<Omit<PlayerState, "playerId" | "position" | "stance">> = {}
 ): PlayerState {
-  return {
+  // Create complete player state with explicit property handling
+  const playerState: PlayerState = {
     playerId: id,
     position: { ...position },
-    velocity: { x: 0, y: 0 },
-    health: 100,
-    maxHealth: 100,
-    ki: 50,
-    maxKi: 100,
-    stance,
-    isAttacking: false,
-    isBlocking: false,
-    isMoving: false,
-    stamina: 100,
-    maxStamina: 100,
-    conditions: [],
-    ...overrides,
+    stance: stance,
+    velocity: overrides.velocity ?? { x: 0, y: 0 },
+    health: overrides.health ?? 100,
+    maxHealth: overrides.maxHealth ?? 100,
+    ki: overrides.ki ?? 50,
+    maxKi: overrides.maxKi ?? 100,
+    isAttacking: overrides.isAttacking ?? false,
+    isBlocking: overrides.isBlocking ?? false,
+    isMoving: overrides.isMoving ?? false,
+    stamina: overrides.stamina ?? 100,
+    maxStamina: overrides.maxStamina ?? 100,
+    conditions: overrides.conditions ?? [],
   };
+
+  // Handle optional properties separately to avoid exactOptionalPropertyTypes issues
+  if (overrides.lastStanceChangeTime !== undefined) {
+    playerState.lastStanceChangeTime = overrides.lastStanceChangeTime;
+  }
+  if (overrides.targetId !== undefined) {
+    playerState.targetId = overrides.targetId;
+  }
+  if (overrides.facing !== undefined) {
+    playerState.facing = overrides.facing;
+  }
+  if (overrides.lastDamageTaken !== undefined) {
+    playerState.lastDamageTaken = overrides.lastDamageTaken;
+  }
+  if (overrides.comboCount !== undefined) {
+    playerState.comboCount = overrides.comboCount;
+  }
+  if (overrides.lastHitTime !== undefined) {
+    playerState.lastHitTime = overrides.lastHitTime;
+  }
+  if (overrides.visible !== undefined) {
+    playerState.visible = overrides.visible;
+  }
+
+  return playerState;
 }

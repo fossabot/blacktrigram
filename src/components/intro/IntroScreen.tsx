@@ -1,230 +1,185 @@
-import React, { useState, useCallback } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
-import type { Graphics as PixiGraphics } from "pixi.js";
-import type { GamePhase } from "../../types";
-import { KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../types";
+import React, { useState, useCallback, useEffect } from "react";
 import { MenuSection } from "./components/MenuSection";
 import { ControlsSection } from "./components/ControlsSection";
 import { PhilosophySection } from "./components/PhilosophySection";
+import type { GamePhase } from "../../types";
+import { KOREAN_COLORS } from "../../types";
 
 export interface IntroScreenProps {
-  readonly onGameStart: (phase: GamePhase) => void;
-  readonly onExit?: () => void;
+  readonly onGamePhaseChange: (phase: GamePhase) => void;
 }
-
-type IntroSection = "menu" | "controls" | "philosophy";
 
 export function IntroScreen({
-  onGameStart,
-  onExit,
+  onGamePhaseChange,
 }: IntroScreenProps): React.ReactElement {
-  const [currentSection, setCurrentSection] = useState<IntroSection>("menu");
-  const [selectedOption, setSelectedOption] = useState<GamePhase>("training");
+  const [currentSection, setCurrentSection] = useState<
+    "menu" | "controls" | "philosophy"
+  >("menu");
+  const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
 
-  const handleOptionSelect = useCallback((option: GamePhase) => {
-    setSelectedOption(option);
+  // Handle window resize for responsive dimensions
+  useEffect(() => {
+    const handleResize = () => {
+      setDimensions({
+        width: Math.min(window.innerWidth * 0.9, 1200),
+        height: Math.min(window.innerHeight * 0.8, 800),
+      });
+    };
+
+    handleResize(); // Set initial dimensions
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleGameStart = useCallback(() => {
-    onGameStart(selectedOption);
-  }, [selectedOption, onGameStart]);
+  const handleSectionChange = useCallback(
+    (section: "menu" | "controls" | "philosophy") => {
+      setCurrentSection(section);
+    },
+    []
+  );
 
-  // Korean cyberpunk background
-  const drawBackground = useCallback((g: PixiGraphics) => {
-    g.clear();
-
-    // Dark cyberpunk base
-    g.setFillStyle({ color: 0x000a12, alpha: 1.0 });
-    g.rect(0, 0, 1200, 800);
-    g.fill();
-
-    // Korean traditional pattern overlay
-    const gridSize = 40;
-    g.setStrokeStyle({ color: 0x004455, width: 1, alpha: 0.3 });
-
-    for (let x = 0; x < 1200; x += gridSize) {
-      g.moveTo(x, 0);
-      g.lineTo(x, 800);
-      g.stroke();
-    }
-
-    for (let y = 0; y < 800; y += gridSize) {
-      g.moveTo(0, y);
-      g.lineTo(1200, y);
-      g.stroke();
-    }
-
-    // Central focus area with trigram styling
-    g.setStrokeStyle({ color: KOREAN_COLORS.GOLD, width: 3, alpha: 0.8 });
-    g.circle(600, 400, 200);
-    g.stroke();
-
-    // Inner energy ring
-    g.setStrokeStyle({ color: KOREAN_COLORS.CYAN, width: 2, alpha: 0.6 });
-    g.circle(600, 400, 150);
-    g.stroke();
-  }, []);
-
-  const handleNext = useCallback(() => {
-    switch (currentSection) {
-      case "menu":
+  const handlePhilosophyNavigation = useCallback(
+    (direction: "next" | "prev") => {
+      // Handle philosophy section navigation
+      if (direction === "next") {
+        // Could navigate to training or combat mode
+        onGamePhaseChange("training");
+      } else {
+        // Return to controls section
         setCurrentSection("controls");
-        break;
-      case "controls":
-        setCurrentSection("philosophy");
-        break;
-      case "philosophy":
-        handleGameStart();
-        break;
-    }
-  }, [currentSection, handleGameStart]);
-
-  const handlePrev = useCallback(() => {
-    switch (currentSection) {
-      case "controls":
-        setCurrentSection("menu");
-        break;
-      case "philosophy":
-        setCurrentSection("controls");
-        break;
-      case "menu":
-        if (onExit) {
-          onExit();
-        }
-        break;
-    }
-  }, [currentSection, onExit]);
-
-  const renderCurrentSection = useCallback(() => {
-    switch (currentSection) {
-      case "menu":
-        return (
-          <MenuSection
-            selectedOption={selectedOption}
-            onOptionSelect={handleOptionSelect}
-            onNext={handleNext}
-            onPrev={handlePrev}
-          />
-        );
-      case "controls":
-        return <ControlsSection onNext={handleNext} onPrev={handlePrev} />;
-      case "philosophy":
-        return <PhilosophySection onNext={handleNext} onPrev={handlePrev} />;
-      default:
-        return null;
-    }
-  }, [
-    currentSection,
-    selectedOption,
-    handleOptionSelect,
-    handleNext,
-    handlePrev,
-  ]);
+      }
+    },
+    [onGamePhaseChange]
+  );
 
   return (
-    <Container data-testid="intro-screen">
-      {/* Background */}
-      <Graphics draw={drawBackground} />
+    <div
+      className="intro-screen"
+      style={{
+        width: "100%",
+        height: "100vh",
+        background: `linear-gradient(135deg, ${KOREAN_COLORS.DARK_BLUE}, ${KOREAN_COLORS.BLACK})`,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        color: KOREAN_COLORS.WHITE,
+        fontFamily: "Noto Sans KR, Arial, sans-serif",
+      }}
+      data-testid="intro-screen"
+    >
+      {/* Header with Korean title */}
+      <header style={{ textAlign: "center", marginBottom: "2rem" }}>
+        <h1
+          style={{
+            fontSize: "3rem",
+            color: KOREAN_COLORS.GOLD,
+            textShadow: "2px 2px 4px rgba(0,0,0,0.8)",
+            marginBottom: "0.5rem",
+          }}
+        >
+          흑괘 무술 도장
+        </h1>
+        <p style={{ fontSize: "1.2rem", opacity: 0.8 }}>
+          Black Trigram Martial Arts Simulator
+        </p>
+      </header>
 
-      {/* Main title */}
-      <Text
-        text="흑괘 무술 도장"
-        anchor={{ x: 0.5, y: 0.5 }}
-        x={600}
-        y={150}
-        style={
-          {
-            fontFamily: KOREAN_FONT_FAMILY,
-            fontSize: 48,
-            fill: KOREAN_COLORS.GOLD,
-            fontWeight: "bold",
-            stroke: KOREAN_COLORS.BLACK,
-            strokeThickness: 3,
-          } as any
-        }
-      />
+      {/* Navigation */}
+      <nav style={{ marginBottom: "2rem" }}>
+        <button
+          onClick={() => handleSectionChange("menu")}
+          style={{
+            background:
+              currentSection === "menu" ? KOREAN_COLORS.GOLD : "transparent",
+            color:
+              currentSection === "menu"
+                ? KOREAN_COLORS.BLACK
+                : KOREAN_COLORS.WHITE,
+            border: `2px solid ${KOREAN_COLORS.GOLD}`,
+            padding: "0.5rem 1rem",
+            margin: "0 0.5rem",
+            borderRadius: "4px",
+            cursor: "pointer",
+            transition: "all 0.3s ease",
+          }}
+        >
+          메뉴 (Menu)
+        </button>
+        <button
+          onClick={() => handleSectionChange("controls")}
+          style={{
+            background:
+              currentSection === "controls"
+                ? KOREAN_COLORS.GOLD
+                : "transparent",
+            color:
+              currentSection === "controls"
+                ? KOREAN_COLORS.BLACK
+                : KOREAN_COLORS.WHITE,
+            border: `2px solid ${KOREAN_COLORS.GOLD}`,
+            padding: "0.5rem 1rem",
+            margin: "0 0.5rem",
+            borderRadius: "4px",
+            cursor: "pointer",
+            transition: "all 0.3s ease",
+          }}
+        >
+          조작법 (Controls)
+        </button>
+        <button
+          onClick={() => handleSectionChange("philosophy")}
+          style={{
+            background:
+              currentSection === "philosophy"
+                ? KOREAN_COLORS.GOLD
+                : "transparent",
+            color:
+              currentSection === "philosophy"
+                ? KOREAN_COLORS.BLACK
+                : KOREAN_COLORS.WHITE,
+            border: `2px solid ${KOREAN_COLORS.GOLD}`,
+            padding: "0.5rem 1rem",
+            margin: "0 0.5rem",
+            borderRadius: "4px",
+            cursor: "pointer",
+            transition: "all 0.3s ease",
+          }}
+        >
+          철학 (Philosophy)
+        </button>
+      </nav>
 
-      {/* Subtitle */}
-      <Text
-        text="Black Trigram Martial Arts Academy"
-        anchor={{ x: 0.5, y: 0.5 }}
-        x={600}
-        y={200}
-        style={
-          {
-            fontFamily: "Arial, sans-serif",
-            fontSize: 24,
-            fill: KOREAN_COLORS.CYAN,
-            fontStyle: "italic",
-          } as any
-        }
-      />
+      {/* Content sections */}
+      <main style={{ width: "100%", maxWidth: "1000px", height: "400px" }}>
+        {currentSection === "menu" && (
+          <MenuSection
+            onGamePhaseChange={onGamePhaseChange}
+            width={dimensions.width}
+            height={dimensions.height}
+          />
+        )}
+        {currentSection === "controls" && <ControlsSection />}
+        {currentSection === "philosophy" && (
+          <PhilosophySection
+            onNext={() => handlePhilosophyNavigation("next")}
+            onPrev={() => handlePhilosophyNavigation("prev")}
+          />
+        )}
+      </main>
 
-      {/* Section indicator */}
-      <Text
-        text={getSectionTitle(currentSection)}
-        anchor={{ x: 0.5, y: 0.5 }}
-        x={600}
-        y={280}
-        style={
-          {
-            fontFamily: KOREAN_FONT_FAMILY,
-            fontSize: 20,
-            fill: KOREAN_COLORS.WHITE,
-            fontWeight: "bold",
-          } as any
-        }
-      />
-
-      {/* Current section content */}
-      <Container x={0} y={320}>
-        {renderCurrentSection()}
-      </Container>
-
-      {/* Navigation hints */}
-      <Text
-        text="← 이전 (Previous) | 다음 (Next) →"
-        anchor={{ x: 0.5, y: 0.5 }}
-        x={600}
-        y={750}
-        style={
-          {
-            fontFamily: KOREAN_FONT_FAMILY,
-            fontSize: 16,
-            fill: KOREAN_COLORS.GRAY_LIGHT,
-          } as any
-        }
-      />
-
-      {/* Footer text */}
-      <Text
-        text="정확한 타격과 전통 무술의 만남 - Precision Combat Meets Traditional Martial Arts"
-        anchor={{ x: 0.5, y: 0.5 }}
-        x={600}
-        y={780}
-        style={
-          {
-            fontFamily: KOREAN_FONT_FAMILY,
-            fontSize: 14,
-            fill: KOREAN_COLORS.GRAY_MEDIUM,
-            fontStyle: "italic",
-          } as any
-        }
-      />
-    </Container>
+      {/* Footer */}
+      <footer
+        style={{
+          marginTop: "2rem",
+          textAlign: "center",
+          opacity: 0.6,
+          fontSize: "0.9rem",
+        }}
+      >
+        <p>Korean Traditional Martial Arts • 한국 전통 무술</p>
+        <p>Press keys 1-8 to select trigram stances</p>
+      </footer>
+    </div>
   );
-}
-
-// Helper function to get section titles in Korean
-function getSectionTitle(section: IntroSection): string {
-  switch (section) {
-    case "menu":
-      return "메인 메뉴 (Main Menu)";
-    case "controls":
-      return "조작법 (Controls)";
-    case "philosophy":
-      return "무술 철학 (Martial Philosophy)";
-    default:
-      return "";
-  }
 }

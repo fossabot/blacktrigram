@@ -1,273 +1,184 @@
-import React, { useCallback } from "react";
-import { Container, Text, Graphics } from "@pixi/react";
-import type { Graphics as PixiGraphics } from "pixi.js";
-import { KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../../types";
+import React from "react";
+import { KOREAN_COLORS } from "../../../types";
 
 export interface ControlsSectionProps {
-  readonly onNext: () => void;
-  readonly onPrev: () => void;
+  readonly width?: number;
+  readonly height?: number;
 }
 
-interface ControlInfo {
-  readonly key: string;
-  readonly korean: string;
-  readonly english: string;
-  readonly description: string;
-}
-
-const CONTROL_MAPPINGS: readonly ControlInfo[] = [
-  {
-    key: "1-8",
-    korean: "팔괘 변환",
-    english: "Trigram Stance",
-    description:
-      "1=건(天) 2=태(澤) 3=리(火) 4=진(雷) 5=손(風) 6=감(水) 7=간(山) 8=곤(地)",
-  },
-  {
-    key: "WASD",
-    korean: "이동",
-    english: "Movement",
-    description: "W=위로 A=왼쪽 S=아래로 D=오른쪽",
-  },
-  {
-    key: "Space",
-    korean: "공격",
-    english: "Attack",
-    description: "현재 자세의 기본 공격 실행",
-  },
-  {
-    key: "Shift",
-    korean: "방어",
-    english: "Block",
-    description: "들어오는 공격을 방어",
-  },
-  {
-    key: "Enter",
-    korean: "급소 공격",
-    english: "Vital Strike",
-    description: "정확한 급소 타격 시도",
-  },
-  {
-    key: "ESC",
-    korean: "일시정지",
-    english: "Pause",
-    description: "게임 일시정지 및 메뉴",
-  },
-];
-
-export function ControlsSection({
-  onNext,
-  onPrev,
-}: ControlsSectionProps): React.ReactElement {
-  const drawControlBox = useCallback((g: PixiGraphics) => {
-    g.clear();
-
-    // Background
-    g.setFillStyle({ color: KOREAN_COLORS.DARK_BLUE, alpha: 0.9 });
-    g.rect(0, 0, 800, 350);
-    g.fill();
-
-    // Border with Korean traditional styling
-    g.setStrokeStyle({ color: KOREAN_COLORS.GOLD, width: 2, alpha: 0.8 });
-    g.rect(0, 0, 800, 350);
-    g.stroke();
-
-    // Inner accent border
-    g.setStrokeStyle({ color: KOREAN_COLORS.CYAN, width: 1, alpha: 0.5 });
-    g.rect(10, 10, 780, 330);
-    g.stroke();
-  }, []);
-
-  const drawNavigationButton = useCallback((g: PixiGraphics) => {
-    g.clear();
-
-    // Button background
-    g.setFillStyle({ color: KOREAN_COLORS.ACCENT_BLUE, alpha: 0.8 });
-    g.rect(0, 0, 120, 40);
-    g.fill();
-
-    // Button border
-    g.setStrokeStyle({ color: KOREAN_COLORS.GOLD, width: 2, alpha: 0.9 });
-    g.rect(0, 0, 120, 40);
-    g.stroke();
-  }, []);
-
+export function ControlsSection({}: ControlsSectionProps): React.ReactElement {
   return (
-    <Container data-testid="controls-section">
-      {/* Main controls container */}
-      <Container x={200} y={0}>
-        <Graphics draw={drawControlBox} />
+    <div
+      className="controls-section"
+      style={{
+        width: "100%",
+        height: "100%",
+        padding: "2rem",
+        background: `linear-gradient(135deg, ${KOREAN_COLORS.DARK_BLUE}, ${KOREAN_COLORS.BLACK})`,
+        color: KOREAN_COLORS.WHITE,
+        fontFamily: "Noto Sans KR, Arial, sans-serif",
+      }}
+    >
+      <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+        <h2 style={{ color: KOREAN_COLORS.GOLD, marginBottom: "1rem" }}>
+          조작법 안내 (Control Guide)
+        </h2>
+      </div>
 
-        {/* Title */}
-        <Text
-          text="조작법 안내 (Control Guide)"
-          anchor={{ x: 0.5, y: 0.5 }}
-          x={400}
-          y={40}
-          style={
-            {
-              fontFamily: KOREAN_FONT_FAMILY,
-              fontSize: 24,
-              fill: KOREAN_COLORS.GOLD,
-              fontWeight: "bold",
-            } as any
-          }
-        />
-
-        {/* Control mappings */}
-        {CONTROL_MAPPINGS.map((control, index) => {
-          const yPos = 80 + index * 45;
-
-          return (
-            <Container key={control.key} x={30} y={yPos}>
-              {/* Key binding */}
-              <Text
-                text={control.key}
-                anchor={{ x: 0, y: 0.5 }}
-                x={0}
-                y={0}
-                style={
-                  {
-                    fontFamily: "Courier New, monospace",
-                    fontSize: 16,
-                    fill: KOREAN_COLORS.YELLOW,
-                    fontWeight: "bold",
-                  } as any
-                }
-              />
-
-              {/* Korean function */}
-              <Text
-                text={control.korean}
-                anchor={{ x: 0, y: 0.5 }}
-                x={120}
-                y={0}
-                style={
-                  {
-                    fontFamily: KOREAN_FONT_FAMILY,
-                    fontSize: 16,
-                    fill: KOREAN_COLORS.WHITE,
-                    fontWeight: "bold",
-                  } as any
-                }
-              />
-
-              {/* English function */}
-              <Text
-                text={control.english}
-                anchor={{ x: 0, y: 0.5 }}
-                x={250}
-                y={0}
-                style={
-                  {
-                    fontFamily: "Arial, sans-serif",
-                    fontSize: 14,
-                    fill: KOREAN_COLORS.CYAN,
-                  } as any
-                }
-              />
-
-              {/* Description */}
-              <Text
-                text={control.description}
-                anchor={{ x: 0, y: 0.5 }}
-                x={120}
-                y={20}
-                style={
-                  {
-                    fontFamily: KOREAN_FONT_FAMILY,
-                    fontSize: 12,
-                    fill: KOREAN_COLORS.GRAY_LIGHT,
-                  } as any
-                }
-              />
-            </Container>
-          );
-        })}
-      </Container>
-
-      {/* Navigation buttons */}
-      <Container x={100} y={370}>
-        {/* Previous button */}
-        <Container
-          x={0}
-          y={0}
-          interactive={true}
-          onPointerDown={onPrev}
-          cursor="pointer"
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "2rem",
+          maxWidth: "800px",
+          margin: "0 auto",
+        }}
+      >
+        {/* Basic Controls */}
+        <div
+          style={{
+            background: "rgba(255, 255, 255, 0.1)",
+            padding: "1.5rem",
+            borderRadius: "8px",
+            border: `1px solid ${KOREAN_COLORS.GOLD}`,
+          }}
         >
-          <Graphics draw={drawNavigationButton} />
-          <Text
-            text="← 이전"
-            anchor={{ x: 0.5, y: 0.5 }}
-            x={60}
-            y={20}
-            style={
-              {
-                fontFamily: KOREAN_FONT_FAMILY,
-                fontSize: 14,
-                fill: KOREAN_COLORS.WHITE,
-                fontWeight: "bold",
-              } as any
-            }
-          />
-        </Container>
+          <h3 style={{ color: KOREAN_COLORS.GOLD, marginBottom: "1rem" }}>
+            기본 조작 (Basic Controls)
+          </h3>
+          <div style={{ fontSize: "0.9rem", lineHeight: "1.6" }}>
+            <p>
+              <strong>WASD</strong> - 이동 (Movement)
+            </p>
+            <p>
+              <strong>마우스</strong> - 공격 조준 (Attack Targeting)
+            </p>
+            <p>
+              <strong>클릭</strong> - 공격 실행 (Execute Attack)
+            </p>
+            <p>
+              <strong>Shift</strong> - 방어 (Block/Guard)
+            </p>
+            <p>
+              <strong>Space</strong> - 일시정지 (Pause)
+            </p>
+          </div>
+        </div>
 
-        {/* Next button */}
-        <Container
-          x={680}
-          y={0}
-          interactive={true}
-          onPointerDown={onNext}
-          cursor="pointer"
+        {/* Trigram Stances */}
+        <div
+          style={{
+            background: "rgba(255, 255, 255, 0.1)",
+            padding: "1.5rem",
+            borderRadius: "8px",
+            border: `1px solid ${KOREAN_COLORS.GOLD}`,
+          }}
         >
-          <Graphics draw={drawNavigationButton} />
-          <Text
-            text="다음 →"
-            anchor={{ x: 0.5, y: 0.5 }}
-            x={60}
-            y={20}
-            style={
-              {
-                fontFamily: KOREAN_FONT_FAMILY,
-                fontSize: 14,
-                fill: KOREAN_COLORS.WHITE,
-                fontWeight: "bold",
-              } as any
-            }
-          />
-        </Container>
-      </Container>
+          <h3 style={{ color: KOREAN_COLORS.GOLD, marginBottom: "1rem" }}>
+            팔괘 자세 (Trigram Stances)
+          </h3>
+          <div style={{ fontSize: "0.9rem", lineHeight: "1.6" }}>
+            <p>
+              <strong>1</strong> - 건 ☰ (Heaven)
+            </p>
+            <p>
+              <strong>2</strong> - 태 ☱ (Lake)
+            </p>
+            <p>
+              <strong>3</strong> - 리 ☲ (Fire)
+            </p>
+            <p>
+              <strong>4</strong> - 진 ☳ (Thunder)
+            </p>
+            <p>
+              <strong>5</strong> - 손 ☴ (Wind)
+            </p>
+            <p>
+              <strong>6</strong> - 감 ☵ (Water)
+            </p>
+            <p>
+              <strong>7</strong> - 간 ☶ (Mountain)
+            </p>
+            <p>
+              <strong>8</strong> - 곤 ☷ (Earth)
+            </p>
+          </div>
+        </div>
 
-      {/* Navigation hint */}
-      <Text
-        text="조작법을 숙지한 후 다음으로 진행해주세요"
-        anchor={{ x: 0.5, y: 0.5 }}
-        x={600}
-        y={450}
-        style={
-          {
-            fontFamily: KOREAN_FONT_FAMILY,
-            fontSize: 16,
-            fill: KOREAN_COLORS.YELLOW,
-          } as any
-        }
-      />
+        {/* Advanced Techniques */}
+        <div
+          style={{
+            background: "rgba(255, 255, 255, 0.1)",
+            padding: "1.5rem",
+            borderRadius: "8px",
+            border: `1px solid ${KOREAN_COLORS.GOLD}`,
+            gridColumn: "1 / -1",
+          }}
+        >
+          <h3 style={{ color: KOREAN_COLORS.GOLD, marginBottom: "1rem" }}>
+            고급 기술 (Advanced Techniques)
+          </h3>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+              gap: "1rem",
+              fontSize: "0.9rem",
+            }}
+          >
+            <div>
+              <h4
+                style={{
+                  color: KOREAN_COLORS.CYAN,
+                  marginBottom: "0.5rem",
+                }}
+              >
+                급소 공격 (Vital Point Targeting)
+              </h4>
+              <p>
+                정확한 마우스 조준으로 상대의 급소를 노려 추가 피해를 입힙니다.
+              </p>
+            </div>
+            <div>
+              <h4
+                style={{
+                  color: KOREAN_COLORS.CYAN,
+                  marginBottom: "0.5rem",
+                }}
+              >
+                자세 연계 (Stance Combos)
+              </h4>
+              <p>팔괘 자세를 빠르게 전환하여 강력한 연계 기술을 사용합니다.</p>
+            </div>
+            <div>
+              <h4
+                style={{
+                  color: KOREAN_COLORS.CYAN,
+                  marginBottom: "0.5rem",
+                }}
+              >
+                기 관리 (Ki Management)
+              </h4>
+              <p>기력을 효율적으로 관리하여 지속적인 전투를 유지합니다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <Text
-        text="Familiarize yourself with the controls, then proceed"
-        anchor={{ x: 0.5, y: 0.5 }}
-        x={600}
-        y={470}
-        style={
-          {
-            fontFamily: "Arial, sans-serif",
-            fontSize: 14,
-            fill: KOREAN_COLORS.GRAY_LIGHT,
-            fontStyle: "italic",
-          } as any
-        }
-      />
-    </Container>
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: "2rem",
+          opacity: 0.7,
+          fontSize: "0.8rem",
+        }}
+      >
+        <p>한국 전통 무술의 정신으로 정확하고 절제된 움직임을 연습하세요.</p>
+        <p>
+          Practice precise and disciplined movements in the spirit of Korean
+          martial arts.
+        </p>
+      </div>
+    </div>
   );
 }

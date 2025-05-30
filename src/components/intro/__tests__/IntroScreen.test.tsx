@@ -80,7 +80,8 @@ describe("IntroScreen", () => {
   };
 
   // Combine all props into a default object
-  const defaultProps = {
+  const mockProps = {
+    onGamePhaseChange: vi.fn(),
     onStartGame: vi.fn(),
     onStartTraining: vi.fn(),
     onGameStart: vi.fn(),
@@ -117,7 +118,7 @@ describe("IntroScreen", () => {
 
   describe("Component Rendering", () => {
     it("should render intro screen with Korean martial arts theme", () => {
-      const { container } = render(<IntroScreen {...defaultProps} />);
+      const { container } = render(<IntroScreen {...mockProps} />);
 
       // Find elements by their text attribute instead of text content
       const pixiTexts = container.querySelectorAll("pixitext");
@@ -136,7 +137,7 @@ describe("IntroScreen", () => {
     });
 
     it("should display all Korean martial arts terminology correctly", () => {
-      const { container } = render(<IntroScreen {...defaultProps} />);
+      const { container } = render(<IntroScreen {...mockProps} />);
 
       const pixiTexts = container.querySelectorAll("pixitext");
 
@@ -153,7 +154,7 @@ describe("IntroScreen", () => {
     });
 
     it("should render trigram symbols in correct positions", () => {
-      const { container } = render(<IntroScreen {...defaultProps} />);
+      const { container } = render(<IntroScreen {...mockProps} />);
 
       const pixiTexts = container.querySelectorAll("pixitext");
 
@@ -169,7 +170,7 @@ describe("IntroScreen", () => {
     });
 
     it("should display Korean philosophy text", () => {
-      const { container } = render(<IntroScreen {...defaultProps} />);
+      const { container } = render(<IntroScreen {...mockProps} />);
 
       // Since we can't directly access text content in PixiJS elements through RTL,
       // we check for the existence of the element and verify attributes
@@ -195,11 +196,141 @@ describe("IntroScreen", () => {
         "harmony of body, mind, and spirit"
       );
     });
+
+    it("renders without crashing", () => {
+      render(<IntroScreen onGamePhaseChange={vi.fn()} />);
+    });
+
+    it("displays Korean title correctly", () => {
+      render(<IntroScreen onGamePhaseChange={vi.fn()} />);
+
+      const { container } = render(<IntroScreen {...mockProps} />);
+
+      // Find elements by their text attribute instead of text content
+      const pixiTexts = container.querySelectorAll("pixitext");
+
+      // Check for Korean title text
+      const hasKoreanTitle = Array.from(pixiTexts).some((el) =>
+        el.getAttribute("text")?.includes("흑괘 무술 도장")
+      );
+      expect(hasKoreanTitle).toBe(true);
+
+      // Check for English title text
+      const hasEnglishTitle = Array.from(pixiTexts).some((el) =>
+        el.getAttribute("text")?.includes("BLACK TRIGRAM MARTIAL ARTS DOJANG")
+      );
+      expect(hasEnglishTitle).toBe(true);
+    });
+
+    it("handles section navigation", () => {
+      render(<IntroScreen onGamePhaseChange={vi.fn()} />);
+
+      const { container } = render(<IntroScreen {...mockProps} />);
+
+      // Find elements by their text attribute instead of text content
+      const pixiTexts = container.querySelectorAll("pixitext");
+
+      // Check for Korean title text
+      const hasKoreanTitle = Array.from(pixiTexts).some((el) =>
+        el.getAttribute("text")?.includes("흑괘 무술 도장")
+      );
+      expect(hasKoreanTitle).toBe(true);
+
+      // Check for English title text
+      const hasEnglishTitle = Array.from(pixiTexts).some((el) =>
+        el.getAttribute("text")?.includes("BLACK TRIGRAM MARTIAL ARTS DOJANG")
+      );
+      expect(hasEnglishTitle).toBe(true);
+    });
+
+    it("shows menu section by default", () => {
+      render(<IntroScreen onGamePhaseChange={vi.fn()} />);
+
+      const { container } = render(<IntroScreen {...mockProps} />);
+
+      // Find elements by their text attribute instead of text content
+      const pixiTexts = container.querySelectorAll("pixitext");
+
+      // Check for Korean title text
+      const hasKoreanTitle = Array.from(pixiTexts).some((el) =>
+        el.getAttribute("text")?.includes("흑괘 무술 도장")
+      );
+      expect(hasKoreanTitle).toBe(true);
+
+      // Check for English title text
+      const hasEnglishTitle = Array.from(pixiTexts).some((el) =>
+        el.getAttribute("text")?.includes("BLACK TRIGRAM MARTIAL ARTS DOJANG")
+      );
+      expect(hasEnglishTitle).toBe(true);
+    });
+
+    it("switches to controls section", () => {
+      render(<IntroScreen onGamePhaseChange={vi.fn()} />);
+
+      const { container } = render(<IntroScreen {...mockProps} />);
+
+      // Find elements by their text attribute instead of text content
+      const pixiTexts = container.querySelectorAll("pixitext");
+
+      // Check for Korean title text
+      const hasKoreanTitle = Array.from(pixiTexts).some((el) =>
+        el.getAttribute("text")?.includes("흑괘 무술 도장")
+      );
+      expect(hasKoreanTitle).toBe(true);
+
+      // Check for English title text
+      const hasEnglishTitle = Array.from(pixiTexts).some((el) =>
+        el.getAttribute("text")?.includes("BLACK TRIGRAM MARTIAL ARTS DOJANG")
+      );
+      expect(hasEnglishTitle).toBe(true);
+    });
+
+    it("switches to philosophy section", () => {
+      render(<IntroScreen onGamePhaseChange={vi.fn()} />);
+
+      const { container } = render(<IntroScreen {...mockProps} />);
+
+      // Find elements by their text attribute instead of text content
+      const pixiTexts = container.querySelectorAll("pixitext");
+
+      // Check for Korean title text
+      const hasKoreanTitle = Array.from(pixiTexts).some((el) =>
+        el.getAttribute("text")?.includes("흑괘 무술 도장")
+      );
+      expect(hasKoreanTitle).toBe(true);
+
+      // Check for English title text
+      const hasEnglishTitle = Array.from(pixiTexts).some((el) =>
+        el.getAttribute("text")?.includes("BLACK TRIGRAM MARTIAL ARTS DOJANG")
+      );
+      expect(hasEnglishTitle).toBe(true);
+    });
+
+    it("maintains Korean aesthetic styling", () => {
+      render(<IntroScreen onGamePhaseChange={vi.fn()} />);
+
+      const { container } = render(<IntroScreen {...mockProps} />);
+
+      // Find elements by their text attribute instead of text content
+      const pixiTexts = container.querySelectorAll("pixitext");
+
+      // Check for Korean title text
+      const hasKoreanTitle = Array.from(pixiTexts).some((el) =>
+        el.getAttribute("text")?.includes("흑괘 무술 도장")
+      );
+      expect(hasKoreanTitle).toBe(true);
+
+      // Check for English title text
+      const hasEnglishTitle = Array.from(pixiTexts).some((el) =>
+        el.getAttribute("text")?.includes("BLACK TRIGRAM MARTIAL ARTS DOJANG")
+      );
+      expect(hasEnglishTitle).toBe(true);
+    });
   });
 
   describe("User Interactions", () => {
     it("should handle sparring selection with audio feedback", async () => {
-      render(<IntroScreen {...defaultProps} />);
+      render(<IntroScreen {...mockProps} />);
 
       // Simulate left arrow key press for sparring selection
       fireEvent.keyDown(document, { code: "ArrowLeft" });
@@ -210,7 +341,7 @@ describe("IntroScreen", () => {
     });
 
     it("should handle training selection with audio feedback", async () => {
-      render(<IntroScreen {...defaultProps} />);
+      render(<IntroScreen {...mockProps} />);
 
       // Simulate right arrow key press for training selection
       fireEvent.keyDown(document, { code: "ArrowRight" });
@@ -221,7 +352,7 @@ describe("IntroScreen", () => {
     });
 
     it("should start game when sparring is confirmed", async () => {
-      render(<IntroScreen {...defaultProps} />);
+      render(<IntroScreen {...mockProps} />);
 
       // Select sparring and confirm
       fireEvent.keyDown(document, { code: "ArrowLeft" });
@@ -234,7 +365,7 @@ describe("IntroScreen", () => {
     });
 
     it("should start training when training is confirmed", async () => {
-      render(<IntroScreen {...defaultProps} />);
+      render(<IntroScreen {...mockProps} />);
 
       // Select training and confirm
       fireEvent.keyDown(document, { code: "ArrowRight" });
@@ -247,7 +378,7 @@ describe("IntroScreen", () => {
     });
 
     it("should handle direct game start with number keys", async () => {
-      render(<IntroScreen {...defaultProps} />);
+      render(<IntroScreen {...mockProps} />);
 
       // Press '1' for direct sparring start
       fireEvent.keyDown(document, { code: "Digit1" });
@@ -266,7 +397,7 @@ describe("IntroScreen", () => {
     });
 
     it("should handle Alt key for training shortcut", async () => {
-      render(<IntroScreen {...defaultProps} />);
+      render(<IntroScreen {...mockProps} />);
 
       // Press Alt for training shortcut
       fireEvent.keyDown(document, { code: "AltLeft" });
@@ -280,7 +411,7 @@ describe("IntroScreen", () => {
 
   describe("Korean Text Validation", () => {
     it("should render Korean characters correctly", () => {
-      const { container } = render(<IntroScreen {...defaultProps} />);
+      const { container } = render(<IntroScreen {...mockProps} />);
 
       const koreanTexts = [
         "흑괘 무술 도장",
@@ -303,7 +434,7 @@ describe("IntroScreen", () => {
     });
 
     it("should have proper Korean font styling", () => {
-      const { container } = render(<IntroScreen {...defaultProps} />);
+      const { container } = render(<IntroScreen {...mockProps} />);
 
       // Find elements with Korean text by checking text attribute for Korean characters
       const pixiTexts = container.querySelectorAll("pixitext");
@@ -324,7 +455,7 @@ describe("IntroScreen", () => {
 
   describe("Menu Button Interactions", () => {
     it("should handle mouse interactions on menu buttons", async () => {
-      const { container } = render(<IntroScreen {...defaultProps} />);
+      const { container } = render(<IntroScreen {...mockProps} />);
 
       // Find menu button containers by checking their cursor property
       const pixiContainers = container.querySelectorAll(
@@ -366,7 +497,7 @@ describe("IntroScreen", () => {
 
   describe("Accessibility and Performance", () => {
     it("should handle keyboard navigation properly", () => {
-      render(<IntroScreen {...defaultProps} />);
+      render(<IntroScreen {...mockProps} />);
 
       // Test various keyboard inputs
       const keyEvents = [
@@ -385,7 +516,7 @@ describe("IntroScreen", () => {
     });
 
     it("should initialize properly with audio system", () => {
-      render(<IntroScreen {...defaultProps} />);
+      render(<IntroScreen {...mockProps} />);
 
       // Verify audio system is accessed
       expect(useAudio).toHaveBeenCalled();
@@ -394,14 +525,14 @@ describe("IntroScreen", () => {
     it("should handle texture loading", () => {
       const { useTexture } = require("../../../hooks/useTexture");
 
-      render(<IntroScreen {...defaultProps} />);
+      render(<IntroScreen {...mockProps} />);
 
       // Verify texture hook is called for logo
       expect(useTexture).toHaveBeenCalledWith("/black-trigram-256.png");
     });
 
     it("should render Korean header correctly", () => {
-      render(<IntroScreen {...defaultProps} />);
+      render(<IntroScreen {...mockProps} />);
 
       // Check for Korean text in the header
       const textElements = screen.getAllByTestId("pixi-text");
@@ -416,7 +547,7 @@ describe("IntroScreen", () => {
 
   describe("Component State Management", () => {
     it("should maintain selected option state correctly", async () => {
-      render(<IntroScreen {...defaultProps} />);
+      render(<IntroScreen {...mockProps} />);
 
       // Change selection multiple times
       fireEvent.keyDown(document, { code: "ArrowLeft" }); // sparring
@@ -432,7 +563,7 @@ describe("IntroScreen", () => {
     });
 
     it("should handle training mode selection", async () => {
-      render(<IntroScreen {...defaultProps} />);
+      render(<IntroScreen {...mockProps} />);
 
       // Select training mode
       fireEvent.keyDown(document, { code: "ArrowRight" });
@@ -444,7 +575,7 @@ describe("IntroScreen", () => {
     });
 
     it("should display proper menu options", () => {
-      render(<IntroScreen {...defaultProps} />);
+      render(<IntroScreen {...mockProps} />);
 
       // Verify main container exists
       expect(screen.getByTestId("pixi-container")).toBeInTheDocument();

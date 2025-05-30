@@ -1,18 +1,15 @@
-import React, { useState, useCallback, useEffect, useMemo } from "react";
-import { Container, Stage, useTick } from "@pixi/react";
-import type {
-  PlayerState,
-  TrigramStance,
-  GamePhase,
-  HitEffect,
-  AttackResult,
+import React, { useState, useCallback, useEffect } from "react";
+import { Stage, Container, useTick } from "@pixi/react";
+import {
+  type PlayerState,
+  type GamePhase,
+  type TrigramStance,
+  type HitEffect,
+  KOREAN_COLORS,
 } from "../../types";
-import { TRIGRAM_DATA } from "../../types";
-import { Player } from "./Player";
 import { DojangBackground } from "./DojangBackground";
+import { Player } from "./Player";
 import { HitEffectsLayer } from "./HitEffectsLayer";
-import { CombatSystem } from "../../systems/CombatSystem";
-import { TrigramSystem } from "../../systems/TrigramSystem";
 import { useAudio } from "../../audio/AudioManager";
 
 export interface GameEngineProps {
@@ -32,7 +29,6 @@ export interface GameEngineProps {
 export function GameEngine({
   players,
   gamePhase,
-  onGamePhaseChange,
   onPlayerUpdate,
   onStanceChange,
   width = 800,
@@ -42,210 +38,245 @@ export function GameEngine({
   const audio = useAudio();
   const [hitEffects, setHitEffects] = useState<HitEffect[]>([]);
 
-  // Korean martial arts key mappings for trigram stances - fix type safety
-  const koreanKeyMappings = useMemo(
-    () =>
-      ({
-        "1": "geon",
-        "2": "tae",
-        "3": "li",
-        "4": "jin",
-        "5": "son",
-        "6": "gam",
-        "7": "gan",
-        "8": "gon",
-      } as const satisfies Record<string, TrigramStance>),
-    []
-  );
-
   // Game loop - Korean martial arts physics and combat
   useTick(
     useCallback(
       (delta: number) => {
-        if (isPaused || gamePhase !== "combat") return;
+        if (isPaused) return;
 
-        // Update players with Korean martial arts physics
-        players.forEach((player, index) => {
-          if (!player) return;
+        const now = Date.now();
 
-          const updates: Partial<PlayerState> = {};
+        // Update game physics and logic
+        if (gamePhase === "combat") {
+          // Update player positions based on velocity
+          players.forEach((player, index) => {
+            if (player.isMoving) {
+              const newX = player.position.x + player.velocity.x * delta;
+              const newY = player.position.y + player.velocity.y * delta;
 
-          // Korean martial arts Ki regeneration based on stance
-          const kiRegenRate = TrigramSystem.getKiRegenRate(player.stance);
-          if (player.ki < player.maxKi) {
-            updates.ki = Math.min(
-              player.maxKi,
-              player.ki + kiRegenRate * delta * 0.01
+              // Keep players within bounds
+              const boundedX = Math.max(50, Math.min(width - 50, newX));
+              const boundedY = Math.max(50, Math.min(height - 50, newY));
+
+              onPlayerUpdate(index, {
+                position: { x: boundedX, y: boundedY },
+              });
+            }
+          });
+
+          // Check for collisions and attacks
+          if (players[0] && players[1]) {
+            const distance = Math.abs(
+              players[0].position.x - players[1].position.x
             );
+
+            // Simple attack resolution
+            if (distance < 80) {
+              players.forEach((player, attackerIndex) => {
+                if (player.isAttacking) {
+                  const defenderIndex = attackerIndex === 0 ? 1 : 0;
+                  const defender = players[defenderIndex];
+
+                  if (!defender.isBlocking && Math.random() > 0.5) {
+                    // Hit successful
+                    const damage = 10 + Math.random() * 15;
+
+                    // Create hit effect with proper color type (number)
+                    const hitEffect: HitEffect = {
+                      id: `hit-${now}-${attackerIndex}`,
+                      position: { ...defender.position },
+                      type: damage > 20 ? "heavy" : "medium",
+                      damage: Math.round(damage),
+                      startTime: now,
+                      duration: 1000,
+                      korean: damage > 20 ? "강타!" : "타격",
+                      color: damage > 20 ? 0xff0000 : 0xffff00,
+                      createdAt: now,
+                    };
+
+                    setHitEffects((prev) => [...prev, hitEffect]);
+
+                    // Apply damage
+                    onPlayerUpdate(defenderIndex, {
+                      health: Math.max(0, defender.health - damage),
+                      isAttacking: false, // Reset attack state
+                    });
+
+                    // Play hit sound
+                    if (audio.playHitSound) {
+                      audio.playHitSound(damage, damage > 20);
+                    }
+                  }
+
+                  // Reset attacker state
+                  onPlayerUpdate(attackerIndex, {
+                    isAttacking: false,
+                  });
+                }
+              });
+            }
           }
-
-          // Stamina regeneration
-          if (player.stamina < player.maxStamina && !player.isAttacking) {
-            updates.stamina = Math.min(
-              player.maxStamina,
-              player.stamina + delta * 0.02
-            );
-          }
-
-          // Position updates for movement
-          if (player.isMoving && player.velocity) {
-            const newX = player.position.x + player.velocity.x * delta * 0.1;
-            const newY = player.position.y + player.velocity.y * delta * 0.1;
-
-            // Boundary checking for dojang (training hall)
-            updates.position = {
-              x: Math.max(50, Math.min(width - 50, newX)),
-              y: Math.max(100, Math.min(height - 100, newY)),
-            };
-          }
-
-          // Apply updates if any
-          if (Object.keys(updates).length > 0) {
-            onPlayerUpdate(index, updates);
-          }
-        });
-
-        // Remove expired hit effects
-        setHitEffects((prev) =>
-          prev.filter(
-            (effect) => Date.now() - effect.startTime < effect.duration
-          )
-        );
+        }
       },
-      [isPaused, gamePhase, players, width, height, onPlayerUpdate]
+      [isPaused, gamePhase, players, width, height, onPlayerUpdate, audio]
     )
   );
 
   // Korean martial arts keyboard input handling
   useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
+    const handleKeyDown = (event: KeyboardEvent): void => {
       if (gamePhase !== "combat") return;
 
-      const key = event.key;
+      const key = event.key.toLowerCase();
 
-      // Fix type safety for stance lookup
-      if (key in koreanKeyMappings) {
-        const stance = koreanKeyMappings[key as keyof typeof koreanKeyMappings];
-
-        // Player 1 controls (trigram stance changes)
-        const player1 = players[0];
-        if (player1 && player1.ki >= 10) {
-          // Require Ki for stance change
-          onStanceChange(0, stance);
+      // Player 1 controls (WASD + trigram stances 1-8)
+      switch (key) {
+        case "w":
           onPlayerUpdate(0, {
-            ki: Math.max(0, player1.ki - 10),
-            lastStanceChangeTime: Date.now(),
+            velocity: { x: 0, y: -2 },
+            isMoving: true,
+            facing: players[0]?.facing || "right",
           });
-
-          // Play Korean martial arts audio feedback
-          if (audio.playStanceChangeSound) {
-            audio.playStanceChangeSound();
+          break;
+        case "s":
+          onPlayerUpdate(0, {
+            velocity: { x: 0, y: 2 },
+            isMoving: true,
+            facing: players[0]?.facing || "right",
+          });
+          break;
+        case "a":
+          onPlayerUpdate(0, {
+            velocity: { x: -2, y: 0 },
+            isMoving: true,
+            facing: "left",
+          });
+          break;
+        case "d":
+          onPlayerUpdate(0, {
+            velocity: { x: 2, y: 0 },
+            isMoving: true,
+            facing: "right",
+          });
+          break;
+        case " ":
+          onPlayerUpdate(0, { isAttacking: true });
+          if (audio.playAttackSound) {
+            audio.playAttackSound(15);
           }
+          break;
+        case "shift":
+          onPlayerUpdate(0, { isBlocking: true });
+          break;
 
-          // Add combat log entry - fix type safety
-          const techniqueData = TRIGRAM_DATA[stance];
-          console.log(
-            `Player 1: ${techniqueData.koreanName} (${techniqueData.english})`
-          );
-        }
+        // Trigram stance changes for Player 1 - Korean martial arts
+        case "1":
+          onStanceChange(0, "geon");
+          break; // Heaven
+        case "2":
+          onStanceChange(0, "tae");
+          break; // Lake
+        case "3":
+          onStanceChange(0, "li");
+          break; // Fire
+        case "4":
+          onStanceChange(0, "jin");
+          break; // Thunder
+        case "5":
+          onStanceChange(0, "son");
+          break; // Wind
+        case "6":
+          onStanceChange(0, "gam");
+          break; // Water
+        case "7":
+          onStanceChange(0, "gan");
+          break; // Mountain
+        case "8":
+          onStanceChange(0, "gon");
+          break; // Earth
       }
 
-      // Attack controls (Space for Player 1)
-      if (event.code === "Space") {
-        event.preventDefault();
-        executeAttack(0);
+      // Player 2 controls (Arrow keys + NumPad)
+      switch (event.code) {
+        case "ArrowUp":
+          onPlayerUpdate(1, {
+            velocity: { x: 0, y: -2 },
+            isMoving: true,
+            facing: players[1]?.facing || "left",
+          });
+          break;
+        case "ArrowDown":
+          onPlayerUpdate(1, {
+            velocity: { x: 0, y: 2 },
+            isMoving: true,
+            facing: players[1]?.facing || "left",
+          });
+          break;
+        case "ArrowLeft":
+          onPlayerUpdate(1, {
+            velocity: { x: -2, y: 0 },
+            isMoving: true,
+            facing: "left",
+          });
+          break;
+        case "ArrowRight":
+          onPlayerUpdate(1, {
+            velocity: { x: 2, y: 0 },
+            isMoving: true,
+            facing: "right",
+          });
+          break;
+        case "Numpad0":
+          onPlayerUpdate(1, { isAttacking: true });
+          break;
+        case "NumpadEnter":
+          onPlayerUpdate(1, { isBlocking: true });
+          break;
       }
-
-      // Player 2 AI or second player controls could be added here
-      // For now, focusing on Player 1 training mode
     };
 
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [
-    gamePhase,
-    players,
-    koreanKeyMappings,
-    onStanceChange,
-    onPlayerUpdate,
-    audio,
-  ]);
+    const handleKeyUp = (event: KeyboardEvent): void => {
+      if (gamePhase !== "combat") return;
 
-  // Execute Korean martial arts attack
-  const executeAttack = useCallback(
-    (playerIndex: number) => {
-      const attacker = players[playerIndex];
-      const defender = players[1 - playerIndex]; // Get opponent
+      const key = event.key.toLowerCase();
 
-      if (!attacker || !defender) return;
+      // Stop movement for Player 1
+      if (["w", "a", "s", "d"].includes(key)) {
+        onPlayerUpdate(0, {
+          velocity: { x: 0, y: 0 },
+          isMoving: false,
+        });
+      }
 
-      // Get Korean technique for current stance
-      const technique = TrigramSystem.getTechniqueForStance(attacker.stance);
-      if (!technique) return;
+      // Stop blocking for Player 1
+      if (key === "shift") {
+        onPlayerUpdate(0, { isBlocking: false });
+      }
 
-      // Check if player has enough resources
+      // Stop movement for Player 2
       if (
-        attacker.ki < technique.kiCost ||
-        attacker.stamina < technique.staminaCost
+        ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.code)
       ) {
-        return; // Not enough resources
+        onPlayerUpdate(1, {
+          velocity: { x: 0, y: 0 },
+          isMoving: false,
+        });
       }
 
-      // Execute attack using Korean martial arts combat system
-      const attackResult: AttackResult = CombatSystem.resolveAttack(
-        attacker,
-        defender,
-        technique
-      );
-
-      // Create hit effect for visual feedback
-      const hitEffect: HitEffect = {
-        id: `hit-${Date.now()}`,
-        position: { x: defender.position.x, y: defender.position.y - 30 },
-        type: attackResult.critical
-          ? "critical"
-          : attackResult.damage > 20
-          ? "heavy"
-          : attackResult.damage > 10
-          ? "medium"
-          : "light",
-        damage: attackResult.damage,
-        startTime: Date.now(),
-        duration: 1500,
-        korean: attackResult.critical ? "치명타!" : "타격",
-        color: attackResult.critical ? 0xff0000 : 0xffd700,
-        createdAt: Date.now(),
-      };
-
-      setHitEffects((prev) => [...prev, hitEffect]);
-
-      // Update game state
-      onPlayerUpdate(playerIndex, {
-        ...attackResult.attackerState,
-        isAttacking: true,
-      });
-
-      onPlayerUpdate(1 - playerIndex, attackResult.defenderState);
-
-      // Log attack with Korean names
-      console.log(
-        `${technique.koreanName}: ${attackResult.damage} 피해 (${attackResult.description})`
-      );
-
-      // Reset attacking state after animation
-      setTimeout(() => {
-        onPlayerUpdate(playerIndex, { isAttacking: false });
-      }, 500);
-
-      // Check for victory condition
-      if (attackResult.defenderState.health <= 0) {
-        setTimeout(() => {
-          onGamePhaseChange("victory");
-        }, 1000);
+      // Stop blocking for Player 2
+      if (event.code === "NumpadEnter") {
+        onPlayerUpdate(1, { isBlocking: false });
       }
-    },
-    [players, onPlayerUpdate, onGamePhaseChange]
-  );
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [gamePhase, players, onPlayerUpdate, onStanceChange, audio]);
 
   // Handle hit effect completion
   const handleEffectComplete = useCallback((effectId: string) => {
@@ -253,48 +284,43 @@ export function GameEngine({
   }, []);
 
   return (
-    <Stage
-      width={width}
-      height={height}
-      options={{
-        backgroundColor: 0x1a1a2e,
-        antialias: true,
-        autoDensity: true,
-        resolution: window.devicePixelRatio || 1,
-      }}
-    >
-      <Container>
-        {/* Korean dojang (training hall) background */}
-        <DojangBackground width={width} height={height} />
+    <div style={{ width, height, position: "relative" }}>
+      <Stage
+        width={width}
+        height={height}
+        options={{
+          backgroundColor: KOREAN_COLORS.BLACK,
+          antialias: true,
+        }}
+      >
+        <Container>
+          {/* Korean dojang (training hall) background */}
+          <DojangBackground width={width} height={height} />
 
-        {/* Players with Korean martial arts visualization */}
-        {players.map((player, index) =>
-          player ? (
+          {/* Players with Korean martial arts visualization - Fix props */}
+          {players[0] && (
             <Player
-              key={player.playerId}
-              player={player}
-              onStanceChange={(stance: string) => {
-                // Convert string stance back to TrigramStance and use playerIndex
-                const trigramStance = stance as TrigramStance;
-                onStanceChange(index, trigramStance);
-              }}
+              player={players[0]}
+              x={players[0].position.x}
+              y={players[0].position.y}
             />
-          ) : null
-        )}
+          )}
 
-        {/* Korean martial arts hit effects */}
-        <HitEffectsLayer
-          effects={hitEffects}
-          onEffectComplete={handleEffectComplete}
-        />
+          {players[1] && (
+            <Player
+              player={players[1]}
+              x={players[1].position.x}
+              y={players[1].position.y}
+            />
+          )}
 
-        {/* Combat log overlay (could be moved to UI layer) */}
-        {gamePhase === "combat" && (
-          <Container x={10} y={10}>
-            {/* Combat log rendering would go here */}
-          </Container>
-        )}
-      </Container>
-    </Stage>
+          {/* Korean martial arts hit effects */}
+          <HitEffectsLayer
+            effects={hitEffects}
+            onEffectComplete={handleEffectComplete}
+          />
+        </Container>
+      </Stage>
+    </div>
   );
 }
