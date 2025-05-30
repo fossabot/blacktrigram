@@ -28,7 +28,7 @@ export interface StanceWisdom {
 }
 
 // Korean martial arts philosophies for each trigram stance
-export const KOREAN_PHILOSOPHIES: KoreanPhilosophy[] = [
+export const KOREAN_PHILOSOPHIES: readonly KoreanPhilosophy[] = [
   {
     id: "geon_heaven",
     korean: "건괘 - 천",
@@ -154,6 +154,18 @@ export const KOREAN_PHILOSOPHIES: KoreanPhilosophy[] = [
   },
 ];
 
+// TRIGRAM_STANCES_ORDER for ordering operations
+const TRIGRAM_STANCES_ORDER: readonly TrigramStance[] = [
+  "geon",
+  "tae",
+  "li",
+  "jin",
+  "son",
+  "gam",
+  "gan",
+  "gon",
+] as const;
+
 /**
  * Get philosophy for specific trigram stance
  */
@@ -203,29 +215,6 @@ export function getPhilosophyByElement(element: string): KoreanPhilosophy {
 }
 
 /**
- * Get random philosophy for meditation/training
- */
-export function getRandomPhilosophy(): KoreanPhilosophy {
-  const philosophy = KOREAN_PHILOSOPHIES.find((p) => p.stance === "geon");
-  return (
-    philosophy ?? {
-      id: "default",
-      korean: "기본 철학",
-      english: "Basic Philosophy",
-      concept: "Balance",
-      principle: "Harmony",
-      application: "Practical wisdom",
-      stance: "geon",
-      description: {
-        korean: "기본적인 무술 철학",
-        english: "Basic martial philosophy",
-      },
-      modernInterpretation: "Fundamental principles",
-    }
-  );
-}
-
-/**
  * Generate tactical wisdom based on combat situation
  */
 export function getStanceWisdom(
@@ -242,9 +231,8 @@ export function getStanceWisdom(
   }
 
   const playerPhilosophy = getPhilosophyForStance(playerStance);
-  const opponentPhilosophy =
-    KOREAN_PHILOSOPHIES.find((p) => p.stance === opponentStance) ??
-    playerPhilosophy;
+  // Fix: Use getPhilosophyForStance instead of direct find to ensure non-undefined result
+  const opponentPhilosophy = getPhilosophyForStance(opponentStance);
 
   // Generate contextual wisdom based on stance interactions
   const wisdomMap: Record<string, StanceWisdom> = {
@@ -267,11 +255,55 @@ export function getStanceWisdom(
 }
 
 /**
+ * Generate recommended philosophies for training scenarios
+ * Fix: Remove unused opponentStance parameter
+ */
+export function generateRecommendedPhilosophies(currentStance: TrigramStance): {
+  primary: KoreanPhilosophy;
+  secondary: KoreanPhilosophy;
+  application: KoreanPhilosophy;
+} {
+  const stanceIndex = TRIGRAM_STANCES_ORDER.indexOf(currentStance);
+
+  if (stanceIndex === -1 || KOREAN_PHILOSOPHIES.length === 0) {
+    const defaultPhilosophy: KoreanPhilosophy = {
+      id: "default",
+      korean: "기본 철학",
+      english: "Basic Philosophy",
+      concept: "Balance",
+      principle: "Harmony",
+      application: "Practical wisdom",
+      stance: currentStance,
+      description: {
+        korean: "기본적인 무술 철학",
+        english: "Basic martial philosophy",
+      },
+      modernInterpretation: "Fundamental principles",
+    };
+
+    return {
+      primary: defaultPhilosophy,
+      secondary: defaultPhilosophy,
+      application: defaultPhilosophy,
+    };
+  }
+
+  const secondaryIndex = (stanceIndex + 2) % KOREAN_PHILOSOPHIES.length;
+  const applicationIndex = (stanceIndex + 4) % KOREAN_PHILOSOPHIES.length;
+
+  // Fix: Use non-null assertion since we checked array length above
+  return {
+    primary: KOREAN_PHILOSOPHIES[stanceIndex]!,
+    secondary: KOREAN_PHILOSOPHIES[secondaryIndex]!,
+    application: KOREAN_PHILOSOPHIES[applicationIndex]!,
+  };
+}
+
+/**
  * Generate random philosophy for training scenarios
  */
 export function generateRandomPhilosophy(): KoreanPhilosophy {
-  const philosophies = KOREAN_PHILOSOPHIES;
-  if (philosophies.length === 0) {
+  if (KOREAN_PHILOSOPHIES.length === 0) {
     return {
       id: "default",
       korean: "기본 철학",
@@ -288,8 +320,8 @@ export function generateRandomPhilosophy(): KoreanPhilosophy {
     };
   }
 
-  const randomIndex = Math.floor(Math.random() * philosophies.length);
-  return philosophies[randomIndex];
+  const randomIndex = Math.floor(Math.random() * KOREAN_PHILOSOPHIES.length);
+  return KOREAN_PHILOSOPHIES[randomIndex]!; // Use non-null assertion since we checked length
 }
 
 /**

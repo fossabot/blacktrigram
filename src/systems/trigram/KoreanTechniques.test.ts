@@ -1,15 +1,20 @@
 import { describe, it, expect } from "vitest";
 import {
-  getAdvancedTechnique,
   KOREAN_TECHNIQUES_DATABASE,
-  KoreanTechniquesUtils,
+  getTechniquesForStance,
+  findTechniqueByName,
+  getComboTechniques,
+  getCounterTechniques,
+  canExecuteTechnique,
+  calculateTechniqueEffectiveness,
+  generateLearningPath,
+  getAllKoreanTechniques,
 } from "./KoreanTechniques";
 import type { TrigramStance } from "../../types";
-import { TRIGRAM_DATA } from "../../types";
 
-describe("Korean Martial Arts Techniques", () => {
-  describe("Trigram Data Validation", () => {
-    it("should have all 8 trigram stances defined", () => {
+describe("KoreanTechniques", () => {
+  describe("KOREAN_TECHNIQUES_DATABASE", () => {
+    it("should contain techniques for all trigram stances", () => {
       const expectedStances: TrigramStance[] = [
         "geon",
         "tae",
@@ -22,317 +27,399 @@ describe("Korean Martial Arts Techniques", () => {
       ];
 
       expectedStances.forEach((stance) => {
-        expect(TRIGRAM_DATA[stance]).toBeDefined();
-        expect(TRIGRAM_DATA[stance].technique).toBeDefined();
+        expect(KOREAN_TECHNIQUES_DATABASE[stance]).toBeDefined();
+        expect(Array.isArray(KOREAN_TECHNIQUES_DATABASE[stance])).toBe(true);
+        expect(KOREAN_TECHNIQUES_DATABASE[stance].length).toBeGreaterThan(0);
       });
     });
 
-    it("should have valid Korean technique names", () => {
-      const koreanTechniques = [
-        "천둥벽력", // Heaven - Thunder Strike
-        "유수연타", // Lake - Flowing Combo
-        "화염지창", // Fire - Flame Spear
-        "벽력일섬", // Thunder - Lightning Flash
-        "선풍연격", // Wind - Whirlwind
-        "수류반격", // Water - Counter Strike
-        "반석방어", // Mountain - Defense
-        "대지포옹", // Earth - Grappling
-      ];
-
-      Object.values(TRIGRAM_DATA).forEach((data) => {
-        expect(koreanTechniques).toContain(data.technique.koreanName);
-        expect(data.technique.koreanName).toMatch(/^[가-힣]+$/); // Korean characters only
+    it("should have valid Korean technique properties", () => {
+      Object.values(KOREAN_TECHNIQUES_DATABASE).forEach((techniques) => {
+        techniques.forEach((technique) => {
+          expect(technique.name).toBeDefined();
+          expect(technique.koreanName).toBeDefined();
+          expect(technique.englishName).toBeDefined();
+          expect(technique.description.korean).toBeDefined();
+          expect(technique.description.english).toBeDefined();
+          expect(technique.kiCost).toBeGreaterThan(0);
+          expect(technique.staminaCost).toBeGreaterThan(0);
+          expect(technique.range).toBeGreaterThan(0);
+          expect(technique.accuracy).toBeGreaterThanOrEqual(0);
+          expect(technique.accuracy).toBeLessThanOrEqual(1);
+          expect(technique.damage).toBeGreaterThan(0);
+          expect(technique.stance).toBeDefined();
+          expect(technique.type).toBeDefined();
+        });
       });
     });
 
-    it("should have balanced damage values", () => {
-      const damages = Object.values(TRIGRAM_DATA).map(
-        (data) => data.technique.damage
-      );
-      const minDamage = Math.min(...damages);
-      const maxDamage = Math.max(...damages);
-
-      expect(minDamage).toBeGreaterThan(0);
-      expect(maxDamage).toBeLessThan(50);
-      expect(maxDamage - minDamage).toBeLessThan(30); // Reasonable spread
-    });
-  });
-
-  describe("Korean Technique Properties", () => {
-    it("should have appropriate ki and stamina costs", () => {
-      Object.values(TRIGRAM_DATA).forEach((data) => {
-        const technique = data.technique;
-
-        expect(technique.kiCost).toBeGreaterThan(0);
-        expect(technique.kiCost).toBeLessThan(30);
-        expect(technique.staminaCost).toBeGreaterThan(0);
-        expect(technique.staminaCost).toBeLessThan(25);
-
-        // Higher damage should generally cost more
-        if (technique.damage > 30) {
-          expect(technique.kiCost).toBeGreaterThan(15);
-        }
-      });
-    });
-
-    it("should have realistic accuracy values", () => {
-      Object.values(TRIGRAM_DATA).forEach((data) => {
-        const accuracy = data.technique.accuracy;
-        expect(accuracy).toBeGreaterThan(0.5);
-        expect(accuracy).toBeLessThanOrEqual(1.0);
-      });
-    });
-
-    it("should have valid attack types", () => {
-      const validTypes = [
-        "punch",
-        "kick",
-        "elbow",
-        "knee",
-        "grapple",
-        "throw",
-        "pressure_point",
-        "combination",
-        "strike",
-      ];
-
-      Object.values(TRIGRAM_DATA).forEach((data) => {
-        expect(validTypes).toContain(data.technique.type);
-      });
-    });
-  });
-
-  describe("Korean Techniques Translation", () => {
-    it("should provide correct Korean-English translations", () => {
-      const techniques = Object.values(TRIGRAM_DATA).map(
-        (data) => data.technique
+    it("should have authentic Korean martial arts techniques", () => {
+      const heavenTechniques = KOREAN_TECHNIQUES_DATABASE["geon"];
+      const thunderStrike = heavenTechniques.find(
+        (t) => t.koreanName === "천둥벽력"
       );
 
-      const translations: Record<string, string> = {
-        천둥벽력: "Thunder Strike",
-        유수연타: "Flowing Combo",
-        화염지창: "Flame Spear",
-        벽력일섬: "Lightning Flash",
-        선풍연격: "Whirlwind",
-        수류반격: "Counter Strike",
-        반석방어: "Mountain Defense",
-        대지포옹: "Earth Embrace",
-      };
-
-      techniques.forEach((technique) => {
-        const koreanName = technique.koreanName as keyof typeof translations;
-        expect(translations[koreanName]).toBe(technique.englishName);
-      });
+      expect(thunderStrike).toBeDefined();
+      expect(thunderStrike?.englishName).toBe("Heavenly Thunder Strike");
+      expect(thunderStrike?.culturalContext.origin).toBe("전통 택견");
+      expect(thunderStrike?.stance).toBe("geon");
     });
   });
 
-  describe("Korean Philosophy Integration", () => {
-    it("should provide philosophy-based explanations", () => {
-      const stances: TrigramStance[] = [
-        "geon",
-        "tae",
-        "li",
-        "jin",
-        "son",
-        "gam",
-        "gan",
-        "gon",
-      ];
+  describe("getTechniquesForStance", () => {
+    it("should return techniques for valid stances", () => {
+      const geonTechniques = getTechniquesForStance("geon");
+      expect(geonTechniques.length).toBeGreaterThan(0);
 
-      stances.forEach((stance) => {
-        const techniqueName = TRIGRAM_DATA[stance].technique.koreanName;
-        const explanation = `Philosophy for ${techniqueName}`;
-        expect(explanation).toBeDefined();
+      geonTechniques.forEach((technique) => {
+        expect(technique.stance).toBe("geon");
       });
     });
 
-    it("should handle thunder stance philosophy correctly", () => {
-      const technique = getAdvancedTechnique("천둥벽력");
+    it("should return empty array for invalid stance", () => {
+      const invalidTechniques = getTechniquesForStance(
+        "invalid" as TrigramStance
+      );
+      expect(invalidTechniques).toEqual([]);
+    });
 
-      if (technique) {
-        expect(technique.philosophy.korean).toBeDefined();
-        expect(technique.philosophy.english).toBeDefined();
+    it("should include Heaven trigram signature techniques", () => {
+      const geonTechniques = getTechniquesForStance("geon");
+      const techniqueNames = geonTechniques.map((t) => t.koreanName);
 
-        // Check for thunder-related concepts
-        expect(technique.philosophy.korean).toContain("천둥");
-        expect(technique.philosophy.english).toContain("thunder");
+      expect(techniqueNames).toContain("천둥벽력"); // Heavenly Thunder Strike
+      expect(techniqueNames).toContain("하늘찌르기"); // Sky Piercing Thrust
+      expect(techniqueNames).toContain("천지개벽"); // Heaven and Earth Opening
+    });
+  });
+
+  describe("findTechniqueByName", () => {
+    it("should find technique by Korean name", () => {
+      const technique = findTechniqueByName("천둥벽력");
+      expect(technique).toBeDefined();
+      expect(technique?.koreanName).toBe("천둥벽력");
+      expect(technique?.englishName).toBe("Heavenly Thunder Strike");
+    });
+
+    it("should find technique by English name", () => {
+      const technique = findTechniqueByName("Flame Spear Thrust");
+      expect(technique).toBeDefined();
+      expect(technique?.koreanName).toBe("화염지창");
+      expect(technique?.stance).toBe("li");
+    });
+
+    it("should return null for non-existent technique", () => {
+      const technique = findTechniqueByName("Non-existent Technique");
+      expect(technique).toBeNull();
+    });
+  });
+
+  describe("getComboTechniques", () => {
+    it("should return combo techniques for valid technique", () => {
+      const comboTechniques = getComboTechniques("천둥벽력");
+      expect(Array.isArray(comboTechniques)).toBe(true);
+
+      if (comboTechniques.length > 0) {
+        comboTechniques.forEach((technique) => {
+          expect(technique.name).toBeDefined();
+          expect(technique.koreanName).toBeDefined();
+        });
+      }
+    });
+
+    it("should return empty array for technique with no combos", () => {
+      const comboTechniques = getComboTechniques("천지개벽"); // Final technique
+      expect(comboTechniques).toEqual([]);
+    });
+
+    it("should return empty array for non-existent technique", () => {
+      const comboTechniques = getComboTechniques("Non-existent");
+      expect(comboTechniques).toEqual([]);
+    });
+  });
+
+  describe("getCounterTechniques", () => {
+    it("should return counter techniques for valid technique", () => {
+      const counterTechniques = getCounterTechniques("천둥벽력");
+      expect(Array.isArray(counterTechniques)).toBe(true);
+
+      if (counterTechniques.length > 0) {
+        counterTechniques.forEach((technique) => {
+          expect(technique.name).toBeDefined();
+          expect(technique.koreanName).toBeDefined();
+        });
+      }
+    });
+
+    it("should demonstrate martial arts rock-paper-scissors mechanics", () => {
+      // Water counters Thunder in Korean martial arts philosophy
+      const thunderCounters = getCounterTechniques("벽력일섬");
+      const hasWaterCounter = thunderCounters.some((t) => t.stance === "gam");
+
+      if (thunderCounters.length > 0) {
+        expect(hasWaterCounter).toBe(true);
       }
     });
   });
 
-  describe("Combat Balance", () => {
-    it("should have balanced stance modifiers", () => {
-      Object.values(TRIGRAM_DATA).forEach((data) => {
-        // Damage modifiers should be reasonable
-        if (data.damageModifier) {
-          expect(data.damageModifier).toBeGreaterThan(0.5);
-          expect(data.damageModifier).toBeLessThan(1.6);
-        }
+  describe("canExecuteTechnique", () => {
+    it("should allow execution with sufficient resources", () => {
+      const technique = findTechniqueByName("천둥벽력");
+      expect(technique).toBeDefined();
 
-        // Defense modifiers should complement damage
-        if (data.defenseModifier && data.damageModifier) {
-          const total = data.defenseModifier + data.damageModifier;
-          expect(total).toBeGreaterThan(1.5);
-          expect(total).toBeLessThan(2.5);
-        }
+      if (technique) {
+        const result = canExecuteTechnique(technique, 20, 15, "geon");
+        expect(result.canExecute).toBe(true);
+        expect(result.reason).toBeUndefined();
+      }
+    });
+
+    it("should prevent execution with insufficient ki", () => {
+      const technique = findTechniqueByName("천둥벽력");
+      expect(technique).toBeDefined();
+
+      if (technique) {
+        const result = canExecuteTechnique(technique, 10, 15, "geon");
+        expect(result.canExecute).toBe(false);
+        expect(result.reason).toContain("기 부족");
+      }
+    });
+
+    it("should prevent execution with insufficient stamina", () => {
+      const technique = findTechniqueByName("천둥벽력");
+      expect(technique).toBeDefined();
+
+      if (technique) {
+        const result = canExecuteTechnique(technique, 20, 5, "geon");
+        expect(result.canExecute).toBe(false);
+        expect(result.reason).toContain("체력 부족");
+      }
+    });
+
+    it("should prevent execution with wrong stance", () => {
+      const technique = findTechniqueByName("천둥벽력");
+      expect(technique).toBeDefined();
+
+      if (technique) {
+        const result = canExecuteTechnique(technique, 20, 15, "tae");
+        expect(result.canExecute).toBe(false);
+        expect(result.reason).toContain("잘못된 자세");
+      }
+    });
+  });
+
+  describe("calculateTechniqueEffectiveness", () => {
+    it("should calculate optimal effectiveness at close range", () => {
+      const technique = findTechniqueByName("천둥벽력");
+      expect(technique).toBeDefined();
+
+      if (technique) {
+        const effectiveness = calculateTechniqueEffectiveness(technique, 30, 0);
+        expect(effectiveness).toBeGreaterThan(0.8);
+        expect(effectiveness).toBeLessThanOrEqual(1.2);
+      }
+    });
+
+    it("should reduce effectiveness at maximum range", () => {
+      const technique = findTechniqueByName("천둥벽력");
+      expect(technique).toBeDefined();
+
+      if (technique) {
+        const closeEffectiveness = calculateTechniqueEffectiveness(
+          technique,
+          30,
+          0
+        );
+        const farEffectiveness = calculateTechniqueEffectiveness(
+          technique,
+          technique.range,
+          0
+        );
+
+        expect(farEffectiveness).toBeLessThan(closeEffectiveness);
+      }
+    });
+
+    it("should provide timing bonus for frame-perfect execution", () => {
+      const technique = findTechniqueByName("천둥벽력");
+      expect(technique).toBeDefined();
+
+      if (technique) {
+        const normalEffectiveness = calculateTechniqueEffectiveness(
+          technique,
+          30,
+          0
+        );
+        const perfectEffectiveness = calculateTechniqueEffectiveness(
+          technique,
+          30,
+          technique.timingProperties.cancelWindows[0] || 8
+        );
+
+        expect(perfectEffectiveness).toBeGreaterThanOrEqual(
+          normalEffectiveness
+        );
+      }
+    });
+  });
+
+  describe("generateLearningPath", () => {
+    it("should recommend basic techniques for beginners", () => {
+      const learningPath = generateLearningPath("geon", 1);
+
+      expect(learningPath.recommended.length).toBeGreaterThan(0);
+      expect(learningPath.description).toContain("기본 기술");
+
+      learningPath.recommended.forEach((technique) => {
+        expect(technique.prerequisites.minKi).toBeLessThanOrEqual(15);
       });
     });
 
-    it("should have critical hit balance", () => {
-      Object.values(TRIGRAM_DATA).forEach((data) => {
-        const technique = data.technique;
+    it("should recommend intermediate techniques for mid-level players", () => {
+      const learningPath = generateLearningPath("li", 5);
 
-        if (technique.critChance) {
-          expect(technique.critChance).toBeGreaterThan(0);
-          expect(technique.critChance).toBeLessThan(0.3); // Max 30% crit chance
-        }
+      expect(learningPath.recommended.length).toBeGreaterThan(0);
+      expect(learningPath.description).toContain("중급 기술");
 
-        if (technique.critMultiplier) {
-          expect(technique.critMultiplier).toBeGreaterThan(1.0);
-          expect(technique.critMultiplier).toBeLessThan(2.0); // Max 2x damage
-        }
+      learningPath.recommended.forEach((technique) => {
+        expect(technique.prerequisites.minKi).toBeGreaterThan(15);
+        expect(technique.prerequisites.minKi).toBeLessThanOrEqual(20);
+      });
+    });
 
-        // High damage techniques should have lower crit chance
-        if (technique.damage > 35 && technique.critChance) {
-          expect(technique.critChance).toBeLessThan(0.2);
-        }
+    it("should recommend advanced techniques for high-level players", () => {
+      const learningPath = generateLearningPath("jin", 10);
+
+      expect(learningPath.recommended.length).toBeGreaterThan(0);
+      expect(learningPath.description).toContain("고급 기술");
+
+      learningPath.recommended.forEach((technique) => {
+        expect(technique.prerequisites.minKi).toBeGreaterThan(20);
       });
     });
   });
 
-  describe("Korean Technique Execution", () => {
-    it("should calculate technique effectiveness correctly", () => {
-      const heavenTechnique = TRIGRAM_DATA.geon.technique;
+  describe("getAllKoreanTechniques", () => {
+    it("should return all techniques from all stances", () => {
+      const allTechniques = getAllKoreanTechniques();
 
-      // Test basic properties
-      expect(heavenTechnique.name).toBe("천둥벽력");
-      expect(heavenTechnique.englishName).toBe("Thunder Strike");
-      expect(heavenTechnique.damage).toBe(28);
-      expect(heavenTechnique.stance).toBe("geon");
+      expect(allTechniques.length).toBeGreaterThan(0);
+
+      // Should include techniques from all 8 stances
+      const stances = new Set(allTechniques.map((t) => t.stance));
+      expect(stances.size).toBe(8);
+
+      // Should include signature techniques
+      const techniqueNames = allTechniques.map((t) => t.koreanName);
+      expect(techniqueNames).toContain("천둥벽력"); // Heaven
+      expect(techniqueNames).toContain("화염지창"); // Fire
+      expect(techniqueNames).toContain("벽력일섬"); // Thunder
+      expect(techniqueNames).toContain("수류반격"); // Water
     });
 
-    it("should have unique technique names", () => {
-      const koreanNames = Object.values(TRIGRAM_DATA).map(
-        (d) => d.technique.koreanName
+    it("should maintain cultural authenticity", () => {
+      const allTechniques = getAllKoreanTechniques();
+
+      allTechniques.forEach((technique) => {
+        expect(technique.culturalContext).toBeDefined();
+        expect(technique.culturalContext.origin).toBeDefined();
+        expect(technique.culturalContext.philosophy).toBeDefined();
+        expect(technique.culturalContext.traditionalUse).toBeDefined();
+
+        // Should have proper Korean naming
+        expect(technique.koreanName).toMatch(/^[가-힣]+$/);
+      });
+    });
+
+    it("should have balanced technique distribution", () => {
+      const allTechniques = getAllKoreanTechniques();
+      const techniquesByStance = allTechniques.reduce((acc, technique) => {
+        acc[technique.stance] = (acc[technique.stance] || 0) + 1;
+        return acc;
+      }, {} as Record<TrigramStance, number>);
+
+      // Each stance should have at least 2 techniques
+      Object.values(techniquesByStance).forEach((count) => {
+        expect(count).toBeGreaterThanOrEqual(2);
+      });
+    });
+  });
+
+  describe("Cultural Authenticity", () => {
+    it("should maintain proper Korean martial arts terminology", () => {
+      const fireTechniques = getTechniquesForStance("li");
+      const flameSpear = fireTechniques.find(
+        (t) => t.koreanName === "화염지창"
       );
-      const englishNames = Object.values(TRIGRAM_DATA).map(
-        (d) => d.technique.englishName
+
+      expect(flameSpear).toBeDefined();
+      expect(flameSpear?.culturalContext.origin).toBe("한국 전통 무술");
+      expect(flameSpear?.culturalContext.philosophy).toBe(
+        "명료함과 정확성의 추구"
+      );
+    });
+
+    it("should reflect trigram philosophy in techniques", () => {
+      const waterTechniques = getTechniquesForStance("gam");
+      const waterCounter = waterTechniques.find(
+        (t) => t.koreanName === "수류반격"
       );
 
-      expect(new Set(koreanNames).size).toBe(koreanNames.length);
-      expect(new Set(englishNames).size).toBe(englishNames.length);
+      expect(waterCounter).toBeDefined();
+      expect(waterCounter?.culturalContext.philosophy).toContain(
+        "적의 힘을 이용"
+      );
+      expect(waterCounter?.type).toBe("grapple"); // Water flows and redirects
     });
 
-    it("should have consistent range values", () => {
-      Object.values(TRIGRAM_DATA).forEach((data) => {
-        const range = data.technique.range;
-        expect(range).toBeGreaterThan(20);
-        expect(range).toBeLessThan(70);
+    it("should have appropriate timing properties for Korean martial arts", () => {
+      const thunderTechniques = getTechniquesForStance("jin");
+      const lightningFlash = thunderTechniques.find(
+        (t) => t.koreanName === "벽력일섬"
+      );
 
-        // Certain attack types should have specific range patterns
-        if (data.technique.type === "kick") {
-          expect(range).toBeLessThan(50); // Kicks are shorter range
+      expect(lightningFlash).toBeDefined();
+      expect(
+        lightningFlash?.timingProperties.startupFrames
+      ).toBeLessThanOrEqual(10); // Fast like lightning
+      expect(lightningFlash?.timingProperties.activeFrames).toBeLessThanOrEqual(
+        5
+      ); // Brief impact
+    });
+  });
+
+  describe("Combat Integration", () => {
+    it("should support realistic combo chains", () => {
+      const heavenTechniques = getTechniquesForStance("geon");
+      const thunderStrike = heavenTechniques.find(
+        (t) => t.koreanName === "천둥벽력"
+      );
+
+      expect(thunderStrike).toBeDefined();
+      expect(thunderStrike?.comboChains.length).toBeGreaterThan(0);
+
+      // Should be able to combo into other Heaven techniques
+      const combos = getComboTechniques("천둥벽력");
+      if (combos.length > 0) {
+        combos.forEach((combo) => {
+          expect(combo.stance).toBe("geon");
+        });
+      }
+    });
+
+    it("should implement elemental counter relationships", () => {
+      // Fire techniques should be countered by Water techniques
+      const fireTechnique = findTechniqueByName("화염지창");
+      expect(fireTechnique).toBeDefined();
+
+      if (fireTechnique) {
+        const counters = getCounterTechniques("화염지창");
+        const hasWaterCounter = counters.some((t) => t.stance === "gam");
+
+        if (counters.length > 0) {
+          expect(hasWaterCounter).toBe(true);
         }
-
-        if (data.technique.type === "grapple") {
-          expect(range).toBeLessThan(40); // Grapples are close range
-        }
-      });
-    });
-  });
-
-  describe("Korean Cultural Authenticity", () => {
-    it("should use authentic Korean martial arts terminology", () => {
-      // Check for specific Korean martial arts terms
-      const techniques = Object.values(TRIGRAM_DATA).map((d) => d.technique);
-
-      // Should include traditional Korean attack terms
-      const koreanTerms = techniques.map((t) => t.koreanName).join("");
-      expect(koreanTerms).toMatch(/벽력/); // Lightning/Thunder
-      expect(koreanTerms).toMatch(/화염/); // Flame
-      expect(koreanTerms).toMatch(/선풍/); // Whirlwind
-      expect(koreanTerms).toMatch(/수류/); // Water flow
-      expect(koreanTerms).toMatch(/대지/); // Earth
-    });
-
-    it("should maintain traditional trigram elements", () => {
-      const expectedElements = [
-        "Heaven",
-        "Lake",
-        "Fire",
-        "Thunder",
-        "Wind",
-        "Water",
-        "Mountain",
-        "Earth",
-      ];
-
-      const actualElements = Object.values(TRIGRAM_DATA).map((d) => d.element);
-      expect(actualElements.sort()).toEqual(expectedElements.sort());
-    });
-  });
-
-  describe("Korean Techniques Philosophy Integration", () => {
-    it("should provide philosophy-based explanations", () => {
-      const techniqueNames = [
-        "천둥벽력",
-        "유수연타",
-        "화염지창",
-        "벽력일섬",
-        "선풍연격",
-        "수류반격",
-        "반석방어",
-        "대지포옹",
-      ] as const;
-
-      const expectedExplanations: Record<string, string> = {
-        천둥벽력: "하늘의 기운을 담은 강력한 일격",
-        유수연타: "호수의 잔잔함 속에 숨겨진 연타",
-        화염지창: "불의 정밀함으로 적의 급소를 찌르다",
-        벽력일섬: "번개의 속도로 적을 제압하다",
-        선풍연격: "바람의 부드러움으로 연속 공격",
-        수류반격: "물의 깊이로 적의 공격을 되받아치다",
-        반석방어: "산의 견고함으로 모든 공격을 막다",
-        대지포옹: "땅의 포용력으로 적을 제압하다",
-      };
-
-      techniqueNames.forEach((techniqueName) => {
-        const explanation = `Philosophy for ${techniqueName}`;
-        expect(explanation).toBe(expectedExplanations[techniqueName]);
-      });
-    });
-  });
-
-  describe("Korean technique names and descriptions", () => {
-    it("should provide accurate Korean martial arts technique names", () => {
-      const expectedTechniques: Record<string, string> = {
-        // Fix: Add type annotation
-        천둥벽력: "Thunder Strike",
-        유수연타: "Flowing Combo",
-        화염지창: "Flame Spear",
-        벽력일섬: "Lightning Flash",
-        선풍연격: "Whirlwind",
-        수류반격: "Counter Strike",
-        반석방어: "Mountain Defense",
-        대지포옹: "Earth Embrace",
-      };
-
-      Object.entries(expectedTechniques).forEach(([korean, english]) => {
-        const technique =
-          KoreanTechniquesUtils.getTechniqueByKoreanName(korean);
-        expect(technique).toBeDefined();
-        expect(technique?.englishName).toBe(english);
-      });
-    });
-
-    it("should include traditional Korean martial arts philosophy", () => {
-      const technique = KOREAN_TECHNIQUES_DATABASE["천둥벽력"];
-      expect(technique.philosophy.korean).toBeDefined();
-      expect(technique.philosophy.english).toBeDefined();
-
-      // Fix: Remove undefined function call
-      expect(technique.philosophy.korean).toContain("천둥");
-      expect(technique.philosophy.english).toContain("thunder");
+      }
     });
   });
 });

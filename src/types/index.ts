@@ -287,7 +287,7 @@ export interface KoreanAnatomicalZone {
   readonly description: string;
 }
 
-// Korean technique interface
+// Korean technique interface - enhanced version
 export interface KoreanTechnique {
   name: string;
   koreanName: string;
@@ -348,8 +348,11 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     technique: {
       name: "천둥벽력",
       koreanName: "천둥벽력",
-      englishName: "Thunder Strike",
-      description: { korean: "천둥벽력", english: "Thunder Strike" },
+      englishName: "Heavenly Thunder Strike",
+      description: {
+        korean: "하늘의 기운을 모아 강력한 일격을 가하는 기술",
+        english: "Gathering heavenly energy for a powerful devastating strike",
+      },
       kiCost: 15,
       staminaCost: 10,
       range: 60,
@@ -379,8 +382,11 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     technique: {
       name: "유수연타",
       koreanName: "유수연타",
-      englishName: "Flowing Combo",
-      description: { korean: "유수연타", english: "Flowing Combo" },
+      englishName: "Flowing Water Combo",
+      description: {
+        korean: "물이 흐르듯 자연스럽고 연속적인 공격",
+        english: "Natural and continuous attacks flowing like water",
+      },
       kiCost: 12,
       staminaCost: 8,
       range: 50,
@@ -410,8 +416,11 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     technique: {
       name: "화염지창",
       koreanName: "화염지창",
-      englishName: "Flame Spear",
-      description: { korean: "화염지창", english: "Flame Spear" },
+      englishName: "Flame Spear Thrust",
+      description: {
+        korean: "불꽃처럼 빠르고 정확한 급소 공격",
+        english: "Swift and precise vital point attack like a flame spear",
+      },
       kiCost: 20,
       staminaCost: 15,
       range: 55,
@@ -441,8 +450,11 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     technique: {
       name: "벽력일섬",
       koreanName: "벽력일섬",
-      englishName: "Lightning Flash",
-      description: { korean: "벽력일섬", english: "Lightning Flash" },
+      englishName: "Lightning Flash Kick",
+      description: {
+        korean: "번개처럼 빠르고 강력한 일격",
+        english: "Swift and powerful strike like a lightning flash",
+      },
       kiCost: 25,
       staminaCost: 20,
       range: 45,
@@ -472,8 +484,11 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     technique: {
       name: "선풍연격",
       koreanName: "선풍연격",
-      englishName: "Whirlwind",
-      description: { korean: "선풍연격", english: "Whirlwind" },
+      englishName: "Whirlwind Barrage",
+      description: {
+        korean: "선풍처럼 빠르고 연속적인 공격",
+        english: "Swift and continuous attacks like a whirlwind",
+      },
       kiCost: 10,
       staminaCost: 12,
       range: 40,
@@ -503,8 +518,11 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     technique: {
       name: "수류반격",
       koreanName: "수류반격",
-      englishName: "Counter Strike",
-      description: { korean: "수류반격", english: "Counter Strike" },
+      englishName: "Water Current Counter",
+      description: {
+        korean: "물의 흐름처럼 자연스럽게 반격하는 기술",
+        english: "Natural counter-attack flowing like water current",
+      },
       kiCost: 15,
       staminaCost: 10,
       range: 35,
@@ -534,8 +552,11 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     technique: {
       name: "반석방어",
       koreanName: "반석방어",
-      englishName: "Mountain Defense",
-      description: { korean: "반석방어", english: "Mountain Defense" },
+      englishName: "Solid Rock Defense",
+      description: {
+        korean: "반석처럼 견고한 방어 후 반격",
+        english: "Solid defense like bedrock followed by counter-attack",
+      },
       kiCost: 12,
       staminaCost: 8,
       range: 30,
@@ -565,8 +586,11 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     technique: {
       name: "대지포옹",
       koreanName: "대지포옹",
-      englishName: "Earth Embrace",
-      description: { korean: "대지포옹", english: "Earth Embrace" },
+      englishName: "Earth's Embrace",
+      description: {
+        korean: "대지가 품듯 강력하게 감싸는 잡기 기술",
+        english: "Powerful grappling technique that embraces like the earth",
+      },
       kiCost: 18,
       staminaCost: 15,
       range: 25,
