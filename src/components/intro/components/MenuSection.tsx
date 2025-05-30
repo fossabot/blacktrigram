@@ -1,166 +1,108 @@
-import { useCallback } from "react";
-import type { JSX } from "react";
+import React, { useState, useCallback } from "react";
+import { KoreanPixiContainer, BaseButton, Text } from "../../ui/base";
 import { KOREAN_COLORS } from "../../../types";
-import type { Graphics as PixiGraphics } from "pixi.js";
 
 export interface MenuSectionProps {
-  readonly selectedOption: "training" | "combat" | "settings";
-  readonly onOptionChange: (option: "training" | "combat" | "settings") => void;
-  readonly onNext: () => void;
+  readonly selectedOption?: string | null;
+  readonly onOptionChange?: (option: string) => void;
+  readonly onMenuSelect: (section: string) => void;
+  readonly onNext?: () => void;
+  readonly onPrev?: () => void;
   readonly onStartGame: () => void;
   readonly onStartTraining: () => void;
 }
 
 export function MenuSection({
-  selectedOption,
+  selectedOption: propSelectedOption,
   onOptionChange,
+  onMenuSelect,
   onNext,
+  // onPrev,
   onStartGame,
   onStartTraining,
-}: MenuSectionProps): JSX.Element {
-  const drawMenuBackground = useCallback((g: PixiGraphics) => {
-    g.clear();
+}: MenuSectionProps): React.ReactElement {
+  const [internalSelectedOption, setInternalSelectedOption] = useState<
+    string | null
+  >(propSelectedOption || null);
 
-    // Traditional Korean menu panel
-    g.setFillStyle({
-      color: KOREAN_COLORS.BLACK,
-      alpha: 0.85,
-    });
-    g.roundRect(-200, -150, 400, 300, 15);
-    g.fill();
+  // Use either the prop or internal state
+  const selectedOption =
+    propSelectedOption !== undefined
+      ? propSelectedOption
+      : internalSelectedOption;
 
-    // Golden border
-    g.setStrokeStyle({
-      color: KOREAN_COLORS.GOLD,
-      width: 2,
-      alpha: 0.9,
-    });
-    g.roundRect(-200, -150, 400, 300, 15);
-    g.stroke();
-  }, []);
+  const menuItems = [
+    { label: "새 게임 (New Game)", action: "game", targetSection: "game" },
+    { label: "훈련 (Training)", action: "training", targetSection: "training" },
+    {
+      label: "조작법 (Controls)",
+      action: "controls",
+      targetSection: "controls",
+    },
+    {
+      label: "철학 (Philosophy)",
+      action: "philosophy",
+      targetSection: "philosophy",
+    },
+    { label: "나가기 (Exit)", action: "exit", targetSection: "exit" },
+  ];
+
+  const handleSelect = useCallback(
+    (item: (typeof menuItems)[0]) => {
+      if (onOptionChange) {
+        // Call the external handler with string parameter
+        onOptionChange(item.action);
+      } else {
+        // Use internal state when no handler is provided
+        setInternalSelectedOption(item.action);
+      }
+
+      if (item.action === "game") {
+        onStartGame();
+      } else if (item.action === "training") {
+        onStartTraining();
+      } else if (item.action === "exit") {
+        if (onNext) onNext();
+      } else {
+        onMenuSelect(item.targetSection);
+      }
+    },
+    [onMenuSelect, onStartGame, onStartTraining, onNext, onOptionChange]
+  );
 
   return (
-    <pixiContainer x={100} y={200} data-testid="menu-section">
-      <pixiGraphics draw={drawMenuBackground} />
-
-      {/* Menu Title */}
-      <pixiText
-        text="메뉴 (Menu)"
-        x={300}
-        y={50}
-        anchor={{ x: 0.5, y: 0.5 }}
+    <KoreanPixiContainer
+      x={50}
+      y={150}
+      width={700}
+      height={300}
+      traditionalBorder={true}
+    >
+      <Text
+        text="메인 메뉴 (Main Menu)"
+        x={350}
+        y={20}
         style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 24,
-          fill: 0xffd700,
+          fontFamily: "Noto Sans KR, Arial, sans-serif",
+          fontSize: 28,
+          fill: KOREAN_COLORS.GOLD,
           fontWeight: "bold",
         }}
+        anchor={{ x: 0.5, y: 0.5 }}
       />
-
-      {/* Menu options with selection highlighting */}
-      <pixiContainer
-        x={50}
-        y={120}
-        interactive={true}
-        cursor="pointer"
-        onPointerDown={() => onOptionChange("training")}
-      >
-        <pixiText
-          text="1. 훈련 모드 (Training Mode)"
-          x={0}
-          y={0}
-          anchor={{ x: 0, y: 0.5 }}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 18,
-            fill: selectedOption === "training" ? 0xffd700 : 0xffffff,
-          }}
+      {menuItems.map((item, index) => (
+        <BaseButton
+          key={item.action}
+          x={150}
+          y={80 + index * 60}
+          width={400}
+          height={50}
+          text={`${item.label}${selectedOption === item.action ? " <" : ""}`}
+          onClick={() => handleSelect(item)}
+          isSelected={selectedOption === item.action}
+          isEnabled={true}
         />
-      </pixiContainer>
-
-      <pixiContainer
-        x={50}
-        y={160}
-        interactive={true}
-        cursor="pointer"
-        onPointerDown={() => onOptionChange("combat")}
-      >
-        <pixiText
-          text="2. 대전 모드 (Combat Mode)"
-          x={0}
-          y={0}
-          anchor={{ x: 0, y: 0.5 }}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 18,
-            fill: selectedOption === "combat" ? 0xffd700 : 0xffffff,
-          }}
-        />
-      </pixiContainer>
-
-      <pixiContainer
-        x={50}
-        y={200}
-        interactive={true}
-        cursor="pointer"
-        onPointerDown={() => onOptionChange("settings")}
-      >
-        <pixiText
-          text="3. 설정 (Settings)"
-          x={0}
-          y={0}
-          anchor={{ x: 0, y: 0.5 }}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 18,
-            fill: selectedOption === "settings" ? 0xffd700 : 0xffffff,
-          }}
-        />
-      </pixiContainer>
-
-      {/* Action buttons */}
-      <pixiContainer
-        x={150}
-        y={280}
-        interactive={true}
-        cursor="pointer"
-        onPointerDown={
-          selectedOption === "training" ? onStartTraining : onStartGame
-        }
-      >
-        <pixiText
-          text="시작 (Start)"
-          x={0}
-          y={0}
-          anchor={{ x: 0.5, y: 0.5 }}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 16,
-            fill: 0xffd700,
-          }}
-        />
-      </pixiContainer>
-
-      {/* Continue to next section button */}
-      <pixiContainer
-        x={450}
-        y={280}
-        interactive={true}
-        cursor="pointer"
-        onPointerDown={onNext}
-      >
-        <pixiText
-          text="계속 → (Continue)"
-          x={0}
-          y={0}
-          anchor={{ x: 0.5, y: 0.5 }}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 16,
-            fill: 0xffd700,
-          }}
-        />
-      </pixiContainer>
-    </pixiContainer>
+      ))}
+    </KoreanPixiContainer>
   );
 }

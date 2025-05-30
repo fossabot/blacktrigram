@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import type { JSX } from "react";
 import { KOREAN_COLORS } from "../../../types";
 import type { Graphics as PixiGraphics, FederatedPointerEvent } from "pixi.js";
+import { Container, Graphics, Text } from "./PixiComponents";
 
 export interface BaseButtonProps {
   readonly text: string;
@@ -73,19 +74,26 @@ export function BaseButton({
     [width, height, isSelected, isEnabled]
   );
 
-  return (
-    <pixiContainer
-      x={x}
-      y={y}
-      interactive={isEnabled}
-      cursor={isEnabled ? "pointer" : "default"}
-      onPointerDown={handlePointerDown}
-      onPointerEnter={handlePointerEnter}
-      data-testid={testId}
-    >
-      <pixiGraphics draw={drawButton} />
+  // Create container props to handle optional testId properly
+  const containerProps: any = {
+    x,
+    y,
+    interactive: isEnabled,
+    cursor: isEnabled ? "pointer" : "default",
+    onPointerDown: handlePointerDown,
+    onPointerEnter: handlePointerEnter,
+  };
 
-      <pixiText
+  // Only add testId if it's defined
+  if (testId !== undefined) {
+    containerProps["data-testid"] = testId;
+  }
+
+  return (
+    <Container {...containerProps}>
+      <Graphics draw={drawButton} />
+
+      <Text
         text={text}
         anchor={{ x: 0.5, y: 0.5 }}
         style={{
@@ -96,6 +104,6 @@ export function BaseButton({
         }}
         alpha={isEnabled ? 1.0 : 0.6}
       />
-    </pixiContainer>
+    </Container>
   );
 }

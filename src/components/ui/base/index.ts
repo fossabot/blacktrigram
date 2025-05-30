@@ -1,21 +1,32 @@
 // Centralized exports for all base UI components
 
-// PixiJS Components
-export * from "./PixiComponents";
+// Base UI Components - Korean Martial Arts Theme
+export {
+  Stage,
+  Container,
+  Graphics,
+  Text,
+  Sprite,
+  useTick,
+  useApp,
+  KoreanPixiContainer,
+  KOREAN_TEXT_STYLE,
+  KOREAN_COLORS, // Now properly exported from PixiComponents
+} from "./PixiComponents";
 
-// Korean-specific components
 export {
   KoreanText,
+  KoreanHeader,
   KoreanTitle,
   KoreanSubtitle,
   KoreanInstruction,
-  KoreanButton,
   CombatFeedback,
+  KOREAN_TEXT_STYLES,
 } from "./KoreanPixiComponents";
 
 // Base components
-export { BackgroundGrid } from "./BackgroundGrid";
 export { BaseButton } from "./BaseButton";
+export { BackgroundGrid } from "./BackgroundGrid";
 
 // Korean text utilities
 export {
@@ -24,5 +35,21 @@ export {
   KOREAN_MARTIAL_TERMS,
 } from "./KoreanText";
 
-// Re-export PixiJS React components for convenience
-export { Container, Graphics, Text } from "@pixi/react";
+// Export types
+export type {
+  BasePixiProps,
+  PixiContainerProps,
+  PixiGraphicsProps,
+  PixiTextProps,
+  PixiSpriteProps,
+  KoreanPixiContainerProps,
+} from "./PixiComponents";
+
+export type {
+  KoreanTextProps,
+  KoreanHeaderProps,
+  KoreanTitleProps,
+  KoreanSubtitleProps,
+  KoreanInstructionProps,
+  CombatFeedbackProps,
+} from "./KoreanPixiComponents";

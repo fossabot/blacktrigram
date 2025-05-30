@@ -1,151 +1,114 @@
-import { useCallback } from "react";
-import type { JSX } from "react";
-import { KOREAN_COLORS } from "../../../types";
+import { KoreanPixiContainer, Graphics, Text, Container } from "../../ui/base";
+import { KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../../types";
+import React, { useCallback } from "react";
 import type { Graphics as PixiGraphics } from "pixi.js";
-import { KOREAN_TEXT_STYLE } from "../../ui/base";
 
+// Define props for navigation
 export interface ControlsSectionProps {
-  readonly x?: number;
-  readonly y?: number;
-  readonly onNext: () => void;
-  readonly onPrev: () => void;
+  readonly onNext?: () => void;
+  readonly onPrev?: () => void;
 }
 
-export function ControlsSection({
-  x = window.innerWidth / 2,
-  y = window.innerHeight - 200,
-  onNext,
-  onPrev,
-}: ControlsSectionProps): JSX.Element {
-  const drawControlsBackground = useCallback((g: PixiGraphics) => {
+const KEY_WIDTH = 40;
+const KEY_HEIGHT = 40;
+
+const KEY_STYLE = {
+  fontFamily: KOREAN_FONT_FAMILY,
+  fontSize: 14,
+  fill: KOREAN_COLORS.BLACK,
+  align: "center" as const,
+};
+
+const LABEL_STYLE = {
+  fontFamily: KOREAN_FONT_FAMILY,
+  fontSize: 14,
+  fill: KOREAN_COLORS.WHITE,
+  align: "left" as const,
+};
+
+interface KeyDisplayProps {
+  x: number;
+  y: number;
+  label: string;
+  keyChar: string;
+}
+
+const KeyDisplay: React.FC<KeyDisplayProps> = ({ x, y, label, keyChar }) => {
+  const drawKeyShape = useCallback((g: PixiGraphics) => {
     g.clear();
-
-    // Traditional Korean controls panel
-    g.setFillStyle({
-      color: KOREAN_COLORS.BLACK,
-      alpha: 0.8,
-    });
-    g.roundRect(-300, -80, 600, 160, 10);
-    g.fill();
-
-    // Golden border
-    g.setStrokeStyle({
-      color: KOREAN_COLORS.GOLD,
-      width: 2,
-      alpha: 0.9,
-    });
-    g.roundRect(-300, -80, 600, 160, 10);
-    g.stroke();
+    g.rect(0, 0, KEY_WIDTH, KEY_HEIGHT);
+    g.fill({ color: KOREAN_COLORS.LIGHT_GREY, alpha: 1 });
+    g.stroke({ width: 1, color: KOREAN_COLORS.GRAY_DARK });
   }, []);
 
   return (
-    <pixiContainer x={x} y={y} data-testid="controls-section">
-      <pixiGraphics draw={drawControlsBackground} />
-
-      {/* Title */}
-      <pixiText
-        text="조작법 (Controls)"
+    <Container x={x} y={y}>
+      <Graphics draw={drawKeyShape} />
+      <Text
+        text={keyChar}
+        x={KEY_WIDTH / 2}
+        y={KEY_HEIGHT / 2}
         anchor={{ x: 0.5, y: 0.5 }}
-        y={-50}
+        style={KEY_STYLE}
+      />
+      <Text
+        text={label}
+        x={KEY_WIDTH + 10}
+        y={KEY_HEIGHT / 2}
+        anchor={{ x: 0, y: 0.5 }}
+        style={LABEL_STYLE}
+      />
+    </Container>
+  );
+};
+
+export function ControlsSection({}: /* onNext, onPrev */ ControlsSectionProps): React.ReactElement {
+  const controls = [
+    {
+      keyChar: "1-8",
+      label: "Select Trigram Stance (건, 태, 리, 진, 손, 감, 간, 곤)",
+    },
+    { keyChar: "W, A, S, D", label: "Movement (Up, Left, Down, Right)" },
+    { keyChar: "Space", label: "Primary Attack / Practice Technique" },
+    { keyChar: "Shift", label: "Block / Defensive Maneuver" },
+    { keyChar: "Ctrl", label: "Special Ability / Ki Power" },
+    { keyChar: "Tab", label: "Cycle Target (Combat Mode)" },
+    { keyChar: "Esc", label: "Pause Menu / Exit Training" },
+  ];
+
+  return (
+    <KoreanPixiContainer
+      x={50}
+      y={100}
+      traditionalBorder={false}
+      width={700}
+      height={500}
+    >
+      {/* Add navigation buttons if onNext/onPrev are used */}
+      {/* Example:
+      {onPrev && <BaseButton x={10} y={450} label="이전 (Prev)" onClick={onPrev} />}
+      {onNext && <BaseButton x={600} y={450} label="다음 (Next)" onClick={onNext} />}
+      */}
+      <Text
+        text="게임 조작법 (Game Controls)"
+        x={0}
+        y={0}
         style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 20,
+          fontFamily: KOREAN_FONT_FAMILY,
+          fontSize: 24,
           fill: KOREAN_COLORS.GOLD,
           fontWeight: "bold",
         }}
       />
-
-      {/* Controls Instructions */}
-      <pixiText
-        text="화살표 키: 이동 | Space: 공격 | 1-8: 팔괘 자세 변경"
-        anchor={{ x: 0.5, y: 0.5 }}
-        y={-20}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 14,
-          fill: KOREAN_COLORS.WHITE,
-        }}
-      />
-
-      <pixiText
-        text="Arrow Keys: Move | Space: Attack | 1-8: Change Trigram Stance"
-        anchor={{ x: 0.5, y: 0.5 }}
-        y={0}
-        alpha={0.8}
-        style={{
-          fontFamily: "Orbitron",
-          fontSize: 12,
-          fill: KOREAN_COLORS.WHITE,
-        }}
-      />
-
-      {/* Advanced Controls */}
-      <pixiText
-        text="Shift: 방어 (Block) | Ctrl: 회피 (Dodge) | Enter: 확인 (Confirm)"
-        anchor={{ x: 0.5, y: 0.5 }}
-        y={25}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 12,
-          fill: KOREAN_COLORS.CYAN,
-        }}
-      />
-
-      <pixiText
-        text="M: 음악 토글 (Music Toggle) | ESC: 일시정지 (Pause)"
-        anchor={{ x: 0.5, y: 0.5 }}
-        y={45}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 12,
-          fill: KOREAN_COLORS.GRAY_LIGHT,
-        }}
-      />
-
-      {/* Navigation buttons */}
-      {onPrev && (
-        <pixiContainer
-          x={100}
-          y={400}
-          interactive={true}
-          cursor="pointer"
-          onPointerDown={onPrev}
-        >
-          <pixiText
-            text="← 뒤로 (Back)"
-            x={0}
-            y={0}
-            anchor={{ x: 0.5, y: 0.5 }}
-            style={{
-              ...KOREAN_TEXT_STYLE,
-              fontSize: 16,
-              fill: 0xffd700,
-            }}
-          />
-        </pixiContainer>
-      )}
-
-      {onNext && (
-        <pixiContainer
-          x={700}
-          y={400}
-          interactive={true}
-          cursor="pointer"
-          onPointerDown={onNext}
-        >
-          <pixiText
-            text="계속 → (Continue)"
-            x={0}
-            y={0}
-            anchor={{ x: 0.5, y: 0.5 }}
-            style={{
-              ...KOREAN_TEXT_STYLE,
-              fontSize: 16,
-              fill: 0xffd700,
-            }}
-          />
-        </pixiContainer>
-      )}
-    </pixiContainer>
+      {controls.map((control, index) => (
+        <KeyDisplay
+          key={index}
+          x={20}
+          y={50 + index * (KEY_HEIGHT + 15)}
+          label={control.label}
+          keyChar={control.keyChar}
+        />
+      ))}
+    </KoreanPixiContainer>
   );
 }

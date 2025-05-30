@@ -1,145 +1,13 @@
 import React from "react";
-import { Container } from "@pixi/react";
-import type { TextStyle } from "pixi.js";
-import { KOREAN_COLORS, type Position } from "../../../types";
+// Import only what we need
+import {
+  PixiTextProps,
+  Text,
+  // Remove unused imports
+} from "./PixiComponents";
+import { KOREAN_FONT_FAMILY, KOREAN_COLORS } from "../../../types";
 
-interface KoreanTextProps {
-  readonly text: string;
-  readonly x?: number;
-  readonly y?: number;
-  readonly style?: Partial<TextStyle>;
-  readonly anchor?: { x: number; y: number };
-  readonly interactive?: boolean;
-  readonly onPointerDown?: () => void;
-}
-
-export function KoreanText({
-  text,
-  x = 0,
-  y = 0,
-  style = {},
-  anchor = { x: 0.5, y: 0.5 },
-  interactive = false,
-  onPointerDown,
-}: KoreanTextProps): React.ReactElement {
-  const defaultStyle: Partial<TextStyle> = {
-    fontFamily: "Noto Sans KR, Arial, sans-serif",
-    fontSize: 16,
-    fill: KOREAN_COLORS.WHITE,
-    align: "center",
-    ...style,
-  };
-
-  // Use pixiText instead of Text since it's not exported
-  return React.createElement("pixiText", {
-    text,
-    x,
-    y,
-    anchor,
-    style: defaultStyle,
-    interactive,
-    onPointerDown,
-  });
-}
-
-interface KoreanHeaderProps {
-  readonly text: string;
-  readonly position: Position;
-  readonly size?: "small" | "medium" | "large";
-  readonly color?: string;
-}
-
-export function KoreanHeader({
-  text,
-  position,
-  size = "medium",
-  color = KOREAN_COLORS.GOLD,
-}: KoreanHeaderProps): React.ReactElement {
-  const sizeMap = {
-    small: 18,
-    medium: 24,
-    large: 32,
-  };
-
-  return (
-    <KoreanText
-      text={text}
-      x={position.x}
-      y={position.y}
-      style={{
-        fontSize: sizeMap[size],
-        fill: color,
-        fontWeight: "bold",
-        stroke: {
-          color: KOREAN_COLORS.BLACK,
-          width: 2,
-        },
-      }}
-    />
-  );
-}
-
-interface KoreanButtonProps {
-  readonly text: string;
-  readonly x: number;
-  readonly y: number;
-  readonly width?: number;
-  readonly height?: number;
-  readonly onClick: () => void;
-  readonly isSelected?: boolean;
-}
-
-export function KoreanButton({
-  text,
-  x,
-  y,
-  width = 200,
-  height = 50,
-  onClick,
-  isSelected = false,
-}: KoreanButtonProps): React.ReactElement {
-  const buttonColor = isSelected
-    ? KOREAN_COLORS.GOLD
-    : KOREAN_COLORS.TRADITIONAL_RED;
-  const textColor = isSelected ? KOREAN_COLORS.BLACK : KOREAN_COLORS.WHITE;
-
-  return (
-    <Container
-      x={x}
-      y={y}
-      interactive={true}
-      cursor="pointer"
-      onPointerDown={onClick}
-    >
-      {/* Button background using pixiGraphics */}
-      {React.createElement("pixiGraphics", {
-        draw: (graphics: any) => {
-          graphics.clear();
-          graphics.setFillStyle({ color: buttonColor });
-          graphics.roundRect(-width / 2, -height / 2, width, height, 5);
-          graphics.fill();
-          graphics.setStrokeStyle({ color: KOREAN_COLORS.WHITE, width: 2 });
-          graphics.roundRect(-width / 2, -height / 2, width, height, 5);
-          graphics.stroke();
-        },
-      })}
-
-      {/* Button text */}
-      <KoreanText
-        text={text}
-        x={0}
-        y={0}
-        style={{
-          fontSize: 16,
-          fill: textColor,
-          fontWeight: "bold",
-        }}
-      />
-    </Container>
-  );
-}
-
-// Export common Korean martial arts text styles
+// Korean text styles for martial arts UI
 export const KOREAN_TEXT_STYLES = {
   header: {
     fontFamily: "Noto Sans KR, Arial, sans-serif",
@@ -174,6 +42,63 @@ export const KOREAN_TEXT_STYLES = {
     },
   },
 } as const;
+
+// Korean Text Component
+// Props for KoreanText, extending base PixiTextProps
+export interface KoreanTextProps extends PixiTextProps {
+  // No additional props specific to KoreanText yet, but can be added.
+  // Example: emphasis?: boolean;
+}
+
+// Default style for Korean text
+const DEFAULT_KOREAN_TEXT_STYLE = {
+  fontFamily: KOREAN_FONT_FAMILY, // Used KOREAN_FONT_FAMILY
+  fontSize: 18,
+  fill: KOREAN_COLORS.WHITE,
+  align: "left" as const,
+};
+
+export function KoreanText({
+  text,
+  style,
+  ...props
+}: KoreanTextProps): React.ReactElement {
+  const mergedStyle = {
+    ...DEFAULT_KOREAN_TEXT_STYLE,
+    ...style,
+  };
+
+  // Cast props to any to avoid TypeScript strictness with exactOptionalPropertyTypes
+  return <Text text={text} style={mergedStyle} {...(props as any)} />;
+}
+
+export interface KoreanHeaderProps {
+  readonly text: string;
+  readonly x?: number; // Added x
+  readonly y?: number; // Added y
+  readonly size?: "small" | "medium" | "large";
+}
+
+export function KoreanHeader({
+  text,
+  x = 0,
+  y = 0,
+  size = "medium",
+}: KoreanHeaderProps): React.ReactElement {
+  const fontSize = size === "large" ? 32 : size === "medium" ? 24 : 18;
+
+  return (
+    <KoreanText
+      text={text}
+      x={x} // Use prop x
+      y={y} // Use prop y
+      style={{
+        ...KOREAN_TEXT_STYLES.header,
+        fontSize,
+      }}
+    />
+  );
+}
 
 export interface KoreanTitleProps {
   readonly text: string;
@@ -281,17 +206,17 @@ export function CombatFeedback({
   isVitalPoint = false,
   isCritical = false,
 }: CombatFeedbackProps): React.ReactElement {
-  let color: string = KOREAN_COLORS.WHITE;
+  let colorValue: string = KOREAN_COLORS.WHITE; // Renamed to avoid conflict with color prop
   let fontSize = 16;
 
   if (isCritical) {
-    color = KOREAN_COLORS.CRITICAL_RED;
+    colorValue = KOREAN_COLORS.CRITICAL_RED;
     fontSize = 20;
   } else if (isVitalPoint) {
-    color = KOREAN_COLORS.GOLD;
+    colorValue = KOREAN_COLORS.GOLD;
     fontSize = 18;
   } else if (damage > 20) {
-    color = KOREAN_COLORS.DAMAGE_YELLOW;
+    colorValue = KOREAN_COLORS.DAMAGE_YELLOW;
     fontSize = 17;
   }
 
@@ -302,7 +227,7 @@ export function CombatFeedback({
       y={y}
       style={{
         fontSize,
-        fill: color,
+        fill: colorValue,
         fontWeight: "bold",
         stroke: {
           color: KOREAN_COLORS.BLACK,

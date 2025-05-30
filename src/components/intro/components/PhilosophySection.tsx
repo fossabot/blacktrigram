@@ -1,180 +1,67 @@
-import { useCallback } from "react";
-import type { PixiGraphicsType } from "../../ui/base/PixiComponents";
-import { KOREAN_TEXT_STYLE } from "../../ui/base/PixiComponents";
+import React from "react";
+import { KoreanPixiContainer, Text } from "../../ui/base"; // Corrected imports
+import { KOREAN_TEXT_STYLE, KOREAN_COLORS } from "../../ui/base"; // KOREAN_COLORS might be used for styling
 
-interface PhilosophySectionProps {
-  readonly x?: number;
-  readonly y?: number;
-  readonly onNext?: () => void; // Add the missing prop
+// Define props if IntroScreen passes any, e.g., for navigation
+export interface PhilosophySectionProps {
+  readonly onNext?: () => void;
+  readonly onPrev?: () => void;
 }
 
-export function PhilosophySection({
-  x = 0,
-  y = 0,
-  onNext,
-}: PhilosophySectionProps): React.ReactElement {
-  const drawPhilosophyBackground = useCallback((graphics: PixiGraphicsType) => {
-    graphics.clear();
+export function PhilosophySection({}: /* onNext, onPrev */ PhilosophySectionProps): React.ReactElement {
+  const philosophyText = `
+  흑괘 (黑卦) - 어둠의 팔괘
 
-    // Traditional Korean background with philosophy theme
-    graphics.setFillStyle({ color: 0x001122, alpha: 0.95 });
-    graphics.rect(0, 0, 600, 400);
-    graphics.fill();
+  "어둠 속에서, 진정한 힘이 드러난다."
 
-    // Decorative border with Korean aesthetic
-    graphics.setStrokeStyle({ color: 0xffd700, width: 3 });
-    graphics.rect(10, 10, 580, 380);
-    graphics.stroke();
+  흑괘 무술은 단순한 전투 기술이 아닙니다.
+  그것은 우주의 근본적인 힘, 음양의 조화,
+  그리고 팔괘의 심오한 철학에 뿌리를 둔 길입니다.
 
-    // Inner decorative elements
-    graphics.setStrokeStyle({ color: 0xffd700, width: 1, alpha: 0.7 });
-    for (let i = 0; i < 8; i++) {
-      const angle = (i * Math.PI) / 4;
-      const innerRadius = 80;
-      const outerRadius = 120;
-      const centerX = 300;
-      const centerY = 200;
+  각 괘는 자연의 힘과 인간 정신의 특정 측면을 나타냅니다.
+  건(乾)은 하늘의 창조적 힘을,
+  곤(坤)은 땅의 수용적 본질을 상징합니다.
+  감(坎)은 물의 위험한 흐름을,
+  리(離)는 불의 명료한 빛을 나타냅니다.
 
-      graphics.moveTo(
-        centerX + Math.cos(angle) * innerRadius,
-        centerY + Math.sin(angle) * innerRadius
-      );
-      graphics.lineTo(
-        centerX + Math.cos(angle) * outerRadius,
-        centerY + Math.sin(angle) * outerRadius
-      );
-    }
-    graphics.stroke();
-  }, []);
+  이러한 원리를 이해하고 신체와 정신에 통합함으로써,
+  흑괘 수련자는 내면의 잠재력을 발휘하고,
+  정밀함, 효율성, 그리고 무시무시한 힘으로 움직일 수 있습니다.
+
+  "상대가 움직이기 전에 그의 의도를 읽으십시오.
+  상대가 공격하기 전에 그의 중심을 부수십시오."
+
+  이것이 흑괘의 길입니다.
+  `;
+  // Removed unused KOREAN_COLORS and KoreanHeader if not used directly here.
+  // KOREAN_TEXT_STYLE is used by Text component by default if not overridden.
 
   return (
-    <pixiContainer x={x} y={y}>
-      <pixiGraphics draw={drawPhilosophyBackground} />
-
-      {/* Main title */}
-      <pixiText
+    <KoreanPixiContainer x={50} y={50} width={700} height={500}>
+      <Text
         text="무술 철학 (Martial Philosophy)"
-        x={300}
-        y={50}
-        anchor={{ x: 0.5, y: 0.5 }}
+        x={0}
+        y={10}
         style={{
           ...KOREAN_TEXT_STYLE,
-          fontSize: 24,
-          fill: 0xffd700,
+          fontSize: 28,
+          fill: KOREAN_COLORS.GOLD,
           fontWeight: "bold",
         }}
       />
-
-      {/* Philosophy content */}
-      <pixiText
-        text="팔괘의 조화 속에서 진정한 힘을 찾으라"
-        x={300}
-        y={120}
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          ...KOREAN_TEXT_STYLE,
-          fontSize: 18,
-          fill: 0xffffff,
-        }}
-      />
-
-      <pixiText
-        text="Find true power in the harmony of the Eight Trigrams"
-        x={300}
-        y={150}
-        anchor={{ x: 0.5, y: 0.5 }}
+      <Text
+        text={philosophyText}
+        x={10}
+        y={70}
         style={{
           ...KOREAN_TEXT_STYLE,
           fontSize: 16,
-          fill: 0xcccccc,
-          fontStyle: "italic",
+          fill: KOREAN_COLORS.WHITE,
+          wordWrap: true,
+          wordWrapWidth: 680,
+          lineHeight: 24,
         }}
       />
-
-      {/* Core principles */}
-      <pixiText
-        text="정심 (正心) - Righteous Heart"
-        x={150}
-        y={220}
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          ...KOREAN_TEXT_STYLE,
-          fontSize: 16,
-          fill: 0xffd700,
-        }}
-      />
-
-      <pixiText
-        text="균형 (均衡) - Balance"
-        x={450}
-        y={220}
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          ...KOREAN_TEXT_STYLE,
-          fontSize: 16,
-          fill: 0xffd700,
-        }}
-      />
-
-      <pixiText
-        text="조화 (調和) - Harmony"
-        x={150}
-        y={280}
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          ...KOREAN_TEXT_STYLE,
-          fontSize: 16,
-          fill: 0xffd700,
-        }}
-      />
-
-      <pixiText
-        text="정진 (精進) - Dedication"
-        x={450}
-        y={280}
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          ...KOREAN_TEXT_STYLE,
-          fontSize: 16,
-          fill: 0xffd700,
-        }}
-      />
-
-      {/* Bottom wisdom */}
-      <pixiText
-        text="수련자는 팔괘를 통해 자신의 내면과 우주의 진리를 탐구한다"
-        x={300}
-        y={340}
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          ...KOREAN_TEXT_STYLE,
-          fontSize: 14,
-          fill: 0xaaaaaa,
-        }}
-      />
-
-      {/* Interactive area to proceed - only if onNext is provided */}
-      {onNext && (
-        <pixiContainer
-          x={250}
-          y={380}
-          interactive={true}
-          cursor="pointer"
-          onPointerDown={onNext}
-        >
-          <pixiText
-            text="계속하려면 클릭하세요 (Click to continue)"
-            x={50}
-            y={0}
-            anchor={{ x: 0.5, y: 0.5 }}
-            style={{
-              ...KOREAN_TEXT_STYLE,
-              fontSize: 12,
-              fill: 0x888888,
-            }}
-          />
-        </pixiContainer>
-      )}
-    </pixiContainer>
+    </KoreanPixiContainer>
   );
 }
