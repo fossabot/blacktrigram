@@ -251,23 +251,32 @@ export class TransitionCalculator {
   ): number {
     let totalCost = 0;
 
+    // Fix: Define from and to stances properly for path calculation
+    let fromStance: TrigramStance | undefined;
+    let toStance: TrigramStance | undefined;
+
     // Fix: Validate path elements before using
     const validatedPath = path.filter(
       (stance): stance is TrigramStance =>
         stance !== undefined && TRIGRAM_DATA[stance] !== undefined
     );
 
-    if (validatedPath.length === 0) {
-      validatedPath.push(fromStance, toStance);
+    if (validatedPath.length < 2) {
+      return Infinity; // Path is invalid if fewer than 2 valid stances
     }
 
+    // Process each segment of the path
     for (let i = 0; i < validatedPath.length - 1; i++) {
-      const from = validatedPath[i];
-      const to = validatedPath[i + 1];
+      fromStance = validatedPath[i];
+      toStance = validatedPath[i + 1];
 
       // Fix: Ensure both stances are valid
-      if (from && to) {
-        const segmentMetrics = this.calculateTransition(from, to, factors);
+      if (fromStance && toStance) {
+        const segmentMetrics = this.calculateTransition(
+          fromStance,
+          toStance,
+          factors
+        );
         totalCost += segmentMetrics.staminaCost + segmentMetrics.kiCost;
       }
     }
