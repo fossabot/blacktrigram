@@ -21,11 +21,27 @@ vi.mock("@pixi/react", async () => {
       );
     },
     Container: ({ children, ...props }: any): ReactElement => {
+      // Fix: Handle onPointerDown properly in tests
+      const { onPointerDown, ...otherProps } = props;
+
+      const handleClick = () => {
+        if (onPointerDown) {
+          // Mock FederatedPointerEvent for tests
+          const mockEvent = {
+            preventDefault: vi.fn(),
+            stopPropagation: vi.fn(),
+            target: null,
+          };
+          onPointerDown(mockEvent);
+        }
+      };
+
       return React.createElement(
         "div",
         {
           "data-testid": "pixi-container",
-          ...props,
+          onClick: onPointerDown ? handleClick : undefined,
+          ...otherProps,
         },
         children
       );

@@ -731,9 +731,25 @@ export type GamePhase =
   | "intro"
   | "training"
   | "combat"
+  | "philosophy" // Add philosophy to GamePhase
   | "result"
   | "victory"
   | "defeat";
+
+// Add GameUIProps interface
+export interface GameUIProps {
+  readonly players: readonly [PlayerState, PlayerState]; // Change to readonly to match AppState
+  readonly gamePhase: GamePhase;
+  readonly onGamePhaseChange: (phase: GamePhase) => void;
+  readonly gameTime: number;
+  readonly currentRound: number;
+  readonly timeRemaining: number;
+  readonly onStanceChange: (playerIndex: number, stance: TrigramStance) => void;
+  readonly combatLog: readonly string[];
+  readonly onStartMatch: () => void;
+  readonly onResetMatch: () => void;
+  readonly onTogglePause: () => void;
+}
 
 // Combat result
 export interface CombatResult {

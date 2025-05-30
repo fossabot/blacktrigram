@@ -1,239 +1,244 @@
 import React from "react";
-// Import only what we need
-import {
-  PixiTextProps,
-  Text,
-  // Remove unused imports
-} from "./PixiComponents";
-import { KOREAN_FONT_FAMILY, KOREAN_COLORS } from "../../../types";
+import type { BasePixiProps } from "./PixiComponents";
+import { Text, Container, Graphics } from "./PixiComponents";
+import { KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../../types";
+import type { FederatedPointerEvent } from "pixi.js";
 
-// Korean text styles for martial arts UI
-export const KOREAN_TEXT_STYLES = {
-  header: {
-    fontFamily: "Noto Sans KR, Arial, sans-serif",
-    fontSize: 24,
-    fill: KOREAN_COLORS.GOLD,
-    fontWeight: "bold",
-    stroke: {
-      color: KOREAN_COLORS.BLACK,
-      width: 2,
-    },
-  },
-  body: {
-    fontFamily: "Noto Sans KR, Arial, sans-serif",
-    fontSize: 16,
-    fill: KOREAN_COLORS.WHITE,
-    align: "center",
-  },
-  technique: {
-    fontFamily: "Noto Sans KR, Arial, sans-serif",
-    fontSize: 18,
-    fill: KOREAN_COLORS.GOLD,
-    fontWeight: "bold",
-  },
-  damage: {
-    fontFamily: "Noto Sans KR, Arial, sans-serif",
-    fontSize: 20,
-    fill: KOREAN_COLORS.CRITICAL_RED,
-    fontWeight: "bold",
-    stroke: {
-      color: KOREAN_COLORS.WHITE,
-      width: 1,
-    },
-  },
-} as const;
-
-// Korean Text Component
-// Props for KoreanText, extending base PixiTextProps
-export interface KoreanTextProps extends PixiTextProps {
-  // No additional props specific to KoreanText yet, but can be added.
-  // Example: emphasis?: boolean;
-}
-
-// Default style for Korean text
-const DEFAULT_KOREAN_TEXT_STYLE = {
-  fontFamily: KOREAN_FONT_FAMILY, // Used KOREAN_FONT_FAMILY
-  fontSize: 18,
-  fill: KOREAN_COLORS.WHITE,
-  align: "left" as const,
-};
-
-export function KoreanText({
-  text,
-  style,
-  ...props
-}: KoreanTextProps): React.ReactElement {
-  const mergedStyle = {
-    ...DEFAULT_KOREAN_TEXT_STYLE,
-    ...style,
-  };
-
-  // Cast props to any to avoid TypeScript strictness with exactOptionalPropertyTypes
-  return <Text text={text} style={mergedStyle} {...(props as any)} />;
-}
-
-export interface KoreanHeaderProps {
+// Korean button props
+export interface KoreanButtonProps extends BasePixiProps {
   readonly text: string;
-  readonly x?: number; // Added x
-  readonly y?: number; // Added y
+  readonly onClick?: () => void;
+  readonly disabled?: boolean;
+  readonly variant?: "primary" | "secondary" | "accent";
   readonly size?: "small" | "medium" | "large";
 }
 
-export function KoreanHeader({
+// Korean text component props
+export interface KoreanTitleTextProps extends BasePixiProps {
+  readonly text: string;
+  readonly emphasis?: boolean;
+}
+
+export interface KoreanBodyTextProps extends BasePixiProps {
+  readonly text: string;
+  readonly muted?: boolean;
+}
+
+export interface KoreanHighlightTextProps extends BasePixiProps {
+  readonly text: string;
+  readonly type?: "warning" | "success" | "error" | "info";
+}
+
+// Korean button component
+export function KoreanButton({
   text,
-  x = 0,
-  y = 0,
+  onClick,
+  disabled = false,
+  variant = "primary",
   size = "medium",
-}: KoreanHeaderProps): React.ReactElement {
-  const fontSize = size === "large" ? 32 : size === "medium" ? 24 : 18;
-
-  return (
-    <KoreanText
-      text={text}
-      x={x} // Use prop x
-      y={y} // Use prop y
-      style={{
-        ...KOREAN_TEXT_STYLES.header,
-        fontSize,
-      }}
-    />
-  );
-}
-
-export interface KoreanTitleProps {
-  readonly text: string;
-  readonly x?: number;
-  readonly y?: number;
-  readonly size?: "large" | "xlarge";
-  readonly color?: string;
-}
-
-export function KoreanTitle({
-  text,
   x = 0,
   y = 0,
-  size = "large",
-  color = KOREAN_COLORS.GOLD,
-}: KoreanTitleProps): React.ReactElement {
-  const fontSize = size === "xlarge" ? 36 : 28;
+  ...props
+}: KoreanButtonProps): React.ReactElement {
+  const sizeConfig = {
+    small: { width: 120, height: 30, fontSize: 12 },
+    medium: { width: 160, height: 40, fontSize: 14 },
+    large: { width: 200, height: 50, fontSize: 16 },
+  };
 
-  return (
-    <KoreanText
-      text={text}
-      x={x}
-      y={y}
-      style={{
-        fontSize,
-        fill: color,
-        fontWeight: "bold",
-        stroke: {
-          color: KOREAN_COLORS.BLACK,
-          width: 3,
-        },
-      }}
-    />
-  );
-}
+  const config = sizeConfig[size];
+  const variantColors = {
+    primary: KOREAN_COLORS.GOLD,
+    secondary: KOREAN_COLORS.DOJANG_BLUE,
+    accent: KOREAN_COLORS.TRADITIONAL_RED,
+  };
 
-export interface KoreanSubtitleProps {
-  readonly text: string;
-  readonly x?: number;
-  readonly y?: number;
-  readonly color?: string;
-}
+  // Fix: Properly handle event handler - only pass when not disabled and onClick exists
+  const handlePointerDown = (_event: FederatedPointerEvent) => {
+    if (!disabled && onClick) {
+      onClick();
+    }
+  };
 
-export function KoreanSubtitle({
-  text,
-  x = 0,
-  y = 0,
-  color = KOREAN_COLORS.WHITE,
-}: KoreanSubtitleProps): React.ReactElement {
-  return (
-    <KoreanText
-      text={text}
-      x={x}
-      y={y}
-      style={{
-        fontSize: 20,
-        fill: color,
-        fontWeight: "normal",
-      }}
-    />
-  );
-}
+  // Fix: Create container props without undefined values
+  const containerProps: any = {
+    x,
+    y,
+    interactive: !disabled,
+    ...props,
+  };
 
-export interface KoreanInstructionProps {
-  readonly text: string;
-  readonly x?: number;
-  readonly y?: number;
-  readonly color?: string;
-}
-
-export function KoreanInstruction({
-  text,
-  x = 0,
-  y = 0,
-  color = KOREAN_COLORS.GRAY_LIGHT,
-}: KoreanInstructionProps): React.ReactElement {
-  return (
-    <KoreanText
-      text={text}
-      x={x}
-      y={y}
-      style={{
-        fontSize: 14,
-        fill: color,
-        fontStyle: "italic",
-      }}
-    />
-  );
-}
-
-export interface CombatFeedbackProps {
-  readonly text: string;
-  readonly x: number;
-  readonly y: number;
-  readonly damage?: number;
-  readonly isVitalPoint?: boolean;
-  readonly isCritical?: boolean;
-}
-
-export function CombatFeedback({
-  text,
-  x,
-  y,
-  damage = 0,
-  isVitalPoint = false,
-  isCritical = false,
-}: CombatFeedbackProps): React.ReactElement {
-  let colorValue: string = KOREAN_COLORS.WHITE; // Renamed to avoid conflict with color prop
-  let fontSize = 16;
-
-  if (isCritical) {
-    colorValue = KOREAN_COLORS.CRITICAL_RED;
-    fontSize = 20;
-  } else if (isVitalPoint) {
-    colorValue = KOREAN_COLORS.GOLD;
-    fontSize = 18;
-  } else if (damage > 20) {
-    colorValue = KOREAN_COLORS.DAMAGE_YELLOW;
-    fontSize = 17;
+  // Only add onPointerDown if we have an onClick handler and not disabled
+  if (!disabled && onClick) {
+    containerProps.onPointerDown = handlePointerDown;
   }
 
   return (
-    <KoreanText
+    <Container {...containerProps}>
+      <Graphics
+        draw={(g) => {
+          g.clear();
+
+          // Button background
+          g.setFillStyle({
+            color: disabled ? 0x444444 : variantColors[variant],
+            alpha: disabled ? 0.3 : 0.8,
+          });
+          g.rect(
+            -config.width / 2,
+            -config.height / 2,
+            config.width,
+            config.height
+          );
+          g.fill();
+
+          // Button border
+          g.setStrokeStyle({
+            color: disabled ? 0x666666 : 0xffffff,
+            width: 2,
+          });
+          g.rect(
+            -config.width / 2,
+            -config.height / 2,
+            config.width,
+            config.height
+          );
+          g.stroke();
+        }}
+      />
+
+      <Text
+        text={text}
+        anchor={{ x: 0.5, y: 0.5 }}
+        style={
+          {
+            fontSize: config.fontSize,
+            fontFamily: KOREAN_FONT_FAMILY,
+            fill: disabled ? KOREAN_COLORS.GRAY_MEDIUM : KOREAN_COLORS.WHITE,
+            fontWeight: "bold",
+            ...(disabled
+              ? {}
+              : {
+                  stroke: {
+                    color: KOREAN_COLORS.BLACK,
+                    width: 1,
+                  },
+                }),
+          } as any
+        }
+      />
+    </Container>
+  );
+}
+
+// Korean title text
+export function KoreanTitleText({
+  text,
+  emphasis = false,
+  x = 0,
+  y = 0,
+  ...props
+}: KoreanTitleTextProps): React.ReactElement {
+  // Fix: Create style object without undefined values
+  const style: any = {
+    fontSize: emphasis ? 24 : 20,
+    fontFamily: KOREAN_FONT_FAMILY,
+    fill: KOREAN_COLORS.GOLD,
+    fontWeight: "bold",
+  };
+
+  if (emphasis) {
+    style.stroke = {
+      color: KOREAN_COLORS.BLACK,
+      width: 2,
+    };
+  }
+
+  return <Text text={text} x={x} y={y} style={style} {...props} />;
+}
+
+// Korean body text
+export function KoreanBodyText({
+  text,
+  muted = false,
+  x = 0,
+  y = 0,
+  ...props
+}: KoreanBodyTextProps): React.ReactElement {
+  // Fix: Create style object without undefined values
+  const style: any = {
+    fontSize: 14,
+    fill: muted ? KOREAN_COLORS.GRAY_LIGHT : KOREAN_COLORS.WHITE,
+    fontWeight: muted ? "normal" : "bold",
+  };
+
+  if (!muted) {
+    style.stroke = {
+      color: KOREAN_COLORS.BLACK,
+      width: 1,
+    };
+  }
+
+  return <Text text={text} x={x} y={y} style={style} {...props} />;
+}
+
+// Korean highlight text
+export function KoreanHighlightText({
+  text,
+  type = "info",
+  x = 0,
+  y = 0,
+  ...props
+}: KoreanHighlightTextProps): React.ReactElement {
+  const typeColors = {
+    warning: KOREAN_COLORS.Orange,
+    success: KOREAN_COLORS.Green,
+    error: KOREAN_COLORS.CRITICAL_RED,
+    info: KOREAN_COLORS.CYAN,
+  };
+
+  return (
+    <Text
       text={text}
       x={x}
       y={y}
       style={{
-        fontSize,
-        fill: colorValue,
-        fontWeight: "bold",
-        stroke: {
-          color: KOREAN_COLORS.BLACK,
-          width: 1,
-        },
+        fontSize: 12,
+        fill: typeColors[type],
+        fontStyle: type === "warning" ? "italic" : "normal",
       }}
+      {...props}
     />
   );
+}
+
+// Korean combat status display
+export interface KoreanCombatStatusProps extends BasePixiProps {
+  readonly status: string;
+  readonly critical?: boolean;
+}
+
+export function KoreanCombatStatus({
+  status,
+  critical = false,
+  x = 0,
+  y = 0,
+  ...props
+}: KoreanCombatStatusProps): React.ReactElement {
+  // Fix: Create style object without undefined values
+  const style: any = {
+    fontSize: 16,
+    fontFamily: KOREAN_FONT_FAMILY,
+    fill: critical ? KOREAN_COLORS.CRITICAL_RED : KOREAN_COLORS.WHITE,
+    fontWeight: "bold",
+  };
+
+  if (critical) {
+    style.stroke = {
+      color: KOREAN_COLORS.BLACK,
+      width: 2,
+    };
+  }
+
+  return <Text text={status} x={x} y={y} style={style} {...props} />;
 }

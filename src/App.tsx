@@ -1,180 +1,287 @@
-import { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { Stage } from "@pixi/react";
 import { IntroScreen } from "./components/intro/IntroScreen";
-import { TrainingScreen } from "./components/training";
-import { GameEngine } from "./components/game/GameEngine";
-import {
-  createPlayerState,
-  KOREAN_COLORS,
-  type GamePhase,
-  type PlayerState,
-} from "./types";
+import { GameUI } from "./components/game/GameUI";
+import { TrainingScreen } from "./components/training/TrainingScreen";
+import { PhilosophySection } from "./components/intro/components/PhilosophySection";
+import type { GamePhase, PlayerState, TrigramStance, Position } from "./types";
+import { createPlayerState } from "./types";
+import "./App.css";
 
+// Define AppState interface
 interface AppState {
-  readonly mode: GamePhase;
-  readonly isAudioInitialized: boolean;
-  readonly showDebugInfo: boolean;
+  readonly gamePhase: GamePhase;
+  readonly players: [PlayerState, PlayerState]; // Mutable array for GameUI compatibility
+  readonly gameTime: number;
+  readonly currentRound: number;
+  readonly timeRemaining: number;
+  readonly combatLog: string[]; // Mutable array for easier updates
+  readonly isPaused: boolean;
 }
 
-const CANVAS_WIDTH = 800;
-const CANVAS_HEIGHT = 600;
+// Initial player positions
+const PLAYER_1_START: Position = { x: 200, y: 300 };
+const PLAYER_2_START: Position = { x: 600, y: 300 };
 
-export default function App(): React.JSX.Element {
+export function App(): React.ReactElement {
+  // Main application state
   const [appState, setAppState] = useState<AppState>({
-    mode: "intro",
-    isAudioInitialized: false,
-    showDebugInfo: false,
+    gamePhase: "intro",
+    players: [
+      createPlayerState("player1", PLAYER_1_START, "geon"),
+      createPlayerState("player2", PLAYER_2_START, "tae"),
+    ],
+    gameTime: 0,
+    currentRound: 1,
+    timeRemaining: 120, // 2 minutes per round
+    combatLog: ["Welcome to Black Trigram Martial Arts!"],
+    isPaused: false,
   });
 
-  // Initialize audio on first user interaction
+  // Game phase transitions
+  const handleGamePhaseChange = useCallback((newPhase: GamePhase) => {
+    setAppState((prev: AppState) => ({
+      ...prev,
+      gamePhase: newPhase,
+      combatLog: [...prev.combatLog, `Phase changed to: ${newPhase}`],
+    }));
+  }, []);
+
+  // Handle game start from intro
+  const handleGameStart = useCallback((selectedPhase: GamePhase) => {
+    setAppState((prev: AppState) => ({
+      ...prev,
+      gamePhase: selectedPhase,
+      combatLog: [...prev.combatLog, `Starting ${selectedPhase} mode...`],
+    }));
+  }, []);
+
+  // Handle game exit/reset
+  const handleGameExit = useCallback(() => {
+    setAppState((prev: AppState) => ({
+      ...prev,
+      gamePhase: "intro",
+      combatLog: [...prev.combatLog, "Returning to main menu..."],
+    }));
+  }, []);
+
+  // Stance change handler
+  const handleStanceChange = useCallback(
+    (playerIndex: number, newStance: TrigramStance) => {
+      if (playerIndex < 0 || playerIndex > 1) return;
+
+      setAppState((prev: AppState) => {
+        const updatedPlayers: [PlayerState, PlayerState] = [
+          ...prev.players,
+        ] as [PlayerState, PlayerState];
+
+        // Properly update the player while maintaining all required properties
+        const currentPlayer = updatedPlayers[playerIndex];
+        updatedPlayers[playerIndex] = {
+          ...currentPlayer,
+          stance: newStance,
+          lastStanceChangeTime: Date.now(),
+        } as PlayerState;
+
+        return {
+          ...prev,
+          players: updatedPlayers,
+          combatLog: [
+            ...prev.combatLog,
+            `Player ${playerIndex + 1} changed stance to ${newStance}`,
+          ],
+        };
+      });
+    },
+    []
+  );
+
+  // Match control handlers
+  const handleStartMatch = useCallback(() => {
+    setAppState((prev: AppState) => ({
+      ...prev,
+      gamePhase: "combat",
+      timeRemaining: 120,
+      combatLog: [...prev.combatLog, "Combat match started!"],
+    }));
+  }, []);
+
+  const handleResetMatch = useCallback(() => {
+    setAppState((prev: AppState) => ({
+      ...prev,
+      players: [
+        createPlayerState("player1", PLAYER_1_START, "geon"),
+        createPlayerState("player2", PLAYER_2_START, "tae"),
+      ],
+      gameTime: 0,
+      timeRemaining: 120,
+      combatLog: ["Match reset. Ready for new combat!"],
+    }));
+  }, []);
+
+  const handleTogglePause = useCallback(() => {
+    setAppState((prev: AppState) => ({
+      ...prev,
+      isPaused: !prev.isPaused,
+      combatLog: [
+        ...prev.combatLog,
+        prev.isPaused ? "Game resumed" : "Game paused",
+      ],
+    }));
+  }, []);
+
+  // Game timer effect
   useEffect(() => {
-    const handleFirstInteraction = () => {
-      setAppState((prev) => ({ ...prev, isAudioInitialized: true }));
-      document.removeEventListener("click", handleFirstInteraction);
-      document.removeEventListener("keydown", handleFirstInteraction);
-    };
+    if (
+      appState.gamePhase === "combat" &&
+      !appState.isPaused &&
+      appState.timeRemaining > 0
+    ) {
+      const timer = setInterval(() => {
+        setAppState((prev: AppState) => ({
+          ...prev,
+          gameTime: prev.gameTime + 1,
+          timeRemaining: Math.max(0, prev.timeRemaining - 1),
+        }));
+      }, 1000);
 
-    document.addEventListener("click", handleFirstInteraction);
-    document.addEventListener("keydown", handleFirstInteraction);
+      return () => clearInterval(timer);
+    }
+  }, [appState.gamePhase, appState.isPaused, appState.timeRemaining]);
 
-    return () => {
-      document.removeEventListener("click", handleFirstInteraction);
-      document.removeEventListener("keydown", handleFirstInteraction);
-    };
-  }, []);
+  // Handle philosophy section navigation
+  const handlePhilosophyNext = useCallback(() => {
+    handleGamePhaseChange("training");
+  }, [handleGamePhaseChange]);
 
-  // Handle mode transitions
-  const handleModeChange = useCallback((newMode: GamePhase) => {
-    setAppState((prev) => ({ ...prev, mode: newMode }));
-  }, []);
+  const handlePhilosophyPrev = useCallback(() => {
+    handleGamePhaseChange("intro");
+  }, [handleGamePhaseChange]);
 
-  const handleStartGame = useCallback(() => {
-    handleModeChange("combat");
-  }, [handleModeChange]);
+  // Render appropriate screen based on game phase
+  const renderCurrentScreen = useCallback(() => {
+    switch (appState.gamePhase) {
+      case "intro":
+        return (
+          <IntroScreen onGameStart={handleGameStart} onExit={handleGameExit} />
+        );
 
-  const handleExitToIntro = useCallback(() => {
-    handleModeChange("intro");
-  }, [handleModeChange]);
+      case "training":
+        return <TrainingScreen onGamePhaseChange={handleGamePhaseChange} />;
 
-  // Toggle debug information
-  const toggleDebugInfo = useCallback(() => {
-    setAppState((prev) => ({ ...prev, showDebugInfo: !prev.showDebugInfo }));
-  }, []);
+      case "philosophy":
+        return (
+          <PhilosophySection
+            onNext={handlePhilosophyNext}
+            onPrev={handlePhilosophyPrev}
+          />
+        );
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key === "F1") {
-        toggleDebugInfo();
-      }
-      if (event.key === "Escape" && appState.mode !== "intro") {
-        handleExitToIntro();
-      }
-    };
+      case "combat":
+      case "result":
+      case "victory":
+      case "defeat":
+        return (
+          <GameUI
+            players={appState.players}
+            gamePhase={appState.gamePhase}
+            onGamePhaseChange={handleGamePhaseChange}
+            gameTime={appState.gameTime}
+            currentRound={appState.currentRound}
+            timeRemaining={appState.timeRemaining}
+            onStanceChange={handleStanceChange}
+            combatLog={appState.combatLog}
+            onStartMatch={handleStartMatch}
+            onResetMatch={handleResetMatch}
+            onTogglePause={handleTogglePause}
+          />
+        );
 
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [appState.mode, handleExitToIntro, toggleDebugInfo]);
-
-  // Create mock players for combat mode
-  const [players] = useState<[PlayerState, PlayerState]>([
-    createPlayerState("player1", { x: 200, y: 400 }),
-    createPlayerState("player2", { x: 600, y: 400 }),
+      default:
+        return (
+          <IntroScreen onGameStart={handleGameStart} onExit={handleGameExit} />
+        );
+    }
+  }, [
+    appState.gamePhase,
+    appState.players,
+    appState.gameTime,
+    appState.currentRound,
+    appState.timeRemaining,
+    appState.combatLog,
+    handleGameStart,
+    handleGameExit,
+    handleGamePhaseChange,
+    handleStanceChange,
+    handleStartMatch,
+    handleResetMatch,
+    handleTogglePause,
+    handlePhilosophyNext,
+    handlePhilosophyPrev,
   ]);
 
   return (
-    <div
-      style={{
-        width: "100vw",
-        height: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: KOREAN_COLORS.BLACK,
-        fontFamily: "Noto Sans KR, Arial, sans-serif",
-      }}
-    >
-      <Stage
-        width={CANVAS_WIDTH}
-        height={CANVAS_HEIGHT}
-        options={{
-          backgroundColor: KOREAN_COLORS.BLACK,
-          antialias: true,
-          autoDensity: true,
-          resolution: window.devicePixelRatio || 1,
-        }}
-      >
-        {/* Intro Screen */}
-        {appState.mode === "intro" && (
-          <IntroScreen onStartGame={handleStartGame} />
-        )}
+    <div className="app" data-testid="black-trigram-app">
+      {/* Korean Martial Arts Title */}
+      <header className="app-header">
+        <h1 className="app-title">
+          <span className="korean-title">흑괘 무술 도장</span>
+          <span className="english-title">Black Trigram Martial Arts</span>
+        </h1>
+        <div className="app-status">
+          <span className="phase-indicator">Phase: {appState.gamePhase}</span>
+          {appState.gamePhase === "combat" && (
+            <span className="time-indicator">
+              Time: {Math.floor(appState.timeRemaining / 60)}:
+              {(appState.timeRemaining % 60).toString().padStart(2, "0")}
+            </span>
+          )}
+        </div>
+      </header>
 
-        {/* Training Mode */}
-        {appState.mode === "training" && (
-          <TrainingScreen
-            playerState={players[0]}
-            onBack={() => setAppState((prev) => ({ ...prev, mode: "intro" }))}
-          />
-        )}
-
-        {/* Combat Mode */}
-        {appState.mode === "combat" && (
-          <GameEngine
-            players={players}
-            gamePhase={appState.mode}
-            onGamePhaseChange={handleModeChange}
-            onPlayersChange={() => {}}
-          />
-        )}
-      </Stage>
-
-      {/* Debug Information Overlay */}
-      {appState.showDebugInfo && (
-        <div
-          style={{
-            position: "absolute",
-            top: 10,
-            left: 10,
-            backgroundColor: "rgba(0, 0, 0, 0.8)",
-            color: KOREAN_COLORS.WHITE,
-            padding: "10px",
-            fontFamily: "monospace",
-            fontSize: "12px",
-            borderRadius: "5px",
-            zIndex: 1000,
+      {/* Main Game Container */}
+      <main className="app-main">
+        <Stage
+          width={1200}
+          height={800}
+          options={{
+            backgroundColor: 0x000a12,
+            antialias: true,
+            resolution: window.devicePixelRatio || 1,
+            autoDensity: true,
           }}
         >
-          <div>흑괘 무술 도장 (Black Trigram Martial Arts)</div>
-          <div>Mode: {appState.mode}</div>
-          <div>Audio: {appState.isAudioInitialized ? "✓" : "✗"}</div>
-          <div>
-            Canvas: {CANVAS_WIDTH}x{CANVAS_HEIGHT}
-          </div>
-          <div>FPS: {Math.round(60)} (estimated)</div>
-          <div>F1: Toggle Debug | ESC: Exit to Menu</div>
-        </div>
-      )}
+          {renderCurrentScreen()}
+        </Stage>
+      </main>
 
-      {/* Audio initialization prompt */}
-      {!appState.isAudioInitialized && (
-        <div
-          style={{
-            position: "absolute",
-            bottom: 20,
-            left: "50%",
-            transform: "translateX(-50%)",
-            backgroundColor: "rgba(255, 215, 0, 0.9)",
-            color: KOREAN_COLORS.BLACK,
-            padding: "10px 20px",
-            borderRadius: "5px",
-            fontWeight: "bold",
-            fontSize: "14px",
-            zIndex: 1000,
-          }}
-        >
-          클릭하여 오디오 활성화 (Click to enable audio)
-        </div>
+      {/* Debug Info (development only) */}
+      {process.env.NODE_ENV === "development" && (
+        <footer className="app-debug">
+          <details>
+            <summary>Debug Info</summary>
+            <pre>
+              {JSON.stringify(
+                {
+                  gamePhase: appState.gamePhase,
+                  gameTime: appState.gameTime,
+                  timeRemaining: appState.timeRemaining,
+                  playerStances: appState.players.map((p) => ({
+                    id: p.playerId,
+                    stance: p.stance,
+                    health: p.health,
+                    ki: p.ki,
+                  })),
+                },
+                null,
+                2
+              )}
+            </pre>
+          </details>
+        </footer>
       )}
     </div>
   );
 }
+
+export default App;

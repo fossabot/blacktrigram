@@ -6,15 +6,13 @@ import { KOREAN_COLORS } from "../../types";
 export interface DojangBackgroundProps {
   readonly width: number;
   readonly height: number;
-  readonly ambientIntensity?: number;
-  readonly showGrid?: boolean;
+  readonly style?: "traditional" | "modern" | "cyberpunk";
 }
 
 export function DojangBackground({
   width,
   height,
-  ambientIntensity = 0.3,
-  showGrid = true,
+  style = "traditional",
 }: DojangBackgroundProps): React.ReactElement {
   const drawBackground = useCallback(
     (g: PixiGraphics) => {
@@ -67,7 +65,7 @@ export function DojangBackground({
       g.stroke();
 
       // Grid lines for positioning reference
-      if (showGrid) {
+      if (style === "modern") {
         g.setStrokeStyle({
           color: KOREAN_COLORS.GRAY_MEDIUM,
           width: 1,
@@ -93,7 +91,7 @@ export function DojangBackground({
       const lightSteps = 10;
 
       for (let i = 0; i < lightSteps; i++) {
-        const alpha = ambientIntensity * (1 - i / lightSteps) * 0.1;
+        const alpha = (1 - i / lightSteps) * 0.1;
         const radius = lightRadius * (1 - i / lightSteps);
 
         g.setFillStyle({
@@ -136,7 +134,7 @@ export function DojangBackground({
       g.lineTo(width - 20, height - 20 - cornerSize);
       g.stroke();
     },
-    [width, height, ambientIntensity, showGrid]
+    [width, height, style]
   );
 
   return (

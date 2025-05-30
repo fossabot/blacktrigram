@@ -2,54 +2,48 @@
 
 // Base UI Components - Korean Martial Arts Theme
 export {
-  Stage,
   Container,
   Graphics,
   Text,
   Sprite,
-  useTick,
   useApp,
-  KoreanPixiContainer,
-  KOREAN_TEXT_STYLE,
-  KOREAN_COLORS, // Now properly exported from PixiComponents
-} from "./PixiComponents";
-
-export {
+  KoreanContainer,
   KoreanText,
   KoreanHeader,
-  KoreanTitle,
-  KoreanSubtitle,
   KoreanInstruction,
-  CombatFeedback,
-  KOREAN_TEXT_STYLES,
+  KoreanPhilosophy,
+  KoreanStatus,
+} from "./PixiComponents";
+
+// Re-export Korean-specific components
+export {
+  KoreanButton,
+  KoreanTitleText,
+  KoreanBodyText,
+  KoreanCombatStatus,
 } from "./KoreanPixiComponents";
 
 // Base components
 export { BaseButton } from "./BaseButton";
-export { BackgroundGrid } from "./BackgroundGrid";
+export type { BaseButtonProps } from "./BaseButton";
 
-// Korean text utilities
-export {
-  isKoreanText,
-  formatKoreanTechniqueName,
-  KOREAN_MARTIAL_TERMS,
-} from "./KoreanText";
-
-// Export types
+// Re-export types for convenience
 export type {
   BasePixiProps,
-  PixiContainerProps,
-  PixiGraphicsProps,
-  PixiTextProps,
-  PixiSpriteProps,
-  KoreanPixiContainerProps,
+  KoreanContainerProps,
+  KoreanTextProps,
+  KoreanHeaderProps,
+  KoreanInstructionProps,
+  KoreanPhilosophyProps,
+  KoreanStatusProps,
 } from "./PixiComponents";
 
 export type {
-  KoreanTextProps,
-  KoreanHeaderProps,
-  KoreanTitleProps,
-  KoreanSubtitleProps,
-  KoreanInstructionProps,
-  CombatFeedbackProps,
+  KoreanButtonProps,
+  KoreanTitleTextProps,
+  KoreanBodyTextProps,
+  KoreanCombatStatusProps,
 } from "./KoreanPixiComponents";
+
+// Export common Korean styles and colors from types
+export { KOREAN_FONT_FAMILY } from "../../../types";

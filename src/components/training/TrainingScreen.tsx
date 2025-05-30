@@ -1,313 +1,503 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { Container, Text, Graphics } from "@pixi/react";
-import type { Graphics as PixiGraphics } from "pixi.js";
-import {
+import { Stage } from "@pixi/react";
+import { KoreanContainer, KoreanText } from "../ui/base";
+import { BaseButton } from "../ui/base/BaseButton";
+import { TrigramWheel } from "../ui/TrigramWheel";
+import { ProgressTracker } from "../ui/ProgressTracker";
+import { KoreanHeader } from "../ui/KoreanHeader";
+import { DojangBackground } from "../game/DojangBackground";
+import { Player } from "../game/Player";
+import type {
+  GamePhase,
   TrigramStance,
   PlayerState,
   TrainingProgress,
-  KOREAN_COLORS,
-  TRIGRAM_STANCES_ORDER,
-  TRIGRAM_DATA,
+  KoreanTechnique,
 } from "../../types";
-import { BaseButton } from "../ui/base/BaseButton";
+import { TRIGRAM_DATA, KOREAN_COLORS, createPlayerState } from "../../types";
 import { useAudio } from "../../audio/AudioManager";
 
-interface TrainingScreenProps {
-  readonly playerState: PlayerState;
-  readonly onBack: () => void;
+export interface TrainingScreenProps {
+  readonly onGamePhaseChange: (phase: GamePhase) => void;
 }
 
-const trainingTips = [
-  { korean: "좋은 시작입니다!", english: "Good start!" },
-  { korean: "자세를 낮추세요.", english: "Lower your stance." },
-  { korean: "더욱 강하게 치세요!", english: "Strike harder!" },
-  { korean: "정확성을 높이세요.", english: "Increase your accuracy." },
-  { korean: "기술을 연마하세요.", english: "Refine your technique." },
-];
+interface TrainingSession {
+  readonly stance: TrigramStance;
+  readonly technique: KoreanTechnique;
+  readonly targetHits: number;
+  readonly successfulHits: number;
+  readonly accuracy: number;
+  readonly startTime: number;
+}
 
 export function TrainingScreen({
-  onBack,
-}: TrainingScreenProps): React.JSX.Element {
+  onGamePhaseChange,
+}: TrainingScreenProps): React.ReactElement {
+  // Training state
+  const [currentStance, setCurrentStance] = useState<TrigramStance>("geon");
+  const [trainingMode, setTrainingMode] = useState<
+    "basics" | "techniques" | "combinations"
+  >("basics");
+  const [playerState, setPlayerState] = useState<PlayerState>(() =>
+    createPlayerState("trainee", { x: 200, y: 300 }, "geon")
+  );
+
+  // Training progress tracking
   const [trainingProgress, setTrainingProgress] = useState<
     Record<TrigramStance, TrainingProgress>
-  >(() => {
-    return TRIGRAM_STANCES_ORDER.reduce((acc, stance) => {
-      acc[stance] = { practiceCount: 0, mastery: 0 };
-      return acc;
-    }, {} as Record<TrigramStance, TrainingProgress>);
-  });
+  >(() =>
+    Object.keys(TRIGRAM_DATA).reduce(
+      (acc, stance) => ({
+        ...acc,
+        [stance as TrigramStance]: { practiceCount: 0, mastery: 0 },
+      }),
+      {} as Record<TrigramStance, TrainingProgress>
+    )
+  );
 
-  const [currentTip, setCurrentTip] = useState<number>(0);
-  const [selectedStance, setSelectedStance] = useState<TrigramStance>("geon");
+  const [currentSession, setCurrentSession] = useState<TrainingSession | null>(
+    null
+  );
+  const [showInstructions, setShowInstructions] = useState<boolean>(true);
+
   const audio = useAudio();
 
-  const handleStancePractice = useCallback(
+  // Handle stance changes with audio feedback
+  const handleStanceChange = useCallback(
     (stance: TrigramStance) => {
-      setTrainingProgress((prev: Record<TrigramStance, TrainingProgress>) => {
-        const current = prev[stance];
-        const newPracticeCount = current.practiceCount + 1;
-        const newMastery = Math.min(100, current.mastery + 2);
+      setCurrentStance(stance);
+      setPlayerState((prev) => ({ ...prev, stance }));
 
-        return {
-          ...prev,
-          [stance]: {
-            practiceCount: newPracticeCount,
-            mastery: newMastery,
-          },
-        };
-      });
+      // Update training progress
+      setTrainingProgress((prev) => ({
+        ...prev,
+        [stance]: {
+          ...prev[stance],
+          practiceCount: prev[stance].practiceCount + 1,
+          mastery: Math.min(1.0, prev[stance].mastery + 0.05),
+        },
+      }));
 
-      setCurrentTip((prev: number) => (prev + 1) % trainingTips.length);
-
-      if (audio.playSFX) {
-        audio.playSFX("attack_light");
+      // Audio feedback for stance change
+      if (audio.playStanceChangeSound) {
+        audio.playStanceChangeSound();
       }
     },
     [audio]
   );
 
-  const handleKeyDown = useCallback(
-    (event: KeyboardEvent) => {
-      const key = event.key;
-      const keyIndex = parseInt(key, 10);
+  // Start technique practice session - fix undefined stance issue
+  const startTechniqueSession = useCallback((stance: TrigramStance) => {
+    const stanceData = TRIGRAM_DATA[stance];
+    if (!stanceData?.technique) {
+      console.warn(`No technique found for stance: ${stance}`);
+      return;
+    }
 
-      if (keyIndex >= 1 && keyIndex <= 8) {
-        const targetStance = TRIGRAM_STANCES_ORDER[keyIndex - 1];
-        if (targetStance) {
-          setSelectedStance(targetStance);
-          handleStancePractice(targetStance);
-        }
-      }
-    },
-    [handleStancePractice]
-  );
+    const technique = stanceData.technique;
+    setCurrentSession({
+      stance,
+      technique,
+      targetHits: 10,
+      successfulHits: 0,
+      accuracy: 0,
+      startTime: Date.now(),
+    });
+  }, []);
 
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [handleKeyDown]);
+  // Practice technique execution
+  const executeTechnique = useCallback(() => {
+    if (!currentSession) return;
 
-  const handleStartTraining = () => {
-    setTrainingProgress((prev: Record<TrigramStance, TrainingProgress>) => {
-      const newProgress = { ...prev };
-      Object.keys(newProgress).forEach((key) => {
-        const stanceKey = key as TrigramStance;
-        newProgress[stanceKey] = { practiceCount: 0, mastery: 0 };
-      });
-      return newProgress;
+    const accuracy = 0.7 + Math.random() * 0.3; // Simulate practice accuracy
+    const isSuccessful = accuracy > 0.6;
+
+    if (isSuccessful && audio.playAttackSound) {
+      audio.playAttackSound(currentSession.technique.damage);
+    }
+
+    setCurrentSession((prev) => {
+      if (!prev) return null;
+
+      const successfulHits = isSuccessful
+        ? prev.successfulHits + 1
+        : prev.successfulHits;
+      const totalAttempts = prev.successfulHits + 1;
+
+      return {
+        ...prev,
+        successfulHits,
+        accuracy: successfulHits / totalAttempts,
+      };
     });
 
-    if (audio.playSFX) {
-      audio.playSFX("match_start");
+    // Complete session if target reached
+    if (
+      currentSession.successfulHits + (isSuccessful ? 1 : 0) >=
+      currentSession.targetHits
+    ) {
+      setCurrentSession(null);
+      setTrainingProgress((prev) => ({
+        ...prev,
+        [currentSession.stance]: {
+          ...prev[currentSession.stance],
+          mastery: Math.min(1.0, prev[currentSession.stance].mastery + 0.1),
+        },
+      }));
     }
-  };
+  }, [currentSession, audio]);
 
-  const drawBackground = useCallback((g: PixiGraphics) => {
-    g.clear();
-    g.setFillStyle({ color: KOREAN_COLORS.BLACK });
-    g.rect(0, 0, window.innerWidth, window.innerHeight);
-    g.fill();
-  }, []);
+  // Keyboard controls for stance changes
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      const key = parseInt(event.key);
+      if (key >= 1 && key <= 8) {
+        const stances: TrigramStance[] = [
+          "geon",
+          "tae",
+          "li",
+          "jin",
+          "son",
+          "gam",
+          "gan",
+          "gon",
+        ];
+        const selectedStance = stances[key - 1];
+        if (selectedStance) {
+          handleStanceChange(selectedStance);
+        }
+      } else if (event.code === "Space") {
+        event.preventDefault();
+        if (currentSession) {
+          executeTechnique();
+        } else {
+          startTechniqueSession(currentStance);
+        }
+      } else if (event.code === "Escape") {
+        onGamePhaseChange("intro");
+      }
+    };
 
-  const drawStanceIndicator = useCallback((g: PixiGraphics) => {
-    g.clear();
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [
+    currentStance,
+    currentSession,
+    handleStanceChange,
+    executeTechnique,
+    startTechniqueSession,
+    onGamePhaseChange,
+  ]);
 
-    const radius = 60;
-    g.setStrokeStyle({ color: KOREAN_COLORS.CYAN, width: 3, alpha: 0.6 });
-    g.circle(0, 0, radius);
-    g.stroke();
+  const renderTrainingModeSelector = (): React.ReactElement => (
+    <KoreanContainer koreanTheme={true} traditionalBorder={true} x={50} y={50}>
+      <KoreanText
+        koreanText="수련 방식 (Training Mode)"
+        size={18}
+        weight="bold"
+        x={0}
+        y={-20}
+        anchor={{ x: 0.5, y: 0.5 }}
+      />
 
-    g.setFillStyle({ color: KOREAN_COLORS.GOLD, alpha: 0.3 });
-    g.circle(0, 0, radius);
-    g.fill();
-  }, []);
+      {(["basics", "techniques", "combinations"] as const).map(
+        (mode, index) => {
+          const modeLabels = {
+            basics: { korean: "기본기", english: "Basics" },
+            techniques: { korean: "기술", english: "Techniques" },
+            combinations: { korean: "연계기", english: "Combinations" },
+          };
 
-  const totalMastery = Object.values(trainingProgress).reduce(
-    (sum: number, progress: TrainingProgress) => sum + progress.mastery,
-    0
+          return (
+            <BaseButton
+              key={mode}
+              label={`${modeLabels[mode].korean} (${modeLabels[mode].english})`}
+              x={0}
+              y={index * 50 + 10}
+              width={200}
+              height={40}
+              onClick={() => setTrainingMode(mode)}
+              variant={trainingMode === mode ? "primary" : "secondary"}
+              testId={`training-mode-${mode}`}
+            />
+          );
+        }
+      )}
+    </KoreanContainer>
   );
 
-  return (
-    <Container>
-      <Graphics draw={drawBackground} />
+  const renderCurrentTechnique = (): React.ReactElement => {
+    const technique = TRIGRAM_DATA[currentStance]?.technique;
 
-      <Text
-        text="수련 모드 (Training Mode)"
-        anchor={{ x: 0.5, y: 0.5 }}
-        x={window.innerWidth / 2}
-        y={50}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 32,
-          fill: KOREAN_COLORS.GOLD,
-          fontWeight: "bold",
-        }}
-      />
-
-      <Text
-        text={`현재 자세: ${
-          TRIGRAM_DATA[selectedStance].koreanName
-        } (${selectedStance.toUpperCase()})`}
-        anchor={{ x: 0.5, y: 0.5 }}
-        x={window.innerWidth / 2}
-        y={100}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 24,
-          fill: KOREAN_COLORS.WHITE,
-        }}
-      />
-
-      <Container y={150}>
-        {TRIGRAM_STANCES_ORDER.map((stance, index) => (
-          <Text
-            key={stance}
-            text={`${index + 1}. ${TRIGRAM_DATA[stance].koreanName}`}
-            x={(index % 4) * 200}
-            y={Math.floor(index / 4) * 30}
-            style={{
-              fontFamily: "Noto Sans KR",
-              fontSize: 16,
-              fill: KOREAN_COLORS.WHITE,
-            }}
-            interactive={true}
-            onClick={() => {
-              setSelectedStance(stance);
-              handleStancePractice(stance);
-            }}
+    if (!technique) {
+      return (
+        <KoreanContainer
+          koreanTheme={true}
+          traditionalBorder={true}
+          x={300}
+          y={50}
+        >
+          <KoreanText
+            koreanText="기술 정보 없음 (No Technique Data)"
+            size={16}
+            weight="bold"
+            color={KOREAN_COLORS.GRAY_MEDIUM}
+            x={0}
+            y={10}
+            anchor={{ x: 0.5, y: 0.5 }}
           />
-        ))}
-      </Container>
+        </KoreanContainer>
+      );
+    }
 
-      <Container y={250}>
-        <Text
-          text="훈련 진행도 (Training Progress)"
+    return (
+      <KoreanContainer
+        koreanTheme={true}
+        traditionalBorder={true}
+        x={300}
+        y={50}
+      >
+        <KoreanText
+          koreanText="현재 기술 (Current Technique)"
+          size={16}
+          weight="bold"
+          x={0}
+          y={-20}
           anchor={{ x: 0.5, y: 0.5 }}
-          x={window.innerWidth / 2}
-          y={0}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 20,
-            fill: KOREAN_COLORS.GOLD,
-            fontWeight: "bold",
-          }}
         />
-        <Text
-          text={`연습 횟수: ${trainingProgress[selectedStance].practiceCount}`}
-          anchor={{ x: 0.5, y: 0.5 }}
-          x={window.innerWidth / 2}
-          y={30}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 16,
-            fill: KOREAN_COLORS.CYAN,
-          }}
-        />
-        <Text
-          text={`숙련도: ${trainingProgress[selectedStance].mastery}%`}
-          anchor={{ x: 0.5, y: 0.5 }}
-          x={window.innerWidth / 2}
-          y={60}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 16,
-            fill: KOREAN_COLORS.GOLD,
-          }}
-        />
-      </Container>
 
-      <Container y={350}>
-        <Text
-          text={trainingTips[currentTip]?.korean || ""}
-          anchor={{ x: 0.5, y: 0.5 }}
-          x={window.innerWidth / 2}
-          y={0}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 18,
-            fill: KOREAN_COLORS.CYAN,
-            fontStyle: "italic",
-          }}
-        />
-        <Text
-          text={trainingTips[currentTip]?.english || ""}
-          anchor={{ x: 0.5, y: 0.5 }}
-          x={window.innerWidth / 2}
-          y={30}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 14,
-            fill: KOREAN_COLORS.WHITE,
-          }}
-        />
-      </Container>
-
-      <BaseButton
-        text="훈련 시작 (Start Training)"
-        x={window.innerWidth / 2 - 150}
-        y={450}
-        width={300}
-        height={50}
-        onClick={handleStartTraining}
-        testId="start-training-button"
-      />
-
-      <BaseButton
-        text="메뉴로 돌아가기 (Back to Menu)"
-        x={window.innerWidth / 2 - 150}
-        y={520}
-        width={300}
-        height={50}
-        onClick={onBack}
-        testId="back-to-menu-button"
-      />
-
-      <Container x={window.innerWidth - 100} y={100}>
-        <Graphics draw={drawStanceIndicator} />
-        <Text
-          text={TRIGRAM_DATA[selectedStance]?.symbol || ""}
-          anchor={{ x: 0.5, y: 0.5 }}
-          style={{
-            fontFamily: "serif",
-            fontSize: 36,
-            fill: KOREAN_COLORS.WHITE,
-          }}
-        />
-      </Container>
-
-      {/* Progress bar showing total mastery */}
-      <Container x={50} y={80}>
-        <Graphics
-          draw={(g: PixiGraphics) => {
-            g.clear();
-            g.setFillStyle({ color: KOREAN_COLORS.BLACK, alpha: 0.8 });
-            g.rect(0, 0, 300, 20);
-            g.fill();
-
-            const progressWidth = (totalMastery / (8 * 100)) * 300;
-            g.setFillStyle({ color: KOREAN_COLORS.GOLD });
-            g.rect(0, 0, progressWidth, 20);
-            g.fill();
-
-            g.setStrokeStyle({ color: KOREAN_COLORS.GOLD, width: 2 });
-            g.rect(0, 0, 300, 20);
-            g.stroke();
-          }}
-        />
-        <Text
-          text={`Total Mastery: ${Math.round(totalMastery / 8)}%`}
-          x={150}
+        <KoreanText
+          koreanText={technique.koreanName}
+          size={20}
+          weight="bold"
+          color={KOREAN_COLORS.GOLD}
+          x={0}
           y={10}
           anchor={{ x: 0.5, y: 0.5 }}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 14,
-            fill: KOREAN_COLORS.WHITE,
-          }}
         />
-      </Container>
-    </Container>
+
+        <KoreanText
+          koreanText={`(${technique.englishName})`}
+          size={14}
+          color={KOREAN_COLORS.GRAY_LIGHT}
+          x={0}
+          y={30}
+          anchor={{ x: 0.5, y: 0.5 }}
+        />
+
+        <KoreanText
+          koreanText={technique.description.korean}
+          size={12}
+          x={0}
+          y={50}
+          anchor={{ x: 0.5, y: 0.5 }}
+        />
+
+        {/* Technique stats */}
+        <KoreanText
+          koreanText={`데미지: ${technique.damage} | 기력: ${technique.kiCost} | 사정거리: ${technique.range}`}
+          size={10}
+          color={KOREAN_COLORS.CYAN}
+          x={0}
+          y={70}
+          anchor={{ x: 0.5, y: 0.5 }}
+        />
+      </KoreanContainer>
+    );
+  };
+
+  const renderTrainingProgress = (): React.ReactElement => (
+    <KoreanContainer koreanTheme={true} traditionalBorder={true} x={550} y={50}>
+      <KoreanText
+        koreanText="수련 진도 (Training Progress)"
+        size={16}
+        weight="bold"
+        x={0}
+        y={-20}
+        anchor={{ x: 0.5, y: 0.5 }}
+      />
+
+      <ProgressTracker
+        label={`${
+          TRIGRAM_DATA[currentStance]?.koreanName || currentStance
+        } 숙련도`}
+        current={Math.floor(trainingProgress[currentStance].mastery * 100)}
+        maximum={100}
+        currentStance={currentStance}
+      />
+
+      <KoreanText
+        koreanText={`연습 횟수: ${trainingProgress[currentStance].practiceCount}`}
+        size={12}
+        color={KOREAN_COLORS.GRAY_LIGHT}
+        x={0}
+        y={40}
+        anchor={{ x: 0.5, y: 0.5 }}
+      />
+    </KoreanContainer>
+  );
+
+  const renderSessionStatus = (): React.ReactElement | null => {
+    if (!currentSession) return null;
+
+    return (
+      <KoreanContainer
+        koreanTheme={true}
+        traditionalBorder={true}
+        x={300}
+        y={200}
+      >
+        <KoreanText
+          koreanText="훈련 세션 (Training Session)"
+          size={16}
+          weight="bold"
+          x={0}
+          y={-20}
+          anchor={{ x: 0.5, y: 0.5 }}
+        />
+
+        <KoreanText
+          koreanText={`목표: ${currentSession.targetHits}회 성공`}
+          size={14}
+          x={0}
+          y={10}
+          anchor={{ x: 0.5, y: 0.5 }}
+        />
+
+        <KoreanText
+          koreanText={`성공: ${currentSession.successfulHits}/${currentSession.targetHits}`}
+          size={14}
+          color={KOREAN_COLORS.GOLD}
+          x={0}
+          y={30}
+          anchor={{ x: 0.5, y: 0.5 }}
+        />
+
+        <ProgressTracker
+          label="정확도"
+          current={Math.floor(currentSession.accuracy * 100)}
+          maximum={100}
+        />
+
+        <KoreanText
+          koreanText="스페이스 키로 기술 실행"
+          size={12}
+          color={KOREAN_COLORS.CYAN}
+          x={0}
+          y={70}
+          anchor={{ x: 0.5, y: 0.5 }}
+        />
+      </KoreanContainer>
+    );
+  };
+
+  const renderInstructions = (): React.ReactElement | null => {
+    if (!showInstructions) return null;
+
+    return (
+      <KoreanContainer
+        koreanTheme={true}
+        traditionalBorder={true}
+        x={50}
+        y={450}
+      >
+        <KoreanText
+          koreanText="조작법 (Controls)"
+          size={16}
+          weight="bold"
+          x={0}
+          y={-20}
+          anchor={{ x: 0.5, y: 0.5 }}
+        />
+
+        <KoreanText
+          koreanText="1-8: 팔괘 자세 변경 | 스페이스: 기술 연습 | ESC: 메뉴로 돌아가기"
+          size={12}
+          x={0}
+          y={10}
+          anchor={{ x: 0.5, y: 0.5 }}
+        />
+
+        <BaseButton
+          label="지시사항 숨기기"
+          x={0}
+          y={30}
+          width={120}
+          height={25}
+          onClick={() => setShowInstructions(false)}
+          variant="secondary"
+        />
+      </KoreanContainer>
+    );
+  };
+
+  return (
+    <Stage
+      width={800}
+      height={600}
+      options={{ backgroundColor: KOREAN_COLORS.DARK_BLUE }}
+    >
+      {/* Traditional Korean dojang background - fix missing props */}
+      <DojangBackground width={800} height={600} />
+
+      {/* Korean martial arts header */}
+      <KoreanHeader
+        title="흑괘 무술 수련장"
+        subtitle="Black Trigram Training Dojo"
+      />
+
+      {/* Training mode selector */}
+      {renderTrainingModeSelector()}
+
+      {/* Current technique display */}
+      {renderCurrentTechnique()}
+
+      {/* Training progress */}
+      {renderTrainingProgress()}
+
+      {/* Trigram wheel for stance selection */}
+      <TrigramWheel
+        selectedStance={currentStance}
+        onStanceChange={handleStanceChange}
+        x={100}
+        y={300}
+        radius={80}
+        isEnabled={!currentSession}
+        playerKi={playerState.ki}
+        playerMaxKi={playerState.maxKi}
+      />
+
+      {/* Player character - fix props interface */}
+      <Player player={playerState} isLocalPlayer={true} />
+
+      {/* Training session status */}
+      {renderSessionStatus()}
+
+      {/* Instructions */}
+      {renderInstructions()}
+
+      {/* Navigation buttons */}
+      <BaseButton
+        label="메뉴로 돌아가기 (Back to Menu)"
+        x={600}
+        y={500}
+        width={180}
+        height={40}
+        onClick={() => onGamePhaseChange("intro")}
+        variant="secondary"
+        testId="back-to-menu"
+      />
+
+      <BaseButton
+        label="실전 대련 (Combat Mode)"
+        x={600}
+        y={550}
+        width={180}
+        height={40}
+        onClick={() => onGamePhaseChange("combat")}
+        variant="primary"
+        testId="enter-combat"
+      />
+    </Stage>
   );
 }

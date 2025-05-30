@@ -29,17 +29,18 @@ declare module "@pixi/react" {
     rotation?: number;
     skew?: { x: number; y: number };
     pivot?: { x: number; y: number };
-    anchor?: { x: number; y: number } | number; // Allow number for uniform anchor
+    anchor?: { x: number; y: number } | number;
     alpha?: number;
     visible?: boolean;
     interactive?: boolean;
     cursor?: string;
     "data-testid"?: string;
+    // Remove buttonMode - deprecated in PixiJS v8
   }
 
   export interface ContainerProps extends BaseProps {
     children?: React.ReactNode;
-    // Event handlers
+    // Fix: Make event handlers properly optional
     onPointerDown?: (event: FederatedPointerEvent) => void;
     onPointerUp?: (event: FederatedPointerEvent) => void;
     onPointerMove?: (event: FederatedPointerEvent) => void;
@@ -62,7 +63,6 @@ declare module "@pixi/react" {
   export interface TextProps extends BaseProps {
     text: string;
     style?: Partial<TextStyle> | TextStyle;
-    // anchor is inherited from BaseProps, which is now compatible
     // Event handlers
     onPointerDown?: (event: FederatedPointerEvent) => void;
     onPointerUp?: (event: FederatedPointerEvent) => void;
@@ -84,7 +84,6 @@ declare module "@pixi/react" {
   export interface SpriteProps extends BaseProps {
     texture?: PIXI.Texture;
     image?: string;
-    // anchor is inherited from BaseProps
     // Event handlers
     onPointerDown?: (event: FederatedPointerEvent) => void;
     onPointerUp?: (event: FederatedPointerEvent) => void;
@@ -101,12 +100,12 @@ declare module "@pixi/react" {
   export const Text: React.FC<TextProps>;
   export const Sprite: React.FC<SpriteProps>;
 
-  // Hook exports
+  // Hook exports - use the correct hook name
   export function useTick(
     callback: (delta: number) => void,
     enabled?: boolean
   ): void;
-  export function useApp(): PIXI.Application;
+  export function useApp(): PIXI.Application; // Fix: useApp instead of useApplication
   export function extend(components: Record<string, any>): void;
 
   // Additional utilities

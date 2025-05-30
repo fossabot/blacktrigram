@@ -1,108 +1,105 @@
-import { useCallback } from "react";
-import type { JSX } from "react";
-import { KOREAN_COLORS } from "../../../types";
-import type { Graphics as PixiGraphics, FederatedPointerEvent } from "pixi.js";
+import React from "react";
 import { Container, Graphics, Text } from "./PixiComponents";
+import { KOREAN_COLORS } from "../../../types";
+import type { FederatedPointerEvent } from "pixi.js";
 
 export interface BaseButtonProps {
-  readonly text: string;
-  readonly x?: number;
-  readonly y?: number;
+  readonly x: number;
+  readonly y: number;
+  readonly label: string;
+  readonly onClick?: () => void;
+  readonly disabled?: boolean;
+  readonly variant?: "primary" | "secondary";
+  // Add missing props
   readonly width?: number;
   readonly height?: number;
   readonly isSelected?: boolean;
   readonly isEnabled?: boolean;
-  readonly onClick?: () => void;
-  readonly onHover?: () => void;
-  readonly testId?: string;
+  readonly text?: string; // For compatibility with existing usage
+  readonly testId?: string; // Add testId support for testing
 }
 
 export function BaseButton({
-  text,
-  x = 0,
-  y = 0,
-  width = 200,
-  height = 50,
+  x,
+  y,
+  label,
+  text, // Support both label and text props
+  onClick,
+  disabled = false,
+  variant = "primary",
+  width = 120,
+  height = 40,
   isSelected = false,
   isEnabled = true,
-  onClick,
-  onHover,
   testId,
-}: BaseButtonProps): JSX.Element {
-  const handlePointerDown = useCallback(
-    (event: FederatedPointerEvent) => {
-      event.stopPropagation();
-      if (isEnabled && onClick) {
-        onClick();
-      }
-    },
-    [isEnabled, onClick]
-  );
+}: BaseButtonProps): React.ReactElement {
+  // Use text prop if provided, otherwise use label
+  const displayText = text || label;
 
-  const handlePointerEnter = useCallback(() => {
-    if (isEnabled && onHover) {
-      onHover();
+  // Calculate effective disabled state
+  const isDisabled = disabled || !isEnabled;
+
+  // Calculate effective variant based on selection
+  const effectiveVariant = isSelected ? "primary" : variant;
+
+  // Fix: Use underscore prefix for intentionally unused parameter
+  const handlePointerDown = (_event: FederatedPointerEvent) => {
+    if (!isDisabled && onClick) {
+      onClick();
     }
-  }, [isEnabled, onHover]);
+  };
 
-  const drawButton = useCallback(
-    (g: PixiGraphics) => {
-      g.clear();
+  const buttonColor =
+    effectiveVariant === "primary"
+      ? KOREAN_COLORS.GOLD
+      : KOREAN_COLORS.DOJANG_BLUE;
 
-      const bgColor = isSelected
-        ? KOREAN_COLORS.GOLD
-        : isEnabled
-        ? KOREAN_COLORS.DOJANG_BLUE
-        : KOREAN_COLORS.GRAY_DARK;
-
-      const alpha = isEnabled ? 0.9 : 0.5;
-
-      // Button background
-      g.setFillStyle({ color: bgColor, alpha });
-      g.roundRect(-width / 2, -height / 2, width, height, 10);
-      g.fill();
-
-      // Button border
-      g.setStrokeStyle({
-        color: isSelected ? KOREAN_COLORS.WHITE : KOREAN_COLORS.GOLD,
-        width: 2,
-        alpha: isEnabled ? 1.0 : 0.5,
-      });
-      g.roundRect(-width / 2, -height / 2, width, height, 10);
-      g.stroke();
-    },
-    [width, height, isSelected, isEnabled]
-  );
-
-  // Create container props to handle optional testId properly
+  // Fix: Create container props without undefined values
   const containerProps: any = {
     x,
     y,
-    interactive: isEnabled,
-    cursor: isEnabled ? "pointer" : "default",
-    onPointerDown: handlePointerDown,
-    onPointerEnter: handlePointerEnter,
+    interactive: !isDisabled,
   };
 
-  // Only add testId if it's defined
-  if (testId !== undefined) {
-    containerProps["data-testid"] = testId;
+  // Only add onPointerDown if we have an onClick handler and not disabled
+  if (!isDisabled && onClick) {
+    containerProps.onPointerDown = handlePointerDown;
   }
 
   return (
-    <Container {...containerProps}>
-      <Graphics draw={drawButton} />
+    <Container
+      {...containerProps}
+      data-testid={testId} // Add testId support
+    >
+      <Graphics
+        draw={(g) => {
+          g.clear();
+          g.setFillStyle({
+            color: isDisabled ? 0x444444 : buttonColor,
+            alpha: isDisabled ? 0.3 : 0.8,
+          });
+          g.rect(-width / 2, -height / 2, width, height);
+          g.fill();
+
+          g.setStrokeStyle({
+            color: isDisabled ? 0x666666 : 0xffffff,
+            width: 2,
+          });
+          g.rect(-width / 2, -height / 2, width, height);
+          g.stroke();
+        }}
+      />
 
       <Text
-        text={text}
+        text={displayText}
         anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 16,
-          fill: isSelected ? KOREAN_COLORS.BLACK : KOREAN_COLORS.WHITE,
-          fontWeight: "bold",
-        }}
-        alpha={isEnabled ? 1.0 : 0.6}
+        style={
+          {
+            fontSize: 14,
+            fill: isDisabled ? KOREAN_COLORS.GRAY_MEDIUM : KOREAN_COLORS.WHITE,
+            fontWeight: "bold",
+          } as any
+        }
       />
     </Container>
   );
