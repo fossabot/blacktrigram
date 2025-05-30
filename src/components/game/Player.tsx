@@ -1,94 +1,83 @@
 import React, { useState, useCallback } from "react";
 import { Container, Graphics, Text, useTick } from "@pixi/react";
-import type { PlayerState, TrigramStance, TrigramData } from "../../types"; // Removed Position, PlayerAction
-import { KOREAN_COLORS, TRIGRAM_DATA } from "../../types";
-// import { PlayerVisuals } from '../PlayerVisuals'; // Assuming this will be created
-import type { Graphics as PixiGraphics, Ticker } from "pixi.js"; // Added Ticker for useTick type
+import type { Graphics as PixiGraphics } from "pixi.js";
+import type { PlayerState, Position } from "../../types";
 
-// Define PlayerProps directly or ensure it's correctly exported if from another file
 export interface PlayerProps {
   readonly playerState: PlayerState;
-  readonly onAction: (action: { type: string; techniqueName?: string }) => void;
-  readonly onStanceChange: (stance: TrigramStance) => void;
+  readonly onAttack: () => void;
+  readonly onStanceChange: (stance: string) => void;
 }
 
 export function Player({
   playerState,
-  onAction,
+  onAttack, // This prop is part of the component's API
   onStanceChange, // This prop is part of the component's API, usage is up to the parent
-}: PlayerProps): React.JSX.Element {
-  const { x, y } = playerState.position;
-  const currentStanceData: TrigramData = TRIGRAM_DATA[playerState.stance];
-
-  const [animationTime, setAnimationTime] = useState(0);
+}: PlayerProps): JSX.Element {
+  const [animationTime, setAnimationTime] = useState<number>(0);
 
   useTick(
-    useCallback((delta: number, _ticker: Ticker) => {
-      // Corrected signature: delta is number
+    useCallback((delta: number) => {
       setAnimationTime((prev) => prev + delta);
     }, [])
   );
 
-  const handleAttack = useCallback(() => {
-    if (!playerState.isAttacking && playerState.stamina > 10) {
-      // Example condition
-      onAction({
-        type: "attack",
-        techniqueName: currentStanceData.technique.name,
-      });
-    }
-  }, [playerState, onAction, currentStanceData]);
-
-  // Example drawing logic, replace with PlayerVisuals or more complex graphics
   const drawPlayer = useCallback(
     (g: PixiGraphics) => {
       g.clear();
-      g.beginFill(
-        playerState.playerId === "Player1"
-          ? KOREAN_COLORS.DOJANG_BLUE
-          : KOREAN_COLORS.TRADITIONAL_RED
-      );
-      g.drawCircle(0, 0, 30); // Simple circle representation
+
+      // Traditional Korean martial arts uniform (dobok)
+      g.beginFill(0xffffff, 0.9);
+      g.drawRect(-25, -90, 50, 90);
       g.endFill();
 
-      // Aura for attacking state
+      // Belt color indicating mastery level
+      g.beginFill(0x8b0000); // Red belt for master
+      g.drawRect(-27, -25, 54, 10);
+      g.endFill();
+
+      // Stance-specific energy aura
       if (playerState.isAttacking) {
-        // Assuming currentStanceData.color is a hex string like "#RRGGBB"
-        const colorString = String(currentStanceData.color); // Ensure it's a string
-        const auraColor = parseInt(
-          colorString.startsWith("#") ? colorString.slice(1) : colorString,
-          16
-        );
-        g.lineStyle(4, auraColor, Math.sin(animationTime * 0.2) * 0.5 + 0.5);
-        g.drawCircle(0, 0, 35 + Math.sin(animationTime * 0.2) * 5);
+        const stanceColors: Record<string, number> = {
+          geon: 0xffd700, // Gold - Heaven
+          tae: 0x87ceeb, // Sky Blue - Lake
+          li: 0xff4500, // Red Orange - Fire
+          jin: 0x9370db, // Purple - Thunder
+          son: 0x98fb98, // Pale Green - Wind
+          gam: 0x4169e1, // Royal Blue - Water
+          gan: 0x8b4513, // Saddle Brown - Mountain
+          gon: 0x654321, // Dark Brown - Earth
+        };
+
+        const auraAlpha = Math.sin(animationTime * 0.3) * 0.4 + 0.6;
+        g.lineStyle(8, stanceColors[playerState.stance] || 0xffffff, auraAlpha);
+        g.drawCircle(0, -45, 45 + Math.sin(animationTime * 0.5) * 5);
       }
     },
-    [playerState, currentStanceData, animationTime]
+    [playerState.stance, playerState.isAttacking, animationTime]
   );
 
   return (
-    <Container x={x} y={y} interactive={true} pointertap={handleAttack}>
+    <Container
+      x={playerState.position.x}
+      y={playerState.position.y}
+      interactive={true}
+      onPointerDown={onAttack}
+      data-testid="pixi-container"
+    >
       <Graphics draw={drawPlayer} />
-      {/* <PlayerVisuals playerState={playerState} visualState={visualState} /> */}
+
       <Text
-        text={currentStanceData.koreanName} // Accessing koreanName directly
+        text={`${playerState.stance.toUpperCase()}`}
         anchor={{ x: 0.5, y: 0.5 }}
-        y={-45}
+        y={-120}
         style={{
           fontFamily: "Noto Sans KR",
-          fontSize: 14,
-          fill: KOREAN_COLORS.WHITE,
+          fontSize: 16,
+          fill: 0xffd700,
+          fontWeight: "bold",
         }}
-      />
-      <Text
-        text={currentStanceData.symbol}
-        anchor={{ x: 0.5, y: 0.5 }}
-        y={-65}
-        style={{
-          fontFamily: "serif",
-          fontSize: 20,
-          fill: currentStanceData.color,
-        }}
+        data-testid="pixi-text"
       />
     </Container>
   );

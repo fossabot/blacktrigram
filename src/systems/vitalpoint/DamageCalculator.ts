@@ -38,6 +38,36 @@ export class KoreanDamageCalculator {
   // private static readonly MAX_ELEMENTAL_BONUS = 0.5;
   // private static readonly GUARD_EFFECTIVENESS = 0.7;
 
+  public static calculateBaseDamage(
+    technique: KoreanTechnique,
+    distance: number,
+    precision: number
+  ): DamageResult {
+    const basePower = technique.damage;
+    const distanceMultiplier = Math.max(0.3, 1 - distance / technique.range);
+    const baseDmg = basePower * distanceMultiplier * precision;
+
+    const damageType =
+      baseDmg >= 35 && precision >= 0.9
+        ? "critical"
+        : baseDmg >= 25 && precision >= 0.7
+        ? "heavy"
+        : baseDmg >= 15 && precision >= 0.5
+        ? "medium"
+        : "light";
+
+    const result: DamageResult = {
+      damage: Math.round(baseDmg),
+      baseDamage: baseDmg,
+      isCritical: damageType === "critical",
+      vitalPointHit: null,
+      modifiers: [],
+      description: "기본 계산된 손상",
+      damageType: damageType,
+    };
+    return result;
+  }
+
   public static applyVitalPointModifiers(
     baseDamage: number,
     vitalPoint: VitalPoint | null,
@@ -47,23 +77,19 @@ export class KoreanDamageCalculator {
     let vitalPointBonus = 0;
     let meridianMultiplier = 1.0;
     let finalDamageType: DamageType = "light";
-    let hitVitalPointNameObj: { english: string; korean: string } | undefined =
-      undefined;
     let hitVitalPointKoreanName: string | undefined = undefined;
     let descriptionMessage = "";
 
     if (vitalPoint) {
-      hitVitalPointNameObj = vitalPoint.name;
-      hitVitalPointKoreanName = vitalPoint.koreanName; // This is string
+      hitVitalPointKoreanName = vitalPoint.koreanName;
       vitalPointBonus = (vitalPoint.damageMultiplier - 1) * baseDamage;
-      // meridianMultiplier = getMeridianMultiplier(vitalPoint.meridian);
 
       finalDamageType = KoreanDamageCalculator.determineDamageType(
         baseDamage,
         precision,
         vitalPoint
       );
-      descriptionMessage = hitVitalPointKoreanName // This is string
+      descriptionMessage = hitVitalPointKoreanName
         ? `${hitVitalPointKoreanName} - ${damageDescriptions[finalDamageType]}`
         : damageDescriptions[finalDamageType];
     } else {
@@ -99,12 +125,11 @@ export class KoreanDamageCalculator {
       damageType: finalDamageType,
     };
 
-    // Explicitly assign optional properties if they are defined
     if (hitVitalPointKoreanName !== undefined) {
       result.koreanName = hitVitalPointKoreanName;
     }
-    if (hitVitalPointNameObj !== undefined) {
-      result.vitalPointName = hitVitalPointNameObj;
+    if (vitalPoint?.name !== undefined) {
+      result.vitalPointName = vitalPoint.name;
     }
 
     return result;
@@ -130,31 +155,6 @@ export class KoreanDamageCalculator {
       if (baseDamage >= 15 && precision >= 0.5) return "medium";
     }
     return "light";
-  }
-
-  public static calculateBaseDamage(
-    technique: KoreanTechnique,
-    distance: number,
-    precision: number
-  ): DamageResult {
-    // Returns imported DamageResult
-    const basePower = technique.damage;
-    const rangeMultiplier = Math.max(baseDmg, precision, null);
-
-    const result: DamageResult = {
-      damage: Math.round(baseDmg),
-      baseDamage: baseDmg,
-      isCritical: damageType === "critical",
-      vitalPointHit: null,
-      modifiers: [],
-      description: "기본 계산된 손상", // Default description
-      damageType: damageType,
-      // koreanName is optional, so it can be omitted if not applicable
-      // vitalPointName is optional
-      // vitalPointBonus is optional
-      // meridianMultiplier is optional
-    };
-    return result;
   }
 
   public static calculateDamageOnVitalPoint(

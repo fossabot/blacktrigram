@@ -181,6 +181,7 @@ export interface KoreanTechnique {
   accuracyModifier?: number;
   stunValue?: number;
   vitalPointMultiplier?: number;
+  stance?: TrigramStance; // Add for compatibility
 }
 
 export interface VitalPointHit {
@@ -230,7 +231,7 @@ export interface Condition {
 export interface PlayerState {
   readonly playerId: string;
   readonly position: Position;
-  readonly velocity: Velocity; // Make sure Velocity is found
+  readonly velocity: Velocity;
   readonly health: number;
   readonly maxHealth: number;
   readonly stamina: number;
@@ -253,6 +254,8 @@ export interface PlayerState {
   readonly skill?: number; // From GameTypes.ts
   readonly attack?: number; // From GameTypes.ts (base attack power)
   readonly defense?: number; // From GameTypes.ts (base defense)
+  readonly activeEffects?: StatusEffect[]; // Add for compatibility
+  readonly lastStanceChangeTime?: number; // Add for stance management
 }
 
 export interface TransitionMetrics {
@@ -300,10 +303,9 @@ export interface AttackResult {
   readonly statusEffectsApplied?: StatusEffect[]; // Renamed from statusEffects for clarity
   readonly description: string;
   readonly knockback?: Position; // Using Position for Vector2D (From GameTypes.ts)
-  // If GameEngine.processAttack is meant to update player states directly,
-  // consider if it should return a structure more like CombatResult,
-  // or if GameEngine should use CombatResult type for its return.
-  // For now, assuming AttackResult is as defined. GameEngine might need to use CombatResult.
+  readonly conditionsApplied?: Condition[]; // Add missing property
+  readonly attackerState?: PlayerState; // Add for combat system
+  readonly defenderState?: PlayerState; // Add for combat system
 }
 
 export interface BlockResult {
@@ -450,6 +452,7 @@ export interface GameState {
   readonly maxRounds?: number;
 }
 
+// ProgressTrackerProps and TrigramWheelProps - UNIFIED
 export interface ProgressTrackerProps {
   readonly label: string;
   readonly current: number;
@@ -470,48 +473,92 @@ export interface TrigramWheelProps {
   readonly playerMaxKi?: number;
 }
 
-// TrigramProperties from GameTypes.ts, merged with TrigramData
-export interface TrigramData {
-  symbol: string;
-  englishName: string;
-  koreanName: string;
-  element: string;
-  description: string; // General description
-  philosophy: string;
-  color: string; // Hex color string - This expects a string
-  technique: KoreanTechnique; // Default technique
-  techniques: KoreanTechnique[]; // All techniques
-  strengths?: TrigramStance[]; // Trigrams this stance is strong against
-  weaknesses?: TrigramStance[]; // Trigrams this stance is weak against
-  nature?: string; // From TrigramProperties
-  kiRegenRate?: number; // From TrigramProperties
-  staminaCostModifier?: number; // From TrigramProperties (staminaCost)
-  damageModifier?: number; // From TrigramProperties
-  defenseModifier?: number; // From TrigramProperties
-  speedModifier?: number; // From TrigramProperties
-}
-
-export const KOREAN_COLORS = {
-  TRADITIONAL_RED: "#8a0000", // Dark red
-  GOLD: "#ffd700",
-  BLACK: "#000000",
-  WHITE: "#ffffff",
-  DOJANG_BLUE: "#4a89e2", // A medium blue
-  CYAN: "#00ffff", // Bright cyan
-  GRAY_LIGHT: "#cccccc",
-  YELLOW: "#ffff00",
-  LIGHT_GREY: "#d3d3d3",
-  Red: "#ff0000",
-  Orange: "#ffa500",
-  Green: "#00ff00",
-  Blue: "#0000ff", // Pure blue
-  Purple: "#800080",
-  Brown: "#a52a2a",
-  DARK_BLUE: "#000a12", // From GameTypes.ts
-  ACCENT_BLUE: "#004455", // From GameTypes.ts
-  GRAY_MEDIUM: "#888888", // From GameTypes.ts
-  GRAY_DARK: "#444444", // From GameTypes.ts
-} as const;
+// STANCE_EFFECTIVENESS_MATRIX - Added
+export const STANCE_EFFECTIVENESS_MATRIX: Record<
+  TrigramStance,
+  Record<TrigramStance, number>
+> = {
+  geon: {
+    geon: 1.0,
+    tae: 1.2,
+    li: 0.8,
+    jin: 1.1,
+    son: 0.9,
+    gam: 1.3,
+    gan: 0.7,
+    gon: 1.0,
+  },
+  tae: {
+    geon: 0.8,
+    tae: 1.0,
+    li: 1.1,
+    jin: 0.9,
+    son: 1.2,
+    gam: 0.7,
+    gan: 1.3,
+    gon: 1.0,
+  },
+  li: {
+    geon: 1.2,
+    tae: 0.9,
+    li: 1.0,
+    jin: 1.3,
+    son: 0.8,
+    gam: 1.1,
+    gan: 0.7,
+    gon: 1.0,
+  },
+  jin: {
+    geon: 0.9,
+    tae: 1.1,
+    li: 0.7,
+    jin: 1.0,
+    son: 1.3,
+    gam: 0.8,
+    gan: 1.2,
+    gon: 1.0,
+  },
+  son: {
+    geon: 1.1,
+    tae: 0.8,
+    li: 1.2,
+    jin: 0.7,
+    son: 1.0,
+    gam: 1.0,
+    gan: 0.9,
+    gon: 1.3,
+  },
+  gam: {
+    geon: 0.7,
+    tae: 1.3,
+    li: 0.9,
+    jin: 1.2,
+    son: 1.0,
+    gam: 1.0,
+    gan: 1.1,
+    gon: 0.8,
+  },
+  gan: {
+    geon: 1.3,
+    tae: 0.7,
+    li: 1.3,
+    jin: 0.8,
+    son: 1.1,
+    gam: 0.9,
+    gan: 1.0,
+    gon: 1.2,
+  },
+  gon: {
+    geon: 1.0,
+    tae: 1.0,
+    li: 1.0,
+    jin: 1.0,
+    son: 0.7,
+    gam: 1.2,
+    gan: 0.8,
+    gon: 1.0,
+  },
+};
 
 // TRIGRAM_DATA definition (ensure KoreanTechnique inside matches the main definition)
 // ... (TRIGRAM_DATA definition remains largely the same, but ensure nested KoreanTechnique objects are valid)
@@ -522,17 +569,23 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     symbol: "☰",
     englishName: "Heaven",
     koreanName: "건",
-    element: "Metal", // Or Sky/Heaven based on interpretation
+    korean: "건", // Add compatibility property
+    english: "Heaven", // Add compatibility property
+    name: "건", // Add compatibility property
+    element: "Metal",
     description:
       "하늘의 우뢰같은 강력한 일격 (A powerful strike like thunder from the sky)",
     philosophy: "창조와 권위의 힘 (Creative and authoritative power)",
-    color: KOREAN_COLORS.GOLD, // Now correctly assigns a string
+    color: KOREAN_COLORS.GOLD,
+    order: 1, // Add order property
+    direction: "Northwest", // Add direction property
     technique: {
       // This is a KoreanTechnique
       id: "geon_thunder_strike",
       name: "천둥벽력",
       koreanName: "천둥벽력",
       englishName: "Thunder Strike",
+      stance: "geon", // Add stance property
       description: {
         korean: "하늘의 우뢰같은 강력한 일격",
         english: "Thunderous strike from heaven",
@@ -562,16 +615,22 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     symbol: "☱",
     englishName: "Lake",
     koreanName: "태",
-    element: "Metal", // Or Water based on interpretation
+    korean: "태",
+    english: "Lake",
+    name: "태",
+    element: "Metal",
     description:
       "호수의 물결처럼 연속적인 타격 (Continuous strikes like lake waves)",
     philosophy: "기쁨과 만족의 표현 (Expression of joy and satisfaction)",
-    color: KOREAN_COLORS.ACCENT_BLUE, // Now correctly assigns a string
+    color: KOREAN_COLORS.ACCENT_BLUE,
+    order: 2,
+    direction: "West",
     technique: {
       id: "tae_flowing_combo",
       name: "유수연타",
       koreanName: "유수연타",
       englishName: "Flowing Combo",
+      stance: "tae",
       description: {
         korean: "호수의 물결처럼 연속적인 타격",
         english: "Continuous strikes like lake waves",
@@ -836,16 +895,38 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
   },
 };
 
+export const KOREAN_COLORS = {
+  TRADITIONAL_RED: "#8a0000",
+  GOLD: "#ffd700",
+  BLACK: "#000000",
+  WHITE: "#ffffff",
+  DOJANG_BLUE: "#4a89e2",
+  CYAN: "#00ffff",
+  GRAY_LIGHT: "#cccccc",
+  YELLOW: "#ffff00",
+  LIGHT_GREY: "#d3d3d3",
+  Red: "#ff0000",
+  Orange: "#ffa500",
+  Green: "#00ff00",
+  Blue: "#0000ff",
+  Purple: "#800080",
+  Brown: "#a52a2a",
+  DARK_BLUE: "#000a12",
+  ACCENT_BLUE: "#004455",
+  GRAY_MEDIUM: "#888888",
+  GRAY_DARK: "#444444",
+  SKIN_TONE_LIGHT: "#fdbcb4",
+} as const;
+
+// Fix KOREAN_TECHNIQUES with proper typing
 export const KOREAN_TECHNIQUES: Record<string, KoreanTechnique> = Object.values(
   TRIGRAM_DATA
 ).reduce((acc, trigram) => {
   if (trigram.technique?.name) {
-    // Ensure technique and name exist
     acc[trigram.technique.name] = trigram.technique;
   }
-  trigram.techniques.forEach((tech) => {
+  trigram.techniques.forEach((tech: KoreanTechnique) => {
     if (tech?.name) {
-      // Ensure tech and name exist
       acc[tech.name] = tech;
     }
   });
@@ -854,7 +935,8 @@ export const KOREAN_TECHNIQUES: Record<string, KoreanTechnique> = Object.values(
 
 export function createPlayerState(
   playerId: string,
-  initialPosition: Position
+  initialPosition: Position,
+  stance: TrigramStance = "geon"
 ): PlayerState {
   return {
     playerId,
@@ -866,7 +948,7 @@ export function createPlayerState(
     maxStamina: 100,
     ki: 50,
     maxKi: 100,
-    stance: "geon",
+    stance,
     isAttacking: false,
     isBlocking: false,
     isMoving: false,
@@ -877,6 +959,7 @@ export function createPlayerState(
     comboCount: 0,
     lastHitTime: 0,
     targetId: null,
+    lastStanceChangeTime: Date.now(),
   };
 }
 
@@ -1037,3 +1120,41 @@ export interface CollisionZone {
 export type ReadonlyDeep<T> = {
   readonly [P in keyof T]: T[P] extends object ? ReadonlyDeep<T[P]> : T[P];
 };
+
+// Add missing TrigramData interface
+export interface TrigramData {
+  symbol: string;
+  englishName: string;
+  koreanName: string;
+  korean: string; // Add for compatibility
+  english: string; // Add for compatibility
+  element: string;
+  description: string;
+  philosophy: string;
+  color: string;
+  technique: KoreanTechnique;
+  techniques: KoreanTechnique[];
+  strengths?: TrigramStance[];
+  weaknesses?: TrigramStance[];
+  nature?: string;
+  kiRegenRate?: number;
+  staminaCostModifier?: number;
+  damageModifier?: number;
+  defenseModifier?: number;
+  speedModifier?: number;
+  order: number; // Add for transition calculations
+  direction?: string; // Add for culture system
+  name?: string; // Add for compatibility
+}
+
+// Add missing TRIGRAM_STANCES_ORDER
+export const TRIGRAM_STANCES_ORDER: TrigramStance[] = [
+  "geon",
+  "tae",
+  "li",
+  "jin",
+  "son",
+  "gam",
+  "gan",
+  "gon",
+];

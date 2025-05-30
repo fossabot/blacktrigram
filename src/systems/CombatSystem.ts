@@ -15,10 +15,11 @@ import type {
 import { TrigramSystem } from "./TrigramSystem";
 import { VitalPointSystem } from "./VitalPointSystem";
 
-// Placeholder for vitalPointConfig if not imported
+// Fix vitalPointConfig to be compatible
 const vitalPointConfig: VitalPointSystemConfig = {
   baseAccuracy: 0.8,
   distanceModifier: 0.05,
+  angleModifier: 0.02, // Add optional property to make it compatible
 };
 
 export const CombatSystem = {
@@ -32,39 +33,40 @@ export const CombatSystem = {
 
     let baseHitChance = 0.9;
     if ("isDodging" in defender && defender.isDodging) {
-      // Check if property exists
       baseHitChance -= 0.3;
     }
 
     if (Math.random() > baseHitChance) {
-      if (audioManager.playDodgeSound) audioManager.playDodgeSound();
+      if (audioManager.playSFX) audioManager.playSFX("hit_light"); // Fix string argument
       return {
         hit: false,
         damage: 0,
         critical: false,
         blocked: false,
-        conditionsApplied: [], // Add conditionsApplied
+        conditionsApplied: [],
         attackerState: attacker,
         defenderState: defender,
+        description: "Attack missed",
       };
     }
 
     if (defender.isBlocking) {
       const blockEffectiveness = 0.7;
       const damageAfterBlock =
-        (technique.damage || 0) * (1 - blockEffectiveness); // Ensure technique.damage exists
-      if (audioManager.playBlockSound) audioManager.playBlockSound();
+        (technique.damage || 0) * (1 - blockEffectiveness);
+      if (audioManager.playSFX) audioManager.playSFX("block_success"); // Fix string argument
       return {
         hit: true,
         damage: Math.floor(damageAfterBlock),
         critical: false,
         blocked: true,
-        conditionsApplied: [], // Add conditionsApplied
+        conditionsApplied: [],
         attackerState: attacker,
         defenderState: {
           ...defender,
           stamina: Math.max(0, defender.stamina - 5),
         },
+        description: "Attack blocked",
       };
     }
 
@@ -84,14 +86,12 @@ export const CombatSystem = {
         vitalPointConfig
       );
       if (vitalPointHitDetail?.vitalPoint) {
-        // Check vitalPoint on VitalPointHit
         vitalPointMultiplier =
           vitalPointHitDetail.vitalPoint.damageMultiplier || 1.5;
       }
     }
 
-    let finalDamage = technique.damage || 0; // Ensure technique.damage exists
-
+    let finalDamage = technique.damage || 0;
     finalDamage *= stanceAdvantage;
     finalDamage *= vitalPointMultiplier;
 
@@ -108,14 +108,13 @@ export const CombatSystem = {
 
     const conditionsApplied: Condition[] = [];
     if ("effects" in technique && technique.effects) {
-      // Check if property exists
       (technique.effects as StatusEffect[]).forEach((effect: StatusEffect) => {
         if (Math.random() < (effect.chance || 1.0)) {
           conditionsApplied.push({
             type: effect.type,
             duration: effect.duration,
-            magnitude: effect.magnitude, // Ensure magnitude is on StatusEffect or Condition
-            source: attacker.playerId, // Ensure source is on Condition
+            magnitude: effect.magnitude || 1.0,
+            source: attacker.playerId,
           });
         }
       });
@@ -125,15 +124,14 @@ export const CombatSystem = {
       "effectsApplied" in vitalPointHitDetail &&
       vitalPointHitDetail.effectsApplied
     ) {
-      // Check if property exists
       (vitalPointHitDetail.effectsApplied as StatusEffect[]).forEach(
         (effect: StatusEffect) => {
           if (Math.random() < (effect.chance || 1.0)) {
             conditionsApplied.push({
               type: effect.type,
               duration: effect.duration,
-              magnitude: effect.magnitude,
-              source: attacker.playerId, // Ensure source is on Condition
+              magnitude: effect.magnitude || 1.0,
+              source: attacker.playerId,
             });
           }
         }
@@ -141,12 +139,11 @@ export const CombatSystem = {
     }
 
     if (audioManager.playAttackSound)
-      audioManager.playAttackSound(technique.name, finalDamage); // Adjust params if needed
+      audioManager.playAttackSound(technique.damage || 10); // Fix to use number
     if (audioManager.playHitSound)
       audioManager.playHitSound(
-        finalDamage,
-        isCriticalHit,
-        vitalPointHitDetail !== null
+        finalDamage, // Use number instead of string
+        isCriticalHit
       );
 
     return {
@@ -154,13 +151,14 @@ export const CombatSystem = {
       damage: finalDamage,
       critical: isCriticalHit,
       blocked: false,
-      conditionsApplied, // Add conditionsApplied
+      conditionsApplied,
       attackerState: { ...attacker, ki: attacker.ki - (technique.kiCost || 5) },
       defenderState: {
         ...defender,
         health: Math.max(0, defender.health - finalDamage),
         conditions: [...defender.conditions, ...conditionsApplied],
       },
+      description: `${technique.name} hit for ${finalDamage} damage`,
     };
   },
 

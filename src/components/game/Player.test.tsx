@@ -21,24 +21,7 @@ vi.mock("@pixi/react", async () => {
 function createMockPlayerState(
   overrides: Partial<PlayerState> = {}
 ): PlayerState {
-  return createPlayerState({
-    playerId: "test-player",
-    position: { x: 400, y: 300 },
-    velocity: { x: 0, y: 0 },
-    health: 100,
-    maxHealth: 100,
-    stamina: 100,
-    maxStamina: 100,
-    ki: 50,
-    maxKi: 100,
-    stance: "geon",
-    isAttacking: false,
-    isBlocking: false,
-    isMoving: false,
-    facing: "right",
-    lastDamageTaken: 0,
-    activeEffects: [],
-    comboCount: 0,
+  return createPlayerState("test-player", { x: 100, y: 200 }, "geon", {
     ...overrides,
   });
 }
@@ -58,7 +41,6 @@ describe("Player Component", () => {
     render(
       <Player
         playerState={playerState}
-        opponentPosition={mockOpponentPosition}
         onAttack={mockOnAttack}
         onStanceChange={mockOnStanceChange}
       />
@@ -73,7 +55,6 @@ describe("Player Component", () => {
     render(
       <Player
         playerState={playerState}
-        opponentPosition={mockOpponentPosition}
         onAttack={mockOnAttack}
         onStanceChange={mockOnStanceChange}
       />
@@ -101,7 +82,6 @@ describe("Player Component", () => {
       const { unmount } = render(
         <Player
           playerState={playerState}
-          opponentPosition={mockOpponentPosition}
           onAttack={mockOnAttack}
           onStanceChange={mockOnStanceChange}
         />
@@ -118,7 +98,6 @@ describe("Player Component", () => {
     render(
       <Player
         playerState={playerState}
-        opponentPosition={mockOpponentPosition}
         onAttack={mockOnAttack}
         onStanceChange={mockOnStanceChange}
       />
@@ -130,18 +109,12 @@ describe("Player Component", () => {
 
   it("should handle status effects correctly", () => {
     const playerState = createMockPlayerState({
-      activeEffects: [
+      conditions: [
         {
-          id: "test-effect",
-          name: "Test Effect",
-          korean: "테스트 효과",
           type: "stun",
-          intensity: 50,
           duration: 1000,
-          effects: {
-            healthReduction: 10,
-            speedMultiplier: 0.5,
-          },
+          magnitude: 0.5,
+          source: "test",
         },
       ],
     });
@@ -149,7 +122,6 @@ describe("Player Component", () => {
     render(
       <Player
         playerState={playerState}
-        opponentPosition={mockOpponentPosition}
         onAttack={mockOnAttack}
         onStanceChange={mockOnStanceChange}
       />
@@ -167,7 +139,6 @@ describe("Player Component", () => {
     render(
       <Player
         playerState={playerState}
-        opponentPosition={mockOpponentPosition}
         onAttack={mockOnAttack}
         onStanceChange={mockOnStanceChange}
       />
@@ -196,7 +167,6 @@ describe("Player Component", () => {
       const { unmount } = render(
         <Player
           playerState={playerState}
-          opponentPosition={mockOpponentPosition}
           onAttack={mockOnAttack}
           onStanceChange={mockOnStanceChange}
         />

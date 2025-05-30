@@ -1,10 +1,10 @@
 import type {
   TrigramStance,
   KoreanTechnique as ImportedKoreanTechnique,
-  TrigramData,
   KoreanTechnique,
-} from "../../types"; // Use alias for imported type
-import { TRIGRAM_DATA } from "../../types"; // Ensure TRIGRAM_DATA is imported if used directly
+  TrigramData,
+} from "../../types";
+import { TRIGRAM_DATA } from "../../types";
 
 export class KoreanTechniques {
   public static getTechniqueForStance(
@@ -12,19 +12,28 @@ export class KoreanTechniques {
   ): ImportedKoreanTechnique {
     const trigramData = TRIGRAM_DATA[stance];
     if (!trigramData || !trigramData.technique) {
-      throw new Error(`Technique for stance ${stance} not found.`);
+      throw new Error(`No technique found for stance: ${stance}`);
     }
-    return trigramData.technique as ImportedKoreanTechnique;
+    return trigramData.technique;
   }
 
-  public static getAllTechniques(): ImportedKoreanTechnique[] {
-    return Object.values(TRIGRAM_DATA).map(
-      (trigram) => trigram.technique as ImportedKoreanTechnique
-    );
+  public static getAllTechniques(): Record<
+    TrigramStance,
+    ImportedKoreanTechnique
+  > {
+    const techniques: Record<TrigramStance, ImportedKoreanTechnique> =
+      {} as Record<TrigramStance, ImportedKoreanTechnique>;
+
+    Object.entries(TRIGRAM_DATA).forEach(([stance, data]) => {
+      techniques[stance as TrigramStance] = data.technique;
+    });
+
+    return techniques;
   }
 
   public static getKoreanName(stance: TrigramStance): string {
-    return TRIGRAM_DATA[stance].name;
+    const technique = this.getTechniqueForStance(stance);
+    return technique.koreanName || technique.name;
   }
 }
 

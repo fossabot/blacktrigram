@@ -82,7 +82,8 @@ describe("VitalPointSystem", () => {
         mockTargetPosition,
         sampleVitalPoint,
         mockTechnique,
-        5
+        5,
+        defaultConfig // Add required config parameter
       );
       expect(hitResult).toBeNull();
     });
@@ -95,7 +96,8 @@ describe("VitalPointSystem", () => {
           mockTargetPosition,
           sampleVitalPoint,
           mockTechnique,
-          5
+          5,
+          defaultConfig // Add required config parameter
         );
       expect(hitResult).not.toBeNull();
       if (hitResult?.vitalPoint) {
@@ -123,13 +125,15 @@ describe("VitalPointSystem", () => {
         mockTargetPosition,
         sampleVitalPoint,
         accurateTechnique,
-        5
+        5,
+        defaultConfig // Add required config parameter
       );
       const hitResultInaccurate = VitalPointSystem.checkVitalPointHit(
         mockTargetPosition,
         sampleVitalPoint,
         inaccurateTechnique,
-        5
+        5,
+        defaultConfig // Add required config parameter
       );
 
       expect(hitResultAccurate !== null || hitResultInaccurate !== null).toBe(
@@ -147,7 +151,8 @@ describe("VitalPointSystem", () => {
         mockTargetPosition,
         vitalPointWithEffects,
         mockTechnique,
-        5
+        5,
+        defaultConfig // Add required config parameter
       );
       if (hitResult && "effectsApplied" in hitResult) {
         // Check for effectsApplied

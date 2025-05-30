@@ -11,8 +11,8 @@ import type {
 import { KOREAN_VITAL_POINTS_DATA } from "./vitalpoint/KoreanVitalPoints";
 
 export interface VitalPointSystemConfig {
-  baseAccuracy: number;
-  distanceModifier: number;
+  baseAccuracy: number; // Required
+  distanceModifier: number; // Required
   angleModifier?: number; // Optional
 }
 
@@ -43,9 +43,9 @@ export const VitalPointSystem = {
     vitalPoint: VitalPoint,
     technique: KoreanTechnique,
     distanceToTarget: number,
-    configParams?: VitalPointSystemConfig
+    configParams: VitalPointSystemConfig // Make required to match CombatSystem usage
   ): VitalPointHit | null {
-    const currentConfig = configParams || this.config;
+    const currentConfig = configParams;
 
     const effectiveDistance =
       Math.sqrt(
@@ -89,7 +89,7 @@ export const VitalPointSystem = {
         ),
         stunning: Math.round((techStunValue || 0) * (vpStunMultiplier || 0)),
         critical: Math.random() < (vpCritChanceBonus || 0),
-        effectsApplied: appliedEffects, // Ensure this matches VitalPointHit type
+        effectsApplied: appliedEffects,
       };
     }
 

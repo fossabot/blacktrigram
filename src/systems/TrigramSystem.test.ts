@@ -87,7 +87,6 @@ describe("TrigramSystem", () => {
       const distance = 50;
       const accuracy = 0.8;
 
-      // Create a mock technique for calculateDamage
       const mockTechnique: KoreanTechnique = {
         name: "Mock Technique",
         koreanName: "모의 기술",
@@ -98,14 +97,14 @@ describe("TrigramSystem", () => {
         range: 100,
         accuracy: accuracy,
         stance: "geon",
-        damage: 25, // Added missing damage property
+        damage: 25,
+        type: "strike", // Add missing type property
       };
 
-      // Corrected function call and arguments
       const damage = TrigramSystem.calculateDamage(
         mockTechnique,
         distance,
-        accuracy // Using accuracy as stanceAdvantage
+        accuracy
       );
 
       expect(typeof damage).toBe("number");
