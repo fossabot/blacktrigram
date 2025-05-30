@@ -38,3 +38,148 @@ All audio assets should be in the `.webm` format for optimal web performance and
 - Keep audio files optimized for web (consider file size vs. quality).
 - Ensure consistent volume levels across similar types of sounds.
 - Use stereo or mono appropriately based on the sound type (e.g., music in stereo, some SFX in mono).
+
+/assets/audio/sfx/menu_select.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/match_start.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/stance_change.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/defeat.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/combo_finish.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/menu_back.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/hit_light.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/countdown.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/match_end.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/hit_medium.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/footstep.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/wind_effect.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/music/victory_theme.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/dodge.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/attack_critical.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/music/training_theme.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/perfect_strike.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/music/intro_theme.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/block_success.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/music/combat_theme.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/music/meditation_theme.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/attack_heavy.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/ki_charge.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/attack_medium.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/energy_pulse.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/block_break.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/health_low.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/hit_critical.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/attack_light.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/combo_buildup.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/stamina_depleted.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/dojang_ambience.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/hit_heavy.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/ki_release.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/victory.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error
+/assets/audio/sfx/menu_hover.webm:1 
+            
+            
+           Failed to load resource: the server responded with a status of 404 ()Understand this error

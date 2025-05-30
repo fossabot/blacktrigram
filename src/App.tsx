@@ -1,141 +1,180 @@
+import { useState, useCallback, useEffect } from "react";
 import { Stage } from "@pixi/react";
-import { useState, useCallback } from "react";
-import type { JSX } from "react";
-import "./App.css";
-import { GameEngine } from "./components/game/GameEngine";
-import { useAudio } from "./audio/AudioManager";
 import { IntroScreen } from "./components/intro/IntroScreen";
-import { TrainingScreen } from "./components/training/TrainingScreen";
+import { TrainingScreen } from "./components/training";
+import { GameEngine } from "./components/game/GameEngine";
+import {
+  createPlayerState,
+  KOREAN_COLORS,
+  type GamePhase,
+  type PlayerState,
+} from "./types";
 
-// Type definitions
-type GameMode = "intro" | "game" | "training";
-
-interface BackButtonProps {
-  readonly onBack: () => void;
+interface AppState {
+  readonly mode: GamePhase;
+  readonly isAudioInitialized: boolean;
+  readonly showDebugInfo: boolean;
 }
 
-// Constants
-const COLORS_APP = {
-  BLACK: 0x000000,
-  WHITE: 0xffffff,
-  DARK_BLUE: 0x000a12,
-  ACCENT_BLUE: 0x004455,
-  GRAY_TEXT: 0xcccccc,
-  CYAN: 0x00ffd0,
-} as const;
+const CANVAS_WIDTH = 800;
+const CANVAS_HEIGHT = 600;
 
-function App(): JSX.Element {
-  const [gameMode, setGameMode] = useState<GameMode>("intro");
-  const audio = useAudio();
+export default function App(): React.JSX.Element {
+  const [appState, setAppState] = useState<AppState>({
+    mode: "intro",
+    isAudioInitialized: false,
+    showDebugInfo: false,
+  });
 
-  const startGame = useCallback((): void => {
-    audio.playSFX("menu_select");
-    setGameMode("game");
-  }, [audio]);
+  // Initialize audio on first user interaction
+  useEffect(() => {
+    const handleFirstInteraction = () => {
+      setAppState((prev) => ({ ...prev, isAudioInitialized: true }));
+      document.removeEventListener("click", handleFirstInteraction);
+      document.removeEventListener("keydown", handleFirstInteraction);
+    };
 
-  const startTraining = useCallback((): void => {
-    audio.playSFX("menu_select");
-    setGameMode("training");
-  }, [audio]);
+    document.addEventListener("click", handleFirstInteraction);
+    document.addEventListener("keydown", handleFirstInteraction);
 
-  const returnToIntro = useCallback((): void => {
-    audio.playSFX("menu_back");
-    setGameMode("intro");
-  }, [audio]);
+    return () => {
+      document.removeEventListener("click", handleFirstInteraction);
+      document.removeEventListener("keydown", handleFirstInteraction);
+    };
+  }, []);
+
+  // Handle mode transitions
+  const handleModeChange = useCallback((newMode: GamePhase) => {
+    setAppState((prev) => ({ ...prev, mode: newMode }));
+  }, []);
+
+  const handleStartGame = useCallback(() => {
+    handleModeChange("combat");
+  }, [handleModeChange]);
+
+  const handleExitToIntro = useCallback(() => {
+    handleModeChange("intro");
+  }, [handleModeChange]);
+
+  // Toggle debug information
+  const toggleDebugInfo = useCallback(() => {
+    setAppState((prev) => ({ ...prev, showDebugInfo: !prev.showDebugInfo }));
+  }, []);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === "F1") {
+        toggleDebugInfo();
+      }
+      if (event.key === "Escape" && appState.mode !== "intro") {
+        handleExitToIntro();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [appState.mode, handleExitToIntro, toggleDebugInfo]);
+
+  // Create mock players for combat mode
+  const [players] = useState<[PlayerState, PlayerState]>([
+    createPlayerState("player1", { x: 200, y: 400 }),
+    createPlayerState("player2", { x: 600, y: 400 }),
+  ]);
 
   return (
-    <div className="app-container">
+    <div
+      style={{
+        width: "100vw",
+        height: "100vh",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: KOREAN_COLORS.BLACK,
+        fontFamily: "Noto Sans KR, Arial, sans-serif",
+      }}
+    >
       <Stage
-        width={window.innerWidth}
-        height={window.innerHeight}
-        backgroundColor={COLORS_APP.BLACK}
-        antialias={true}
-        resizeTo={window}
+        width={CANVAS_WIDTH}
+        height={CANVAS_HEIGHT}
+        options={{
+          backgroundColor: KOREAN_COLORS.BLACK,
+          antialias: true,
+          autoDensity: true,
+          resolution: window.devicePixelRatio || 1,
+        }}
       >
-        {gameMode === "intro" && (
-          <IntroScreen
-            onStartGame={startGame}
-            onStartTraining={startTraining}
+        {/* Intro Screen */}
+        {appState.mode === "intro" && (
+          <IntroScreen onStartGame={handleStartGame} />
+        )}
+
+        {/* Training Mode */}
+        {appState.mode === "training" && (
+          <TrainingScreen
+            playerState={players[0]}
+            onBack={() => setAppState((prev) => ({ ...prev, mode: "intro" }))}
           />
         )}
-        {gameMode === "game" && (
-          <pixiContainer>
-            <GameEngine />
-            <BackButton onBack={returnToIntro} />
-          </pixiContainer>
-        )}
-        {gameMode === "training" && (
-          <pixiContainer>
-            <TrainingScreen onExit={returnToIntro} />
-            <BackButton onBack={returnToIntro} />
-          </pixiContainer>
+
+        {/* Combat Mode */}
+        {appState.mode === "combat" && (
+          <GameEngine
+            players={players}
+            gamePhase={appState.mode}
+            onGamePhaseChange={handleModeChange}
+            onPlayersChange={() => {}}
+          />
         )}
       </Stage>
+
+      {/* Debug Information Overlay */}
+      {appState.showDebugInfo && (
+        <div
+          style={{
+            position: "absolute",
+            top: 10,
+            left: 10,
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            color: KOREAN_COLORS.WHITE,
+            padding: "10px",
+            fontFamily: "monospace",
+            fontSize: "12px",
+            borderRadius: "5px",
+            zIndex: 1000,
+          }}
+        >
+          <div>흑괘 무술 도장 (Black Trigram Martial Arts)</div>
+          <div>Mode: {appState.mode}</div>
+          <div>Audio: {appState.isAudioInitialized ? "✓" : "✗"}</div>
+          <div>
+            Canvas: {CANVAS_WIDTH}x{CANVAS_HEIGHT}
+          </div>
+          <div>FPS: {Math.round(60)} (estimated)</div>
+          <div>F1: Toggle Debug | ESC: Exit to Menu</div>
+        </div>
+      )}
+
+      {/* Audio initialization prompt */}
+      {!appState.isAudioInitialized && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: 20,
+            left: "50%",
+            transform: "translateX(-50%)",
+            backgroundColor: "rgba(255, 215, 0, 0.9)",
+            color: KOREAN_COLORS.BLACK,
+            padding: "10px 20px",
+            borderRadius: "5px",
+            fontWeight: "bold",
+            fontSize: "14px",
+            zIndex: 1000,
+          }}
+        >
+          클릭하여 오디오 활성화 (Click to enable audio)
+        </div>
+      )}
     </div>
   );
 }
-
-function BackButton({ onBack }: BackButtonProps): JSX.Element {
-  const [isHovered, setIsHovered] = useState(false);
-  const audio = useAudio();
-
-  return (
-    <pixiContainer
-      x={50}
-      y={50}
-      interactive={true}
-      cursor="pointer"
-      onPointerDown={() => {
-        audio.playSFX("menu_back");
-        onBack();
-      }}
-      onPointerEnter={() => {
-        audio.playSFX("menu_hover");
-        setIsHovered(true);
-      }}
-      onPointerLeave={() => setIsHovered(false)}
-    >
-      <pixiGraphics
-        draw={(g: any) => {
-          g.clear();
-          g.setFillStyle({ color: COLORS_APP.DARK_BLUE, alpha: 0.9 });
-          g.roundRect(-40, -20, 80, 40, 5);
-          g.fill();
-
-          g.setStrokeStyle({
-            color: isHovered ? COLORS_APP.CYAN : COLORS_APP.ACCENT_BLUE,
-            width: isHovered ? 2 : 1,
-            alpha: isHovered ? 0.9 : 0.7,
-          });
-          g.roundRect(-40, -20, 80, 40, 5);
-          g.stroke();
-
-          g.setStrokeStyle({ color: COLORS_APP.CYAN, width: 1, alpha: 0.4 });
-          g.moveTo(-40, -10);
-          g.lineTo(-30, -20);
-          g.moveTo(40, -10);
-          g.lineTo(30, -20);
-          g.stroke();
-        }}
-      />
-      <pixiText
-        text="← 뒤로"
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 14,
-          fill: isHovered ? COLORS_APP.CYAN : COLORS_APP.GRAY_TEXT,
-          ...(isHovered && {
-            dropShadow: {
-              color: COLORS_APP.CYAN,
-              blur: 4,
-              distance: 0,
-            },
-          }),
-        }}
-      />
-    </pixiContainer>
-  );
-}
-
-export default App;

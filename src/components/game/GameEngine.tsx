@@ -1,145 +1,138 @@
-import React, { useEffect, useReducer, useCallback } from "react";
-import { Stage } from "@pixi/react";
-import {
-  GameState,
-  createPlayerState,
-  TRIGRAM_DATA,
+import React, { useState, useCallback, useEffect } from "react";
+import { Container } from "@pixi/react";
+import type {
   PlayerState,
+  GamePhase,
+  TrigramStance,
+  KoreanTechnique,
 } from "../../types";
-import { Player } from "./Player";
+import { TrigramSystem } from "../../systems/TrigramSystem";
 import { GameUI } from "./GameUI";
+import { Player } from "./Player";
 import { DojangBackground } from "./DojangBackground";
-import { useAudio } from "../../audio/AudioManager";
-import { CombatSystem } from "../../systems/CombatSystem";
 
-const ROUND_TIME_LIMIT = 180 * 1000; // 3 minutes in milliseconds
-const PLAYER_ONE_ID = "player1";
-const PLAYER_TWO_ID = "player2";
+export interface GameEngineProps {
+  readonly players: [PlayerState, PlayerState];
+  readonly gamePhase: GamePhase;
+  readonly onPlayersChange: (players: [PlayerState, PlayerState]) => void;
+  readonly onGamePhaseChange: (phase: GamePhase) => void;
+  readonly onExit?: () => void;
+}
 
-const initialPlayer1State = createPlayerState(PLAYER_ONE_ID, {
-  x: 100,
-  y: 300,
-});
-const initialPlayer2State = createPlayerState(PLAYER_TWO_ID, {
-  x: 700,
-  y: 300,
-});
+export function GameEngine({
+  players,
+  gamePhase,
+  onPlayersChange,
+  onExit,
+}: GameEngineProps): React.JSX.Element {
+  const [currentRound] = useState<number>(1);
+  const [timeRemaining] = useState<number>(90);
+  const [combatLog] = useState<string[]>([]);
 
-const initialState: GameState = {
-  players: [initialPlayer1State, initialPlayer2State] as [
-    PlayerState,
-    PlayerState
-  ], // Fix tuple typing
-  currentRound: 1,
-  timeRemaining: ROUND_TIME_LIMIT,
-  winner: null,
-  isPaused: false,
-  phase: "initializing",
-  gameTime: 0,
-  environment: {
-    dojangType: "traditional_dojang", // Example
-    lighting: "day",
-    timeOfDay: 12, // Noon
-    weather: "clear",
-  },
-  gameEvents: [],
-  matchScore: { player1: 0, player2: 0 },
-  settings: {
-    // This should match GameSettings interface
-    difficulty: "medium",
-    allowMusic: true,
-    allowSFX: true,
-    showVitalPoints: true,
-    showDamageNumbers: true,
-    showStanceIndicator: true,
-    // 'rounds' was incorrect; maxRounds is part of GameState if needed
-  },
-  combatLog: [],
-  maxRounds: 3, // Example
-};
+  const handleExit = useCallback(() => {
+    onExit?.();
+  }, [onExit]);
 
-export function GameEngine(): React.ReactElement {
-  const audio = useAudio();
+  const handleStanceChange = useCallback(
+    (playerId: string, stance: TrigramStance) => {
+      const playerIndex = players.findIndex((p) => p.playerId === playerId);
+      if (playerIndex !== -1) {
+        const newPlayers = [...players] as [PlayerState, PlayerState];
+        const currentPlayer = players[playerIndex];
 
-  useEffect(() => {
-    audio.playMusic("combat_theme" as any); // Fix music track ID
-  }, [audio]);
+        if (!currentPlayer) return; // Guard against undefined
 
-  // Fix reducer to use CombatSystem.resolveAttack instead of processAttack
-  const gameReducer = useCallback(
-    (state: GameState, action: any): GameState => {
-      switch (action.type) {
-        case "EXECUTE_ATTACK": {
-          const { attackerId, defenderId, techniqueName } = action.payload;
-
-          const attacker = state.players.find((p) => p.playerId === attackerId);
-          const defender = state.players.find((p) => p.playerId === defenderId);
-
-          if (!attacker || !defender) return state;
-
-          const technique = Object.values(TRIGRAM_DATA).find(
-            (t) => t.technique.name === techniqueName
-          )?.technique;
-
-          if (!technique) return state;
-
-          const attackResult = CombatSystem.resolveAttack(
-            attacker,
-            defender,
-            technique
-          );
-
-          return {
-            ...state,
-            players: state.players.map((p) => {
-              if (p.playerId === attackerId)
-                return attackResult.attackerState || p;
-              if (p.playerId === defenderId)
-                return attackResult.defenderState || p;
-              return p;
-            }) as [PlayerState, PlayerState], // Ensure tuple type
-          };
-        }
-        default:
-          return state;
+        // Create new player state with stance change
+        newPlayers[playerIndex] = {
+          ...currentPlayer,
+          stance,
+          lastStanceChangeTime: Date.now(),
+        };
+        onPlayersChange(newPlayers);
       }
     },
-    []
+    [players, onPlayersChange]
   );
 
-  const [state] = useReducer(gameReducer, initialState); // Remove unused dispatch
+  const handlePlayerAttack = useCallback(
+    (playerId: string, technique: KoreanTechnique) => {
+      const attackerIndex = players.findIndex((p) => p.playerId === playerId);
+      const defenderIndex = attackerIndex === 0 ? 1 : 0;
+
+      if (attackerIndex !== -1 && attackerIndex < players.length) {
+        const newPlayers = [...players] as [PlayerState, PlayerState];
+        const attacker = players[attackerIndex];
+        const defender = players[defenderIndex];
+
+        if (!attacker || !defender) return; // Guard against undefined
+
+        // Update attacker state
+        newPlayers[attackerIndex] = {
+          ...attacker,
+          stamina: Math.max(0, attacker.stamina - (technique.staminaCost || 3)),
+          ki: Math.max(0, attacker.ki - (technique.kiCost || 5)),
+          isAttacking: true,
+        };
+
+        const damage = technique.damage || 10;
+        // Update defender state
+        newPlayers[defenderIndex] = {
+          ...defender,
+          health: Math.max(0, defender.health - damage),
+          lastDamageTaken: damage,
+        };
+
+        onPlayersChange(newPlayers);
+      }
+    },
+    [players, onPlayersChange]
+  );
+
+  useEffect(() => {
+    if (gamePhase === "victory" || gamePhase === "defeat") {
+      setTimeout(handleExit, 3000);
+    }
+  }, [gamePhase, handleExit]);
 
   return (
-    <Stage width={800} height={600} data-testid="game-engine">
-      <DojangBackground
-        variant="traditional"
-        lighting="day"
-        setting={state.environment?.dojangType || "traditional"}
-        timeOfDay={state.environment?.timeOfDay?.toString() || "day"}
-        weather={state.environment?.weather || "clear"}
-        dojangType={state.environment?.dojangType || "traditional"}
-      />
+    <Container data-testid="game-container">
+      <DojangBackground width={800} height={600} />
 
-      {state.players.map(
-        (
-          player // Remove unused index
-        ) => (
+      {players.map((player) => {
+        const technique = TrigramSystem.getTechniqueForStance(player.stance);
+
+        return (
           <Player
             key={player.playerId}
             playerState={player}
-            onStanceChange={(_stance) => {
-              // Mark parameter as intentionally unused
-              // Handle stance change
-            }}
-            onAttack={(_target) => {
-              // Mark parameter as intentionally unused
-              // Handle attack
+            onStanceChange={(stance) =>
+              handleStanceChange(player.playerId, stance)
+            }
+            onAttack={(attackTechnique) => {
+              // Fix: ensure we only pass KoreanTechnique objects
+              const finalTechnique = attackTechnique || technique;
+              if (
+                finalTechnique &&
+                typeof finalTechnique === "object" &&
+                "damage" in finalTechnique
+              ) {
+                handlePlayerAttack(
+                  player.playerId,
+                  finalTechnique as KoreanTechnique
+                );
+              }
             }}
           />
-        )
-      )}
+        );
+      })}
 
-      <GameUI gameState={state} />
-    </Stage>
+      <GameUI
+        players={players}
+        gameTime={Date.now()}
+        currentRound={currentRound}
+        timeRemaining={timeRemaining}
+        combatLog={combatLog}
+      />
+    </Container>
   );
 }

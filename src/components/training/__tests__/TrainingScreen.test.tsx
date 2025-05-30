@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, waitFor, fireEvent } from "@testing-library/react"; // fireEvent for keyboard
 import userEvent from "@testing-library/user-event";
 import { TrainingScreen } from "../TrainingScreen";
-import { Stage } from "@pixi/react"; // For context
+import { Stage } from "@pixi/react";
+import type { TrigramStance } from "../../../types"; // Add missing import
 
 // Mock the audio manager
 vi.mock("../../../audio/AudioManager", () => ({
@@ -26,7 +27,7 @@ vi.mock("../../ui/ProgressTracker", () => ({
 }));
 
 describe("TrainingScreen", () => {
-  const mockOnExit = vi.fn();
+  const mockOnExit = vi.fn(); // Changed from mockOnExit to match usage
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -37,7 +38,28 @@ describe("TrainingScreen", () => {
     return render(<Stage>{ui}</Stage>);
   };
 
-  const TrainingScreenComponent = () => <TrainingScreen onExit={mockOnExit} />;
+  const mockPlayerState = {
+    playerId: "player1",
+    position: { x: 100, y: 200 },
+    velocity: { x: 0, y: 0 },
+    health: 100,
+    maxHealth: 100,
+    stamina: 100,
+    maxStamina: 100,
+    ki: 50,
+    maxKi: 100,
+    stance: "geon" as TrigramStance,
+    isAttacking: false,
+    isBlocking: false,
+    isMoving: false,
+    facing: "right" as const,
+    conditions: [],
+    comboCount: 0,
+  };
+
+  const TrainingScreenComponent = () => (
+    <TrainingScreen playerState={mockPlayerState} onBack={mockOnExit} />
+  );
 
   describe("Component Structure", () => {
     it("renders training screen with all main components", () => {
@@ -123,13 +145,13 @@ describe("TrainingScreen", () => {
     it("responds to exit commands (Escape)", async () => {
       renderInStage(<TrainingScreenComponent />);
       fireEvent.keyDown(document.body, { key: "Escape" });
-      await waitFor(() => expect(mockOnExit).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect(mockOnExit).toHaveBeenCalledTimes(1)); // Changed from mockOnExit to mockOnExit
     });
 
     it("responds to exit commands (Backspace)", async () => {
       renderInStage(<TrainingScreenComponent />);
       fireEvent.keyDown(document.body, { key: "Backspace" });
-      await waitFor(() => expect(mockOnExit).toHaveBeenCalledTimes(1));
+      await waitFor(() => expect(mockOnExit).toHaveBeenCalledTimes(1)); // Changed from mockOnExit to mockOnExit
     });
   });
 

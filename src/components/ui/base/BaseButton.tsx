@@ -1,79 +1,87 @@
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import type { JSX } from "react";
+import { KOREAN_COLORS } from "../../../types";
+import type { Graphics as PixiGraphics, FederatedPointerEvent } from "pixi.js";
 
 export interface BaseButtonProps {
-  readonly width: number;
-  readonly height: number;
   readonly text: string;
-  readonly onSelect?: () => void;
-  readonly onActivate?: () => void;
-  readonly keyBinding?: string;
-  readonly showKeyBinding?: boolean;
+  readonly x?: number;
+  readonly y?: number;
+  readonly width?: number;
+  readonly height?: number;
+  readonly isSelected?: boolean;
   readonly isEnabled?: boolean;
-  readonly style?: {
-    readonly backgroundColor?: number;
-    readonly borderColor?: number;
-    readonly textColor?: number;
-    readonly hoverColor?: number;
-  };
+  readonly onClick?: () => void;
+  readonly onHover?: () => void;
+  readonly testId?: string;
 }
 
 export function BaseButton({
-  width,
-  height,
   text,
-  onSelect,
-  onActivate,
+  x = 0,
+  y = 0,
+  width = 200,
+  height = 50,
+  isSelected = false,
   isEnabled = true,
-  style = {},
+  onClick,
+  onHover,
+  testId,
 }: BaseButtonProps): JSX.Element {
-  const [isHovered, setIsHovered] = useState(false);
-
-  const handlePointerDown = useCallback(() => {
-    if (!isEnabled) return;
-    onActivate?.();
-  }, [isEnabled, onActivate]);
+  const handlePointerDown = useCallback(
+    (event: FederatedPointerEvent) => {
+      event.stopPropagation();
+      if (isEnabled && onClick) {
+        onClick();
+      }
+    },
+    [isEnabled, onClick]
+  );
 
   const handlePointerEnter = useCallback(() => {
-    if (!isEnabled) return;
-    setIsHovered(true);
-    onSelect?.();
-  }, [isEnabled, onSelect]);
-
-  const handlePointerLeave = useCallback(() => {
-    setIsHovered(false);
-  }, []);
+    if (isEnabled && onHover) {
+      onHover();
+    }
+  }, [isEnabled, onHover]);
 
   const drawButton = useCallback(
-    (g: any) => {
+    (g: PixiGraphics) => {
       g.clear();
 
-      // Button background
-      const bgColor = isHovered
-        ? style.hoverColor || 0x555555
-        : style.backgroundColor || 0x333333;
+      const bgColor = isSelected
+        ? KOREAN_COLORS.GOLD
+        : isEnabled
+        ? KOREAN_COLORS.DOJANG_BLUE
+        : KOREAN_COLORS.GRAY_DARK;
 
-      g.setFillStyle({ color: bgColor, alpha: 0.8 });
-      g.roundRect(-width / 2, -height / 2, width, height, 5);
+      const alpha = isEnabled ? 0.9 : 0.5;
+
+      // Button background
+      g.setFillStyle({ color: bgColor, alpha });
+      g.roundRect(-width / 2, -height / 2, width, height, 10);
       g.fill();
 
       // Button border
-      const borderColor =
-        style.borderColor || (isHovered ? 0xffd700 : 0x666666);
-      g.setStrokeStyle({ color: borderColor, width: 2, alpha: 0.9 });
-      g.roundRect(-width / 2, -height / 2, width, height, 5);
+      g.setStrokeStyle({
+        color: isSelected ? KOREAN_COLORS.WHITE : KOREAN_COLORS.GOLD,
+        width: 2,
+        alpha: isEnabled ? 1.0 : 0.5,
+      });
+      g.roundRect(-width / 2, -height / 2, width, height, 10);
       g.stroke();
     },
-    [width, height, isHovered, style]
+    [width, height, isSelected, isEnabled]
   );
 
   return (
     <pixiContainer
+      x={x}
+      y={y}
       interactive={isEnabled}
       cursor={isEnabled ? "pointer" : "default"}
       onPointerDown={handlePointerDown}
       onPointerEnter={handlePointerEnter}
-      onPointerLeave={handlePointerLeave}
+      data-testid={testId}
     >
       <pixiGraphics draw={drawButton} />
 
@@ -82,10 +90,11 @@ export function BaseButton({
         anchor={{ x: 0.5, y: 0.5 }}
         style={{
           fontFamily: "Noto Sans KR",
-          fontSize: 14,
-          fill: style.textColor || (isEnabled ? 0xffffff : 0x999999),
+          fontSize: 16,
+          fill: isSelected ? KOREAN_COLORS.BLACK : KOREAN_COLORS.WHITE,
           fontWeight: "bold",
         }}
+        alpha={isEnabled ? 1.0 : 0.6}
       />
     </pixiContainer>
   );

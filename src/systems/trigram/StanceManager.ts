@@ -1,7 +1,5 @@
-import type { PlayerState, TrigramStance } from "../../types"; // Fix import path
-import { TrigramCalculator, type TransitionMetrics } from "./TrigramCalculator";
+import type { PlayerState, TrigramStance } from "../../types";
 
-// Export stance order for testing
 export const STANCE_ORDER: TrigramStance[] = [
   "geon",
   "tae",
@@ -13,18 +11,26 @@ export const STANCE_ORDER: TrigramStance[] = [
   "gon",
 ];
 
+export interface TransitionMetrics {
+  readonly cost: number; // General cost metric
+  readonly effectiveness: number;
+  readonly timeRequired: number;
+  readonly kiCost?: number; // Add as optional for backward compatibility
+  readonly staminaCost?: number; // Add as optional for backward compatibility
+}
+
 export interface StanceTransitionResult {
   readonly updatedPlayer: PlayerState;
   readonly transitionData: {
     readonly cost: TransitionMetrics;
     readonly success: boolean;
-    readonly reason?: string | undefined; // Allow undefined for success cases
+    readonly reason?: string | undefined; // Fix: explicitly allow undefined
   };
 }
 
 export interface StanceValidationResult {
   readonly success: boolean;
-  readonly reason?: string;
+  readonly reason?: string | undefined; // Fix: explicitly allow undefined
 }
 
 export class StanceManager {
@@ -35,24 +41,6 @@ export class StanceManager {
     player: PlayerState,
     targetStance: TrigramStance
   ): StanceTransitionResult {
-    // Check if player is stunned
-    if (player.isStunned) {
-      return {
-        updatedPlayer: player,
-        transitionData: {
-          cost: {
-            staminaCost: 0,
-            kiCost: 0,
-            timeDelay: 0,
-            effectiveness: 0,
-          },
-          success: false,
-          reason: "Cannot transition while stunned",
-        },
-      };
-    }
-
-    // Validate transition
     const validation = StanceManager.validateTransition(
       player.stance,
       targetStance
@@ -61,61 +49,34 @@ export class StanceManager {
       return {
         updatedPlayer: player,
         transitionData: {
-          cost: {
-            staminaCost: 0,
-            kiCost: 0,
-            timeDelay: 0,
-            effectiveness: 0,
-          },
+          cost: { cost: 0, effectiveness: 0, timeRequired: 0 },
           success: false,
-          reason: validation.reason,
+          reason: validation.reason, // Now properly typed as string | undefined
         },
       };
     }
 
-    // Calculate transition cost
-    const transitionCost = TrigramCalculator.calculateTransitionCost(
+    const costMetrics = this.calculateTransitionCost(
       player.stance,
       targetStance
     );
-
-    // Check if player has enough resources
-    if (player.stamina < transitionCost.staminaCost) {
-      return {
-        updatedPlayer: player,
-        transitionData: {
-          cost: transitionCost,
-          success: false,
-          reason: "Insufficient stamina for stance transition",
-        },
-      };
-    }
-
-    if (player.ki < transitionCost.kiCost) {
-      return {
-        updatedPlayer: player,
-        transitionData: {
-          cost: transitionCost,
-          success: false,
-          reason: "Insufficient ki for stance transition",
-        },
-      };
-    }
-
-    // Execute transition
     const updatedPlayer: PlayerState = {
       ...player,
       stance: targetStance,
-      stamina: Math.max(0, player.stamina - transitionCost.staminaCost),
-      ki: Math.max(0, player.ki - transitionCost.kiCost),
-      lastAttackTime: Date.now(),
+      ki: Math.max(0, player.ki - costMetrics.cost),
+      stamina: Math.max(
+        0,
+        player.stamina - (costMetrics.staminaCost || costMetrics.cost * 0.5)
+      ),
+      lastStanceChangeTime: Date.now(),
     };
 
     return {
       updatedPlayer,
       transitionData: {
-        cost: transitionCost,
+        cost: costMetrics,
         success: true,
+        reason: undefined, // Explicitly set to undefined for successful transitions
       },
     };
   }
@@ -128,15 +89,29 @@ export class StanceManager {
     toStance: TrigramStance
   ): StanceValidationResult {
     if (fromStance === toStance) {
-      return {
-        success: false,
-        reason: "Already in target stance",
-      };
+      return { success: false, reason: "Already in target stance" };
     }
+    return { success: true, reason: undefined }; // Explicitly set reason to undefined
+  }
 
-    // Add any stance-specific restrictions here
-    // For now, all transitions are valid if different
-    return { success: true };
+  private calculateTransitionCost(
+    fromStance: TrigramStance,
+    toStance: TrigramStance
+  ): TransitionMetrics {
+    const fromIndex = STANCE_ORDER.indexOf(fromStance);
+    const toIndex = STANCE_ORDER.indexOf(toStance);
+    const distance = Math.abs(toIndex - fromIndex);
+
+    const baseCost = distance * 5;
+    const staminaCost = distance * 3;
+
+    return {
+      cost: baseCost,
+      effectiveness: 1.0 - distance * 0.1,
+      timeRequired: distance * 0.2,
+      kiCost: baseCost, // Add for compatibility
+      staminaCost: staminaCost, // Add for compatibility
+    };
   }
 
   /**
@@ -146,53 +121,14 @@ export class StanceManager {
     currentStance: TrigramStance,
     player: PlayerState
   ): TrigramStance[] {
-    const allStances: TrigramStance[] = [
-      "geon",
-      "tae",
-      "li",
-      "jin",
-      "son",
-      "gam",
-      "gan",
-      "gon",
-    ];
-
-    return allStances.filter((stance) => {
+    return STANCE_ORDER.filter((stance) => {
       if (stance === currentStance) return false;
-
-      const cost = TrigramCalculator.calculateTransitionCost(
-        currentStance,
-        stance
+      const cost = this.calculateTransitionCost(currentStance, stance);
+      return (
+        player.ki >= cost.cost &&
+        player.stamina >= (cost.staminaCost || cost.cost * 0.5)
       );
-      return player.stamina >= cost.staminaCost && player.ki >= cost.kiCost;
     });
-  }
-
-  /**
-   * Calculate time until transition is complete
-   */
-  public calculateTransitionTime(
-    fromStance: TrigramStance,
-    toStance: TrigramStance
-  ): number {
-    const cost = TrigramCalculator.calculateTransitionCost(
-      fromStance,
-      toStance
-    );
-    return cost.timeDelay;
-  }
-
-  /**
-   * Get stance effectiveness modifier
-   */
-  public getStanceEffectiveness(
-    playerStance: TrigramStance,
-    opponentStance: TrigramStance
-  ): number {
-    return TrigramCalculator.calculateDamageMultiplier(
-      playerStance,
-      opponentStance
-    );
   }
 
   /**
@@ -202,14 +138,17 @@ export class StanceManager {
     player: PlayerState,
     targetStance: TrigramStance
   ): boolean {
-    if (player.isStunned) return false;
-    if (player.stance === targetStance) return false;
-
-    const cost = TrigramCalculator.calculateTransitionCost(
+    const validation = StanceManager.validateTransition(
       player.stance,
       targetStance
     );
-    return player.stamina >= cost.staminaCost && player.ki >= cost.kiCost;
+    if (!validation.success) return false;
+
+    const cost = this.calculateTransitionCost(player.stance, targetStance);
+    return (
+      player.ki >= cost.cost &&
+      player.stamina >= (cost.staminaCost || cost.cost * 0.5)
+    );
   }
 
   /**
@@ -237,23 +176,18 @@ export class StanceManager {
       playerStance,
       opponentStance
     );
-    const effectiveness = TrigramCalculator.calculateDamageMultiplier(
-      playerStance,
-      opponentStance
-    );
+    const effectiveness = advantage > 1.0 ? advantage : 1.0 / advantage;
 
-    let recommendation = "Maintain current stance";
-    if (advantage < -0.3) {
-      recommendation = "Consider defensive transition";
-    } else if (advantage > 0.3) {
-      recommendation = "Aggressive stance - exploit advantage";
+    let recommendation: string;
+    if (advantage > 1.1) {
+      recommendation = `${playerStance} has advantage over ${opponentStance}`;
+    } else if (advantage < 0.9) {
+      recommendation = `Consider switching from ${playerStance} against ${opponentStance}`;
+    } else {
+      recommendation = `${playerStance} is neutral against ${opponentStance}`;
     }
 
-    return {
-      advantage,
-      effectiveness,
-      recommendation,
-    };
+    return { advantage, effectiveness, recommendation };
   }
 
   /**
@@ -268,44 +202,37 @@ export class StanceManager {
     reason: string;
     confidence: number;
   } {
-    const availableStances = this.getAvailableTransitions(
-      currentStance,
-      player
-    );
-
-    if (availableStances.length === 0) {
-      return {
-        recommendedStance: currentStance,
-        reason: "No available transitions",
-        confidence: 0,
-      };
-    }
-
-    // Find stance with highest advantage
     let bestStance = currentStance;
     let bestAdvantage = StanceManager.calculateStanceAdvantage(
       currentStance,
       opponentStance
     );
 
-    for (const stance of availableStances) {
-      const advantage = StanceManager.calculateStanceAdvantage(
-        stance,
-        opponentStance
-      );
-      if (advantage > bestAdvantage) {
-        bestAdvantage = advantage;
-        bestStance = stance;
+    for (const stance of STANCE_ORDER) {
+      if (this.canTransition(player, stance)) {
+        const advantage = StanceManager.calculateStanceAdvantage(
+          stance,
+          opponentStance
+        );
+        if (advantage > bestAdvantage) {
+          bestAdvantage = advantage;
+          bestStance = stance;
+        }
       }
     }
 
+    const confidence = Math.min(1.0, (bestAdvantage - 1.0) * 2);
+    const reason =
+      bestStance === currentStance
+        ? "Current stance is optimal"
+        : `Switch to ${bestStance} for ${Math.round(
+            (bestAdvantage - 1) * 100
+          )}% advantage`;
+
     return {
       recommendedStance: bestStance,
-      reason:
-        bestStance === currentStance
-          ? "Current stance is optimal"
-          : "Better advantage available",
-      confidence: Math.abs(bestAdvantage),
+      reason,
+      confidence,
     };
   }
 
@@ -330,18 +257,73 @@ export class StanceManager {
     this.transitionHistory = [];
   }
 
+  // Add the missing calculateDamageMultiplier method
+  public calculateDamageMultiplier(
+    attackerStance: TrigramStance,
+    defenderStance: TrigramStance,
+    technique?: string
+  ): number {
+    const baseAdvantage = StanceManager.calculateStanceAdvantage(
+      attackerStance,
+      defenderStance
+    );
+
+    // Additional modifiers based on technique type
+    let techniqueModifier = 1.0;
+    if (technique) {
+      // Simple technique-based modifiers
+      const techniqueModifiers: Record<string, number> = {
+        천둥벽력: 1.1, // Thunder techniques are stronger
+        화염지창: 1.15, // Fire techniques have high damage
+        수류반격: 1.2, // Counter techniques are very effective
+      };
+      techniqueModifier = techniqueModifiers[technique] || 1.0;
+    }
+
+    return baseAdvantage * techniqueModifier;
+  }
+
   // Static calculation methods
   public static calculateStanceAdvantage(
     attackerStance: TrigramStance,
     defenderStance: TrigramStance
   ): number {
-    const compatibility = TrigramCalculator["calculateCompatibility"](
-      attackerStance,
-      defenderStance
-    );
-    return (compatibility - 0.5) * 2; // Normalize to -1 to 1 range
+    // Simplified stance advantage calculation based on I Ching relationships
+    const advantages: Record<TrigramStance, TrigramStance[]> = {
+      geon: ["tae", "gam"], // Heaven overcomes Lake and Water
+      tae: ["li", "gan"], // Lake overcomes Fire and Mountain
+      li: ["jin", "gon"], // Fire overcomes Thunder and Earth
+      jin: ["son", "geon"], // Thunder overcomes Wind and Heaven
+      son: ["gam", "tae"], // Wind overcomes Water and Lake
+      gam: ["gan", "li"], // Water overcomes Mountain and Fire
+      gan: ["gon", "jin"], // Mountain overcomes Earth and Thunder
+      gon: ["geon", "son"], // Earth overcomes Heaven and Wind
+    };
+
+    return advantages[attackerStance]?.includes(defenderStance) ? 1.2 : 1.0;
   }
 
+  /**
+   * Get the stance that counters the given stance most effectively
+   */
+  public static getCounterStance(stance: TrigramStance): TrigramStance {
+    const counters: Record<TrigramStance, TrigramStance> = {
+      geon: "gam", // Heaven countered by Water
+      tae: "li", // Lake countered by Fire
+      li: "gam", // Fire countered by Water
+      jin: "gan", // Thunder countered by Mountain
+      son: "geon", // Wind countered by Heaven
+      gam: "li", // Water countered by Fire
+      gan: "jin", // Mountain countered by Thunder
+      gon: "son", // Earth countered by Wind
+    };
+
+    return counters[stance];
+  }
+
+  /**
+   * Calculate the minimum distance between two stances in the trigram circle
+   */
   public static calculateStanceDistance(
     fromStance: TrigramStance,
     toStance: TrigramStance
@@ -349,7 +331,9 @@ export class StanceManager {
     const fromIndex = STANCE_ORDER.indexOf(fromStance);
     const toIndex = STANCE_ORDER.indexOf(toStance);
 
-    if (fromIndex === -1 || toIndex === -1) return Infinity;
+    if (fromIndex === -1 || toIndex === -1) {
+      throw new Error(`Invalid stance provided: ${fromStance} or ${toStance}`);
+    }
 
     const directDistance = Math.abs(toIndex - fromIndex);
     const wraparoundDistance = STANCE_ORDER.length - directDistance;
@@ -357,40 +341,28 @@ export class StanceManager {
     return Math.min(directDistance, wraparoundDistance);
   }
 
-  public static getCounterStance(stance: TrigramStance): TrigramStance {
-    // Based on I Ching opposition principles
-    const counterMap: Record<TrigramStance, TrigramStance> = {
-      geon: "gam", // Heaven vs Water
-      tae: "son", // Lake vs Wind
-      li: "gam", // Fire vs Water
-      jin: "gan", // Thunder vs Mountain
-      son: "tae", // Wind vs Lake
-      gam: "li", // Water vs Fire
-      gan: "jin", // Mountain vs Thunder
-      gon: "geon", // Earth vs Heaven
-    };
-
-    return counterMap[stance];
-  }
-
+  /**
+   * Get adjacent stances (previous and next in the trigram order)
+   */
   public static getAdjacentStances(stance: TrigramStance): {
     previous: TrigramStance;
     next: TrigramStance;
   } {
-    const index = STANCE_ORDER.indexOf(stance);
-    if (index === -1) {
-      throw new Error(`Invalid stance: ${stance}`);
-    }
+    const currentIndex = STANCE_ORDER.indexOf(stance);
 
+    // Handle wrap-around for circular stance order
     const previousIndex =
-      (index - 1 + STANCE_ORDER.length) % STANCE_ORDER.length;
-    const nextIndex = (index + 1) % STANCE_ORDER.length;
+      currentIndex === 0 ? STANCE_ORDER.length - 1 : currentIndex - 1;
+    const nextIndex =
+      currentIndex === STANCE_ORDER.length - 1 ? 0 : currentIndex + 1;
 
+    // These are guaranteed to be valid since we're using controlled indices
     const previous = STANCE_ORDER[previousIndex];
     const next = STANCE_ORDER[nextIndex];
 
+    // Add runtime safety check
     if (!previous || !next) {
-      throw new Error(`Failed to get adjacent stances for ${stance}`);
+      throw new Error(`Invalid stance configuration for ${stance}`);
     }
 
     return {
@@ -399,23 +371,40 @@ export class StanceManager {
     };
   }
 
+  /**
+   * Check if a transition is optimal (distance <= 2 or is a counter stance)
+   */
   public static isOptimalTransition(
     fromStance: TrigramStance,
     toStance: TrigramStance
   ): boolean {
+    if (fromStance === toStance) {
+      return true; // Same stance is always optimal
+    }
+
     const distance = this.calculateStanceDistance(fromStance, toStance);
-    return distance <= 1 || distance >= 3; // Adjacent or opposite stances
+    const isCounter = this.getCounterStance(fromStance) === toStance;
+
+    return distance <= 2 || isCounter;
   }
 
+  /**
+   * Get stances ordered by transition efficiency from the given stance
+   */
   public static getStancesByTransitionEfficiency(
     fromStance: TrigramStance
   ): TrigramStance[] {
-    return STANCE_ORDER.filter((stance) => stance !== fromStance).sort(
-      (a, b) => {
-        const distanceA = this.calculateStanceDistance(fromStance, a);
-        const distanceB = this.calculateStanceDistance(fromStance, b);
-        return distanceA - distanceB;
-      }
-    );
+    const otherStances = STANCE_ORDER.filter((stance) => stance !== fromStance);
+
+    return otherStances.sort((a, b) => {
+      const distanceA = this.calculateStanceDistance(fromStance, a);
+      const distanceB = this.calculateStanceDistance(fromStance, b);
+
+      // Counter stances get priority (lower sort value)
+      const isCounterA = this.getCounterStance(fromStance) === a ? -10 : 0;
+      const isCounterB = this.getCounterStance(fromStance) === b ? -10 : 0;
+
+      return distanceA + isCounterA - (distanceB + isCounterB);
+    });
   }
 }

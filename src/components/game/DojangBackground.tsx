@@ -4,148 +4,95 @@ import type { Graphics as PixiGraphics } from "pixi.js";
 import { KOREAN_COLORS } from "../../types";
 
 export interface DojangBackgroundProps {
-  variant: "traditional" | "modern" | "mountain" | "temple";
-  lighting: "day" | "night" | "dawn" | "evening";
-  setting?: string; // Make optional
-  timeOfDay?: string; // Make optional
-  weather?: string;
-  dojangType?: string;
+  readonly width: number;
+  readonly height: number;
 }
 
 export function DojangBackground({
-  variant,
-  lighting,
-  setting,
-  timeOfDay,
-  weather,
-  dojangType,
-}: DojangBackgroundProps): React.ReactElement {
-  const backgroundStyle = {
-    variant,
-    lighting,
-    setting: setting || "traditional",
-    timeOfDay: timeOfDay || "day",
-    weather: weather || "clear",
-    dojangType: dojangType || "traditional",
-  };
-
-  const trigrams = ["☰", "☱", "☲", "☳", "☴", "☵", "☶", "☷"];
-  const positions = [
-    { x: 100, y: 100 },
-    { x: 200, y: 100 },
-    { x: 300, y: 100 },
-    { x: 400, y: 100 },
-    { x: 100, y: 200 },
-    { x: 200, y: 200 },
-    { x: 300, y: 200 },
-    { x: 400, y: 200 },
-  ];
-
+  width,
+  height,
+}: DojangBackgroundProps): React.JSX.Element {
   const drawBackground = useCallback(
     (g: PixiGraphics) => {
       g.clear();
-
-      // Use backgroundStyle to determine colors and patterns
-      const baseColor =
-        backgroundStyle.lighting === "night" ? 0x1a1a2e : 0x87ceeb;
-      g.setFillStyle({ color: baseColor });
-      g.rect(0, 0, 800, 600);
+      g.setFillStyle({ color: KOREAN_COLORS.DOJANG_BLUE });
+      g.rect(0, 0, width, height);
       g.fill();
-
-      // Apply variant-specific styling
-      if (backgroundStyle.variant === "mountain") {
-        g.setFillStyle({ color: 0x8b7355 });
-        // Draw mountain silhouettes
-      }
-
-      // Floor
-      g.setFillStyle({ color: 0x8b4513, alpha: 0.8 });
-      g.rect(0, 400, 800, 200);
-      g.fill();
-
-      // Traditional wooden floor pattern
-      for (let i = 0; i < 800; i += 100) {
-        g.setStrokeStyle({ color: 0x654321, width: 2, alpha: 0.6 });
-        g.moveTo(i, 400);
-        g.lineTo(i, 600);
-        g.stroke();
-      }
-
-      // Walls
-      g.setFillStyle({ color: 0x696969, alpha: 0.7 });
-      g.rect(0, 0, 800, 400);
-      g.fill();
-
-      // Traditional Korean decorative elements
-      if (variant === "traditional") {
-        // Wooden beams
-        g.setFillStyle({ color: 0x8b4513, alpha: 0.9 });
-        g.rect(0, 350, 800, 20);
-        g.rect(0, 180, 800, 15);
-        g.fill();
-
-        // Traditional Korean patterns
-        g.setStrokeStyle({ color: KOREAN_COLORS.GOLD, width: 3, alpha: 0.6 });
-
-        // Draw simplified dancheong pattern
-        for (let x = 100; x < 700; x += 150) {
-          // Cloud pattern
-          g.arc(x, 100, 20, 0, Math.PI * 2);
-          g.stroke();
-
-          // Geometric patterns
-          g.rect(x - 15, 120, 30, 15);
-          g.stroke();
-        }
-      }
-
-      // Side pillars
-      g.setFillStyle({ color: 0x8b4513, alpha: 0.8 });
-      g.rect(50, 200, 30, 200);
-      g.rect(720, 200, 30, 200);
-      g.fill();
-
-      trigrams.forEach((_, index) => {
-        const pos = positions[index];
-        if (pos) {
-          g.circle(pos.x, pos.y, 25);
-          g.fill();
-        }
-      });
     },
-    [backgroundStyle] // Include backgroundStyle in dependencies
+    [width, height]
+  );
+
+  const drawFloor = useCallback(
+    (g: PixiGraphics) => {
+      g.clear();
+      const floorHeight = height * 0.15;
+      g.setFillStyle({ color: KOREAN_COLORS.GRAY_DARK });
+      g.rect(0, height - floorHeight, width, floorHeight);
+      g.fill();
+
+      g.setStrokeStyle({ color: KOREAN_COLORS.GOLD, width: 2 });
+      g.moveTo(0, height - floorHeight);
+      g.lineTo(width, height - floorHeight);
+      g.stroke();
+    },
+    [width, height]
+  );
+
+  const drawDecorations = useCallback(
+    (g: PixiGraphics) => {
+      g.clear();
+      g.setFillStyle({ color: KOREAN_COLORS.TRADITIONAL_RED });
+      g.rect(width * 0.05, height * 0.1, width * 0.9, height * 0.05);
+      g.fill();
+
+      g.setFillStyle({ color: KOREAN_COLORS.GOLD });
+      g.rect(width * 0.07, height * 0.11, width * 0.86, height * 0.03);
+      g.fill();
+    },
+    [width, height]
+  );
+
+  const drawGrid = useCallback(
+    (g: PixiGraphics) => {
+      g.clear();
+      g.setStrokeStyle({
+        color: KOREAN_COLORS.ACCENT_BLUE,
+        width: 1,
+        alpha: 0.3,
+      });
+
+      const gridSize = 50;
+      for (let x = 0; x <= width; x += gridSize) {
+        g.moveTo(x, 0);
+        g.lineTo(x, height);
+      }
+      for (let y = 0; y <= height; y += gridSize) {
+        g.moveTo(0, y);
+        g.lineTo(width, y);
+      }
+      g.stroke();
+    },
+    [width, height]
   );
 
   return (
     <Container>
-      {/* Main background */}
       <Graphics draw={drawBackground} />
+      <Graphics draw={drawFloor} />
+      <Graphics draw={drawDecorations} />
+      <Graphics draw={drawGrid} />
 
-      {/* Trigram symbols */}
-      {trigrams.map((symbol, index) => {
-        const pos = positions[index];
-        return pos ? (
-          <Text
-            key={index}
-            text={symbol}
-            x={pos.x}
-            y={pos.y}
-            anchor={{ x: 0.5, y: 0.5 }}
-            style={{
-              fontFamily: "serif",
-              fontSize: 24,
-              fill: 0xffd700,
-              dropShadow: {
-                color: "#000000",
-                blur: 4,
-                distance: 2,
-                alpha: 0.8,
-                angle: Math.PI / 4,
-              },
-            }}
-          />
-        ) : null;
-      })}
+      <Text
+        text="무술 도장"
+        x={10}
+        y={20}
+        style={{
+          fontFamily: "Noto Sans KR",
+          fontSize: 16,
+          fill: KOREAN_COLORS.BLACK,
+        }}
+        alpha={0.7}
+      />
     </Container>
   );
 }

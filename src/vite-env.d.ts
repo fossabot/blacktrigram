@@ -1,15 +1,21 @@
 /// <reference types="vite/client" />
 /// <reference types="react" />
 
-// Environment variables for Korean martial arts game
-interface ImportMetaEnv {
-  readonly VITE_GAME_VERSION: string;
-  readonly VITE_DOJANG_NAME: string;
-  readonly VITE_ENABLE_DEBUG: string;
+// Global JSX declarations for PixiJS components
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      pixiContainer: any;
+      pixiGraphics: any;
+      pixiText: any;
+      pixiSprite: any;
+    }
+  }
 }
 
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
+// Declare module for @pixi/react compatibility
+declare module "@pixi/react" {
+  export * from "@pixi/react/lib/index";
 }
 
 // Game asset type declarations

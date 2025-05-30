@@ -1,28 +1,30 @@
 import React from "react";
-import { Text } from "@pixi/react"; // Keep import as it's used below
-import type { TextProps } from "@pixi/react"; // Use proper type
+import { Text } from "@pixi/react";
+import type { TextProps } from "@pixi/react";
+import { KOREAN_COLORS } from "../../../types";
 
-interface KoreanTextProps extends Omit<TextProps, "style"> {
-  // Use TextProps instead of PixiReactTextProps
-  readonly text: string;
-  readonly style?: Partial<import("pixi.js").TextStyle>;
-  readonly fontFamily?: string;
+export interface KoreanTextProps extends Omit<TextProps, "style"> {
+  text: string;
+  style?: any; // Allow flexible styling
+  koreanFont?: boolean;
 }
 
 export function KoreanText({
   text,
   style = {},
-  fontFamily = "Noto Sans KR, Arial, sans-serif",
-  ...rest
+  koreanFont = true,
+  ...props
 }: KoreanTextProps): React.ReactElement {
-  const mergedStyle = {
-    fontFamily,
+  const defaultStyle = {
+    fontFamily: koreanFont
+      ? "Noto Sans KR, Arial, sans-serif"
+      : "Arial, sans-serif",
     fontSize: 16,
-    fill: 0xffffff,
+    fill: KOREAN_COLORS.WHITE,
     ...style,
   };
 
-  return <Text text={text} style={mergedStyle} {...rest} />; // Use Text instead of PixiText
+  return <Text text={text} style={defaultStyle} {...props} />;
 }
 
 // Helper function to validate Korean text

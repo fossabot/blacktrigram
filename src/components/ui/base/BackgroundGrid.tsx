@@ -1,39 +1,55 @@
-import React, { useCallback } from "react";
+import { useCallback } from "react";
+import type { JSX } from "react";
+import { KOREAN_COLORS } from "../../../types";
 import { Graphics } from "@pixi/react";
 import type { Graphics as PixiGraphics } from "pixi.js";
 
-interface BackgroundGridProps {
-  readonly width: number;
-  readonly height: number;
+export interface BackgroundGridProps {
+  readonly width?: number;
+  readonly height?: number;
   readonly gridSize?: number;
-  readonly color?: number;
-  readonly alpha?: number;
+  readonly time?: number;
 }
 
 export function BackgroundGrid({
-  width,
-  height,
-  gridSize = 50,
-  color = 0xcccccc,
-  alpha = 0.2,
-}: BackgroundGridProps): React.JSX.Element {
+  width = window.innerWidth,
+  height = window.innerHeight,
+  gridSize = 60,
+  time = 0,
+}: BackgroundGridProps): JSX.Element {
   const drawGrid = useCallback(
     (g: PixiGraphics) => {
       g.clear();
-      g.setStrokeStyle({ color, width: 1, alpha });
 
-      for (let i = 0; i < width; i += gridSize) {
-        g.moveTo(i, 0);
-        g.lineTo(i, height);
+      // Background fill
+      g.setFillStyle({ color: KOREAN_COLORS.BLACK });
+      g.rect(0, 0, width, height);
+      g.fill();
+
+      // Animated grid lines
+      const alpha = 0.2 + Math.sin(time * 0.01) * 0.1;
+      g.setStrokeStyle({
+        color: KOREAN_COLORS.DOJANG_BLUE,
+        width: 1,
+        alpha,
+      });
+
+      // Vertical lines
+      for (let x = 0; x < width; x += gridSize) {
+        g.moveTo(x, 0);
+        g.lineTo(x, height);
+        g.stroke();
       }
-      for (let j = 0; j < height; j += gridSize) {
-        g.moveTo(0, j);
-        g.lineTo(width, j);
+
+      // Horizontal lines
+      for (let y = 0; y < height; y += gridSize) {
+        g.moveTo(0, y);
+        g.lineTo(width, y);
+        g.stroke();
       }
-      g.stroke();
     },
-    [width, height, gridSize, color, alpha]
+    [width, height, gridSize, time]
   );
 
-  return <Graphics draw={drawGrid} />;
+  return <Graphics draw={drawGrid} data-testid="background-grid" />;
 }

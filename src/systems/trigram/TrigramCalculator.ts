@@ -1,5 +1,5 @@
-import type { TrigramStance } from "../../types"; // Fix import path
-import { TRIGRAM_DATA } from "../../types"; // Add TRIGRAM_DATA import
+import type { TrigramStance, PlayerState } from "../../types";
+import { TRIGRAM_DATA } from "../../types";
 
 export interface PathCalculationResult {
   readonly path: TrigramStance[];
@@ -12,6 +12,13 @@ export interface TransitionMetrics {
   readonly kiCost: number;
   readonly timeDelay: number;
   readonly effectiveness: number;
+}
+
+export interface TrigramEffectiveness {
+  readonly offensive: number;
+  readonly defensive: number;
+  readonly mobility: number;
+  readonly kiGeneration: number;
 }
 
 /**
@@ -426,6 +433,91 @@ export class TrigramCalculator {
     };
 
     return koreanNames[stance];
+  }
+
+  public static calculateEffectiveness(
+    stance: TrigramStance,
+    playerState: PlayerState
+  ): TrigramEffectiveness {
+    const trigramData = TRIGRAM_DATA[stance];
+    const baseValues = {
+      offensive: trigramData.damageModifier || 1.0,
+      defensive: trigramData.defenseModifier || 1.0,
+      mobility: trigramData.speedModifier || 1.0,
+      kiGeneration: trigramData.kiRegenRate || 1.0,
+    };
+
+    // Apply player state modifiers
+    const healthRatio = playerState.health / playerState.maxHealth;
+    const staminaRatio = playerState.stamina / playerState.maxStamina;
+    const kiRatio = playerState.ki / playerState.maxKi;
+
+    return {
+      offensive: baseValues.offensive * (0.5 + healthRatio * 0.5),
+      defensive: baseValues.defensive * (0.7 + staminaRatio * 0.3),
+      mobility: baseValues.mobility * (0.6 + staminaRatio * 0.4),
+      kiGeneration: baseValues.kiGeneration * (0.8 + kiRatio * 0.2),
+    };
+  }
+
+  public static getOptimalStance(
+    currentStance: TrigramStance,
+    opponentStance: TrigramStance,
+    playerState: PlayerState
+  ): TrigramStance {
+    let bestStance = currentStance;
+    let bestScore = 0;
+
+    for (const stance of Object.keys(TRIGRAM_DATA) as TrigramStance[]) {
+      const effectiveness = this.calculateEffectiveness(stance, playerState);
+      const advantage = this.calculateStanceAdvantage(stance, opponentStance);
+      const score =
+        (effectiveness.offensive + effectiveness.defensive) * advantage;
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestStance = stance;
+      }
+    }
+
+    return bestStance;
+  }
+
+  private static calculateStanceAdvantage(
+    attackerStance: TrigramStance,
+    defenderStance: TrigramStance
+  ): number {
+    // Use the same logic as StanceManager for consistency
+    const advantages: Record<TrigramStance, TrigramStance[]> = {
+      geon: ["tae", "gam"],
+      tae: ["li", "gan"],
+      li: ["jin", "gon"],
+      jin: ["son", "geon"],
+      son: ["gam", "tae"],
+      gam: ["gan", "li"],
+      gan: ["gon", "jin"],
+      gon: ["geon", "son"],
+    };
+
+    return advantages[attackerStance]?.includes(defenderStance) ? 1.2 : 1.0;
+  }
+
+  public static calculateTransitionEfficiency(
+    fromStance: TrigramStance,
+    toStance: TrigramStance
+  ): number {
+    if (fromStance === toStance) return 1.0;
+
+    const fromData = TRIGRAM_DATA[fromStance];
+    const toData = TRIGRAM_DATA[toStance];
+
+    // Calculate efficiency based on elemental compatibility
+    const elementCompatibility =
+      fromData.element === toData.element ? 1.2 : 1.0;
+    const orderDistance = Math.abs(fromData.order - toData.order);
+    const distancePenalty = 1.0 - orderDistance * 0.05;
+
+    return Math.max(0.5, elementCompatibility * distancePenalty);
   }
 }
 

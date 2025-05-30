@@ -1,157 +1,177 @@
-import React, { useState, useCallback } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
-import type { Graphics as PixiGraphics } from "pixi.js";
-import type { TrigramStance, TrigramWheelProps } from "../../types";
+import { useState, useCallback } from "react";
+import type { JSX } from "react";
+import { useAudio } from "../../audio/AudioManager";
+import type { TrigramWheelProps, TrigramStance } from "../../types";
 import { TRIGRAM_DATA, KOREAN_COLORS } from "../../types";
+import type { Graphics as PixiGraphics } from "pixi.js";
 
 export function TrigramWheel({
   selectedStance,
+  onStanceSelect,
   onStanceChange,
-  x = 0,
-  y = 0,
+  x = 400,
+  y = 300,
   radius = 120,
-}: TrigramWheelProps): React.JSX.Element {
+  isEnabled = true,
+  playerKi = 50,
+  playerMaxKi = 100,
+}: TrigramWheelProps): JSX.Element {
   const [hoveredStance, setHoveredStance] = useState<TrigramStance | null>(
     null
   );
+  const audio = useAudio();
 
   const drawWheel = useCallback(
     (g: PixiGraphics) => {
       g.clear();
 
-      // Draw central circle
-      const blackColor =
-        typeof KOREAN_COLORS.BLACK === "string"
-          ? parseInt(KOREAN_COLORS.BLACK.replace("#", ""), 16)
-          : KOREAN_COLORS.BLACK;
-      const goldColor =
-        typeof KOREAN_COLORS.GOLD === "string"
-          ? parseInt(KOREAN_COLORS.GOLD.replace("#", ""), 16)
-          : KOREAN_COLORS.GOLD;
-
-      g.setFillStyle({ color: blackColor, alpha: 0.8 });
-      g.circle(0, 0, radius * 0.3);
-      g.fill();
-
-      g.setStrokeStyle({ color: goldColor, width: 2 });
-      g.circle(0, 0, radius * 0.3);
+      // Draw outer ring
+      g.setStrokeStyle({
+        color: KOREAN_COLORS.GOLD,
+        width: 3,
+        alpha: 0.8,
+      });
+      g.circle(0, 0, radius);
       g.stroke();
-    },
-    [radius]
-  );
 
-  const drawStanceButton = useCallback(
-    (g: PixiGraphics, stance: TrigramStance, index: number) => {
-      const angle = (index / 8) * Math.PI * 2 - Math.PI / 2;
-      const buttonX = Math.cos(angle) * radius;
-      const buttonY = Math.sin(angle) * radius;
-
-      const trigramData = TRIGRAM_DATA[stance];
-      const isSelected = stance === selectedStance;
-      const isHovered = stance === hoveredStance;
-      const alpha = isSelected ? 1.0 : isHovered ? 0.8 : 0.6;
-
-      g.clear();
-
-      // Convert color string to number if needed
-      const stanceColor =
-        typeof trigramData.color === "string"
-          ? parseInt(trigramData.color.replace("#", ""), 16)
-          : trigramData.color;
-
-      // Button background
-      g.setFillStyle({ color: stanceColor, alpha: alpha * 0.3 });
-      g.circle(buttonX, buttonY, 30);
-      g.fill();
+      // Draw Ki energy ring
+      const kiRatio = playerKi / playerMaxKi;
+      const kiArcStart = -Math.PI / 2;
 
       g.setStrokeStyle({
-        color: stanceColor,
-        width: isSelected ? 3 : 2,
-        alpha: alpha,
+        color: KOREAN_COLORS.CYAN,
+        width: 6,
+        alpha: 0.6,
       });
-      g.circle(buttonX, buttonY, 30);
+      g.arc(0, 0, radius - 10, kiArcStart, kiArcStart + kiRatio * Math.PI * 2);
       g.stroke();
+
+      // Draw trigram positions
+      const stances: TrigramStance[] = [
+        "geon",
+        "tae",
+        "li",
+        "jin",
+        "son",
+        "gam",
+        "gan",
+        "gon",
+      ];
+
+      stances.forEach((stance, index) => {
+        const angle = (index / 8) * Math.PI * 2 - Math.PI / 2;
+        const posX = Math.cos(angle) * (radius - 30);
+        const posY = Math.sin(angle) * (radius - 30);
+
+        // Stance background
+        const isSelected = stance === selectedStance;
+        const isHovered = stance === hoveredStance;
+
+        g.setFillStyle({
+          color: isSelected
+            ? KOREAN_COLORS.GOLD
+            : isHovered
+            ? KOREAN_COLORS.CYAN
+            : KOREAN_COLORS.BLACK,
+          alpha: 0.7,
+        });
+        g.circle(posX, posY, 20);
+        g.fill();
+
+        // Stance border
+        g.setStrokeStyle({
+          color: TRIGRAM_DATA[stance].color,
+          width: 2,
+          alpha: 1.0,
+        });
+        g.circle(posX, posY, 20);
+        g.stroke();
+      });
     },
-    [radius, selectedStance, hoveredStance]
+    [radius, playerKi, playerMaxKi, selectedStance, hoveredStance]
   );
 
   return (
-    <Container x={x} y={y}>
-      <Graphics draw={drawWheel} />
+    <pixiContainer
+      x={x}
+      y={y}
+      interactive={isEnabled}
+      data-testid="trigram-wheel"
+    >
+      <pixiGraphics draw={drawWheel} />
 
-      {Object.entries(TRIGRAM_DATA).map(([stance, trigramData], index) => (
-        <Container
-          key={stance}
-          interactive={true}
-          onPointerDown={() => onStanceChange(stance as TrigramStance)}
-          onPointerEnter={() => setHoveredStance(stance as TrigramStance)}
-          onPointerLeave={() => setHoveredStance(null)}
-        >
-          <Graphics
-            draw={(g: PixiGraphics) =>
-              drawStanceButton(g, stance as TrigramStance, index)
-            }
-          />
+      {/* Trigram symbols and labels */}
+      {(
+        [
+          "geon",
+          "tae",
+          "li",
+          "jin",
+          "son",
+          "gam",
+          "gan",
+          "gon",
+        ] as TrigramStance[]
+      ).map((stance, index) => {
+        const angle = (index / 8) * Math.PI * 2 - Math.PI / 2;
+        const posX = Math.cos(angle) * (radius - 30);
+        const posY = Math.sin(angle) * (radius - 30);
 
-          <Text
-            text={trigramData.symbol}
-            anchor={{ x: 0.5, y: 0.5 }}
-            x={Math.cos((index / 8) * Math.PI * 2 - Math.PI / 2) * radius}
-            y={Math.sin((index / 8) * Math.PI * 2 - Math.PI / 2) * radius}
-            style={{
-              fontFamily: "serif",
-              fontSize: 24,
-              fill: KOREAN_COLORS.WHITE,
+        return (
+          <pixiContainer
+            key={stance}
+            x={posX}
+            y={posY}
+            interactive={isEnabled}
+            cursor="pointer"
+            onPointerDown={() => {
+              if (isEnabled) {
+                audio.playSFX("menu_select");
+                onStanceSelect?.(stance);
+                onStanceChange(stance);
+              }
             }}
-          />
+            onPointerEnter={() => setHoveredStance(stance)}
+            onPointerLeave={() => setHoveredStance(null)}
+          >
+            {/* Trigram symbol */}
+            <pixiText
+              text={TRIGRAM_DATA[stance].symbol}
+              anchor={{ x: 0.5, y: 0.5 }}
+              style={{
+                fontFamily: "serif",
+                fontSize: 16,
+                fill: KOREAN_COLORS.WHITE,
+                fontWeight: "bold",
+              }}
+            />
 
-          <Text
-            text={`${index + 1}`}
-            anchor={{ x: 0.5, y: 0.5 }}
-            x={Math.cos((index / 8) * Math.PI * 2 - Math.PI / 2) * radius}
-            y={Math.sin((index / 8) * Math.PI * 2 - Math.PI / 2) * radius + 20}
-            style={{
-              fontFamily: "Noto Sans KR",
-              fontSize: 12,
-              fill: KOREAN_COLORS.WHITE,
-            }}
-          />
+            {/* Korean name */}
+            <pixiText
+              text={TRIGRAM_DATA[stance].koreanName}
+              anchor={{ x: 0.5, y: 0.5 }}
+              y={25}
+              style={{
+                fontFamily: "Noto Sans KR",
+                fontSize: 12,
+                fill: KOREAN_COLORS.GOLD,
+              }}
+            />
+          </pixiContainer>
+        );
+      })}
 
-          <Text
-            text={trigramData.korean}
-            anchor={{ x: 0.5, y: 0.5 }}
-            x={Math.cos((index / 8) * Math.PI * 2 - Math.PI / 2) * radius}
-            y={Math.sin((index / 8) * Math.PI * 2 - Math.PI / 2) * radius - 20}
-            style={{
-              fontFamily: "Noto Sans KR",
-              fontSize: 14,
-              fill: trigramData.color,
-            }}
-          />
-        </Container>
-      ))}
-
-      {/* Center display */}
-      <Text
-        text={TRIGRAM_DATA[selectedStance].symbol}
+      {/* Center Ki indicator */}
+      <pixiText
+        text={`기 ${Math.round(playerKi)}/${playerMaxKi}`}
         anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          fontFamily: "serif",
-          fontSize: 32,
-          fill: TRIGRAM_DATA[selectedStance].color,
-        }}
-      />
-
-      <Text
-        text={TRIGRAM_DATA[selectedStance].english}
-        anchor={{ x: 0.5, y: 0.5 }}
-        y={25}
         style={{
           fontFamily: "Noto Sans KR",
-          fontSize: 16,
-          fill: KOREAN_COLORS.WHITE,
+          fontSize: 14,
+          fill: KOREAN_COLORS.CYAN,
+          fontWeight: "bold",
         }}
       />
-    </Container>
+    </pixiContainer>
   );
 }

@@ -1,59 +1,137 @@
-import React, { useCallback, useState } from "react";
-import { Container, Graphics, Text, useTick } from "@pixi/react";
-import type { PlayerState } from "../../types";
+import { useCallback } from "react";
+import { Container, Graphics, Text } from "@pixi/react";
+import type { ReactElement } from "react";
 import type { Graphics as PixiGraphics } from "pixi.js";
+import { KOREAN_COLORS, TRIGRAM_DATA, type PlayerState } from "../../types";
 
-export interface PlayerVisualsProps {
-  readonly playerState: PlayerState;
-  readonly scale?: number;
-  readonly showHealthBar?: boolean;
+interface PlayerVisualsProps {
+  player: PlayerState;
+  isLocalPlayer?: boolean;
 }
 
 export function PlayerVisuals({
-  playerState,
-  scale = 1,
-  showHealthBar = true,
-}: PlayerVisualsProps): React.ReactElement {
-  const [animationTime, setAnimationTime] = useState<number>(0);
+  player,
+  isLocalPlayer = false,
+}: PlayerVisualsProps): ReactElement {
+  const showHealthBar = true; // Add missing variable
+  const showStanceIndicator = true; // Add missing variable
 
-  useTick(
-    useCallback((delta: number) => {
-      setAnimationTime((prev) => prev + delta);
-    }, [])
-  );
+  const uniformColor = isLocalPlayer
+    ? KOREAN_COLORS.PLAYER_1_BLUE
+    : KOREAN_COLORS.WHITE;
 
   const drawPlayer = useCallback(
     (g: PixiGraphics) => {
       g.clear();
 
-      const pulseFactor = Math.sin(animationTime * 0.1) * 0.1 + 1;
-
-      g.setFillStyle({ color: 0x4a89e2 });
-      g.circle(0, 0, 20 * scale * pulseFactor);
+      // Player body
+      g.setFillStyle({ color: uniformColor });
+      g.rect(-15, -40, 30, 80);
       g.fill();
+
+      // Stance aura
+      const trigramData = TRIGRAM_DATA[player.stance];
+      if (trigramData) {
+        g.setStrokeStyle({
+          color: trigramData.color,
+          width: 3,
+          alpha: 0.7,
+        });
+        g.circle(0, 0, 50);
+        g.stroke();
+      }
     },
-    [scale, animationTime]
+    [player.stance, uniformColor]
+  );
+
+  const drawHealthBar = useCallback(
+    (g: PixiGraphics) => {
+      if (!showHealthBar) return;
+
+      g.clear();
+
+      const barWidth = 40;
+      const barHeight = 4;
+      const healthPercent = player.health / player.maxHealth;
+
+      // Background
+      g.setFillStyle({ color: KOREAN_COLORS.GRAY_DARK, alpha: 0.8 });
+      g.rect(-barWidth / 2, 0, barWidth, barHeight);
+      g.fill();
+
+      // Health
+      const healthColor =
+        healthPercent > 0.6
+          ? KOREAN_COLORS.Green
+          : healthPercent > 0.3
+          ? KOREAN_COLORS.Orange
+          : KOREAN_COLORS.Red;
+      g.setFillStyle({ color: healthColor, alpha: 0.9 });
+      g.rect(-barWidth / 2, 0, barWidth * healthPercent, barHeight);
+      g.fill();
+
+      // Border
+      g.setStrokeStyle({ color: KOREAN_COLORS.WHITE, width: 1 });
+      g.rect(-barWidth / 2, 0, barWidth, barHeight);
+      g.stroke();
+    },
+    [player.health, player.maxHealth, showHealthBar]
   );
 
   return (
-    <Container
-      x={playerState.position.x}
-      y={playerState.position.y}
-      scale={{ x: scale, y: scale }}
-    >
+    <Container x={player.position.x} y={player.position.y}>
+      {/* Main player graphics */}
       <Graphics draw={drawPlayer} />
-      {showHealthBar && (
+
+      {/* Health bar */}
+      <Container y={-75}>
+        <Graphics draw={drawHealthBar} />
+      </Container>
+
+      {/* Player ID label */}
+      <Text
+        text={player.playerId}
+        anchor={{ x: 0.5, y: 0.5 }}
+        y={-90}
+        style={{
+          fontFamily: "Noto Sans KR",
+          fontSize: 10,
+          fill: KOREAN_COLORS.PLAYER_1_BLUE,
+        }}
+      />
+
+      {/* Stance indicator */}
+      {showStanceIndicator && (
+        <Container y={50}>
+          <Text
+            text={`${TRIGRAM_DATA[player.stance].symbol} ${
+              TRIGRAM_DATA[player.stance].koreanName
+            }`}
+            anchor={{ x: 0.5, y: 0.5 }}
+            style={{
+              fontFamily: "Noto Sans KR, Arial, sans-serif",
+              fontSize: 14,
+              fill: isLocalPlayer
+                ? KOREAN_COLORS.PLAYER_1_BLUE
+                : KOREAN_COLORS.PLAYER_2_RED,
+              fontWeight: "bold",
+            }}
+          />
+        </Container>
+      )}
+
+      {/* Ki level indicator */}
+      <Container y={-65}>
         <Text
-          text={`HP: ${playerState.health}/${playerState.maxHealth}`}
-          y={-40}
+          text={`기 ${Math.round(player.ki)}/${player.maxKi}`}
           anchor={{ x: 0.5, y: 0.5 }}
           style={{
-            fontFamily: "Arial",
-            fontSize: 12,
-            fill: 0xffffff,
+            fontFamily: "Noto Sans KR",
+            fontSize: 8,
+            fill: KOREAN_COLORS.CYAN,
           }}
         />
-      )}
+      </Container>
     </Container>
   );
 }

@@ -58,6 +58,7 @@ vi.mock("react", async () => {
 describe("IntroScreen", () => {
   const mockOnStartGame = vi.fn();
   const mockOnStartTraining = vi.fn();
+  const mockOnStartCombat = vi.fn(); // Add missing prop
   const mockAudio = {
     playSFX: vi.fn(),
     playMusic: vi.fn(),
@@ -77,6 +78,13 @@ describe("IntroScreen", () => {
     width: 256,
     height: 256,
     label: "mock-texture",
+  };
+
+  // Combine all props into a default object
+  const defaultProps = {
+    onStartGame: mockOnStartGame,
+    onStartTraining: mockOnStartTraining,
+    onStartCombat: mockOnStartCombat,
   };
 
   beforeEach(() => {
@@ -109,12 +117,7 @@ describe("IntroScreen", () => {
 
   describe("Component Rendering", () => {
     it("should render intro screen with Korean martial arts theme", () => {
-      const { container } = render(
-        <IntroScreen
-          onStartGame={mockOnStartGame}
-          onStartTraining={mockOnStartTraining}
-        />
-      );
+      const { container } = render(<IntroScreen {...defaultProps} />);
 
       // Find elements by their text attribute instead of text content
       const pixiTexts = container.querySelectorAll("pixitext");
@@ -133,12 +136,7 @@ describe("IntroScreen", () => {
     });
 
     it("should display all Korean martial arts terminology correctly", () => {
-      const { container } = render(
-        <IntroScreen
-          onStartGame={mockOnStartGame}
-          onStartTraining={mockOnStartTraining}
-        />
-      );
+      const { container } = render(<IntroScreen {...defaultProps} />);
 
       const pixiTexts = container.querySelectorAll("pixitext");
 
@@ -155,12 +153,7 @@ describe("IntroScreen", () => {
     });
 
     it("should render trigram symbols in correct positions", () => {
-      const { container } = render(
-        <IntroScreen
-          onStartGame={mockOnStartGame}
-          onStartTraining={mockOnStartTraining}
-        />
-      );
+      const { container } = render(<IntroScreen {...defaultProps} />);
 
       const pixiTexts = container.querySelectorAll("pixitext");
 
@@ -176,12 +169,7 @@ describe("IntroScreen", () => {
     });
 
     it("should display Korean philosophy text", () => {
-      const { container } = render(
-        <IntroScreen
-          onStartGame={mockOnStartGame}
-          onStartTraining={mockOnStartTraining}
-        />
-      );
+      const { container } = render(<IntroScreen {...defaultProps} />);
 
       // Since we can't directly access text content in PixiJS elements through RTL,
       // we check for the existence of the element and verify attributes
@@ -211,12 +199,7 @@ describe("IntroScreen", () => {
 
   describe("User Interactions", () => {
     it("should handle sparring selection with audio feedback", async () => {
-      render(
-        <IntroScreen
-          onStartGame={mockOnStartGame}
-          onStartTraining={mockOnStartTraining}
-        />
-      );
+      render(<IntroScreen {...defaultProps} />);
 
       // Simulate left arrow key press for sparring selection
       fireEvent.keyDown(document, { code: "ArrowLeft" });
@@ -227,12 +210,7 @@ describe("IntroScreen", () => {
     });
 
     it("should handle training selection with audio feedback", async () => {
-      render(
-        <IntroScreen
-          onStartGame={mockOnStartGame}
-          onStartTraining={mockOnStartTraining}
-        />
-      );
+      render(<IntroScreen {...defaultProps} />);
 
       // Simulate right arrow key press for training selection
       fireEvent.keyDown(document, { code: "ArrowRight" });
@@ -243,12 +221,7 @@ describe("IntroScreen", () => {
     });
 
     it("should start game when sparring is confirmed", async () => {
-      render(
-        <IntroScreen
-          onStartGame={mockOnStartGame}
-          onStartTraining={mockOnStartTraining}
-        />
-      );
+      render(<IntroScreen {...defaultProps} />);
 
       // Select sparring and confirm
       fireEvent.keyDown(document, { code: "ArrowLeft" });
@@ -261,12 +234,7 @@ describe("IntroScreen", () => {
     });
 
     it("should start training when training is confirmed", async () => {
-      render(
-        <IntroScreen
-          onStartGame={mockOnStartGame}
-          onStartTraining={mockOnStartTraining}
-        />
-      );
+      render(<IntroScreen {...defaultProps} />);
 
       // Select training and confirm
       fireEvent.keyDown(document, { code: "ArrowRight" });
@@ -279,12 +247,7 @@ describe("IntroScreen", () => {
     });
 
     it("should handle direct game start with number keys", async () => {
-      render(
-        <IntroScreen
-          onStartGame={mockOnStartGame}
-          onStartTraining={mockOnStartTraining}
-        />
-      );
+      render(<IntroScreen {...defaultProps} />);
 
       // Press '1' for direct sparring start
       fireEvent.keyDown(document, { code: "Digit1" });
@@ -303,12 +266,7 @@ describe("IntroScreen", () => {
     });
 
     it("should handle Alt key for training shortcut", async () => {
-      render(
-        <IntroScreen
-          onStartGame={mockOnStartGame}
-          onStartTraining={mockOnStartTraining}
-        />
-      );
+      render(<IntroScreen {...defaultProps} />);
 
       // Press Alt for training shortcut
       fireEvent.keyDown(document, { code: "AltLeft" });
@@ -322,12 +280,7 @@ describe("IntroScreen", () => {
 
   describe("Korean Text Validation", () => {
     it("should render Korean characters correctly", () => {
-      const { container } = render(
-        <IntroScreen
-          onStartGame={mockOnStartGame}
-          onStartTraining={mockOnStartTraining}
-        />
-      );
+      const { container } = render(<IntroScreen {...defaultProps} />);
 
       const koreanTexts = [
         "흑괘 무술 도장",
@@ -350,12 +303,7 @@ describe("IntroScreen", () => {
     });
 
     it("should have proper Korean font styling", () => {
-      const { container } = render(
-        <IntroScreen
-          onStartGame={mockOnStartGame}
-          onStartTraining={mockOnStartTraining}
-        />
-      );
+      const { container } = render(<IntroScreen {...defaultProps} />);
 
       // Find elements with Korean text by checking text attribute for Korean characters
       const pixiTexts = container.querySelectorAll("pixitext");
@@ -376,12 +324,7 @@ describe("IntroScreen", () => {
 
   describe("Menu Button Interactions", () => {
     it("should handle mouse interactions on menu buttons", async () => {
-      const { container } = render(
-        <IntroScreen
-          onStartGame={mockOnStartGame}
-          onStartTraining={mockOnStartTraining}
-        />
-      );
+      const { container } = render(<IntroScreen {...defaultProps} />);
 
       // Find menu button containers by checking their cursor property
       const pixiContainers = container.querySelectorAll(
@@ -423,12 +366,7 @@ describe("IntroScreen", () => {
 
   describe("Accessibility and Performance", () => {
     it("should handle keyboard navigation properly", () => {
-      render(
-        <IntroScreen
-          onStartGame={mockOnStartGame}
-          onStartTraining={mockOnStartTraining}
-        />
-      );
+      render(<IntroScreen {...defaultProps} />);
 
       // Test various keyboard inputs
       const keyEvents = [
@@ -447,12 +385,7 @@ describe("IntroScreen", () => {
     });
 
     it("should initialize properly with audio system", () => {
-      render(
-        <IntroScreen
-          onStartGame={mockOnStartGame}
-          onStartTraining={mockOnStartTraining}
-        />
-      );
+      render(<IntroScreen {...defaultProps} />);
 
       // Verify audio system is accessed
       expect(useAudio).toHaveBeenCalled();
@@ -461,24 +394,14 @@ describe("IntroScreen", () => {
     it("should handle texture loading", () => {
       const { useTexture } = require("../../../hooks/useTexture");
 
-      render(
-        <IntroScreen
-          onStartGame={mockOnStartGame}
-          onStartTraining={mockOnStartTraining}
-        />
-      );
+      render(<IntroScreen {...defaultProps} />);
 
       // Verify texture hook is called for logo
       expect(useTexture).toHaveBeenCalledWith("/black-trigram-256.png");
     });
 
     it("should render Korean header correctly", () => {
-      render(
-        <IntroScreen
-          onStartGame={mockOnStartGame}
-          onStartTraining={mockOnStartTraining}
-        />
-      );
+      render(<IntroScreen {...defaultProps} />);
 
       // Check for Korean text in the header
       const textElements = screen.getAllByTestId("pixi-text");
@@ -493,12 +416,7 @@ describe("IntroScreen", () => {
 
   describe("Component State Management", () => {
     it("should maintain selected option state correctly", async () => {
-      render(
-        <IntroScreen
-          onStartGame={mockOnStartGame}
-          onStartTraining={mockOnStartTraining}
-        />
-      );
+      render(<IntroScreen {...defaultProps} />);
 
       // Change selection multiple times
       fireEvent.keyDown(document, { code: "ArrowLeft" }); // sparring
@@ -514,12 +432,7 @@ describe("IntroScreen", () => {
     });
 
     it("should handle training mode selection", async () => {
-      render(
-        <IntroScreen
-          onStartGame={mockOnStartGame}
-          onStartTraining={mockOnStartTraining}
-        />
-      );
+      render(<IntroScreen {...defaultProps} />);
 
       // Select training mode
       fireEvent.keyDown(document, { code: "ArrowRight" });
@@ -531,12 +444,7 @@ describe("IntroScreen", () => {
     });
 
     it("should display proper menu options", () => {
-      render(
-        <IntroScreen
-          onStartGame={mockOnStartGame}
-          onStartTraining={mockOnStartTraining}
-        />
-      );
+      render(<IntroScreen {...defaultProps} />);
 
       // Verify main container exists
       expect(screen.getByTestId("pixi-container")).toBeInTheDocument();

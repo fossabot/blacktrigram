@@ -296,11 +296,11 @@ export interface TransitionMetrics {
 }
 
 export interface TransitionPath {
-  readonly path: TrigramStance[]; // Path of stances
+  readonly path: TrigramStance[]; // Change from readonly TrigramStance[]
   readonly totalKiCost: number;
   readonly totalStaminaCost: number;
-  readonly totalCost?: number; // From GameTypes.ts, could be weighted sum
-  readonly stances?: readonly TrigramStance[]; // Alias for path from GameTypes.ts
+  readonly totalCost?: number;
+  readonly stances?: readonly TrigramStance[];
 }
 
 // Damage result - UNIFIED & EXPANDED
@@ -1168,3 +1168,10 @@ export const TRIGRAM_STANCES_ORDER: TrigramStance[] = [
   "gan",
   "gon",
 ];
+
+// Training progress type - NEW
+export interface TrainingProgress {
+  readonly practiceCount: number;
+  readonly mastery: number;
+  readonly lastPracticed?: number;
+}

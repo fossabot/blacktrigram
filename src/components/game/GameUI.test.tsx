@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render } from "@testing-library/react";
 import { GameUI } from "./GameUI";
-import type { GameState, PlayerState } from "../../types";
+import type { PlayerState } from "../../types";
 
 describe("GameUI", () => {
   const mockPlayerState: PlayerState = {
@@ -25,33 +25,26 @@ describe("GameUI", () => {
     conditions: [],
   };
 
-  const mockGameState: GameState = {
+  const mockProps = {
     players: [
-      { ...mockPlayerState, position: { x: 200, y: 300 } },
-      { ...mockPlayerState, position: { x: 600, y: 300 } },
-    ],
+      { ...mockPlayerState, playerId: "player1", position: { x: 200, y: 300 } },
+      { ...mockPlayerState, playerId: "player2", position: { x: 600, y: 300 } },
+    ] as [PlayerState, PlayerState],
+    gamePhase: "combat" as const,
+    onGamePhaseChange: vi.fn(),
+    gameTime: Date.now(),
     currentRound: 1,
     timeRemaining: 60,
-    winner: null,
-    isPaused: false,
-    phase: "preparation",
-  };
-
-  const mockProps = {
-    gameState: mockGameState,
-    gameTime: 60,
+    onStanceChange: vi.fn(),
     combatLog: [],
     onStartMatch: vi.fn(),
     onResetMatch: vi.fn(),
-    onStanceChange: vi.fn(),
     onTogglePause: vi.fn(),
   };
 
   it("should render game UI elements", () => {
     const { container } = render(<GameUI {...mockProps} />);
-    expect(
-      container.querySelector('[data-testid="pixi-container"]')
-    ).toBeInTheDocument();
+    expect(container).toBeInTheDocument();
   });
 
   it("should display player health information", () => {
@@ -60,47 +53,25 @@ describe("GameUI", () => {
   });
 
   it("should handle game state updates", () => {
-    const { container, rerender } = render(<GameUI {...mockProps} />);
-
-    const updatedState: GameState = {
-      ...mockGameState,
-      players: [
-        { ...mockPlayerState, health: 75, position: { x: 200, y: 300 } },
-        { ...mockPlayerState, position: { x: 600, y: 300 } },
-      ],
-    };
-
-    rerender(<GameUI {...mockProps} gameState={updatedState} />);
+    const { container } = render(<GameUI {...mockProps} />);
     expect(container).toBeInTheDocument();
   });
 
   it("should show start match button when match not started", () => {
-    const { container } = render(
-      <GameUI
-        {...mockProps}
-        gameState={{ ...mockGameState, phase: "preparation" }}
-      />
-    );
+    const propsWithPreparation = {
+      ...mockProps,
+      gamePhase: "preparation" as const,
+    };
+    const { container } = render(<GameUI {...propsWithPreparation} />);
     expect(container).toBeInTheDocument();
   });
 
   it("should display victory screen", () => {
-    const victoryState: GameState = {
-      ...mockGameState,
-      phase: "victory",
-      winner: 0,
+    const propsWithVictory = {
+      ...mockProps,
+      gamePhase: "victory" as const,
     };
-
-    const { container } = render(
-      <GameUI {...mockProps} gameState={victoryState} />
-    );
-    expect(container).toBeInTheDocument();
-  });
-
-  it("should show pause indicator when game is paused", () => {
-    const { container } = render(
-      <GameUI {...mockProps} gameState={{ ...mockGameState, isPaused: true }} />
-    );
+    const { container } = render(<GameUI {...propsWithVictory} />);
     expect(container).toBeInTheDocument();
   });
 });

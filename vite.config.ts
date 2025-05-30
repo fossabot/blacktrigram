@@ -8,7 +8,6 @@ export default defineConfig(({ command }) => ({
   base: command === "build" ? "./" : "/",
   resolve: {
     alias: {
-      // Fix react-reconciler module resolution
       "react-reconciler/constants": "react-reconciler/constants.js",
     },
   },
@@ -67,7 +66,6 @@ export default defineConfig(({ command }) => ({
           lines: 85,
           statements: 85,
         },
-        // Critical Korean martial arts systems
         "src/systems/": {
           branches: 90,
           functions: 92,

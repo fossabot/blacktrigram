@@ -1,62 +1,59 @@
 import { describe, it, expect } from "vitest";
-import { renderInStage } from "../../../test/test-utils";
-import {
-  DojangBackground,
-  type DojangBackgroundProps,
-} from "./DojangBackground";
-
-// Mock KOREAN_COLORS if needed
-// vi.mock('../../types', () => ({ KOREAN_COLORS: { /* ...mocked colors... */ } }));
+import { render } from "@testing-library/react";
+import { Stage } from "@pixi/react";
+import { DojangBackground } from "./DojangBackground";
 
 describe("DojangBackground", () => {
-  const defaultProps: DojangBackgroundProps = {
-    variant: "traditional", // Add required prop
-    lighting: "day", // Add required prop
-    setting: "traditional",
-    timeOfDay: "day",
-  };
-
-  it("renders without crashing with default props", () => {
-    expect(() =>
-      renderInStage(<DojangBackground {...defaultProps} />)
-    ).not.toThrow();
+  it("should render without crashing", () => {
+    expect(() => {
+      render(
+        <Stage>
+          <DojangBackground width={800} height={600} />
+        </Stage>
+      );
+    }).not.toThrow();
   });
 
-  it("should handle different settings", () => {
-    const settings = ["dojang", "mountain", "temple"];
-    settings.forEach((setting) => {
-      renderInStage(
-        <DojangBackground
-          {...defaultProps}
-          setting={setting || "traditional"} // Ensure string type
-        />
-      );
-      expect(true).toBe(true);
+  it("should handle different dimensions", () => {
+    const testDimensions = [
+      { width: 1024, height: 768 },
+      { width: 1920, height: 1080 },
+      { width: 800, height: 600 },
+    ];
+
+    testDimensions.forEach(({ width, height }) => {
+      expect(() => {
+        render(
+          <Stage>
+            <DojangBackground width={width} height={height} />
+          </Stage>
+        );
+      }).not.toThrow();
     });
   });
 
-  it("should handle different times of day", () => {
-    const times = ["day", "night", "dawn", "evening"];
-    times.forEach((time) => {
-      renderInStage(
-        <DojangBackground
-          {...defaultProps}
-          timeOfDay={time || "day"} // Ensure string type
-        />
+  it("should accept custom dimensions", () => {
+    const customWidth = 1024;
+    const customHeight = 768;
+
+    expect(() => {
+      render(
+        <Stage>
+          <DojangBackground width={customWidth} height={customHeight} />
+        </Stage>
       );
-      expect(true).toBe(true);
-    });
+    }).not.toThrow();
   });
 
-  // Fix all test cases to include required props
-  it("should render with minimal props", () => {
-    renderInStage(
-      <DojangBackground
-        variant="traditional"
-        lighting="day"
-        setting="dojang"
-        timeOfDay="day"
-      />
-    );
+  it("should render consistently across multiple renders", () => {
+    for (let i = 0; i < 3; i++) {
+      expect(() => {
+        render(
+          <Stage>
+            <DojangBackground width={800} height={600} />
+          </Stage>
+        );
+      }).not.toThrow();
+    }
   });
 });

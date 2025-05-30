@@ -1,85 +1,87 @@
-import { Container, Text, useTick } from "@pixi/react";
-import React, { useCallback } from "react";
-import type { DamageType, HitEffect, Position } from "../../types";
+import React from "react";
+import { Container, Text } from "@pixi/react";
+import { useState, useCallback, useEffect } from "react";
+import type { HitEffect } from "../../types";
+import { KOREAN_COLORS } from "../../types";
 
 // Fix props interface
 export interface HitEffectsLayerProps {
   readonly effects: readonly HitEffect[]; // Add effects prop
+  readonly onEffectComplete?: (effectId: string) => void;
 }
 
 export function HitEffectsLayer({
   effects,
+  onEffectComplete,
 }: HitEffectsLayerProps): React.ReactElement {
-  const createEffect = useCallback(
-    (
-      position: Position,
-      damage: number,
-      type: DamageType,
-      korean?: string,
-      attackerId?: string,
-      targetId?: string,
-      techniqueName?: string
-    ): HitEffect => {
-      const newEffect: HitEffect = {
-        id: `effect-${Date.now()}-${Math.random()}`,
-        position,
-        type,
-        damage,
-        startTime: Date.now(),
-        duration: 2000,
-        korean: korean ?? undefined,
-        attackerId: attackerId ?? undefined,
-        targetId: targetId === undefined ? undefined : targetId, // Explicitly handle undefined
-        techniqueName: techniqueName === undefined ? undefined : techniqueName, // Explicitly handle undefined
-      };
-      return newEffect;
-    },
-    []
-  );
+  const [currentTime, setCurrentTime] = useState<number>(Date.now());
 
-  // Use createEffect in implementation
-  const handleEffectCreation = useCallback(() => {
-    const effect = createEffect(
-      { x: 100, y: 100 },
-      25,
-      "medium",
-      "타격",
-      "player1",
-      "player2",
-      "천둥벽력"
-    );
-    console.log("Created effect:", effect);
-  }, [createEffect]);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 16); // ~60 FPS
 
-  // Call handleEffectCreation to mark createEffect as used
-  React.useEffect(() => {
-    if (effects.length > 0) {
-      handleEffectCreation();
+    return () => clearInterval(interval);
+  }, []);
+
+  // Remove completed effects
+  useEffect(() => {
+    effects.forEach((effect) => {
+      const elapsed = currentTime - effect.startTime;
+      if (elapsed >= effect.duration && onEffectComplete) {
+        onEffectComplete(effect.id);
+      }
+    });
+  }, [currentTime, effects, onEffectComplete]);
+
+  // Fix color assignments in getEffectColor
+  const getEffectColor = useCallback((effect: HitEffect): string => {
+    let effectColor: string = KOREAN_COLORS.WHITE;
+
+    if (effect.damage > 30) {
+      effectColor = KOREAN_COLORS.CRITICAL_RED;
+    } else if (effect.damage > 20) {
+      effectColor = KOREAN_COLORS.DAMAGE_YELLOW;
+    } else if (effect.damage > 10) {
+      effectColor = KOREAN_COLORS.Orange;
+    } else if (effect.damage > 5) {
+      effectColor = KOREAN_COLORS.GOLD;
+    } else {
+      effectColor = KOREAN_COLORS.CYAN;
     }
-  }, [effects.length, handleEffectCreation]);
 
-  useTick(
-    useCallback((_: number) => {
-      // Remove unused delta parameter
-      // Animation logic
-    }, [])
-  );
+    return effectColor;
+  }, []);
 
   return (
-    <Container>
-      {effects.map((effect) => (
-        <Text
-          key={effect.id}
-          text={`${effect.damage}`}
-          x={effect.position.x}
-          y={effect.position.y}
-          style={{
-            fontFamily: "Arial",
-            fontSize: 16,
-            fill: 0xff0000,
-          }}
-        />
-      ))}
+    <Container data-testid="hit-effects-layer">
+      {effects.map((effect) => {
+        const elapsed = Date.now() - effect.startTime;
+        // Remove unused progress variable or use it
+        const alpha = Math.max(0, 1 - elapsed / effect.duration);
+        const yOffset = (elapsed / effect.duration) * 20;
+
+        return (
+          <Text
+            key={effect.id}
+            text={`${effect.damage}`}
+            anchor={{ x: 0.5, y: 0.5 }}
+            x={effect.position.x}
+            y={effect.position.y - yOffset}
+            alpha={alpha}
+            style={
+              {
+                fontFamily: "Noto Sans KR, Arial, sans-serif",
+                fontSize: Math.max(16, Math.min(effect.damage / 2 + 12, 32)),
+                fill: getEffectColor(effect),
+                fontWeight: "bold",
+                stroke: "#000000",
+                strokeThickness: 2,
+              } as any
+            }
+          />
+        );
+      })}
     </Container>
   );
 }
