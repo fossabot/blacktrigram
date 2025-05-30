@@ -142,15 +142,15 @@ export interface VitalPoint {
 
 // Korean technique definitions - UNIFIED (based on types/index.ts, enhanced from GameTypes.ts)
 export interface KoreanTechnique {
-  id?: string; // Added from GameTypes.ts (optional if name is primary key)
+  id?: string;
   name: string;
   koreanName?: string;
-  englishName?: string; // Added for consistency
-  description: string | { korean: string; english: string }; // Allow object or simple string
-  damage: number;
+  englishName?: string;
+  description: string | { korean: string; english: string };
+  damage: number; // Ensure this is 'number'. If errors persist, check TS server/cache.
   range: number;
-  accuracy?: number; // From GameTypes.ts (0.0 to 1.0)
-  speed?: number; // Attack speed multiplier, from GameTypes.ts
+  accuracy?: number;
+  speed?: number;
   kiCost?: number;
   staminaCost?: number;
   cooldown?: number;
@@ -163,11 +163,10 @@ export interface KoreanTechnique {
   stanceAffinity?: TrigramStance[];
   properties?: string[];
   critChance?: number;
-  critMultiplier?: number; // Damage multiplier on crit
+  critMultiplier?: number;
   accuracyModifier?: number;
   stunValue?: number;
-  vitalPointMultiplier?: number; // From GameTypes.ts
-  // stance?: TrigramStance; // From GameTypes.ts, covered by stanceAffinity or implicit by TrigramData
+  vitalPointMultiplier?: number;
 }
 
 export interface VitalPointHit {
@@ -459,7 +458,7 @@ export interface TrigramData {
   element: string;
   description: string; // General description
   philosophy: string;
-  color: string; // Hex color string
+  color: string; // Hex color string - This expects a string
   technique: KoreanTechnique; // Default technique
   techniques: KoreanTechnique[]; // All techniques
   strengths?: TrigramStance[]; // Trigrams this stance is strong against
@@ -473,25 +472,25 @@ export interface TrigramData {
 }
 
 export const KOREAN_COLORS = {
-  TRADITIONAL_RED: 0x8a0000, // Dark red
-  GOLD: 0xffd700,
-  BLACK: 0x000000,
-  WHITE: 0xffffff,
-  DOJANG_BLUE: 0x4a89e2, // A medium blue
-  CYAN: 0x00ffff, // Bright cyan
-  GRAY_LIGHT: 0xcccccc,
-  YELLOW: 0xffff00,
-  LIGHT_GREY: 0xd3d3d3,
-  Red: 0xff0000,
-  Orange: 0xffa500,
-  Green: 0x00ff00,
-  Blue: 0x0000ff, // Pure blue
-  Purple: 0x800080,
-  Brown: 0xa52a2a,
-  DARK_BLUE: 0x000a12, // From GameTypes.ts
-  ACCENT_BLUE: 0x004455, // From GameTypes.ts
-  GRAY_MEDIUM: 0x888888, // From GameTypes.ts
-  GRAY_DARK: 0x444444, // From GameTypes.ts
+  TRADITIONAL_RED: "#8a0000", // Dark red
+  GOLD: "#ffd700",
+  BLACK: "#000000",
+  WHITE: "#ffffff",
+  DOJANG_BLUE: "#4a89e2", // A medium blue
+  CYAN: "#00ffff", // Bright cyan
+  GRAY_LIGHT: "#cccccc",
+  YELLOW: "#ffff00",
+  LIGHT_GREY: "#d3d3d3",
+  Red: "#ff0000",
+  Orange: "#ffa500",
+  Green: "#00ff00",
+  Blue: "#0000ff", // Pure blue
+  Purple: "#800080",
+  Brown: "#a52a2a",
+  DARK_BLUE: "#000a12", // From GameTypes.ts
+  ACCENT_BLUE: "#004455", // From GameTypes.ts
+  GRAY_MEDIUM: "#888888", // From GameTypes.ts
+  GRAY_DARK: "#444444", // From GameTypes.ts
 } as const;
 
 // TRIGRAM_DATA definition (ensure KoreanTechnique inside matches the main definition)
@@ -507,7 +506,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     description:
       "하늘의 우뢰같은 강력한 일격 (A powerful strike like thunder from the sky)",
     philosophy: "창조와 권위의 힘 (Creative and authoritative power)",
-    color: KOREAN_COLORS.GOLD,
+    color: KOREAN_COLORS.GOLD, // Now correctly assigns a string
     technique: {
       // This is a KoreanTechnique
       id: "geon_thunder_strike",
@@ -518,7 +517,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
         korean: "하늘의 우뢰같은 강력한 일격",
         english: "Thunderous strike from heaven",
       },
-      damage: 28,
+      damage: 28, // This is a number, matching KoreanTechnique.damage: number;
       range: 60, // Mid-range
       accuracy: 0.85,
       speed: 1.0,
@@ -528,7 +527,6 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
       critChance: 0.1,
       critMultiplier: 1.6,
       vitalPointMultiplier: 1.2,
-      // stance: "geon", // Implicit
     } as KoreanTechnique, // Cast to ensure compatibility
     techniques: [], // Populate with more techniques
     strengths: ["li", "son"], // Example
@@ -548,7 +546,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     description:
       "호수의 물결처럼 연속적인 타격 (Continuous strikes like lake waves)",
     philosophy: "기쁨과 만족의 표현 (Expression of joy and satisfaction)",
-    color: KOREAN_COLORS.ACCENT_BLUE, // Sky Blue like 0x87ceeb
+    color: KOREAN_COLORS.ACCENT_BLUE, // Now correctly assigns a string
     technique: {
       id: "tae_flowing_combo",
       name: "유수연타",
@@ -558,7 +556,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
         korean: "호수의 물결처럼 연속적인 타격",
         english: "Continuous strikes like lake waves",
       },
-      damage: 18, // Lower damage, but perhaps faster or more hits
+      damage: 18, // This is a number
       range: 50,
       accuracy: 0.9,
       speed: 1.2,
@@ -585,7 +583,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     element: "Fire",
     description: "불꽃처럼 맹렬한 찌르기 (Fierce thrust like flame)",
     philosophy: "명료함과 지혜의 빛 (Light of clarity and wisdom)",
-    color: KOREAN_COLORS.Red, // Red Orange like 0xff4500
+    color: KOREAN_COLORS.Red, // Now correctly assigns a string
     technique: {
       id: "li_flame_spear",
       name: "화염지창",
@@ -595,7 +593,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
         korean: "불꽃처럼 맹렬한 찌르기",
         english: "Fierce thrust like flame",
       },
-      damage: 35,
+      damage: 35, // This is a number
       range: 70, // Longer range
       accuracy: 0.8,
       speed: 0.9, // Slower but powerful
@@ -608,7 +606,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
           duration: 3,
           magnitude: 5,
           chance: 0.3,
-          source: "Flame Spear",
+          source: "Flame Spear", // Optional source property
         },
       ],
       critChance: 0.12,
@@ -630,7 +628,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     element: "Wood", // Or Thunder/Movement
     description: "번개처럼 빠른 일격 (Lightning-fast strike)",
     philosophy: "움직임과 각성의 에너지 (Energy of movement and awakening)",
-    color: KOREAN_COLORS.Purple, // Purple like 0x9370db
+    color: KOREAN_COLORS.Purple, // Now correctly assigns a string
     technique: {
       id: "jin_lightning_flash",
       name: "벽력일섬",
@@ -640,7 +638,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
         korean: "번개처럼 빠른 일격",
         english: "Lightning-fast strike",
       },
-      damage: 40, // High damage
+      damage: 40, // This is a number
       range: 55,
       accuracy: 0.75, // Harder to land
       speed: 1.5, // Very fast
@@ -668,7 +666,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     description:
       "바람처럼 가벼운 연속 공격 (Light continuous attacks like wind)",
     philosophy: "순응과 침투의 힘 (Power of yielding and penetration)",
-    color: KOREAN_COLORS.Green, // Pale Green like 0x98fb98
+    color: KOREAN_COLORS.Green, // Now correctly assigns a string
     technique: {
       id: "son_whirlwind_strikes",
       name: "선풍연격",
@@ -678,7 +676,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
         korean: "바람처럼 가벼운 연속 공격",
         english: "Light continuous attacks like wind",
       },
-      damage: 15, // Should be number
+      damage: 15, // This is a number
       range: 80,
       accuracy: 0.95,
       speed: 1.3,
@@ -705,7 +703,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     element: "Water",
     description: "물의 흐름을 따른 반격 (Counterattack following water's flow)",
     philosophy: "위험과 심연의 지혜 (Wisdom of danger and abyss)",
-    color: KOREAN_COLORS.Blue, // Royal Blue like 0x4169e1
+    color: KOREAN_COLORS.Blue, // Now correctly assigns a string
     technique: {
       id: "gam_water_counter",
       name: "수류반격",
@@ -715,7 +713,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
         korean: "물의 흐름을 따른 반격",
         english: "Counterattack following water's flow",
       },
-      damage: 25, // Should be number
+      damage: 25, // This is a number
       range: 45,
       accuracy: 0.88, // Accuracy of the counter itself
       speed: 1.0, // Speed of counter execution
@@ -741,7 +739,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     element: "Earth", // Or Mountain/Stillness
     description: "산처럼 견고한 방어 (Solid defense like mountain)",
     philosophy: "정지와 명상의 안정 (Stability of stillness and meditation)",
-    color: KOREAN_COLORS.Brown, // Saddle Brown like 0x8b4513
+    color: KOREAN_COLORS.Brown, // Now correctly assigns a string
     technique: {
       id: "gan_mountain_defense",
       name: "반석방어",
@@ -751,7 +749,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
         korean: "산처럼 견고한 방어",
         english: "Solid defense like mountain",
       },
-      damage: 12, // Should be number
+      damage: 12, // This is a number
       range: 30,
       accuracy: 0.98,
       speed: 0.8,
@@ -778,7 +776,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     element: "Earth",
     description: "대지의 포용력으로 제압 (Subduing with earth's embrace)",
     philosophy: "수용과 양육의 덕 (Virtue of receptivity and nurturing)",
-    color: KOREAN_COLORS.GRAY_DARK, // Dark Brown like 0x654321
+    color: KOREAN_COLORS.GRAY_DARK, // Now correctly assigns a string
     technique: {
       id: "gon_earth_embrace",
       name: "대지포옹",
@@ -788,7 +786,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
         korean: "대지의 포용력으로 제압",
         english: "Subduing with earth's embrace",
       },
-      damage: 30, // Should be number
+      damage: 30, // This is a number
       range: 40,
       accuracy: 0.82,
       speed: 0.9,
@@ -801,7 +799,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
           duration: 2,
           magnitude: 1,
           chance: 0.7,
-          source: "Earth Embrace",
+          source: "Earth Embrace", // Optional source property
         },
       ],
       critChance: 0.05,

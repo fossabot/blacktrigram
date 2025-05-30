@@ -365,7 +365,9 @@ export interface TransitionResult {
   readonly reason?: string;
 }
 
-// Add DamageResult interface
+/*
+// Add DamageResult interface --- COMMENTED OUT TO AVOID CONFLICT
+// Use DamageResult from /src/types/index.ts as the unified source of truth.
 export interface DamageResult {
   readonly amount: number;
   readonly type: string;
@@ -375,3 +377,4 @@ export interface DamageResult {
   readonly bonus?: number;
   readonly meridianMultiplier?: number;
 }
+*/
