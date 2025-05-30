@@ -98,11 +98,9 @@ describe("CombatSystem", () => {
 
   describe("Combat calculations", () => {
     it("should calculate damage correctly", () => {
-      // Fix vi.fn() typing by removing typed parameters
       const mockCalculateEffectiveDamage = vi
         .fn()
         .mockImplementation((...args: unknown[]) => {
-          // Access args as unknown and cast if needed
           const [attacker, defender] = args as [
             PlayerState,
             PlayerState,
@@ -128,7 +126,6 @@ describe("CombatSystem", () => {
       expect(result.log).toContain("Test damage calculation");
     });
 
-    // Remove unused variables test
     it("should validate combat state transitions", () => {
       const initialAttacker = createPlayerState("player1", { x: 0, y: 0 });
       const initialDefender = createPlayerState("player2", { x: 50, y: 0 });
@@ -139,9 +136,17 @@ describe("CombatSystem", () => {
         mockTechnique
       );
 
-      // Use the variables to avoid TS6133 errors
-      expect(result.attackerState.playerId).toBe(initialAttacker.playerId);
-      expect(result.defenderState.playerId).toBe(initialDefender.playerId);
+      // Add null checks for possibly undefined properties
+      expect(result.attackerState).toBeDefined();
+      expect(result.defenderState).toBeDefined();
+
+      if (result.attackerState) {
+        expect(result.attackerState.playerId).toBe(initialAttacker.playerId);
+      }
+
+      if (result.defenderState) {
+        expect(result.defenderState.playerId).toBe(initialDefender.playerId);
+      }
     });
   });
 });
