@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { TrigramSystem } from "../TrigramSystem"; // Assuming TrigramCalculator logic is in TrigramSystem
+import { TrigramSystem } from "../TrigramSystem";
 import type { KoreanTechnique } from "../../types";
-import { TRIGRAM_DATA, createPlayerState } from "../../types";
+import { TRIGRAM_DATA } from "../../types";
 
 const mockTechnique: KoreanTechnique = {
   ...TRIGRAM_DATA.geon.technique, // Base on an existing technique

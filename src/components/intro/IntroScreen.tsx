@@ -48,12 +48,18 @@ export function IntroScreen({
 
   return (
     <Container>
-      <Text text="흑괘 무술" x={400} y={150} anchor={0.5} style={titleStyle} />
+      <Text
+        text="흑괘 무술"
+        x={400}
+        y={150}
+        anchor={{ x: 0.5, y: 0.5 }} // Fix anchor type
+        style={titleStyle}
+      />
       <Text
         text="Black Trigram Martial Arts"
         x={400}
         y={220}
-        anchor={0.5}
+        anchor={{ x: 0.5, y: 0.5 }} // Fix anchor type
         style={{
           ...buttonTextStyle,
           fontSize: 18,

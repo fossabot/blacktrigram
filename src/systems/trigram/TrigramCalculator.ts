@@ -1,4 +1,5 @@
-import type { TrigramStance } from "../../types/GameTypes";
+import type { TrigramStance } from "../../types"; // Fix import path
+import { TRIGRAM_DATA } from "../../types"; // Add TRIGRAM_DATA import
 
 export interface PathCalculationResult {
   readonly path: TrigramStance[];
@@ -426,4 +427,134 @@ export class TrigramCalculator {
 
     return koreanNames[stance];
   }
+}
+
+export function getStaminaModifier(stance: TrigramStance): number {
+  const modifiers: Record<TrigramStance, number> = {
+    geon: 0.9,
+    tae: 0.8,
+    li: 1.1,
+    jin: 1.2,
+    son: 0.7,
+    gam: 1.0,
+    gan: 0.95,
+    gon: 1.05,
+  };
+  return modifiers[stance] ?? 1.0; // Use nullish coalescing
+}
+
+export function getDamageModifier(stance: TrigramStance): number {
+  const modifiers: Record<TrigramStance, number> = {
+    geon: 1.1,
+    tae: 0.9,
+    li: 1.2,
+    jin: 1.15,
+    son: 0.85,
+    gam: 1.0,
+    gan: 0.95,
+    gon: 1.05,
+  };
+  return modifiers[stance] ?? 1.0; // Use nullish coalescing
+}
+
+export function getDefenseModifier(stance: TrigramStance): number {
+  const modifiers: Record<TrigramStance, number> = {
+    geon: 1.0,
+    tae: 1.1,
+    li: 0.9,
+    jin: 0.85,
+    son: 1.0,
+    gam: 1.2,
+    gan: 1.3,
+    gon: 1.15,
+  };
+  return modifiers[stance] ?? 1.0; // Use nullish coalescing
+}
+
+export function getSpeedModifier(stance: TrigramStance): number {
+  const modifiers: Record<TrigramStance, number> = {
+    geon: 1.05,
+    tae: 1.1,
+    li: 0.95,
+    jin: 1.2,
+    son: 1.3,
+    gam: 0.9,
+    gan: 0.8,
+    gon: 0.85,
+  };
+  return modifiers[stance] ?? 1.0; // Use nullish coalescing
+}
+
+// Fix other functions with proper null checks
+export function calculateElementalAdvantage(
+  attackElement: string,
+  defenseElement: string
+): number {
+  const strongAgainst: Record<string, string[]> = {
+    Metal: ["Wood"],
+    Wood: ["Earth"],
+    Earth: ["Water"],
+    Water: ["Fire"],
+    Fire: ["Metal"],
+  };
+
+  if (strongAgainst[attackElement]?.includes(defenseElement)) {
+    return 1.2;
+  }
+
+  if (strongAgainst[defenseElement]?.includes(attackElement)) {
+    return 0.8;
+  }
+
+  return 1.0;
+}
+
+export function calculateSpeed(
+  stance: TrigramStance,
+  baseSpeed: number
+): number {
+  const speedModifiers = getSpeedModifier(stance);
+  return baseSpeed * speedModifiers;
+}
+
+export function calculateOverallStats(stance: TrigramStance): {
+  power: number;
+  speed: number;
+  defense: number;
+  flexibility: number;
+  overall: number;
+} {
+  const stats = TRIGRAM_DATA[stance];
+  if (!stats) {
+    return { power: 1, speed: 1, defense: 1, flexibility: 1, overall: 1 };
+  }
+
+  const power = stats.damageModifier ?? 1.0;
+  const speed = stats.speedModifier ?? 1.0;
+  const defense = stats.defenseModifier ?? 1.0;
+  const flexibility = stats.staminaCostModifier ?? 1.0;
+
+  const overall = (power + speed + defense + flexibility) / 4;
+
+  return {
+    power,
+    speed,
+    defense,
+    flexibility,
+    overall,
+  };
+}
+
+export function getKoreanStanceName(stance: TrigramStance): string {
+  const koreanNames: Record<TrigramStance, string> = {
+    geon: "건 (天)",
+    tae: "태 (澤)",
+    li: "리 (火)",
+    jin: "진 (雷)",
+    son: "손 (風)",
+    gam: "감 (水)",
+    gan: "간 (山)",
+    gon: "곤 (地)",
+  };
+  return koreanNames[stance] ?? stance; // Use nullish coalescing
 }

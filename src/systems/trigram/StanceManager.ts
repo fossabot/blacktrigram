@@ -1,4 +1,4 @@
-import type { PlayerState, TrigramStance } from "../../types/GameTypes";
+import type { PlayerState, TrigramStance } from "../../types"; // Fix import path
 import { TrigramCalculator, type TransitionMetrics } from "./TrigramCalculator";
 
 // Export stance order for testing

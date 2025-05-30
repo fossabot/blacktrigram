@@ -81,7 +81,7 @@ declare module "@pixi/react" {
     interactive?: boolean;
     cursor?: string;
     pivot?: { x: number; y: number };
-    anchor?: { x: number; y: number };
+    anchor?: number | { x: number; y: number }; // Fix anchor type
 
     // Text-specific props
     text: string;
@@ -130,4 +130,9 @@ declare module "pixi.js" {
   }
 }
 
-export {};
+export {}; // namespace declaration
+declare global {
+  namespace JSX {
+    interface Element extends React.ReactElement<any, any> {}
+  }
+}

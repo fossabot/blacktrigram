@@ -11,9 +11,9 @@ import type {
 import { KOREAN_VITAL_POINTS_DATA } from "./vitalpoint/KoreanVitalPoints";
 
 export interface VitalPointSystemConfig {
-  baseAccuracy: number; // Required
-  distanceModifier: number; // Required
-  angleModifier?: number; // Optional
+  baseAccuracy?: number; // Make optional to match types/index.ts
+  distanceModifier?: number; // Make optional
+  angleModifier?: number;
 }
 
 const defaultConfig: VitalPointSystemConfig = {
@@ -45,7 +45,7 @@ export const VitalPointSystem = {
     distanceToTarget: number,
     configParams: VitalPointSystemConfig // Make required to match CombatSystem usage
   ): VitalPointHit | null {
-    const currentConfig = configParams;
+    const currentConfig = { ...defaultConfig, ...configParams };
 
     const effectiveDistance =
       Math.sqrt(
@@ -59,10 +59,9 @@ export const VitalPointSystem = {
       "accessibility" in vitalPoint ? vitalPoint.accessibility : 0.7;
     let hitChance = (techAccuracy || 1.0) * (vpAccessibility || 0.7);
 
-    hitChance -= effectiveDistance * currentConfig.distanceModifier;
+    hitChance -= effectiveDistance * (currentConfig.distanceModifier ?? 0.05); // Use nullish coalescing
     if (currentConfig.angleModifier) {
-      // Example: Angle could be another factor
-      // hitChance -= angleDifference * currentConfig.angleModifier;
+      // Use angleModifier safely
     }
     hitChance = Math.max(0, Math.min(1, hitChance)); // Clamp between 0 and 1
 

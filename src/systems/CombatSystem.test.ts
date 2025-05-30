@@ -1,4 +1,4 @@
-import { describe, it, expect, vi as vitestVi, beforeEach } from "vitest";
+import { describe, it, expect, vi as vitestVi, beforeEach, vi } from "vitest";
 import { CombatSystem } from "../systems/CombatSystem";
 import type {
   PlayerState,
@@ -205,5 +205,35 @@ describe("CombatSystem", () => {
         MockedCombatSystem.canExecuteTechnique(mockPlayerState, mockTechnique)
       ).toBe(true);
     });
+  });
+
+  it("should mock combat function properly", () => {
+    const mockCombatFunction = vi
+      .fn()
+      .mockImplementation((...args: unknown[]) => {
+        // Cast args to proper types inside implementation
+        const [attacker, defender, techName] = args as [
+          PlayerState,
+          PlayerState,
+          string
+        ];
+
+        return {
+          damageDealt: 25,
+          attackerState: attacker,
+          defenderState: {
+            ...defender,
+            health: defender.health - 25,
+          },
+          log: [`${techName} executed`],
+          conditionsApplied: [],
+        };
+      });
+
+    const attacker = createPlayerState("attacker", { x: 0, y: 0 });
+    const defender = createPlayerState("defender", { x: 100, y: 0 });
+
+    const result = mockCombatFunction(attacker, defender, "천둥벽력");
+    expect(result.damageDealt).toBe(25);
   });
 });

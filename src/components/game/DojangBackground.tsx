@@ -1,32 +1,62 @@
 import React, { useCallback } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
-import type { JSX } from "react";
+import type { Graphics as PixiGraphics } from "pixi.js";
 import { KOREAN_COLORS } from "../../types";
 
 export interface DojangBackgroundProps {
-  readonly variant: "traditional" | "modern" | "mountain" | "temple";
-  readonly lighting: "day" | "evening" | "night" | "dawn";
+  variant: "traditional" | "modern" | "mountain" | "temple";
+  lighting: "day" | "night" | "dawn" | "evening";
+  setting?: string; // Make optional
+  timeOfDay?: string; // Make optional
+  weather?: string;
+  dojangType?: string;
 }
 
 export function DojangBackground({
-  variant = "traditional",
-  lighting = "day",
-}: DojangBackgroundProps): JSX.Element {
+  variant,
+  lighting,
+  setting,
+  timeOfDay,
+  weather,
+  dojangType,
+}: DojangBackgroundProps): React.ReactElement {
+  const backgroundStyle = {
+    variant,
+    lighting,
+    setting: setting || "traditional",
+    timeOfDay: timeOfDay || "day",
+    weather: weather || "clear",
+    dojangType: dojangType || "traditional",
+  };
+
+  const trigrams = ["☰", "☱", "☲", "☳", "☴", "☵", "☶", "☷"];
+  const positions = [
+    { x: 100, y: 100 },
+    { x: 200, y: 100 },
+    { x: 300, y: 100 },
+    { x: 400, y: 100 },
+    { x: 100, y: 200 },
+    { x: 200, y: 200 },
+    { x: 300, y: 200 },
+    { x: 400, y: 200 },
+  ];
+
   const drawBackground = useCallback(
-    (g: any) => {
+    (g: PixiGraphics) => {
       g.clear();
 
-      // Base background color based on lighting
-      const lightingColors = {
-        day: 0x2c3e50,
-        evening: 0x8b4513,
-        night: 0x191970,
-        dawn: 0x4682b4,
-      };
-
-      g.setFillStyle({ color: lightingColors[lighting], alpha: 1 });
+      // Use backgroundStyle to determine colors and patterns
+      const baseColor =
+        backgroundStyle.lighting === "night" ? 0x1a1a2e : 0x87ceeb;
+      g.setFillStyle({ color: baseColor });
       g.rect(0, 0, 800, 600);
       g.fill();
+
+      // Apply variant-specific styling
+      if (backgroundStyle.variant === "mountain") {
+        g.setFillStyle({ color: 0x8b7355 });
+        // Draw mountain silhouettes
+      }
 
       // Floor
       g.setFillStyle({ color: 0x8b4513, alpha: 0.8 });
@@ -74,37 +104,17 @@ export function DojangBackground({
       g.rect(50, 200, 30, 200);
       g.rect(720, 200, 30, 200);
       g.fill();
+
+      trigrams.forEach((_, index) => {
+        const pos = positions[index];
+        if (pos) {
+          g.circle(pos.x, pos.y, 25);
+          g.fill();
+        }
+      });
     },
-    [variant, lighting]
+    [backgroundStyle] // Include backgroundStyle in dependencies
   );
-
-  const drawTrigramSymbols = useCallback((g: any) => {
-    g.clear();
-
-    // Eight trigram symbols positioned around the dojang
-    const trigrams = ["☰", "☱", "☲", "☳", "☴", "☵", "☶", "☷"];
-    const positions = [
-      { x: 100, y: 100 },
-      { x: 400, y: 80 },
-      { x: 700, y: 100 },
-      { x: 750, y: 250 },
-      { x: 700, y: 350 },
-      { x: 400, y: 370 },
-      { x: 100, y: 350 },
-      { x: 50, y: 250 },
-    ];
-
-    trigrams.forEach((symbol, index) => {
-      const pos = positions[index];
-      g.setFillStyle({ color: KOREAN_COLORS.GOLD, alpha: 0.3 });
-      g.circle(pos.x, pos.y, 25);
-      g.fill();
-
-      g.setStrokeStyle({ color: KOREAN_COLORS.GOLD, width: 2, alpha: 0.5 });
-      g.circle(pos.x, pos.y, 25);
-      g.stroke();
-    });
-  }, []);
 
   return (
     <Container>
@@ -112,58 +122,30 @@ export function DojangBackground({
       <Graphics draw={drawBackground} />
 
       {/* Trigram symbols */}
-      <Graphics draw={drawTrigramSymbols} />
-
-      {/* Trigram text labels */}
-      {["☰", "☱", "☲", "☳", "☴", "☵", "☶", "☷"].map((symbol, index) => {
-        const positions = [
-          { x: 100, y: 100 },
-          { x: 400, y: 80 },
-          { x: 700, y: 100 },
-          { x: 750, y: 250 },
-          { x: 700, y: 350 },
-          { x: 400, y: 370 },
-          { x: 100, y: 350 },
-          { x: 50, y: 250 },
-        ];
+      {trigrams.map((symbol, index) => {
         const pos = positions[index];
-
-        return (
+        return pos ? (
           <Text
-            key={`trigram-${index}`}
+            key={index}
             text={symbol}
             x={pos.x}
             y={pos.y}
             anchor={{ x: 0.5, y: 0.5 }}
             style={{
               fontFamily: "serif",
-              fontSize: 20,
-              fill: KOREAN_COLORS.GOLD,
-              fontWeight: "bold",
-              alpha: 0.6,
+              fontSize: 24,
+              fill: 0xffd700,
+              dropShadow: {
+                color: "#000000",
+                blur: 4,
+                distance: 2,
+                alpha: 0.8,
+                angle: Math.PI / 4,
+              },
             }}
           />
-        );
+        ) : null;
       })}
-
-      {/* Dojang name */}
-      <Text
-        text="흑괘 무술 도장 (Black Trigram Martial Arts)"
-        x={400}
-        y={50}
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 24,
-          fill: KOREAN_COLORS.GOLD,
-          fontWeight: "bold",
-          dropShadow: {
-            color: KOREAN_COLORS.BLACK,
-            blur: 4,
-            distance: 2,
-          },
-        }}
-      />
     </Container>
   );
 }

@@ -1,38 +1,28 @@
-import { Text as PixiText } from "@pixi/react";
 import React from "react";
-import type {
-  ITextStyle as PixiTextStyle,
-  TextProps as PixiReactTextProps,
-} from "@pixi/react"; // Correct imports
+import { Text } from "@pixi/react"; // Keep import as it's used below
+import type { TextProps } from "@pixi/react"; // Use proper type
 
-interface KoreanTextProps extends Omit<PixiReactTextProps, "style"> {
+interface KoreanTextProps extends Omit<TextProps, "style"> {
+  // Use TextProps instead of PixiReactTextProps
   readonly text: string;
-  readonly style?: Partial<PixiTextStyle>;
-  readonly x?: number;
-  readonly y?: number;
-  readonly anchor?: number | { x: number; y: number };
+  readonly style?: Partial<import("pixi.js").TextStyle>;
+  readonly fontFamily?: string;
 }
-
-const defaultKoreanTextStyle: Partial<PixiTextStyle> = {
-  fontFamily: "Noto Sans KR, Arial, sans-serif",
-  fontSize: 16,
-  fill: 0xffffff,
-  align: "left",
-  wordWrap: true,
-  wordWrapWidth: 400, // Default wrap width
-};
 
 export function KoreanText({
   text,
-  style,
+  style = {},
+  fontFamily = "Noto Sans KR, Arial, sans-serif",
   ...rest
-}: KoreanTextProps): React.JSX.Element {
-  const mergedStyle: Partial<PixiTextStyle> = {
-    ...defaultKoreanTextStyle,
+}: KoreanTextProps): React.ReactElement {
+  const mergedStyle = {
+    fontFamily,
+    fontSize: 16,
+    fill: 0xffffff,
     ...style,
-  }; // Ensure mergedStyle is Partial<PixiTextStyle>
+  };
 
-  return <PixiText text={text} style={mergedStyle} {...rest} />;
+  return <Text text={text} style={mergedStyle} {...rest} />; // Use Text instead of PixiText
 }
 
 // Helper function to validate Korean text

@@ -18,10 +18,16 @@ describe("VitalPointSystem", () => {
   };
   const mockTechnique: KoreanTechnique = TRIGRAM_DATA.geon.technique;
   const mockTargetPosition: Position = { x: 10, y: 10 };
+  let sampleVitalPoint: VitalPoint;
 
   beforeEach(() => {
     VitalPointSystem.configure(defaultConfig);
     vi.clearAllMocks();
+    const foundVitalPoint = VitalPointSystem.getAllVitalPoints()[0];
+    if (!foundVitalPoint) {
+      throw new Error("No vital points found for testing");
+    }
+    sampleVitalPoint = foundVitalPoint; // Now guaranteed to be defined
   });
 
   describe("Configuration", () => {
@@ -65,14 +71,7 @@ describe("VitalPointSystem", () => {
   });
 
   describe("checkVitalPointHit", () => {
-    let sampleVitalPoint: VitalPoint;
-
     beforeEach(() => {
-      sampleVitalPoint =
-        KOREAN_VITAL_POINTS_DATA.find((vp) => vp.name.english === "Temple") ||
-        KOREAN_VITAL_POINTS_DATA[0];
-      if (!sampleVitalPoint)
-        throw new Error("Sample vital point not found for testing");
       vi.spyOn(Math, "random").mockRestore();
     });
 

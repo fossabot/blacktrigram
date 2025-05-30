@@ -18,16 +18,16 @@ vi.mock("@pixi/react", async () => {
 });
 
 // Create comprehensive mock player state
-function createMockPlayerState(
-  overrides: Partial<PlayerState> = {}
-): PlayerState {
-  return createPlayerState("test-player", { x: 100, y: 200 }, "geon", {
-    ...overrides,
-  });
+function createTestPlayerState(overrides?: Partial<PlayerState>): PlayerState {
+  return createPlayerState(
+    "test-player",
+    { x: 100, y: 100 },
+    "geon",
+    overrides
+  );
 }
 
 describe("Player Component", () => {
-  const mockOpponentPosition = { x: 600, y: 300 };
   const mockOnAttack = vi.fn();
   const mockOnStanceChange = vi.fn();
 
@@ -36,7 +36,7 @@ describe("Player Component", () => {
   });
 
   it("should render player with correct initial state", () => {
-    const playerState = createMockPlayerState();
+    const playerState = createTestPlayerState();
 
     render(
       <Player
@@ -50,7 +50,7 @@ describe("Player Component", () => {
   });
 
   it("should display Korean technique name based on stance", () => {
-    const playerState = createMockPlayerState({ stance: "li" });
+    const playerState = createTestPlayerState({ stance: "li" });
 
     render(
       <Player
@@ -77,7 +77,7 @@ describe("Player Component", () => {
     ];
 
     stances.forEach((stance) => {
-      const playerState = createMockPlayerState({ stance });
+      const playerState = createTestPlayerState({ stance });
 
       const { unmount } = render(
         <Player
@@ -93,7 +93,7 @@ describe("Player Component", () => {
   });
 
   it("should update animation time correctly", () => {
-    const playerState = createMockPlayerState({ isAttacking: true });
+    const playerState = createTestPlayerState({ isAttacking: true });
 
     render(
       <Player
@@ -108,7 +108,7 @@ describe("Player Component", () => {
   });
 
   it("should handle status effects correctly", () => {
-    const playerState = createMockPlayerState({
+    const playerState = createTestPlayerState({
       conditions: [
         {
           type: "stun",
@@ -131,7 +131,7 @@ describe("Player Component", () => {
   });
 
   it("should handle low health states", () => {
-    const playerState = createMockPlayerState({
+    const playerState = createTestPlayerState({
       health: 15,
       maxHealth: 100,
     });
@@ -160,7 +160,7 @@ describe("Player Component", () => {
     ];
 
     techniques.forEach(({ stance }) => {
-      const playerState = createMockPlayerState({
+      const playerState = createTestPlayerState({
         stance: stance as TrigramStance,
       });
 
@@ -175,5 +175,21 @@ describe("Player Component", () => {
       expect(screen.getByTestId("pixi-container")).toBeInTheDocument();
       unmount();
     });
+  });
+
+  it("should render with different stances", () => {
+    const playerState = createTestPlayerState({
+      stance: "li" as TrigramStance,
+    });
+
+    render(
+      <Player
+        playerState={playerState}
+        onStanceChange={mockOnStanceChange}
+        onAttack={mockOnAttack} // Add onAttack prop
+      />
+    );
+
+    expect(screen.getByTestId("pixi-container")).toBeInTheDocument();
   });
 });

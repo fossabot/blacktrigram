@@ -1,19 +1,19 @@
-import React, { useState, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Container, Graphics, Text, useTick } from "@pixi/react";
 import type { Graphics as PixiGraphics } from "pixi.js";
-import type { PlayerState, Position } from "../../types";
+import type { PlayerState, TrigramStance } from "../../types";
 
 export interface PlayerProps {
   readonly playerState: PlayerState;
-  readonly onAttack: () => void;
-  readonly onStanceChange: (stance: string) => void;
+  readonly onStanceChange: (stance: TrigramStance) => void;
+  readonly onAttack?: (target?: { x: number; y: number }) => void; // Add onAttack prop
 }
 
 export function Player({
   playerState,
-  onAttack, // This prop is part of the component's API
-  onStanceChange, // This prop is part of the component's API, usage is up to the parent
-}: PlayerProps): JSX.Element {
+  onStanceChange, // Part of component API
+  onAttack, // Add onAttack prop
+}: PlayerProps): React.ReactElement {
   const [animationTime, setAnimationTime] = useState<number>(0);
 
   useTick(
@@ -57,28 +57,60 @@ export function Player({
     [playerState.stance, playerState.isAttacking, animationTime]
   );
 
-  return (
-    <Container
-      x={playerState.position.x}
-      y={playerState.position.y}
-      interactive={true}
-      onPointerDown={onAttack}
-      data-testid="pixi-container"
-    >
-      <Graphics draw={drawPlayer} />
+  const handleAttack = useCallback(() => {
+    if (onAttack) {
+      onAttack({ x: playerState.position.x, y: playerState.position.y });
+    }
+  }, [onAttack, playerState.position]);
 
-      <Text
-        text={`${playerState.stance.toUpperCase()}`}
-        anchor={{ x: 0.5, y: 0.5 }}
-        y={-120}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 16,
-          fill: 0xffd700,
-          fontWeight: "bold",
-        }}
-        data-testid="pixi-text"
-      />
+  const handleStanceChange = useCallback(
+    (newStance: TrigramStance) => {
+      onStanceChange(newStance);
+    },
+    [onStanceChange]
+  );
+
+  // Use handleStanceChange in keyboard handler
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      const stanceKeys: Record<string, TrigramStance> = {
+        "1": "geon",
+        "2": "tae",
+        "3": "li",
+        "4": "jin",
+        "5": "son",
+        "6": "gam",
+        "7": "gan",
+        "8": "gon",
+      };
+
+      const newStance = stanceKeys[event.key];
+      if (newStance && newStance !== playerState.stance) {
+        handleStanceChange(newStance);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [handleStanceChange, playerState.stance]);
+
+  return (
+    <Container x={playerState.position.x} y={playerState.position.y}>
+      <Graphics draw={drawPlayer} />
+      <Container interactive={true} onPointerDown={handleAttack}>
+        <Text
+          text={`${playerState.stance.toUpperCase()}`}
+          x={0}
+          y={-80}
+          anchor={{ x: 0.5, y: 0.5 }}
+          style={{
+            fontFamily: "Arial",
+            fontSize: 16,
+            fill: 0xffffff,
+          }}
+          data-testid="pixi-text"
+        />
+      </Container>
     </Container>
   );
 }

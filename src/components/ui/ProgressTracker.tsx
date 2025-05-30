@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import type { TrigramStance, ProgressTrackerProps } from "../../types";
-import { TRIGRAM_DATA, KOREAN_COLORS } from "../../types";
+import { TRIGRAM_DATA } from "../../types";
 import type {
   Graphics as PixiGraphics,
   TextStyle as PixiTextStyle,

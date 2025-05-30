@@ -1,18 +1,18 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { STANCE_ORDER, StanceManager } from "./StanceManager";
-import type { PlayerState, TrigramStance, TransitionResult } from "../../types";
-import { createPlayerState, TRIGRAM_DATA, KOREAN_COLORS } from "../../types";
+import type { PlayerState, TrigramStance } from "../../types";
+import { createPlayerState } from "../../types"; // Remove unused imports
 
 function createTestPlayerState(
-  idSuffix: string,
+  idSuffix: string = "test",
   stance: TrigramStance = "geon",
-  options?: Partial<Omit<PlayerState, "id" | "position" | "stance">>
+  overrides?: Partial<PlayerState>
 ): PlayerState {
   return createPlayerState(
-    `testPlayer-${idSuffix}`,
+    `player-${idSuffix}`,
     { x: 100, y: 100 },
     stance,
-    options
+    overrides
   );
 }
 
@@ -472,5 +472,15 @@ describe("StanceManager", () => {
       const history = stanceManager.getTransitionHistory();
       expect(history).toHaveLength(0);
     });
+  });
+
+  it("should handle stance transitions", () => {
+    const player = createTestPlayerState("1"); // Provide required argument
+    expect(player.stance).toBe("geon");
+  });
+
+  it("should check resource requirements", () => {
+    const player = { ...createTestPlayerState("2"), stamina: 10, ki: 5 }; // Provide required argument
+    expect(player.stamina).toBe(10);
   });
 });

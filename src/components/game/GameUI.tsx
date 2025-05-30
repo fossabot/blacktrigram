@@ -1,36 +1,37 @@
 import React, { useCallback } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
+import { Container, Text, Graphics } from "@pixi/react";
 import type {
   GameState,
-  TrigramStance,
-  PlayerState as PlayerStateType,
-  GamePhase as GamePhaseType,
-  CombatEvent,
+  TrigramStance, // Add this import
 } from "../../types";
-import { KOREAN_COLORS, TRIGRAM_DATA } from "../../types";
+import { TRIGRAM_DATA, KOREAN_COLORS } from "../../types";
+import type { Graphics as PixiGraphics } from "pixi.js";
+import type { TextStyle } from "pixi.js";
 import { ProgressTracker } from "../ui/ProgressTracker";
-import type { Graphics as PixiGraphics, TextStyle } from "pixi.js";
 import { TrigramWheel } from "../ui/TrigramWheel";
 
-interface GameUIProps {
-  readonly gameState: GameState;
-  readonly onTogglePause: () => void;
-  readonly onStanceChange: (stance: TrigramStance) => void;
+export interface GameUIProps {
+  gameState: GameState;
+  onPauseToggle?: () => void;
+  width?: number;
+  height?: number;
 }
 
 export function GameUI({
   gameState,
-  onTogglePause,
-  onStanceChange,
+  onPauseToggle,
+  width = 800,
+  height = 600,
 }: GameUIProps): React.JSX.Element {
   const player1 = gameState.players[0];
   const player2 = gameState.players[1];
 
   const handleStanceClick = useCallback(
-    (stance: TrigramStance) => {
-      onStanceChange(stance);
+    (_stance: TrigramStance) => {
+      // Mark parameter as intentionally unused
+      onPauseToggle?.();
     },
-    [onStanceChange]
+    [onPauseToggle]
   );
 
   const formatTime = (seconds: number): string => {
@@ -153,7 +154,7 @@ export function GameUI({
           }
         }}
         interactive={true}
-        pointertap={onTogglePause}
+        pointertap={onPauseToggle}
       />
 
       {/* Trigram Wheel for Player 1 (example) */}
@@ -209,10 +210,11 @@ export function GameUI({
         />
       )}
       {gameState.phase === "post-round" &&
-        gameState.winner !== null && ( // Access phase, check winner type
+        gameState.winner !== null &&
+        gameState.winner !== undefined && (
           <Text
             text={`${
-              gameState.players[gameState.winner as number].playerId
+              gameState.players[gameState.winner]?.playerId || "Unknown"
             } 승리! (Wins!)`}
             anchor={0.5}
             x={width / 2}
@@ -226,7 +228,7 @@ export function GameUI({
             }}
           />
         )}
-      {gameState.phase === "game-over" && ( // Access phase
+      {gameState.phase === "victory" && ( // Use valid GamePhase value
         <Text
           text="게임 종료 (Game Over)"
           anchor={0.5}

@@ -10,6 +10,35 @@ export type TrigramStance =
   | "gan"
   | "gon";
 
+// Move KOREAN_COLORS to the top
+export const KOREAN_COLORS = {
+  TRADITIONAL_RED: "#8a0000",
+  GOLD: "#ffd700",
+  BLACK: "#000000",
+  WHITE: "#ffffff",
+  DOJANG_BLUE: "#4a89e2",
+  CYAN: "#00ffff",
+  GRAY_LIGHT: "#cccccc",
+  YELLOW: "#ffff00",
+  LIGHT_GREY: "#d3d3d3",
+  Red: "#ff0000",
+  Orange: "#ffa500",
+  Green: "#00ff00",
+  Blue: "#0000ff",
+  Purple: "#800080",
+  Brown: "#a52a2a",
+  DARK_BLUE: "#000a12",
+  ACCENT_BLUE: "#004455",
+  GRAY_MEDIUM: "#888888",
+  GRAY_DARK: "#444444",
+  SKIN_TONE_LIGHT: "#fdbcb4",
+  // Add missing colors referenced in components
+  PLAYER_1_BLUE: "#4a89e2",
+  PLAYER_2_RED: "#8a0000",
+  CRITICAL_RED: "#ff0000",
+  DAMAGE_YELLOW: "#ffff00",
+} as const;
+
 // Position and movement types
 export interface Position {
   readonly x: number;
@@ -212,10 +241,10 @@ export interface HitEffect {
   readonly damage: number;
   readonly startTime: number;
   readonly duration: number;
-  readonly korean?: string;
-  readonly attackerId?: string;
-  readonly targetId?: string;
-  readonly techniqueName?: string;
+  readonly korean?: string | undefined; // Explicitly allow undefined
+  readonly attackerId?: string | undefined; // Explicitly allow undefined
+  readonly targetId?: string | undefined; // Explicitly allow undefined
+  readonly techniqueName?: string | undefined; // Explicitly allow undefined
 }
 
 export interface Condition {
@@ -659,10 +688,14 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     symbol: "☲",
     englishName: "Fire",
     koreanName: "리",
+    korean: "리", // Add missing property
+    english: "Fire", // Add missing property
     element: "Fire",
     description: "불꽃처럼 맹렬한 찌르기 (Fierce thrust like flame)",
     philosophy: "명료함과 지혜의 빛 (Light of clarity and wisdom)",
     color: KOREAN_COLORS.Red,
+    order: 3,
+    direction: "South",
     technique: {
       id: "li_flame_spear",
       name: "화염지창",
@@ -704,10 +737,14 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     symbol: "☳",
     englishName: "Thunder",
     koreanName: "진",
-    element: "Wood", // Or Thunder/Movement
+    korean: "진", // Add missing property
+    english: "Thunder", // Add missing property
+    element: "Wood",
     description: "번개처럼 빠른 일격 (Lightning-fast strike)",
     philosophy: "움직임과 각성의 에너지 (Energy of movement and awakening)",
-    color: KOREAN_COLORS.Purple, // Now correctly assigns a string
+    color: KOREAN_COLORS.Purple,
+    order: 4,
+    direction: "East",
     technique: {
       id: "jin_lightning_flash",
       name: "벽력일섬",
@@ -741,11 +778,15 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     symbol: "☴",
     englishName: "Wind",
     koreanName: "손",
+    korean: "손", // Add missing property
+    english: "Wind", // Add missing property
     element: "Wood", // Or Wind/Gentle
     description:
       "바람처럼 가벼운 연속 공격 (Light continuous attacks like wind)",
     philosophy: "순응과 침투의 힘 (Power of yielding and penetration)",
     color: KOREAN_COLORS.Green, // Now correctly assigns a string
+    order: 5,
+    direction: "Southeast",
     technique: {
       id: "son_whirlwind_strikes",
       name: "선풍연격",
@@ -779,10 +820,14 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     symbol: "☵",
     englishName: "Water",
     koreanName: "감",
+    korean: "감", // Add missing property
+    english: "Water", // Add missing property
     element: "Water",
     description: "물의 흐름을 따른 반격 (Counterattack following water's flow)",
     philosophy: "위험과 심연의 지혜 (Wisdom of danger and abyss)",
     color: KOREAN_COLORS.Blue, // Now correctly assigns a string
+    order: 6,
+    direction: "North",
     technique: {
       id: "gam_water_counter",
       name: "수류반격",
@@ -815,10 +860,14 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     symbol: "☶",
     englishName: "Mountain",
     koreanName: "간",
+    korean: "간", // Add missing property
+    english: "Mountain", // Add missing property
     element: "Earth", // Or Mountain/Stillness
     description: "산처럼 견고한 방어 (Solid defense like mountain)",
     philosophy: "정지와 명상의 안정 (Stability of stillness and meditation)",
     color: KOREAN_COLORS.Brown, // Now correctly assigns a string
+    order: 7,
+    direction: "Northeast",
     technique: {
       id: "gan_mountain_defense",
       name: "반석방어",
@@ -852,10 +901,14 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     symbol: "☷",
     englishName: "Earth",
     koreanName: "곤",
+    korean: "곤", // Add missing property
+    english: "Earth", // Add missing property
     element: "Earth",
     description: "대지의 포용력으로 제압 (Subduing with earth's embrace)",
     philosophy: "수용과 양육의 덕 (Virtue of receptivity and nurturing)",
     color: KOREAN_COLORS.GRAY_DARK, // Now correctly assigns a string
+    order: 8,
+    direction: "Southwest",
     technique: {
       id: "gon_earth_embrace",
       name: "대지포옹",
@@ -895,29 +948,6 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
   },
 };
 
-export const KOREAN_COLORS = {
-  TRADITIONAL_RED: "#8a0000",
-  GOLD: "#ffd700",
-  BLACK: "#000000",
-  WHITE: "#ffffff",
-  DOJANG_BLUE: "#4a89e2",
-  CYAN: "#00ffff",
-  GRAY_LIGHT: "#cccccc",
-  YELLOW: "#ffff00",
-  LIGHT_GREY: "#d3d3d3",
-  Red: "#ff0000",
-  Orange: "#ffa500",
-  Green: "#00ff00",
-  Blue: "#0000ff",
-  Purple: "#800080",
-  Brown: "#a52a2a",
-  DARK_BLUE: "#000a12",
-  ACCENT_BLUE: "#004455",
-  GRAY_MEDIUM: "#888888",
-  GRAY_DARK: "#444444",
-  SKIN_TONE_LIGHT: "#fdbcb4",
-} as const;
-
 // Fix KOREAN_TECHNIQUES with proper typing
 export const KOREAN_TECHNIQUES: Record<string, KoreanTechnique> = Object.values(
   TRIGRAM_DATA
@@ -936,9 +966,10 @@ export const KOREAN_TECHNIQUES: Record<string, KoreanTechnique> = Object.values(
 export function createPlayerState(
   playerId: string,
   initialPosition: Position,
-  stance: TrigramStance = "geon"
+  stance: TrigramStance = "geon",
+  overrides?: Partial<PlayerState>
 ): PlayerState {
-  return {
+  const baseState: PlayerState = {
     playerId,
     position: initialPosition,
     velocity: { x: 0, y: 0 },
@@ -961,12 +992,13 @@ export function createPlayerState(
     targetId: null,
     lastStanceChangeTime: Date.now(),
   };
+
+  return overrides ? { ...baseState, ...overrides } : baseState;
 }
 
 export const KOREAN_FONT_FAMILY = "Noto Sans KR, Arial, sans-serif";
 
 export interface CombatResult {
-  // Used by CombatSystem.ts
   damageDealt: number;
   attackerState: PlayerState;
   defenderState: PlayerState;
@@ -976,7 +1008,6 @@ export interface CombatResult {
 }
 
 export interface KiFlowFactors {
-  // Used by TrigramSystem.ts
   baseRate: number;
   playerLevelModifier: number;
   stanceAffinity: number;
@@ -985,56 +1016,44 @@ export interface KiFlowFactors {
 }
 
 export interface StanceData {
-  // Used by TrigramSystem.ts
   name: string;
   order: number;
-  // Add other properties as needed
 }
 
-// VitalPointSystemConfig - Merged from types/index.ts and GameTypes.ts
 export interface VitalPointSystemConfig {
   readonly enabled?: boolean;
-  readonly baseAccuracy?: number; // From types/index.ts
-  readonly vitalPointMultiplier?: number; // From types/index.ts
-  readonly precisionLevels?: Record<string, number>; // From types/index.ts
-  readonly maxHitDistance?: number; // From GameTypes.ts & types/index.ts
-  readonly precisionThreshold?: number; // From GameTypes.ts & types/index.ts
-  readonly debugging?: boolean; // From GameTypes.ts & types/index.ts
-  readonly distanceModifier?: number; // From types/index.ts
-  readonly angleModifier?: number; // From types/index.ts
+  readonly baseAccuracy?: number;
+  readonly vitalPointMultiplier?: number;
+  readonly precisionLevels?: Record<string, number>;
+  readonly maxHitDistance?: number;
+  readonly precisionThreshold?: number;
+  readonly debugging?: boolean;
+  readonly distanceModifier?: number;
+  readonly angleModifier?: number;
 }
 
-// VitalPointEffect was used in KoreanVitalPoints.ts, but StatusEffect is now the standard.
-// If VitalPointEffect is truly distinct, it should be defined. Otherwise, it's deprecated.
-// For now, assuming StatusEffect covers its use.
-
-// UIState from GameTypes.ts, largely integrated into GameSettings
 export interface UIState {
   readonly currentMenu: string | null;
   readonly isLoading: boolean;
-  // Other UI-specific states not part of GameSettings
 }
 
-// AttackData from GameTypes.ts
 export interface AttackData {
   readonly technique: KoreanTechnique;
   readonly damage: number;
-  readonly force: Position; // Vector2D
-  readonly attacker: string; // Player ID
+  readonly force: Position;
+  readonly attacker: string;
   readonly timestamp: number;
   readonly isVitalPoint: boolean;
   readonly vitalPointHit?: VitalPointHit;
   readonly criticalMultiplier: number;
 }
 
-// TransitionResult from GameTypes.ts
 export interface TransitionResult {
   readonly cost: TransitionMetrics;
   readonly success: boolean;
   readonly reason?: string;
 }
 
-// Types for KoreanAnatomy.ts
 export interface EnergyMeridian {
   readonly id: string;
   readonly korean: string;
@@ -1042,7 +1061,7 @@ export interface EnergyMeridian {
   readonly element: string;
   readonly startPoint: { x: number; y: number };
   readonly endPoint: { x: number; y: number };
-  readonly vitalPoints: readonly string[]; // IDs of vital points
+  readonly vitalPoints: readonly string[];
   readonly energy: "yin" | "yang";
   readonly description: string;
   readonly traditionalName: string;
@@ -1071,13 +1090,12 @@ export interface KoreanAnatomicalZone {
     readonly right: number;
   };
   readonly vulnerability: number;
-  readonly meridians: readonly string[]; // IDs of meridians
-  readonly vitalPoints: readonly string[]; // IDs of vital points
+  readonly meridians: readonly string[];
+  readonly vitalPoints: readonly string[];
   readonly traditionalImportance: number;
   readonly description: string;
 }
 
-// Types for HitDetection.ts
 export type AttackType =
   | "punch"
   | "kick"
@@ -1089,10 +1107,9 @@ export type AttackType =
   | "combination";
 
 export interface HitResult {
-  // Specific to HitDetectionSystem, distinct from AttackResult
   readonly hit: boolean;
   readonly damage: number;
-  readonly vitalPoint: VitalPoint | null; // The actual VP struct from AnatomicalRegions
+  readonly vitalPoint: VitalPoint | null;
   readonly effects: readonly StatusEffect[];
   readonly hitType: "normal" | "vital" | "critical" | "miss";
   readonly description: string;
@@ -1109,25 +1126,19 @@ export interface HitDetectionParams {
 }
 
 export interface CollisionZone {
+  readonly shape: "circle" | "rectangle";
   readonly center: { x: number; y: number };
   readonly radius: number;
-  readonly shape: "circle" | "rectangle";
   readonly width?: number;
   readonly height?: number;
 }
 
-// Utility type ReadonlyDeep (moved from GameTypes.ts if it was there)
-export type ReadonlyDeep<T> = {
-  readonly [P in keyof T]: T[P] extends object ? ReadonlyDeep<T[P]> : T[P];
-};
-
-// Add missing TrigramData interface
 export interface TrigramData {
   symbol: string;
   englishName: string;
   koreanName: string;
-  korean: string; // Add for compatibility
-  english: string; // Add for compatibility
+  korean: string;
+  english: string;
   element: string;
   description: string;
   philosophy: string;
@@ -1142,12 +1153,11 @@ export interface TrigramData {
   damageModifier?: number;
   defenseModifier?: number;
   speedModifier?: number;
-  order: number; // Add for transition calculations
-  direction?: string; // Add for culture system
-  name?: string; // Add for compatibility
+  order: number;
+  direction?: string;
+  name?: string;
 }
 
-// Add missing TRIGRAM_STANCES_ORDER
 export const TRIGRAM_STANCES_ORDER: TrigramStance[] = [
   "geon",
   "tae",

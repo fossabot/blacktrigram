@@ -78,7 +78,7 @@ export class KoreanDamageCalculator {
     let meridianMultiplier = 1.0;
     let finalDamageType: DamageType = "light";
     let hitVitalPointKoreanName: string | undefined = undefined;
-    let descriptionMessage = "";
+    let descriptionMessage = ""; // Initialize as empty string
 
     if (vitalPoint) {
       hitVitalPointKoreanName = vitalPoint.koreanName;
@@ -89,15 +89,19 @@ export class KoreanDamageCalculator {
         precision,
         vitalPoint
       );
+
+      // Ensure string assignment with proper null checking
       descriptionMessage = hitVitalPointKoreanName
         ? `${hitVitalPointKoreanName} - ${damageDescriptions[finalDamageType]}`
-        : damageDescriptions[finalDamageType];
+        : damageDescriptions[finalDamageType] || "Basic attack";
     } else {
+      // Handle non-vital point case
       if (baseDamage > 50 && precision > 0.9) finalDamageType = "critical";
       else if (baseDamage > 30 || precision > 0.7) finalDamageType = "heavy";
       else if (baseDamage > 10) finalDamageType = "medium";
       else finalDamageType = "light";
-      descriptionMessage = damageDescriptions[finalDamageType];
+      descriptionMessage =
+        damageDescriptions[finalDamageType] || "Basic attack"; // Ensure string
     }
 
     const totalDamage = Math.round(
