@@ -40,7 +40,7 @@ export class KoreanDamageCalculator {
 
   public static applyVitalPointModifiers(
     baseDamage: number,
-    vitalPoint: VitalPoint | null, // Uses imported VitalPoint
+    vitalPoint: VitalPoint | null,
     precision: number,
     _technique?: KoreanTechnique
   ): DamageResult {
@@ -48,19 +48,16 @@ export class KoreanDamageCalculator {
     let vitalPointBonus = 0;
     let meridianMultiplier = 1.0;
     let finalDamageType: DamageType = "light";
-    let hitVitalPointName:
-      | string
-      | { english: string; korean: string }
-      | undefined = undefined; // Match VitalPoint.name type
+    let hitVitalPointNameObj: { english: string; korean: string } | undefined =
+      undefined;
     let hitVitalPointKoreanName: string | undefined = undefined;
     let descriptionMessage = "";
 
     if (vitalPoint) {
-      hitVitalPointName = vitalPoint.name; // This is an object
+      hitVitalPointNameObj = vitalPoint.name;
       hitVitalPointKoreanName = vitalPoint.koreanName;
-      // Use damageMultiplier instead of baseDamageModifier
       vitalPointBonus = (vitalPoint.damageMultiplier - 1) * baseDamage;
-      // meridianMultiplier = getMeridianMultiplier(vitalPoint.meridian);
+      // meridianMultiplier = getMeridianMultiplier(vitalPoint.meridian); // Assuming getMeridianMultiplier exists
 
       finalDamageType = KoreanDamageCalculator.determineDamageType(
         baseDamage,
@@ -82,27 +79,37 @@ export class KoreanDamageCalculator {
       (baseDamage + vitalPointBonus) * meridianMultiplier
     );
 
-    return {
-      damage: totalDamage, // main damage property
+    const result: DamageResult = {
+      damage: totalDamage,
       baseDamage: baseDamage,
       isCritical: finalDamageType === "critical",
       vitalPointHit: vitalPoint
         ? ({
-            /* construct VitalPointHit appropriately */
+            hit: true, // Example, ensure VitalPointHit is correctly constructed
+            vitalPoint: vitalPoint,
+            damage: totalDamage, // Or damage specific to VP hit
+            critical: finalDamageType === "critical",
+            description: descriptionMessage,
+            // ... other VitalPointHit properties
           } as VitalPointHit)
-        : null, // Placeholder
-      modifiers: [], // Modifiers messages can be built here
+        : null,
+      modifiers: [],
       description: descriptionMessage,
-      // Optional fields from expanded DamageResult
       vitalPointBonus: vitalPointBonus,
       meridianMultiplier: meridianMultiplier,
       damageType: finalDamageType,
-      koreanName: hitVitalPointKoreanName,
-      vitalPointName:
-        typeof hitVitalPointName === "string"
-          ? hitVitalPointName
-          : hitVitalPointName?.english,
     };
+    if (hitVitalPointKoreanName) {
+      result.koreanName = hitVitalPointKoreanName;
+    }
+    if (hitVitalPointNameObj) {
+      result.vitalPointName = hitVitalPointNameObj; // Assign the object if that's the type
+    } else if (typeof hitVitalPointNameObj === "string") {
+      // Or handle if it could be string
+      result.vitalPointName = hitVitalPointNameObj;
+    }
+
+    return result;
   }
 
   public static determineDamageType(
@@ -168,30 +175,37 @@ export class KoreanDamageCalculator {
       precision,
       vitalPoint
     );
-    // Use damageMultiplier
     const vitalPointMultiplier = vitalPoint.damageMultiplier || 1.0;
     const finalDamageValue =
       baseDamageFromTechnique * vitalPointMultiplier * precision;
     const vitalPointBonusValue =
       (vitalPointMultiplier - 1.0) * baseDamageFromTechnique;
 
-    return {
+    const result: DamageResult = {
       damage: Math.round(finalDamageValue),
       baseDamage: baseDamageFromTechnique,
       isCritical: damageType === "critical",
       vitalPointHit: {
-        /* construct VitalPointHit appropriately */
-      } as VitalPointHit, // Placeholder
+        hit: true, // Example, ensure VitalPointHit is correctly constructed
+        vitalPoint: vitalPoint,
+        damage: Math.round(finalDamageValue),
+        critical: damageType === "critical",
+        description: `효과: ${vitalPoint.koreanName}에 ${precision.toFixed(
+          2
+        )} 정밀도로 타격`,
+        // ... other VitalPointHit properties
+      } as VitalPointHit,
       modifiers: [],
       description: `효과: ${vitalPoint.koreanName}에 ${precision.toFixed(
         2
       )} 정밀도로 타격`,
       vitalPointBonus: vitalPointBonusValue,
-      meridianMultiplier: 1.0, // Placeholder
+      meridianMultiplier: 1.0,
       damageType: damageType,
       koreanName: vitalPoint.koreanName,
-      vitalPointName: vitalPoint.name.english, // Access english part of name
+      vitalPointName: vitalPoint.name, // vitalPoint.name is { english: string; korean: string; }
     };
+    return result;
   }
 }
 

@@ -1,11 +1,11 @@
 import type {
+  EnergyMeridian,
+  ElementalRelations,
+  KoreanAnatomicalZone,
   StatusEffect,
-  VitalPoint, // Imported from types/index.ts
-  EnergyMeridian, // Assuming these are now in types/index.ts
-  ElementalRelations, // Assuming these are now in types/index.ts
-  KoreanAnatomicalZone, // Assuming these are now in types/index.ts
-  Position, // Assuming Position is defined in types/index.ts
-} from "../../types"; // Changed import path
+  VitalPoint,
+  // Position, // Removed unused import
+} from "../../types"; // Assuming types are now unified in ../../types
 import { ANATOMICAL_REGIONS_DATA as ANATOMICAL_REGIONS } from "./AnatomicalRegions"; // Use renamed const
 
 /**

@@ -104,15 +104,16 @@ export type VitalPointCategory =
   | "primary"
   | "secondary"
   | "tertiary"
-  | "critical" // From GameTypes.ts
-  | "major" // From GameTypes.ts
-  | "minor" // From GameTypes.ts
+  | "critical"
+  | "major"
+  | "minor"
   | "consciousness" // From AnatomicalRegions.ts
   | "circulation" // From AnatomicalRegions.ts
   | "breathing" // From AnatomicalRegions.ts
   | "nerve" // From AnatomicalRegions.ts
   | "energy" // From AnatomicalRegions.ts
-  | "balance"; // From AnatomicalRegions.ts
+  | "balance"
+  | "joint"; // Added "joint"
 
 // Vital point system - UNIFIED (based on types/index.ts version, enhanced)
 export interface VitalPoint {
@@ -265,14 +266,14 @@ export interface DamageResult {
   vitalPointHit: VitalPointHit | null;
   modifiers: string[]; // Text descriptions of modifiers applied
   description: string; // Overall description of the damage event
-  blocked?: boolean; // Was the attack blocked? (From GameTypes.ts)
-  multiplier?: number; // Overall damage multiplier (From GameTypes.ts)
-  bonus?: number; // Flat damage bonus (From GameTypes.ts)
-  meridianMultiplier?: number; // Specific meridian multiplier (From GameTypes.ts & KoreanDamageCalculator)
-  damageType?: DamageType; // Type of damage (light, heavy, etc.) (From KoreanDamageCalculator)
-  koreanName?: string; // Korean name for the hit/vital point (From KoreanDamageCalculator)
-  vitalPointName?: string | { english: string; korean: string }; // English name (From KoreanDamageCalculator)
-  vitalPointBonus?: number; // Bonus damage from vital point (From KoreanDamageCalculator)
+  blocked?: boolean;
+  multiplier?: number;
+  bonus?: number;
+  meridianMultiplier?: number; // Added
+  damageType?: DamageType; // Added
+  koreanName?: string; // Ensured optional
+  vitalPointName?: string | { english: string; korean: string }; // Ensured optional and correct type
+  vitalPointBonus?: number; // Added
 }
 
 export interface AttackResult {
@@ -339,9 +340,9 @@ export type CombatEventType =
   | "match_end";
 
 export interface BaseCombatEvent {
-  readonly type: CombatEventType | string; // Allow other string types
-  readonly timestamp?: number; // Made optional as not always present in types/index.ts
-  readonly technique?: string;
+  readonly type: CombatEventType | string;
+  readonly timestamp?: number;
+  readonly technique?: string | KoreanTechnique; // Changed to allow KoreanTechnique for AttackEvent override
   readonly damage?: number;
   readonly isVitalPoint?: boolean;
   readonly stance?: TrigramStance;
@@ -354,7 +355,7 @@ export interface BaseCombatEvent {
 export interface AttackEvent extends BaseCombatEvent {
   readonly type: "attack";
   readonly attacker: string; // playerId
-  readonly technique: KoreanTechnique; // Full technique data
+  readonly technique: KoreanTechnique; // Now compatible with BaseCombatEvent.technique
 }
 
 export interface HitEvent extends BaseCombatEvent {
@@ -601,7 +602,15 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
       kiCost: 20,
       staminaCost: 15,
       type: "strike",
-      effects: [{ type: "burn", duration: 3, magnitude: 5, chance: 0.3 }],
+      effects: [
+        {
+          type: "burn",
+          duration: 3,
+          magnitude: 5,
+          chance: 0.3,
+          source: "Flame Spear",
+        },
+      ],
       critChance: 0.12,
       critMultiplier: 1.7,
       vitalPointMultiplier: 1.3,
@@ -669,17 +678,17 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
         korean: "바람처럼 가벼운 연속 공격",
         english: "Light continuous attacks like wind",
       },
-      damage: 15, // Low damage per hit
-      range: 80, // Longest range due to movement
+      damage: 15, // Should be number
+      range: 80,
       accuracy: 0.95,
       speed: 1.3,
       kiCost: 10,
       staminaCost: 6,
-      type: "movement", // Could be movement or strike
+      type: "movement",
       properties: ["area_effect", "evasive"],
       critChance: 0.08,
       critMultiplier: 1.5,
-      vitalPointMultiplier: 0.9, // Harder to target specific VPs
+      vitalPointMultiplier: 0.9,
     } as KoreanTechnique,
     techniques: [],
     nature: "Yin",
@@ -706,16 +715,16 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
         korean: "물의 흐름을 따른 반격",
         english: "Counterattack following water's flow",
       },
-      damage: 25, // Damage depends on countered attack
+      damage: 25, // Should be number
       range: 45,
       accuracy: 0.88, // Accuracy of the counter itself
       speed: 1.0, // Speed of counter execution
       kiCost: 18,
       staminaCost: 12,
       type: "counter",
-      critChance: 0.2, // High crit on successful counter
+      critChance: 0.2,
       critMultiplier: 2.0,
-      vitalPointMultiplier: 1.5, // Counters can target VPs
+      vitalPointMultiplier: 1.5,
     } as KoreanTechnique,
     techniques: [],
     nature: "Yang",
@@ -742,13 +751,13 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
         korean: "산처럼 견고한 방어",
         english: "Solid defense like mountain",
       },
-      damage: 12, // Defensive, low damage, maybe reflect or stun
-      range: 30, // Short range, defensive posture
-      accuracy: 0.98, // High accuracy for defensive moves
-      speed: 0.8, // Slower, deliberate
+      damage: 12, // Should be number
+      range: 30,
+      accuracy: 0.98,
+      speed: 0.8,
       kiCost: 8,
-      staminaCost: 5, // Low stamina cost for holding stance
-      type: "block", // Or special
+      staminaCost: 5,
+      type: "block",
       properties: ["super_armor", "damage_reduction"],
       critChance: 0.02,
       critMultiplier: 1.5,
@@ -779,17 +788,25 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
         korean: "대지의 포용력으로 제압",
         english: "Subduing with earth's embrace",
       },
-      damage: 30, // Grappling damage
-      range: 40, // Close range for grapple
+      damage: 30, // Should be number
+      range: 40,
       accuracy: 0.82,
       speed: 0.9,
       kiCost: 22,
       staminaCost: 16,
       type: "grapple",
-      effects: [{ type: "stun", duration: 2, magnitude: 1, chance: 0.7 }],
+      effects: [
+        {
+          type: "stun",
+          duration: 2,
+          magnitude: 1,
+          chance: 0.7,
+          source: "Earth Embrace",
+        },
+      ],
       critChance: 0.05,
       critMultiplier: 1.6,
-      vitalPointMultiplier: 1.4, // Grapples can target VPs
+      vitalPointMultiplier: 1.4,
     } as KoreanTechnique,
     techniques: [],
     nature: "Yin",

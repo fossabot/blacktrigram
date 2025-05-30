@@ -22,9 +22,10 @@ function createVitalPoint(
   stunMultiplier: number = 0,
   accessibility: number = 0.7,
   critChanceBonus: number = 0,
-  meridian?: string // This being optional is key for TS2375 with exactOptionalPropertyTypes
+  meridian?: string
 ): VitalPoint {
-  return {
+  const vitalPointData: Omit<VitalPoint, "meridian"> & { meridian?: string } = {
+    // Use Omit for clarity
     id,
     name: { english: nameEnglish, korean: koreanName },
     koreanName,
@@ -32,13 +33,19 @@ function createVitalPoint(
     position,
     category,
     description: { korean: descriptionKorean, english: descriptionEnglish },
-    effects, // These should now match the simplified StatusEffect
+    effects,
     damageMultiplier,
     stunMultiplier,
     accessibility,
     critChanceBonus,
-    meridian,
+    // Meridian is handled below
   };
+
+  if (meridian !== undefined) {
+    vitalPointData.meridian = meridian;
+  }
+
+  return vitalPointData as VitalPoint;
 }
 
 export const KOREAN_VITAL_POINTS_DATA: VitalPoint[] = [

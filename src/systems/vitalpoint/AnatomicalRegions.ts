@@ -1,11 +1,9 @@
 import type {
-  StatusEffect,
   VitalPoint,
-  AnatomicalRegion,
+  AnatomicalRegionIdentifier,
   VitalPointCategory,
-  Position, // Assuming Position is defined in types/index.ts
-  AnatomicalRegionIdentifier, // If needed for mapping KOREAN_VITAL_POINTS anatomicalRegion
-} from "../../types"; // Changed import path
+  AnatomicalRegion,
+} from "../../types"; // Assuming types are now unified in ../../types
 
 /**
  * Korean Martial Arts Anatomical Regions System

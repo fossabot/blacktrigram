@@ -1,17 +1,15 @@
 import type {
+  AttackType,
+  CollisionZone,
+  HitDetectionParams,
   StatusEffect,
   VitalPoint,
-  AttackType, // Assuming AttackType is defined in types/index.ts
-  HitResult as ConsolidatedHitResult, // Alias to avoid conflict if local HitResult is kept temporarily
-  HitDetectionParams, // Assuming HitDetectionParams is defined in types/index.ts
-  CollisionZone, // Assuming CollisionZone is defined in types/index.ts
-  Position, // Assuming Position is defined in types/index.ts
-} from "../../types"; // Changed import path
+} from "../../types"; // Assuming types are now unified in ../../types
 import {
-  calculateVitalPointDamage,
+  calculateVitalPointDamage, // Assuming this function is defined and compatible
   getClosestVitalPoint,
-  // type VitalPoint, // Already imported
-} from "./AnatomicalRegions";
+  // type VitalPoint, // Already imported from ../../types
+} from "./AnatomicalRegions"; // Check if VitalPoint here is compatible or should use the one from types
 
 /**
  * Korean Martial Arts Hit Detection System
