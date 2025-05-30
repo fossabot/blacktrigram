@@ -4,12 +4,11 @@ import type {
   HitDetectionParams,
   StatusEffect,
   VitalPoint,
-} from "../../types"; // Assuming types are now unified in ../../types
+} from "../../types";
 import {
-  calculateVitalPointDamage, // Assuming this function is defined and compatible
+  calculateVitalPointDamage,
   getClosestVitalPoint,
-  // type VitalPoint, // Already imported from ../../types
-} from "./AnatomicalRegions"; // Check if VitalPoint here is compatible or should use the one from types
+} from "./AnatomicalRegions";
 
 /**
  * Korean Martial Arts Hit Detection System
@@ -170,14 +169,15 @@ export class HitDetectionSystem {
   ): boolean {
     // Base hit chances by attack type
     const baseHitChance: Record<AttackType, number> = {
-      punch: 0.8,
-      kick: 0.7,
-      elbow: 0.75,
-      knee: 0.7,
-      grapple: 0.85,
-      throw: 0.6,
-      pressure_point: 0.5,
-      combination: 0.65,
+      punch: 0.85,
+      kick: 0.75,
+      elbow: 0.9,
+      knee: 0.8,
+      grapple: 0.95,
+      throw: 0.7,
+      pressure_point: 0.6,
+      combination: 0.8,
+      strike: 0.85,
     };
 
     const baseChance = baseHitChance[attackType] || 0.7;
@@ -221,7 +221,9 @@ export class HitDetectionSystem {
     circle2: CollisionZone
   ): boolean {
     const distance = this.calculateDistance(circle1.center, circle2.center);
-    return distance <= circle1.radius + circle2.radius;
+    const radius1 = circle1.radius ?? 0;
+    const radius2 = circle2.radius ?? 0;
+    return distance <= radius1 + radius2;
   }
 
   /**

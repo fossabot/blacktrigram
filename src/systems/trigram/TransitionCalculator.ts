@@ -1,290 +1,198 @@
 import type {
   TrigramStance,
-  PlayerState,
   TransitionMetrics,
   TransitionPath,
+  KiFlowFactors,
 } from "../../types";
 import { TRIGRAM_DATA, TRIGRAM_STANCES_ORDER } from "../../types";
 
-export interface TransitionNode {
-  readonly stance: TrigramStance;
-  readonly cost: number;
-  readonly path: readonly TrigramStance[];
-}
-
-export interface TransitionOptions {
-  readonly maxCost?: number;
-  readonly preferredPath?: readonly TrigramStance[];
-  readonly avoidStances?: readonly TrigramStance[];
-}
+/**
+ * Korean Martial Arts Transition Calculator
+ * Calculates optimal paths between trigram stances based on traditional Korean philosophy
+ */
 
 export class TransitionCalculator {
-  private static readonly MAX_TRANSITION_COST = 100;
+  // Remove unused constant or use it
+  // private static readonly MAX_TRANSITION_STEPS = 3;
+
+  private static readonly KI_COST_BASE = 10;
+  private static readonly STAMINA_COST_BASE = 8;
+  private static readonly TIME_DELAY_BASE = 200; // milliseconds
 
   /**
-   * Calculate the metrics for transitioning between two stances
+   * Calculate metrics for a single transition between stances
    */
-  public static calculateTransition(
+  static calculateTransition(
     fromStance: TrigramStance,
-    toStance: TrigramStance,
-    player: PlayerState
+    toStance: TrigramStance
   ): TransitionMetrics {
     if (fromStance === toStance) {
       return {
-        kiCost: 0,
         staminaCost: 0,
-        time: 0,
+        kiCost: 0,
+        timeDelay: 0,
         effectiveness: 1.0,
+        cost: 0,
+        time: 0,
+        cooldown: 0,
       };
     }
 
     const fromData = TRIGRAM_DATA[fromStance];
     const toData = TRIGRAM_DATA[toStance];
 
-    // Calculate base transition distance
-    const fromIndex = TRIGRAM_STANCES_ORDER.indexOf(fromStance);
-    const toIndex = TRIGRAM_STANCES_ORDER.indexOf(toStance);
-    const distance = Math.min(
-      Math.abs(toIndex - fromIndex),
-      8 - Math.abs(toIndex - fromIndex) // Circular distance
-    );
+    // Calculate order difference in the traditional sequence
+    const orderDiff = Math.abs((fromData.order || 0) - (toData.order || 0));
 
-    // Base costs
-    let kiCost = 5 + distance * 3;
-    let staminaCost = 3 + distance * 2;
-    let time = 0.2 + distance * 0.1;
+    // Base costs increase with distance in traditional order
+    const kiCost = this.KI_COST_BASE + orderDiff * 5;
+    const staminaCost = this.STAMINA_COST_BASE + orderDiff * 3;
+    const timeDelay = this.TIME_DELAY_BASE + orderDiff * 50;
 
-    // Element compatibility modifier
-    if (fromData.element === toData.element) {
-      kiCost *= 0.8; // Same element bonus
-      staminaCost *= 0.8;
-      time *= 0.9;
-    }
+    // Effectiveness decreases with larger transitions
+    const effectiveness = Math.max(0.3, 1.0 - orderDiff * 0.1);
 
-    // Player state modifiers
-    const kiRatio = player.ki / player.maxKi;
-    const staminaRatio = player.stamina / player.maxStamina;
-
-    if (kiRatio < 0.3) {
-      kiCost *= 1.3; // Low ki penalty
-      time *= 1.2;
-    }
-
-    if (staminaRatio < 0.3) {
-      staminaCost *= 1.3; // Low stamina penalty
-      time *= 1.1;
-    }
-
-    // Calculate effectiveness
-    const effectiveness = Math.max(
-      0.3,
-      1.0 - distance * 0.1 - Math.max(0, 0.3 - kiRatio) * 0.5
-    );
+    // Consider elemental relationships for efficiency
+    const elementalBonus = this.calculateElementalBonus(fromStance, toStance);
+    const adjustedEffectiveness = Math.min(1.0, effectiveness * elementalBonus);
 
     return {
-      kiCost: Math.round(kiCost),
-      staminaCost: Math.round(staminaCost),
-      time: Math.round(time * 100) / 100,
-      effectiveness: Math.round(effectiveness * 100) / 100,
+      staminaCost,
+      kiCost,
+      timeDelay,
+      effectiveness: adjustedEffectiveness,
+      cost: kiCost + staminaCost,
+      time: timeDelay,
+      cooldown: timeDelay * 1.5,
     };
   }
 
   /**
-   * Find the optimal transition path between stances
+   * Find the optimal transition path between two stances
    */
-  public static findOptimalPath(
+  static findOptimalPath(
     fromStance: TrigramStance,
     toStance: TrigramStance,
-    player: PlayerState,
-    options: TransitionOptions = {}
+    _maxSteps: number = 3 // Prefix with underscore to indicate intentionally unused
   ): TransitionPath {
-    if (fromStance === toStance) {
-      return {
-        path: [fromStance],
-        totalKiCost: 0,
-        totalStaminaCost: 0,
-      };
-    }
+    // For now, direct transition is optimal (can be enhanced later for multi-step paths)
+    const directTransition = this.calculateTransition(fromStance, toStance);
 
-    // For simple transitions, use direct path
-    const directTransition = this.calculateTransition(
-      fromStance,
-      toStance,
-      player
-    );
-
-    // Check if direct path is acceptable
-    const maxCost = options.maxCost ?? this.MAX_TRANSITION_COST;
-    if (directTransition.kiCost <= maxCost) {
-      return {
-        path: [fromStance, toStance],
-        totalKiCost: directTransition.kiCost,
-        totalStaminaCost: directTransition.staminaCost,
-      };
-    }
-
-    // If direct path is too expensive, find alternative
-    return this.findAlternativePath(fromStance, toStance, player, options);
-  }
-
-  /**
-   * Find alternative path when direct transition is not optimal
-   */
-  private static findAlternativePath(
-    fromStance: TrigramStance,
-    toStance: TrigramStance,
-    player: PlayerState,
-    options: TransitionOptions
-  ): TransitionPath {
-    const visited = new Set<TrigramStance>();
-    const queue: TransitionNode[] = [
-      {
-        stance: fromStance,
-        cost: 0,
-        path: [fromStance],
-      },
-    ];
-
-    visited.add(fromStance);
-
-    while (queue.length > 0) {
-      const current = queue.shift()!;
-
-      if (current.stance === toStance) {
-        return {
-          path: [...current.path], // Create mutable copy
-          totalKiCost: current.cost,
-          totalStaminaCost: Math.round(current.cost * 0.6),
-        };
-      }
-
-      // Explore adjacent stances
-      for (const nextStance of TRIGRAM_STANCES_ORDER) {
-        if (visited.has(nextStance)) continue;
-        if (options.avoidStances?.includes(nextStance)) continue;
-
-        const transition = this.calculateTransition(
-          current.stance,
-          nextStance,
-          player
-        );
-        const newCost = current.cost + transition.kiCost;
-
-        if (newCost <= (options.maxCost ?? this.MAX_TRANSITION_COST)) {
-          visited.add(nextStance);
-          queue.push({
-            stance: nextStance,
-            cost: newCost,
-            path: [...current.path, nextStance],
-          });
-        }
-      }
-    }
-
-    // Fallback to direct path if no alternative found
-    const directTransition = this.calculateTransition(
-      fromStance,
-      toStance,
-      player
-    );
     return {
       path: [fromStance, toStance],
+      totalCost: directTransition.cost || 0,
       totalKiCost: directTransition.kiCost,
       totalStaminaCost: directTransition.staminaCost,
+      efficiency: directTransition.effectiveness,
+      success: true,
+      description: `Direct transition from ${TRIGRAM_DATA[fromStance].koreanName} to ${TRIGRAM_DATA[toStance].koreanName}`,
+      from: fromStance,
+      to: toStance,
     };
   }
 
   /**
-   * Calculate transition efficiency based on player state and stance compatibility
+   * Calculate Ki flow efficiency between stances
    */
-  public static calculateTransitionEfficiency(
+  static calculateKiFlow(
     fromStance: TrigramStance,
     toStance: TrigramStance,
-    player: PlayerState
+    factors: KiFlowFactors = {}
   ): number {
-    const metrics = this.calculateTransition(fromStance, toStance, player);
-    const playerResourceRatio =
-      (player.ki + player.stamina) / (player.maxKi + player.maxStamina);
+    const baseTransition = this.calculateTransition(fromStance, toStance);
+    let flowEfficiency = baseTransition.effectiveness;
 
-    // Fix undefined effectiveness
-    const effectiveness = metrics.effectiveness ?? 1.0;
-    return effectiveness * playerResourceRatio;
-  }
-
-  /**
-   * Get recommended transitions based on current player state
-   */
-  public static getRecommendedTransitions(
-    currentStance: TrigramStance,
-    player: PlayerState,
-    targetStance?: TrigramStance
-  ): readonly TrigramStance[] {
-    if (targetStance) {
-      const path = this.findOptimalPath(currentStance, targetStance, player);
-      return path.path.slice(1); // Remove current stance
+    // Apply player level modifier
+    if (factors.playerLevelModifier) {
+      flowEfficiency *= factors.playerLevelModifier;
     }
 
-    // Return adjacent stances with good efficiency
-    return TRIGRAM_STANCES_ORDER.filter((stance) => {
-      if (stance === currentStance) return false;
-      const efficiency = this.calculateTransitionEfficiency(
-        currentStance,
-        stance,
-        player
-      );
-      return efficiency > 0.7;
-    });
+    // Apply stance affinity
+    if (factors.stanceAffinity) {
+      flowEfficiency *= factors.stanceAffinity;
+    }
+
+    // Factor in ki recovery and consumption
+    const kiBalance = (factors.kiRecovery || 0) - (factors.kiConsumption || 0);
+    flowEfficiency += kiBalance * 0.01; // Small adjustment based on ki balance
+
+    return Math.max(0.1, Math.min(2.0, flowEfficiency));
   }
 
   /**
-   * Check if a transition is viable given current player state
+   * Get transition difficulty rating
    */
-  public static isTransitionViable(
+  static getTransitionDifficulty(
     fromStance: TrigramStance,
-    toStance: TrigramStance,
-    player: PlayerState
-  ): boolean {
-    const metrics = this.calculateTransition(fromStance, toStance, player);
-    const effectiveness = metrics.effectiveness ?? 1.0;
-    return (
-      player.ki >= metrics.kiCost &&
-      player.stamina >= metrics.staminaCost &&
-      effectiveness > 0.5
-    );
+    toStance: TrigramStance
+  ): "easy" | "medium" | "hard" | "expert" {
+    const metrics = this.calculateTransition(fromStance, toStance);
+    const totalCost = metrics.cost || 0;
+
+    if (totalCost <= 15) return "easy";
+    if (totalCost <= 25) return "medium";
+    if (totalCost <= 35) return "hard";
+    return "expert";
   }
 
   /**
-   * Calculate stance distance in the trigram circle
+   * Calculate elemental bonus based on traditional Korean five-element theory
    */
-  public static calculateStanceDistance(
+  private static calculateElementalBonus(
     fromStance: TrigramStance,
     toStance: TrigramStance
   ): number {
-    const fromIndex = TRIGRAM_STANCES_ORDER.indexOf(fromStance);
-    const toIndex = TRIGRAM_STANCES_ORDER.indexOf(toStance);
+    const fromElement = TRIGRAM_DATA[fromStance].element;
+    const toElement = TRIGRAM_DATA[toStance].element;
 
-    if (fromIndex === -1 || toIndex === -1) {
-      return Infinity; // Invalid stance
+    // Same element transitions are more efficient
+    if (fromElement === toElement) {
+      return 1.2;
     }
 
-    return Math.min(
-      Math.abs(toIndex - fromIndex),
-      8 - Math.abs(toIndex - fromIndex) // Circular distance
-    );
+    // Complementary element bonuses (simplified)
+    const elementPairs: Record<string, string[]> = {
+      Heaven: ["Earth", "Thunder"],
+      Earth: ["Heaven", "Mountain"],
+      Fire: ["Water", "Lake"],
+      Water: ["Fire", "Wind"],
+      Thunder: ["Heaven", "Wind"],
+      Wind: ["Thunder", "Lake"],
+      Mountain: ["Earth", "Lake"],
+      Lake: ["Mountain", "Fire", "Wind"],
+    };
+
+    const compatibleElements = elementPairs[fromElement] || [];
+    if (compatibleElements.includes(toElement)) {
+      return 1.1;
+    }
+
+    return 1.0; // Neutral transition
   }
 
   /**
-   * Get the most efficient path considering multiple factors
+   * Get all possible transitions from a stance with their metrics
    */
-  public static getMostEfficientPath(
-    fromStance: TrigramStance,
-    toStance: TrigramStance,
-    player: PlayerState
-  ): TransitionPath {
-    const directPath = this.findOptimalPath(fromStance, toStance, player);
-
-    // For now, return the direct path as it includes optimization logic
-    // Future enhancement: compare multiple path strategies
-    return directPath;
+  static getAllTransitionsFrom(
+    fromStance: TrigramStance
+  ): Array<{ toStance: TrigramStance; metrics: TransitionMetrics }> {
+    return TRIGRAM_STANCES_ORDER.filter((stance) => stance !== fromStance)
+      .map((toStance) => ({
+        toStance,
+        metrics: this.calculateTransition(fromStance, toStance),
+      }))
+      .sort((a, b) => (a.metrics.cost || 0) - (b.metrics.cost || 0));
   }
+
+  // Remove unused helper function or implement it properly
+  // If this is meant to be a private helper for future multi-step pathfinding:
+  // private static findBestIntermediatePath(
+  //   fromStance: TrigramStance,
+  //   toStance: TrigramStance,
+  //   _maxSteps: number
+  // ): TransitionPath {
+  //   // Implementation for multi-step pathfinding
+  //   // For now, just return direct path
+  //   return this.findOptimalPath(fromStance, toStance, _maxSteps);
+  // }
 }

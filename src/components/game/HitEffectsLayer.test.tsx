@@ -32,13 +32,15 @@ vi.mock("@pixi/react", () => ({
 
 describe("HitEffectsLayer", () => {
   const mockHitEffect: HitEffect = {
-    id: "test-hit-1",
+    id: "test-hit",
     position: { x: 100, y: 100 },
-    type: "medium",
+    type: "damage", // Fix type
     damage: 25,
     startTime: Date.now(),
-    duration: 500,
+    duration: 1000,
     korean: "타격",
+    color: 0xff0000,
+    createdAt: Date.now(),
   };
 
   it("renders without effects", () => {
@@ -65,7 +67,7 @@ describe("HitEffectsLayer", () => {
         ...mockHitEffect,
         id: "test-hit-3",
         position: { x: 300, y: 200 },
-        type: "light",
+        type: "damage", // Fix type
         damage: 10,
       },
     ];
@@ -76,11 +78,10 @@ describe("HitEffectsLayer", () => {
 
   it("displays different effect types", () => {
     const effectTypes: HitEffect["type"][] = [
-      "light",
-      "medium",
-      "heavy",
+      "damage", // Fix types
       "critical",
       "block",
+      "miss",
     ];
 
     effectTypes.forEach((type) => {

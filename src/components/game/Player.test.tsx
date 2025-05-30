@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { Player } from "./Player";
 import { createPlayerState } from "../../types";
-import type { PlayerState, TrigramStance } from "../../types";
+import type { PlayerState, TrigramStance, KoreanTechnique } from "../../types";
 
 // Mock useTick properly
 vi.mock("@pixi/react", async () => {
@@ -28,19 +28,19 @@ function createTestPlayerState(overrides?: Partial<PlayerState>): PlayerState {
 }
 
 describe("Player Component", () => {
-  const mockOnAttack = vi.fn();
-  const mockOnStanceChange = vi.fn();
+  const mockOnAttack = vi.fn<(technique: KoreanTechnique) => void>();
+  const mockOnStanceChange = vi.fn<(stance: TrigramStance) => void>();
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("should render player with correct initial state", () => {
-    const playerState = createTestPlayerState();
+    const player = createTestPlayerState();
 
     render(
       <Player
-        playerState={playerState}
+        player={player}
         onAttack={mockOnAttack}
         onStanceChange={mockOnStanceChange}
       />
@@ -50,11 +50,11 @@ describe("Player Component", () => {
   });
 
   it("should display Korean technique name based on stance", () => {
-    const playerState = createTestPlayerState({ stance: "li" });
+    const player = createTestPlayerState({ stance: "li" });
 
     render(
       <Player
-        playerState={playerState}
+        player={player}
         onAttack={mockOnAttack}
         onStanceChange={mockOnStanceChange}
       />
@@ -77,11 +77,11 @@ describe("Player Component", () => {
     ];
 
     stances.forEach((stance) => {
-      const playerState = createTestPlayerState({ stance });
+      const player = createTestPlayerState({ stance });
 
       const { unmount } = render(
         <Player
-          playerState={playerState}
+          player={player}
           onAttack={mockOnAttack}
           onStanceChange={mockOnStanceChange}
         />
@@ -93,11 +93,11 @@ describe("Player Component", () => {
   });
 
   it("should update animation time correctly", () => {
-    const playerState = createTestPlayerState({ isAttacking: true });
+    const player = createTestPlayerState({ isAttacking: true });
 
     render(
       <Player
-        playerState={playerState}
+        player={player}
         onAttack={mockOnAttack}
         onStanceChange={mockOnStanceChange}
       />
@@ -108,7 +108,7 @@ describe("Player Component", () => {
   });
 
   it("should handle status effects correctly", () => {
-    const playerState = createTestPlayerState({
+    const player = createTestPlayerState({
       conditions: [
         {
           type: "stun",
@@ -121,7 +121,7 @@ describe("Player Component", () => {
 
     render(
       <Player
-        playerState={playerState}
+        player={player}
         onAttack={mockOnAttack}
         onStanceChange={mockOnStanceChange}
       />
@@ -131,14 +131,14 @@ describe("Player Component", () => {
   });
 
   it("should handle low health states", () => {
-    const playerState = createTestPlayerState({
+    const player = createTestPlayerState({
       health: 15,
       maxHealth: 100,
     });
 
     render(
       <Player
-        playerState={playerState}
+        player={player}
         onAttack={mockOnAttack}
         onStanceChange={mockOnStanceChange}
       />
@@ -160,13 +160,13 @@ describe("Player Component", () => {
     ];
 
     techniques.forEach(({ stance }) => {
-      const playerState = createTestPlayerState({
+      const player = createTestPlayerState({
         stance: stance as TrigramStance,
       });
 
       const { unmount } = render(
         <Player
-          playerState={playerState}
+          player={player}
           onAttack={mockOnAttack}
           onStanceChange={mockOnStanceChange}
         />
@@ -178,15 +178,15 @@ describe("Player Component", () => {
   });
 
   it("should render with different stances", () => {
-    const playerState = createTestPlayerState({
+    const player = createTestPlayerState({
       stance: "li" as TrigramStance,
     });
 
     render(
       <Player
-        playerState={playerState}
+        player={player}
         onStanceChange={mockOnStanceChange}
-        onAttack={mockOnAttack} // Add onAttack prop
+        onAttack={mockOnAttack}
       />
     );
 

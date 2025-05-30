@@ -514,7 +514,7 @@ export class TrigramCalculator {
     // Calculate efficiency based on elemental compatibility
     const elementCompatibility =
       fromData.element === toData.element ? 1.2 : 1.0;
-    const orderDistance = Math.abs(fromData.order - toData.order);
+    const orderDistance = Math.abs((fromData.order || 0) - (toData.order || 0));
     const distancePenalty = 1.0 - orderDistance * 0.05;
 
     return Math.max(0.5, elementCompatibility * distancePenalty);

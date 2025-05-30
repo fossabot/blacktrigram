@@ -3,23 +3,22 @@ import type {
   PlayerState,
   KoreanTechnique,
   VitalPoint,
-  // Position, // Unused
-  // TrigramStance, // Unused
   AttackResult,
-  // DamageResult, // Unused
-  StatusEffect, // Used for technique effects
+  StatusEffect,
   Condition,
-  VitalPointHit,
+  VitalPointHit, // This should now work with the export fixed
   VitalPointSystemConfig, // Assuming this is defined for vitalPointConfig
 } from "../types";
 import { TrigramSystem } from "./TrigramSystem";
 import { VitalPointSystem } from "./VitalPointSystem";
 
 // Fix vitalPointConfig to be compatible
-const vitalPointConfig: VitalPointSystemConfig = {
+const VITAL_POINT_CONFIG: VitalPointSystemConfig = {
+  targetingDifficulty: 0.75,
+  damageMultiplier: 1.8,
+  effectChance: 0.6,
   baseAccuracy: 0.8,
   distanceModifier: 0.05,
-  angleModifier: 0.02, // Add optional property to make it compatible
 };
 
 export const CombatSystem = {
@@ -83,7 +82,7 @@ export const CombatSystem = {
         targetedVitalPoints[0],
         technique,
         distance,
-        vitalPointConfig
+        VITAL_POINT_CONFIG
       );
       if (vitalPointHitDetail?.vitalPoint) {
         vitalPointMultiplier =

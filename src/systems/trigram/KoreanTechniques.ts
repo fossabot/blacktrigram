@@ -1,81 +1,81 @@
-import type { TrigramStance, KoreanTechnique, TrigramData } from "../../types";
+import type { TrigramStance, KoreanTechnique } from "../../types";
 import { TRIGRAM_DATA } from "../../types";
 
 export class KoreanTechniques {
-  public static getTechniqueForStance(stance: TrigramStance): KoreanTechnique {
-    const trigramData = TRIGRAM_DATA[stance];
-    if (!trigramData?.technique) {
-      throw new Error(`No technique found for stance: ${stance}`);
+  static getAllTechniques(): Record<TrigramStance, KoreanTechnique> {
+    const techniques: Partial<Record<TrigramStance, KoreanTechnique>> = {};
+
+    for (const [stance, data] of Object.entries(TRIGRAM_DATA)) {
+      if (data.technique) {
+        techniques[stance as TrigramStance] = data.technique;
+      }
     }
-    return trigramData.technique;
+
+    return techniques as Record<TrigramStance, KoreanTechnique>;
   }
 
-  public static getAllTechniques(): Record<TrigramStance, KoreanTechnique> {
-    const techniques: Record<TrigramStance, KoreanTechnique> = {} as Record<
-      TrigramStance,
-      KoreanTechnique
-    >;
-
-    Object.entries(TRIGRAM_DATA).forEach(([stance, data]) => {
-      techniques[stance as TrigramStance] = data.technique;
-    });
-
-    return techniques;
-  }
-
-  public static getKoreanName(stance: TrigramStance): string {
-    const technique = this.getTechniqueForStance(stance);
-    return technique.koreanName || technique.name;
-  }
-
-  public static getTechniqueByName(name: string): KoreanTechnique | undefined {
-    for (const stance in TRIGRAM_DATA) {
-      const data = TRIGRAM_DATA[stance as TrigramStance];
-      if (data.technique.name === name || data.technique.koreanName === name) {
+  static getTechniqueByName(name: string): KoreanTechnique | undefined {
+    for (const [, data] of Object.entries(TRIGRAM_DATA)) {
+      if (
+        data.technique &&
+        (data.technique.name === name || data.technique.koreanName === name)
+      ) {
         return data.technique;
       }
     }
     return undefined;
   }
 
-  public static getStanceName(stance: TrigramStance): string {
-    return TRIGRAM_DATA[stance].englishName;
+  static getStanceDisplayName(stance: TrigramStance): string {
+    return TRIGRAM_DATA[stance].englishName || TRIGRAM_DATA[stance].element;
   }
 
-  public static getAllTechniqueNames(): string[] {
-    return Object.values(TRIGRAM_DATA).map((data) => data.technique.name);
+  static getAllTechniqueNames(): string[] {
+    return Object.values(TRIGRAM_DATA)
+      .map((data) => data.technique)
+      .filter(
+        (technique): technique is KoreanTechnique => technique !== undefined
+      )
+      .map((technique) => technique.name);
   }
 
-  public static getTrigramDataForTechnique(
+  static getStanceFromTechniqueName(
     techniqueName: string
-  ): TrigramData | undefined {
-    for (const stance in TRIGRAM_DATA) {
-      const data = TRIGRAM_DATA[stance as TrigramStance];
-      if (
-        data.technique.name === techniqueName ||
-        data.technique.koreanName === techniqueName
-      ) {
-        return data;
-      }
+  ): TrigramStance | undefined {
+    const trigram = Object.values(TRIGRAM_DATA).find(
+      (data) =>
+        data.technique &&
+        (data.technique.name === techniqueName ||
+          data.technique.koreanName === techniqueName)
+    );
+
+    if (trigram) {
+      return Object.keys(TRIGRAM_DATA).find(
+        (key) => TRIGRAM_DATA[key as TrigramStance] === trigram
+      ) as TrigramStance;
     }
+
     return undefined;
   }
+
+  static getAllTechniquesArray(): KoreanTechnique[] {
+    return Object.values(TRIGRAM_DATA)
+      .map((trigram) => trigram.technique)
+      .filter(
+        (technique): technique is KoreanTechnique => technique !== undefined
+      );
+  }
+
+  static getTechniquesForStance(stance: TrigramStance): KoreanTechnique[] {
+    const technique = TRIGRAM_DATA[stance].technique;
+    return technique ? [technique] : [];
+  }
 }
 
-// Export for external access
-export function getTechniqueByStance(stance: TrigramStance): KoreanTechnique {
-  return KoreanTechniques.getTechniqueForStance(stance);
-}
-
-export function getAllTechniques(): KoreanTechnique[] {
-  return Object.values(TRIGRAM_DATA).map((trigram) => trigram.technique);
-}
-
-export function getTechniquesByElement(element: string): KoreanTechnique[] {
+export function getTechniquesByElement(_element: string): KoreanTechnique[] {
   return Object.values(TRIGRAM_DATA)
-    .filter((trigram) => trigram.element === element)
-    .map((trigram) => trigram.technique);
+    .map((trigram) => trigram.technique)
+    .filter(
+      (technique): technique is KoreanTechnique => technique !== undefined
+    );
 }
-
-export { KoreanTechniques as KOREAN_TECHNIQUES };
-export default KoreanTechniques;

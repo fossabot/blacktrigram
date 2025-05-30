@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { VitalPointSystem } from "./VitalPointSystem";
-import type { VitalPointSystemConfig } from "./VitalPointSystem";
+import type { VitalPointSystemConfig } from "../types"; // Fix import source
 
 import type {
   VitalPoint,
@@ -16,7 +16,11 @@ describe("VitalPointSystem", () => {
     baseAccuracy: 0.8,
     distanceModifier: 0.05,
   };
-  const mockTechnique: KoreanTechnique = TRIGRAM_DATA.geon.technique;
+  const technique = TRIGRAM_DATA.geon.technique;
+  if (!technique) {
+    throw new Error("No technique found for geon stance");
+  }
+  const mockTechnique: KoreanTechnique = technique;
   const mockTargetPosition: Position = { x: 10, y: 10 };
   let sampleVitalPoint: VitalPoint;
 
@@ -159,6 +163,54 @@ describe("VitalPointSystem", () => {
           vitalPointWithEffects.effects?.length || 0
         );
       }
+    });
+  });
+
+  describe("Integration with system", () => {
+    const mockVitalPoint: VitalPoint = {
+      id: "test-point",
+      name: { english: "Test Point", korean: "테스트 포인트" },
+      koreanName: "테스트 포인트",
+      position: { x: 50, y: 100 },
+      region: "head",
+      difficulty: 0.8,
+      damageMultiplier: 1.5,
+      effects: [],
+    };
+
+    const mockConfig: VitalPointSystemConfig = {
+      baseAccuracy: 0.8,
+      distanceModifier: 0.05,
+      targetingDifficulty: 0.75,
+      damageMultiplier: 1.8,
+      effectChance: 0.6,
+    };
+
+    it("should configure system correctly", () => {
+      VitalPointSystem.configure({ baseAccuracy: 0.9 });
+      expect(VitalPointSystem.config.baseAccuracy).toBe(0.9);
+    });
+
+    it("should get vital points for region", () => {
+      const points = VitalPointSystem.getVitalPointsForRegion("head");
+      expect(Array.isArray(points)).toBe(true);
+    });
+
+    it("should get all vital points", () => {
+      const points = VitalPointSystem.getAllVitalPoints();
+      expect(Array.isArray(points)).toBe(true);
+    });
+
+    it("should check vital point hit", () => {
+      const result = VitalPointSystem.checkVitalPointHit(
+        { x: 50, y: 100 },
+        mockVitalPoint,
+        { name: "test", damage: 20 } as any,
+        10,
+        mockConfig
+      );
+
+      expect(result).toBeDefined();
     });
   });
 });

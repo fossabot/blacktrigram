@@ -10,54 +10,53 @@ import type {
 // Helper function to create VitalPoint objects with correct typing
 function createVitalPoint(
   id: string,
-  nameEnglish: string,
   koreanName: string,
-  region: AnatomicalRegionIdentifier,
+  englishName: string,
   position: Position,
-  category: VitalPointCategory,
-  descriptionKorean: string,
-  descriptionEnglish: string,
-  effects: StatusEffect[] = [],
+  region: AnatomicalRegionIdentifier,
   damageMultiplier: number,
-  stunMultiplier: number = 0,
-  accessibility: number = 0.7,
-  critChanceBonus: number = 0,
+  category: VitalPointCategory,
+  effects: StatusEffect[] = [],
+  difficulty: number = 0.5,
+  descriptionKorean: string = "",
+  descriptionEnglish: string = "",
   meridian?: string
 ): VitalPoint {
-  const vitalPointData: Omit<VitalPoint, "meridian"> & { meridian?: string } = {
-    // Use Omit for clarity
+  const vitalPoint: VitalPoint = {
     id,
-    name: { english: nameEnglish, korean: koreanName },
+    name: { korean: koreanName, english: englishName },
     koreanName,
-    region,
     position,
-    category,
-    description: { korean: descriptionKorean, english: descriptionEnglish },
-    effects,
+    region,
     damageMultiplier,
-    stunMultiplier,
-    accessibility,
-    critChanceBonus,
-    // Meridian is handled below
+    category,
+    effects,
+    difficulty,
   };
 
-  if (meridian !== undefined) {
-    vitalPointData.meridian = meridian;
+  if (descriptionKorean && descriptionEnglish) {
+    vitalPoint.description = {
+      korean: descriptionKorean,
+      english: descriptionEnglish,
+    };
   }
 
-  return vitalPointData as VitalPoint;
+  if (meridian) {
+    vitalPoint.meridian = meridian;
+  }
+
+  return vitalPoint;
 }
 
 export const KOREAN_VITAL_POINTS_DATA: VitalPoint[] = [
   createVitalPoint(
     "head_temple",
-    "Temple",
     "관자놀이 (Gwanjanori)",
-    "head",
+    "Temple",
     { x: 0.1, y: 0.8 },
+    "head",
+    2.5,
     "primary",
-    "머리 옆의 매우 취약한 지점.",
-    "Highly vulnerable point on the side of the head.",
     [
       {
         type: "stun",
@@ -67,21 +66,19 @@ export const KOREAN_VITAL_POINTS_DATA: VitalPoint[] = [
         source: "Temple Strike", // Matches updated StatusEffect
       },
     ],
-    2.5,
-    2.0,
     0.7,
-    0.15,
+    "머리 옆의 매우 취약한 지점.",
+    "Highly vulnerable point on the side of the head.",
     "Gallbladder"
   ),
   createVitalPoint(
     "neck_carotid",
-    "Carotid Artery",
     "목동맥 (Mokdongmaek)",
-    "neck",
+    "Carotid Artery",
     { x: 0.5, y: 0.5 },
+    "neck",
+    2.0,
     "secondary",
-    "목의 주요 동맥으로, 타격 시 무력화될 수 있습니다.",
-    "Major artery in the neck, strike can be incapacitating.",
     [
       {
         type: "debuff",
@@ -98,21 +95,19 @@ export const KOREAN_VITAL_POINTS_DATA: VitalPoint[] = [
         source: "Carotid Strike", // Matches updated StatusEffect
       },
     ],
-    2.0,
-    1.5,
     0.6,
-    0.2,
+    "목의 주요 동맥으로, 타격 시 무력화될 수 있습니다.",
+    "Major artery in the neck, strike can be incapacitating.",
     "Stomach"
   ),
   createVitalPoint(
     "chest_solar_plexus",
-    "Solar Plexus",
     "명치 (Myeongchi)",
-    "chest",
+    "Solar Plexus",
     { x: 0.5, y: 0.3 },
+    "chest",
+    1.8,
     "primary",
-    "흉골 아래 신경 다발로, 충격 시 호흡 곤란을 유발합니다.",
-    "Nerve cluster below the sternum, impact causes breathlessness.",
     [
       {
         type: "debuff",
@@ -122,10 +117,9 @@ export const KOREAN_VITAL_POINTS_DATA: VitalPoint[] = [
         source: "Solar Plexus Strike", // Matches updated StatusEffect
       },
     ],
-    1.8,
-    1.2,
     0.8,
-    0.1,
+    "흉골 아래 신경 다발로, 충격 시 호흡 곤란을 유발합니다.",
+    "Nerve cluster below the sternum, impact causes breathlessness.",
     "Conception Vessel"
   ),
   // ... more vital points

@@ -1,7 +1,7 @@
 import React from "react";
 import { Container, Text } from "@pixi/react";
 import { useState, useCallback, useEffect } from "react";
-import type { HitEffect } from "../../types";
+import type { HitEffect } from "../../types"; // This should now work
 import { KOREAN_COLORS } from "../../types";
 
 // Fix props interface
@@ -39,13 +39,13 @@ export function HitEffectsLayer({
     let effectColor: string = KOREAN_COLORS.WHITE;
 
     if (effect.damage > 30) {
-      effectColor = KOREAN_COLORS.CRITICAL_RED;
+      return "critical";
     } else if (effect.damage > 20) {
-      effectColor = KOREAN_COLORS.DAMAGE_YELLOW;
+      return "heavy";
     } else if (effect.damage > 10) {
-      effectColor = KOREAN_COLORS.Orange;
+      return "medium";
     } else if (effect.damage > 5) {
-      effectColor = KOREAN_COLORS.GOLD;
+      return "light";
     } else {
       effectColor = KOREAN_COLORS.CYAN;
     }

@@ -127,14 +127,10 @@ export class KoreanDamageCalculator {
       vitalPointBonus: vitalPointBonus,
       meridianMultiplier: meridianMultiplier,
       damageType: finalDamageType,
+      // Set optional properties directly in object literal
+      ...(hitVitalPointKoreanName && { koreanName: hitVitalPointKoreanName }),
+      ...(vitalPoint?.name && { vitalPointName: vitalPoint.name }),
     };
-
-    if (hitVitalPointKoreanName !== undefined) {
-      result.koreanName = hitVitalPointKoreanName;
-    }
-    if (vitalPoint?.name !== undefined) {
-      result.vitalPointName = vitalPoint.name;
-    }
 
     return result;
   }
@@ -250,16 +246,13 @@ export function calculateBaseDamage(
     vitalPointHit: vitalPointHit,
     modifiers: modifiers.messages,
     description: description,
+    damageType: "medium", // Add required damageType
+    // Set optional properties conditionally
+    ...(hitVitalPointKoreanName && { koreanName: hitVitalPointKoreanName }),
+    ...(vitalPointHit?.vitalPoint?.name && {
+      vitalPointName: vitalPointHit.vitalPoint.name,
+    }),
   };
-
-  // Conditionally add optional properties
-  if (hitVitalPointKoreanName) {
-    result.koreanName = hitVitalPointKoreanName;
-  }
-  if (vitalPointHit?.vitalPoint?.name) {
-    result.vitalPointName = vitalPointHit.vitalPoint.name;
-  }
-  // vitalPointBonus and meridianMultiplier can be added if calculated and applicable
 
   return result;
 }
@@ -316,7 +309,8 @@ export function calculateDamageModifiers(
     messages.push(`${technique.koreanName || technique.name} pierces armor!`);
   }
 
-  defender.conditions.forEach((condition: Condition) => {
+  const defenderConditions = defender.conditions || [];
+  defenderConditions.forEach((condition: Condition) => {
     if (condition.type === "vulnerable") {
       const magnitude = condition.magnitude ?? 1.5; // Access magnitude from Condition
       overallMultiplier *= magnitude;
