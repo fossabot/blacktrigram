@@ -1,8 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { Player } from "./Player";
-import { createPlayerState } from "../../types";
-import type { PlayerState, TrigramStance, KoreanTechnique } from "../../types";
+import {
+  createPlayerState,
+  type PlayerState,
+  type TrigramStance,
+} from "../../types";
 
 // Mock useTick properly
 vi.mock("@pixi/react", async () => {
@@ -28,8 +31,9 @@ function createTestPlayerState(overrides?: Partial<PlayerState>): PlayerState {
 }
 
 describe("Player Component", () => {
-  const mockOnAttack = vi.fn<(technique: KoreanTechnique) => void>();
-  const mockOnStanceChange = vi.fn<(stance: TrigramStance) => void>();
+  const mockOnStanceChange =
+    vi.fn<(playerId: string, stance: string) => void>(); // Fix type
+  const mockOnAttack = vi.fn<(playerId: string, technique: string) => void>(); // Fix type
 
   beforeEach(() => {
     vi.clearAllMocks();

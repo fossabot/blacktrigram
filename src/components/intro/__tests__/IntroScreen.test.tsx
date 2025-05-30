@@ -58,7 +58,6 @@ vi.mock("react", async () => {
 describe("IntroScreen", () => {
   const mockOnStartGame = vi.fn();
   const mockOnStartTraining = vi.fn();
-  const mockOnStartCombat = vi.fn(); // Add missing prop
   const mockAudio = {
     playSFX: vi.fn(),
     playMusic: vi.fn(),
@@ -82,9 +81,10 @@ describe("IntroScreen", () => {
 
   // Combine all props into a default object
   const defaultProps = {
-    onStartGame: mockOnStartGame,
-    onStartTraining: mockOnStartTraining,
-    onStartCombat: mockOnStartCombat,
+    onStartGame: vi.fn(),
+    onStartTraining: vi.fn(),
+    onGameStart: vi.fn(),
+    onExit: vi.fn(),
   };
 
   beforeEach(() => {

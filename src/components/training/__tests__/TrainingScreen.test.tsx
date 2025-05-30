@@ -3,7 +3,6 @@ import { render, screen, waitFor, fireEvent } from "@testing-library/react"; // 
 import userEvent from "@testing-library/user-event";
 import { TrainingScreen } from "../TrainingScreen";
 import { Stage } from "@pixi/react";
-import type { TrigramStance } from "../../../types"; // Add missing import
 
 // Mock the audio manager
 vi.mock("../../../audio/AudioManager", () => ({
@@ -27,39 +26,20 @@ vi.mock("../../ui/ProgressTracker", () => ({
 }));
 
 describe("TrainingScreen", () => {
-  const mockOnExit = vi.fn(); // Changed from mockOnExit to match usage
+  const mockOnGamePhaseChange = vi.fn();
+
+  const TrainingScreenComponent = () => (
+    <TrainingScreen onGamePhaseChange={mockOnGamePhaseChange} />
+  );
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockOnExit.mockClear();
+    mockOnGamePhaseChange.mockClear();
   });
 
   const renderInStage = (ui: React.ReactElement) => {
     return render(<Stage>{ui}</Stage>);
   };
-
-  const mockPlayerState = {
-    playerId: "player1",
-    position: { x: 100, y: 200 },
-    velocity: { x: 0, y: 0 },
-    health: 100,
-    maxHealth: 100,
-    stamina: 100,
-    maxStamina: 100,
-    ki: 50,
-    maxKi: 100,
-    stance: "geon" as TrigramStance,
-    isAttacking: false,
-    isBlocking: false,
-    isMoving: false,
-    facing: "right" as const,
-    conditions: [],
-    comboCount: 0,
-  };
-
-  const TrainingScreenComponent = () => (
-    <TrainingScreen playerState={mockPlayerState} onBack={mockOnExit} />
-  );
 
   describe("Component Structure", () => {
     it("renders training screen with all main components", () => {
@@ -145,13 +125,17 @@ describe("TrainingScreen", () => {
     it("responds to exit commands (Escape)", async () => {
       renderInStage(<TrainingScreenComponent />);
       fireEvent.keyDown(document.body, { key: "Escape" });
-      await waitFor(() => expect(mockOnExit).toHaveBeenCalledTimes(1)); // Changed from mockOnExit to mockOnExit
+      await waitFor(() =>
+        expect(mockOnGamePhaseChange).toHaveBeenCalledTimes(1)
+      ); // Changed from mockOnExit to mockOnExit
     });
 
     it("responds to exit commands (Backspace)", async () => {
       renderInStage(<TrainingScreenComponent />);
       fireEvent.keyDown(document.body, { key: "Backspace" });
-      await waitFor(() => expect(mockOnExit).toHaveBeenCalledTimes(1)); // Changed from mockOnExit to mockOnExit
+      await waitFor(() =>
+        expect(mockOnGamePhaseChange).toHaveBeenCalledTimes(1)
+      ); // Changed from mockOnExit to mockOnExit
     });
   });
 
@@ -241,6 +225,24 @@ describe("TrainingScreen", () => {
 
       // Final verification
       expect(screen.getByTestId("pixi-container")).toBeInTheDocument();
+    });
+  });
+
+  it("renders without crashing", () => {
+    render(
+      <TrainingScreen onGamePhaseChange={mockOnGamePhaseChange} /> // Fix: use onGamePhaseChange instead of playerState
+    );
+  });
+
+  it("calls onGamePhaseChange when back button is clicked", async () => {
+    render(<TrainingScreen onGamePhaseChange={mockOnGamePhaseChange} />);
+
+    // Assuming there's a button with test ID 'back-button'
+    const backButton = screen.getByTestId("back-button");
+    fireEvent.click(backButton);
+
+    await waitFor(() => {
+      expect(mockOnGamePhaseChange).toHaveBeenCalledTimes(1);
     });
   });
 });

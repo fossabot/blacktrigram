@@ -7,46 +7,42 @@ import { useAudio } from "../../audio/AudioManager";
 
 export interface PlayerProps {
   readonly player: PlayerState;
-  readonly isLocalPlayer?: boolean;
   readonly x?: number;
   readonly y?: number;
-  readonly scale?: number;
-  readonly onDeath?: (playerId: string) => void;
   readonly onStanceChange?: (playerId: string, stance: string) => void;
   readonly onAttack?: (playerId: string, technique: string) => void;
-  readonly showHitboxes?: boolean;
-  readonly debug?: boolean;
+  readonly onDeath?: () => void; // Add missing onDeath prop
+  readonly scale?: number; // Add missing scale prop
+  readonly debug?: boolean; // Add missing debug prop
+  readonly showHitboxes?: boolean; // Add missing showHitboxes prop
+  readonly isLocalPlayer?: boolean; // Add missing isLocalPlayer prop
 }
 
 export function Player({
   player,
-  isLocalPlayer = false,
-  x: overrideX,
-  y: overrideY,
-  scale = 1,
-  onDeath,
+  x,
+  y,
   onStanceChange,
   onAttack,
-  showHitboxes = false,
-  debug = false,
+  onDeath, // Add to destructuring
+  scale = 1.0, // Add to destructuring with default
+  debug = false, // Add to destructuring with default
+  showHitboxes = false, // Add to destructuring with default
+  isLocalPlayer = false, // Add to destructuring with default
 }: PlayerProps): React.ReactElement {
   const [animationTime, setAnimationTime] = useState<number>(0);
   const [lastHealthCheck, setLastHealthCheck] = useState<number>(player.health);
   const audio = useAudio();
 
-  // Use override positions or player state positions
-  const actualX = overrideX ?? player.position.x;
-  const actualY = overrideY ?? player.position.y;
-
   // Handle death detection
   useEffect(() => {
     if (player.health <= 0 && lastHealthCheck > 0) {
       if (onDeath) {
-        onDeath(player.playerId);
+        onDeath();
       }
     }
     setLastHealthCheck(player.health);
-  }, [player.health, lastHealthCheck, onDeath, player.playerId]);
+  }, [player.health, lastHealthCheck, onDeath]);
 
   // Handle stance changes
   useEffect(() => {
@@ -262,9 +258,10 @@ export function Player({
 
   return (
     <Container
-      x={actualX}
-      y={actualY}
-      scale={scale}
+      x={player.position.x + (x || 0)}
+      y={player.position.y + (y || 0)}
+      scale={{ x: scale, y: scale }} // Apply scale
+      interactive={isLocalPlayer}
       alpha={player.health > 0 ? 1.0 : 0.5}
       data-testid={`player-${player.playerId}`}
     >
