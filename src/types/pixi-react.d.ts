@@ -95,5 +95,4 @@ declare global {
   }
 }
 
-export type { PixiReactElementProps } from "@pixi/react";
 export {};
