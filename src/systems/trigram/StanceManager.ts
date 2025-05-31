@@ -28,6 +28,7 @@ export const STANCE_ORDER = TRIGRAM_STANCES_ORDER;
 export class StanceManager {
   private playerStances = new Map<string, StanceState>();
   private activeTransitions = new Map<string, StanceTransition>();
+  private stanceMasteryData = new Map<string, Map<TrigramStance, number>>(); // Add missing property
   private transitionHistory: Array<{
     playerId: string;
     from: TrigramStance;
@@ -189,26 +190,26 @@ export class StanceManager {
   /**
    * Initialize stance state for a player
    */
-  public initializePlayer(
+  public initializeStanceState(
     playerId: string,
     initialStance: TrigramStance = "geon"
   ): void {
-    this.playerStances.set(playerId, {
+    const stanceState: StanceState = {
       current: initialStance,
       previous: null,
       timeInStance: 0,
-      lastTransitionTime: Date.now(),
+      transitionCooldown: 0,
+      lastTransitionTime: 0,
       stability: 1.0,
-      mastery: 0.5,
-      kiFlow: TRIGRAM_DATA[initialStance].kiRegenRate || 1.0,
-    });
+      mastery: 0.0,
+    };
+
+    this.playerStances.set(playerId, stanceState);
 
     // Initialize mastery data
     if (!this.stanceMasteryData.has(playerId)) {
       const masteryMap = new Map<TrigramStance, number>();
-      Object.keys(TRIGRAM_DATA).forEach((stance) => {
-        masteryMap.set(stance as TrigramStance, 0.1);
-      });
+      STANCE_ORDER.forEach((stance) => masteryMap.set(stance, 0));
       this.stanceMasteryData.set(playerId, masteryMap);
     }
   }
@@ -468,24 +469,19 @@ export class StanceManager {
   /**
    * Get stance mastery level for a player
    */
-  public getStanceMastery(playerId: string, stance: TrigramStance): number {
+  public getMasteryLevel(playerId: string, stance: TrigramStance): number {
     const masteryMap = this.stanceMasteryData.get(playerId);
-    return masteryMap?.get(stance) || 0.1;
+    return masteryMap?.get(stance) || 0;
   }
 
   /**
    * Increase stance mastery through practice
    */
-  public increaseMastery(
-    playerId: string,
-    stance: TrigramStance,
-    practiceAmount: number = 0.01
-  ): void {
+  public increaseMastery(playerId: string, stance: TrigramStance): void {
     const masteryMap = this.stanceMasteryData.get(playerId);
     if (masteryMap) {
-      const currentMastery = masteryMap.get(stance) || 0.1;
-      const newMastery = Math.min(1.0, currentMastery + practiceAmount);
-      masteryMap.set(stance, newMastery);
+      const currentMastery = masteryMap.get(stance) || 0;
+      masteryMap.set(stance, Math.min(1.0, currentMastery + 0.01));
     }
   }
 
@@ -581,20 +577,37 @@ export class StanceManager {
   /**
    * Start a stance transition
    */
-  private startTransition(
+  public startTransition(
     playerId: string,
-    fromStance: TrigramStance,
-    toStance: TrigramStance,
-    duration: number
+    from: TrigramStance,
+    to: TrigramStance
   ): void {
-    this.activeTransitions.set(playerId, {
-      from: fromStance,
-      to: toStance,
+    const transition: StanceTransition = {
+      from,
+      to,
       startTime: Date.now(),
-      duration,
+      duration: 1000, // 1 second transition
       progress: 0,
+      playerId,
       isActive: true,
-    });
+    };
+
+    this.activeTransitions.set(playerId, transition);
+
+    // Update stance state
+    const currentState = this.playerStances.get(playerId);
+    if (currentState) {
+      const updatedState: StanceState = {
+        ...currentState,
+        previous: currentState.current,
+        current: to,
+        timeInStance: 0,
+        lastTransitionTime: Date.now(),
+        stability: 0.8, // Reduced stability after transition
+        mastery: currentState.mastery || 0,
+      };
+      this.playerStances.set(playerId, updatedState);
+    }
   }
 
   /**
@@ -612,7 +625,7 @@ export class StanceManager {
       timeInStance: 0,
       lastTransitionTime: Date.now(),
       stability: 0.8, // Reduced stability after transition
-      mastery: this.getStanceMastery(playerId, newStance),
+      mastery: this.getMasteryLevel(playerId, newStance),
       kiFlow: TRIGRAM_DATA[newStance].kiRegenRate || 1.0,
     });
 
@@ -620,59 +633,125 @@ export class StanceManager {
     this.activeTransitions.delete(playerId);
 
     // Increase mastery for successful transition
-    this.increaseMastery(playerId, newStance, 0.005);
+    this.increaseMastery(playerId, newStance);
   }
 
   /**
-   * Calculate stance stability based on time and usage
+   * Calculate transition recovery time
    */
-  private calculateStanceStability(
-    state: StanceState,
-    _deltaTime: number
-  ): number {
-    // Fix: Add underscore prefix to unused parameter
-    // Stability increases over time in stance, up to a maximum
-    const timeBonus = Math.min(0.5, state.timeInStance / 20000); // 20 second max
-    const masteryBonus = state.mastery * 0.3;
+  public calculateRecoveryTime(playerId: string): number {
+    const state = this.playerStances.get(playerId);
+    if (!state) return 0;
 
-    return Math.min(1.0, 0.5 + timeBonus + masteryBonus);
+    const baseRecovery = 2000; // 2 seconds
+    const masteryBonus = (state.mastery || 0) * 0.3;
+
+    return Math.max(500, baseRecovery * (1 - masteryBonus));
   }
 
   /**
-   * Enhanced transition calculation with player level consideration
+   * Calculate flow state bonus
    */
-  public static calculateTransition(
-    fromStance: TrigramStance,
-    toStance: TrigramStance,
-    playerLevel: number = 1
-  ): TransitionMetrics {
-    // Use TransitionCalculator for detailed calculations
-    return TransitionCalculator.calculateTransition(fromStance, toStance, {
-      playerLevelModifier: StanceManager.getPlayerLevelModifier(playerLevel),
-      stanceAffinity: StanceManager.getStanceAffinity(fromStance, toStance),
-      timeInStance: 0,
-    });
-  }
-
-  /**
-   * Calculate ki flow rate for stance with player state
-   */
-  public static calculateKiFlowRate(
-    stance: TrigramStance,
-    playerState: PlayerState
-  ): number {
+  public calculateFlowStateBonus(playerId: string): number {
     const factors: KiFlowFactors = {
-      playerLevelModifier: StanceManager.getPlayerLevelModifier(1),
-      stanceAffinity: StanceManager.getStanceAffinity(
-        stance,
-        playerState.stance
-      ),
-      timeInStance: playerState.lastStanceChangeTime
-        ? Date.now() - playerState.lastStanceChangeTime
-        : 0,
+      playerLevelModifier: 1.0,
+      stanceAffinity: 1.0,
+      timeInStance: 0,
     };
 
-    return StanceManager.calculateKiFlow(stance, factors);
+    return StanceManager.calculateKiFlow("geon", factors); // Use static method
+  }
+
+  /**
+   * Check if player can transition to new stance
+   */
+  public canTransition(player: PlayerState, newStance: TrigramStance): boolean {
+    if (player.stance === newStance) return false;
+
+    // Check for blocking conditions
+    if (
+      player.conditions.some((c) => c.type === "stun" || c.type === "paralysis")
+    ) {
+      return false;
+    }
+
+    if (player.isAttacking) return false;
+
+    // Check cooldown
+    const cooldownTime = 500; // ms
+    if (
+      player.lastStanceChangeTime &&
+      Date.now() - player.lastStanceChangeTime < cooldownTime
+    ) {
+      return false;
+    }
+
+    // Check resources
+    const transition = StanceManager.calculateTransition(
+      player.stance,
+      newStance
+    );
+    return (
+      player.ki >= transition.kiCost && player.stamina >= transition.staminaCost
+    );
+  }
+
+  /**
+   * Get current stance analytics
+   */
+  public getStanceAnalytics(playerId: string): {
+    efficiency: number;
+    kiFlow: number;
+    stabilityIndex: number;
+    masteryLevel: number;
+  } {
+    const state = this.playerStances.get(playerId);
+    if (!state) {
+      return { efficiency: 0, kiFlow: 0, stabilityIndex: 0, masteryLevel: 0 };
+    }
+
+    return {
+      efficiency: this.calculateStanceEfficiency(playerId),
+      kiFlow: StanceManager.calculateKiFlow(state.current, {
+        playerLevelModifier: 1.0,
+        stanceAffinity: 1.0,
+        timeInStance: state.timeInStance,
+      }),
+      stabilityIndex: state.stability || 0,
+      masteryLevel: state.mastery || 0,
+    };
+  }
+
+  /**
+   * Calculate stance mastery bonus
+   */
+  private calculateStanceMasteryBonus(
+    playerId: string,
+    stance: TrigramStance
+  ): number {
+    const state = this.playerStances.get(playerId);
+    if (!state) return 1.0;
+
+    const stabilityBonus = (state.stability || 0) * 0.2;
+    const masteryBonus = (state.mastery || 0) * 0.3;
+
+    return 1.0 + stabilityBonus + masteryBonus;
+  }
+
+  /**
+   * Enhanced ki flow calculation
+   */
+  public calculateAdvancedKiFlow(
+    playerId: string,
+    stance: TrigramStance
+  ): number {
+    const factors: KiFlowFactors = {
+      playerLevelModifier: StanceManager.getPlayerLevelModifier(1), // Use static method
+      stanceAffinity: StanceManager.getStanceAffinity(stance, stance), // Use static method
+      timeInStance: this.playerStances.get(playerId)?.timeInStance || 0,
+    };
+
+    return StanceManager.calculateKiFlow(stance, factors); // Use static method
   }
 
   /**

@@ -207,7 +207,7 @@ export interface KiFlowFactors {
   readonly stanceAffinity?: number;
   readonly kiRecovery?: number;
   readonly kiConsumption?: number;
-  readonly timeInStance?: number; // This property already exists
+  readonly timeInStance?: number;
 }
 
 export interface CollisionZone {
@@ -867,6 +867,8 @@ export interface StanceState {
   readonly timeInStance: number;
   readonly transitionCooldown: number;
   readonly lastTransitionTime: number;
+  readonly stability?: number; // Add stability property
+  readonly mastery?: number; // Add mastery property
 }
 
 export interface StanceTransition {
@@ -876,6 +878,7 @@ export interface StanceTransition {
   readonly duration: number;
   readonly progress: number;
   readonly playerId: string;
+  readonly isActive?: boolean; // Add isActive property
 }
 
 export interface StanceRecommendation {
