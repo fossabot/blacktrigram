@@ -928,3 +928,36 @@ export interface TrainingScreenProps {
 
 // Remove duplicate export and fix reference
 export type { PixiReactElementProps } from "./pixi-react";
+
+// Add PixiJS-specific text style interface to avoid React CSS conflicts
+export interface PixiTextStyleConfig {
+  readonly fontFamily?: string;
+  readonly fontSize?: number;
+  readonly fill?: number | string | readonly (number | string)[];
+  readonly align?: "left" | "center" | "right" | "justify";
+  readonly fontWeight?: "normal" | "bold" | "bolder" | "lighter" | number;
+  readonly fontStyle?: "normal" | "italic" | "oblique";
+  readonly stroke?: number | string;
+  readonly strokeThickness?: number;
+  readonly dropShadow?: boolean;
+  readonly dropShadowColor?: number | string;
+  readonly dropShadowBlur?: number;
+  readonly dropShadowAngle?: number;
+  readonly dropShadowDistance?: number;
+  readonly letterSpacing?: number;
+  readonly lineHeight?: number;
+  readonly wordWrap?: boolean;
+  readonly wordWrapWidth?: number;
+  readonly breakWords?: boolean;
+}
+
+// Enhanced Korean text configuration for PixiJS compatibility
+export interface KoreanPixiTextConfig {
+  readonly korean: string;
+  readonly english?: string;
+  readonly style: PixiTextStyleConfig;
+  readonly anchor?: { x: number; y: number };
+  readonly position?: Position;
+  readonly interactive?: boolean;
+  readonly visible?: boolean;
+}

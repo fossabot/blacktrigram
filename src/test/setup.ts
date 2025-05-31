@@ -62,6 +62,34 @@ vi.mock("@pixi/react", async () => {
           stroke: vi.fn(),
           closePath: vi.fn(),
           lineStyle: vi.fn(),
+          // Add missing PixiJS Graphics methods for Korean martial arts rendering
+          beginFill: vi.fn(),
+          endFill: vi.fn(),
+          drawRect: vi.fn(),
+          drawCircle: vi.fn(),
+          drawRoundedRect: vi.fn(),
+          drawPolygon: vi.fn(),
+          drawEllipse: vi.fn(),
+          arcTo: vi.fn(),
+          arc: vi.fn(),
+          bezierCurveTo: vi.fn(),
+          quadraticCurveTo: vi.fn(),
+          // Korean martial arts specific drawing methods
+          drawStar: vi.fn(),
+          drawTriangle: vi.fn(),
+          // Add methods commonly used in Korean trigram drawing
+          lineWidth: 1,
+          alpha: 1,
+          visible: true,
+          x: 0,
+          y: 0,
+          scale: { x: 1, y: 1 },
+          rotation: 0,
+          // Fix: Add proper PixiJS Graphics properties to avoid style conflicts
+          width: 0,
+          height: 0,
+          tint: 0xffffff,
+          blendMode: "normal",
         };
         try {
           draw(mockGraphics);
