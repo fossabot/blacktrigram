@@ -1,12 +1,15 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { IntroScreen } from "./components/intro/IntroScreen";
 import { GameUI } from "./components/game/GameUI";
-import type { TrigramStance, PlayerState, GamePhase } from "./types";
-import { createPlayerState } from "./types";
+import { TrainingScreen } from "./components/training/TrainingScreen";
+import {
+  createPlayerState,
+  type GamePhase,
+  type PlayerState,
+  type TrigramStance,
+} from "./types";
 import "./App.css";
-import { TrainingScreen } from "./components/training";
 
-// Define AppState interface
 interface AppState {
   readonly gamePhase: GamePhase;
   readonly players: readonly [PlayerState, PlayerState];
@@ -14,132 +17,127 @@ interface AppState {
   readonly currentRound: number;
   readonly timeRemaining: number;
   readonly combatLog: readonly string[];
+  readonly isPaused: boolean;
 }
 
-export function App(): React.ReactElement {
-  const [appState, setAppState] = useState<AppState>({
-    gamePhase: "intro" as const,
-    players: [
-      createPlayerState("player1", { x: 200, y: 300 }, "geon", {
-        health: 100,
-        maxHealth: 100,
-        ki: 50,
-        maxKi: 100,
-        stamina: 100,
-        maxStamina: 100,
-        visible: true,
-        facing: "right",
-      }),
-      createPlayerState("player2", { x: 600, y: 300 }, "gam", {
-        health: 100,
-        maxHealth: 100,
-        ki: 50,
-        maxKi: 100,
-        stamina: 100,
-        maxStamina: 100,
-        visible: true,
-        facing: "left",
-      }),
-    ] as const,
-    gameTime: 0,
-    currentRound: 1,
-    timeRemaining: 60,
-    combatLog: [],
+export default function App(): React.ReactElement {
+  // Initialize player states using helper function
+  const player1 = createPlayerState("player1", { x: 200, y: 400 }, "geon", {
+    health: 100,
+    maxHealth: 100,
+    ki: 50,
+    maxKi: 100,
+    facing: "right",
   });
 
-  // Handle game phase changes
+  const player2 = createPlayerState("player2", { x: 600, y: 400 }, "gon", {
+    health: 100,
+    maxHealth: 100,
+    ki: 50,
+    maxKi: 100,
+    facing: "left",
+  });
+
+  const [appState, setAppState] = useState<AppState>({
+    gamePhase: "intro",
+    players: [player1, player2],
+    gameTime: 0,
+    currentRound: 1,
+    timeRemaining: 90,
+    combatLog: [],
+    isPaused: false, // Add missing isPaused property
+  });
+
+  // Game loop for combat phase
+  useEffect(() => {
+    if (appState.gamePhase !== "combat" || appState.isPaused) return;
+
+    const gameLoop = setInterval(() => {
+      setAppState((prev) => ({
+        ...prev,
+        gameTime: prev.gameTime + 1,
+        timeRemaining: Math.max(0, prev.timeRemaining - 1),
+      }));
+    }, 1000);
+
+    return () => clearInterval(gameLoop);
+  }, [appState.gamePhase, appState.isPaused]);
+
   const handleGamePhaseChange = useCallback((phase: GamePhase) => {
-    setAppState((prevState) => ({
-      ...prevState,
+    setAppState((prev) => ({
+      ...prev,
       gamePhase: phase,
+      // Reset game state when entering combat
+      ...(phase === "combat" && {
+        gameTime: 0,
+        timeRemaining: 180,
+        combatLog: ["전투 시작! (Combat Started!)"],
+        players: [
+          createPlayerState("player1", { x: 200, y: 300 }, "geon"),
+          createPlayerState("player2", { x: 600, y: 300 }, "gon"),
+        ],
+      }),
     }));
   }, []);
 
-  // Handle stance changes
   const handleStanceChange = useCallback(
-    (playerIndex: number, newStance: TrigramStance) => {
-      setAppState((prevState) => {
-        const newPlayers = [...prevState.players] as [PlayerState, PlayerState];
-        const currentPlayer = newPlayers[playerIndex];
-
-        if (currentPlayer) {
-          newPlayers[playerIndex] = {
-            ...currentPlayer, // Spread current player to preserve all properties including position
-            stance: newStance,
-            lastStanceChangeTime: Date.now(),
-          };
-        }
-
-        return {
-          ...prevState,
-          players: newPlayers,
-        };
-      });
+    (playerIndex: number, stance: TrigramStance): void => {
+      setAppState((prev) => ({
+        ...prev,
+        players: [
+          playerIndex === 0
+            ? { ...prev.players[0], stance, lastStanceChangeTime: Date.now() }
+            : prev.players[0],
+          playerIndex === 1
+            ? { ...prev.players[1], stance, lastStanceChangeTime: Date.now() }
+            : prev.players[1],
+        ] as [PlayerState, PlayerState],
+      }));
     },
     []
   );
 
-  // Match control functions
+  // Add separate handler for training screen
+  const handleTrainingStanceChange = useCallback(
+    (stance: TrigramStance): void => {
+      handleStanceChange(0, stance); // Always update player 0 in training
+    },
+    [handleStanceChange]
+  );
+
   const handleStartMatch = useCallback(() => {
-    setAppState((prevState) => ({
-      ...prevState,
-      gamePhase: "combat",
-      gameTime: 0,
-      timeRemaining: 60,
-      combatLog: ["Match started!"],
+    setAppState((prev) => ({
+      ...prev,
+      isPaused: false,
+      combatLog: [...prev.combatLog, "경기 시작! (Match Started!)"],
     }));
   }, []);
 
   const handleResetMatch = useCallback(() => {
-    setAppState((prevState) => ({
-      ...prevState,
-      gamePhase: "intro",
-      players: [
-        createPlayerState("player1", { x: 200, y: 300 }, "geon", {
-          health: 100,
-          maxHealth: 100,
-          ki: 50,
-          maxKi: 100,
-          stamina: 100,
-          maxStamina: 100,
-          visible: true,
-          facing: "right",
-        }),
-        createPlayerState("player2", { x: 600, y: 300 }, "gam", {
-          health: 100,
-          maxHealth: 100,
-          ki: 50,
-          maxKi: 100,
-          stamina: 100,
-          maxStamina: 100,
-          visible: true,
-          facing: "left",
-        }),
-      ] as const,
+    setAppState((prev) => ({
+      ...prev,
       gameTime: 0,
-      timeRemaining: 60,
-      combatLog: [],
+      timeRemaining: 180,
+      currentRound: 1,
+      isPaused: false,
+      players: [
+        createPlayerState("player1", { x: 200, y: 300 }, "geon"),
+        createPlayerState("player2", { x: 600, y: 300 }, "gon"),
+      ],
+      combatLog: ["경기 재시작! (Match Reset!)"],
     }));
   }, []);
 
   const handleTogglePause = useCallback(() => {
-    console.log("Game paused/unpaused");
+    setAppState((prev) => ({
+      ...prev,
+      isPaused: !prev.isPaused,
+      combatLog: [
+        ...prev.combatLog,
+        prev.isPaused ? "경기 재개 (Resumed)" : "일시정지 (Paused)",
+      ],
+    }));
   }, []);
-
-  // Game loop for time updates
-  useEffect(() => {
-    if (appState.gamePhase === "combat" && appState.timeRemaining > 0) {
-      const interval = setInterval(() => {
-        setAppState((prevState) => ({
-          ...prevState,
-          gameTime: prevState.gameTime + 1,
-          timeRemaining: Math.max(0, prevState.timeRemaining - 1),
-        }));
-      }, 1000);
-
-      return () => clearInterval(interval);
-    }
-  }, [appState.gamePhase, appState.timeRemaining]);
 
   // Render appropriate screen based on game phase
   switch (appState.gamePhase) {
@@ -147,25 +145,16 @@ export function App(): React.ReactElement {
       return <IntroScreen onGamePhaseChange={handleGamePhaseChange} />;
 
     case "training":
-      return <TrainingScreen onGamePhaseChange={handleGamePhaseChange} />;
-
-    case "philosophy":
       return (
-        <div className="philosophy-screen">
-          <h1>Korean Martial Arts Philosophy</h1>
-          <p>
-            Learn about the eight trigrams and their martial applications...
-          </p>
-          <button onClick={() => handleGamePhaseChange("intro")}>
-            Back to Main Menu
-          </button>
-        </div>
+        <TrainingScreen
+          onGamePhaseChange={handleGamePhaseChange}
+          onStanceChange={handleTrainingStanceChange}
+          selectedStance={appState.players[0].stance}
+        />
       );
 
     case "combat":
-    case "result":
-    case "victory":
-    case "defeat":
+    case "philosophy":
       return (
         <GameUI
           players={appState.players}
@@ -183,15 +172,6 @@ export function App(): React.ReactElement {
       );
 
     default:
-      return (
-        <div className="error-screen">
-          <h1>Unknown Game Phase</h1>
-          <button onClick={() => handleGamePhaseChange("intro")}>
-            Return to Main Menu
-          </button>
-        </div>
-      );
+      return <IntroScreen onGamePhaseChange={handleGamePhaseChange} />;
   }
 }
-
-export default App;

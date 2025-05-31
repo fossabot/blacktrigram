@@ -1,503 +1,333 @@
-import React, { useState, useCallback, useEffect } from "react";
-import { Stage } from "@pixi/react";
-import { KoreanContainer, KoreanText } from "../ui/base";
-import { BaseButton } from "../ui/base/BaseButton";
+import React, { useCallback, useState } from "react";
+import { Stage, Container, Text } from "@pixi/react";
 import { TrigramWheel } from "../ui/TrigramWheel";
 import { ProgressTracker } from "../ui/ProgressTracker";
 import { KoreanHeader } from "../ui/KoreanHeader";
-import { DojangBackground } from "../game/DojangBackground";
-import { Player } from "../game/Player";
-import type {
-  GamePhase,
-  TrigramStance,
-  PlayerState,
-  TrainingProgress,
-  KoreanTechnique,
+import {
+  KOREAN_COLORS,
+  KOREAN_FONT_FAMILY,
+  TRIGRAM_DATA,
+  type TrainingScreenProps,
+  type TrigramStance,
 } from "../../types";
-import { TRIGRAM_DATA, KOREAN_COLORS, createPlayerState } from "../../types";
-import { useAudio } from "../../audio/AudioManager";
-
-export interface TrainingScreenProps {
-  readonly onGamePhaseChange: (phase: GamePhase) => void;
-}
-
-interface TrainingSession {
-  readonly stance: TrigramStance;
-  readonly technique: KoreanTechnique;
-  readonly targetHits: number;
-  readonly successfulHits: number;
-  readonly accuracy: number;
-  readonly startTime: number;
-}
 
 export function TrainingScreen({
   onGamePhaseChange,
+  onStanceChange,
+  selectedStance = "geon",
+  playerProgress,
 }: TrainingScreenProps): React.ReactElement {
-  // Training state
-  const [currentStance, setCurrentStance] = useState<TrigramStance>("geon");
   const [trainingMode, setTrainingMode] = useState<
-    "basics" | "techniques" | "combinations"
-  >("basics");
-  const [playerState, setPlayerState] = useState<PlayerState>(() =>
-    createPlayerState("trainee", { x: 200, y: 300 }, "geon")
-  );
+    "forms" | "techniques" | "philosophy"
+  >("forms");
+  const [practiceCount, setPracticeCount] = useState<number>(0);
 
-  // Training progress tracking
-  const [trainingProgress, setTrainingProgress] = useState<
-    Record<TrigramStance, TrainingProgress>
-  >(() =>
-    Object.keys(TRIGRAM_DATA).reduce(
-      (acc, stance) => ({
-        ...acc,
-        [stance as TrigramStance]: { practiceCount: 0, mastery: 0 },
-      }),
-      {} as Record<TrigramStance, TrainingProgress>
-    )
-  );
-
-  const [currentSession, setCurrentSession] = useState<TrainingSession | null>(
-    null
-  );
-  const [showInstructions, setShowInstructions] = useState<boolean>(true);
-
-  const audio = useAudio();
-
-  // Handle stance changes with audio feedback
-  const handleStanceChange = useCallback(
-    (stance: TrigramStance) => {
-      setCurrentStance(stance);
-      setPlayerState((prev) => ({ ...prev, stance }));
-
-      // Update training progress
-      setTrainingProgress((prev) => ({
-        ...prev,
-        [stance]: {
-          ...prev[stance],
-          practiceCount: prev[stance].practiceCount + 1,
-          mastery: Math.min(1.0, prev[stance].mastery + 0.05),
-        },
-      }));
-
-      // Audio feedback for stance change
-      if (audio.playStanceChangeSound) {
-        audio.playStanceChangeSound();
-      }
+  const handleStanceSelect = useCallback(
+    (stance: TrigramStance): void => {
+      onStanceChange(stance);
+      setPracticeCount((prev) => prev + 1);
     },
-    [audio]
+    [onStanceChange]
   );
 
-  // Start technique practice session - fix undefined stance issue
-  const startTechniqueSession = useCallback((stance: TrigramStance) => {
-    const stanceData = TRIGRAM_DATA[stance];
-    if (!stanceData?.technique) {
-      console.warn(`No technique found for stance: ${stance}`);
-      return;
-    }
-
-    const technique = stanceData.technique;
-    setCurrentSession({
-      stance,
-      technique,
-      targetHits: 10,
-      successfulHits: 0,
-      accuracy: 0,
-      startTime: Date.now(),
-    });
-  }, []);
-
-  // Practice technique execution
-  const executeTechnique = useCallback(() => {
-    if (!currentSession) return;
-
-    const accuracy = 0.7 + Math.random() * 0.3; // Simulate practice accuracy
-    const isSuccessful = accuracy > 0.6;
-
-    if (isSuccessful && audio.playAttackSound) {
-      audio.playAttackSound(currentSession.technique.damage);
-    }
-
-    setCurrentSession((prev) => {
-      if (!prev) return null;
-
-      const successfulHits = isSuccessful
-        ? prev.successfulHits + 1
-        : prev.successfulHits;
-      const totalAttempts = prev.successfulHits + 1;
-
-      return {
-        ...prev,
-        successfulHits,
-        accuracy: successfulHits / totalAttempts,
-      };
-    });
-
-    // Complete session if target reached
-    if (
-      currentSession.successfulHits + (isSuccessful ? 1 : 0) >=
-      currentSession.targetHits
-    ) {
-      setCurrentSession(null);
-      setTrainingProgress((prev) => ({
-        ...prev,
-        [currentSession.stance]: {
-          ...prev[currentSession.stance],
-          mastery: Math.min(1.0, prev[currentSession.stance].mastery + 0.1),
-        },
-      }));
-    }
-  }, [currentSession, audio]);
-
-  // Keyboard controls for stance changes
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      const key = parseInt(event.key);
-      if (key >= 1 && key <= 8) {
-        const stances: TrigramStance[] = [
-          "geon",
-          "tae",
-          "li",
-          "jin",
-          "son",
-          "gam",
-          "gan",
-          "gon",
-        ];
-        const selectedStance = stances[key - 1];
-        if (selectedStance) {
-          handleStanceChange(selectedStance);
-        }
-      } else if (event.code === "Space") {
-        event.preventDefault();
-        if (currentSession) {
-          executeTechnique();
-        } else {
-          startTechniqueSession(currentStance);
-        }
-      } else if (event.code === "Escape") {
-        onGamePhaseChange("intro");
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [
-    currentStance,
-    currentSession,
-    handleStanceChange,
-    executeTechnique,
-    startTechniqueSession,
-    onGamePhaseChange,
-  ]);
-
-  const renderTrainingModeSelector = (): React.ReactElement => (
-    <KoreanContainer koreanTheme={true} traditionalBorder={true} x={50} y={50}>
-      <KoreanText
-        koreanText="수련 방식 (Training Mode)"
-        size={18}
-        weight="bold"
-        x={0}
-        y={-20}
-        anchor={{ x: 0.5, y: 0.5 }}
-      />
-
-      {(["basics", "techniques", "combinations"] as const).map(
-        (mode, index) => {
-          const modeLabels = {
-            basics: { korean: "기본기", english: "Basics" },
-            techniques: { korean: "기술", english: "Techniques" },
-            combinations: { korean: "연계기", english: "Combinations" },
-          };
-
-          return (
-            <BaseButton
-              key={mode}
-              label={`${modeLabels[mode].korean} (${modeLabels[mode].english})`}
-              x={0}
-              y={index * 50 + 10}
-              width={200}
-              height={40}
-              onClick={() => setTrainingMode(mode)}
-              variant={trainingMode === mode ? "primary" : "secondary"}
-              testId={`training-mode-${mode}`}
-            />
-          );
-        }
-      )}
-    </KoreanContainer>
+  const handleTrainingModeChange = useCallback(
+    (mode: "forms" | "techniques" | "philosophy"): void => {
+      setTrainingMode(mode);
+    },
+    []
   );
 
-  const renderCurrentTechnique = (): React.ReactElement => {
-    const technique = TRIGRAM_DATA[currentStance]?.technique;
-
-    if (!technique) {
-      return (
-        <KoreanContainer
-          koreanTheme={true}
-          traditionalBorder={true}
-          x={300}
-          y={50}
-        >
-          <KoreanText
-            koreanText="기술 정보 없음 (No Technique Data)"
-            size={16}
-            weight="bold"
-            color={KOREAN_COLORS.GRAY_MEDIUM}
-            x={0}
-            y={10}
-            anchor={{ x: 0.5, y: 0.5 }}
-          />
-        </KoreanContainer>
-      );
-    }
-
-    return (
-      <KoreanContainer
-        koreanTheme={true}
-        traditionalBorder={true}
-        x={300}
-        y={50}
-      >
-        <KoreanText
-          koreanText="현재 기술 (Current Technique)"
-          size={16}
-          weight="bold"
-          x={0}
-          y={-20}
-          anchor={{ x: 0.5, y: 0.5 }}
-        />
-
-        <KoreanText
-          koreanText={technique.koreanName}
-          size={20}
-          weight="bold"
-          color={KOREAN_COLORS.GOLD}
-          x={0}
-          y={10}
-          anchor={{ x: 0.5, y: 0.5 }}
-        />
-
-        <KoreanText
-          koreanText={`(${technique.englishName})`}
-          size={14}
-          color={KOREAN_COLORS.GRAY_LIGHT}
-          x={0}
-          y={30}
-          anchor={{ x: 0.5, y: 0.5 }}
-        />
-
-        <KoreanText
-          koreanText={technique.description.korean}
-          size={12}
-          x={0}
-          y={50}
-          anchor={{ x: 0.5, y: 0.5 }}
-        />
-
-        {/* Technique stats */}
-        <KoreanText
-          koreanText={`데미지: ${technique.damage} | 기력: ${technique.kiCost} | 사정거리: ${technique.range}`}
-          size={10}
-          color={KOREAN_COLORS.CYAN}
-          x={0}
-          y={70}
-          anchor={{ x: 0.5, y: 0.5 }}
-        />
-      </KoreanContainer>
-    );
-  };
-
-  const renderTrainingProgress = (): React.ReactElement => (
-    <KoreanContainer koreanTheme={true} traditionalBorder={true} x={550} y={50}>
-      <KoreanText
-        koreanText="수련 진도 (Training Progress)"
-        size={16}
-        weight="bold"
-        x={0}
-        y={-20}
-        anchor={{ x: 0.5, y: 0.5 }}
-      />
-
-      <ProgressTracker
-        label={`${
-          TRIGRAM_DATA[currentStance]?.koreanName || currentStance
-        } 숙련도`}
-        current={Math.floor(trainingProgress[currentStance].mastery * 100)}
-        maximum={100}
-        currentStance={currentStance}
-      />
-
-      <KoreanText
-        koreanText={`연습 횟수: ${trainingProgress[currentStance].practiceCount}`}
-        size={12}
-        color={KOREAN_COLORS.GRAY_LIGHT}
-        x={0}
-        y={40}
-        anchor={{ x: 0.5, y: 0.5 }}
-      />
-    </KoreanContainer>
-  );
-
-  const renderSessionStatus = (): React.ReactElement | null => {
-    if (!currentSession) return null;
-
-    return (
-      <KoreanContainer
-        koreanTheme={true}
-        traditionalBorder={true}
-        x={300}
-        y={200}
-      >
-        <KoreanText
-          koreanText="훈련 세션 (Training Session)"
-          size={16}
-          weight="bold"
-          x={0}
-          y={-20}
-          anchor={{ x: 0.5, y: 0.5 }}
-        />
-
-        <KoreanText
-          koreanText={`목표: ${currentSession.targetHits}회 성공`}
-          size={14}
-          x={0}
-          y={10}
-          anchor={{ x: 0.5, y: 0.5 }}
-        />
-
-        <KoreanText
-          koreanText={`성공: ${currentSession.successfulHits}/${currentSession.targetHits}`}
-          size={14}
-          color={KOREAN_COLORS.GOLD}
-          x={0}
-          y={30}
-          anchor={{ x: 0.5, y: 0.5 }}
-        />
-
-        <ProgressTracker
-          label="정확도"
-          current={Math.floor(currentSession.accuracy * 100)}
-          maximum={100}
-        />
-
-        <KoreanText
-          koreanText="스페이스 키로 기술 실행"
-          size={12}
-          color={KOREAN_COLORS.CYAN}
-          x={0}
-          y={70}
-          anchor={{ x: 0.5, y: 0.5 }}
-        />
-      </KoreanContainer>
-    );
-  };
-
-  const renderInstructions = (): React.ReactElement | null => {
-    if (!showInstructions) return null;
-
-    return (
-      <KoreanContainer
-        koreanTheme={true}
-        traditionalBorder={true}
-        x={50}
-        y={450}
-      >
-        <KoreanText
-          koreanText="조작법 (Controls)"
-          size={16}
-          weight="bold"
-          x={0}
-          y={-20}
-          anchor={{ x: 0.5, y: 0.5 }}
-        />
-
-        <KoreanText
-          koreanText="1-8: 팔괘 자세 변경 | 스페이스: 기술 연습 | ESC: 메뉴로 돌아가기"
-          size={12}
-          x={0}
-          y={10}
-          anchor={{ x: 0.5, y: 0.5 }}
-        />
-
-        <BaseButton
-          label="지시사항 숨기기"
-          x={0}
-          y={30}
-          width={120}
-          height={25}
-          onClick={() => setShowInstructions(false)}
-          variant="secondary"
-        />
-      </KoreanContainer>
-    );
+  const selectedTrigramData = TRIGRAM_DATA[selectedStance];
+  const currentProgress = playerProgress?.[selectedStance] || {
+    practiceCount: 0,
+    mastery: 0,
   };
 
   return (
-    <Stage
-      width={800}
-      height={600}
-      options={{ backgroundColor: KOREAN_COLORS.DARK_BLUE }}
+    <div
+      style={{
+        width: "100%",
+        height: "100vh",
+        background: `linear-gradient(135deg, ${KOREAN_COLORS.DARK_BLUE}, ${KOREAN_COLORS.BLACK})`,
+        display: "flex",
+        flexDirection: "column",
+        color: KOREAN_COLORS.WHITE,
+        fontFamily: KOREAN_FONT_FAMILY,
+      }}
     >
-      {/* Traditional Korean dojang background - fix missing props */}
-      <DojangBackground width={800} height={600} />
-
-      {/* Korean martial arts header */}
+      {/* Header */}
       <KoreanHeader
-        title="흑괘 무술 수련장"
-        subtitle="Black Trigram Training Dojo"
+        title="팔괘 수련 도장"
+        subtitle="Trigram Training Dojang"
+        currentRound={practiceCount}
+        timeRemaining={0}
       />
 
-      {/* Training mode selector */}
-      {renderTrainingModeSelector()}
+      {/* Main Training Area */}
+      <div style={{ display: "flex", flex: 1 }}>
+        {/* Left Panel - Training Controls */}
+        <div
+          style={{
+            width: "300px",
+            padding: "1rem",
+            background: "rgba(0,0,0,0.3)",
+            borderRight: `2px solid ${KOREAN_COLORS.GOLD}`,
+          }}
+        >
+          <h3
+            style={{
+              color: KOREAN_COLORS.GOLD,
+              marginBottom: "1rem",
+              textAlign: "center",
+            }}
+          >
+            수련 모드 (Training Mode)
+          </h3>
 
-      {/* Current technique display */}
-      {renderCurrentTechnique()}
+          {/* Training Mode Selector */}
+          <div style={{ marginBottom: "2rem" }}>
+            {[
+              {
+                mode: "forms" as const,
+                korean: "형 연습",
+                english: "Forms Practice",
+              },
+              {
+                mode: "techniques" as const,
+                korean: "기술 훈련",
+                english: "Technique Training",
+              },
+              {
+                mode: "philosophy" as const,
+                korean: "철학 명상",
+                english: "Philosophy Meditation",
+              },
+            ].map(({ mode, korean, english }) => (
+              <button
+                key={mode}
+                onClick={() => handleTrainingModeChange(mode)}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  padding: "0.75rem",
+                  margin: "0.5rem 0",
+                  background:
+                    trainingMode === mode
+                      ? KOREAN_COLORS.GOLD
+                      : "rgba(255,255,255,0.1)",
+                  color:
+                    trainingMode === mode
+                      ? KOREAN_COLORS.BLACK
+                      : KOREAN_COLORS.WHITE,
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  fontSize: "0.9rem",
+                }}
+              >
+                {korean}
+                <br />
+                <small>{english}</small>
+              </button>
+            ))}
+          </div>
 
-      {/* Training progress */}
-      {renderTrainingProgress()}
+          {/* Current Stance Info */}
+          <div
+            style={{
+              marginBottom: "2rem",
+              padding: "1rem",
+              background: "rgba(255,255,255,0.05)",
+              borderRadius: "8px",
+            }}
+          >
+            <h4 style={{ color: KOREAN_COLORS.CYAN, marginBottom: "0.5rem" }}>
+              현재 자세 (Current Stance)
+            </h4>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>
+                {selectedTrigramData.symbol}
+              </div>
+              <div
+                style={{
+                  fontSize: "1.1rem",
+                  fontWeight: "bold",
+                  marginBottom: "0.25rem",
+                }}
+              >
+                {selectedTrigramData.koreanName}
+              </div>
+              <div style={{ fontSize: "0.9rem", opacity: 0.8 }}>
+                {selectedTrigramData.englishName}
+              </div>
+            </div>
+          </div>
 
-      {/* Trigram wheel for stance selection */}
-      <TrigramWheel
-        selectedStance={currentStance}
-        onStanceChange={handleStanceChange}
-        x={100}
-        y={300}
-        radius={80}
-        isEnabled={!currentSession}
-        playerKi={playerState.ki}
-        playerMaxKi={playerState.maxKi}
-      />
+          {/* Progress Tracking */}
+          <ProgressTracker
+            label="숙련도 (Mastery)"
+            current={currentProgress.mastery}
+            maximum={100}
+            currentStance={selectedStance}
+          />
 
-      {/* Player character - fix props interface */}
-      <Player player={playerState} isLocalPlayer={true} />
+          <ProgressTracker
+            label="연습 횟수 (Practice Count)"
+            current={currentProgress.practiceCount + practiceCount}
+            maximum={1000}
+            currentStance={selectedStance}
+          />
 
-      {/* Training session status */}
-      {renderSessionStatus()}
+          {/* Navigation */}
+          <div style={{ marginTop: "2rem" }}>
+            <button
+              onClick={() => onGamePhaseChange("combat")}
+              style={{
+                width: "100%",
+                padding: "0.75rem",
+                background: KOREAN_COLORS.TRADITIONAL_RED,
+                color: KOREAN_COLORS.WHITE,
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontSize: "1rem",
+                marginBottom: "0.5rem",
+              }}
+            >
+              실전 모드 (Combat Mode)
+            </button>
+            <button
+              onClick={() => onGamePhaseChange("intro")}
+              style={{
+                width: "100%",
+                padding: "0.75rem",
+                background: KOREAN_COLORS.GRAY_MEDIUM,
+                color: KOREAN_COLORS.WHITE,
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+                fontSize: "1rem",
+              }}
+            >
+              메인 메뉴 (Main Menu)
+            </button>
+          </div>
+        </div>
 
-      {/* Instructions */}
-      {renderInstructions()}
+        {/* Center - PixiJS Training Visualization */}
+        <div style={{ flex: 1, position: "relative" }}>
+          <Stage
+            width={800}
+            height={600}
+            options={{
+              backgroundColor: parseInt(
+                KOREAN_COLORS.DARK_BLUE.replace("#", ""),
+                16
+              ),
+              antialias: true,
+            }}
+          >
+            <Container>
+              {/* Training visualization would go here */}
+              <Text
+                text={`${selectedTrigramData.technique.koreanName} 연습`}
+                anchor={{ x: 0.5, y: 0.5 }}
+                x={400}
+                y={300}
+                style={{
+                  fontFamily: KOREAN_FONT_FAMILY,
+                  fontSize: 24,
+                  fill: parseInt(KOREAN_COLORS.GOLD.replace("#", ""), 16),
+                  fontWeight: "bold",
+                }}
+              />
+            </Container>
+          </Stage>
 
-      {/* Navigation buttons */}
-      <BaseButton
-        label="메뉴로 돌아가기 (Back to Menu)"
-        x={600}
-        y={500}
-        width={180}
-        height={40}
-        onClick={() => onGamePhaseChange("intro")}
-        variant="secondary"
-        testId="back-to-menu"
-      />
+          {/* Training Content Overlay */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: "2rem",
+              left: "50%",
+              transform: "translateX(-50%)",
+              background: "rgba(0,0,0,0.8)",
+              padding: "1rem",
+              borderRadius: "8px",
+              textAlign: "center",
+              minWidth: "400px",
+            }}
+          >
+            <h4 style={{ color: KOREAN_COLORS.GOLD, marginBottom: "0.5rem" }}>
+              {selectedTrigramData.technique.koreanName}
+            </h4>
+            <p style={{ fontSize: "0.9rem", marginBottom: "0.5rem" }}>
+              {selectedTrigramData.technique.description.korean}
+            </p>
+            <p style={{ fontSize: "0.8rem", opacity: 0.8 }}>
+              {selectedTrigramData.technique.description.english}
+            </p>
+          </div>
+        </div>
 
-      <BaseButton
-        label="실전 대련 (Combat Mode)"
-        x={600}
-        y={550}
-        width={180}
-        height={40}
-        onClick={() => onGamePhaseChange("combat")}
-        variant="primary"
-        testId="enter-combat"
-      />
-    </Stage>
+        {/* Right Panel - Trigram Wheel */}
+        <div
+          style={{
+            width: "300px",
+            padding: "1rem",
+            background: "rgba(0,0,0,0.3)",
+            borderLeft: `2px solid ${KOREAN_COLORS.GOLD}`,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <h3
+            style={{
+              color: KOREAN_COLORS.GOLD,
+              marginBottom: "1rem",
+              textAlign: "center",
+            }}
+          >
+            팔괘 선택 (Trigram Selection)
+          </h3>
+
+          <TrigramWheel
+            selectedStance={selectedStance}
+            onStanceChange={handleStanceSelect}
+            radius={120}
+            isEnabled={true}
+            playerKi={100}
+            playerMaxKi={100}
+          />
+
+          {/* Technique Details */}
+          <div style={{ marginTop: "2rem", width: "100%" }}>
+            <h4 style={{ color: KOREAN_COLORS.CYAN, marginBottom: "1rem" }}>
+              기술 정보 (Technique Info)
+            </h4>
+            <div style={{ fontSize: "0.9rem", lineHeight: "1.6" }}>
+              <div style={{ marginBottom: "0.5rem" }}>
+                <strong>위력:</strong> {selectedTrigramData.technique.damage}
+              </div>
+              <div style={{ marginBottom: "0.5rem" }}>
+                <strong>기 소모:</strong> {selectedTrigramData.technique.kiCost}
+              </div>
+              <div style={{ marginBottom: "0.5rem" }}>
+                <strong>체력 소모:</strong>{" "}
+                {selectedTrigramData.technique.staminaCost}
+              </div>
+              <div style={{ marginBottom: "0.5rem" }}>
+                <strong>사거리:</strong> {selectedTrigramData.technique.range}
+              </div>
+              <div style={{ marginBottom: "0.5rem" }}>
+                <strong>정확도:</strong>{" "}
+                {Math.round(selectedTrigramData.technique.accuracy * 100)}%
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

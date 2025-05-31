@@ -905,3 +905,23 @@ export interface StanceAnalysis {
   readonly recommendation: string;
   readonly counterStances?: TrigramStance[];
 }
+
+// Add missing GameEngineProps interface
+export interface GameEngineProps {
+  readonly players: readonly [PlayerState, PlayerState];
+  readonly gamePhase: GamePhase;
+  readonly onGamePhaseChange: (phase: GamePhase) => void;
+  readonly onPlayerUpdate: (
+    playerIndex: number,
+    updates: Partial<PlayerState>
+  ) => void;
+  readonly onStanceChange: (playerIndex: number, stance: TrigramStance) => void;
+}
+
+// Add missing TrainingScreenProps interface
+export interface TrainingScreenProps {
+  readonly onGamePhaseChange: (phase: GamePhase) => void;
+  readonly onStanceChange: (stance: TrigramStance) => void;
+  readonly selectedStance?: TrigramStance;
+  readonly playerProgress?: Record<TrigramStance, TrainingProgress>;
+}

@@ -1,79 +1,93 @@
-import type { JSX } from "react";
-import { KOREAN_COLORS, TRIGRAM_DATA } from "../../types";
-import type { ProgressTrackerProps } from "../../types";
-import type { Graphics as PixiGraphics } from "pixi.js";
+import React from "react";
+import {
+  KOREAN_COLORS,
+  KOREAN_FONT_FAMILY,
+  TRIGRAM_DATA,
+  type ProgressTrackerProps,
+} from "../../types";
 
 export function ProgressTracker({
   label,
   current,
   maximum,
   currentStance,
-}: ProgressTrackerProps): JSX.Element {
-  const percentage = Math.min(100, (current / maximum) * 100);
-  const stanceText = currentStance ? TRIGRAM_DATA[currentStance].korean : "";
+}: ProgressTrackerProps): React.ReactElement {
+  const percentage = Math.max(0, Math.min(100, (current / maximum) * 100));
 
-  const drawProgressBar = (g: PixiGraphics): void => {
-    g.clear();
+  // Color based on percentage and stance
+  const getBarColor = (): string => {
+    if (currentStance && TRIGRAM_DATA[currentStance]) {
+      return `#${TRIGRAM_DATA[currentStance].color
+        .toString(16)
+        .padStart(6, "0")}`;
+    }
 
-    // Background bar
-    g.setFillStyle({ color: KOREAN_COLORS.BLACK, alpha: 0.7 });
-    g.roundRect(0, 0, 200, 20, 10);
-    g.fill();
-
-    // Progress fill
-    const fillWidth = (percentage / 100) * 200;
-    g.setFillStyle({ color: KOREAN_COLORS.GOLD, alpha: 0.8 });
-    g.roundRect(0, 0, fillWidth, 20, 10);
-    g.fill();
-
-    // Border
-    g.setStrokeStyle({ color: KOREAN_COLORS.WHITE, width: 2 });
-    g.roundRect(0, 0, 200, 20, 10);
-    g.stroke();
+    if (percentage > 60) return KOREAN_COLORS.Green;
+    if (percentage > 30) return KOREAN_COLORS.Orange;
+    return KOREAN_COLORS.Red;
   };
 
   return (
-    <pixiContainer data-testid="progress-tracker">
-      {/* Label */}
-      <pixiText
-        text={label}
+    <div
+      style={{
+        marginBottom: "1rem",
+        fontFamily: KOREAN_FONT_FAMILY,
+      }}
+    >
+      <div
         style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 14,
-          fill: KOREAN_COLORS.WHITE,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "0.25rem",
+          fontSize: "0.9rem",
         }}
-        y={-25}
-      />
+      >
+        <span style={{ color: KOREAN_COLORS.WHITE }}>{label}</span>
+        <span style={{ color: KOREAN_COLORS.GRAY_LIGHT }}>
+          {Math.round(current)}/{maximum}
+        </span>
+      </div>
 
-      {/* Progress Bar */}
-      <pixiGraphics draw={drawProgressBar} />
-
-      {/* Progress Text */}
-      <pixiText
-        text={`${current}/${maximum} (${Math.round(percentage)}%)`}
-        anchor={{ x: 0.5, y: 0.5 }}
-        x={100}
-        y={10}
+      <div
         style={{
-          fontFamily: "monospace",
-          fontSize: 12,
-          fill: KOREAN_COLORS.BLACK,
-          fontWeight: "bold",
+          width: "100%",
+          height: "8px",
+          backgroundColor: KOREAN_COLORS.GRAY_DARK,
+          borderRadius: "4px",
+          overflow: "hidden",
+          border: `1px solid ${KOREAN_COLORS.GRAY_MEDIUM}`,
         }}
-      />
-
-      {/* Stance Text */}
-      {currentStance && (
-        <pixiText
-          text={`${stanceText} (${currentStance.toUpperCase()})`}
+      >
+        <div
           style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 12,
-            fill: KOREAN_COLORS.GOLD,
+            width: `${percentage}%`,
+            height: "100%",
+            backgroundColor: getBarColor(),
+            transition: "width 0.3s ease, background-color 0.3s ease",
+            borderRadius: "3px",
           }}
-          y={30}
         />
+      </div>
+
+      {/* Stance indicator */}
+      {currentStance && (
+        <div
+          style={{
+            fontSize: "0.7rem",
+            color: KOREAN_COLORS.GRAY_LIGHT,
+            marginTop: "0.25rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.25rem",
+          }}
+        >
+          <span style={{ color: getBarColor() }}>
+            {TRIGRAM_DATA[currentStance].symbol}
+          </span>
+          <span>{TRIGRAM_DATA[currentStance].korean}</span>
+        </div>
       )}
-    </pixiContainer>
+    </div>
   );
 }

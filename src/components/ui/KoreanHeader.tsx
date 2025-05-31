@@ -1,99 +1,90 @@
-import type { JSX } from "react";
-import { KOREAN_COLORS, type TrigramStance } from "../../types";
-
-const TRIGRAM_SYMBOLS: Record<TrigramStance, string> = {
-  geon: "☰", // Heaven
-  tae: "☱", // Lake
-  li: "☲", // Fire
-  jin: "☳", // Thunder
-  son: "☴", // Wind
-  gam: "☵", // Water
-  gan: "☶", // Mountain
-  gon: "☷", // Earth
-};
+import React from "react";
+import { KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../types";
 
 export interface KoreanHeaderProps {
   readonly title: string;
   readonly subtitle?: string;
-  readonly currentStance?: TrigramStance;
-  readonly showTrigramSymbol?: boolean;
-  readonly className?: string;
+  readonly currentRound?: number;
+  readonly timeRemaining?: number;
 }
 
 export function KoreanHeader({
   title,
   subtitle,
-  currentStance,
-  showTrigramSymbol = true,
-  className = "",
-}: KoreanHeaderProps): JSX.Element {
-  const headerStyle: React.CSSProperties = {
-    background: `linear-gradient(135deg, ${KOREAN_COLORS.TRADITIONAL_RED}, ${KOREAN_COLORS.DARK_BLUE})`,
-    color: KOREAN_COLORS.GOLD,
-    padding: "1rem 2rem",
-    borderBottom: `3px solid ${KOREAN_COLORS.GOLD}`,
-    fontFamily: "Noto Sans KR, Arial, sans-serif",
-    textAlign: "center",
-    position: "relative",
-    overflow: "hidden",
-  };
-
-  const titleStyle: React.CSSProperties = {
-    fontSize: "2rem",
-    fontWeight: "bold",
-    margin: "0",
-    textShadow: "2px 2px 4px rgba(0, 0, 0, 0.7)",
-    letterSpacing: "0.05em",
-  };
-
-  const subtitleStyle: React.CSSProperties = {
-    fontSize: "1rem",
-    fontWeight: "300",
-    margin: "0.5rem 0 0 0",
-    opacity: 0.9,
-    letterSpacing: "0.1em",
-  };
-
-  const trigramStyle: React.CSSProperties = {
-    position: "absolute",
-    right: "2rem",
-    top: "50%",
-    transform: "translateY(-50%)",
-    fontSize: "2.5rem",
-    color: KOREAN_COLORS.GOLD,
-    textShadow: "0 0 10px rgba(255, 215, 0, 0.5)",
-    filter: "drop-shadow(0 0 5px rgba(255, 215, 0, 0.3))",
-  };
-
-  const backgroundPatternStyle: React.CSSProperties = {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    opacity: 0.1,
-    background: `
-      radial-gradient(circle at 20% 50%, ${KOREAN_COLORS.GOLD} 1px, transparent 1px),
-      radial-gradient(circle at 80% 50%, ${KOREAN_COLORS.GOLD} 1px, transparent 1px)
-    `,
-    backgroundSize: "100px 50px",
-    pointerEvents: "none",
+  currentRound,
+  timeRemaining,
+}: KoreanHeaderProps): React.ReactElement {
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   return (
-    <header className={`korean-header ${className}`} style={headerStyle}>
-      <div style={backgroundPatternStyle} />
-
-      <div style={{ position: "relative", zIndex: 1 }}>
-        <h1 style={titleStyle}>{title}</h1>
-        {subtitle && <p style={subtitleStyle}>{subtitle}</p>}
+    <header
+      style={{
+        background: `linear-gradient(90deg, ${KOREAN_COLORS.BLACK}, ${KOREAN_COLORS.DARK_BLUE})`,
+        padding: "1rem 2rem",
+        borderBottom: `2px solid ${KOREAN_COLORS.GOLD}`,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        fontFamily: KOREAN_FONT_FAMILY,
+      }}
+    >
+      <div>
+        <h1
+          style={{
+            color: KOREAN_COLORS.GOLD,
+            fontSize: "1.8rem",
+            margin: 0,
+            textShadow: "2px 2px 4px rgba(0,0,0,0.8)",
+          }}
+        >
+          {title}
+        </h1>
+        {subtitle && (
+          <p
+            style={{
+              color: KOREAN_COLORS.WHITE,
+              fontSize: "1rem",
+              margin: "0.25rem 0 0 0",
+              opacity: 0.9,
+            }}
+          >
+            {subtitle}
+          </p>
+        )}
       </div>
 
-      {showTrigramSymbol && currentStance && (
-        <div style={trigramStyle} title={`Current stance: ${currentStance}`}>
-          {TRIGRAM_SYMBOLS[currentStance]}
-        </div>
-      )}
+      <div style={{ textAlign: "right" }}>
+        {currentRound !== undefined && (
+          <div
+            style={{
+              color: KOREAN_COLORS.CYAN,
+              fontSize: "1.2rem",
+              fontWeight: "bold",
+            }}
+          >
+            라운드 {currentRound}
+          </div>
+        )}
+        {timeRemaining !== undefined && (
+          <div
+            style={{
+              color:
+                timeRemaining <= 10
+                  ? KOREAN_COLORS.CRITICAL_RED
+                  : KOREAN_COLORS.WHITE,
+              fontSize: "1.5rem",
+              fontWeight: "bold",
+              fontFamily: "monospace",
+            }}
+          >
+            {formatTime(timeRemaining)}
+          </div>
+        )}
+      </div>
     </header>
   );
 }
