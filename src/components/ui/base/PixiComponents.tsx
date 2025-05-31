@@ -1,8 +1,6 @@
 import React, { useCallback } from "react";
 import type { Graphics as PixiGraphics } from "pixi.js";
-import { KOREAN_FONT_FAMILY } from "../../../types";
 
-// Simple wrapper components for PixiJS elements
 export interface PixiGraphicsComponentProps {
   readonly x?: number;
   readonly y?: number;
@@ -77,23 +75,13 @@ export function PixiTextComponent({
   alpha = 1,
   visible = true,
 }: PixiTextComponentProps): React.ReactElement {
-  // Ensure proper PixiJS style format
-  const pixiStyle = {
-    fontFamily: KOREAN_FONT_FAMILY,
-    fontSize: 16,
-    fill: 0xffffff,
-    fontWeight: "normal" as const,
-    align: "left" as const,
-    ...style,
-  };
-
   return (
     <pixiText
       text={text}
       x={x}
       y={y}
       anchor={anchor}
-      style={pixiStyle}
+      style={style}
       alpha={alpha}
       visible={visible}
     />
@@ -101,49 +89,46 @@ export function PixiTextComponent({
 }
 
 export interface PixiContainerComponentProps {
+  readonly children?: React.ReactNode;
   readonly x?: number;
   readonly y?: number;
   readonly interactive?: boolean;
-  readonly children?: React.ReactNode;
-  readonly alpha?: number;
-  readonly visible?: boolean;
   readonly onClick?: (() => void) | null;
   readonly onPointerDown?: (() => void) | null;
-  readonly onPointerLeave?: (() => void) | null;
   readonly onPointerEnter?: (() => void) | null;
-  readonly scale?: { x: number; y: number } | number;
+  readonly onPointerLeave?: (() => void) | null;
+  readonly alpha?: number;
+  readonly visible?: boolean;
+  readonly scale?: number | { x: number; y: number };
 }
 
 export function PixiContainerComponent({
+  children,
   x = 0,
   y = 0,
   interactive = false,
-  children,
-  alpha = 1,
-  visible = true,
   onClick = null,
   onPointerDown = null,
-  onPointerLeave = null,
   onPointerEnter = null,
-  scale,
+  onPointerLeave = null,
+  alpha = 1,
+  visible = true,
+  scale = 1,
 }: PixiContainerComponentProps): React.ReactElement {
-  // Handle scale property to avoid exactOptionalPropertyTypes issues
-  const containerProps: any = {
-    x,
-    y,
-    interactive,
-    alpha,
-    visible,
-    onClick,
-    onPointerDown,
-    onPointerLeave,
-    onPointerEnter,
-  };
-
-  // Only add scale if it's defined to avoid undefined assignment issues
-  if (scale !== undefined) {
-    containerProps.scale = scale;
-  }
-
-  return <pixiContainer {...containerProps}>{children}</pixiContainer>;
+  return (
+    <pixiContainer
+      x={x}
+      y={y}
+      interactive={interactive}
+      onClick={onClick}
+      onPointerDown={onPointerDown}
+      onPointerEnter={onPointerEnter}
+      onPointerLeave={onPointerLeave}
+      alpha={alpha}
+      visible={visible}
+      scale={scale}
+    >
+      {children}
+    </pixiContainer>
+  );
 }
