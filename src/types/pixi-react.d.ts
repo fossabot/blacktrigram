@@ -60,6 +60,7 @@ declare module "@pixi/react" {
         onPointerMove?: () => void;
         onPointerEnter?: () => void;
         onPointerLeave?: () => void;
+        scale?: number | { x: number; y: number };
       };
     pixiGraphics: PixiReactElementProps<PIXI.Graphics> &
       Partial<PIXI.Graphics> & {

@@ -110,7 +110,8 @@ export interface PixiContainerComponentProps {
   readonly onClick?: (() => void) | null;
   readonly onPointerDown?: (() => void) | null;
   readonly onPointerLeave?: (() => void) | null;
-  readonly onPointerEnter?: (() => void) | null; // Add this missing prop
+  readonly onPointerEnter?: (() => void) | null;
+  readonly scale?: { x: number; y: number } | number;
 }
 
 export function PixiContainerComponent({
@@ -124,20 +125,25 @@ export function PixiContainerComponent({
   onPointerDown = null,
   onPointerLeave = null,
   onPointerEnter = null,
+  scale,
 }: PixiContainerComponentProps): React.ReactElement {
-  return (
-    <pixiContainer
-      x={x}
-      y={y}
-      interactive={interactive}
-      alpha={alpha}
-      visible={visible}
-      onClick={onClick}
-      onPointerDown={onPointerDown}
-      onPointerLeave={onPointerLeave}
-      onPointerEnter={onPointerEnter}
-    >
-      {children}
-    </pixiContainer>
-  );
+  // Handle scale property to avoid exactOptionalPropertyTypes issues
+  const containerProps: any = {
+    x,
+    y,
+    interactive,
+    alpha,
+    visible,
+    onClick,
+    onPointerDown,
+    onPointerLeave,
+    onPointerEnter,
+  };
+
+  // Only add scale if it's defined to avoid undefined assignment issues
+  if (scale !== undefined) {
+    containerProps.scale = scale;
+  }
+
+  return <pixiContainer {...containerProps}>{children}</pixiContainer>;
 }

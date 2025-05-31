@@ -1,134 +1,126 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo, useState } from "react";
+import { useTick } from "@pixi/react";
 import type { Graphics as PixiGraphics } from "pixi.js";
 import {
   PixiContainerComponent,
   PixiGraphicsComponent,
   PixiTextComponent,
 } from "../ui/base/PixiComponents";
-import { KOREAN_COLORS, type HitEffect } from "../../types";
+import { type HitEffect, KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../types";
 
 export interface HitEffectsLayerProps {
   readonly effects: readonly HitEffect[];
-  readonly currentTime: number;
 }
 
 export function HitEffectsLayer({
   effects,
-  currentTime,
 }: HitEffectsLayerProps): React.ReactElement {
-  const getEffectAlpha = useCallback(
-    (effect: HitEffect): number => {
-      const elapsed = currentTime - effect.startTime;
-      const progress = elapsed / effect.duration;
-      return Math.max(0, 1 - progress);
-    },
-    [currentTime]
-  );
-
-  const getEffectScale = useCallback(
-    (effect: HitEffect): number => {
-      const elapsed = currentTime - effect.startTime;
-      const progress = elapsed / effect.duration;
-      return 1 + progress * 0.5; // Grow slightly over time
-    },
-    [currentTime]
-  );
-
-  const getDamageColor = useCallback((damage: number): number => {
-    if (damage > 30) return KOREAN_COLORS.CRITICAL_RED;
-    if (damage > 20) return KOREAN_COLORS.Red;
-    if (damage > 10) return KOREAN_COLORS.Orange;
-    return KOREAN_COLORS.DAMAGE_YELLOW;
-  }, []);
-
-  const getKoreanHitText = useCallback((effect: HitEffect): string => {
-    switch (effect.type) {
-      case "critical":
-        return "치명타!";
-      case "heavy":
-        return "강타!";
-      case "medium":
-        return "타격!";
-      case "light":
-        return "경타";
-      case "block":
-        return "방어!";
-      case "miss":
-        return "빗나감";
-      default:
-        return "타격";
-    }
-  }, []);
+  // Filter active effects based on current time
+  const activeEffects = useMemo(() => {
+    const now = Date.now();
+    return effects.filter((effect) => now - effect.startTime < effect.duration);
+  }, [effects]);
 
   return (
     <PixiContainerComponent>
-      {effects.map((effect) => {
-        const alpha = getEffectAlpha(effect);
-        const scale = getEffectScale(effect);
+      {activeEffects.map((effect) => (
+        <HitEffectDisplay key={effect.id} effect={effect} />
+      ))}
+    </PixiContainerComponent>
+  );
+}
 
-        if (alpha <= 0) return null;
+interface HitEffectDisplayProps {
+  readonly effect: HitEffect;
+}
 
-        return (
-          <PixiContainerComponent
-            key={effect.id}
-            x={effect.position.x}
-            y={effect.position.y}
-            alpha={alpha}
-          >
-            {/* Impact circle effect */}
-            <PixiGraphicsComponent
-              draw={(g: PixiGraphics) => {
-                g.clear();
+function HitEffectDisplay({
+  effect,
+}: HitEffectDisplayProps): React.ReactElement {
+  const [alpha, setAlpha] = useState(1);
+  const [scale, setScale] = useState(1);
+  const [offsetY, setOffsetY] = useState(0);
 
-                // Outer impact ring
-                g.setStrokeStyle({
-                  color: effect.color,
-                  width: 3,
-                  alpha: alpha * 0.8,
-                });
-                g.circle(0, 0, 20 * scale);
-                g.stroke();
+  useTick(
+    useCallback(() => {
+      const elapsed = Date.now() - effect.startTime;
+      const progress = elapsed / effect.duration;
 
-                // Inner impact flash
-                if (effect.type === "critical") {
-                  g.setFillStyle({
-                    color: KOREAN_COLORS.CRITICAL_RED,
-                    alpha: alpha * 0.4,
-                  });
-                  g.circle(0, 0, 15 * scale);
-                  g.fill();
-                }
-              }}
-            />
+      if (progress >= 1) return;
 
-            {/* Damage number */}
-            <PixiTextComponent
-              text={effect.damage.toString()}
-              y={-30 * scale}
-              anchor={{ x: 0.5, y: 0.5 }}
-              style={{
-                fontFamily: "Noto Sans KR, Arial, sans-serif",
-                fontSize: 16 + (effect.damage > 20 ? 4 : 0),
-                fill: getDamageColor(effect.damage),
-                fontWeight: "bold",
-              }}
-            />
+      // Fade out effect
+      setAlpha(1 - progress);
 
-            {/* Korean hit text */}
-            <PixiTextComponent
-              text={getKoreanHitText(effect)}
-              y={20 * scale}
-              anchor={{ x: 0.5, y: 0.5 }}
-              style={{
-                fontFamily: "Noto Sans KR, Arial, sans-serif",
-                fontSize: 12,
-                fill: KOREAN_COLORS.WHITE,
-                fontWeight: "bold",
-              }}
-            />
-          </PixiContainerComponent>
-        );
-      })}
+      // Scale effect based on damage type
+      if (effect.type === "critical" || effect.type === "heavy") {
+        setScale(1 + Math.sin(progress * Math.PI * 4) * 0.1);
+      }
+
+      // Float upward
+      setOffsetY(-progress * 30);
+    }, [effect])
+  );
+
+  const drawEffect = useCallback(
+    (g: PixiGraphics) => {
+      g.clear();
+
+      // Draw hit effect background
+      const radius = effect.type === "critical" ? 25 : 15;
+      g.setFillStyle({
+        color: effect.color,
+        alpha: alpha * 0.3,
+      });
+      g.circle(0, 0, radius);
+      g.fill();
+
+      // Draw effect border
+      g.setStrokeStyle({
+        color: effect.color,
+        width: 2,
+        alpha: alpha,
+      });
+      g.circle(0, 0, radius);
+      g.stroke();
+    },
+    [effect.color, effect.type, alpha]
+  );
+
+  return (
+    <PixiContainerComponent
+      x={effect.position.x}
+      y={effect.position.y + offsetY}
+      alpha={alpha}
+      scale={{ x: scale, y: scale }}
+    >
+      <PixiGraphicsComponent draw={drawEffect} />
+
+      {/* Damage text */}
+      <PixiTextComponent
+        text={effect.damage.toString()}
+        anchor={{ x: 0.5, y: 0.5 }}
+        style={{
+          fontFamily: KOREAN_FONT_FAMILY,
+          fontSize: effect.type === "critical" ? 20 : 16,
+          fill: KOREAN_COLORS.WHITE,
+          fontWeight: "bold",
+        }}
+      />
+
+      {/* Korean damage text for critical hits */}
+      {effect.type === "critical" && (
+        <PixiTextComponent
+          text="치명타!"
+          y={-25}
+          anchor={{ x: 0.5, y: 0.5 }}
+          style={{
+            fontFamily: KOREAN_FONT_FAMILY,
+            fontSize: 12,
+            fill: KOREAN_COLORS.CRITICAL_RED,
+            fontWeight: "bold",
+          }}
+        />
+      )}
     </PixiContainerComponent>
   );
 }

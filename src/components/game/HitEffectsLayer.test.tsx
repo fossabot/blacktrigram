@@ -34,7 +34,7 @@ describe("HitEffectsLayer Component", () => {
   const mockHitEffect: HitEffect = {
     id: "test-hit",
     position: { x: 100, y: 100 },
-    type: "damage", // Fix type
+    type: "heavy", // Fix type to match actual interface
     damage: 25,
     startTime: Date.now(),
     duration: 1000,
@@ -45,16 +45,12 @@ describe("HitEffectsLayer Component", () => {
 
   it("should render without errors when no effects are present", () => {
     const effects: HitEffect[] = [];
-    const { container } = render(
-      <HitEffectsLayer effects={effects} currentTime={0} />
-    );
+    const { container } = render(<HitEffectsLayer effects={effects} />);
     expect(container).toBeInTheDocument();
   });
 
   it("should render hit effects correctly", () => {
-    const { container } = render(
-      <HitEffectsLayer effects={[mockHitEffect]} currentTime={100} />
-    );
+    const { container } = render(<HitEffectsLayer effects={[mockHitEffect]} />);
     expect(container).toBeInTheDocument();
   });
 
@@ -72,20 +68,19 @@ describe("HitEffectsLayer Component", () => {
         ...mockHitEffect,
         id: "test-hit-3",
         position: { x: 300, y: 200 },
-        type: "damage", // Fix type
+        type: "light", // Fix type
         damage: 10,
       },
     ];
 
-    const { container } = render(
-      <HitEffectsLayer effects={effects} currentTime={100} />
-    );
+    const { container } = render(<HitEffectsLayer effects={effects} />);
     expect(container).toBeInTheDocument();
   });
 
   it("displays different effect types", () => {
     const effectTypes: HitEffect["type"][] = [
-      "damage", // Fix types
+      "light", // Fix types to match interface
+      "heavy",
       "critical",
       "block",
       "miss",
@@ -98,9 +93,7 @@ describe("HitEffectsLayer Component", () => {
         type,
       };
 
-      const { container } = render(
-        <HitEffectsLayer effects={[effect]} currentTime={100} />
-      );
+      const { container } = render(<HitEffectsLayer effects={[effect]} />);
       expect(container).toBeInTheDocument();
     });
   });
@@ -112,7 +105,7 @@ describe("HitEffectsLayer Component", () => {
       type: "critical",
     };
 
-    render(<HitEffectsLayer effects={[effectWithKorean]} currentTime={200} />);
+    render(<HitEffectsLayer effects={[effectWithKorean]} />);
   });
 
   it("manages effect lifecycle", () => {
@@ -131,10 +124,7 @@ describe("HitEffectsLayer Component", () => {
     };
 
     const { container } = render(
-      <HitEffectsLayer
-        effects={[activeEffect, expiredEffect]}
-        currentTime={2500}
-      />
+      <HitEffectsLayer effects={[activeEffect, expiredEffect]} />
     );
     expect(container).toBeInTheDocument();
   });

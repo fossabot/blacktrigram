@@ -1,15 +1,16 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
+import { useTick } from "@pixi/react";
+import type { Graphics as PixiGraphics } from "pixi.js";
 import {
   PixiContainerComponent,
   PixiGraphicsComponent,
   PixiTextComponent,
 } from "../ui/base/PixiComponents";
-import type { Graphics as PixiGraphics } from "pixi.js";
 import {
-  KOREAN_COLORS,
-  TRIGRAM_DATA,
   type PlayerState,
-  type TrigramStance,
+  KOREAN_COLORS,
+  KOREAN_FONT_FAMILY,
+  TRIGRAM_DATA,
 } from "../../types";
 
 export interface PlayerProps {
@@ -19,7 +20,6 @@ export interface PlayerProps {
     damage: number,
     position: { x: number; y: number }
   ) => void;
-  readonly onStanceChange: (stance: TrigramStance) => void;
 }
 
 export function Player({
@@ -27,17 +27,20 @@ export function Player({
   isPlayer1,
   onAttack,
 }: PlayerProps): React.ReactElement {
-  const currentTrigram = TRIGRAM_DATA[playerState.stance];
+  const [animationTime, setAnimationTime] = useState(0);
+
+  useTick(
+    useCallback((delta: number) => {
+      setAnimationTime((prev) => prev + delta);
+    }, [])
+  );
 
   const drawPlayer = useCallback(
     (g: PixiGraphics) => {
       g.clear();
 
       // Player body (Korean martial arts uniform - dobok)
-      g.setFillStyle({
-        color: KOREAN_COLORS.WHITE,
-        alpha: 0.9,
-      });
+      g.setFillStyle({ color: KOREAN_COLORS.WHITE, alpha: 0.9 });
       g.rect(-25, -90, 50, 90);
       g.fill();
 
@@ -49,61 +52,58 @@ export function Player({
       g.rect(-27, -25, 54, 10);
       g.fill();
 
-      // Stance aura
+      // Stance energy aura
       if (playerState.isAttacking) {
+        const stanceColor = TRIGRAM_DATA[playerState.stance].color;
+        const auraAlpha = Math.sin(animationTime * 0.3) * 0.4 + 0.6;
+
         g.setStrokeStyle({
-          color: currentTrigram.color,
-          width: 4,
-          alpha: 0.8,
+          color: stanceColor,
+          width: 8,
+          alpha: auraAlpha,
         });
-        g.circle(0, -45, 50);
+        g.circle(0, -45, 45 + Math.sin(animationTime * 0.5) * 5);
         g.stroke();
       }
 
       // Health indicator
       const healthPercent = playerState.health / playerState.maxHealth;
-      if (healthPercent < 0.3) {
-        g.setStrokeStyle({
-          color: KOREAN_COLORS.CRITICAL_RED,
-          width: 2,
-          alpha: 0.6,
-        });
-        g.circle(0, -45, 55);
-        g.stroke();
-      }
+      const healthColor =
+        healthPercent > 0.6
+          ? KOREAN_COLORS.Green
+          : healthPercent > 0.3
+          ? KOREAN_COLORS.Orange
+          : KOREAN_COLORS.Red;
+
+      g.setFillStyle({ color: healthColor });
+      g.rect(-25, -100, 50 * healthPercent, 5);
+      g.fill();
     },
-    [playerState, isPlayer1, currentTrigram.color]
+    [playerState, isPlayer1, animationTime]
   );
 
-  const handlePlayerClick = useCallback(() => {
-    if (!playerState.isAttacking) {
-      const technique = currentTrigram.technique;
-      onAttack(technique.damage, playerState.position);
-    }
-  }, [
-    currentTrigram.technique,
-    onAttack,
-    playerState.position,
-    playerState.isAttacking,
-  ]);
+  const trigram = TRIGRAM_DATA[playerState.stance];
 
   return (
     <PixiContainerComponent
       x={playerState.position.x}
       y={playerState.position.y}
       interactive={true}
-      onClick={handlePlayerClick}
+      onClick={() => {
+        // Execute attack
+        const damage = trigram.technique.damage;
+        onAttack(damage, playerState.position);
+      }}
     >
-      {/* Player visual */}
       <PixiGraphicsComponent draw={drawPlayer} />
 
-      {/* Player ID */}
+      {/* Player name */}
       <PixiTextComponent
-        text={playerState.playerId}
-        y={-110}
+        text={isPlayer1 ? "플레이어 1" : "플레이어 2"}
+        y={-120}
         anchor={{ x: 0.5, y: 0.5 }}
         style={{
-          fontFamily: "Arial, sans-serif",
+          fontFamily: KOREAN_FONT_FAMILY,
           fontSize: 12,
           fill: isPlayer1
             ? KOREAN_COLORS.PLAYER_1_BLUE
@@ -112,50 +112,28 @@ export function Player({
         }}
       />
 
-      {/* Current stance */}
+      {/* Current stance display */}
       <PixiTextComponent
-        text={`${currentTrigram.symbol} ${currentTrigram.korean}`}
+        text={`${trigram.korean} ${trigram.symbol}`}
         y={20}
         anchor={{ x: 0.5, y: 0.5 }}
         style={{
-          fontFamily: "Noto Sans KR, Arial, sans-serif",
+          fontFamily: KOREAN_FONT_FAMILY,
           fontSize: 14,
-          fill: currentTrigram.color,
+          fill: trigram.color,
           fontWeight: "bold",
         }}
       />
 
-      {/* Health bar */}
-      <PixiGraphicsComponent
-        y={40}
-        draw={(g: PixiGraphics) => {
-          g.clear();
-
-          const healthPercent = playerState.health / playerState.maxHealth;
-          const barWidth = 60;
-          const barHeight = 6;
-
-          // Background
-          g.setFillStyle({ color: KOREAN_COLORS.GRAY_DARK });
-          g.rect(-barWidth / 2, 0, barWidth, barHeight);
-          g.fill();
-
-          // Health fill
-          const healthColor =
-            healthPercent > 0.6
-              ? KOREAN_COLORS.Green
-              : healthPercent > 0.3
-              ? KOREAN_COLORS.Orange
-              : KOREAN_COLORS.Red;
-
-          g.setFillStyle({ color: healthColor });
-          g.rect(
-            -barWidth / 2 + 1,
-            1,
-            (barWidth - 2) * healthPercent,
-            barHeight - 2
-          );
-          g.fill();
+      {/* Health text */}
+      <PixiTextComponent
+        text={`체력: ${playerState.health}/${playerState.maxHealth}`}
+        y={35}
+        anchor={{ x: 0.5, y: 0.5 }}
+        style={{
+          fontFamily: KOREAN_FONT_FAMILY,
+          fontSize: 10,
+          fill: KOREAN_COLORS.WHITE,
         }}
       />
     </PixiContainerComponent>
