@@ -1,12 +1,12 @@
-// Main components
-export { KoreanText } from "./components/KoreanText";
-export { KoreanMartialText } from "./components/KoreanMartialText";
-export { KoreanTechniqueText } from "./components/KoreanTechniqueText";
-export { KoreanStatusText } from "./components/KoreanStatusText";
-export { KoreanTitle } from "./components/KoreanTitle";
-
-// PixiJS utilities
-export { KoreanPixiTextUtils } from "./components/KoreanPixiTextUtils";
+// Main components - import from components index
+export {
+  KoreanText,
+  KoreanTitle,
+  KoreanMartialText,
+  KoreanTechniqueText,
+  KoreanStatusText,
+  KoreanPixiTextUtils,
+} from "./components";
 
 // Utilities and helpers
 export {
@@ -14,6 +14,7 @@ export {
   validateKoreanText,
   hasKoreanText,
   isKoreanCharacter,
+  cssToPixiTextStyle,
 } from "./utils";
 
 // Hooks
@@ -38,6 +39,7 @@ export type {
   KoreanTextSize,
   MartialVariant,
   StatusKey,
+  TrigramKey,
   KoreanTextVariant,
   KoreanTextEmphasis,
   HonorLevel,
