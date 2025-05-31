@@ -87,6 +87,7 @@ describe("GameUI", () => {
       onStartMatch: vi.fn(),
       onResetMatch: vi.fn(),
       onTogglePause: vi.fn(),
+      onPlayerUpdate: vi.fn(), // Add missing prop
     };
   });
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, fireEvent } from "@testing-library/react";
 import { Player } from "./Player";
-import { type PlayerState, TRIGRAM_DATA, createPlayerState } from "../../types";
+import { type PlayerState, createPlayerState } from "../../types";
 
 // Mock @pixi/react with proper JSX component types
 vi.mock("@pixi/react", () => ({
@@ -70,10 +70,10 @@ describe("Player Component", () => {
   });
 
   it("should handle attacks", () => {
-    let capturedDamage: number | null = null;
+    let capturedPosition: { x: number; y: number } | null = null;
 
-    const handleAttack = (damage: number) => {
-      capturedDamage = damage;
+    const handleAttack = (position: { x: number; y: number }) => {
+      capturedPosition = position;
     };
 
     render(
@@ -85,7 +85,7 @@ describe("Player Component", () => {
     );
 
     // Test that component renders without errors
-    expect(capturedDamage).toBeNull(); // Initially no attacks
+    expect(capturedPosition).toBeNull(); // Initially no attacks
   });
 
   it("should render player with Korean martial arts styling", () => {
@@ -116,10 +116,7 @@ describe("Player Component", () => {
     fireEvent.click(playerContainer);
 
     // Verify attack was called with correct damage and position
-    expect(mockOnAttack).toHaveBeenCalledWith(
-      TRIGRAM_DATA["geon"].technique.damage,
-      mockPlayerState.position
-    );
+    expect(mockOnAttack).toHaveBeenCalledWith(mockPlayerState.position);
   });
 
   it("should display Korean stance information", () => {

@@ -20,6 +20,7 @@ export function GameUI({
   onStartMatch,
   onResetMatch,
   onTogglePause,
+  onPlayerUpdate, // Now properly typed
 }: GameUIProps): React.ReactElement {
   return (
     <div
@@ -54,7 +55,7 @@ export function GameUI({
           title="전투 모드"
           subtitle="Combat Mode"
           onBack={() => onGamePhaseChange("intro")}
-          currentPhase="combat"
+          currentPhase={gamePhase}
           onPhaseChange={onGamePhaseChange}
         />
 
@@ -97,7 +98,7 @@ export function GameUI({
             players={players}
             gamePhase={gamePhase}
             onGamePhaseChange={onGamePhaseChange}
-            onPlayerUpdate={() => {}} // Placeholder
+            onPlayerUpdate={onPlayerUpdate} // Pass it down properly
             onStanceChange={onStanceChange}
           />
         </Application>

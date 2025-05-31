@@ -139,6 +139,23 @@ export default function App(): React.ReactElement {
     }));
   }, []);
 
+  const handlePlayerUpdate = useCallback(
+    (playerIndex: number, updates: Partial<PlayerState>): void => {
+      setAppState((prev) => ({
+        ...prev,
+        players: [
+          playerIndex === 0
+            ? { ...prev.players[0], ...updates }
+            : prev.players[0],
+          playerIndex === 1
+            ? { ...prev.players[1], ...updates }
+            : prev.players[1],
+        ] as [PlayerState, PlayerState],
+      }));
+    },
+    []
+  );
+
   // Wrap the entire app with AudioManagerProvider
   const renderCurrentPhase = (): React.ReactElement => {
     switch (appState.gamePhase) {
@@ -169,6 +186,7 @@ export default function App(): React.ReactElement {
             onStartMatch={handleStartMatch}
             onResetMatch={handleResetMatch}
             onTogglePause={handleTogglePause}
+            onPlayerUpdate={handlePlayerUpdate} // Add this missing prop
           />
         );
 

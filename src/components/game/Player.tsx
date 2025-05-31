@@ -16,10 +16,7 @@ import {
 export interface PlayerProps {
   readonly playerState: PlayerState;
   readonly isPlayer1: boolean;
-  readonly onAttack: (
-    damage: number,
-    position: { x: number; y: number }
-  ) => void;
+  readonly onAttack: (position: { x: number; y: number }) => void; // Remove damage parameter
 }
 
 export function Player({
@@ -90,9 +87,8 @@ export function Player({
       y={playerState.position.y}
       interactive={true}
       onClick={() => {
-        // Execute attack
-        const damage = trigram.technique.damage;
-        onAttack(damage, playerState.position);
+        // Execute attack without damage calculation (handled in GameEngine)
+        onAttack(playerState.position);
       }}
     >
       <PixiGraphicsComponent draw={drawPlayer} />

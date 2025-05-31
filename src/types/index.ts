@@ -265,7 +265,7 @@ export interface HitEffect {
   readonly damage: number;
   readonly startTime: number;
   readonly duration: number;
-  readonly korean?: string;
+  readonly korean?: string; // Make properly optional
   readonly color: number;
   readonly createdAt: number;
 }
@@ -774,6 +774,10 @@ export interface GameUIProps {
   readonly onStartMatch: () => void;
   readonly onResetMatch: () => void;
   readonly onTogglePause: () => void;
+  readonly onPlayerUpdate: (
+    playerIndex: number,
+    updates: Partial<PlayerState>
+  ) => void; // Add missing prop
 }
 
 // Combat result
