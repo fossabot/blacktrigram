@@ -1,177 +1,168 @@
-import React, { useState } from "react";
-import {
-  KOREAN_COLORS,
-  KOREAN_FONT_FAMILY,
-  TRIGRAM_DATA,
-  type TrigramStance,
-} from "../../../types";
+import React, { useState, useCallback } from "react";
+import { TRIGRAM_DATA, KOREAN_COLORS, type TrigramStance, TRIGRAM_STANCES_ORDER } from "../../../types";
 
-export interface PhilosophySectionProps {
+interface PhilosophySectionProps {
+  readonly selectedStance: TrigramStance;
   readonly onNext: () => void;
   readonly onPrev: () => void;
 }
 
-export function PhilosophySection({
+export const PhilosophySection: React.FC<PhilosophySectionProps> = ({
+  selectedStance,
   onNext,
   onPrev,
-}: PhilosophySectionProps): React.ReactElement {
-  const [selectedTrigram, setSelectedTrigram] = useState<TrigramStance>("geon");
-  const trigram = TRIGRAM_DATA[selectedTrigram];
+}) => {
+  const [currentStanceIndex, setCurrentStanceIndex] = useState<number>(
+    TRIGRAM_STANCES_ORDER.indexOf(selectedStance)
+  );
+
+  const handleNext = useCallback(() => {
+    const nextIndex = (currentStanceIndex + 1) % TRIGRAM_STANCES_ORDER.length;
+    setCurrentStanceIndex(nextIndex);
+    onNext();
+  }, [currentStanceIndex, onNext]);
+
+  const handlePrev = useCallback(() => {
+    const prevIndex = currentStanceIndex === 0 
+      ? TRIGRAM_STANCES_ORDER.length - 1 
+      : currentStanceIndex - 1;
+    setCurrentStanceIndex(prevIndex);
+    onPrev();
+  }, [currentStanceIndex, onPrev]);
+
+  const currentStance = TRIGRAM_STANCES_ORDER[currentStanceIndex];
+  const trigram = currentStance ? TRIGRAM_DATA[currentStance] : TRIGRAM_DATA.geon;
 
   return (
     <div
-      className="philosophy-section"
       style={{
-        fontFamily: KOREAN_FONT_FAMILY,
-        color: KOREAN_COLORS.WHITE,
         padding: "2rem",
-        maxWidth: "900px",
-        margin: "0 auto",
+        background: "rgba(0,0,0,0.3)",
+        borderRadius: "8px",
+        border: `2px solid ${KOREAN_COLORS.GOLD}`,
+        margin: "1rem 0",
+        maxWidth: "800px",
       }}
     >
-      <h2
-        style={{
-          color: KOREAN_COLORS.GOLD,
-          textAlign: "center",
-          marginBottom: "2rem",
-        }}
-      >
-        팔괘 철학 (Trigram Philosophy)
-      </h2>
-
-      {/* Trigram Selector */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: "0.5rem",
-          marginBottom: "2rem",
-          flexWrap: "wrap",
-        }}
-      >
-        {Object.entries(TRIGRAM_DATA).map(([stance, data]) => (
-          <button
-            key={stance}
-            onClick={() => setSelectedTrigram(stance as TrigramStance)}
-            style={{
-              background:
-                selectedTrigram === stance ? data.color : "transparent",
-              color:
-                selectedTrigram === stance
-                  ? KOREAN_COLORS.BLACK
-                  : KOREAN_COLORS.WHITE,
-              border: `2px solid ${data.color}`,
-              padding: "0.5rem 1rem",
-              borderRadius: "4px",
-              cursor: "pointer",
-              fontSize: "1.2rem",
-              transition: "all 0.3s ease",
-            }}
-          >
-            {data.symbol}
-          </button>
-        ))}
-      </div>
-
-      {/* Selected Trigram Details */}
-      <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-        <div
-          style={{
-            fontSize: "4rem",
-            color: trigram.color,
-            marginBottom: "1rem",
-          }}
-        >
-          {trigram.symbol}
-        </div>
-        <h3 style={{ color: trigram.color, marginBottom: "0.5rem" }}>
-          {trigram.koreanName}
-        </h3>
-        <p style={{ fontSize: "1.1rem", marginBottom: "1rem" }}>
-          {trigram.philosophy}
-        </p>
-        <p style={{ opacity: 0.8 }}>
-          방향: {trigram.direction} • 원소: {trigram.element}
-        </p>
-      </div>
-
-      {/* Technique Details */}
-      <div
-        style={{
-          background: "rgba(255, 255, 255, 0.1)",
-          padding: "1.5rem",
-          borderRadius: "8px",
-          marginBottom: "2rem",
-        }}
-      >
-        <h4 style={{ color: KOREAN_COLORS.CYAN, marginBottom: "1rem" }}>
-          전용 기술: {trigram.technique.koreanName}
-        </h4>
-        <p style={{ marginBottom: "1rem" }}>
-          {trigram.technique.description.korean}
-        </p>
-        <p style={{ fontSize: "0.9rem", opacity: 0.8 }}>
-          {trigram.technique.description.english}
-        </p>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
-            gap: "1rem",
-            marginTop: "1rem",
-          }}
-        >
-          <div style={{ textAlign: "center" }}>
-            <div style={{ color: KOREAN_COLORS.DAMAGE_YELLOW }}>위력</div>
-            <div>{trigram.technique.damage}</div>
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ color: KOREAN_COLORS.CYAN }}>정확도</div>
-            <div>{Math.round(trigram.technique.accuracy * 100)}%</div>
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ color: KOREAN_COLORS.Purple }}>기 소모</div>
-            <div>{trigram.technique.kiCost}</div>
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ color: KOREAN_COLORS.Orange }}>사거리</div>
-            <div>{trigram.technique.range}</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
+      {/* Navigation Header */}
+      <div style={{ 
+        display: "flex", 
+        justifyContent: "space-between", 
+        alignItems: "center",
+        marginBottom: "2rem" 
+      }}>
         <button
-          onClick={onPrev}
+          onClick={handlePrev}
           style={{
-            background: "transparent",
-            color: KOREAN_COLORS.WHITE,
-            border: `2px solid ${KOREAN_COLORS.GRAY_MEDIUM}`,
             padding: "0.5rem 1rem",
-            borderRadius: "4px",
-            cursor: "pointer",
-            transition: "all 0.3s ease",
-          }}
-        >
-          ← 이전
-        </button>
-        <button
-          onClick={onNext}
-          style={{
-            background: KOREAN_COLORS.TRADITIONAL_RED,
+            background: KOREAN_COLORS.ACCENT_BLUE,
             color: KOREAN_COLORS.WHITE,
             border: "none",
-            padding: "0.5rem 1rem",
             borderRadius: "4px",
             cursor: "pointer",
-            transition: "all 0.3s ease",
+            fontSize: "0.9rem",
           }}
         >
-          수련 시작 →
+          ← 이전 (Previous)
         </button>
+
+        <h2
+          style={{
+            color: `#${trigram.color.toString(16).padStart(6, "0")}`,
+            textAlign: "center",
+            fontSize: "1.8rem",
+            margin: 0,
+          }}
+        >
+          {trigram.symbol} {trigram.koreanName}
+        </h2>
+
+        <button
+          onClick={handleNext}
+          style={{
+            padding: "0.5rem 1rem",
+            background: KOREAN_COLORS.ACCENT_BLUE,
+            color: KOREAN_COLORS.WHITE,
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "0.9rem",
+          }}
+        >
+          다음 (Next) →
+        </button>
+      </div>
+      
+      {/* Philosophy Content */}
+      <div style={{ lineHeight: "1.6", fontSize: "1rem" }}>
+        <h3 
+          style={{ 
+            color: `#${trigram.color.toString(16).padStart(6, "0")}`, 
+            marginBottom: "0.5rem" 
+          }}
+        >
+          철학 (Philosophy)
+        </h3>
+        <p style={{ marginBottom: "1rem" }}>{trigram.philosophy}</p>
+        
+        <h3 
+          style={{ 
+            color: `#${trigram.color.toString(16).padStart(6, "0")}`, 
+            marginBottom: "0.5rem" 
+          }}
+        >
+          원소 (Element)
+        </h3>
+        <p style={{ marginBottom: "1rem" }}>{trigram.element}</p>
+        
+        <h3 
+          style={{ 
+            color: `#${trigram.color.toString(16).padStart(6, "0")}`, 
+            marginBottom: "0.5rem" 
+          }}
+        >
+          방향 (Direction)
+        </h3>
+        <p style={{ marginBottom: "1rem" }}>{trigram.direction}</p>
+        
+        <h3 
+          style={{ 
+            color: `#${trigram.color.toString(16).padStart(6, "0")}`, 
+            marginBottom: "0.5rem" 
+          }}
+        >
+          기술 (Technique)
+        </h3>
+        <div style={{ 
+          background: "rgba(255,255,255,0.05)", 
+          padding: "1rem", 
+          borderRadius: "4px" 
+        }}>
+          <h4 style={{ color: KOREAN_COLORS.CYAN, marginBottom: "0.5rem" }}>
+            {trigram.technique.koreanName}
+          </h4>
+          <p style={{ fontSize: "0.9rem", marginBottom: "0.5rem" }}>
+            {trigram.technique.description.korean}
+          </p>
+          <p style={{ fontSize: "0.8rem", opacity: 0.8 }}>
+            {trigram.technique.description.english}
+          </p>
+          
+          {/* Technique Stats */}
+          <div style={{ 
+            display: "grid", 
+            gridTemplateColumns: "repeat(2, 1fr)", 
+            gap: "0.5rem",
+            marginTop: "1rem",
+            fontSize: "0.85rem"
+          }}>
+            <div>위력 (Damage): {trigram.technique.damage}</div>
+            <div>기 소모 (Ki Cost): {trigram.technique.kiCost}</div>
+            <div>체력 소모 (Stamina): {trigram.technique.staminaCost}</div>
+            <div>사거리 (Range): {trigram.technique.range}</div>
+          </div>
+        </div>
       </div>
     </div>
   );
-}
+};

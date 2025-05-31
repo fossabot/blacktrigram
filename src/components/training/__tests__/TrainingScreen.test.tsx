@@ -27,9 +27,13 @@ vi.mock("../../ui/ProgressTracker", () => ({
 
 describe("TrainingScreen", () => {
   const mockOnGamePhaseChange = vi.fn();
+  const mockOnStanceChange = vi.fn();
 
   const TrainingScreenComponent = () => (
-    <TrainingScreen onGamePhaseChange={mockOnGamePhaseChange} />
+    <TrainingScreen
+      onGamePhaseChange={mockOnGamePhaseChange}
+      onStanceChange={mockOnStanceChange}
+    />
   );
 
   beforeEach(() => {
@@ -230,12 +234,20 @@ describe("TrainingScreen", () => {
 
   it("renders without crashing", () => {
     render(
-      <TrainingScreen onGamePhaseChange={mockOnGamePhaseChange} /> // Fix: use onGamePhaseChange instead of playerState
+      <TrainingScreen
+        onGamePhaseChange={mockOnGamePhaseChange}
+        onStanceChange={mockOnStanceChange}
+      />
     );
   });
 
   it("calls onGamePhaseChange when back button is clicked", async () => {
-    render(<TrainingScreen onGamePhaseChange={mockOnGamePhaseChange} />);
+    render(
+      <TrainingScreen
+        onGamePhaseChange={mockOnGamePhaseChange}
+        onStanceChange={vi.fn()}
+      />
+    );
 
     // Assuming there's a button with test ID 'back-button'
     const backButton = screen.getByTestId("back-button");
