@@ -1,73 +1,67 @@
-import React, { useCallback } from "react";
-import type { GamePhase } from "../../../types";
-import { KOREAN_COLORS } from "../../../types";
+import React from "react";
+import { KOREAN_COLORS, type GamePhase } from "../../../types";
 
 export interface MenuSectionProps {
   readonly onGamePhaseChange: (phase: GamePhase) => void;
-  readonly width?: number;
-  readonly height?: number;
 }
 
 export function MenuSection({
   onGamePhaseChange,
 }: MenuSectionProps): React.ReactElement {
-  const handleTrainingMode = useCallback(() => {
-    onGamePhaseChange("training");
-  }, [onGamePhaseChange]);
-
-  const handleCombatMode = useCallback(() => {
-    onGamePhaseChange("combat");
-  }, [onGamePhaseChange]);
-
-  const handlePhilosophyMode = useCallback(() => {
-    onGamePhaseChange("philosophy");
-  }, [onGamePhaseChange]);
-
   return (
-    <div data-menu-section className="menu-section">
-      <div className="korean-menu-container">
-        <h2 className="korean-title" style={{ color: KOREAN_COLORS.GOLD }}>
-          흑괘 무술 도장
-        </h2>
-        <p className="korean-subtitle">Black Trigram Martial Arts</p>
+    <div className="menu-section">
+      <h2
+        className="korean-title"
+        style={{
+          color: `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
+        }}
+      >
+        흑괘 무술 도장
+      </h2>
 
-        <div className="menu-buttons">
-          <button
-            className="korean-menu-button"
-            onClick={handleTrainingMode}
-            style={{
-              backgroundColor: KOREAN_COLORS.TRADITIONAL_RED,
-              color: KOREAN_COLORS.WHITE,
-            }}
-          >
-            <span className="korean-text">수련 모드</span>
-            <span className="english-text">Training Mode</span>
-          </button>
+      <div className="menu-buttons">
+        <button
+          className="menu-button primary"
+          onClick={() => onGamePhaseChange("combat")}
+          style={{
+            backgroundColor: `#${KOREAN_COLORS.TRADITIONAL_RED.toString(
+              16
+            ).padStart(6, "0")}`,
+            color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
+          }}
+        >
+          <span className="korean-text">대전 모드</span>
+          <span className="english-text">Combat Mode</span>
+        </button>
 
-          <button
-            className="korean-menu-button"
-            onClick={handleCombatMode}
-            style={{
-              backgroundColor: KOREAN_COLORS.DOJANG_BLUE,
-              color: KOREAN_COLORS.WHITE,
-            }}
-          >
-            <span className="korean-text">대전 모드</span>
-            <span className="english-text">Combat Mode</span>
-          </button>
+        <button
+          className="menu-button secondary"
+          onClick={() => onGamePhaseChange("training")}
+          style={{
+            backgroundColor: `#${KOREAN_COLORS.DOJANG_BLUE.toString(
+              16
+            ).padStart(6, "0")}`,
+            color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
+          }}
+        >
+          <span className="korean-text">수련 모드</span>
+          <span className="english-text">Training Mode</span>
+        </button>
 
-          <button
-            className="korean-menu-button"
-            onClick={handlePhilosophyMode}
-            style={{
-              backgroundColor: KOREAN_COLORS.GOLD,
-              color: KOREAN_COLORS.BLACK,
-            }}
-          >
-            <span className="korean-text">철학 연구</span>
-            <span className="english-text">Philosophy Study</span>
-          </button>
-        </div>
+        <button
+          className="menu-button tertiary"
+          onClick={() => onGamePhaseChange("philosophy")}
+          style={{
+            backgroundColor: `#${KOREAN_COLORS.GOLD.toString(16).padStart(
+              6,
+              "0"
+            )}`,
+            color: `#${KOREAN_COLORS.BLACK.toString(16).padStart(6, "0")}`,
+          }}
+        >
+          <span className="korean-text">철학 연구</span>
+          <span className="english-text">Philosophy Study</span>
+        </button>
       </div>
     </div>
   );

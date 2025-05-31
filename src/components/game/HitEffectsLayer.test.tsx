@@ -30,7 +30,7 @@ vi.mock("@pixi/react", () => ({
   ),
 }));
 
-describe("HitEffectsLayer", () => {
+describe("HitEffectsLayer Component", () => {
   const mockHitEffect: HitEffect = {
     id: "test-hit",
     position: { x: 100, y: 100 },
@@ -43,13 +43,18 @@ describe("HitEffectsLayer", () => {
     createdAt: Date.now(),
   };
 
-  it("renders without effects", () => {
-    const { container } = render(<HitEffectsLayer effects={[]} />);
+  it("should render without errors when no effects are present", () => {
+    const effects: HitEffect[] = [];
+    const { container } = render(
+      <HitEffectsLayer effects={effects} currentTime={0} />
+    );
     expect(container).toBeInTheDocument();
   });
 
-  it("renders hit effects correctly", () => {
-    const { container } = render(<HitEffectsLayer effects={[mockHitEffect]} />);
+  it("should render hit effects correctly", () => {
+    const { container } = render(
+      <HitEffectsLayer effects={[mockHitEffect]} currentTime={100} />
+    );
     expect(container).toBeInTheDocument();
   });
 
@@ -72,7 +77,9 @@ describe("HitEffectsLayer", () => {
       },
     ];
 
-    const { container } = render(<HitEffectsLayer effects={effects} />);
+    const { container } = render(
+      <HitEffectsLayer effects={effects} currentTime={100} />
+    );
     expect(container).toBeInTheDocument();
   });
 
@@ -91,22 +98,21 @@ describe("HitEffectsLayer", () => {
         type,
       };
 
-      const { container } = render(<HitEffectsLayer effects={[effect]} />);
+      const { container } = render(
+        <HitEffectsLayer effects={[effect]} currentTime={100} />
+      );
       expect(container).toBeInTheDocument();
     });
   });
 
-  it("handles Korean text display", () => {
+  it("should display Korean text for hit effects", () => {
     const effectWithKorean: HitEffect = {
       ...mockHitEffect,
       korean: "치명타",
       type: "critical",
     };
 
-    const { container } = render(
-      <HitEffectsLayer effects={[effectWithKorean]} />
-    );
-    expect(container).toBeInTheDocument();
+    render(<HitEffectsLayer effects={[effectWithKorean]} currentTime={200} />);
   });
 
   it("manages effect lifecycle", () => {
@@ -125,7 +131,10 @@ describe("HitEffectsLayer", () => {
     };
 
     const { container } = render(
-      <HitEffectsLayer effects={[activeEffect, expiredEffect]} />
+      <HitEffectsLayer
+        effects={[activeEffect, expiredEffect]}
+        currentTime={2500}
+      />
     );
     expect(container).toBeInTheDocument();
   });

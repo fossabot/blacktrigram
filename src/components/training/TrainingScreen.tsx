@@ -1,14 +1,18 @@
-import React, { useCallback, useState } from "react";
-import { Stage, Container, Text } from "@pixi/react";
+import React, { useState, useCallback } from "react";
+import { KoreanHeader } from "../ui/KoreanHeader";
 import { TrigramWheel } from "../ui/TrigramWheel";
 import { ProgressTracker } from "../ui/ProgressTracker";
-import { KoreanHeader } from "../ui/KoreanHeader";
+import { KoreanText } from "../ui/base/KoreanText";
+import { BaseButton } from "../ui/base/BaseButton";
+import { BackgroundGrid } from "../ui/base/BackgroundGrid";
 import {
   KOREAN_COLORS,
   KOREAN_FONT_FAMILY,
   TRIGRAM_DATA,
+  TRIGRAM_STANCES_ORDER,
   type TrainingScreenProps,
   type TrigramStance,
+  type TrainingProgress,
 } from "../../types";
 
 export function TrainingScreen({
@@ -17,316 +21,260 @@ export function TrainingScreen({
   selectedStance = "geon",
   playerProgress,
 }: TrainingScreenProps): React.ReactElement {
-  const [trainingMode, setTrainingMode] = useState<
-    "forms" | "techniques" | "philosophy"
-  >("forms");
-  const [practiceCount, setPracticeCount] = useState<number>(0);
+  const [currentStance, setCurrentStance] =
+    useState<TrigramStance>(selectedStance);
+  const [progress, setProgress] = useState<
+    Record<TrigramStance, TrainingProgress>
+  >(() => {
+    const initialProgress: Record<TrigramStance, TrainingProgress> = {
+      geon: { practiceCount: 0, mastery: 0 },
+      tae: { practiceCount: 0, mastery: 0 },
+      li: { practiceCount: 0, mastery: 0 },
+      jin: { practiceCount: 0, mastery: 0 },
+      son: { practiceCount: 0, mastery: 0 },
+      gam: { practiceCount: 0, mastery: 0 },
+      gan: { practiceCount: 0, mastery: 0 },
+      gon: { practiceCount: 0, mastery: 0 },
+    };
 
-  const handleStanceSelect = useCallback(
-    (stance: TrigramStance): void => {
+    // Merge with player progress if provided
+    if (playerProgress) {
+      TRIGRAM_STANCES_ORDER.forEach((stance) => {
+        if (playerProgress[stance]) {
+          initialProgress[stance] = playerProgress[stance];
+        }
+      });
+    }
+
+    return initialProgress;
+  });
+
+  const handleStanceChange = useCallback(
+    (stance: TrigramStance) => {
+      setCurrentStance(stance);
       onStanceChange(stance);
-      setPracticeCount((prev) => prev + 1);
     },
     [onStanceChange]
   );
 
-  const handleTrainingModeChange = useCallback(
-    (mode: "forms" | "techniques" | "philosophy"): void => {
-      setTrainingMode(mode);
-    },
-    []
-  );
+  const handlePractice = useCallback(() => {
+    setProgress((prev) => ({
+      ...prev,
+      [currentStance]: {
+        practiceCount: prev[currentStance].practiceCount + 1,
+        mastery: Math.min(100, prev[currentStance].mastery + 2),
+      },
+    }));
+  }, [currentStance]);
 
-  const selectedTrigramData = TRIGRAM_DATA[selectedStance];
-  const currentProgress = playerProgress?.[selectedStance] || {
-    practiceCount: 0,
-    mastery: 0,
-  };
+  const currentTrigramData = TRIGRAM_DATA[currentStance];
 
   return (
     <div
       style={{
         width: "100%",
         height: "100vh",
-        background: `linear-gradient(135deg, ${KOREAN_COLORS.DARK_BLUE}, ${KOREAN_COLORS.BLACK})`,
+        background: `linear-gradient(135deg, #${KOREAN_COLORS.DARK_BLUE.toString(
+          16
+        ).padStart(6, "0")}, #${KOREAN_COLORS.BLACK.toString(16).padStart(
+          6,
+          "0"
+        )})`,
+        fontFamily: KOREAN_FONT_FAMILY,
+        color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
         display: "flex",
         flexDirection: "column",
-        color: KOREAN_COLORS.WHITE,
-        fontFamily: KOREAN_FONT_FAMILY,
+        padding: "2rem",
       }}
     >
       {/* Header */}
       <KoreanHeader
-        title="팔괘 수련 도장"
-        subtitle="Trigram Training Dojang"
-        currentRound={practiceCount}
-        timeRemaining={0}
+        title="수련장"
+        subtitle="Training Ground"
+        onBack={() => onGamePhaseChange("intro")}
+        currentPhase="training"
+        onPhaseChange={onGamePhaseChange}
       />
 
-      {/* Main Training Area */}
-      <div style={{ display: "flex", flex: 1 }}>
-        {/* Left Panel - Training Controls */}
-        <div
-          style={{
-            width: "300px",
-            padding: "1rem",
-            background: "rgba(0,0,0,0.3)",
-            borderRight: `2px solid ${KOREAN_COLORS.GOLD}`,
-          }}
-        >
-          <h3
-            style={{
-              color: KOREAN_COLORS.GOLD,
-              marginBottom: "1rem",
-              textAlign: "center",
-            }}
-          >
-            수련 모드 (Training Mode)
-          </h3>
-
-          {/* Training Mode Selector */}
-          <div style={{ marginBottom: "2rem" }}>
-            {[
-              {
-                mode: "forms" as const,
-                korean: "형 연습",
-                english: "Forms Practice",
-              },
-              {
-                mode: "techniques" as const,
-                korean: "기술 훈련",
-                english: "Technique Training",
-              },
-              {
-                mode: "philosophy" as const,
-                korean: "철학 명상",
-                english: "Philosophy Meditation",
-              },
-            ].map(({ mode, korean, english }) => (
-              <button
-                key={mode}
-                onClick={() => handleTrainingModeChange(mode)}
-                style={{
-                  display: "block",
-                  width: "100%",
-                  padding: "0.75rem",
-                  margin: "0.5rem 0",
-                  background:
-                    trainingMode === mode
-                      ? KOREAN_COLORS.GOLD
-                      : "rgba(255,255,255,0.1)",
-                  color:
-                    trainingMode === mode
-                      ? KOREAN_COLORS.BLACK
-                      : KOREAN_COLORS.WHITE,
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontSize: "0.9rem",
-                }}
-              >
-                {korean}
-                <br />
-                <small>{english}</small>
-              </button>
-            ))}
-          </div>
-
-          {/* Current Stance Info */}
-          <div
-            style={{
-              marginBottom: "2rem",
-              padding: "1rem",
-              background: "rgba(255,255,255,0.05)",
-              borderRadius: "8px",
-            }}
-          >
-            <h4 style={{ color: KOREAN_COLORS.CYAN, marginBottom: "0.5rem" }}>
-              현재 자세 (Current Stance)
-            </h4>
-            <div style={{ textAlign: "center" }}>
-              <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>
-                {selectedTrigramData.symbol}
-              </div>
-              <div
-                style={{
-                  fontSize: "1.1rem",
-                  fontWeight: "bold",
-                  marginBottom: "0.25rem",
-                }}
-              >
-                {selectedTrigramData.koreanName}
-              </div>
-              <div style={{ fontSize: "0.9rem", opacity: 0.8 }}>
-                {selectedTrigramData.englishName}
-              </div>
-            </div>
-          </div>
-
-          {/* Progress Tracking */}
-          <ProgressTracker
-            label="숙련도 (Mastery)"
-            current={currentProgress.mastery}
-            maximum={100}
-            currentStance={selectedStance}
+      <div style={{ display: "flex", flex: 1, gap: "2rem", marginTop: "2rem" }}>
+        {/* Left Panel - Stance Selection */}
+        <div style={{ flex: "0 0 400px" }}>
+          <KoreanText
+            text="팔괘 선택 (Select Trigram)"
+            size="large"
+            color={`#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`}
+            style={{ marginBottom: "1rem" }}
           />
-
-          <ProgressTracker
-            label="연습 횟수 (Practice Count)"
-            current={currentProgress.practiceCount + practiceCount}
-            maximum={1000}
-            currentStance={selectedStance}
-          />
-
-          {/* Navigation */}
-          <div style={{ marginTop: "2rem" }}>
-            <button
-              onClick={() => onGamePhaseChange("combat")}
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                background: KOREAN_COLORS.TRADITIONAL_RED,
-                color: KOREAN_COLORS.WHITE,
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontSize: "1rem",
-                marginBottom: "0.5rem",
-              }}
-            >
-              실전 모드 (Combat Mode)
-            </button>
-            <button
-              onClick={() => onGamePhaseChange("intro")}
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                background: KOREAN_COLORS.GRAY_MEDIUM,
-                color: KOREAN_COLORS.WHITE,
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-                fontSize: "1rem",
-              }}
-            >
-              메인 메뉴 (Main Menu)
-            </button>
-          </div>
-        </div>
-
-        {/* Center - PixiJS Training Visualization */}
-        <div style={{ flex: 1, position: "relative" }}>
-          <Stage
-            width={800}
-            height={600}
-            options={{
-              backgroundColor: parseInt(
-                KOREAN_COLORS.DARK_BLUE.replace("#", ""),
-                16
-              ),
-              antialias: true,
-            }}
-          >
-            <Container>
-              {/* Training visualization would go here */}
-              <Text
-                text={`${selectedTrigramData.technique.koreanName} 연습`}
-                anchor={{ x: 0.5, y: 0.5 }}
-                x={400}
-                y={300}
-                style={{
-                  fontFamily: KOREAN_FONT_FAMILY,
-                  fontSize: 24,
-                  fill: parseInt(KOREAN_COLORS.GOLD.replace("#", ""), 16),
-                  fontWeight: "bold",
-                }}
-              />
-            </Container>
-          </Stage>
-
-          {/* Training Content Overlay */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: "2rem",
-              left: "50%",
-              transform: "translateX(-50%)",
-              background: "rgba(0,0,0,0.8)",
-              padding: "1rem",
-              borderRadius: "8px",
-              textAlign: "center",
-              minWidth: "400px",
-            }}
-          >
-            <h4 style={{ color: KOREAN_COLORS.GOLD, marginBottom: "0.5rem" }}>
-              {selectedTrigramData.technique.koreanName}
-            </h4>
-            <p style={{ fontSize: "0.9rem", marginBottom: "0.5rem" }}>
-              {selectedTrigramData.technique.description.korean}
-            </p>
-            <p style={{ fontSize: "0.8rem", opacity: 0.8 }}>
-              {selectedTrigramData.technique.description.english}
-            </p>
-          </div>
-        </div>
-
-        {/* Right Panel - Trigram Wheel */}
-        <div
-          style={{
-            width: "300px",
-            padding: "1rem",
-            background: "rgba(0,0,0,0.3)",
-            borderLeft: `2px solid ${KOREAN_COLORS.GOLD}`,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
-          <h3
-            style={{
-              color: KOREAN_COLORS.GOLD,
-              marginBottom: "1rem",
-              textAlign: "center",
-            }}
-          >
-            팔괘 선택 (Trigram Selection)
-          </h3>
 
           <TrigramWheel
-            selectedStance={selectedStance}
-            onStanceChange={handleStanceSelect}
-            radius={120}
-            isEnabled={true}
+            selectedStance={currentStance}
+            onStanceChange={handleStanceChange}
             playerKi={100}
             playerMaxKi={100}
+            radius={120}
           />
 
-          {/* Technique Details */}
-          <div style={{ marginTop: "2rem", width: "100%" }}>
-            <h4 style={{ color: KOREAN_COLORS.CYAN, marginBottom: "1rem" }}>
-              기술 정보 (Technique Info)
-            </h4>
-            <div style={{ fontSize: "0.9rem", lineHeight: "1.6" }}>
-              <div style={{ marginBottom: "0.5rem" }}>
-                <strong>위력:</strong> {selectedTrigramData.technique.damage}
-              </div>
-              <div style={{ marginBottom: "0.5rem" }}>
-                <strong>기 소모:</strong> {selectedTrigramData.technique.kiCost}
-              </div>
-              <div style={{ marginBottom: "0.5rem" }}>
-                <strong>체력 소모:</strong>{" "}
-                {selectedTrigramData.technique.staminaCost}
-              </div>
-              <div style={{ marginBottom: "0.5rem" }}>
-                <strong>사거리:</strong> {selectedTrigramData.technique.range}
-              </div>
-              <div style={{ marginBottom: "0.5rem" }}>
-                <strong>정확도:</strong>{" "}
-                {Math.round(selectedTrigramData.technique.accuracy * 100)}%
-              </div>
-            </div>
+          {/* Progress Trackers */}
+          <div style={{ marginTop: "2rem" }}>
+            <ProgressTracker
+              label="연습 횟수 (Practice Count)"
+              current={progress[currentStance].practiceCount}
+              maximum={50}
+            />
+            <ProgressTracker
+              label="숙련도 (Mastery)"
+              current={progress[currentStance].mastery}
+              maximum={100}
+              currentStance={currentStance}
+            />
           </div>
         </div>
+
+        {/* Center Panel - Technique Display */}
+        <div style={{ flex: 1, textAlign: "center" }}>
+          {/* Trigram Symbol Display */}
+          <div
+            style={{
+              fontSize: "4rem",
+              color: `#${currentTrigramData.color
+                .toString(16)
+                .padStart(6, "0")}`,
+              marginBottom: "1rem",
+            }}
+          >
+            {currentTrigramData.symbol}
+          </div>
+
+          <div style={{ marginTop: "2rem" }}>
+            <KoreanText
+              text={currentTrigramData.korean}
+              englishText={currentTrigramData.english}
+              size="xlarge"
+              showBoth={true}
+              color={`#${currentTrigramData.color
+                .toString(16)
+                .padStart(6, "0")}`}
+              style={{ marginBottom: "1rem" }}
+            />
+
+            <KoreanText
+              text={currentTrigramData.technique.koreanName}
+              englishText={currentTrigramData.technique.englishName}
+              size="large"
+              showBoth={true}
+              style={{ marginBottom: "2rem" }}
+            />
+
+            <div style={{ maxWidth: "500px", margin: "0 auto" }}>
+              <KoreanText
+                text={currentTrigramData.technique.description.korean}
+                size="medium"
+                style={{ marginBottom: "1rem", lineHeight: "1.6" }}
+              />
+              <KoreanText
+                text={currentTrigramData.technique.description.english}
+                size="medium"
+                style={{ fontStyle: "italic", opacity: 0.8, lineHeight: "1.6" }}
+              />
+            </div>
+          </div>
+
+          {/* Practice Button */}
+          <div style={{ marginTop: "3rem" }}>
+            <BaseButton
+              onClick={handlePractice}
+              variant="primary"
+              size="large"
+              style={{ padding: "1rem 2rem", fontSize: "1.2rem" }}
+            >
+              <KoreanText
+                text="연습하기"
+                englishText="Practice"
+                showBoth={true}
+              />
+            </BaseButton>
+          </div>
+        </div>
+
+        {/* Right Panel - All Stances Overview */}
+        <div style={{ flex: "0 0 300px" }}>
+          <KoreanText
+            text="전체 진도 (Overall Progress)"
+            size="large"
+            color={`#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`}
+            style={{ marginBottom: "1rem" }}
+          />
+
+          <div style={{ maxHeight: "600px", overflowY: "auto" }}>
+            {TRIGRAM_STANCES_ORDER.map((stance) => {
+              const data = TRIGRAM_DATA[stance];
+              const stanceProgress = progress[stance];
+              const isSelected = stance === currentStance;
+
+              return (
+                <div
+                  key={stance}
+                  onClick={() => handleStanceChange(stance)}
+                  style={{
+                    padding: "1rem",
+                    marginBottom: "0.5rem",
+                    background: isSelected
+                      ? `#${data.color.toString(16).padStart(6, "0")}33`
+                      : "rgba(255,255,255,0.05)",
+                    border: isSelected
+                      ? `2px solid #${data.color.toString(16).padStart(6, "0")}`
+                      : "1px solid rgba(255,255,255,0.1)",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    <span style={{ fontSize: "1.5rem", marginRight: "0.5rem" }}>
+                      {data.symbol}
+                    </span>
+                    <KoreanText
+                      text={data.korean}
+                      size="medium"
+                      color={`#${data.color.toString(16).padStart(6, "0")}`}
+                    />
+                  </div>
+                  <div style={{ fontSize: "0.8rem", opacity: 0.8 }}>
+                    연습: {stanceProgress.practiceCount}/50 | 숙련도:{" "}
+                    {stanceProgress.mastery}%
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Background Grid */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          zIndex: -1,
+        }}
+      >
+        <BackgroundGrid
+          width={window.innerWidth}
+          height={window.innerHeight}
+          gridSize={60}
+          color={KOREAN_COLORS.ACCENT_BLUE}
+          alpha={0.1}
+          animated={true}
+        />
       </div>
     </div>
   );

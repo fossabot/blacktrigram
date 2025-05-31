@@ -1,89 +1,115 @@
 import React from "react";
-import { KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../types";
+import { KOREAN_COLORS, type GamePhase } from "../../types";
 
 export interface KoreanHeaderProps {
-  readonly title: string;
+  readonly currentPhase: GamePhase;
+  readonly onPhaseChange: (phase: GamePhase) => void;
+  readonly gameTime?: number;
+  readonly playerNames?: readonly [string, string];
+  readonly title?: string;
   readonly subtitle?: string;
-  readonly currentRound?: number;
-  readonly timeRemaining?: number;
+  readonly showBackButton?: boolean;
+  readonly onBack?: () => void;
 }
 
 export function KoreanHeader({
+  currentPhase,
+  onPhaseChange,
+  gameTime = 0,
+  playerNames = ["플레이어 1", "플레이어 2"],
   title,
   subtitle,
-  currentRound,
-  timeRemaining,
+  showBackButton = false,
+  onBack,
 }: KoreanHeaderProps): React.ReactElement {
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
   return (
     <header
+      className="korean-header"
       style={{
-        background: `linear-gradient(90deg, ${KOREAN_COLORS.BLACK}, ${KOREAN_COLORS.DARK_BLUE})`,
+        background:
+          "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f172a 100%)",
+        borderBottom: "2px solid #ffd700",
         padding: "1rem 2rem",
-        borderBottom: `2px solid ${KOREAN_COLORS.GOLD}`,
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        fontFamily: KOREAN_FONT_FAMILY,
+        color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
+        fontFamily: "Noto Sans KR, Arial, sans-serif",
+        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)",
       }}
     >
-      <div>
-        <h1
+      {showBackButton && onBack && (
+        <button
+          onClick={onBack}
           style={{
-            color: KOREAN_COLORS.GOLD,
-            fontSize: "1.8rem",
-            margin: 0,
-            textShadow: "2px 2px 4px rgba(0,0,0,0.8)",
+            color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
+            background: "transparent",
+            border: "none",
+            fontSize: "1.5rem",
+            cursor: "pointer",
+            padding: "0.5rem",
           }}
         >
-          {title}
-        </h1>
-        {subtitle && (
-          <p
-            style={{
-              color: KOREAN_COLORS.WHITE,
-              fontSize: "1rem",
-              margin: "0.25rem 0 0 0",
-              opacity: 0.9,
-            }}
-          >
-            {subtitle}
-          </p>
-        )}
-      </div>
+          ← 뒤로
+        </button>
+      )}
 
-      <div style={{ textAlign: "right" }}>
-        {currentRound !== undefined && (
-          <div
-            style={{
-              color: KOREAN_COLORS.CYAN,
-              fontSize: "1.2rem",
-              fontWeight: "bold",
-            }}
-          >
-            라운드 {currentRound}
-          </div>
-        )}
-        {timeRemaining !== undefined && (
-          <div
-            style={{
-              color:
-                timeRemaining <= 10
-                  ? KOREAN_COLORS.CRITICAL_RED
-                  : KOREAN_COLORS.WHITE,
-              fontSize: "1.5rem",
-              fontWeight: "bold",
-              fontFamily: "monospace",
-            }}
-          >
-            {formatTime(timeRemaining)}
-          </div>
-        )}
+      <nav
+        style={{
+          display: "flex",
+          gap: "2rem",
+          alignItems: "center",
+        }}
+      >
+        <button
+          onClick={() => onPhaseChange("intro")}
+          style={{
+            background:
+              currentPhase === "intro"
+                ? `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`
+                : "transparent",
+            color: `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
+            border: "none",
+            padding: "0.5rem 1rem",
+            borderRadius: "4px",
+            cursor: "pointer",
+            fontSize: "1rem",
+            fontWeight: "bold",
+            transition: "all 0.3s ease",
+          }}
+        >
+          {title || "흑괘 무술 (Black Trigram)"}
+        </button>
+      </nav>
+
+      {subtitle && (
+        <div
+          style={{
+            color: `#${KOREAN_COLORS.CYAN.toString(16).padStart(6, "0")}`,
+            fontSize: "0.9rem",
+            fontStyle: "italic",
+            textAlign: "center",
+            flex: 1,
+          }}
+        >
+          {subtitle}
+        </div>
+      )}
+
+      <div
+        style={{
+          color: `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
+          fontSize: "0.9rem",
+          textAlign: "right",
+        }}
+      >
+        <div>
+          게임 시간: {Math.floor(gameTime / 60)}:
+          {(gameTime % 60).toString().padStart(2, "0")}
+        </div>
+        <div>
+          {playerNames[0]} vs {playerNames[1]}
+        </div>
       </div>
     </header>
   );

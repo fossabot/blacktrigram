@@ -14,107 +14,85 @@ import type {
 } from "pixi.js";
 import type { ReactNode } from "react";
 
-// Declare module for @pixi/react with correct v8 exports
+// Type definitions for @pixi/react v8 compatibility
 declare module "@pixi/react" {
-  import * as PIXI from "pixi.js";
-  import { FederatedPointerEvent } from "pixi.js";
+  import type { ComponentProps } from "react";
+  import type * as PIXI from "pixi.js";
 
-  // Component prop interfaces
-  export interface BaseProps {
-    x?: number;
-    y?: number;
-    width?: number;
-    height?: number;
-    scale?: number | { x: number; y: number };
-    rotation?: number;
-    skew?: { x: number; y: number };
-    pivot?: { x: number; y: number };
-    anchor?: { x: number; y: number } | number;
-    alpha?: number;
-    visible?: boolean;
-    interactive?: boolean;
-    cursor?: string;
-    "data-testid"?: string;
-    // Remove buttonMode - deprecated in PixiJS v8
-  }
-
-  export interface ContainerProps extends BaseProps {
-    children?: React.ReactNode;
-    // Fix: Make event handlers properly optional
-    onPointerDown?: (event: FederatedPointerEvent) => void;
-    onPointerUp?: (event: FederatedPointerEvent) => void;
-    onPointerMove?: (event: FederatedPointerEvent) => void;
-    onPointerEnter?: (event: FederatedPointerEvent) => void;
-    onPointerLeave?: (event: FederatedPointerEvent) => void;
-    onClick?: (event: FederatedPointerEvent) => void;
-  }
-
-  export interface GraphicsProps extends BaseProps {
-    draw: (graphics: PIXI.Graphics) => void;
-    // Event handlers
-    onPointerDown?: (event: FederatedPointerEvent) => void;
-    onPointerUp?: (event: FederatedPointerEvent) => void;
-    onPointerMove?: (event: FederatedPointerEvent) => void;
-    onPointerEnter?: (event: FederatedPointerEvent) => void;
-    onPointerLeave?: (event: FederatedPointerEvent) => void;
-    onClick?: (event: FederatedPointerEvent) => void;
-  }
-
-  export interface TextProps extends BaseProps {
-    text: string;
-    style?: Partial<TextStyle> | TextStyle;
-    // Event handlers
-    onPointerDown?: (event: FederatedPointerEvent) => void;
-    onPointerUp?: (event: FederatedPointerEvent) => void;
-    onPointerMove?: (event: FederatedPointerEvent) => void;
-    onPointerEnter?: (event: FederatedPointerEvent) => void;
-    onPointerLeave?: (event: FederatedPointerEvent) => void;
-    onClick?: (event: FederatedPointerEvent) => void;
-  }
-
-  export interface StageProps {
-    width?: number;
-    height?: number;
-    options?: PIXI.IRendererOptionsAuto;
-    children?: React.ReactNode;
-    onMount?: (app: PIXI.Application) => void;
-    [key: string]: any;
-  }
-
-  export interface SpriteProps extends BaseProps {
-    texture?: PIXI.Texture;
-    image?: string;
-    // Event handlers
-    onPointerDown?: (event: FederatedPointerEvent) => void;
-    onPointerUp?: (event: FederatedPointerEvent) => void;
-    onPointerMove?: (event: FederatedPointerEvent) => void;
-    onPointerEnter?: (event: FederatedPointerEvent) => void;
-    onPointerLeave?: (event: FederatedPointerEvent) => void;
-    onClick?: (event: FederatedPointerEvent) => void;
-  }
-
-  // Component exports - these are the actual component functions
-  export const Stage: React.FC<StageProps>;
-  export const Container: React.FC<ContainerProps>;
-  export const Graphics: React.FC<GraphicsProps>;
-  export const Text: React.FC<TextProps>;
-  export const Sprite: React.FC<SpriteProps>;
-
-  // Hook exports - use the correct hook name
+  // Core exports
+  export function extend(components: Record<string, any>): void;
+  export function useExtend(components: Record<string, any>): void;
+  export function useApplication(): { app: PIXI.Application };
   export function useTick(
     callback: (delta: number) => void,
-    enabled?: boolean
+    enabled?: boolean | { enabled?: boolean }
   ): void;
-  export function useApp(): PIXI.Application; // Fix: useApp instead of useApplication
-  export function extend(components: Record<string, any>): void;
 
-  // Additional utilities
-  export const PixiComponent: any;
+  // Application component
+  export interface ApplicationProps {
+    children?: React.ReactNode;
+    width?: number;
+    height?: number;
+    backgroundColor?: number;
+    antialias?: boolean;
+    autoStart?: boolean;
+    resizeTo?: HTMLElement | React.RefObject<HTMLElement> | Window;
+    defaultTextStyle?: Partial<PIXI.TextStyle>;
+    extensions?: any[];
+    onInit?: (app: PIXI.Application) => void;
+  }
+
+  export const Application: React.FC<ApplicationProps>;
+
+  // Pixi component props
+  export interface PixiReactElementProps<T> extends ComponentProps<any> {
+    ref?: React.Ref<T>;
+  }
+
+  // Built-in element types
+  export interface PixiElements {
+    pixiContainer: PixiReactElementProps<PIXI.Container> &
+      Partial<PIXI.Container> & {
+        interactive?: boolean;
+        onClick?: () => void;
+        onPointerDown?: () => void;
+        onPointerUp?: () => void;
+        onPointerMove?: () => void;
+        onPointerEnter?: () => void;
+        onPointerLeave?: () => void;
+      };
+    pixiGraphics: PixiReactElementProps<PIXI.Graphics> &
+      Partial<PIXI.Graphics> & {
+        draw?: (graphics: PIXI.Graphics) => void;
+        interactive?: boolean;
+        onClick?: () => void;
+        onPointerDown?: () => void;
+      };
+    pixiText: PixiReactElementProps<PIXI.Text> &
+      Partial<PIXI.Text> & {
+        text: string;
+        style?: Partial<PIXI.TextStyle>;
+        anchor?: { x: number; y: number } | number;
+      };
+    pixiSprite: PixiReactElementProps<PIXI.Sprite> &
+      Partial<PIXI.Sprite> & {
+        texture?: PIXI.Texture;
+        anchor?: { x: number; y: number } | number;
+      };
+  }
 }
 
-// Ensure proper module resolution
-declare module "react-reconciler/constants" {
-  export * from "react-reconciler/constants.js";
+// Extend JSX namespace
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      pixiContainer: import("@pixi/react").PixiElements["pixiContainer"];
+      pixiGraphics: import("@pixi/react").PixiElements["pixiGraphics"];
+      pixiText: import("@pixi/react").PixiElements["pixiText"];
+      pixiSprite: import("@pixi/react").PixiElements["pixiSprite"];
+    }
+  }
 }
 
+export type { PixiReactElementProps } from "@pixi/react";
 export {};

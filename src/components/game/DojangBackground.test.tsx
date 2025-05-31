@@ -1,15 +1,19 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { Stage } from "@pixi/react";
 import { DojangBackground } from "./DojangBackground";
+
+// Mock the missing Stage component
+const MockStage = ({ children }: { children: React.ReactNode }) => (
+  <div data-testid="pixi-stage">{children}</div>
+);
 
 describe("DojangBackground", () => {
   it("should render without crashing", () => {
     expect(() => {
       render(
-        <Stage>
+        <MockStage>
           <DojangBackground width={800} height={600} />
-        </Stage>
+        </MockStage>
       );
     }).not.toThrow();
   });
@@ -24,9 +28,9 @@ describe("DojangBackground", () => {
     testDimensions.forEach(({ width, height }) => {
       expect(() => {
         render(
-          <Stage>
+          <MockStage>
             <DojangBackground width={width} height={height} />
-          </Stage>
+          </MockStage>
         );
       }).not.toThrow();
     });
@@ -38,9 +42,9 @@ describe("DojangBackground", () => {
 
     expect(() => {
       render(
-        <Stage>
+        <MockStage>
           <DojangBackground width={customWidth} height={customHeight} />
-        </Stage>
+        </MockStage>
       );
     }).not.toThrow();
   });
@@ -49,9 +53,9 @@ describe("DojangBackground", () => {
     for (let i = 0; i < 3; i++) {
       expect(() => {
         render(
-          <Stage>
+          <MockStage>
             <DojangBackground width={800} height={600} />
-          </Stage>
+          </MockStage>
         );
       }).not.toThrow();
     }

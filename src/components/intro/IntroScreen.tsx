@@ -2,13 +2,7 @@ import React, { useState, useCallback } from "react";
 import { MenuSection } from "./components/MenuSection";
 import { ControlsSection } from "./components/ControlsSection";
 import { PhilosophySection } from "./components/PhilosophySection";
-import {
-  KOREAN_COLORS,
-  KOREAN_FONT_FAMILY,
-  TRIGRAM_STANCES_ORDER,
-  type GamePhase,
-  type TrigramStance,
-} from "../../types";
+import { KOREAN_COLORS, KOREAN_FONT_FAMILY, type GamePhase } from "../../types";
 
 interface IntroScreenProps {
   readonly onGamePhaseChange: (phase: GamePhase) => void;
@@ -17,27 +11,7 @@ interface IntroScreenProps {
 export function IntroScreen({
   onGamePhaseChange,
 }: IntroScreenProps): React.ReactElement {
-  const [selectedStance, setSelectedStance] = useState<TrigramStance>("geon");
   const [currentSection, setCurrentSection] = useState<string>("menu");
-
-  const handleNext = useCallback(() => {
-    const currentIndex = TRIGRAM_STANCES_ORDER.indexOf(selectedStance);
-    const nextIndex = (currentIndex + 1) % TRIGRAM_STANCES_ORDER.length;
-    const nextStance = TRIGRAM_STANCES_ORDER[nextIndex];
-    if (nextStance) {
-      setSelectedStance(nextStance);
-    }
-  }, [selectedStance]);
-
-  const handlePrev = useCallback(() => {
-    const currentIndex = TRIGRAM_STANCES_ORDER.indexOf(selectedStance);
-    const prevIndex =
-      currentIndex === 0 ? TRIGRAM_STANCES_ORDER.length - 1 : currentIndex - 1;
-    const prevStance = TRIGRAM_STANCES_ORDER[prevIndex];
-    if (prevStance) {
-      setSelectedStance(prevStance);
-    }
-  }, [selectedStance]);
 
   const handleSectionChange = useCallback((section: string) => {
     setCurrentSection(section);
@@ -45,15 +19,21 @@ export function IntroScreen({
 
   return (
     <div
+      className="intro-screen"
       style={{
         width: "100%",
         height: "100vh",
-        background: `linear-gradient(135deg, ${KOREAN_COLORS.DARK_BLUE}, ${KOREAN_COLORS.BLACK})`,
+        background: `linear-gradient(135deg, #${KOREAN_COLORS.DARK_BLUE.toString(
+          16
+        ).padStart(6, "0")}, #${KOREAN_COLORS.BLACK.toString(16).padStart(
+          6,
+          "0"
+        )})`,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        color: KOREAN_COLORS.WHITE,
+        color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
         fontFamily: KOREAN_FONT_FAMILY,
         overflow: "hidden",
       }}
@@ -64,7 +44,7 @@ export function IntroScreen({
           style={{
             fontSize: "3rem",
             margin: "0 0 0.5rem 0",
-            color: KOREAN_COLORS.GOLD,
+            color: `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
             textShadow: "2px 2px 4px rgba(0,0,0,0.8)",
           }}
         >
@@ -74,7 +54,7 @@ export function IntroScreen({
           style={{
             fontSize: "1.5rem",
             margin: 0,
-            color: KOREAN_COLORS.CYAN,
+            color: `#${KOREAN_COLORS.CYAN.toString(16).padStart(6, "0")}`,
             opacity: 0.9,
           }}
         >
@@ -104,12 +84,12 @@ export function IntroScreen({
               padding: "0.75rem 1.5rem",
               background:
                 currentSection === key
-                  ? KOREAN_COLORS.GOLD
+                  ? `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`
                   : "rgba(255,255,255,0.1)",
               color:
                 currentSection === key
-                  ? KOREAN_COLORS.BLACK
-                  : KOREAN_COLORS.WHITE,
+                  ? `#${KOREAN_COLORS.BLACK.toString(16).padStart(6, "0")}`
+                  : `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
               border: "none",
               borderRadius: "8px",
               cursor: "pointer",
@@ -138,13 +118,7 @@ export function IntroScreen({
 
         {currentSection === "controls" && <ControlsSection />}
 
-        {currentSection === "philosophy" && (
-          <PhilosophySection
-            selectedStance={selectedStance}
-            onNext={handleNext}
-            onPrev={handlePrev}
-          />
-        )}
+        {currentSection === "philosophy" && <PhilosophySection />}
       </div>
     </div>
   );

@@ -139,39 +139,44 @@ export default function App(): React.ReactElement {
     }));
   }, []);
 
-  // Render appropriate screen based on game phase
-  switch (appState.gamePhase) {
-    case "intro":
-      return <IntroScreen onGamePhaseChange={handleGamePhaseChange} />;
+  // Wrap the entire app with AudioManagerProvider
+  const renderCurrentPhase = (): React.ReactElement => {
+    switch (appState.gamePhase) {
+      case "intro":
+        return <IntroScreen onGamePhaseChange={handleGamePhaseChange} />;
 
-    case "training":
-      return (
-        <TrainingScreen
-          onGamePhaseChange={handleGamePhaseChange}
-          onStanceChange={handleTrainingStanceChange}
-          selectedStance={appState.players[0].stance}
-        />
-      );
+      case "training":
+        return (
+          <TrainingScreen
+            onGamePhaseChange={handleGamePhaseChange}
+            onStanceChange={handleTrainingStanceChange}
+            selectedStance={appState.players[0].stance}
+          />
+        );
 
-    case "combat":
-    case "philosophy":
-      return (
-        <GameUI
-          players={appState.players}
-          gamePhase={appState.gamePhase}
-          onGamePhaseChange={handleGamePhaseChange}
-          gameTime={appState.gameTime}
-          currentRound={appState.currentRound}
-          timeRemaining={appState.timeRemaining}
-          onStanceChange={handleStanceChange}
-          combatLog={appState.combatLog}
-          onStartMatch={handleStartMatch}
-          onResetMatch={handleResetMatch}
-          onTogglePause={handleTogglePause}
-        />
-      );
+      case "combat":
+      case "philosophy":
+        return (
+          <GameUI
+            players={appState.players}
+            gamePhase={appState.gamePhase}
+            onGamePhaseChange={handleGamePhaseChange}
+            gameTime={appState.gameTime}
+            currentRound={appState.currentRound}
+            timeRemaining={appState.timeRemaining}
+            onStanceChange={handleStanceChange}
+            combatLog={appState.combatLog}
+            onStartMatch={handleStartMatch}
+            onResetMatch={handleResetMatch}
+            onTogglePause={handleTogglePause}
+          />
+        );
 
-    default:
-      return <IntroScreen onGamePhaseChange={handleGamePhaseChange} />;
-  }
+      default:
+        return <IntroScreen onGamePhaseChange={handleGamePhaseChange} />;
+    }
+  };
+
+  // Remove AudioManagerProvider wrapper for now
+  return renderCurrentPhase();
 }

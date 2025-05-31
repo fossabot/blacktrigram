@@ -1,49 +1,62 @@
-// Centralized exports for all base UI components
+// Base UI component exports for Korean martial arts game
 
-// Base UI Components - Korean Martial Arts Theme
+import { KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../../types";
+
 export {
-  Container,
-  Graphics,
-  Text,
-  Sprite,
-  useApp,
-  KoreanContainer,
   KoreanText,
-  KoreanHeader,
-  KoreanInstruction,
-  KoreanPhilosophy,
-  KoreanStatus,
-} from "./PixiComponents";
+  KoreanMartialText,
+  KoreanTechniqueText,
+  KoreanStatusText,
+  KoreanTextUtils,
+  validateKoreanText,
+  KoreanTitle,
+  type KoreanTextProps,
+  type KoreanMartialTextProps,
+  type KoreanTechniqueTextProps,
+  type KoreanStatusTextProps,
+  type KoreanTitleProps,
+  type KoreanTextSize,
+  type KoreanTextVariant,
+  type KoreanTextEmphasis,
+  type MartialVariant,
+  type HonorLevel,
+} from "./KoreanText";
 
-// Re-export Korean-specific components
 export {
-  KoreanButton,
-  KoreanTitleText,
-  KoreanBodyText,
-  KoreanCombatStatus,
-} from "./KoreanPixiComponents";
+  BackgroundGrid,
+  CyberpunkBackground,
+  type BackgroundGridProps,
+  type CyberpunkBackgroundProps,
+} from "./BackgroundGrid";
 
-// Base components
-export { BaseButton } from "./BaseButton";
-export type { BaseButtonProps } from "./BaseButton";
-
-// Re-export types for convenience
-export type {
-  BasePixiProps,
-  KoreanContainerProps,
-  KoreanTextProps,
-  KoreanHeaderProps,
-  KoreanInstructionProps,
-  KoreanPhilosophyProps,
-  KoreanStatusProps,
+export {
+  PixiContainerComponent,
+  PixiGraphicsComponent,
+  PixiTextComponent,
 } from "./PixiComponents";
 
-export type {
-  KoreanButtonProps,
-  KoreanTitleTextProps,
-  KoreanBodyTextProps,
-  KoreanCombatStatusProps,
-} from "./KoreanPixiComponents";
+// Re-export commonly used Korean martial arts constants
+export {
+  KOREAN_COLORS,
+  KOREAN_FONT_FAMILY,
+  TRIGRAM_DATA,
+  TRIGRAM_STANCES_ORDER,
+} from "../../../types";
 
-// Export common Korean styles and colors from types
-export { KOREAN_FONT_FAMILY } from "../../../types";
+// Utility type for Korean UI theming
+export interface KoreanUITheme {
+  readonly primaryColor: number;
+  readonly accentColor: number;
+  readonly backgroundColor: number;
+  readonly textColor: number;
+  readonly fontFamily: string;
+}
+
+// Default Korean martial arts theme
+export const KOREAN_MARTIAL_THEME: KoreanUITheme = {
+  primaryColor: KOREAN_COLORS.GOLD,
+  accentColor: KOREAN_COLORS.CYAN,
+  backgroundColor: KOREAN_COLORS.BLACK,
+  textColor: KOREAN_COLORS.WHITE,
+  fontFamily: KOREAN_FONT_FAMILY,
+} as const;

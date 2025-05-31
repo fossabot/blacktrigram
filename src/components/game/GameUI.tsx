@@ -1,16 +1,18 @@
-import { useCallback } from "react";
-import { Stage } from "@pixi/react";
+import { Application } from "@pixi/react";
 import { GameEngine } from "./GameEngine";
-import { TrigramWheel } from "../ui/TrigramWheel";
+import { DojangBackground } from "./DojangBackground";
 import { ProgressTracker } from "../ui/ProgressTracker";
+import { TrigramWheel } from "../ui/TrigramWheel";
 import { KoreanHeader } from "../ui/KoreanHeader";
-import type { GameUIProps, PlayerState } from "../../types";
-import { KOREAN_COLORS } from "../../types";
+import { BaseButton } from "../ui/base/BaseButton";
+import type { GameUIProps } from "../../types";
+import { KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../types";
 
 export function GameUI({
   players,
   gamePhase,
   onGamePhaseChange,
+  gameTime,
   currentRound,
   timeRemaining,
   onStanceChange,
@@ -19,189 +21,258 @@ export function GameUI({
   onResetMatch,
   onTogglePause,
 }: GameUIProps): React.ReactElement {
-  const [player1, player2] = players;
-
-  const handleStanceChange = useCallback(
-    (stance: Parameters<typeof onStanceChange>[1]) => {
-      onStanceChange(0, stance);
-    },
-    [onStanceChange]
-  );
-
   return (
     <div
       style={{
         width: "100%",
         height: "100vh",
-        background: `linear-gradient(135deg, ${KOREAN_COLORS.DARK_BLUE}, ${KOREAN_COLORS.BLACK})`,
+        background: `linear-gradient(135deg, #${KOREAN_COLORS.DARK_BLUE.toString(
+          16
+        ).padStart(6, "0")}, #${KOREAN_COLORS.BLACK.toString(16).padStart(
+          6,
+          "0"
+        )})`,
+        fontFamily: KOREAN_FONT_FAMILY,
+        color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
         display: "flex",
         flexDirection: "column",
-        color: KOREAN_COLORS.WHITE,
       }}
     >
-      {/* Header */}
-      <KoreanHeader
-        title="흑괘 무술 대전"
-        subtitle="Black Trigram Combat"
-        currentRound={currentRound}
-        timeRemaining={timeRemaining}
-      />
+      {/* Header with game controls */}
+      <div
+        style={{
+          padding: "1rem 2rem",
+          borderBottom: `1px solid #${KOREAN_COLORS.GRAY_DARK.toString(
+            16
+          ).padStart(6, "0")}`,
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <KoreanHeader
+          title="전투 모드"
+          subtitle="Combat Mode"
+          onBack={() => onGamePhaseChange("intro")}
+          currentPhase="combat"
+          onPhaseChange={onGamePhaseChange}
+        />
 
-      {/* Main Game Area */}
-      <div style={{ display: "flex", flex: 1 }}>
-        {/* Left UI Panel */}
-        <div
-          style={{
-            width: "200px",
-            padding: "1rem",
-            background: "rgba(0,0,0,0.3)",
-          }}
-        >
-          <ProgressTracker
-            label="체력 (Health)"
-            current={player1.health}
-            maximum={player1.maxHealth}
-            currentStance={player1.stance}
-          />
-          <ProgressTracker
-            label="기 (Ki)"
-            current={player1.ki}
-            maximum={player1.maxKi}
-            currentStance={player1.stance}
-          />
-          <ProgressTracker
-            label="체력 (Stamina)"
-            current={player1.stamina}
-            maximum={player1.maxStamina}
-            currentStance={player1.stance}
-          />
-
-          <TrigramWheel
-            selectedStance={player1.stance}
-            onStanceChange={handleStanceChange}
-            playerKi={player1.ki}
-            playerMaxKi={player1.maxKi}
-            radius={80}
-            isEnabled={gamePhase === "combat"}
-          />
+        {/* Game Controls */}
+        <div style={{ display: "flex", gap: "1rem" }}>
+          <BaseButton onClick={onStartMatch} variant="primary" size="small">
+            시작 (Start)
+          </BaseButton>
+          <BaseButton onClick={onTogglePause} variant="secondary" size="small">
+            일시정지 (Pause)
+          </BaseButton>
+          <BaseButton onClick={onResetMatch} variant="secondary" size="small">
+            재시작 (Reset)
+          </BaseButton>
         </div>
 
-        {/* Game Canvas */}
-        <div style={{ flex: 1, position: "relative" }}>
-          <Stage
-            width={800}
-            height={600}
-            options={{
-              backgroundColor: KOREAN_COLORS.DARK_BLUE,
-              antialias: true,
-            }}
-          >
-            <GameEngine
-              players={players}
-              gamePhase={gamePhase}
-              onGamePhaseChange={onGamePhaseChange}
-              onPlayerUpdate={(
-                playerIndex: number,
-                updates: Partial<PlayerState>
-              ) => {
-                // Handle player updates
-                console.log(`Player ${playerIndex} updated:`, updates);
-              }}
-              onStanceChange={onStanceChange}
-            />
-          </Stage>
+        {/* Timer */}
+        <div style={{ textAlign: "center" }}>
+          <div style={{ fontSize: "1.5rem", fontWeight: "bold" }}>
+            {Math.floor(timeRemaining / 60)}:
+            {(timeRemaining % 60).toString().padStart(2, "0")}
+          </div>
+          <div style={{ fontSize: "0.8rem", opacity: 0.8 }}>
+            라운드 {currentRound} | {gameTime}초
+          </div>
+        </div>
+      </div>
 
-          {/* Game Controls Overlay */}
+      <div style={{ flex: 1, position: "relative" }}>
+        <Application
+          width={window.innerWidth}
+          height={window.innerHeight - 100}
+          backgroundColor={KOREAN_COLORS.BLACK}
+        >
+          <DojangBackground
+            width={window.innerWidth}
+            height={window.innerHeight - 100}
+          />
+          <GameEngine
+            players={players}
+            gamePhase={gamePhase}
+            onGamePhaseChange={onGamePhaseChange}
+            onPlayerUpdate={() => {}} // Placeholder
+            onStanceChange={onStanceChange}
+          />
+        </Application>
+
+        {/* UI Overlay */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            pointerEvents: "none",
+            zIndex: 100,
+          }}
+        >
+          {/* Player 1 Stats */}
           <div
             style={{
               position: "absolute",
-              bottom: "1rem",
-              left: "50%",
-              transform: "translateX(-50%)",
-              display: "flex",
-              gap: "1rem",
+              top: "20px",
+              left: "20px",
+              background: "rgba(0,0,0,0.8)",
+              padding: "1rem",
+              borderRadius: "8px",
+              border: `2px solid #${KOREAN_COLORS.PLAYER_1_BLUE.toString(
+                16
+              ).padStart(6, "0")}`,
+              pointerEvents: "auto",
             }}
           >
-            <button
-              onClick={onStartMatch}
+            <h4
               style={{
-                background: KOREAN_COLORS.TRADITIONAL_RED,
-                color: KOREAN_COLORS.WHITE,
-                border: "none",
-                padding: "0.5rem 1rem",
-                borderRadius: "4px",
-                cursor: "pointer",
+                margin: "0 0 0.5rem 0",
+                color: `#${KOREAN_COLORS.PLAYER_1_BLUE.toString(16).padStart(
+                  6,
+                  "0"
+                )}`,
               }}
             >
-              시작 (Start)
-            </button>
-            <button
-              onClick={onTogglePause}
+              플레이어 1
+            </h4>
+            <ProgressTracker
+              label="체력"
+              current={players[0].health}
+              maximum={players[0].maxHealth}
+            />
+            <ProgressTracker
+              label="기력"
+              current={players[0].ki}
+              maximum={players[0].maxKi}
+            />
+            <ProgressTracker
+              label="스태미나"
+              current={players[0].stamina}
+              maximum={players[0].maxStamina}
+            />
+          </div>
+
+          {/* Player 2 Stats */}
+          <div
+            style={{
+              position: "absolute",
+              top: "20px",
+              right: "20px",
+              background: "rgba(0,0,0,0.8)",
+              padding: "1rem",
+              borderRadius: "8px",
+              border: `2px solid #${KOREAN_COLORS.PLAYER_2_RED.toString(
+                16
+              ).padStart(6, "0")}`,
+              pointerEvents: "auto",
+            }}
+          >
+            <h4
               style={{
-                background: KOREAN_COLORS.GOLD,
-                color: KOREAN_COLORS.BLACK,
-                border: "none",
-                padding: "0.5rem 1rem",
-                borderRadius: "4px",
-                cursor: "pointer",
+                margin: "0 0 0.5rem 0",
+                color: `#${KOREAN_COLORS.PLAYER_2_RED.toString(16).padStart(
+                  6,
+                  "0"
+                )}`,
               }}
             >
-              일시정지 (Pause)
-            </button>
-            <button
-              onClick={onResetMatch}
+              플레이어 2
+            </h4>
+            <ProgressTracker
+              label="체력"
+              current={players[1].health}
+              maximum={players[1].maxHealth}
+            />
+            <ProgressTracker
+              label="기력"
+              current={players[1].ki}
+              maximum={players[1].maxKi}
+            />
+            <ProgressTracker
+              label="스태미나"
+              current={players[1].stamina}
+              maximum={players[1].maxStamina}
+            />
+          </div>
+
+          {/* Trigram Wheel */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: "20px",
+              left: "50%",
+              transform: "translateX(-50%)",
+              pointerEvents: "auto",
+            }}
+          >
+            <TrigramWheel
+              selectedStance={players[0].stance}
+              onStanceChange={(stance) => onStanceChange(0, stance)}
+              playerKi={players[0].ki}
+              playerMaxKi={players[0].maxKi}
+            />
+          </div>
+
+          {/* Combat Log */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: "120px",
+              left: "20px",
+              right: "20px",
+              background: "rgba(0,0,0,0.9)",
+              padding: "1rem",
+              borderRadius: "8px",
+              border: `1px solid #${KOREAN_COLORS.CYAN.toString(16).padStart(
+                6,
+                "0"
+              )}`,
+              maxHeight: "150px",
+              overflow: "auto",
+              pointerEvents: "auto",
+            }}
+          >
+            <h4
               style={{
-                background: KOREAN_COLORS.GRAY_MEDIUM,
-                color: KOREAN_COLORS.WHITE,
-                border: "none",
-                padding: "0.5rem 1rem",
-                borderRadius: "4px",
-                cursor: "pointer",
+                margin: "0 0 0.5rem 0",
+                color: `#${KOREAN_COLORS.CYAN.toString(16).padStart(6, "0")}`,
               }}
             >
-              재시작 (Reset)
-            </button>
+              전투 로그
+            </h4>
+            {combatLog.slice(-5).map((entry, index) => (
+              <div
+                key={index}
+                style={{
+                  fontSize: "0.8rem",
+                  color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(
+                    6,
+                    "0"
+                  )}`,
+                }}
+              >
+                {entry}
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Right UI Panel */}
         <div
           style={{
-            width: "200px",
-            padding: "1rem",
-            background: "rgba(0,0,0,0.3)",
+            fontSize: "0.7rem",
+            color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
+            position: "absolute",
+            bottom: "10px",
+            left: "50%",
+            transform: "translateX(-50%)",
           }}
         >
-          <ProgressTracker
-            label="상대 체력"
-            current={player2.health}
-            maximum={player2.maxHealth}
-            currentStance={player2.stance}
-          />
-
-          {/* Combat Log */}
-          <div style={{ marginTop: "2rem" }}>
-            <h4 style={{ color: KOREAN_COLORS.CYAN, marginBottom: "0.5rem" }}>
-              전투 기록
-            </h4>
-            <div
-              style={{
-                height: "200px",
-                overflowY: "auto",
-                fontSize: "0.8rem",
-                lineHeight: "1.4",
-              }}
-            >
-              {combatLog.slice(-10).map((entry, index) => (
-                <div
-                  key={index}
-                  style={{ marginBottom: "0.25rem", opacity: 0.8 }}
-                >
-                  {entry}
-                </div>
-              ))}
-            </div>
-          </div>
+          Press 1-8 to change stances • ESC to return to menu
         </div>
       </div>
     </div>

@@ -1,87 +1,134 @@
-import React from "react";
-import { Container, Text } from "@pixi/react";
-import { useState, useCallback, useEffect } from "react";
-import type { HitEffect } from "../../types"; // This should now work
-import { KOREAN_COLORS } from "../../types";
+import React, { useCallback } from "react";
+import type { Graphics as PixiGraphics } from "pixi.js";
+import {
+  PixiContainerComponent,
+  PixiGraphicsComponent,
+  PixiTextComponent,
+} from "../ui/base/PixiComponents";
+import { KOREAN_COLORS, type HitEffect } from "../../types";
 
-// Fix props interface
 export interface HitEffectsLayerProps {
-  readonly effects: readonly HitEffect[]; // Add effects prop
-  readonly onEffectComplete?: (effectId: string) => void;
+  readonly effects: readonly HitEffect[];
+  readonly currentTime: number;
 }
 
 export function HitEffectsLayer({
   effects,
-  onEffectComplete,
+  currentTime,
 }: HitEffectsLayerProps): React.ReactElement {
-  const [currentTime, setCurrentTime] = useState<number>(Date.now());
+  const getEffectAlpha = useCallback(
+    (effect: HitEffect): number => {
+      const elapsed = currentTime - effect.startTime;
+      const progress = elapsed / effect.duration;
+      return Math.max(0, 1 - progress);
+    },
+    [currentTime]
+  );
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentTime(Date.now());
-    }, 16); // ~60 FPS
+  const getEffectScale = useCallback(
+    (effect: HitEffect): number => {
+      const elapsed = currentTime - effect.startTime;
+      const progress = elapsed / effect.duration;
+      return 1 + progress * 0.5; // Grow slightly over time
+    },
+    [currentTime]
+  );
 
-    return () => clearInterval(interval);
+  const getDamageColor = useCallback((damage: number): number => {
+    if (damage > 30) return KOREAN_COLORS.CRITICAL_RED;
+    if (damage > 20) return KOREAN_COLORS.Red;
+    if (damage > 10) return KOREAN_COLORS.Orange;
+    return KOREAN_COLORS.DAMAGE_YELLOW;
   }, []);
 
-  // Remove completed effects
-  useEffect(() => {
-    effects.forEach((effect) => {
-      const elapsed = currentTime - effect.startTime;
-      if (elapsed >= effect.duration && onEffectComplete) {
-        onEffectComplete(effect.id);
-      }
-    });
-  }, [currentTime, effects, onEffectComplete]);
-
-  // Fix color assignments in getEffectColor
-  const getEffectColor = useCallback((effect: HitEffect): string => {
-    let effectColor: string = KOREAN_COLORS.WHITE;
-
-    if (effect.damage > 30) {
-      return "critical";
-    } else if (effect.damage > 20) {
-      return "heavy";
-    } else if (effect.damage > 10) {
-      return "medium";
-    } else if (effect.damage > 5) {
-      return "light";
-    } else {
-      effectColor = KOREAN_COLORS.CYAN;
+  const getKoreanHitText = useCallback((effect: HitEffect): string => {
+    switch (effect.type) {
+      case "critical":
+        return "치명타!";
+      case "heavy":
+        return "강타!";
+      case "medium":
+        return "타격!";
+      case "light":
+        return "경타";
+      case "block":
+        return "방어!";
+      case "miss":
+        return "빗나감";
+      default:
+        return "타격";
     }
-
-    return effectColor;
   }, []);
 
   return (
-    <Container data-testid="hit-effects-layer">
+    <PixiContainerComponent>
       {effects.map((effect) => {
-        const elapsed = Date.now() - effect.startTime;
-        // Remove unused progress variable or use it
-        const alpha = Math.max(0, 1 - elapsed / effect.duration);
-        const yOffset = (elapsed / effect.duration) * 20;
+        const alpha = getEffectAlpha(effect);
+        const scale = getEffectScale(effect);
+
+        if (alpha <= 0) return null;
 
         return (
-          <Text
+          <PixiContainerComponent
             key={effect.id}
-            text={`${effect.damage}`}
-            anchor={{ x: 0.5, y: 0.5 }}
             x={effect.position.x}
-            y={effect.position.y - yOffset}
+            y={effect.position.y}
             alpha={alpha}
-            style={
-              {
+          >
+            {/* Impact circle effect */}
+            <PixiGraphicsComponent
+              draw={(g: PixiGraphics) => {
+                g.clear();
+
+                // Outer impact ring
+                g.setStrokeStyle({
+                  color: effect.color,
+                  width: 3,
+                  alpha: alpha * 0.8,
+                });
+                g.circle(0, 0, 20 * scale);
+                g.stroke();
+
+                // Inner impact flash
+                if (effect.type === "critical") {
+                  g.setFillStyle({
+                    color: KOREAN_COLORS.CRITICAL_RED,
+                    alpha: alpha * 0.4,
+                  });
+                  g.circle(0, 0, 15 * scale);
+                  g.fill();
+                }
+              }}
+            />
+
+            {/* Damage number */}
+            <PixiTextComponent
+              text={effect.damage.toString()}
+              y={-30 * scale}
+              anchor={{ x: 0.5, y: 0.5 }}
+              style={{
                 fontFamily: "Noto Sans KR, Arial, sans-serif",
-                fontSize: Math.max(16, Math.min(effect.damage / 2 + 12, 32)),
-                fill: getEffectColor(effect),
+                fontSize: 16 + (effect.damage > 20 ? 4 : 0),
+                fill: getDamageColor(effect.damage),
                 fontWeight: "bold",
-                stroke: "#000000",
-                strokeThickness: 2,
-              } as any
-            }
-          />
+              }}
+            />
+
+            {/* Korean hit text */}
+            <PixiTextComponent
+              text={getKoreanHitText(effect)}
+              y={20 * scale}
+              anchor={{ x: 0.5, y: 0.5 }}
+              style={{
+                fontFamily: "Noto Sans KR, Arial, sans-serif",
+                fontSize: 12,
+                fill: KOREAN_COLORS.WHITE,
+                fontWeight: "bold",
+              }}
+            />
+          </PixiContainerComponent>
         );
       })}
-    </Container>
+    </PixiContainerComponent>
   );
 }
