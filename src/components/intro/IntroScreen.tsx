@@ -3,6 +3,7 @@ import { MenuSection } from "./components/MenuSection";
 import { ControlsSection } from "./components/ControlsSection";
 import { PhilosophySection } from "./components/PhilosophySection";
 import { KOREAN_COLORS, KOREAN_FONT_FAMILY, type GamePhase } from "../../types";
+import logo from "../../assets/black-trigram-256.png"; // Import the logo
 
 interface IntroScreenProps {
   readonly onGamePhaseChange: (phase: GamePhase) => void;
@@ -40,6 +41,15 @@ export function IntroScreen({
     >
       {/* Header */}
       <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+        <img
+          src={logo}
+          alt="Black Trigram Logo"
+          style={{
+            width: "128px",
+            height: "128px",
+            marginBottom: "1rem",
+          }}
+        />
         <h1
           style={{
             fontSize: "3rem",

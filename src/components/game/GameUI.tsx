@@ -20,8 +20,13 @@ export function GameUI({
   onStartMatch,
   onResetMatch,
   onTogglePause,
-  onPlayerUpdate, // Now properly typed
+  onPlayerUpdate,
 }: GameUIProps): React.ReactElement {
+  // This component might not be rendered if App.tsx switches to a dedicated EndScreen
+  // However, if GameUI is intended to show victory/defeat messages itself, this logic is useful.
+  // For now, assuming App.tsx handles full-screen victory/defeat via EndScreen.
+  // GameUI will render the combat interface.
+
   return (
     <div
       style={{
@@ -56,18 +61,33 @@ export function GameUI({
           subtitle="Combat Mode"
           onBack={() => onGamePhaseChange("intro")}
           currentPhase={gamePhase}
-          onPhaseChange={onGamePhaseChange}
+          onPhaseChange={onGamePhaseChange} // This might be for changing to 'training' or 'philosophy' from combat
         />
 
         {/* Game Controls */}
         <div style={{ display: "flex", gap: "1rem" }}>
-          <BaseButton onClick={onStartMatch} variant="primary" size="small">
+          <BaseButton
+            onClick={onStartMatch}
+            variant="primary"
+            size="small"
+            disabled={gamePhase !== "combat" && gamePhase !== "intro"}
+          >
             시작 (Start)
           </BaseButton>
-          <BaseButton onClick={onTogglePause} variant="secondary" size="small">
+          <BaseButton
+            onClick={onTogglePause}
+            variant="secondary"
+            size="small"
+            disabled={gamePhase !== "combat"}
+          >
             일시정지 (Pause)
           </BaseButton>
-          <BaseButton onClick={onResetMatch} variant="secondary" size="small">
+          <BaseButton
+            onClick={onResetMatch}
+            variant="secondary"
+            size="small"
+            disabled={gamePhase !== "combat"}
+          >
             재시작 (Reset)
           </BaseButton>
         </div>
@@ -87,181 +107,186 @@ export function GameUI({
       <div style={{ flex: 1, position: "relative" }}>
         <Application
           width={window.innerWidth}
-          height={window.innerHeight - 100}
+          height={window.innerHeight - 100} // Adjust height based on header
           backgroundColor={KOREAN_COLORS.BLACK}
         >
           <DojangBackground
             width={window.innerWidth}
-            height={window.innerHeight - 100}
+            height={window.innerHeight - 100} // Adjust height
           />
           <GameEngine
             players={players}
             gamePhase={gamePhase}
-            onGamePhaseChange={onGamePhaseChange}
-            onPlayerUpdate={onPlayerUpdate} // Pass it down properly
+            onGamePhaseChange={onGamePhaseChange} // Pass for potential internal needs (e.g. pause menu)
+            onPlayerUpdate={onPlayerUpdate}
             onStanceChange={onStanceChange}
+            timeRemaining={timeRemaining}
+            currentRound={currentRound}
           />
         </Application>
 
-        {/* UI Overlay */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            pointerEvents: "none",
-            zIndex: 100,
-          }}
-        >
-          {/* Player 1 Stats */}
+        {/* UI Overlay - visible only during combat */}
+        {gamePhase === "combat" && (
           <div
             style={{
               position: "absolute",
-              top: "20px",
-              left: "20px",
-              background: "rgba(0,0,0,0.8)",
-              padding: "1rem",
-              borderRadius: "8px",
-              border: `2px solid #${KOREAN_COLORS.PLAYER_1_BLUE.toString(
-                16
-              ).padStart(6, "0")}`,
-              pointerEvents: "auto",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              pointerEvents: "none",
+              zIndex: 100,
             }}
           >
-            <h4
+            {/* Player 1 Stats */}
+            <div
               style={{
-                margin: "0 0 0.5rem 0",
-                color: `#${KOREAN_COLORS.PLAYER_1_BLUE.toString(16).padStart(
-                  6,
-                  "0"
-                )}`,
+                position: "absolute",
+                top: "20px",
+                left: "20px",
+                background: "rgba(0,0,0,0.8)",
+                padding: "1rem",
+                borderRadius: "8px",
+                border: `2px solid #${KOREAN_COLORS.PLAYER_1_BLUE.toString(
+                  16
+                ).padStart(6, "0")}`,
+                pointerEvents: "auto",
               }}
             >
-              플레이어 1
-            </h4>
-            <ProgressTracker
-              label="체력"
-              current={players[0].health}
-              maximum={players[0].maxHealth}
-            />
-            <ProgressTracker
-              label="기력"
-              current={players[0].ki}
-              maximum={players[0].maxKi}
-            />
-            <ProgressTracker
-              label="스태미나"
-              current={players[0].stamina}
-              maximum={players[0].maxStamina}
-            />
-          </div>
-
-          {/* Player 2 Stats */}
-          <div
-            style={{
-              position: "absolute",
-              top: "20px",
-              right: "20px",
-              background: "rgba(0,0,0,0.8)",
-              padding: "1rem",
-              borderRadius: "8px",
-              border: `2px solid #${KOREAN_COLORS.PLAYER_2_RED.toString(
-                16
-              ).padStart(6, "0")}`,
-              pointerEvents: "auto",
-            }}
-          >
-            <h4
-              style={{
-                margin: "0 0 0.5rem 0",
-                color: `#${KOREAN_COLORS.PLAYER_2_RED.toString(16).padStart(
-                  6,
-                  "0"
-                )}`,
-              }}
-            >
-              플레이어 2
-            </h4>
-            <ProgressTracker
-              label="체력"
-              current={players[1].health}
-              maximum={players[1].maxHealth}
-            />
-            <ProgressTracker
-              label="기력"
-              current={players[1].ki}
-              maximum={players[1].maxKi}
-            />
-            <ProgressTracker
-              label="스태미나"
-              current={players[1].stamina}
-              maximum={players[1].maxStamina}
-            />
-          </div>
-
-          {/* Trigram Wheel */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: "20px",
-              left: "50%",
-              transform: "translateX(-50%)",
-              pointerEvents: "auto",
-            }}
-          >
-            <TrigramWheel
-              selectedStance={players[0].stance}
-              onStanceChange={(stance) => onStanceChange(0, stance)}
-              playerKi={players[0].ki}
-              playerMaxKi={players[0].maxKi}
-            />
-          </div>
-
-          {/* Combat Log */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: "120px",
-              left: "20px",
-              right: "20px",
-              background: "rgba(0,0,0,0.9)",
-              padding: "1rem",
-              borderRadius: "8px",
-              border: `1px solid #${KOREAN_COLORS.CYAN.toString(16).padStart(
-                6,
-                "0"
-              )}`,
-              maxHeight: "150px",
-              overflow: "auto",
-              pointerEvents: "auto",
-            }}
-          >
-            <h4
-              style={{
-                margin: "0 0 0.5rem 0",
-                color: `#${KOREAN_COLORS.CYAN.toString(16).padStart(6, "0")}`,
-              }}
-            >
-              전투 로그
-            </h4>
-            {combatLog.slice(-5).map((entry, index) => (
-              <div
-                key={index}
+              <h4
                 style={{
-                  fontSize: "0.8rem",
-                  color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(
+                  margin: "0 0 0.5rem 0",
+                  color: `#${KOREAN_COLORS.PLAYER_1_BLUE.toString(16).padStart(
                     6,
                     "0"
                   )}`,
                 }}
               >
-                {entry}
-              </div>
-            ))}
+                플레이어 1 ({players[0].stance})
+              </h4>
+              <ProgressTracker
+                label="체력"
+                current={players[0].health}
+                maximum={players[0].maxHealth}
+              />
+              <ProgressTracker
+                label="기력"
+                current={players[0].ki}
+                maximum={players[0].maxKi}
+              />
+              <ProgressTracker
+                label="스태미나"
+                current={players[0].stamina}
+                maximum={players[0].maxStamina}
+              />
+            </div>
+
+            {/* Player 2 Stats */}
+            <div
+              style={{
+                position: "absolute",
+                top: "20px",
+                right: "20px",
+                background: "rgba(0,0,0,0.8)",
+                padding: "1rem",
+                borderRadius: "8px",
+                border: `2px solid #${KOREAN_COLORS.PLAYER_2_RED.toString(
+                  16
+                ).padStart(6, "0")}`,
+                pointerEvents: "auto",
+              }}
+            >
+              <h4
+                style={{
+                  margin: "0 0 0.5rem 0",
+                  color: `#${KOREAN_COLORS.PLAYER_2_RED.toString(16).padStart(
+                    6,
+                    "0"
+                  )}`,
+                }}
+              >
+                플레이어 2 ({players[1].stance})
+              </h4>
+              <ProgressTracker
+                label="체력"
+                current={players[1].health}
+                maximum={players[1].maxHealth}
+              />
+              <ProgressTracker
+                label="기력"
+                current={players[1].ki}
+                maximum={players[1].maxKi}
+              />
+              <ProgressTracker
+                label="스태미나"
+                current={players[1].stamina}
+                maximum={players[1].maxStamina}
+              />
+            </div>
+
+            {/* Trigram Wheel - Assuming for Player 1 */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: "20px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                pointerEvents: "auto",
+              }}
+            >
+              <TrigramWheel
+                selectedStance={players[0].stance}
+                onStanceChange={(stance) => onStanceChange(0, stance)}
+                playerKi={players[0].ki}
+                playerMaxKi={players[0].maxKi}
+              />
+            </div>
+
+            {/* Combat Log */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: "120px",
+                left: "20px",
+                right: "20px",
+                background: "rgba(0,0,0,0.9)",
+                padding: "1rem",
+                borderRadius: "8px",
+                border: `1px solid #${KOREAN_COLORS.CYAN.toString(16).padStart(
+                  6,
+                  "0"
+                )}`,
+                maxHeight: "150px",
+                overflow: "auto",
+                pointerEvents: "auto",
+              }}
+            >
+              <h4
+                style={{
+                  margin: "0 0 0.5rem 0",
+                  color: `#${KOREAN_COLORS.CYAN.toString(16).padStart(6, "0")}`,
+                }}
+              >
+                전투 로그
+              </h4>
+              {combatLog.slice(-5).map((entry, index) => (
+                <div
+                  key={index}
+                  style={{
+                    fontSize: "0.8rem",
+                    color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(
+                      6,
+                      "0"
+                    )}`,
+                  }}
+                >
+                  {entry}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+        {/* End of combat UI Overlay */}
 
         <div
           style={{

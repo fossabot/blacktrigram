@@ -8,6 +8,7 @@ import type {
   Condition,
   VitalPointHit, // This should now work with the export fixed
   VitalPointSystemConfig, // Assuming this is defined for vitalPointConfig
+  GamePhase,
 } from "../types";
 import { TrigramSystem } from "./TrigramSystem";
 import { VitalPointSystem } from "./VitalPointSystem";
@@ -159,6 +160,36 @@ export const CombatSystem = {
       },
       description: `${technique.name} hit for ${finalDamage} damage`,
     };
+  },
+
+  checkWinCondition(
+    players: readonly [PlayerState, PlayerState],
+    timeRemaining: number
+  ): { gamePhase: GamePhase; winnerId: string | null } {
+    const [player1, player2] = players;
+
+    if (player1.health <= 0 && player2.health <= 0) {
+      return { gamePhase: "defeat", winnerId: null }; // Draw or mutual defeat
+    }
+    if (player1.health <= 0) {
+      return { gamePhase: "victory", winnerId: player2.playerId };
+    }
+    if (player2.health <= 0) {
+      return { gamePhase: "victory", winnerId: player1.playerId };
+    }
+
+    if (timeRemaining <= 0) {
+      if (player1.health > player2.health) {
+        return { gamePhase: "victory", winnerId: player1.playerId };
+      }
+      if (player2.health > player1.health) {
+        return { gamePhase: "victory", winnerId: player2.playerId };
+      }
+      // Draw condition if health is equal, P1 wins by default or specific rule
+      return { gamePhase: "defeat", winnerId: null }; // Or player1.playerId for tie-break
+    }
+
+    return { gamePhase: "combat", winnerId: null }; // Game continues
   },
 
   // ... other combat system methods

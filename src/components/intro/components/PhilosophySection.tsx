@@ -6,6 +6,7 @@ import {
   TRIGRAM_STANCES_ORDER,
   type TrigramStance,
 } from "../../../types";
+import playerArchetypesImg from "../../../assets/PlayerArchetypesExplained.png"; // Import the image
 
 export interface PhilosophySectionProps {
   readonly selectedStance?: TrigramStance;
@@ -71,7 +72,9 @@ export function PhilosophySection({
           padding: "1rem",
           background: "rgba(255,255,255,0.05)",
           borderRadius: "12px",
-          border: `2px solid #${trigramData.color.toString(16).padStart(6, "0")}`,
+          border: `2px solid #${trigramData.color
+            .toString(16)
+            .padStart(6, "0")}`,
         }}
       >
         <button
@@ -144,7 +147,9 @@ export function PhilosophySection({
           background: "rgba(0,0,0,0.6)",
           padding: "2rem",
           borderRadius: "12px",
-          border: `1px solid #${trigramData.color.toString(16).padStart(6, "0")}`,
+          border: `1px solid #${trigramData.color
+            .toString(16)
+            .padStart(6, "0")}`,
           textAlign: "left",
         }}
       >
@@ -286,6 +291,30 @@ export function PhilosophySection({
         </div>
       </div>
 
+      {/* Player Archetypes Image */}
+      <div style={{ marginTop: "2rem", marginBottom: "2rem" }}>
+        <KoreanText
+          text="플레이어 유형"
+          englishText="Player Archetypes"
+          size="large"
+          color={`#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`}
+          showBoth={true}
+          style={{ marginBottom: "1rem" }}
+        />
+        <img
+          src={playerArchetypesImg}
+          alt="Player Archetypes Explained"
+          style={{
+            maxWidth: "100%",
+            maxHeight: "400px",
+            borderRadius: "8px",
+            border: `2px solid #${KOREAN_COLORS.ACCENT_BLUE.toString(
+              16
+            ).padStart(6, "0")}`,
+          }}
+        />
+      </div>
+
       {/* All Trigrams Quick Reference */}
       <div style={{ marginTop: "2rem" }}>
         <KoreanText
@@ -315,11 +344,16 @@ export function PhilosophySection({
                   background: isSelected
                     ? `#${data.color.toString(16).padStart(6, "0")}44`
                     : "rgba(255,255,255,0.05)",
-                  border: `2px solid #${data.color.toString(16).padStart(6, "0")}`,
+                  border: `2px solid #${data.color
+                    .toString(16)
+                    .padStart(6, "0")}`,
                   borderRadius: "8px",
                   cursor: "pointer",
                   transition: "all 0.3s ease",
-                  color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
+                  color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(
+                    6,
+                    "0"
+                  )}`,
                 }}
               >
                 <div

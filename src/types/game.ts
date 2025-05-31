@@ -29,12 +29,14 @@ export interface GameUIProps {
 export interface GameEngineProps {
   readonly players: readonly [PlayerState, PlayerState];
   readonly gamePhase: GamePhase;
-  readonly onGamePhaseChange: (phase: GamePhase) => void;
+  readonly onGamePhaseChange: (phase: GamePhase) => void; // Still needed for internal phase changes like pause
   readonly onPlayerUpdate: (
     playerIndex: number,
     updates: Partial<PlayerState>
   ) => void;
   readonly onStanceChange: (playerIndex: number, stance: TrigramStance) => void;
+  readonly timeRemaining: number; // Pass timer for reference if needed by engine logic (e.g. effects)
+  readonly currentRound: number; // Pass round for reference
 }
 
 export interface TrainingScreenProps {

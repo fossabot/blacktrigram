@@ -1,6 +1,6 @@
 import { useCallback, useState, useEffect } from "react";
 import { Player } from "./Player";
-import { DojangBackground } from "./DojangBackground";
+// import { DojangBackground } from "./DojangBackground"; // DojangBackground is rendered by GameUI's Application
 import { HitEffectsLayer } from "./HitEffectsLayer";
 import {
   PixiContainerComponent,
@@ -22,7 +22,10 @@ export function GameEngine({
   gamePhase,
   onPlayerUpdate,
   onStanceChange,
-}: GameEngineProps): React.ReactElement {
+}: // timeRemaining, // Received from App.tsx, used for win condition checks there
+// currentRound, // Received from App.tsx
+// onGamePhaseChange, // Game phase changes (victory/defeat) are handled by App.tsx
+GameEngineProps): React.ReactElement {
   const [hitEffects, setHitEffects] = useState<HitEffect[]>([]);
   const audio = useAudio();
 
@@ -103,7 +106,7 @@ export function GameEngine({
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [gamePhase, players, onPlayerUpdate, onStanceChange, audio]);
+  }, [gamePhase, players, onPlayerUpdate, onStanceChange, audio]); // Removed executeAttack from dependencies as it's stable if players/onPlayerUpdate are stable
 
   const executeAttack = useCallback(
     (
@@ -166,6 +169,7 @@ export function GameEngine({
       }, effect.duration);
 
       // Update both attacker and defender states
+      // App.tsx will check win conditions after these updates
       onPlayerUpdate(attackerIndex, {
         ...attackResult.attackerState,
         isAttacking: true,
@@ -180,7 +184,7 @@ export function GameEngine({
         onPlayerUpdate(attackerIndex, { isAttacking: false });
       }, 300);
     },
-    [players, onPlayerUpdate]
+    [players, onPlayerUpdate, audio] // audio was missing, add if playAttackSound etc. are used inside
   );
 
   const handlePlayerAttack = useCallback(
@@ -195,11 +199,19 @@ export function GameEngine({
   );
 
   // Non-combat phases use simple text display
+  // Victory/Defeat messages are handled by App.tsx's EndScreen or GameUI's overlay
   if (gamePhase !== "combat") {
+    let message = "게임 엔진은 전투 중에만 활성화됩니다";
+    if (gamePhase === "victory" || gamePhase === "defeat") {
+      // This part might be redundant if App.tsx already shows a full EndScreen
+      // However, GameEngine might still be mounted, so good to have a fallback.
+      message = gamePhase === "victory" ? "승리!" : "패배 또는 무승부";
+    }
+
     return (
       <PixiContainerComponent>
         <PixiTextComponent
-          text="게임 엔진은 전투 중에만 활성화됩니다"
+          text={message}
           x={400}
           y={300}
           anchor={{ x: 0.5, y: 0.5 }}
@@ -215,8 +227,8 @@ export function GameEngine({
 
   return (
     <PixiContainerComponent>
-      {/* Dojang background */}
-      <DojangBackground width={800} height={600} />
+      {/* Dojang background is rendered by GameUI's Application component */}
+      {/* <DojangBackground width={800} height={600} /> */}
 
       {/* Players */}
       {players.map((playerState, index) => (

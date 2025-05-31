@@ -575,7 +575,6 @@ graph TB
 
 The game emphasizes **respect, discipline, and lethal mastery** - core values of traditional Korean underground martial arts - while providing authentic knowledge that extends beyond the digital realm into real-world combat application within ethical boundaries.
 
-
 ---
 
 _"어둠 속에서 완벽한 일격을 찾아라"_  
@@ -591,3 +590,93 @@ _Enter the shadow dojang. Master the dark arts. Walk the path of the perfect let
 
 ---
 
+# Black Trigram - Game Design Document
+
+## 1. Overview
+
+Black Trigram is a sophisticated 2D precision combat simulator deeply rooted in Korean martial arts and modern combat technology, set against a cyberpunk backdrop. It emphasizes anatomical realism, precise targeting, authentic martial techniques, and dark futuristic aesthetics.
+
+## 2. Core Gameplay
+
+### 2.1. Combat System
+
+- **Precision Targeting**: Players can target specific vital points (급소 - geupso) on the opponent's body.
+- **Trigram Stances (팔괘 - Palgwae)**: Eight unique stances, each with distinct techniques, strengths, and weaknesses.
+  - 건 (Geon - Heaven): Balanced, spiritual energy.
+  - 태 (Tae - Lake): Joyful, fluid movements.
+  - 리 (Li - Fire): Bright, aggressive attacks.
+  - 진 (Jin - Thunder): Explosive, powerful strikes.
+  - 손 (Son - Wind): Gentle, swift, penetrating.
+  - 감 (Gam - Water): Deep, adaptable, dangerous.
+  - 간 (Gan - Mountain): Stable, firm defense.
+  - 곤 (Gon - Earth): Receptive, grounded techniques.
+- **Ki Management**: Ki (기 - internal energy) is used for special techniques and can be regenerated.
+- **Stamina**: Governs movement and basic actions.
+
+### 2.2. Game Modes
+
+- **Combat Mode (대전 모드)**: Player vs. Player or Player vs. AI.
+- **Training Mode (수련 모드)**: Practice techniques, stances, and vital point targeting.
+- **Philosophy Study (철학 연구)**: Learn about the philosophy behind the Trigrams and Korean martial arts.
+
+## 3. Winning and Losing
+
+### 3.1. Victory Conditions
+
+A player wins a round under the following conditions:
+
+- **Knockout (KO)**: The opponent's health is depleted to 0.
+- **Time Out**: If the round timer expires, the player with more remaining health wins the round.
+  - **Draw (무승부 - Museungbu)**: If health is equal when the timer expires, the round is a draw. (Further tie-breaking rules like first significant hit or overall damage could be implemented for match resolution if draws are not desired for overall match outcome).
+
+### 3.2. Match Structure
+
+- A match typically consists of a set number of rounds (e.g., best of 3 or 5).
+- The first player to win the required number of rounds wins the match.
+
+## 4. Game Flow & UI
+
+### 4.1. Intro Screen
+
+- Displays game logo (`black-trigram-256.png`).
+- Navigation: Menu, Controls, Philosophy.
+
+### 4.2. Combat Screen
+
+- **Player Stats**: Health, Ki, Stamina bars for both players.
+- **Trigram Display**: Current stance for each player.
+- **Timer**: Round timer.
+- **Round Counter**: Current round number.
+- **Combat Log**: Display key actions and damage.
+
+### 4.3. Game Over / Victory Screen
+
+- Displayed at the end of a match.
+- **Message**: Clearly indicates the winner (e.g., "Player 1 Wins!", "플레이어 2 승리!") or a draw.
+- **Options**:
+  - "Play Again (다시하기)": Resets the match and starts a new combat session.
+  - "Return to Menu (메뉴로 돌아가기)": Takes the player back to the Intro Screen.
+
+## 5. Asset Integration
+
+- **Logo**: `black-trigram-256.png` used on the Intro Screen and potentially other branding locations.
+- **Informational Images**:
+  - `PlayerArchetypesExplained.png`: Displayed in the Philosophy section or a dedicated "Lore/Guide" section to explain character types or combat styles.
+  - `CyberpunkTeamDynamics.png`: Could be used in a similar context if team-based modes or lore are expanded.
+  - `PlayerArchetypesOverview.png`: Similar to `PlayerArchetypesExplained.png`.
+- **Backgrounds**: Cyberpunk-themed Dojang backgrounds.
+- **Character Sprites**: Silhouettes or detailed 2D sprites with traditional Korean martial arts attire mixed with tactical gear.
+- **VFX**: Effects for Ki energy, impacts, stance auras.
+
+## 6. Technical Details
+
+- **Platform**: Web-based (HTML5/WebGL via PixiJS with React).
+- **Physics**: Aim for authentic 60fps combat physics.
+- **Audio**: Dynamic sound effects based on impact, damage, and Korean martial arts themes.
+
+## 7. Future Considerations
+
+- AI opponents with varying difficulty.
+- Expanded move sets and combos.
+- Online multiplayer.
+- Deeper story mode.
