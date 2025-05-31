@@ -421,12 +421,13 @@ export function KoreanMartialText({
     }`,
   } as KoreanTextProps;
 
-  // Only add englishText if it's defined to avoid undefined assignment
-  if (englishText) {
-    koreanTextProps.englishText = `${honorPrefix} - ${englishText}`;
-  }
+  // Fix readonly property assignment by creating new object
+  const updatedKoreanTextProps = {
+    ...koreanTextProps,
+    englishText: `${honorPrefix} - ${englishText}`,
+  };
 
-  return <KoreanText {...koreanTextProps} />;
+  return <KoreanText {...updatedKoreanTextProps} />;
 }
 
 // Korean technique display component
