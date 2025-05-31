@@ -207,7 +207,7 @@ export interface KiFlowFactors {
   readonly stanceAffinity?: number;
   readonly kiRecovery?: number;
   readonly kiConsumption?: number;
-  readonly timeInStance?: number; // Add missing property
+  readonly timeInStance?: number; // This property already exists
 }
 
 export interface CollisionZone {
@@ -819,7 +819,7 @@ export function createPlayerState(
   // Create complete player state with explicit property handling
   const playerState: PlayerState = {
     playerId: id,
-    position: { ...position },
+    position: { ...position }, // Ensure position is always provided
     stance: stance,
     velocity: overrides.velocity ?? { x: 0, y: 0 },
     health: overrides.health ?? 100,
@@ -858,4 +858,47 @@ export function createPlayerState(
   }
 
   return playerState;
+}
+
+// Add missing types for StanceManager
+export interface StanceState {
+  readonly current: TrigramStance;
+  readonly previous: TrigramStance | null;
+  readonly timeInStance: number;
+  readonly transitionCooldown: number;
+  readonly lastTransitionTime: number;
+}
+
+export interface StanceTransition {
+  readonly from: TrigramStance;
+  readonly to: TrigramStance;
+  readonly startTime: number;
+  readonly duration: number;
+  readonly progress: number;
+  readonly playerId: string;
+}
+
+export interface StanceRecommendation {
+  readonly recommendedStance: TrigramStance;
+  readonly reason: string;
+  readonly confidence: number;
+  readonly alternatives?: TrigramStance[];
+}
+
+export interface TransitionResult {
+  readonly success: boolean;
+  readonly message: string;
+  readonly transitionData: {
+    readonly success: boolean;
+    readonly reason?: string;
+    readonly cost?: number;
+  };
+  readonly updatedPlayer: PlayerState;
+}
+
+export interface StanceAnalysis {
+  readonly advantage: number;
+  readonly effectiveness: number;
+  readonly recommendation: string;
+  readonly counterStances?: TrigramStance[];
 }

@@ -1,10 +1,10 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { IntroScreen } from "./components/intro/IntroScreen";
 import { GameUI } from "./components/game/GameUI";
-import { TrainingScreen } from "./components/training/TrainingScreen";
-import type { TrigramStance, PlayerState, GamePhase, Position } from "./types";
+import type { TrigramStance, PlayerState, GamePhase } from "./types";
 import { createPlayerState } from "./types";
 import "./App.css";
+import { TrainingScreen } from "./components/training";
 
 // Define AppState interface
 interface AppState {
@@ -57,16 +57,19 @@ export function App(): React.ReactElement {
 
   // Handle stance changes
   const handleStanceChange = useCallback(
-    (playerIndex: number, stance: TrigramStance) => {
+    (playerIndex: number, newStance: TrigramStance) => {
       setAppState((prevState) => {
         const newPlayers = [...prevState.players] as [PlayerState, PlayerState];
-        // Fix: Ensure all required PlayerState properties are included
-        newPlayers[playerIndex] = {
-          ...newPlayers[playerIndex],
-          stance,
-          lastStanceChangeTime: Date.now(),
-          playerId: newPlayers[playerIndex].playerId, // Ensure playerId is preserved
-        };
+        const currentPlayer = newPlayers[playerIndex];
+
+        if (currentPlayer) {
+          newPlayers[playerIndex] = {
+            ...currentPlayer, // Spread current player to preserve all properties including position
+            stance: newStance,
+            lastStanceChangeTime: Date.now(),
+          };
+        }
+
         return {
           ...prevState,
           players: newPlayers,
