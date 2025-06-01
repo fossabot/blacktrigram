@@ -18,7 +18,7 @@ const AUDIO_CONFIG = {
   MAX_CONCURRENT_SOUNDS: 8,
 } as const;
 
-// Korean martial arts sound effect mappings
+// Korean martial arts sound effect mappings - Updated paths to match organized structure
 export type SoundEffectId =
   | "menu_hover"
   | "menu_select"
@@ -60,8 +60,6 @@ export type SoundEffectId =
   | "hit_block"
   | "body_realistic_sound";
 
-  
-
 export type MusicTrackId =
   | "intro_theme"
   | "menu_theme"
@@ -70,7 +68,7 @@ export type MusicTrackId =
   | "training_theme"
   | "meditation_theme";
 
-// Sound effect definitions with Korean martial arts context
+// Sound effect definitions with Korean martial arts context - Updated to use organized folder structure
 const SOUND_EFFECTS: Record<
   SoundEffectId,
   {
@@ -85,8 +83,8 @@ const SOUND_EFFECTS: Record<
   // Menu sounds with traditional Korean instruments inspiration
   menu_hover: {
     src: [
-      "./assets/audio/sfx/menu_hover.webm",
-      "./assets/audio/sfx/menu_hover.mp3",
+      "./assets/audio/sfx/menu/menu_hover.webm",
+      "./assets/audio/sfx/menu/menu_hover.mp3",
     ],
     volume: 0.3,
     preload: true,
@@ -94,8 +92,8 @@ const SOUND_EFFECTS: Record<
   },
   menu_select: {
     src: [
-      "./assets/audio/sfx/menu_select.webm",
-      "./assets/audio/sfx/menu_select.mp3",
+      "./assets/audio/sfx/menu/menu_select.webm",
+      "./assets/audio/sfx/menu/menu_select.mp3",
     ],
     volume: 0.5,
     preload: true,
@@ -103,19 +101,37 @@ const SOUND_EFFECTS: Record<
   },
   menu_back: {
     src: [
-      "./assets/audio/sfx/menu_back.webm",
-      "./assets/audio/sfx/menu_back.mp3",
+      "./assets/audio/sfx/menu/menu_back.webm",
+      "./assets/audio/sfx/menu/menu_back.mp3",
     ],
     volume: 0.4,
     preload: true,
     description: "Soft gong resonance - returning to previous state",
   },
+  menu_navigate: {
+    src: [
+      "./assets/audio/sfx/misc/menu_navigate.webm",
+      "./assets/audio/sfx/misc/menu_navigate.mp3",
+    ],
+    volume: 0.35,
+    preload: true,
+    description: "Interface navigation sound - subtle click/swoosh",
+  },
+  menu_click: {
+    src: [
+      "./assets/audio/sfx/misc/menu_click.webm",
+      "./assets/audio/sfx/misc/menu_click.mp3",
+    ],
+    volume: 0.45,
+    preload: true,
+    description: "Interface click confirmation sound",
+  },
 
   // Match flow sounds
   match_start: {
     src: [
-      "./assets/audio/sfx/match_start.webm",
-      "./assets/audio/sfx/match_start.mp3",
+      "./assets/audio/sfx/match/match_start.webm",
+      "./assets/audio/sfx/misc/match_start.mp3",
     ],
     volume: 0.8,
     preload: true,
@@ -123,29 +139,35 @@ const SOUND_EFFECTS: Record<
   },
   match_end: {
     src: [
-      "./assets/audio/sfx/match_end.webm",
-      "./assets/audio/sfx/match_end.mp3",
+      "./assets/audio/sfx/misc/match_end.webm",
+      "./assets/audio/sfx/misc/match_end.mp3",
     ],
     volume: 0.7,
     preload: true,
     description: "Ceremonial gong - end of combat",
   },
   victory: {
-    src: ["./assets/audio/sfx/victory.webm", "./assets/audio/sfx/victory.mp3"],
+    src: [
+      "./assets/audio/sfx/misc/victory.webm",
+      "./assets/audio/sfx/misc/victory.mp3",
+    ],
     volume: 0.9,
     preload: true,
     description: "Triumphant Korean traditional music chord",
   },
   defeat: {
-    src: ["./assets/audio/sfx/defeat.webm", "./assets/audio/sfx/defeat.mp3"],
+    src: [
+      "./assets/audio/sfx/misc/defeat.webm",
+      "./assets/audio/sfx/misc/defeat.mp3",
+    ],
     volume: 0.6,
     preload: true,
     description: "Somber traditional melody - learning from defeat",
   },
   countdown: {
     src: [
-      "./assets/audio/sfx/countdown.webm",
-      "./assets/audio/sfx/countdown.mp3",
+      "./assets/audio/sfx/misc/countdown.webm",
+      "./assets/audio/sfx/misc/countdown.mp3",
     ],
     volume: 0.6,
     preload: true,
@@ -155,8 +177,8 @@ const SOUND_EFFECTS: Record<
   // Combat stance and movement sounds
   stance_change: {
     src: [
-      "./assets/audio/sfx/stance_change.webm",
-      "./assets/audio/sfx/stance_change.mp3",
+      "./assets/audio/sfx/movement/stance_change.webm",
+      "./assets/audio/sfx/misc/stance_change.mp3",
     ],
     volume: 0.4,
     preload: true,
@@ -164,15 +186,18 @@ const SOUND_EFFECTS: Record<
   },
   footstep: {
     src: [
-      "./assets/audio/sfx/footstep.webm",
-      "./assets/audio/sfx/footstep.mp3",
+      "./assets/audio/sfx/misc/footstep.webm",
+      "./assets/audio/sfx/misc/footstep.mp3",
     ],
     volume: 0.3,
     preload: true,
     description: "Soft dojang floor contact",
   },
   dodge: {
-    src: ["./assets/audio/sfx/dodge.webm", "./assets/audio/sfx/dodge.mp3"],
+    src: [
+      "./assets/audio/sfx/movement/dodge.webm",
+      "./assets/audio/sfx/misc/dodge.mp3",
+    ],
     volume: 0.4,
     preload: true,
     description: "Quick air displacement - evasive movement",
@@ -181,8 +206,8 @@ const SOUND_EFFECTS: Record<
   // Attack sounds - varying intensity based on trigram philosophy
   attack_light: {
     src: [
-      "./assets/audio/sfx/attack_light.webm",
-      "./assets/audio/sfx/attack_light.mp3",
+      "./assets/audio/sfx/combat/attack_light.webm",
+      "./assets/audio/sfx/combat/attack_light.mp3",
     ],
     volume: 0.5,
     preload: true,
@@ -190,8 +215,8 @@ const SOUND_EFFECTS: Record<
   },
   attack_medium: {
     src: [
-      "./assets/audio/sfx/attack_medium.webm",
-      "./assets/audio/sfx/attack_medium.mp3",
+      "./assets/audio/sfx/combat/attack_medium.webm",
+      "./assets/audio/sfx/combat/attack_medium.mp3",
     ],
     volume: 0.6,
     preload: true,
@@ -199,8 +224,8 @@ const SOUND_EFFECTS: Record<
   },
   attack_heavy: {
     src: [
-      "./assets/audio/sfx/attack_heavy.webm",
-      "./assets/audio/sfx/attack_heavy.mp3",
+      "./assets/audio/sfx/combat/attack_heavy.webm",
+      "./assets/audio/sfx/misc/attack_heavy.mp3",
     ],
     volume: 0.8,
     preload: true,
@@ -208,19 +233,46 @@ const SOUND_EFFECTS: Record<
   },
   attack_critical: {
     src: [
-      "./assets/audio/sfx/attack_critical.webm",
-      "./assets/audio/sfx/attack_critical.mp3",
+      "./assets/audio/sfx/combat/attack_critical.webm",
+      "./assets/audio/sfx/misc/attack_critical.mp3",
     ],
     volume: 0.9,
     preload: true,
     description: "Perfect vital point strike - devastating precision",
   },
+  attack_punch_light: {
+    src: [
+      "./assets/audio/sfx/combat/attack_punch_light.webm",
+      "./assets/audio/sfx/misc/attack_punch_light.mp3",
+    ],
+    volume: 0.55,
+    preload: true,
+    description: "Quick, sharp punch impact - light",
+  },
+  attack_punch_medium: {
+    src: [
+      "./assets/audio/sfx/combat/attack_punch_medium.webm",
+      "./assets/audio/sfx/misc/attack_punch_medium.mp3",
+    ],
+    volume: 0.65,
+    preload: true,
+    description: "Solid punch impact - medium",
+  },
+  attack_special_geon: {
+    src: [
+      "./assets/audio/sfx/combat/attack_special_geon.webm",
+      "./assets/audio/sfx/misc/attack_special_geon.mp3",
+    ],
+    volume: 0.85,
+    preload: true,
+    description: "Geon trigram special technique sound",
+  },
 
   // Blocking and defensive sounds
   block_success: {
     src: [
-      "./assets/audio/sfx/block_success.webm",
-      "./assets/audio/sfx/block_success.mp3",
+      "./assets/audio/sfx/blocks/block_success.webm",
+      "./assets/audio/sfx/misc/block_success.mp3",
     ],
     volume: 0.6,
     preload: true,
@@ -228,8 +280,8 @@ const SOUND_EFFECTS: Record<
   },
   block_break: {
     src: [
-      "./assets/audio/sfx/block_break.webm",
-      "./assets/audio/sfx/block_break.mp3",
+      "./assets/audio/sfx/blocks/block_break.webm",
+      "./assets/audio/sfx/misc/block_break.mp3",
     ],
     volume: 0.7,
     preload: true,
@@ -239,8 +291,8 @@ const SOUND_EFFECTS: Record<
   // Hit impact sounds
   hit_light: {
     src: [
-      "./assets/audio/sfx/hit_light.webm",
-      "./assets/audio/sfx/hit_light.mp3",
+      "./assets/audio/sfx/hits/hit_light.webm",
+      "./assets/audio/sfx/misc/hit_light.mp3",
     ],
     volume: 0.5,
     preload: true,
@@ -248,8 +300,8 @@ const SOUND_EFFECTS: Record<
   },
   hit_medium: {
     src: [
-      "./assets/audio/sfx/hit_medium.webm",
-      "./assets/audio/sfx/hit_medium.mp3",
+      "./assets/audio/sfx/hits/hit_medium.webm",
+      "./assets/audio/sfx/misc/hit_medium.mp3",
     ],
     volume: 0.6,
     preload: true,
@@ -257,8 +309,8 @@ const SOUND_EFFECTS: Record<
   },
   hit_heavy: {
     src: [
-      "./assets/audio/sfx/hit_heavy.webm",
-      "./assets/audio/sfx/hit_heavy.mp3",
+      "./assets/audio/sfx/hits/hit_heavy.webm",
+      "./assets/audio/sfx/misc/hit_heavy.mp3",
     ],
     volume: 0.8,
     preload: true,
@@ -266,19 +318,37 @@ const SOUND_EFFECTS: Record<
   },
   hit_critical: {
     src: [
-      "./assets/audio/sfx/hit_critical.webm",
-      "./assets/audio/sfx/hit_critical.mp3",
+      "./assets/audio/sfx/hits/hit_critical.webm",
+      "./assets/audio/sfx/misc/hit_critical.mp3",
     ],
     volume: 0.9,
     preload: true,
     description: "Vital point struck - critical damage",
   },
+  hit_flesh: {
+    src: [
+      "./assets/audio/sfx/misc/hit_flesh.webm",
+      "./assets/audio/sfx/misc/hit_flesh.mp3",
+    ],
+    volume: 0.6,
+    preload: true,
+    description: "Impact sound on flesh",
+  },
+  hit_block: {
+    src: [
+      "./assets/audio/sfx/misc/hit_block.webm",
+      "./assets/audio/sfx/misc/hit_block.mp3",
+    ],
+    volume: 0.65,
+    preload: true,
+    description: "Sound of an attack hitting a block",
+  },
 
   // Energy and ki effects
   ki_charge: {
     src: [
-      "./assets/audio/sfx/ki_charge.webm",
-      "./assets/audio/sfx/ki_charge.mp3",
+      "./assets/audio/sfx/ki_energy/ki_charge.webm",
+      "./assets/audio/sfx/misc/ki_charge.mp3",
     ],
     volume: 0.5,
     loop: true,
@@ -287,8 +357,8 @@ const SOUND_EFFECTS: Record<
   },
   ki_release: {
     src: [
-      "./assets/audio/sfx/ki_release.webm",
-      "./assets/audio/sfx/ki_release.mp3",
+      "./assets/audio/sfx/ki_energy/ki_release.webm",
+      "./assets/audio/sfx/misc/ki_release.mp3",
     ],
     volume: 0.7,
     preload: true,
@@ -296,8 +366,8 @@ const SOUND_EFFECTS: Record<
   },
   energy_pulse: {
     src: [
-      "./assets/audio/sfx/energy_pulse.webm",
-      "./assets/audio/sfx/energy_pulse.mp3",
+      "./assets/audio/sfx/ki_energy/energy_pulse.webm",
+      "./assets/audio/sfx/misc/energy_pulse.mp3",
     ],
     volume: 0.4,
     preload: true,
@@ -307,8 +377,8 @@ const SOUND_EFFECTS: Record<
   // Combo and special effects
   combo_buildup: {
     src: [
-      "./assets/audio/sfx/combo_buildup.webm",
-      "./assets/audio/sfx/combo_buildup.mp3",
+      "./assets/audio/sfx/misc/combo_buildup.webm",
+      "./assets/audio/sfx/misc/combo_buildup.mp3",
     ],
     volume: 0.6,
     preload: true,
@@ -316,8 +386,8 @@ const SOUND_EFFECTS: Record<
   },
   combo_finish: {
     src: [
-      "./assets/audio/sfx/combo_finish.webm",
-      "./assets/audio/sfx/combo_finish.mp3",
+      "./assets/audio/sfx/misc/combo_finish.webm",
+      "./assets/audio/sfx/misc/combo_finish.mp3",
     ],
     volume: 0.8,
     preload: true,
@@ -325,8 +395,8 @@ const SOUND_EFFECTS: Record<
   },
   perfect_strike: {
     src: [
-      "./assets/audio/sfx/perfect_strike.webm",
-      "./assets/audio/sfx/perfect_strike.mp3",
+      "./assets/audio/sfx/special/perfect_strike.webm",
+      "./assets/audio/sfx/misc/perfect_strike.mp3",
     ],
     volume: 0.9,
     preload: true,
@@ -336,8 +406,8 @@ const SOUND_EFFECTS: Record<
   // Status and warning sounds
   health_low: {
     src: [
-      "./assets/audio/sfx/health_low.webm",
-      "./assets/audio/sfx/health_low.mp3",
+      "./assets/audio/sfx/misc/health_low.webm",
+      "./assets/audio/sfx/misc/health_low.mp3",
     ],
     volume: 0.5,
     loop: true,
@@ -346,8 +416,8 @@ const SOUND_EFFECTS: Record<
   },
   stamina_depleted: {
     src: [
-      "./assets/audio/sfx/stamina_depleted.webm",
-      "./assets/audio/sfx/stamina_depleted.mp3",
+      "./assets/audio/sfx/misc/stamina_depleted.webm",
+      "./assets/audio/sfx/misc/stamina_depleted.mp3",
     ],
     volume: 0.4,
     preload: true,
@@ -357,8 +427,8 @@ const SOUND_EFFECTS: Record<
   // Environmental and ambient effects
   dojang_ambience: {
     src: [
-      "./assets/audio/sfx/dojang_ambience.webm",
-      "./assets/audio/sfx/dojang_ambience.mp3",
+      "./assets/audio/sfx/environment/dojang_ambience.webm",
+      "./assets/audio/sfx/environment/dojang_ambience.mp3",
     ],
     volume: 0.3,
     loop: true,
@@ -367,8 +437,8 @@ const SOUND_EFFECTS: Record<
   },
   wind_effect: {
     src: [
-      "./assets/audio/sfx/wind_effect.webm",
-      "./assets/audio/sfx/wind_effect.mp3",
+      "./assets/audio/sfx/environment/wind_effect.webm",
+      "./assets/audio/sfx/environment/wind_effect.mp3",
     ],
     volume: 0.2,
     loop: true,
@@ -376,81 +446,19 @@ const SOUND_EFFECTS: Record<
     description: "Gentle wind through dojang - natural harmony",
   },
 
-   attack_punch_light: {
+  // Generic/misc sounds
+  body_realistic_sound: {
     src: [
-      "./assets/audio/sfx/attack_punch_light.webm",
-      "./assets/audio/sfx/attack_punch_light.mp3",
+      "./assets/audio/sfx/misc/body_realistic_sound.webm",
+      "./assets/audio/sfx/misc/body_realistic_sound.mp3",
     ],
-    volume: 0.55, // Adjust as needed
-    preload: true,
-    description: "Quick, sharp punch impact - light",
-  },
-  attack_punch_medium: {
-    src: [
-      "./assets/audio/sfx/attack_punch_medium.webm",
-      "./assets/audio/sfx/attack_punch_medium.mp3",
-    ],
-    volume: 0.65, // Adjust as needed
-    preload: true,
-    description: "Solid punch impact - medium",
-  },
-  attack_special_geon: {
-    src: [
-      "./assets/audio/sfx/attack_special_geon.webm",
-      "./assets/audio/sfx/attack_special_geon.mp3",
-    ],
-    volume: 0.85, // Adjust as needed
-    preload: true,
-    description: "Geon trigram special technique sound",
-  },
-  menu_navigate: {
-    src: [
-      "./assets/audio/sfx/menu_navigate.webm",
-      "./assets/audio/sfx/menu_navigate.mp3",
-    ],
-    volume: 0.35, // Adjust as needed
-    preload: true,
-    description: "Interface navigation sound - subtle click/swoosh",
-  },
-  menu_click: {
-    src: [
-      "./assets/audio/sfx/menu_click.webm",
-      "./assets/audio/sfx/menu_click.mp3",
-    ],
-    volume: 0.45, // Adjust as needed
-    preload: true,
-    description: "Interface click confirmation sound",
-  },
-  hit_flesh: {
-    src: [
-      "./assets/audio/sfx/hit_flesh.webm",
-      "./assets/audio/sfx/hit_flesh.mp3",
-    ],
-    volume: 0.6, // Adjust as needed
-    preload: true,
-    description: "Impact sound on flesh",
-  },
-  hit_block: {
-    src: [
-      "./assets/audio/sfx/hit_block.webm",
-      "./assets/audio/sfx/hit_block.mp3",
-    ],
-    volume: 0.65, // Adjust as needed
-    preload: true,
-    description: "Sound of an attack hitting a block",
-  },
-  body_realistic_sound: { // This ID is generic, consider a more descriptive name if possible
-    src: [
-      "./assets/audio/sfx/body_realistic_sound.webm",
-      "./assets/audio/sfx/body_realistic_sound.mp3",
-    ],
-    volume: 0.7, // Adjust as needed
+    volume: 0.7,
     preload: true,
     description: "Generic realistic body impact or movement sound",
   },
 };
 
-// Music track definitions
+// Music track definitions - Updated paths
 const MUSIC_TRACKS: Record<
   MusicTrackId,
   {
