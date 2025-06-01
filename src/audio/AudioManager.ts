@@ -50,7 +50,17 @@ export type SoundEffectId =
   | "perfect_strike"
   | "dojang_ambience"
   | "wind_effect"
-  | "energy_pulse";
+  | "energy_pulse"
+  | "attack_punch_light"
+  | "attack_punch_medium"
+  | "attack_special_geon"
+  | "menu_navigate"
+  | "menu_click"
+  | "hit_flesh"
+  | "hit_block"
+  | "body_realistic_sound";
+
+  
 
 export type MusicTrackId =
   | "intro_theme"
@@ -364,6 +374,79 @@ const SOUND_EFFECTS: Record<
     loop: true,
     preload: true,
     description: "Gentle wind through dojang - natural harmony",
+  },
+
+   attack_punch_light: {
+    src: [
+      "./assets/audio/sfx/attack_punch_light.webm",
+      "./assets/audio/sfx/attack_punch_light.mp3",
+    ],
+    volume: 0.55, // Adjust as needed
+    preload: true,
+    description: "Quick, sharp punch impact - light",
+  },
+  attack_punch_medium: {
+    src: [
+      "./assets/audio/sfx/attack_punch_medium.webm",
+      "./assets/audio/sfx/attack_punch_medium.mp3",
+    ],
+    volume: 0.65, // Adjust as needed
+    preload: true,
+    description: "Solid punch impact - medium",
+  },
+  attack_special_geon: {
+    src: [
+      "./assets/audio/sfx/attack_special_geon.webm",
+      "./assets/audio/sfx/attack_special_geon.mp3",
+    ],
+    volume: 0.85, // Adjust as needed
+    preload: true,
+    description: "Geon trigram special technique sound",
+  },
+  menu_navigate: {
+    src: [
+      "./assets/audio/sfx/menu_navigate.webm",
+      "./assets/audio/sfx/menu_navigate.mp3",
+    ],
+    volume: 0.35, // Adjust as needed
+    preload: true,
+    description: "Interface navigation sound - subtle click/swoosh",
+  },
+  menu_click: {
+    src: [
+      "./assets/audio/sfx/menu_click.webm",
+      "./assets/audio/sfx/menu_click.mp3",
+    ],
+    volume: 0.45, // Adjust as needed
+    preload: true,
+    description: "Interface click confirmation sound",
+  },
+  hit_flesh: {
+    src: [
+      "./assets/audio/sfx/hit_flesh.webm",
+      "./assets/audio/sfx/hit_flesh.mp3",
+    ],
+    volume: 0.6, // Adjust as needed
+    preload: true,
+    description: "Impact sound on flesh",
+  },
+  hit_block: {
+    src: [
+      "./assets/audio/sfx/hit_block.webm",
+      "./assets/audio/sfx/hit_block.mp3",
+    ],
+    volume: 0.65, // Adjust as needed
+    preload: true,
+    description: "Sound of an attack hitting a block",
+  },
+  body_realistic_sound: { // This ID is generic, consider a more descriptive name if possible
+    src: [
+      "./assets/audio/sfx/body_realistic_sound.webm",
+      "./assets/audio/sfx/body_realistic_sound.mp3",
+    ],
+    volume: 0.7, // Adjust as needed
+    preload: true,
+    description: "Generic realistic body impact or movement sound",
   },
 };
 
