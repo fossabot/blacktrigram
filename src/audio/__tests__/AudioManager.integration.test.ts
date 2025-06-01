@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { Howler } from "howler";
-import type { SoundEffectId } from "../AudioManager";
+import { audioManager } from "../AudioManager";
+import type { SoundEffectId } from "../../types/audio";
 
 describe("AudioManager Integration Tests", () => {
   let audioManagerInstance: any = null;
@@ -34,6 +35,31 @@ describe("AudioManager Integration Tests", () => {
       audioManagerInstance.cleanup();
     }
     Howler.unload();
+  });
+
+  it("should initialize correctly", () => {
+    expect(audioManager.getState().isInitialized).toBe(true);
+  });
+
+  it("should play sound effects without errors", () => {
+    const soundId: SoundEffectId = "menu_hover";
+    expect(() => audioManager.playSFX(soundId)).not.toThrow();
+  });
+
+  it("should handle invalid sound IDs gracefully", () => {
+    const invalidId = "invalid_sound" as SoundEffectId;
+    expect(() => audioManager.playSFX(invalidId)).not.toThrow();
+  });
+
+  it("should manage volume correctly", () => {
+    audioManager.setMasterVolume(0.5);
+    expect(audioManager.getState().masterVolume).toBe(0.5);
+  });
+
+  it("should toggle mute functionality", () => {
+    const initialMuteState = audioManager.getState().muted;
+    audioManager.toggleMute();
+    expect(audioManager.getState().muted).toBe(!initialMuteState);
   });
 
   describe("Korean Martial Arts Audio Integration", () => {

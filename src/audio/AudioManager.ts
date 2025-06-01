@@ -6,10 +6,21 @@ declare global {
 }
 
 import { Howl, Howler } from "howler";
-import type { AudioState } from "../types/audio";
+import type {
+  AudioState,
+  IAudioManager,
+  SoundEffectId,
+  MusicTrackId,
+  AudioPlaybackOptions,
+  AudioConfig,
+  AudioAsset,
+  AudioCategory,
+} from "../types/audio";
+import { AUDIO_ASSET_REGISTRY, AudioAssetUtils } from "./AudioAssetRegistry";
+import { SmartVariantSelector } from "./VariantSelector";
 
-// Audio configuration constants
-const AUDIO_CONFIG = {
+// Configuration moved to types
+const AUDIO_CONFIG: AudioConfig = {
   MASTER_VOLUME: 0.8,
   SFX_VOLUME: 0.7,
   AMBIENT_VOLUME: 0.4,
@@ -18,528 +29,14 @@ const AUDIO_CONFIG = {
   MAX_CONCURRENT_SOUNDS: 8,
 } as const;
 
-// Korean martial arts sound effect mappings - Updated paths to match organized structure
-export type SoundEffectId =
-  | "menu_hover"
-  | "menu_select"
-  | "menu_back"
-  | "match_start"
-  | "match_end"
-  | "victory"
-  | "defeat"
-  | "countdown"
-  | "stance_change"
-  | "attack_light"
-  | "attack_medium"
-  | "attack_heavy"
-  | "attack_critical"
-  | "block_success"
-  | "block_break"
-  | "hit_light"
-  | "hit_medium"
-  | "hit_heavy"
-  | "hit_critical"
-  | "footstep"
-  | "dodge"
-  | "ki_charge"
-  | "ki_release"
-  | "combo_buildup"
-  | "combo_finish"
-  | "health_low"
-  | "stamina_depleted"
-  | "perfect_strike"
-  | "dojang_ambience"
-  | "wind_effect"
-  | "energy_pulse"
-  | "attack_punch_light"
-  | "attack_punch_medium"
-  | "attack_special_geon"
-  | "menu_navigate"
-  | "menu_click"
-  | "hit_flesh"
-  | "hit_block"
-  | "body_realistic_sound";
-
-export type MusicTrackId =
-  | "intro_theme"
-  | "menu_theme"
-  | "combat_theme"
-  | "victory_theme"
-  | "training_theme"
-  | "meditation_theme";
-
-// Sound effect definitions with Korean martial arts context - Updated to use organized folder structure
-const SOUND_EFFECTS: Record<
-  SoundEffectId,
-  {
-    src: string[];
-    volume: number;
-    sprite?: Record<string, [number, number]>;
-    loop?: boolean;
-    preload?: boolean;
-    description: string;
-  }
-> = {
-  // Menu sounds with traditional Korean instruments inspiration
-  menu_hover: {
-    src: [
-      "./assets/audio/sfx/menu/menu_hover.webm",
-      "./assets/audio/sfx/menu/menu_hover.mp3",
-    ],
-    volume: 0.3,
-    preload: true,
-    description: "Subtle wood block tap - traditional Korean percussion",
-  },
-  menu_select: {
-    src: [
-      "./assets/audio/sfx/menu/menu_select.webm",
-      "./assets/audio/sfx/menu/menu_select.mp3",
-    ],
-    volume: 0.5,
-    preload: true,
-    description: "Bamboo flute note - decisive selection",
-  },
-  menu_back: {
-    src: [
-      "./assets/audio/sfx/menu/menu_back.webm",
-      "./assets/audio/sfx/menu/menu_back.mp3",
-    ],
-    volume: 0.4,
-    preload: true,
-    description: "Soft gong resonance - returning to previous state",
-  },
-  menu_navigate: {
-    src: [
-      "./assets/audio/sfx/misc/menu_navigate.webm",
-      "./assets/audio/sfx/misc/menu_navigate.mp3",
-    ],
-    volume: 0.35,
-    preload: true,
-    description: "Interface navigation sound - subtle click/swoosh",
-  },
-  menu_click: {
-    src: [
-      "./assets/audio/sfx/misc/menu_click.webm",
-      "./assets/audio/sfx/misc/menu_click.mp3",
-    ],
-    volume: 0.45,
-    preload: true,
-    description: "Interface click confirmation sound",
-  },
-
-  // Match flow sounds
-  match_start: {
-    src: [
-      "./assets/audio/sfx/match/match_start.webm",
-      "./assets/audio/sfx/misc/match_start.mp3",
-    ],
-    volume: 0.8,
-    preload: true,
-    description: "Temple bell strike - beginning of combat",
-  },
-  match_end: {
-    src: [
-      "./assets/audio/sfx/misc/match_end.webm",
-      "./assets/audio/sfx/misc/match_end.mp3",
-    ],
-    volume: 0.7,
-    preload: true,
-    description: "Ceremonial gong - end of combat",
-  },
-  victory: {
-    src: [
-      "./assets/audio/sfx/misc/victory.webm",
-      "./assets/audio/sfx/misc/victory.mp3",
-    ],
-    volume: 0.9,
-    preload: true,
-    description: "Triumphant Korean traditional music chord",
-  },
-  defeat: {
-    src: [
-      "./assets/audio/sfx/misc/defeat.webm",
-      "./assets/audio/sfx/misc/defeat.mp3",
-    ],
-    volume: 0.6,
-    preload: true,
-    description: "Somber traditional melody - learning from defeat",
-  },
-  countdown: {
-    src: [
-      "./assets/audio/sfx/misc/countdown.webm",
-      "./assets/audio/sfx/misc/countdown.mp3",
-    ],
-    volume: 0.6,
-    preload: true,
-    description: "Rhythmic drum beat - building tension",
-  },
-
-  // Combat stance and movement sounds
-  stance_change: {
-    src: [
-      "./assets/audio/sfx/movement/stance_change.webm",
-      "./assets/audio/sfx/misc/stance_change.mp3",
-    ],
-    volume: 0.4,
-    preload: true,
-    description: "Fabric rustle - changing trigram stance",
-  },
-  footstep: {
-    src: [
-      "./assets/audio/sfx/misc/footstep.webm",
-      "./assets/audio/sfx/misc/footstep.mp3",
-    ],
-    volume: 0.3,
-    preload: true,
-    description: "Soft dojang floor contact",
-  },
-  dodge: {
-    src: [
-      "./assets/audio/sfx/movement/dodge.webm",
-      "./assets/audio/sfx/misc/dodge.mp3",
-    ],
-    volume: 0.4,
-    preload: true,
-    description: "Quick air displacement - evasive movement",
-  },
-
-  // Attack sounds - varying intensity based on trigram philosophy
-  attack_light: {
-    src: [
-      "./assets/audio/sfx/combat/attack_light.webm",
-      "./assets/audio/sfx/combat/attack_light.mp3",
-    ],
-    volume: 0.5,
-    preload: true,
-    description: "Swift air cut - precise light strike",
-  },
-  attack_medium: {
-    src: [
-      "./assets/audio/sfx/combat/attack_medium.webm",
-      "./assets/audio/sfx/combat/attack_medium.mp3",
-    ],
-    volume: 0.6,
-    preload: true,
-    description: "Focused energy release - medium power",
-  },
-  attack_heavy: {
-    src: [
-      "./assets/audio/sfx/combat/attack_heavy.webm",
-      "./assets/audio/sfx/misc/attack_heavy.mp3",
-    ],
-    volume: 0.8,
-    preload: true,
-    description: "Thunderous impact - maximum force",
-  },
-  attack_critical: {
-    src: [
-      "./assets/audio/sfx/combat/attack_critical.webm",
-      "./assets/audio/sfx/misc/attack_critical.mp3",
-    ],
-    volume: 0.9,
-    preload: true,
-    description: "Perfect vital point strike - devastating precision",
-  },
-  attack_punch_light: {
-    src: [
-      "./assets/audio/sfx/combat/attack_punch_light.webm",
-      "./assets/audio/sfx/misc/attack_punch_light.mp3",
-    ],
-    volume: 0.55,
-    preload: true,
-    description: "Quick, sharp punch impact - light",
-  },
-  attack_punch_medium: {
-    src: [
-      "./assets/audio/sfx/combat/attack_punch_medium.webm",
-      "./assets/audio/sfx/misc/attack_punch_medium.mp3",
-    ],
-    volume: 0.65,
-    preload: true,
-    description: "Solid punch impact - medium",
-  },
-  attack_special_geon: {
-    src: [
-      "./assets/audio/sfx/combat/attack_special_geon.webm",
-      "./assets/audio/sfx/misc/attack_special_geon.mp3",
-    ],
-    volume: 0.85,
-    preload: true,
-    description: "Geon trigram special technique sound",
-  },
-
-  // Blocking and defensive sounds
-  block_success: {
-    src: [
-      "./assets/audio/sfx/blocks/block_success.webm",
-      "./assets/audio/sfx/misc/block_success.mp3",
-    ],
-    volume: 0.6,
-    preload: true,
-    description: "Solid defensive contact - successful block",
-  },
-  block_break: {
-    src: [
-      "./assets/audio/sfx/blocks/block_break.webm",
-      "./assets/audio/sfx/misc/block_break.mp3",
-    ],
-    volume: 0.7,
-    preload: true,
-    description: "Defense shattered - guard broken",
-  },
-
-  // Hit impact sounds
-  hit_light: {
-    src: [
-      "./assets/audio/sfx/hits/hit_light.webm",
-      "./assets/audio/sfx/misc/hit_light.mp3",
-    ],
-    volume: 0.5,
-    preload: true,
-    description: "Light contact - glancing blow",
-  },
-  hit_medium: {
-    src: [
-      "./assets/audio/sfx/hits/hit_medium.webm",
-      "./assets/audio/sfx/misc/hit_medium.mp3",
-    ],
-    volume: 0.6,
-    preload: true,
-    description: "Solid impact - effective strike",
-  },
-  hit_heavy: {
-    src: [
-      "./assets/audio/sfx/hits/hit_heavy.webm",
-      "./assets/audio/sfx/misc/hit_heavy.mp3",
-    ],
-    volume: 0.8,
-    preload: true,
-    description: "Devastating blow - severe damage",
-  },
-  hit_critical: {
-    src: [
-      "./assets/audio/sfx/hits/hit_critical.webm",
-      "./assets/audio/sfx/misc/hit_critical.mp3",
-    ],
-    volume: 0.9,
-    preload: true,
-    description: "Vital point struck - critical damage",
-  },
-  hit_flesh: {
-    src: [
-      "./assets/audio/sfx/misc/hit_flesh.webm",
-      "./assets/audio/sfx/misc/hit_flesh.mp3",
-    ],
-    volume: 0.6,
-    preload: true,
-    description: "Impact sound on flesh",
-  },
-  hit_block: {
-    src: [
-      "./assets/audio/sfx/misc/hit_block.webm",
-      "./assets/audio/sfx/misc/hit_block.mp3",
-    ],
-    volume: 0.65,
-    preload: true,
-    description: "Sound of an attack hitting a block",
-  },
-
-  // Energy and ki effects
-  ki_charge: {
-    src: [
-      "./assets/audio/sfx/ki_energy/ki_charge.webm",
-      "./assets/audio/sfx/misc/ki_charge.mp3",
-    ],
-    volume: 0.5,
-    loop: true,
-    preload: true,
-    description: "Building internal energy - ki accumulation",
-  },
-  ki_release: {
-    src: [
-      "./assets/audio/sfx/ki_energy/ki_release.webm",
-      "./assets/audio/sfx/misc/ki_release.mp3",
-    ],
-    volume: 0.7,
-    preload: true,
-    description: "Explosive energy release - ki burst",
-  },
-  energy_pulse: {
-    src: [
-      "./assets/audio/sfx/ki_energy/energy_pulse.webm",
-      "./assets/audio/sfx/misc/energy_pulse.mp3",
-    ],
-    volume: 0.4,
-    preload: true,
-    description: "Rhythmic energy wave - trigram power",
-  },
-
-  // Combo and special effects
-  combo_buildup: {
-    src: [
-      "./assets/audio/sfx/misc/combo_buildup.webm",
-      "./assets/audio/sfx/misc/combo_buildup.mp3",
-    ],
-    volume: 0.6,
-    preload: true,
-    description: "Rising tension - combo building",
-  },
-  combo_finish: {
-    src: [
-      "./assets/audio/sfx/misc/combo_finish.webm",
-      "./assets/audio/sfx/misc/combo_finish.mp3",
-    ],
-    volume: 0.8,
-    preload: true,
-    description: "Explosive finale - combo completion",
-  },
-  perfect_strike: {
-    src: [
-      "./assets/audio/sfx/special/perfect_strike.webm",
-      "./assets/audio/sfx/misc/perfect_strike.mp3",
-    ],
-    volume: 0.9,
-    preload: true,
-    description: "Flawless technique - perfect execution",
-  },
-
-  // Status and warning sounds
-  health_low: {
-    src: [
-      "./assets/audio/sfx/misc/health_low.webm",
-      "./assets/audio/sfx/misc/health_low.mp3",
-    ],
-    volume: 0.5,
-    loop: true,
-    preload: true,
-    description: "Heartbeat intensifying - low health warning",
-  },
-  stamina_depleted: {
-    src: [
-      "./assets/audio/sfx/misc/stamina_depleted.webm",
-      "./assets/audio/sfx/misc/stamina_depleted.mp3",
-    ],
-    volume: 0.4,
-    preload: true,
-    description: "Heavy breathing - exhaustion",
-  },
-
-  // Environmental and ambient effects
-  dojang_ambience: {
-    src: [
-      "./assets/audio/sfx/environment/dojang_ambience.webm",
-      "./assets/audio/sfx/environment/dojang_ambience.mp3",
-    ],
-    volume: 0.3,
-    loop: true,
-    preload: true,
-    description: "Peaceful dojang atmosphere - meditation space",
-  },
-  wind_effect: {
-    src: [
-      "./assets/audio/sfx/environment/wind_effect.webm",
-      "./assets/audio/sfx/environment/wind_effect.mp3",
-    ],
-    volume: 0.2,
-    loop: true,
-    preload: true,
-    description: "Gentle wind through dojang - natural harmony",
-  },
-
-  // Generic/misc sounds
-  body_realistic_sound: {
-    src: [
-      "./assets/audio/sfx/misc/body_realistic_sound.webm",
-      "./assets/audio/sfx/misc/body_realistic_sound.mp3",
-    ],
-    volume: 0.7,
-    preload: true,
-    description: "Generic realistic body impact or movement sound",
-  },
-};
-
-// Music track definitions - Updated paths
-const MUSIC_TRACKS: Record<
-  MusicTrackId,
-  {
-    src: string[];
-    volume: number;
-    loop: boolean;
-    preload: boolean;
-    description: string;
-  }
-> = {
-  intro_theme: {
-    src: [
-      "./assets/audio/music/intro_theme.webm",
-      "./assets/audio/music/intro_theme.mp3",
-    ],
-    volume: 0.6,
-    loop: true,
-    preload: true,
-    description:
-      "Contemplative Korean traditional music - setting the philosophical mood",
-  },
-  menu_theme: {
-    src: [
-      "./assets/audio/music/menu_theme.webm",
-      "./assets/audio/music/menu_theme.mp3",
-    ],
-    volume: 0.5,
-    loop: true,
-    preload: true,
-    description: "Traditional Korean melody - menu ambiance",
-  },
-  combat_theme: {
-    src: [
-      "./assets/audio/music/combat_theme.webm",
-      "./assets/audio/music/combat_theme.mp3",
-    ],
-    volume: 0.5,
-    loop: true,
-    preload: true,
-    description: "Intense rhythmic composition - driving combat energy",
-  },
-  victory_theme: {
-    src: [
-      "./assets/audio/music/victory_theme.webm",
-      "./assets/audio/music/victory_theme.mp3",
-    ],
-    volume: 0.7,
-    loop: false,
-    preload: true,
-    description: "Triumphant melody - celebrating martial mastery",
-  },
-  training_theme: {
-    src: [
-      "./assets/audio/music/training_theme.webm",
-      "./assets/audio/music/training_theme.mp3",
-    ],
-    volume: 0.4,
-    loop: true,
-    preload: true,
-    description: "Focused meditation music - disciplined practice",
-  },
-  meditation_theme: {
-    src: [
-      "./assets/audio/music/meditation_theme.webm",
-      "./assets/audio/music/meditation_theme.mp3",
-    ],
-    volume: 0.3,
-    loop: true,
-    preload: true,
-    description: "Deep contemplative sounds - inner harmony",
-  },
-};
-
-// AudioState is now imported from centralized types
-
-class AudioManager {
+class AudioManager implements IAudioManager {
   private static instance: AudioManager;
-  private sounds: Map<SoundEffectId, Howl> = new Map();
+  private sounds: Map<string, Howl> = new Map();
   private music: Map<MusicTrackId, Howl> = new Map();
   private currentMusic: Howl | null = null;
+  private variantSelector = new SmartVariantSelector("adaptive");
   private useFallbackSounds: boolean = false;
+
   private state: AudioState = {
     masterVolume: AUDIO_CONFIG.MASTER_VOLUME,
     sfxVolume: AUDIO_CONFIG.SFX_VOLUME,
@@ -562,86 +59,38 @@ class AudioManager {
 
   private async initializeAudioSystem(): Promise<void> {
     try {
-      // Initialize Howler with optimal settings
       Howler.autoUnlock = true;
       Howler.html5PoolSize = AUDIO_CONFIG.MAX_CONCURRENT_SOUNDS;
-
-      // Set initial volumes
       Howler.volume(this.state.masterVolume);
 
-      // Initialize sound effects and music
-      this.initializeSoundEffects();
-      this.initializeMusicTracks();
-
+      await this.preloadAssets();
       this.state = { ...this.state, isInitialized: true };
       console.log("🎵 AudioManager initialized successfully");
     } catch (error) {
       console.error("❌ Failed to initialize AudioManager:", error);
       this.useFallbackSounds = true;
+      this.state = { ...this.state, isInitialized: true, fallbackMode: true };
     }
   }
 
-  private initializeSoundEffects(): void {
-    Object.entries(SOUND_EFFECTS).forEach(([id, config]) => {
-      const sound = new Howl({
-        src: config.src,
-        volume: config.volume * this.state.sfxVolume,
-        loop: config.loop || false,
-        preload: config.preload || false,
-        sprite: config.sprite,
-        onload: () =>
-          console.log(`🎵 Loaded SFX: ${id} - ${config.description}`),
-        onloaderror: (id, error) => {
-          console.warn(
-            `⚠️ Failed to load SFX ${id}, using fallback sounds:`,
-            error
-          );
-          this.useFallbackSounds = true;
-        },
-      });
-
-      this.sounds.set(id as SoundEffectId, sound);
-    });
-  }
-
-  private initializeMusicTracks(): void {
-    Object.entries(MUSIC_TRACKS).forEach(([id, config]) => {
-      const music = new Howl({
-        src: config.src,
-        volume: config.volume * this.state.musicVolume,
-        loop: config.loop,
-        preload: config.preload,
-        onload: () =>
-          console.log(`🎶 Loaded Music: ${id} - ${config.description}`),
-        onloaderror: (id, error) => {
-          console.warn(`⚠️ Failed to load music ${id}:`, error);
-        },
-      });
-
-      this.music.set(id as MusicTrackId, music);
-    });
-  }
-
-  // Single playSFX implementation with fallback support
+  // Enhanced playSFX with variant support
   public playSFX(
     id: SoundEffectId,
-    options?: {
-      volume?: number;
-      rate?: number;
-      delay?: number;
-    }
+    options: AudioPlaybackOptions = {}
   ): number | null {
     if (this.state.muted || !this.state.isInitialized) return null;
 
-    // Use fallback sounds if original files failed to load
     if (this.useFallbackSounds) {
       this.playFallbackSound(id);
       return null;
     }
 
-    const sound = this.sounds.get(id);
+    // Check if we should play a specific variant
+    const soundKey = this.resolveSoundKey(id, options.variant);
+    const sound = this.sounds.get(soundKey);
+
     if (!sound) {
-      console.warn(`🔇 Sound effect not found: ${id}, using fallback`);
+      console.warn(`🔇 Sound effect not found: ${soundKey}, using fallback`);
       this.playFallbackSound(id);
       return null;
     }
@@ -649,93 +98,121 @@ class AudioManager {
     try {
       const soundId = sound.play();
 
-      if (options?.volume !== undefined) {
+      if (options.volume !== undefined) {
         sound.volume(options.volume * this.state.sfxVolume, soundId);
       }
 
-      if (options?.rate !== undefined) {
+      if (options.rate !== undefined) {
         sound.rate(options.rate, soundId);
       }
 
-      if (options?.delay !== undefined) {
-        setTimeout(() => {
-          if (sound.playing(soundId)) {
-            sound.seek(0, soundId);
-          }
-        }, options.delay);
+      if (options.fadeIn) {
+        sound.volume(0, soundId);
+        sound.fade(
+          0,
+          options.volume || sound.volume(),
+          options.fadeIn,
+          soundId
+        );
       }
 
       return soundId;
     } catch (error) {
-      console.error(`❌ Failed to play sound ${id}:`, error);
+      console.error(`❌ Failed to play sound ${soundKey}:`, error);
       this.playFallbackSound(id);
       return null;
     }
   }
 
-  private async playFallbackSound(id: SoundEffectId): Promise<void> {
-    if (this.state.muted) return;
+  private resolveSoundKey(
+    id: SoundEffectId,
+    requestedVariant?: string
+  ): string {
+    const asset = AUDIO_ASSET_REGISTRY.sfx[id];
+    if (!asset) return id;
 
-    try {
-      // Dynamic import to avoid unused import error
-      const { defaultSoundGenerator } = await import("./DefaultSoundGenerator");
-
-      switch (id) {
-        case "menu_hover":
-        case "menu_select":
-        case "menu_back":
-          await defaultSoundGenerator.playMenuSound();
-          break;
-        case "match_start":
-          await defaultSoundGenerator.playMatchStartSound();
-          break;
-        case "victory":
-          await defaultSoundGenerator.playVictorySound();
-          break;
-        case "stance_change":
-          await defaultSoundGenerator.playStanceChangeSound();
-          break;
-        case "attack_light":
-        case "attack_medium":
-        case "attack_heavy":
-        case "attack_critical":
-          const damage =
-            id === "attack_critical"
-              ? 40
-              : id === "attack_heavy"
-              ? 30
-              : id === "attack_medium"
-              ? 20
-              : 10;
-          await defaultSoundGenerator.playAttackSound(damage);
-          break;
-        case "hit_light":
-        case "hit_medium":
-        case "hit_heavy":
-        case "hit_critical":
-          const hitDamage =
-            id === "hit_critical"
-              ? 40
-              : id === "hit_heavy"
-              ? 30
-              : id === "hit_medium"
-              ? 20
-              : 10;
-          const isVital = id === "hit_critical";
-          await defaultSoundGenerator.playHitSound(hitDamage, isVital);
-          break;
-        case "combo_buildup":
-        case "combo_finish":
-          const comboLevel = id === "combo_finish" ? 5 : 3;
-          await defaultSoundGenerator.playComboSound(comboLevel);
-          break;
-        default:
-          // Generic fallback
-          await defaultSoundGenerator.playMenuSound();
-      }
-    } catch (error) {
-      console.warn(`Failed to play fallback sound for ${id}:`, error);
+    // If specific variant requested and exists, use it
+    if (requestedVariant && asset.variants?.includes(requestedVariant)) {
+      return `${id}_${requestedVariant}`;
     }
+
+    // If asset has variants, select one using strategy
+    if (asset.variants && asset.variants.length > 0) {
+      const selectedVariant = this.variantSelector.selectVariant(
+        id,
+        asset.variants
+      );
+      return selectedVariant ? `${id}_${selectedVariant}` : id;
+    }
+
+    // Use base sound
+    return id;
+  }
+
+  async preloadAssets(category?: AudioCategory): Promise<void> {
+    const assetsToLoad = category
+      ? AudioAssetUtils.getAssetsByCategory(category)
+      : [
+          ...Object.values(AUDIO_ASSET_REGISTRY.sfx),
+          ...Object.values(AUDIO_ASSET_REGISTRY.music),
+        ];
+
+    const loadPromises = assetsToLoad.map((asset: AudioAsset) =>
+      this.loadAsset(asset)
+    );
+    await Promise.allSettled(loadPromises);
+  }
+
+  private async loadAsset(asset: AudioAsset): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const paths = AudioAssetUtils.getAssetPaths(asset);
+
+      const sound = new Howl({
+        src: paths,
+        volume:
+          asset.volume *
+          (asset.category === "music"
+            ? this.state.musicVolume
+            : this.state.sfxVolume),
+        loop: asset.loop || false,
+        preload: asset.preload || false,
+        onload: () => {
+          console.log(`🎵 Loaded: ${asset.id} - ${asset.description}`);
+          resolve();
+        },
+        onloaderror: (_id, error) => {
+          console.warn(`⚠️ Failed to load ${asset.id}:`, error);
+          this.useFallbackSounds = true;
+          reject(error);
+        },
+      });
+
+      // Store base sound and variants
+      if (asset.category === "music") {
+        this.music.set(asset.id as MusicTrackId, sound);
+      } else {
+        this.sounds.set(asset.id, sound);
+
+        // Load variants as separate sounds for individual control
+        if (asset.variants) {
+          const variantsArray = [...asset.variants]; // Convert readonly to mutable
+          variantsArray.forEach((variant) => {
+            const variantPaths = asset.formats.map((format) =>
+              AudioAssetUtils.getVariantPath(asset, variant, format)
+            );
+
+            const variantSound = new Howl({
+              src: variantPaths,
+              volume: asset.volume * this.state.sfxVolume,
+              loop: asset.loop || false,
+              preload: asset.preload || false,
+            });
+
+            this.sounds.set(`${asset.id}_${variant}`, variantSound);
+          });
+        }
+      }
+    });
   }
 
   // Specialized sound methods for game events
@@ -926,6 +403,110 @@ class AudioManager {
     return { ...this.state };
   }
 
+  async unloadAssets(category?: AudioCategory): Promise<void> {
+    if (category) {
+      // Unload specific category
+      const assetsToUnload = AudioAssetUtils.getAssetsByCategory(category);
+
+      assetsToUnload.forEach((asset) => {
+        if (asset.category === "music") {
+          const music = this.music.get(asset.id as MusicTrackId);
+          if (music) {
+            music.unload();
+            this.music.delete(asset.id as MusicTrackId);
+          }
+        } else {
+          const sound = this.sounds.get(asset.id);
+          if (sound) {
+            sound.unload();
+            this.sounds.delete(asset.id);
+          }
+
+          // Also unload variants
+          if (asset.variants) {
+            const variantsArray = [...asset.variants]; // Convert readonly to mutable
+            variantsArray.forEach((variant) => {
+              const variantKey = `${asset.id}_${variant}`;
+              const variantSound = this.sounds.get(variantKey);
+              if (variantSound) {
+                variantSound.unload();
+                this.sounds.delete(variantKey);
+              }
+            });
+          }
+        }
+      });
+    } else {
+      // Unload all assets
+      this.cleanup();
+    }
+  }
+
+  private async playFallbackSound(id: SoundEffectId): Promise<void> {
+    if (this.state.muted) return;
+
+    try {
+      // Dynamic import to avoid unused import error
+      const { defaultSoundGenerator } = await import("./DefaultSoundGenerator");
+
+      switch (id) {
+        case "menu_hover":
+        case "menu_select":
+        case "menu_back":
+          await defaultSoundGenerator.playMenuSound();
+          break;
+        case "match_start":
+          await defaultSoundGenerator.playMatchStartSound();
+          break;
+        case "victory":
+          await defaultSoundGenerator.playVictorySound();
+          break;
+        case "stance_change":
+          await defaultSoundGenerator.playStanceChangeSound();
+          break;
+        case "attack_light":
+        case "attack_medium":
+        case "attack_heavy":
+        case "attack_critical":
+          const damage =
+            id === "attack_critical"
+              ? 40
+              : id === "attack_heavy"
+              ? 30
+              : id === "attack_medium"
+              ? 20
+              : 10;
+          await defaultSoundGenerator.playAttackSound(damage);
+          break;
+        case "hit_light":
+        case "hit_medium":
+        case "hit_heavy":
+        case "hit_critical":
+          const hitDamage =
+            id === "hit_critical"
+              ? 40
+              : id === "hit_heavy"
+              ? 30
+              : id === "hit_medium"
+              ? 20
+              : 10;
+          const isVital = id === "hit_critical";
+          await defaultSoundGenerator.playHitSound(hitDamage, isVital);
+          break;
+        case "combo_buildup":
+        case "combo_finish":
+          const comboLevel = id === "combo_finish" ? 5 : 3;
+          await defaultSoundGenerator.playComboSound(comboLevel);
+          break;
+        default:
+          // Generic fallback
+          await defaultSoundGenerator.playMenuSound();
+      }
+    } catch (error) {
+      console.warn(`Failed to play fallback sound for ${id}:`, error);
+    }
+  }
+
   // Cleanup
   public cleanup(): void {
     this.stopMusic(false);
@@ -936,10 +517,8 @@ class AudioManager {
   }
 }
 
-// Export singleton instance
+// Export singleton instance and hook
 export const audioManager = AudioManager.getInstance();
-
-// React hook for audio management
 export function useAudio(): AudioManager {
   return audioManager;
 }

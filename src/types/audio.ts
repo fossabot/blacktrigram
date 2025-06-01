@@ -1,39 +1,74 @@
-// Types related to audio system and Korean martial arts sound effects
+// Core audio system types for Korean martial arts combat game
 
-// Korean martial arts sound effect mappings
+// Audio format and quality configuration - ONLY MP3 and WebM
+export type AudioFormat = "webm" | "mp3";
+export type AudioCategory = "sfx" | "music" | "ambient";
+export type AudioQuality = "low" | "medium" | "high";
+
+// Sound effect IDs for Korean martial arts combat
 export type SoundEffectId =
+  // Menu interface sounds
   | "menu_hover"
   | "menu_select"
   | "menu_back"
+  | "menu_navigate"
+  | "menu_click"
+
+  // Combat attack sounds
+  | "attack_light"
+  | "attack_medium"
+  | "attack_heavy"
+  | "attack_critical"
+  | "attack_punch_light"
+  | "attack_punch_medium"
+  | "attack_special_geon"
+
+  // Hit impact sounds
+  | "hit_light"
+  | "hit_medium"
+  | "hit_heavy"
+  | "hit_critical"
+  | "hit_flesh"
+  | "hit_block"
+
+  // Blocking and defensive sounds
+  | "block_success"
+  | "block_break"
+
+  // Movement and stance sounds
+  | "stance_change"
+  | "footstep"
+  | "dodge"
+
+  // Ki energy system sounds
+  | "ki_charge"
+  | "ki_release"
+  | "energy_pulse"
+
+  // Match flow sounds
   | "match_start"
   | "match_end"
   | "victory"
   | "defeat"
   | "countdown"
-  | "stance_change"
-  | "attack_light"
-  | "attack_medium"
-  | "attack_heavy"
-  | "attack_critical"
-  | "block_success"
-  | "block_break"
-  | "hit_light"
-  | "hit_medium"
-  | "hit_heavy"
-  | "hit_critical"
-  | "footstep"
-  | "dodge"
-  | "ki_charge"
-  | "ki_release"
+
+  // Combo and special effects
   | "combo_buildup"
   | "combo_finish"
+  | "perfect_strike"
+
+  // Status and warning sounds
   | "health_low"
   | "stamina_depleted"
-  | "perfect_strike"
+
+  // Environmental and ambient effects
   | "dojang_ambience"
   | "wind_effect"
-  | "energy_pulse";
 
+  // Generic/misc sounds
+  | "body_realistic_sound";
+
+// Music track IDs for Korean martial arts themes
 export type MusicTrackId =
   | "intro_theme"
   | "menu_theme"
@@ -41,6 +76,67 @@ export type MusicTrackId =
   | "victory_theme"
   | "training_theme"
   | "meditation_theme";
+
+// Audio asset configuration
+export interface AudioAsset {
+  readonly id: string;
+  readonly category: AudioCategory;
+  readonly basePath: string;
+  readonly formats: readonly AudioFormat[]; // Only MP3 and WebM
+  readonly variants?: readonly string[];
+  readonly volume: number;
+  readonly loop?: boolean;
+  readonly preload?: boolean;
+  readonly description: string;
+  readonly koreanContext: string;
+}
+
+// Audio asset registry structure
+export interface AudioAssetRegistry {
+  readonly sfx: Record<SoundEffectId, AudioAsset>;
+  readonly music: Record<MusicTrackId, AudioAsset>;
+}
+
+// Audio playback options
+export interface AudioPlaybackOptions {
+  readonly volume?: number;
+  readonly loop?: boolean;
+  readonly rate?: number;
+  readonly fadeIn?: number;
+  readonly fadeOut?: number;
+  readonly delay?: number;
+  readonly variant?: string;
+}
+
+// Audio system state
+export interface AudioState {
+  readonly masterVolume: number;
+  readonly sfxVolume: number;
+  readonly musicVolume: number;
+  readonly muted: boolean;
+  readonly currentMusicTrack: MusicTrackId | null;
+  readonly isInitialized: boolean;
+  readonly fallbackMode?: boolean;
+}
+
+// Audio manager interface
+export interface IAudioManager {
+  playSFX(id: SoundEffectId, options?: AudioPlaybackOptions): number | null;
+  playMusic(id: MusicTrackId, fadeIn?: boolean): void;
+  stopMusic(fadeOut?: boolean): void;
+  playAttackSound(damage: number): void;
+  playHitSound(damage: number, isVitalPoint?: boolean): void;
+  playStanceChangeSound(): void;
+  playComboSound(comboCount: number): void;
+  setMasterVolume(volume: number): void;
+  setSFXVolume(volume: number): void;
+  setMusicVolume(volume: number): void;
+  toggleMute(): void;
+  getState(): AudioState;
+  preloadAssets(category?: AudioCategory): Promise<void>;
+  unloadAssets(category?: AudioCategory): Promise<void>;
+  cleanup(): void;
+}
 
 // Audio configuration constants
 export interface AudioConfig {
@@ -50,41 +146,65 @@ export interface AudioConfig {
   readonly MUSIC_VOLUME: number;
   readonly FADE_DURATION: number;
   readonly MAX_CONCURRENT_SOUNDS: number;
-  readonly FALLBACK_ENABLED: boolean;
-  readonly RETRY_COUNT: number;
-  readonly TIMEOUT_MS: number;
 }
 
-// Sound effect definitions with Korean martial arts context
-export interface SoundEffectDefinition {
-  src: string[];
-  volume: number;
-  sprite?: Record<string, [number, number]>;
-  loop?: boolean;
-  preload?: boolean;
-  description: string;
-  fallbackId?: string; // ID to use if this sound fails to load
-  required?: boolean; // Whether this sound is essential for gameplay
+// Spatial audio for 3D positioning in combat
+export interface SpatialAudioOptions {
+  readonly position: { x: number; y: number; z?: number };
+  readonly maxDistance: number;
+  readonly rolloffFactor?: number;
+  readonly orientation?: { x: number; y: number; z: number };
 }
 
-export interface AudioManagerState {
-  isInitialized: boolean;
-  masterVolume: number;
-  sfxVolume: number;
-  musicVolume: number;
-  isMuted: boolean;
-  activeSounds: Map<string, any>; // Howl instances
-  currentMusic?: any; // Current background music Howl
-  failedAssets: Set<string>; // Track failed asset loads
-  fallbackMode: boolean; // Whether using fallback sounds
+// Audio effect processing
+export interface AudioEffectOptions {
+  readonly reverb?: {
+    roomSize: number;
+    damping: number;
+    wetLevel: number;
+  };
+  readonly distortion?: {
+    amount: number;
+    oversample: OverSampleType;
+  };
+  readonly filter?: {
+    type: BiquadFilterType;
+    frequency: number;
+    Q?: number;
+  };
 }
 
-// Audio context and state management
-export interface AudioState {
-  readonly masterVolume: number;
-  readonly sfxVolume: number;
-  readonly musicVolume: number;
-  readonly muted: boolean;
-  readonly currentMusicTrack: MusicTrackId | null;
-  readonly isInitialized: boolean;
+// Korean martial arts specific audio events
+export interface CombatAudioEvent {
+  readonly type: "attack" | "hit" | "block" | "stance_change" | "vital_point";
+  readonly intensity: number; // 0-100
+  readonly archetype?: "musa" | "amsalja" | "hacker" | "jeongbo" | "jojik";
+  readonly trigram?:
+    | "geon"
+    | "tae"
+    | "li"
+    | "jin"
+    | "son"
+    | "gam"
+    | "gan"
+    | "gon";
+  readonly vitalPoint?: boolean;
+  readonly comboCount?: number;
+}
+
+// Audio loading and error handling
+export interface AudioLoadResult {
+  readonly success: boolean;
+  readonly assetId: string;
+  readonly error?: string;
+  readonly fallbackUsed?: boolean;
+}
+
+// Audio analytics for performance monitoring
+export interface AudioAnalytics {
+  readonly totalAssetsLoaded: number;
+  readonly failedLoads: number;
+  readonly fallbacksUsed: number;
+  readonly averageLoadTime: number;
+  readonly memoryUsage: number;
 }
