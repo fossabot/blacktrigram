@@ -4,15 +4,6 @@ import type { Position, TrilingualName } from "./common";
 import type { VitalPointCategory } from "./enums";
 import type { StatusEffect } from "./effects";
 
-export interface VitalPointSystemConfig {
-  readonly baseAccuracy: number;
-  readonly distanceModifier: number;
-  readonly targetingDifficulty?: number;
-  readonly damageMultiplier?: number;
-  readonly effectChance?: number;
-  readonly angleModifier?: number;
-}
-
 export interface VitalPoint {
   id: string;
   name: TrilingualName;

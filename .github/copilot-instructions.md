@@ -44,18 +44,24 @@ Black Trigram is a **realistic 2D precision combat simulator** deeply rooted in 
 
 **Status**: ✅ **COMPLETE** - Comprehensive type definitions
 
-- `src/types/index.ts` (4) - Unified type exports
-- `src/types/trigram.ts` (12) - Complete trigram system with TRIGRAM_DATA
-- `src/types/combat.ts` (4) - Combat mechanics types
-- `src/types/player.ts` (4) - Player state and actions
-- `src/types/anatomy.ts` (4) - Vital points and anatomical regions
-- `src/types/ui.ts` (4) - UI component interfaces
-- `src/types/game.ts` (4) - Game flow and screens
-- `src/types/enums.ts` (4) - String literal unions
-- `src/types/constants.ts` (4) - Global constants including KOREAN_COLORS
-- `src/types/effects.ts` (4) - Status effects and conditions
-- `src/types/common.ts` (4) - Basic shared types
-- `src/types/pixi-react.d.ts` (4) - PixiJS React integration
+src/types/
+├── index.ts           # Main export hub
+├── components.ts      # All component prop interfaces
+├── korean-text.ts     # Korean typography system
+├── systems.ts         # Internal system types
+├── audio.ts          # Audio system types (enhanced)
+├── combat.ts         # Combat mechanics (includes HitResult)
+├── trigram.ts        # Eight trigram system
+├── anatomy.ts        # Vital points and body regions
+├── player.ts         # Player state and actions
+├── game.ts           # Game flow and screens
+├── ui.ts             # UI component interfaces
+├── effects.ts        # Status effects and conditions
+├── constants.ts      # Global constants
+├── enums.ts          # String literal unions
+├── common.ts         # Basic shared types
+├── system.ts         # System types
+└── pixi-react.d.ts   # PixiJS React integration
 
 #### Audio System (`src/audio/` - 108 lines total)
 
