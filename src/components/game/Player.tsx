@@ -1,12 +1,6 @@
 import { PixiContainerComponent } from "../ui/base/PixiComponents";
 import { PlayerVisuals } from "./PlayerVisuals";
-import type { PlayerState } from "../../types";
-
-export interface PlayerProps {
-  readonly playerState: PlayerState;
-  readonly isPlayer1: boolean;
-  readonly onAttack: (position: { x: number; y: number }) => void;
-}
+import type { PlayerProps } from "../../types";
 
 export function Player({
   playerState,

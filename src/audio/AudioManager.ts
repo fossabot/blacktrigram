@@ -6,6 +6,7 @@ declare global {
 }
 
 import { Howl, Howler } from "howler";
+import type { AudioState } from "../types/audio";
 
 // Audio configuration constants
 const AUDIO_CONFIG = {
@@ -440,15 +441,7 @@ const MUSIC_TRACKS: Record<
   },
 };
 
-// Audio context and state management
-interface AudioState {
-  readonly masterVolume: number;
-  readonly sfxVolume: number;
-  readonly musicVolume: number;
-  readonly muted: boolean;
-  readonly currentMusicTrack: MusicTrackId | null;
-  readonly isInitialized: boolean;
-}
+// AudioState is now imported from centralized types
 
 class AudioManager {
   private static instance: AudioManager;

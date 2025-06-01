@@ -1,9 +1,5 @@
 import React from "react";
-import { KOREAN_COLORS, type GamePhase } from "../../../types";
-
-export interface MenuSectionProps {
-  readonly onGamePhaseChange: (phase: GamePhase) => void;
-}
+import { KOREAN_COLORS, type MenuSectionProps } from "../../../types";
 
 export function MenuSection({
   onGamePhaseChange,

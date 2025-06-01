@@ -48,8 +48,3 @@ export const TRIGRAM_CONFIG = {
   gan: { symbol: "☶", color: KOREAN_COLORS.gan },
   gon: { symbol: "☷", color: KOREAN_COLORS.gon },
 } as const;
-
-export type KoreanTextSize = keyof typeof KOREAN_SIZE_CONFIG;
-export type MartialVariant = keyof typeof MARTIAL_COLORS;
-export type StatusKey = keyof typeof KOREAN_STATUS_TRANSLATIONS;
-export type TrigramKey = keyof typeof TRIGRAM_CONFIG;

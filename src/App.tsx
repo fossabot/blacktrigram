@@ -7,30 +7,15 @@ import {
   type GamePhase,
   type PlayerState,
   type TrigramStance,
+  type AppState,
+  type EndScreenProps,
   KOREAN_COLORS,
   KOREAN_FONT_FAMILY,
 } from "./types";
 import { CombatSystem } from "./systems/CombatSystem";
 import "./App.css";
 
-interface AppState {
-  readonly gamePhase: GamePhase;
-  readonly players: readonly [PlayerState, PlayerState];
-  readonly gameTime: number;
-  readonly currentRound: number;
-  readonly timeRemaining: number;
-  readonly combatLog: readonly string[];
-  readonly isPaused: boolean;
-  readonly winnerId: string | null; // To store the ID of the winning player
-}
-
 // Victory/Defeat Screen Component
-interface EndScreenProps {
-  readonly message: string;
-  readonly onRestart: () => void;
-  readonly onMenu: () => void;
-}
-
 function EndScreen({
   message,
   onRestart,

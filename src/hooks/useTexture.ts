@@ -1,11 +1,6 @@
 import { useState, useEffect } from "react";
 import { Texture, Assets } from "pixi.js";
-
-interface TextureState {
-  readonly texture: Texture | null;
-  readonly loading: boolean;
-  readonly error: Error | null;
-}
+import type { TextureState } from "../types";
 
 export function useTexture(url: string): TextureState {
   const [state, setState] = useState<TextureState>({

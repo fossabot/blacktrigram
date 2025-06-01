@@ -86,6 +86,29 @@ export interface KoreanTechnique {
   stunValue?: number;
 }
 
+// Enhanced Korean technique with combat chains and cultural context
+export interface EnhancedKoreanTechnique extends KoreanTechnique {
+  readonly culturalContext: {
+    readonly origin: string; // Which Korean martial art
+    readonly philosophy: string; // Associated philosophy
+    readonly traditionalUse: string; // Historical application
+  };
+  readonly comboChains: readonly string[]; // Technique IDs that can follow
+  readonly counters: readonly string[]; // Techniques that counter this
+  readonly prerequisites: {
+    readonly minKi: number;
+    readonly minStamina: number;
+    readonly requiredStance?: TrigramStance;
+    readonly forbiddenStances?: readonly TrigramStance[];
+  };
+  readonly timingProperties: {
+    readonly startupFrames: number;
+    readonly activeFrames: number;
+    readonly recoveryFrames: number;
+    readonly cancelWindows: readonly number[];
+  };
+}
+
 export interface CombatResult {
   success: boolean; // Overall success of the combat action
   damage: number; // Total damage dealt
@@ -108,4 +131,15 @@ export interface AttackResult {
   attackerState: PlayerState; // Updated attacker state
   defenderState: PlayerState; // Updated defender state
   description: string; // Description of the attack outcome
+}
+
+// Hit detection specific result type for vital point system
+export interface HitResult {
+  readonly hit: boolean;
+  readonly damage: number;
+  readonly vitalPoint: VitalPoint | null;
+  readonly effects: readonly StatusEffect[];
+  readonly hitType: "normal" | "vital" | "critical" | "miss";
+  readonly description: string;
+  readonly accuracy?: number;
 }

@@ -6,34 +6,10 @@ import {
   PixiTextComponent,
 } from "../ui/base/PixiComponents";
 import type { Graphics as PixiGraphics } from "pixi.js";
-import {
-  KOREAN_COLORS,
-  TRIGRAM_DATA,
-  type PlayerState,
-  KOREAN_FONT_FAMILY,
-} from "../../types";
+import { KOREAN_COLORS, TRIGRAM_DATA, KOREAN_FONT_FAMILY } from "../../types";
+import type { PlayerVisualsProps, BodyPartProps } from "../../types";
 
-export interface PlayerVisualsProps {
-  readonly playerState: PlayerState;
-  readonly isPlayer1: boolean;
-}
-
-interface BodyPartProps {
-  shape: "circle" | "rectangle" | "line";
-  color: number;
-  alpha?: number;
-  size: {
-    radius?: number;
-    width?: number;
-    height?: number;
-    length?: number; // For lines
-    thickness?: number; // For lines
-  };
-  x?: number; // Position relative to its own container
-  y?: number;
-  rotation?: number; // In radians
-  anchor?: { x: number; y: number }; // Anchor for rotation and positioning
-}
+// PlayerVisualsProps and BodyPartProps are now imported from centralized types
 
 const BodyPart: React.FC<BodyPartProps> = ({
   shape,

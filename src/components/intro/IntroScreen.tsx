@@ -2,12 +2,12 @@ import React, { useState, useCallback } from "react";
 import { MenuSection } from "./components/MenuSection";
 import { ControlsSection } from "./components/ControlsSection";
 import { PhilosophySection } from "./components/PhilosophySection";
-import { KOREAN_COLORS, KOREAN_FONT_FAMILY, type GamePhase } from "../../types";
+import {
+  KOREAN_COLORS,
+  KOREAN_FONT_FAMILY,
+  type IntroScreenProps,
+} from "../../types";
 import logo from "../../assets/black-trigram-256.png"; // Import the logo
-
-interface IntroScreenProps {
-  readonly onGamePhaseChange: (phase: GamePhase) => void;
-}
 
 export function IntroScreen({
   onGamePhaseChange,

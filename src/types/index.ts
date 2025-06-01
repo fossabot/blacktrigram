@@ -11,6 +11,10 @@ export * from "./combat";
 export * from "./trigram";
 export * from "./game";
 export * from "./ui";
+export * from "./audio";
+export * from "./components";
+export * from "./korean-text";
+export * from "./systems";
 
 // Re-export PixiReactElementProps from @pixi/react, assuming pixi-react.d.ts has augmented it.
 export type { PixiReactElementProps } from "@pixi/react";

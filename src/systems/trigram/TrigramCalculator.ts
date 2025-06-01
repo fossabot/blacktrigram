@@ -3,6 +3,7 @@ import type {
   TransitionMetrics,
   TransitionPath,
   KiFlowFactors,
+  PlayerState,
 } from "../../types";
 import { TRIGRAM_DATA, STANCE_EFFECTIVENESS_MATRIX } from "../../types";
 
@@ -721,13 +722,4 @@ export class TrigramCalculator {
       transitionCosts, // Using the initialized transitionCosts
     };
   }
-}
-
-// Add missing interface for PlayerState
-interface PlayerState {
-  playerId: string;
-  // Add necessary properties - minimal implementation
-  stance?: TrigramStance;
-  ki?: number;
-  stamina?: number;
 }

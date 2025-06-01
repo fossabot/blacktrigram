@@ -1,33 +1,10 @@
-import type { TrigramStance, KoreanTechnique } from "../../types";
+import type { TrigramStance, EnhancedKoreanTechnique } from "../../types";
 
 /**
  * Comprehensive Korean Martial Arts Techniques System
  * Based on traditional Korean martial arts (Taekwondo, Hapkido, Tangsudo)
  * Integrated with I-Ching trigram philosophy
  */
-
-// Enhanced Korean technique with combat chains and cultural context
-export interface EnhancedKoreanTechnique extends KoreanTechnique {
-  readonly culturalContext: {
-    readonly origin: string; // Which Korean martial art
-    readonly philosophy: string; // Associated philosophy
-    readonly traditionalUse: string; // Historical application
-  };
-  readonly comboChains: readonly string[]; // Technique IDs that can follow
-  readonly counters: readonly string[]; // Techniques that counter this
-  readonly prerequisites: {
-    readonly minKi: number;
-    readonly minStamina: number;
-    readonly requiredStance?: TrigramStance;
-    readonly forbiddenStances?: readonly TrigramStance[];
-  };
-  readonly timingProperties: {
-    readonly startupFrames: number;
-    readonly activeFrames: number;
-    readonly recoveryFrames: number;
-    readonly cancelWindows: readonly number[];
-  };
-}
 
 // Comprehensive Korean technique database for each trigram
 export const KOREAN_TECHNIQUES_DATABASE: Record<

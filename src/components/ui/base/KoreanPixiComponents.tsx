@@ -4,9 +4,11 @@ import {
   PixiTextComponent,
   PixiContainerComponent,
   PixiGraphicsComponent,
-  type PixiContainerComponentProps,
-  PixiTextComponentProps,
 } from "./PixiComponents";
+import type {
+  PixiContainerComponentProps,
+  PixiTextComponentProps,
+} from "../../../types";
 import {
   KOREAN_COLORS,
   KOREAN_FONT_FAMILY,

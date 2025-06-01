@@ -6,11 +6,12 @@ import {
   PixiGraphicsComponent,
   PixiTextComponent,
 } from "../ui/base/PixiComponents";
-import { type HitEffect, KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../types";
-
-export interface HitEffectsLayerProps {
-  readonly effects: readonly HitEffect[];
-}
+import {
+  type HitEffectsLayerProps,
+  type HitEffectDisplayProps,
+  KOREAN_COLORS,
+  KOREAN_FONT_FAMILY,
+} from "../../types";
 
 export function HitEffectsLayer({
   effects,
@@ -28,10 +29,6 @@ export function HitEffectsLayer({
       ))}
     </PixiContainerComponent>
   );
-}
-
-interface HitEffectDisplayProps {
-  readonly effect: HitEffect;
 }
 
 function HitEffectDisplay({

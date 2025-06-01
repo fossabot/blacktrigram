@@ -1,16 +1,11 @@
 import React, { useCallback } from "react";
-import type { Graphics as PixiGraphics } from "pixi.js";
+import type {
+  PixiGraphicsComponentProps,
+  PixiTextComponentProps,
+  PixiContainerComponentProps,
+} from "../../../types";
 
-export interface PixiGraphicsComponentProps {
-  readonly x?: number;
-  readonly y?: number;
-  readonly interactive?: boolean;
-  readonly draw: (graphics: PixiGraphics) => void;
-  readonly onClick?: (() => void) | null;
-  readonly onPointerDown?: (() => void) | null;
-  readonly alpha?: number;
-  readonly visible?: boolean;
-}
+// PixiJS component types are now imported from centralized types
 
 export function PixiGraphicsComponent({
   x = 0,
@@ -38,33 +33,7 @@ export function PixiGraphicsComponent({
   );
 }
 
-export interface PixiTextComponentProps {
-  readonly text: string;
-  readonly x?: number;
-  readonly y?: number;
-  readonly anchor?: { x: number; y: number } | number;
-  readonly style?: {
-    readonly fontFamily?: string;
-    readonly fontSize?: number;
-    readonly fill?: number | string;
-    readonly fontWeight?:
-      | "normal"
-      | "bold"
-      | "bolder"
-      | "lighter"
-      | "100"
-      | "200"
-      | "300"
-      | "400"
-      | "500"
-      | "600"
-      | "700"
-      | "800"
-      | "900";
-  };
-  readonly alpha?: number;
-  readonly visible?: boolean;
-}
+// Additional component type definitions moved to centralized types
 
 export function PixiTextComponent({
   text,
@@ -88,19 +57,7 @@ export function PixiTextComponent({
   );
 }
 
-export interface PixiContainerComponentProps {
-  readonly children?: React.ReactNode;
-  readonly x?: number;
-  readonly y?: number;
-  readonly interactive?: boolean;
-  readonly onClick?: (() => void) | null;
-  readonly onPointerDown?: (() => void) | null;
-  readonly onPointerEnter?: (() => void) | null;
-  readonly onPointerLeave?: (() => void) | null;
-  readonly alpha?: number;
-  readonly visible?: boolean;
-  readonly scale?: number | { x: number; y: number };
-}
+// All component types consolidated in centralized location
 
 export function PixiContainerComponent({
   children,

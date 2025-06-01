@@ -2,6 +2,7 @@ import type {
   AttackType,
   CollisionZone,
   HitDetectionParams,
+  HitResult,
   StatusEffect,
   VitalPoint,
 } from "../../types";
@@ -23,20 +24,7 @@ import {
 // For this refactor, let's assume the local HitResult is the one to use or be merged.
 // If types/index.ts has a HitResult, it needs to be compatible.
 // For now, I'll keep the local HitResult definition if it's substantially different
-// and assume it will be reconciled later or moved to types/index.ts.
-// The provided types/index.ts does not have a HitResult that matches this one.
-// It has AttackResult. This HitResult is specific to this system.
-
-interface HitResult {
-  // This local HitResult is specific to this system's return value.
-  readonly hit: boolean;
-  readonly damage: number;
-  readonly vitalPoint: VitalPoint | null; // Uses the imported VitalPoint
-  readonly effects: readonly StatusEffect[]; // Uses the imported StatusEffect
-  readonly hitType: "normal" | "vital" | "critical" | "miss";
-  readonly description: string;
-  readonly accuracy?: number;
-}
+// HitResult is now imported from centralized systems types
 
 /**
  * Advanced hit detection with vital point precision
