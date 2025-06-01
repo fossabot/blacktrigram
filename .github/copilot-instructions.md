@@ -1,756 +1,869 @@
-# Copilot Instructions
+# GitHub Copilot Instructions for Black Trigram (흑괘)
 
-# 🎨 Black Trigram — Art & Asset Style Guide
+## Project Overview
 
-**Goal:** Capture the dark, cyberpunk-meets-traditional Korean martial-arts vibe shown in the concept art, and translate it into a cohesive set of game assets—UI elements, icons, character silhouettes, environment textures, VFX, and more.
+Black Trigram is a **realistic 2D precision combat simulator** deeply rooted in Korean martial arts and the I Ching trigram philosophy. The game emphasizes anatomical realism, precise targeting, authentic martial techniques, and cyberpunk aesthetics.
 
-## Executive Summary
+**Genre**: 2D Realistic Precision Combat Simulator / Traditional Korean Martial Arts Training  
+**Platform**: Web-based (HTML5/WebGL via PixiJS + React)  
+**Core Focus**: Anatomical targeting, authentic Korean martial arts, 5 player archetypes, 70 vital points
 
-Black Trigram is a sophisticated 2D precision combat simulator deeply rooted in Korean martial arts and modern combat technology, set against a cyberpunk backdrop. It emphasizes anatomical realism, precise targeting, authentic martial techniques, and dark futuristic aesthetics.
+## 🎯 Core Game Concepts
 
-Game Identity
-Genre:
-2D Realistic Precision Combat Simulator / Traditional Korean Martial Arts Training (Cyberpunk Style)
+### Player Archetypes (Must Reference in All Combat Code)
 
-Platforms:
+- **무사 (Musa)** - Traditional Warrior: Honor through strength
+- **암살자 (Amsalja)** - Shadow Assassin: Efficiency through invisibility
+- **해커 (Hacker)** - Cyber Warrior: Information as power
+- **정보요원 (Jeongbo Yowon)** - Intelligence Operative: Knowledge through observation
+- **조직폭력배 (Jojik Pokryeokbae)** - Organized Crime: Survival through ruthlessness
 
-Web-based (HTML5/WebGL via PixiJS)
+### Eight Trigram Combat System (팔괘)
 
-Optimized for authentic 60fps combat physics
+- **☰ 건 (Geon)** - Heaven: Direct bone-striking force
+- **☱ 태 (Tae)** - Lake: Fluid joint manipulation
+- **☲ 리 (Li)** - Fire: Precise nerve strikes
+- **☳ 진 (Jin)** - Thunder: Stunning techniques
+- **☴ 손 (Son)** - Wind: Continuous pressure
+- **☵ 감 (Gam)** - Water: Blood flow restriction
+- **☶ 간 (Gan)** - Mountain: Defensive counters
+- **☷ 곤 (Gon)** - Earth: Ground techniques
 
-Audience:
+### Combat Mechanics
 
-Fans of precise combat gameplay (Budokan, IK+)
+- **70 Anatomical Vital Points** for precise targeting
+- **Realistic Body Mechanics**: Health, consciousness, pain, balance, stamina
+- **Authentic Korean Techniques** with cultural accuracy
+- **Damage Calculation** based on technique precision and force
 
-Practitioners and enthusiasts of Korean martial arts
+## 🏗️ Current Architecture Status
 
-Cyberpunk aesthetics and narrative enthusiasts
+### ✅ Implemented Systems
 
-Players seeking realistic and anatomical combat precision
+#### Type System (`src/types/` - 60 lines total)
 
-Visual and Thematic Direction (Cyberpunk Korean Martial Arts)
-Based on the concept art:
+**Status**: ✅ **COMPLETE** - Comprehensive type definitions
 
-Dark cyberpunk aesthetic, blending traditional Korean martial attire with tactical modern gear.
+- `src/types/index.ts` (4) - Unified type exports
+- `src/types/trigram.ts` (12) - Complete trigram system with TRIGRAM_DATA
+- `src/types/combat.ts` (4) - Combat mechanics types
+- `src/types/player.ts` (4) - Player state and actions
+- `src/types/anatomy.ts` (4) - Vital points and anatomical regions
+- `src/types/ui.ts` (4) - UI component interfaces
+- `src/types/game.ts` (4) - Game flow and screens
+- `src/types/enums.ts` (4) - String literal unions
+- `src/types/constants.ts` (4) - Global constants including KOREAN_COLORS
+- `src/types/effects.ts` (4) - Status effects and conditions
+- `src/types/common.ts` (4) - Basic shared types
+- `src/types/pixi-react.d.ts` (4) - PixiJS React integration
 
-## Coding Guidelines
+#### Audio System (`src/audio/` - 108 lines total)
 
-- **Strict Typing:**
-  - _Use explicit types and interfaces; avoid `any` (use `unknown` if needed)_.
-  - _Leverage utility types (Pick, Omit, Partial) and always define return types_.
-  - _Enable TypeScript's strict options in `tsconfig.json` (e.g., `strictNullChecks`, `noImplicitAny`)_.
+**Status**: ✅ **EXCELLENT** - Professional implementation
 
-## Testing Guidelines
+- `src/audio/AudioManager.ts` (24) - Main audio management system
+- `src/audio/DefaultSoundGenerator.ts` (8) - Procedural sound generation
+- `src/audio/AudioUtils.ts` (8) - Audio utility functions
+- `src/audio/placeholder-sounds.ts` (4) - Temporary audio placeholders
+- `src/audio/AudioManager.tsx` (4) - React component wrapper
+- Comprehensive tests in `__tests__/` (56 lines)
 
-- **Vite & Vitest Integration:**
-  - Configure Vite and Vitest for fast feedback and native ESM support.
-  - Separate unit and integration tests, leveraging Vite's watch mode and coverage tools.
-  - Mock external dependencies using existing helpers with proper TypeScript typings.
-- **Quality Standards:**
-  - Aim for a minimum of 80% code coverage.
-  - Write tests for critical business logic and security paths.
+#### Core Systems (`src/systems/` - 248 lines total)
 
-## Summary
+**Status**: ✅ **GOOD FOUNDATION** - Core logic implemented
 
-## UX Components
+- `src/systems/CombatSystem.ts` (8) - Main combat orchestration
+- `src/systems/VitalPointSystem.ts` (8) - Anatomical targeting
+- `src/systems/TrigramSystem.ts` (8) - Eight trigram logic
+- `src/systems/trigram/` (144) - Detailed trigram mechanics
+- `src/systems/vitalpoint/` (56) - Vital point calculations
 
-https://www.npmjs.com/package/@pixi/react?activeTab=readme
-https://pixijs.com/8.x/guides/getting-started/intro
+#### Training System (`src/components/training/` - 36 lines total)
 
+**Status**: ✅ **IMPLEMENTED** - Complete training interface
 
-src/main.tsx
-src/components/intro/IntroScreen.tsx
-src/components/intro/components/MenuSection.tsx
-src/components/intro/components/ControlsSection.tsx
-src/components/intro/components/PhilosophySection.tsx
-src/components/game/GameUI.tsx
-src/components/game/PlayerVisuals.tsx
-src/components/game/GameEngine.tsx
-src/components/game/HitEffectsLayer.tsx
-src/components/game/DojangBackground.tsx
-src/components/game/Player.tsx
-src/components/ui/KoreanHeader.tsx
-src/components/ui/TrigramWheel.tsx
-src/components/ui/ProgressTracker.tsx
-src/components/ui/base/KoreanText.tsx
-src/components/ui/base/BackgroundGrid.tsx
-src/components/ui/base/BaseButton.tsx
-src/components/ui/base/KoreanPixiComponents.tsx
-src/components/ui/base/PixiComponents.tsx
-src/components/training/TrainingScreen.tsx
-src/App.tsx
-src/audio/AudioManager.tsx
+- `src/components/training/TrainingScreen.tsx` (12) - Main training component
+- Comprehensive tests and mock system
 
-## System
+### ⚠️ Partially Implemented Systems
 
-src/components/intro/components
-src/components/intro
-src/components/game
-src/components/ui/base/index.ts
-src/components/ui/base
-src/components/ui
-src/components/training/index.ts
-src/components/training
-src/components
-src/audio/placeholder-sounds.ts
-src/audio/AudioManager.ts
-src/audio/DefaultSoundGenerator.ts
-src/audio/AudioUtils.ts
-src/vite-env.d.ts
-src/hooks/useTexture.ts
-src/types/pixi-react.d.ts
-src/types/index.ts
-src/systems/CombatSystem.ts
-src/systems/VitalPointSystem.ts
-src/systems/TrigramSystem.ts
-src/systems/vitalpoint/KoreanAnatomy.ts
-src/systems/vitalpoint/AnatomicalRegions.ts
-src/systems/vitalpoint/KoreanVitalPoints.ts
-src/systems/vitalpoint/HitDetection.ts
-src/systems/vitalpoint/DamageCalculator.ts
-src/systems/trigram/StanceManager.ts
-src/systems/trigram/TrigramCalculator.ts
-src/systems/trigram/KoreanCulture.ts
-src/systems/trigram/TransitionCalculator.ts
-src/systems/trigram/KoreanTechniques.ts
+#### Game Components (`src/components/game/` - 96 lines total)
 
-## Image assets
+**Status**: ⚠️ **PARTIAL** - Structure exists, needs implementation
 
-src/assets/black-trigram-256.png
-src/assets/PlayerArchetypesExplained.png
+- `src/components/game/GameEngine.tsx` (8) - Game loop (needs expansion)
+- `src/components/game/GameUI.tsx` (12) - UI overlay (basic implementation)
+- `src/components/game/Player.tsx` (4) - Player entity (skeleton)
+- `src/components/game/PlayerVisuals.tsx` (12) - Visual rendering
+- `src/components/game/HitEffectsLayer.tsx` (4) - Combat effects
+- `src/components/game/DojangBackground.tsx` (4) - Environment
 
-src/assets/black-trigram.png
-src/assets/CyberpunkTeamDynamics.png
-src/assets/PlayerArchetypesOverview.png
-src/assets/react.svg
-src/assets/dark-trigram.png
-src/assets/black-trigram.webp
+#### UI Components (`src/components/ui/` - 156 lines total)
 
-## CSS
+**Status**: ⚠️ **MIXED** - Korean text system complete, other components need work
 
-src/Game.css
-src/App.css
-src/index.css
+- `src/components/ui/base/korean-text/` (72) - ✅ **COMPLETE** Korean typography
+- `src/components/ui/TrigramWheel.tsx` (8) - Stance selection (needs implementation)
+- `src/components/ui/ProgressTracker.tsx` (4) - Health/Ki bars (skeleton)
+- `src/components/ui/KoreanHeader.tsx` (4) - Header component (skeleton)
 
-## Systemm
+#### Introduction System (`src/components/intro/` - 40 lines total)
 
-src/components/intro/components
-src/components/intro
-src/components/game
-src/components/ui/base/index.ts
-src/components/ui/base
-src/components/ui
-src/components/training/index.ts
-src/components/training
-src/components
-src/audio/placeholder-sounds.ts
-src/audio/AudioManager.ts
-src/audio/DefaultSoundGenerator.ts
-src/audio/AudioUtils.ts
-src/vite-env.d.ts
-src/hooks/useTexture.ts
-src/types/pixi-react.d.ts
-src/types/index.ts
-src/systems/CombatSystem.ts
-src/systems/VitalPointSystem.ts
-src/systems/TrigramSystem.ts
-src/systems/vitalpoint/KoreanAnatomy.ts
-src/systems/vitalpoint/AnatomicalRegions.ts
-src/systems/vitalpoint/KoreanVitalPoints.ts
-src/systems/vitalpoint/HitDetection.ts
-src/systems/vitalpoint/DamageCalculator.ts
-src/systems/trigram/StanceManager.ts
-src/systems/trigram/TrigramCalculator.ts
-src/systems/trigram/KoreanCulture.ts
-src/systems/trigram/TransitionCalculator.ts
-src/systems/trigram/KoreanTechniques.ts
+**Status**: ⚠️ **MINIMAL** - Basic structure, needs content
 
-Focus on stability, strict TypeScript usage, and Vite-enhanced testing while reusing existing code.
+- `src/components/intro/IntroScreen.tsx` (4) - Main intro (skeleton)
+- Philosophy section has some content (12 lines)
 
-## Comprehensive Testing Strategy
+## 🎯 Strict TypeScript Usage
 
-### 🧪 Unit Testing Plan
-
-**Scope**: Individual components, utilities, and pure functions
-**Tools**: Vitest + React Testing Library
-**Coverage Target**: 90%+ for core game logic
-
-#### Core Testing Areas:
-
-1. **Audio System** (`src/audio/`)
-
-   - AudioManager initialization and configuration
-   - Sound effect playback with damage-based parameters
-   - Music crossfading and volume control
-   - Korean martial arts audio themes
-
-2. **Game Logic** (`src/components/game/`)
-
-   - Combat system calculations (damage, distance, vital points)
-   - Player state management (health, stamina, stance)
-   - Trigram technique mechanics
-   - Korean martial arts philosophy integration
-
-3. **Utility Functions** (`src/utils/`)
-   - Input validation and sanitization
-   - Performance calculations
-   - Korean text handling and display
-
-#### Unit Test Example:
+**ALWAYS use explicit types from existing type system:**
 
 ```typescript
-// src/components/game/__tests__/CombatSystem.test.ts
-import { describe, it, expect } from "vitest";
-import { CombatSystem } from "../CombatSystem";
+// Import from unified type system
+import type {
+  PlayerArchetype,
+  TrigramStance,
+  VitalPoint,
+  CombatState,
+  KoreanTechnique,
+  TRIGRAM_DATA,
+  KOREAN_COLORS,
+} from "../types";
 
-describe("CombatSystem", () => {
-  describe("calculateDamage", () => {
-    it("should calculate damage based on technique and distance", () => {
-      const damage = CombatSystem.calculateDamage("천둥벽력", 50, 100);
-      expect(damage).toBeGreaterThan(0);
-      expect(damage).toBeLessThanOrEqual(35); // Max damage for 천둥벽력
-    });
+// Use existing trigram data
+const technique = TRIGRAM_DATA[stance].technique;
+const color = KOREAN_COLORS.geon; // For stance colors
 
-    it("should apply precision multiplier for close-range attacks", () => {
-      const closeDamage = CombatSystem.calculateDamage("화염지창", 10, 100);
-      const farDamage = CombatSystem.calculateDamage("화염지창", 90, 100);
-      expect(closeDamage).toBeGreaterThan(farDamage);
-    });
-
-    it("should handle vital point detection correctly", () => {
-      const distance = 30;
-      const isVitalPoint = CombatSystem.isVitalPointHit(distance, "sternum");
-      expect(typeof isVitalPoint).toBe("boolean");
-    });
-  });
-
-  describe("Korean technique names", () => {
-    it("should return correct Korean names for techniques", () => {
-      const koreanName = CombatSystem.getKoreanTechniqueName("천둥벽력");
-      expect(koreanName).toBe("천둥벽력 (Thunder Strike)");
-    });
-  });
-});
-```
-
-### 🔗 Integration Testing Plan
-
-**Scope**: Component interactions, game flow, audio-visual synchronization
-**Tools**: Vitest + React Testing Library + Audio Mocks
-**Coverage Target**: 85%+ for component interactions
-
-#### Integration Test Areas:
-
-1. **Game Engine Integration**
-
-   - Player movement and combat coordination
-   - Audio feedback during combat sequences
-   - UI state synchronization with game state
-
-2. **Audio-Visual Synchronization**
-
-   - Attack animations with corresponding sound effects
-   - Korean martial arts stance changes with audio cues
-   - Music transitions between game modes
-
-3. **Korean Localization**
-   - Korean text rendering and display
-   - Cultural authenticity in martial arts terminology
-   - Proper trigram symbol display
-
-#### Integration Test Example:
-
-```typescript
-// src/components/game/__tests__/GameEngineIntegration.test.tsx
-import { describe, it, expect, vi } from "vitest";
-import { render, fireEvent, waitFor } from "@testing-library/react";
-import { GameEngine } from "../GameEngine";
-import { useAudio } from "../../audio/AudioManager";
-
-vi.mock("../../audio/AudioManager");
-
-describe("GameEngine Integration", () => {
-  it("should coordinate player actions with audio feedback", async () => {
-    const mockAudio = {
-      playAttackSound: vi.fn(),
-      playHitSound: vi.fn(),
-      playStanceChangeSound: vi.fn(),
-    };
-    vi.mocked(useAudio).mockReturnValue(mockAudio as any);
-
-    render(<GameEngine />);
-
-    // Simulate attack sequence
-    fireEvent.click(screen.getByTestId("attack-button"));
-
-    await waitFor(() => {
-      expect(mockAudio.playAttackSound).toHaveBeenCalled();
-    });
-
-    // Verify audio parameters match Korean martial arts
-    expect(mockAudio.playAttackSound).toHaveBeenCalledWith(
-      expect.any(Number) // damage value
-    );
-  });
-
-  it("should handle Korean trigram stance changes", async () => {
-    render(<GameEngine />);
-
-    // Test each trigram stance (1-8 keys)
-    for (let i = 1; i <= 8; i++) {
-      fireEvent.keyDown(document, { key: i.toString() });
-
-      await waitFor(() => {
-        // Verify stance change audio and visual feedback
-        expect(screen.getByTestId("stance-indicator")).toBeInTheDocument();
-      });
-    }
-  });
-});
-```
-
-### 🌐 E2E Testing Plan
-
-**Scope**: Complete user journeys, real browser interactions, Korean input
-**Tools**: Cypress with custom commands
-**Coverage Target**: 100% of critical user flows
-
-#### E2E Test Scenarios:
-
-1. **Complete Game Session Flow**
-
-   ```
-   Intro Screen → Training Mode → Combat Mode → Victory/Defeat
-   ```
-
-2. **Korean Martial Arts Journey**
-
-   ```
-   Learn Trigrams → Practice Techniques → Master Combat → Philosophy Study
-   ```
-
-3. **Audio System Validation**
-
-   ```
-   Music Playback → Sound Effects → Volume Control → Korean Audio
-   ```
-
-4. **Performance & Accessibility**
-   ```
-   60 FPS Gameplay → Korean Text Rendering → Mobile Compatibility
-   ```
-
-#### E2E Test Example:
-
-```typescript
-// cypress/e2e/korean-martial-arts-flow.cy.ts
-describe("Korean Martial Arts Complete Journey", () => {
-  beforeEach(() => {
-    cy.visit("/");
-    cy.waitForGameInit();
-  });
-
-  it("should complete full martial arts training sequence", () => {
-    // Start from intro with Korean aesthetics
-    cy.dataCy("intro-screen").should("be.visible");
-    cy.contains("흑괘 무술 도장").should("be.visible");
-
-    // Enter training mode
-    cy.dataCy("training-mode-button").click();
-    cy.waitForAudioReady();
-
-    // Practice each trigram technique
-    const trigrams = ["건", "태", "리", "진", "손", "감", "간", "곤"];
-    trigrams.forEach((trigram, index) => {
-      cy.get("body").type((index + 1).toString());
-      cy.wait(500);
-
-      // Verify Korean technique name display
-      cy.contains(trigram).should("be.visible");
-
-      // Check audio feedback
-      cy.checkAudioPlayback("technique_sound");
-    });
-
-    // Progress to combat mode
-    cy.dataCy("combat-mode-button").click();
-    cy.waitForGameTransition();
-
-    // Execute combat sequence with Korean techniques
-    cy.startCombatSession();
-
-    // Test vital point targeting (급소 공격)
-    cy.executeVitalPointAttack("천둥벽력");
-    cy.verifyKoreanText(".damage-indicator");
-
-    // Complete combat with victory
-    cy.defeatOpponent();
-    cy.contains("승리").should("be.visible");
-  });
-
-  it("should maintain 60 FPS during intense combat", () => {
-    cy.visit("/");
-    cy.startGameMode("combat");
-
-    // Monitor performance during rapid Korean technique execution
-    cy.monitorPerformance(() => {
-      // Rapid trigram technique combinations
-      for (let i = 0; i < 50; i++) {
-        cy.get("body").type("1"); // 건 (Heaven)
-        cy.wait(100);
-        cy.get("body").type("3"); // 리 (Fire)
-        cy.wait(100);
-      }
-    });
-
-    cy.checkPerformanceMetrics({
-      minFPS: 60,
-      maxFrameTime: 16.67,
-      memoryLeak: false,
-    });
-  });
-
-  it("should handle Korean text input and display correctly", () => {
-    cy.visit("/");
-
-    // Test Korean font loading
-    cy.verifyKoreanFontLoading();
-
-    // Verify all Korean martial arts terms render correctly
-    const koreanTerms = [
-      "흑괘 무술 도장",
-      "천둥벽력",
-      "화염지창",
-      "급소 공격",
-      "승리",
-    ];
-
-    koreanTerms.forEach((term) => {
-      cy.verifyKoreanText(`:contains("${term}")`);
-    });
-  });
-});
-```
-
-### 🎮 Custom Cypress Commands for Game Testing
-
-```typescript
-// cypress/support/commands.ts (additions)
-declare global {
-  namespace Cypress {
-    interface Chainable {
-      waitForGameInit(): Chainable<void>;
-      startGameMode(mode: "training" | "combat"): Chainable<void>;
-      executeVitalPointAttack(technique: string): Chainable<void>;
-      checkAudioPlayback(soundType: string): Chainable<void>;
-      verifyKoreanText(selector: string): Chainable<void>;
-      monitorPerformance(actions: () => void): Chainable<void>;
-      startCombatSession(): Chainable<void>;
-      defeatOpponent(): Chainable<void>;
-    }
+// Never use 'any' - use 'unknown' if absolutely necessary
+function processGameData(data: unknown): CombatResult {
+  if (isCombatData(data)) {
+    return calculateDamage(data);
   }
+  throw new Error("Invalid game data");
 }
-
-Cypress.Commands.add("waitForGameInit", () => {
-  cy.get("canvas").should("be.visible");
-  cy.wait(1000); // Allow PixiJS initialization
-});
-
-Cypress.Commands.add("startGameMode", (mode: "training" | "combat") => {
-  if (mode === "training") {
-    cy.get("body").type("2"); // Training mode key
-  } else {
-    cy.get("body").type("1"); // Combat mode key
-  }
-  cy.wait(500);
-});
-
-Cypress.Commands.add("executeVitalPointAttack", (technique: string) => {
-  // Map Korean technique names to key inputs
-  const techniqueMap: Record<string, string> = {
-    천둥벽력: "1", // Heaven - Thunder Strike
-    화염지창: "3", // Fire - Flame Spear
-    벽력일섬: "4", // Thunder - Lightning Flash
-  };
-
-  const key = techniqueMap[technique];
-  if (key) {
-    cy.get("body").type(key);
-    cy.wait(200);
-  }
-});
-
-Cypress.Commands.add("verifyKoreanText", (selector: string) => {
-  cy.get(selector).should(($el) => {
-    const text = $el.text();
-    // Verify Korean characters are properly rendered
-    const hasKorean = /[\uAC00-\uD7AF]/.test(text);
-    expect(hasKorean).to.be.true;
-  });
-});
 ```
 
-## PixiJS with React Guidelines
+### Component Reuse Strategy
 
-- **Leverage `@pixi/react` Components:**
-  - Utilize components like `Stage`, `Container`, `Sprite`, `Graphics`, `Text` from `@pixi/react` for declarative scene graph construction.
-  - Refer to the official `@pixi/react` documentation: https://react.pixijs.io/getting-started/
-- **Extend PixiJS Objects:**
-  - Use the `extend` function from `@pixi/react` to make PixiJS display objects (e.g., `Graphics`, `Sprite`) available as React components.
-  - Example: `extend({ Graphics, Sprite });`
-- **Component-Based Architecture:**
-  - Structure your game elements as reusable React components.
-  - Manage state within components using React hooks (`useState`, `useReducer`).
-  - Encapsulate PixiJS drawing logic within these components, often using `useCallback` for draw functions passed to `<pixiGraphics />`.
-- **Game Loop and State Updates:**
-  - Use the `useTick` hook from `@pixi/react` for logic that needs to run every frame (e.g., animations, physics).
-  - Manage game state with React's state management (e.g., `useState`, `useContext`, or external libraries like Zustand/Redux if complexity grows).
-  - Ensure state updates correctly trigger re-renders of PixiJS components.
-- **PixiJS Core API:**
-  - For advanced features or direct manipulation not covered by `@pixi/react` abstractions, you can still access the core PixiJS API.
-  - Refer to the PixiJS API documentation: https://pixijs.download/release/docs/index.html
-- **Event Handling:**
-  - Use `@pixi/react`'s event props (e.g., `onClick`, `onPointerDown`) on Pixi components, similar to DOM event handling in React.
-  - Ensure `interactive={true}` is set on components that need to respond to pointer events.
-- **Strict Typing with PixiJS:**
-  - When interacting with PixiJS objects directly or defining props for Pixi-React components, use precise TypeScript types provided by `pixi.js` and `@pixi/react`.
-  - For instance, when using `Graphics`, type the draw callback parameter explicitly: `draw={(g: PIXI.Graphics) => { ... }}`.
+**ALWAYS check existing components before creating new ones:**
 
-### Black Trigram Specific Examples
+#### Korean Text System (✅ Complete - Reuse Extensively)
 
-#### Korean Martial Arts Player Component
+```typescript
+// Use comprehensive Korean text components
+import {
+  KoreanText,
+  KoreanTitle,
+  KoreanTechniqueText,
+  KoreanMartialText,
+  KoreanStatusText,
+} from "../ui/base/korean-text";
 
-```tsx
-import { Container, Graphics, Text, useTick } from "@pixi/react";
-import { useState, useCallback } from "react";
+// Example usage with proper typing
+<KoreanTechniqueText
+  korean="천둥벽력"
+  english="Thunder Strike"
+  trigram="geon"
+/>;
+```
+
+#### Audio Integration (✅ Complete - Use Extensively)
+
+```typescript
+// Use existing audio manager
 import { useAudio } from "../audio/AudioManager";
-import type { Graphics as PixiGraphics } from "pixi.js";
 
-interface KoreanMartialArtistProps {
-  readonly x: number;
-  readonly y: number;
-  readonly stance: TrigramStance;
-  readonly isAttacking: boolean;
-  readonly onTechniqueExecute: (technique: string, damage: number) => void;
-}
+const audio = useAudio();
+audio.playAttackSound(damage);
+audio.playHitSound(damage, isVitalPoint);
+audio.playTechniqueSound(technique.korean);
+```
 
-export function KoreanMartialArtist({
-  x,
-  y,
+#### Combat Systems (✅ Foundation - Build Upon)
+
+```typescript
+// Use existing combat systems
+import { CombatSystem } from "../systems/CombatSystem";
+import { VitalPointSystem } from "../systems/VitalPointSystem";
+import { TrigramSystem } from "../systems/TrigramSystem";
+
+// Use trigram data
+import { TRIGRAM_DATA, STANCE_EFFECTIVENESS_MATRIX } from "../types/trigram";
+
+const effectiveness =
+  STANCE_EFFECTIVENESS_MATRIX[attackerStance][defenderStance];
+```
+
+## ⚡ Priority Implementation Areas
+
+### 🚨 Critical Gaps (Implement First)
+
+1. **Game Engine Core** (`src/components/game/GameEngine.tsx`)
+
+   - Expand from 8 lines to full game loop
+   - Integrate existing CombatSystem and VitalPointSystem
+   - Use existing PlayerState types
+
+2. **Player Component** (`src/components/game/Player.tsx`)
+
+   - Build complete Korean martial artist
+   - Use existing TRIGRAM_DATA for techniques
+   - Integrate with existing audio system
+
+3. **TrigramWheel Implementation** (`src/components/ui/TrigramWheel.tsx`)
+   - Build interactive stance selection
+   - Use existing TRIGRAM_DATA and colors
+   - Integrate with Korean text system
+
+### 🔧 Enhancement Areas (Build Upon Existing)
+
+1. **GameUI Enhancement** (`src/components/game/GameUI.tsx`)
+
+   - Expand current 12-line implementation
+   - Use existing Korean text components
+   - Integrate with existing ProgressTracker interface
+
+2. **Hit Effects System** (`src/components/game/HitEffectsLayer.tsx`)
+   - Expand from skeleton to full effect system
+   - Use existing KOREAN_COLORS
+   - Integrate with audio feedback
+
+## 🎨 PixiJS + React Integration
+
+**Use @pixi/react components declaratively:**
+
+```typescript
+import { Stage, Container, Sprite, Graphics, Text, useTick } from "@pixi/react";
+import { useCallback } from "react";
+import { TRIGRAM_DATA, KOREAN_COLORS } from "../types";
+
+// Korean martial artist component following existing patterns
+function KoreanMartialArtist({
+  archetype,
   stance,
-  isAttacking,
-  onTechniqueExecute,
-}: KoreanMartialArtistProps): JSX.Element {
-  const [animationTime, setAnimationTime] = useState<number>(0);
-  const audio = useAudio();
-
-  // Korean trigram techniques with proper typing
-  const techniques: Record<TrigramStance, { name: string; damage: number }> = {
-    geon: { name: "천둥벽력", damage: 28 }, // Heaven - Thunder Strike
-    tae: { name: "유수연타", damage: 18 }, // Lake - Flowing Combo
-    li: { name: "화염지창", damage: 35 }, // Fire - Flame Spear
-    jin: { name: "벽력일섬", damage: 40 }, // Thunder - Lightning Flash
-    son: { name: "선풍연격", damage: 15 }, // Wind - Whirlwind
-    gam: { name: "수류반격", damage: 25 }, // Water - Counter Strike
-    gan: { name: "반석방어", damage: 12 }, // Mountain - Defense
-    gon: { name: "대지포옹", damage: 30 }, // Earth - Grappling
-  };
-
-  useTick(
-    useCallback((delta: number) => {
-      setAnimationTime((prev) => prev + delta);
-    }, [])
-  );
-
-  const executeKoreanTechnique = useCallback(() => {
-    const technique = techniques[stance];
-    audio.playAttackSound(technique.damage);
-    onTechniqueExecute(technique.name, technique.damage);
-  }, [stance, techniques, audio, onTechniqueExecute]);
+  position,
+}: {
+  archetype: PlayerArchetype;
+  stance: TrigramStance;
+  position: { x: number; y: number };
+}) {
+  const technique = TRIGRAM_DATA[stance].technique;
+  const stanceColor = KOREAN_COLORS[stance];
 
   const drawMartialArtist = useCallback(
-    (g: PixiGraphics) => {
+    (g: PIXI.Graphics) => {
       g.clear();
-
-      // Traditional Korean martial arts uniform (dobok)
-      g.setFillStyle({ color: 0xffffff, alpha: 0.9 });
+      // Use existing color constants
+      g.setFillStyle({ color: KOREAN_COLORS.WHITE, alpha: 0.9 });
       g.rect(-25, -90, 50, 90);
       g.fill();
 
-      // Belt color indicating mastery level
-      g.setFillStyle({ color: 0x8b0000 }); // Red belt for master
-      g.rect(-27, -25, 54, 10);
-      g.fill();
-
-      // Stance-specific energy aura
-      if (isAttacking) {
-        const stanceColors: Record<TrigramStance, number> = {
-          geon: 0xffd700, // Gold - Heaven
-          tae: 0x87ceeb, // Sky Blue - Lake
-          li: 0xff4500, // Red Orange - Fire
-          jin: 0x9370db, // Purple - Thunder
-          son: 0x98fb98, // Pale Green - Wind
-          gam: 0x4169e1, // Royal Blue - Water
-          gan: 0x8b4513, // Saddle Brown - Mountain
-          gon: 0x654321, // Dark Brown - Earth
-        };
-
-        const auraAlpha = Math.sin(animationTime * 0.3) * 0.4 + 0.6;
-        g.setStrokeStyle({
-          color: stanceColors[stance],
-          width: 8,
-          alpha: auraAlpha,
-        });
-        g.circle(0, -45, 45 + Math.sin(animationTime * 0.5) * 5);
-        g.stroke();
-      }
+      // Stance-specific aura using existing data
+      g.setStrokeStyle({ color: stanceColor, width: 8 });
+      g.circle(0, -45, 45);
+      g.stroke();
     },
-    [stance, isAttacking, animationTime]
+    [stance, stanceColor]
   );
 
   return (
-    <Container
-      x={x}
-      y={y}
-      interactive={true}
-      onPointerDown={executeKoreanTechnique}
-    >
+    <Container x={position.x} y={position.y}>
       <Graphics draw={drawMartialArtist} />
-
-      {/* Korean technique name display */}
-      <Text
-        text={`${techniques[stance].name} (${stance.toUpperCase()})`}
-        anchor={{ x: 0.5, y: 0.5 }}
-        y={-120}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 16,
-          fill: 0xffd700,
-          fontWeight: "bold",
-        }}
-      />
-
-      {/* Trigram symbol */}
-      <Text
-        text={getTrigramSymbol(stance)}
-        anchor={{ x: 0.5, y: 0.5 }}
-        y={-140}
-        style={{
-          fontFamily: "serif",
-          fontSize: 24,
-          fill: 0xffffff,
-        }}
+      {/* Use existing Korean text components */}
+      <KoreanTechniqueText
+        korean={technique.koreanName}
+        english={technique.englishName}
+        trigram={stance}
       />
     </Container>
   );
 }
-
-// Helper function with proper typing
-function getTrigramSymbol(stance: TrigramStance): string {
-  const symbols: Record<TrigramStance, string> = {
-    geon: "☰", // Heaven
-    tae: "☱", // Lake
-    li: "☲", // Fire
-    jin: "☳", // Thunder
-    son: "☴", // Wind
-    gam: "☵", // Water
-    gan: "☶", // Mountain
-    gon: "☷", // Earth
-  };
-  return symbols[stance];
-}
 ```
 
-#### Audio-Integrated Combat System
+## 🧪 Testing Strategy
 
-```tsx
-import { useAudio } from "../audio/AudioManager";
-import { useCallback } from "react";
+### Existing Test Infrastructure (✅ Excellent)
 
-interface CombatAudioIntegrationProps {
-  readonly onCombatEvent: (event: CombatEvent) => void;
-}
+- **Setup**: `src/test/setup.ts` (8) - PixiJS and audio mocking
+- **Utils**: `src/test/test-utils.ts` (4) - Testing utilities
+- **Audio Tests**: Comprehensive coverage in `src/audio/__tests__/`
+- **System Tests**: Coverage for combat systems
 
-export function CombatAudioIntegration({
-  onCombatEvent,
-}: CombatAudioIntegrationProps): JSX.Element {
-  const audio = useAudio();
-
-  const handleKoreanCombatSequence = useCallback(async () => {
-    // Start combat with traditional Korean music
-    await audio.playMusic("combat_theme");
-
-    // Execute attack with damage-based audio feedback
-    const damage = 35;
-    audio.playAttackSound(damage);
-
-    // Vital point hit with Korean martial arts authenticity
-    const isVitalPoint = true;
-    audio.playHitSound(damage, isVitalPoint);
-
-    // Combo achievement with progressive audio
-    const comboCount = 3;
-    audio.playComboSound(comboCount);
-
-    // Traditional stance change audio
-    audio.playStanceChangeSound();
-
-    onCombatEvent({
-      type: "korean_technique_executed",
-      technique: "천둥벽력",
-      damage,
-      isVitalPoint,
-    });
-  }, [audio, onCombatEvent]);
-
-  // Component implementation with proper Korean martial arts integration
-  return <Container>{/* Combat system implementation */}</Container>;
-}
-```
-
-## Testing Best Practices for Black Trigram
-
-### Mock Strategies
+### Test Patterns to Follow
 
 ```typescript
-// Comprehensive audio mocking for Korean martial arts
-vi.mock("../audio/AudioManager", () => ({
-  useAudio: () => ({
-    playMusic: vi.fn(),
-    playAttackSound: vi.fn(),
-    playHitSound: vi.fn(),
-    playComboSound: vi.fn(),
-    playStanceChangeSound: vi.fn(),
-    setMasterVolume: vi.fn(),
-    getMasterVolume: vi.fn(() => 0.7),
-    isEnabled: vi.fn(() => true),
-  }),
-}));
+// Use existing test utilities
+import { renderWithAudio, mockAudioContext } from "../test/test-utils";
 
-// Korean text rendering validation
-expect(screen.getByText("천둥벽력")).toBeInTheDocument();
-expect(screen.getByText(/급소 공격/)).toBeVisible();
-```
+describe("CombatSystem Integration", () => {
+  it("should execute Korean technique with audio feedback", () => {
+    const mockAudio = mockAudioContext();
 
-### Performance Testing
+    // Use existing TRIGRAM_DATA
+    const technique = TRIGRAM_DATA.geon.technique;
 
-```typescript
-// Test game performance during Korean martial arts sequences
-it("should maintain 60 FPS during trigram technique combinations", () => {
-  const startTime = performance.now();
-
-  // Execute all 8 trigram techniques rapidly
-  for (let i = 1; i <= 8; i++) {
-    fireEvent.keyDown(document, { key: i.toString() });
-  }
-
-  const endTime = performance.now();
-  const duration = endTime - startTime;
-
-  // Should complete within 16.67ms for 60 FPS
-  expect(duration).toBeLessThan(100);
+    // Test with existing audio system
+    result.current.playAttackSound(technique.damage);
+    expect(mockAudio.playAttackSound).toHaveBeenCalledWith(28);
+  });
 });
 ```
 
-https://react.pixijs.io/getting-started/
-https://pixijs.download/release/docs/index.html
+## 🎯 Core Game Design Philosophy
+
+### Combat Pillars (Must Guide All Implementation)
+
+- **정격자 (Jeonggyeokja)** - Precision Striker: Every strike targets anatomical vulnerabilities
+- **비수 (Bisu)** - Lethal Technique: Realistic application of traditional martial arts
+- **암살자 (Amsalja)** - Combat Specialist: Focus on immediate incapacitation
+- **급소격 (Geupsogyeok)** - Vital Point Strike: Authentic pressure point combat
+
+### Realistic Combat Mechanics (Implement in All Combat Code)
+
+```typescript
+// Authentic combat mechanics structure
+interface CombatMechanics {
+  health: number; // 0-100 overall condition
+  pain: number; // Current pain level affecting performance
+  balance: CombatState; // READY | SHAKEN | VULNERABLE | HELPLESS
+  consciousness: number; // 0-100 awareness level
+  bloodLoss: number; // Cumulative bleeding effects
+  stamina: number; // Energy and endurance status
+}
+
+// Combat readiness states
+enum CombatReadiness {
+  READY = 100, // Combat ready, full capability
+  LIGHT_DAMAGE = 80, // Light damage, reduced capability
+  MODERATE = 60, // Moderate damage, significant impairment
+  HEAVY = 40, // Heavy damage, severe limitation
+  CRITICAL = 20, // Critical damage, near incapacitation
+  INCAPACITATED = 0, // Incapacitated/Defeated
+}
+```
+
+## 👤 Player Archetypes (Must Reference in All Combat Code)
+
+### Combat Specializations (Implement Unique Mechanics)
+
+#### 1. 무사 (Musa) - Traditional Warrior
+
+```typescript
+const MUSA_SPECIALIZATION = {
+  philosophy: "Honor through strength, disciplined combat",
+  combatStyle: "Direct confrontation, overwhelming force",
+  preferredTrigrams: ["geon", "jin"],
+  techniques: {
+    관절기법: "Joint manipulation and control",
+    급소타격: "Military-taught pressure point targeting",
+    제압술: "Honor-based control methods",
+  },
+  bonuses: {
+    damageResistance: 1.2,
+    jointTechniques: 1.5,
+    militaryDiscipline: 1.3,
+  },
+};
+```
+
+#### 2. 암살자 (Amsalja) - Shadow Assassin
+
+```typescript
+const AMSALJA_SPECIALIZATION = {
+  philosophy: "Efficiency through invisibility, one perfect strike",
+  combatStyle: "Stealth approaches, instant takedowns",
+  preferredTrigrams: ["son", "gam"],
+  techniques: {
+    무성제압: "Silent takedowns preventing vocal response",
+    신경파괴: "Precise neural disruption for stealth",
+    호흡차단: "Silent breathing and consciousness targeting",
+  },
+  bonuses: {
+    stealthMultiplier: 1.8,
+    oneStrikeKill: 2.0,
+    silentMovement: 1.5,
+  },
+};
+```
+
+#### 3. 해커 (Hacker) - Cyber Warrior
+
+```typescript
+const HACKER_SPECIALIZATION = {
+  philosophy: "Information as power, technological advantage",
+  combatStyle: "Environmental manipulation, tech-assisted strikes",
+  preferredTrigrams: ["li", "tae"],
+  techniques: {
+    해부학적분석: "Data-driven approach to vital points",
+    생체역학파괴: "Tech-enhanced body mechanics understanding",
+    체계적제압: "Algorithm-based damage accumulation",
+  },
+  bonuses: {
+    precisionAnalysis: 1.6,
+    environmentalControl: 1.4,
+    dataOptimization: 1.3,
+  },
+};
+```
+
+#### 4. 정보요원 (Jeongbo Yowon) - Intelligence Operative
+
+```typescript
+const JEONGBO_SPECIALIZATION = {
+  philosophy: "Knowledge through observation, strategic thinking",
+  combatStyle: "Psychological manipulation, precise timing",
+  preferredTrigrams: ["gan", "gon"],
+  techniques: {
+    고통순응: "Intelligence-based submission through pain",
+    심리적압박: "Mental intimidation through technique",
+    정보추출: "Combat methods from interrogation training",
+  },
+  bonuses: {
+    psychologicalWarfare: 1.5,
+    strategicAnalysis: 1.4,
+    painCompliance: 1.7,
+  },
+};
+```
+
+#### 5. 조직폭력배 (Jojik Pokryeokbae) - Organized Crime
+
+```typescript
+const JOJIK_SPECIALIZATION = {
+  philosophy: "Survival through ruthlessness, practical violence",
+  combatStyle: "Dirty fighting, improvised weapons",
+  preferredTrigrams: ["jin", "gam"],
+  techniques: {
+    환경활용: "Street-smart use of surroundings as weapons",
+    더러운기법: "Brutal eye attacks, groin strikes, hair pulling",
+    생존격투: "Underground whatever-it-takes combat",
+  },
+  bonuses: {
+    dirtyFighting: 1.8,
+    survivalInstinct: 1.6,
+    streetSmart: 1.5,
+  },
+};
+```
+
+## 🎨 Visual Design System
+
+### Cyberpunk Korean Aesthetic (Apply to All Visual Components)
+
+#### Color Palette (Use Existing KOREAN_COLORS)
+
+```typescript
+// Primary cyberpunk palette
+const CYBERPUNK_PALETTE = {
+  PRIMARY_CYAN: KOREAN_COLORS.CYAN,
+  NEON_RED: KOREAN_COLORS.TRADITIONAL_RED,
+  ELECTRIC_BLUE: KOREAN_COLORS.DOJANG_BLUE,
+  DIGITAL_GOLD: KOREAN_COLORS.GOLD,
+  SHADOW_BLACK: KOREAN_COLORS.BLACK,
+  TECH_WHITE: KOREAN_COLORS.WHITE,
+};
+
+// Stance-specific visual themes
+const STANCE_VISUAL_THEMES = {
+  geon: { primary: 0xffd700, secondary: 0x8b7355, glow: 0xffed4e },
+  tae: { primary: 0x87ceeb, secondary: 0x4682b4, glow: 0xb0e0e6 },
+  li: { primary: 0xff4500, secondary: 0x8b0000, glow: 0xff6347 },
+  jin: { primary: 0x9370db, secondary: 0x4b0082, glow: 0xda70d6 },
+  son: { primary: 0x98fb98, secondary: 0x228b22, glow: 0x90ee90 },
+  gam: { primary: 0x4169e1, secondary: 0x191970, glow: 0x6495ed },
+  gan: { primary: 0x8b4513, secondary: 0x654321, glow: 0xd2691e },
+  gon: { primary: 0x654321, secondary: 0x8b4513, glow: 0xa0522d },
+};
+```
+
+#### Underground Dojang Environment
+
+```typescript
+// Environment visual config
+const DOJANG_ENVIRONMENT = {
+  lighting: {
+    ambient: 0x0a0a0a,
+    neonAccents: [0x00ffff, 0xff0040, 0x00ff00],
+    bloodStains: 0x8b0000,
+    traditional: 0xffd700,
+  },
+  atmosphere: {
+    shadows: "Deep, dramatic shadows with neon highlights",
+    textures: "Worn concrete, traditional Korean patterns",
+    mood: "Underground, serious, authentic martial arts",
+  },
+  elements: {
+    koreanCalligraphy: "Traditional characters in neon styling",
+    trigramSymbols: "☰☱☲☳☴☵☶☷ with cyberpunk interpretation",
+    combatEquipment: "Professional-grade training tools",
+  },
+};
+```
+
+### UI/UX Visual Standards
+
+#### Korean Typography System
+
+```typescript
+// Use existing Korean text components with these standards
+const KOREAN_TYPOGRAPHY = {
+  primary: "Noto Sans KR",
+  fallback: "Arial, sans-serif",
+  weights: {
+    light: 300,
+    regular: 400,
+    bold: 700,
+    heavy: 900,
+  },
+  sizes: {
+    small: 12,
+    medium: 16,
+    large: 24,
+    xlarge: 32,
+    title: 48,
+  },
+};
+
+// Always use bilingual text
+<KoreanText
+  korean="흑괘 무술 도장"
+  english="Black Trigram Dojang"
+  size="title"
+  style="cyberpunk"
+/>;
+```
+
+## 🔊 Audio Design Integration
+
+### Realistic Combat Audio (Integrate with Existing AudioManager)
+
+#### Korean Martial Arts Soundscape
+
+```typescript
+// Combat audio categories (implement with existing audio system)
+const COMBAT_AUDIO_DESIGN = {
+  // Authentic Korean martial arts sounds
+  traditionalSounds: {
+    gayageum: "Dark traditional Korean string instrument",
+    buk: "Korean war drums for intensity",
+    kkwaenggwari: "Small gongs for technique emphasis",
+    haegeum: "Korean fiddle for atmospheric tension",
+  },
+
+  // Realistic combat effects
+  combatRealism: {
+    boneImpact: "Authentic bone fracture and contact sounds",
+    fleshContact: "Body impact with appropriate intensity",
+    jointManipulation: "Realistic joint stress and popping",
+    breathingEffects: "Gasping, wheezing, breath disruption",
+    bloodFlow: "Circulation and bleeding audio cues",
+  },
+
+  // Cyberpunk integration
+  futuristicElements: {
+    synthDrones: "Low-frequency electronic tension",
+    digitalGlitches: "Tech interference during combat",
+    neonHum: "Electric ambience of underground dojang",
+  },
+};
+
+// Audio feedback based on damage intensity
+function playRealisticCombatAudio(damage: number, vitalPoint?: VitalPoint) {
+  const audio = useAudio();
+
+  // Damage-based audio selection
+  if (damage < 10) {
+    audio.playSFX("hit_light");
+  } else if (damage < 25) {
+    audio.playSFX("hit_medium");
+  } else if (damage < 40) {
+    audio.playSFX("hit_heavy");
+  } else {
+    audio.playSFX("hit_critical");
+  }
+
+  // Vital point specific audio
+  if (vitalPoint) {
+    audio.playSFX(`vital_${vitalPoint.category}`);
+  }
+}
+```
+
+### Dynamic Audio Layers
+
+```typescript
+// Implement layered audio system
+const AUDIO_LAYERS = {
+  background: {
+    dojangAmbience: "Continuous underground atmosphere",
+    traditionalMusic: "Korean instruments with electronic elements",
+  },
+
+  combat: {
+    stanceChanges: "Audio cues for trigram transitions",
+    techniqueExecution: "Korean technique name pronunciation",
+    impactFeedback: "Realistic damage and effect sounds",
+  },
+
+  ui: {
+    menuNavigation: "Cyberpunk-styled interface sounds",
+    koreanVoiceover: "Authentic Korean pronunciation guide",
+    confirmation: "Traditional Korean chimes with modern twist",
+  },
+};
+```
+
+## 🎮 Combat Controls & UX
+
+### Precision Input System (Implement in All Combat Components)
+
+#### Primary Combat Controls
+
+```typescript
+// Combat control mapping
+const COMBAT_CONTROLS = {
+  // Trigram stance system (1-8 keys)
+  stanceControls: {
+    "1": { stance: "geon", korean: "건", technique: "천둥벽력" },
+    "2": { stance: "tae", korean: "태", technique: "유수연타" },
+    "3": { stance: "li", korean: "리", technique: "화염지창" },
+    "4": { stance: "jin", korean: "진", technique: "벽력일섬" },
+    "5": { stance: "son", korean: "손", technique: "선풍연격" },
+    "6": { stance: "gam", korean: "감", technique: "수류반격" },
+    "7": { stance: "gan", korean: "간", technique: "반석방어" },
+    "8": { stance: "gon", korean: "곤", technique: "대지포옹" },
+  },
+
+  // Movement and combat actions
+  movement: {
+    WASD: "Tactical positioning and footwork",
+    ArrowKeys: "Alternative movement system",
+  },
+
+  combat: {
+    SPACE: "Execute current stance technique",
+    SHIFT: "Defensive guard/block position",
+    CTRL: "Precision vital point targeting mode",
+    TAB: "Cycle through player archetypes",
+  },
+
+  // System controls
+  system: {
+    ESC: "Pause menu / Return to intro",
+    F1: "Help / Controls guide",
+    M: "Mute / Audio settings",
+  },
+};
+
+// Implement responsive controls
+function handleCombatInput(event: KeyboardEvent, player: PlayerState) {
+  const key = event.key;
+
+  // Stance changes (1-8)
+  if (key >= "1" && key <= "8") {
+    const stanceIndex = parseInt(key) - 1;
+    const stance = TRIGRAM_STANCES_ORDER[stanceIndex];
+    return executeStanceChange(player, stance);
+  }
+
+  // Combat actions
+  switch (key) {
+    case " ": // Space
+      return executeTechnique(player);
+    case "Shift":
+      return toggleGuard(player);
+    case "Control":
+      return enterVitalPointMode(player);
+  }
+}
+```
+
+### Advanced UX Features
+
+#### Visual Feedback System
+
+```typescript
+// Implement comprehensive visual feedback
+const VISUAL_FEEDBACK = {
+  // Stance indicators
+  stanceDisplay: {
+    trigramSymbol: "Large center display of current trigram ☰☱☲☳☴☵☶☷",
+    koreanName: "Korean and English stance names",
+    techniquePreview: "Available technique preview",
+    colorCoding: "Stance-specific color themes",
+  },
+
+  // Combat feedback
+  damageIndicators: {
+    numbers: "Floating damage numbers with Korean styling",
+    vitalPoints: "Highlighted anatomical targets",
+    effectsText: "Korean descriptions of combat effects",
+    bloodEffects: "Realistic trauma visualization",
+  },
+
+  // UI polish
+  interfaceElements: {
+    healthBars: "Traditional Korean-styled progress bars",
+    kiEnergy: "Flowing energy visualization",
+    stanceWheel: "Interactive trigram selection wheel",
+    combatLog: "Bilingual combat narration",
+  },
+};
+```
+
+#### Accessibility & Cultural Sensitivity
+
+```typescript
+// Implement cultural respect and accessibility
+const ACCESSIBILITY_FEATURES = {
+  // Korean language support
+  localization: {
+    fullKorean: "Complete Korean language option",
+    bilingualMode: "Korean with English subtitles",
+    pronunciation: "Audio pronunciation guide",
+    romanization: "Korean text romanization support",
+  },
+
+  // Combat accessibility
+  difficulty: {
+    precisionAssist: "Vital point targeting assistance",
+    techniqueGuides: "Visual combat technique tutorials",
+    slowerPaced: "Reduced speed options for learning",
+    culturalContext: "Martial arts philosophy education",
+  },
+
+  // Visual accessibility
+  display: {
+    colorBlindSupport: "Alternative color schemes",
+    textScaling: "Adjustable Korean font sizes",
+    contrastOptions: "High contrast cyberpunk themes",
+    motionReduction: "Reduced animation for sensitivity",
+  },
+};
+```
+
+## 🏗️ Implementation Patterns
+
+### Component Structure (Follow These Patterns)
+
+#### Game Component Template
+
+```typescript
+// Template for all game components
+import { useState, useCallback, useEffect } from "react";
+import { Container, Graphics, Text } from "@pixi/react";
+import type { PlayerState, TrigramStance, CombatResult } from "../types";
+import { useAudio } from "../audio/AudioManager";
+import { TRIGRAM_DATA, KOREAN_COLORS } from "../types";
+
+interface GameComponentProps {
+  readonly player: PlayerState;
+  readonly archetype: PlayerArchetype;
+  readonly onStateChange: (updates: Partial<PlayerState>) => void;
+  readonly isActive?: boolean;
+}
+
+export function GameComponent({
+  player,
+  archetype,
+  onStateChange,
+  isActive = true,
+}: GameComponentProps): JSX.Element {
+  const audio = useAudio();
+  const [localState, setLocalState] = useState<ComponentState>({});
+
+  // Use existing trigram data
+  const stanceData = TRIGRAM_DATA[player.stance];
+  const stanceColor = KOREAN_COLORS[player.stance];
+
+  // Combat logic using existing systems
+  const executeTechnique = useCallback(
+    (technique: KoreanTechnique) => {
+      // Integrate with existing combat systems
+      const result = CombatSystem.calculateTechnique(technique, archetype);
+
+      // Audio feedback using existing audio manager
+      audio.playAttackSound(result.damage);
+      audio.playSFX(`technique_${technique.stance}`);
+
+      // State update
+      onStateChange({
+        stamina: player.stamina - technique.staminaCost,
+        ki: player.ki - technique.kiCost,
+      });
+    },
+    [player, archetype, audio, onStateChange]
+  );
+
+  return <Container>{/* Implement component visuals */}</Container>;
+}
+```
+
+### Testing Requirements (Follow Existing Patterns)
+
+#### Combat System Tests
+
+```typescript
+// Test Korean martial arts authenticity
+describe("Korean Martial Arts Combat", () => {
+  it("should execute authentic trigram techniques", () => {
+    const technique = TRIGRAM_DATA.geon.technique;
+    expect(technique.koreanName).toBe("천둥벽력");
+    expect(technique.englishName).toBe("Heavenly Thunder Strike");
+  });
+
+  it("should apply archetype-specific bonuses", () => {
+    const musaDamage = calculateArchetypeDamage("musa", technique);
+    const amsaljaDamage = calculateArchetypeDamage("amsalja", technique);
+    expect(musaDamage).not.toEqual(amsaljaDamage);
+  });
+
+  it("should maintain 60fps during intense combat", () => {
+    // Performance testing for combat sequences
+  });
+});
+```
+
+## 🌟 Success Criteria
+
+When following these guidelines, code should:
+
+- ✅ Implement authentic Korean martial arts mechanics
+- ✅ Respect traditional Korean culture and terminology
+- ✅ Achieve realistic combat physics and feedback
+- ✅ Maintain cyberpunk aesthetic integration
+- ✅ Provide comprehensive accessibility features
+- ✅ Target 60fps performance for all combat
+- ✅ Use existing type system and components extensively
+- ✅ Include proper Korean-English bilingual support
+
+## 🎯 Philosophy Integration
+
+### Traditional Korean Values (Integrate into All Interactions)
+
+```typescript
+// Implement respect for Korean martial arts tradition
+const MARTIAL_ARTS_PHILOSOPHY = {
+  respect: "존중 (Jonjung) - Honor the art and opponent",
+  discipline: "수련 (Suryeon) - Dedicated practice and learning",
+  precision: "정확 (Jeonghwak) - Exact technique execution",
+  wisdom: "지혜 (Jihye) - Understanding beyond physical technique",
+  balance: "균형 (Gyunhyeong) - Harmony of mind, body, spirit",
+};
+
+// Cultural authenticity checks
+function validateKoreanTechnique(technique: KoreanTechnique): boolean {
+  return (
+    technique.koreanName &&
+    technique.englishName &&
+    technique.description.korean &&
+    technique.stance in TRIGRAM_DATA
+  );
+}
+```
+
+---
+
+**Remember**: Black Trigram represents the intersection of traditional Korean martial arts wisdom and modern interactive technology. Every implementation should honor this balance while providing authentic, educational, and respectful gameplay.
+
+**흑괘의 길을 걸어라** - _Walk the Path of the Black Trigram_
