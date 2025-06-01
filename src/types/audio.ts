@@ -50,6 +50,9 @@ export interface AudioConfig {
   readonly MUSIC_VOLUME: number;
   readonly FADE_DURATION: number;
   readonly MAX_CONCURRENT_SOUNDS: number;
+  readonly FALLBACK_ENABLED: boolean;
+  readonly RETRY_COUNT: number;
+  readonly TIMEOUT_MS: number;
 }
 
 // Sound effect definitions with Korean martial arts context
@@ -60,6 +63,8 @@ export interface SoundEffectDefinition {
   loop?: boolean;
   preload?: boolean;
   description: string;
+  fallbackId?: string; // ID to use if this sound fails to load
+  required?: boolean; // Whether this sound is essential for gameplay
 }
 
 export interface AudioManagerState {
@@ -70,6 +75,8 @@ export interface AudioManagerState {
   isMuted: boolean;
   activeSounds: Map<string, any>; // Howl instances
   currentMusic?: any; // Current background music Howl
+  failedAssets: Set<string>; // Track failed asset loads
+  fallbackMode: boolean; // Whether using fallback sounds
 }
 
 // Audio context and state management

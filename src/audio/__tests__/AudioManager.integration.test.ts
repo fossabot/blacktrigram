@@ -29,6 +29,10 @@ describe("AudioManager Integration Tests", () => {
     if (audioManagerInstance?.stopMusic) {
       audioManagerInstance.stopMusic();
     }
+    // Add proper cleanup for failed loads
+    if (audioManagerInstance?.cleanup) {
+      audioManagerInstance.cleanup();
+    }
     Howler.unload();
   });
 
@@ -63,8 +67,9 @@ describe("AudioManager Integration Tests", () => {
         vi.advanceTimersByTime(300); // 300ms between stance changes
       });
 
-      // Assert
+      // Assert - Should handle missing assets gracefully
       expect(audioManagerInstance.getState().isInitialized).toBe(true);
+      expect(audioManagerInstance.getState().fallbackMode).toBeDefined();
     });
 
     it("should provide authentic Korean martial arts audio feedback", () => {
@@ -167,10 +172,20 @@ describe("AudioManager Integration Tests", () => {
     });
 
     it("should handle missing sound effects gracefully", () => {
-      // Act & Assert
+      // Arrange
+      const consoleWarnSpy = vi
+        .spyOn(console, "warn")
+        .mockImplementation(() => {});
+
+      // Act - Try to play a sound that might fail to load
       expect(() => {
         audioManagerInstance.playSFX("nonexistent_sound" as SoundEffectId);
       }).not.toThrow();
+
+      // Assert - Should either load successfully or fall back gracefully
+      expect(audioManagerInstance.getState().isInitialized).toBe(true);
+
+      consoleWarnSpy.mockRestore();
     });
   });
 

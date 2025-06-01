@@ -1,217 +1,440 @@
-# Audio Assets Specification (Focused on AudioManager Usage)
+# Audio Assets Specification (AudioManager Compatible)
 
-Below is the **finalized list of audio assets** required by the current `AudioManager` implementation. Only assets that are actually referenced (directly or indirectly) by the AudioManager’s methods (`playMusic`, `playAttackSound`, `playHitSound`, `playComboSound`, `playStanceChangeSound`, `playSFX`) are included. Each asset entry specifies:
+This document specifies the **exact audio asset requirements** for the Black Trigram AudioManager system. The assets must be in WebM format with Opus codec for optimal compatibility.
 
-1. **Name** (filename without extension)
-2. **Category** (Music or SFX)
-3. **Folder Location** (relative to `public/assets/audio/`)
-4. **Format** (`.webm`)
-5. **Channels / Style** (Mono or Stereo, Loopable or One‐Shot)
-6. **Description / Usage Notes**
+## Critical Issues Identified
 
----
+Based on the console output, the following issues need to be addressed:
 
-## Directory Structure
+1. **Missing Asset Files**: Some audio files are returning "Decoding audio data failed" errors
+2. **Null ID Errors**: The error logs show `null` IDs, indicating improper asset loading
+3. **Format Issues**: Some assets may not be in the correct WebM/Opus format
+
+## 🌑 Dark Cyberpunk Korean Martial Arts Audio Design
+
+### Underground Dojang Atmosphere
+
+All audio assets should embody the **Underground Dojang** aesthetic:
+
+- **Neon Light Audio** - Electric hum and cyberpunk ambience
+- **Blood Stain Echoes** - Reverb suggesting previous brutal training
+- **Depth of Darkness** - Spatial audio creating underground feeling
+- **Weight of Combat** - Heavy, realistic impact sounds
+
+### Korean Traditional + Cyberpunk Fusion
+
+- **Cyberpunk Gayageum** - Traditional Korean strings with electronic processing
+- **Digital Buk Drums** - War drums with synthetic enhancement
+- **Neon Kkwaenggwari** - Small gongs with futuristic resonance
+- **Glitched Haegeum** - Korean fiddle with digital distortion
+
+## 📋 Detailed Audio Asset Table
+
+### Core Sound Effects (Required)
+
+| Asset ID          | File Path                          | Type | Priority    | Size (KB) | Duration (s) | Frequency Range         | Description                                     | Korean Context                                |
+| ----------------- | ---------------------------------- | ---- | ----------- | --------- | ------------ | ----------------------- | ----------------------------------------------- | --------------------------------------------- |
+| `menu_hover`      | `/sfx/menu/menu_hover.webm`        | SFX  | ✅ CRITICAL | 15-25     | 0.1-0.2      | 600-1200Hz              | Subtle neon tone on interface hover             | Soft wood block tap - traditional percussion  |
+| `menu_select`     | `/sfx/menu/menu_select.webm`       | SFX  | ✅ CRITICAL | 20-35     | 0.15-0.3     | 800-1600Hz              | Decisive cyber click confirmation               | Bamboo flute note - selection harmony         |
+| `menu_back`       | `/sfx/menu/menu_back.webm`         | SFX  | ✅ CRITICAL | 18-30     | 0.1-0.25     | 400-800Hz               | Shadow effect return navigation                 | Soft gong resonance - return to state         |
+| `attack_light`    | `/sfx/combat/attack_light.webm`    | SFX  | ✅ CRITICAL | 25-40     | 0.08-0.15    | 200-600Hz               | Quick air cutting + neon glow                   | Swift precision strike - light technique      |
+| `attack_medium`   | `/sfx/combat/attack_medium.webm`   | SFX  | ✅ CRITICAL | 30-50     | 0.1-0.2      | 150-500Hz               | Focused energy release                          | Concentrated ki energy - medium power         |
+| `attack_heavy`    | `/sfx/combat/attack_heavy.webm`    | SFX  | ✅ CRITICAL | 40-65     | 0.15-0.3     | 100-400Hz               | Thunder-like shockwave                          | Devastating force - heavy technique           |
+| `attack_critical` | `/sfx/combat/attack_critical.webm` | SFX  | ✅ CRITICAL | 50-80     | 0.2-0.4      | 80-350Hz + harmonics    | Perfect vital point strike + electronic harmony | Ultimate precision - critical vital strike    |
+| `hit_light`       | `/sfx/hits/hit_light.webm`         | SFX  | ✅ CRITICAL | 20-35     | 0.05-0.12    | 300-700Hz               | Light contact + digital pulse                   | Glancing contact - minimal damage             |
+| `hit_medium`      | `/sfx/hits/hit_medium.webm`        | SFX  | ✅ CRITICAL | 30-45     | 0.1-0.18     | 200-600Hz               | Solid impact + cyber echo                       | Effective strike - moderate damage            |
+| `hit_heavy`       | `/sfx/hits/hit_heavy.webm`         | SFX  | ✅ CRITICAL | 40-60     | 0.15-0.25    | 150-500Hz               | Destructive blow + electronic shock             | Devastating impact - severe damage            |
+| `hit_critical`    | `/sfx/hits/hit_critical.webm`      | SFX  | ✅ CRITICAL | 50-75     | 0.2-0.35     | 100-400Hz + neural freq | Vital point strike + nerve destruction          | Perfect vital point contact - critical damage |
+| `stance_change`   | `/sfx/movement/stance_change.webm` | SFX  | ✅ CRITICAL | 25-40     | 0.2-0.4      | 400-1000Hz              | Trigram transition + energy wave                | Eight trigram stance transformation           |
+| `match_start`     | `/sfx/match/match_start.webm`      | SFX  | ✅ CRITICAL | 60-100    | 0.8-1.5      | 150-800Hz               | Temple bell + combat beginning                  | Sacred combat initiation ceremony             |
+
+### Enhanced Combat Effects (High Priority)
+
+| Asset ID              | File Path                              | Type | Priority | Size (KB) | Duration (s) | Frequency Range       | Description                           | Korean Context                         |
+| --------------------- | -------------------------------------- | ---- | -------- | --------- | ------------ | --------------------- | ------------------------------------- | -------------------------------------- |
+| `attack_punch_light`  | `/sfx/combat/attack_punch_light.webm`  | SFX  | 🔧 HIGH  | 20-35     | 0.06-0.12    | 250-650Hz             | Light punch impact + cyber echo       | Quick jab technique - precise striking |
+| `attack_punch_medium` | `/sfx/combat/attack_punch_medium.webm` | SFX  | 🔧 HIGH  | 30-50     | 0.1-0.18     | 200-550Hz             | Medium punch shock + neon reverb      | Solid punch technique - focused power  |
+| `attack_special_geon` | `/sfx/combat/attack_special_geon.webm` | SFX  | 🔧 HIGH  | 45-70     | 0.2-0.4      | 100-400Hz + celestial | Geon trigram special + heavenly power | Heaven trigram ultimate technique      |
+| `dodge`               | `/sfx/combat/dodge.webm`               | SFX  | 🔧 HIGH  | 15-30     | 0.08-0.15    | 400-1200Hz            | Shadow movement + air displacement    | Evasive shadow arts - defensive flow   |
+| `block_success`       | `/sfx/combat/block_success.webm`       | SFX  | 🔧 HIGH  | 25-40     | 0.1-0.2      | 200-600Hz             | Solid defense + metal resonance       | Successful defensive technique         |
+| `block_break`         | `/sfx/combat/block_break.webm`         | SFX  | 🔧 HIGH  | 35-55     | 0.15-0.3     | 150-500Hz             | Defense shattered + desperate crack   | Guard broken - defensive failure       |
+| `perfect_strike`      | `/sfx/combat/perfect_strike.webm`      | SFX  | 🔧 HIGH  | 60-90     | 0.3-0.5      | 100-1000Hz + divine   | Flawless technique + sacred resonance | Perfect martial arts execution         |
+
+### Archetype-Specific Audio (New System)
+
+| Asset ID          | File Path                             | Type | Priority | Size (KB) | Duration (s) | Frequency Range        | Description                                      | Korean Context                 |
+| ----------------- | ------------------------------------- | ---- | -------- | --------- | ------------ | ---------------------- | ------------------------------------------------ | ------------------------------ |
+| `musa_special`    | `/sfx/archetype/musa_special.webm`    | SFX  | 🔧 NEW   | 40-65     | 0.2-0.4      | 150-500Hz + military   | Warrior exclusive technique + military precision | Traditional warrior discipline |
+| `amsalja_stealth` | `/sfx/archetype/amsalja_stealth.webm` | SFX  | 🔧 NEW   | 20-35     | 0.1-0.3      | 600-1500Hz + whisper   | Assassin stealth + shadow whispers               | Silent shadow techniques       |
+| `hacker_tech`     | `/sfx/archetype/hacker_tech.webm`     | SFX  | 🔧 NEW   | 35-55     | 0.15-0.35    | 200-800Hz + digital    | Hacker technology + digital interference         | Cyber-enhanced combat methods  |
+| `jeongbo_psych`   | `/sfx/archetype/jeongbo_psych.webm`   | SFX  | 🔧 NEW   | 30-50     | 0.2-0.4      | 100-400Hz + subliminal | Intelligence operative psychological warfare     | Mental pressure techniques     |
+| `jojik_brutal`    | `/sfx/archetype/jojik_brutal.webm`    | SFX  | 🔧 NEW   | 45-70     | 0.15-0.3     | 80-350Hz + harsh       | Organized crime brutality + street noise         | Underground survival brutality |
+
+### Eight Trigram Philosophy Audio (New System)
+
+| Asset ID       | File Path                        | Type | Priority | Size (KB) | Duration (s) | Frequency Range       | Description                                                | Korean Context                      |
+| -------------- | -------------------------------- | ---- | -------- | --------- | ------------ | --------------------- | ---------------------------------------------------------- | ----------------------------------- |
+| `geon_heaven`  | `/sfx/trigram/geon_heaven.webm`  | SFX  | 🔧 NEW   | 50-80     | 0.3-0.5      | 100-400Hz + celestial | ☰ Heaven trigram + heavenly force + bone destruction       | Direct bone-striking divine power   |
+| `tae_lake`     | `/sfx/trigram/tae_lake.webm`     | SFX  | 🔧 NEW   | 40-65     | 0.25-0.45    | 200-600Hz + fluid     | ☱ Lake trigram + flowing manipulation + joint control      | Fluid joint manipulation techniques |
+| `li_fire`      | `/sfx/trigram/li_fire.webm`      | SFX  | 🔧 NEW   | 35-60     | 0.2-0.4      | 300-800Hz + sharp     | ☲ Fire trigram + precision flame + nerve strikes           | Precise nerve-targeting fire        |
+| `jin_thunder`  | `/sfx/trigram/jin_thunder.webm`  | SFX  | 🔧 NEW   | 45-75     | 0.2-0.4      | 150-500Hz + electric  | ☳ Thunder trigram + stunning shock + electrical disruption | Thunder stunning techniques         |
+| `son_wind`     | `/sfx/trigram/son_wind.webm`     | SFX  | 🔧 NEW   | 30-50     | 0.3-0.6      | 250-750Hz + flowing   | ☴ Wind trigram + persistent flow + continuous pressure     | Continuous pressure techniques      |
+| `gam_water`    | `/sfx/trigram/gam_water.webm`    | SFX  | 🔧 NEW   | 35-55     | 0.25-0.5     | 180-550Hz + adaptive  | ☵ Water trigram + adaptive flow + blood restriction        | Blood flow restriction methods      |
+| `gan_mountain` | `/sfx/trigram/gan_mountain.webm` | SFX  | 🔧 NEW   | 40-70     | 0.2-0.4      | 120-450Hz + solid     | ☶ Mountain trigram + mountain defense + counterattack      | Defensive mountain techniques       |
+| `gon_earth`    | `/sfx/trigram/gon_earth.webm`    | SFX  | 🔧 NEW   | 45-75     | 0.3-0.5      | 100-400Hz + grounding | ☷ Earth trigram + earth embrace + throwing techniques      | Ground-based throwing arts          |
+
+### Vital Point System Audio (New System)
+
+| Asset ID        | File Path                              | Type | Priority | Size (KB) | Duration (s) | Frequency Range       | Description                                      | Korean Context                 |
+| --------------- | -------------------------------------- | ---- | -------- | --------- | ------------ | --------------------- | ------------------------------------------------ | ------------------------------ |
+| `nerve_strike`  | `/sfx/vital_points/nerve_strike.webm`  | SFX  | 🔧 NEW   | 25-45     | 0.1-0.3      | 800-2000Hz + electric | Nervous system strike + electrical paralysis     | Neural disruption techniques   |
+| `bone_break`    | `/sfx/vital_points/bone_break.webm`    | SFX  | 🔧 NEW   | 40-65     | 0.15-0.4     | 100-400Hz + crack     | Bone fracture + structural destruction           | Skeletal destruction methods   |
+| `blood_flow`    | `/sfx/vital_points/blood_flow.webm`    | SFX  | 🔧 NEW   | 30-50     | 0.2-0.5      | 60-200Hz + pulse      | Blood flow disruption + circulation interference | Vascular control techniques    |
+| `consciousness` | `/sfx/vital_points/consciousness.webm` | SFX  | 🔧 NEW   | 35-60     | 0.2-0.6      | 100-300Hz + fading    | Consciousness manipulation + mental shock        | Awareness disruption methods   |
+| `respiratory`   | `/sfx/vital_points/respiratory.webm`   | SFX  | 🔧 NEW   | 25-45     | 0.15-0.4     | 300-800Hz + breath    | Breathing disruption + airway pressure           | Respiratory control techniques |
+
+### Ki Energy System Audio (New System)
+
+| Asset ID       | File Path                          | Type | Priority | Size (KB) | Duration (s) | Frequency Range      | Description                                   | Korean Context             |
+| -------------- | ---------------------------------- | ---- | -------- | --------- | ------------ | -------------------- | --------------------------------------------- | -------------------------- |
+| `ki_charge`    | `/sfx/ki_energy/ki_charge.webm`    | SFX  | 🔧 NEW   | 40-70     | 0.5-2.0      | 100-500Hz + harmonic | Internal energy accumulation + electronic hum | Traditional ki cultivation |
+| `ki_release`   | `/sfx/ki_energy/ki_release.webm`   | SFX  | 🔧 NEW   | 50-80     | 0.2-0.5      | 150-600Hz + burst    | Explosive energy release + cyber pulse        | Ki energy burst techniques |
+| `energy_pulse` | `/sfx/ki_energy/energy_pulse.webm` | SFX  | 🔧 NEW   | 30-50     | 0.15-0.3     | 200-700Hz + rhythmic | Rhythmic energy wave + trigram power          | Eight trigram energy flow  |
+| `ki_depleted`  | `/sfx/ki_energy/ki_depleted.webm`  | SFX  | 🔧 NEW   | 25-40     | 0.2-0.4      | 80-300Hz + declining | Energy depletion + electronic discharge       | Ki exhaustion state        |
+
+### Environmental & Atmospheric Audio
+
+| Asset ID           | File Path                                | Type | Priority    | Size (KB) | Duration (s) | Frequency Range      | Description                                  | Korean Context                 |
+| ------------------ | ---------------------------------------- | ---- | ----------- | --------- | ------------ | -------------------- | -------------------------------------------- | ------------------------------ |
+| `underground_echo` | `/sfx/environment/underground_echo.webm` | AMB  | 🔧 NEW      | 60-100    | 2.0-5.0      | 40-200Hz + reverb    | Underground space resonance + darkness depth | Hidden dojang atmosphere       |
+| `neon_hum`         | `/sfx/environment/neon_hum.webm`         | AMB  | 🔧 NEW      | 40-70     | 3.0-8.0      | 60Hz + harmonics     | Neon electrical hum + cyberpunk ambience     | Futuristic lighting atmosphere |
+| `blood_stain_echo` | `/sfx/environment/blood_stain_echo.webm` | AMB  | 🔧 NEW      | 50-80     | 2.0-4.0      | 100-400Hz + haunting | Blood stain echoes + past battle memories    | Previous combat history        |
+| `dojang_ambience`  | `/sfx/environment/dojang_ambience.webm`  | AMB  | 🔧 OPTIONAL | 80-120    | 5.0-10.0     | 60-500Hz + peaceful  | Peaceful dojang atmosphere + meditation      | Traditional training space     |
+
+### Music Tracks (Background)
+
+| Asset ID            | File Path                       | Type  | Priority    | Size (MB) | Duration (min) | Style                    | Description                                                    | Korean Context                |
+| ------------------- | ------------------------------- | ----- | ----------- | --------- | -------------- | ------------------------ | -------------------------------------------------------------- | ----------------------------- |
+| `intro_theme`       | `/music/intro_theme.webm`       | MUSIC | ✅ CRITICAL | 3-6       | 2-4            | Traditional + Electronic | Meditative Korean traditional + philosophical atmosphere       | Philosophy introduction music |
+| `combat_theme`      | `/music/combat_theme.webm`      | MUSIC | ✅ CRITICAL | 4-8       | 3-6            | Intense Rhythmic         | Intense rhythm + combat energy + traditional percussion        | Battle intensity soundtrack   |
+| `underground_theme` | `/music/underground_theme.webm` | MUSIC | 🔧 NEW      | 5-10      | 4-8            | Dark Ambient             | Underground dojang + darkness atmosphere + neon ambience       | Hidden training facility      |
+| `cyberpunk_fusion`  | `/music/cyberpunk_fusion.webm`  | MUSIC | 🔧 NEW      | 6-12      | 5-10           | Traditional + Cyber      | Korean traditional + cyberpunk fusion + electronic enhancement | Cultural-tech harmony         |
+
+### Archetype Theme Music (New System)
+
+| Asset ID         | File Path                                     | Type  | Priority | Size (MB) | Duration (min) | Style                  | Description                                                           | Korean Context              |
+| ---------------- | --------------------------------------------- | ----- | -------- | --------- | -------------- | ---------------------- | --------------------------------------------------------------------- | --------------------------- |
+| `musa_warrior`   | `/music/archetype_themes/musa_warrior.webm`   | MUSIC | 🔧 NEW   | 4-8       | 3-6            | Military + Traditional | Traditional warrior + military honor + disciplined rhythm             | Military martial discipline |
+| `amsalja_shadow` | `/music/archetype_themes/amsalja_shadow.webm` | MUSIC | 🔧 NEW   | 3-6       | 2-5            | Dark + Minimal         | Shadow assassin + stealth melody + minimal instrumentation            | Silent shadow techniques    |
+| `hacker_cyber`   | `/music/archetype_themes/hacker_cyber.webm`   | MUSIC | 🔧 NEW   | 5-10      | 4-8            | Electronic + Digital   | Cyber warrior + digital beats + technological enhancement             | Information warfare sound   |
+| `jeongbo_intel`  | `/music/archetype_themes/jeongbo_intel.webm`  | MUSIC | 🔧 NEW   | 4-7       | 3-6            | Tension + Strategic    | Intelligence operative + strategic tension + psychological undertones | Mental warfare atmosphere   |
+| `jojik_street`   | `/music/archetype_themes/jojik_street.webm`   | MUSIC | 🔧 NEW   | 4-8       | 3-7            | Harsh + Urban          | Organized crime + street brutality + harsh urban sounds               | Underground survival music  |
+
+## 🎵 Enhanced Audio Design Specifications
+
+### Format Specifications (Updated for Dark Aesthetics)
+
+- **Container**: WebM
+- **Audio Codec**: Opus (preferred) or Vorbis
+- **Sample Rate**: 48kHz (recommended) or 44.1kHz
+- **Bit Rate**:
+  - SFX: 64-96 kbps (higher for bone impact realism)
+  - Music: 128-160 kbps (higher for traditional instrument richness)
+  - Ambient: 96-128 kbps (for underground atmosphere depth)
+- **Channels**:
+  - SFX: Mono (precise positioning) / Stereo (environmental)
+  - Music: Stereo (full traditional + cyberpunk soundscape)
+  - Combat: Mono (accurate targeting feedback)
+
+### 🌑 Dark Combat Audio Styling Guidelines
+
+#### Bone Impact Realism (골절 현실성)
 
 ```
-public/assets/audio/
-├── sfx/
-│   ├── menu/
-│   │   ├── menu_click.webm
-│   │   ├── menu_navigate.webm
-│   │   ├── menu_select.webm
-│   │   ├── menu_hover.webm
-│   │   └── menu_back.webm
-│   ├── combat/
-│   │   ├── attack_punch_light.webm
-│   │   ├── attack_punch_medium.webm
-│   │   ├── attack_kick_heavy.webm
-│   │   ├── attack_light.webm
-│   │   ├── attack_medium.webm
-│   │   ├── attack_critical.webm
-│   │   ├── attack_special_geon.webm
-│   │   ├── dodge.webm
-│   │   ├── block_success.webm
-│   │   ├── block_break.webm
-│   │   └── perfect_strike.webm
-│   ├── hits/
-│   │   ├── hit_light.webm
-│   │   ├── hit_medium.webm
-│   │   ├── hit_heavy.webm
-│   │   ├── hit_critical.webm
-│   │   ├── hit_flesh.webm
-│   │   └── hit_block.webm
-│   ├── combo/
-│   │   ├── combo_buildup.webm
-│   │   ├── combo_finish.webm
-│   │   └── energy_pulse.webm
-│   ├── match/
-│   │   ├── match_start.webm
-│   │   ├── countdown.webm
-│   │   ├── match_end.webm
-│   │   ├── victory.webm
-│   │   └── defeat.webm
-│   ├── movement/
-│   │   ├── footstep.webm
-│   │   └── stance_change.webm
-│   ├── ki/
-│   │   ├── ki_charge.webm
-│   │   └── ki_release.webm
-│   ├── stamina/
-│   │   └── stamina_depleted.webm
-│   ├── health/
-│   │   └── health_low.webm
-│   ├── ambient/
-│   │   ├── dojang_ambience.webm
-│   │   ├── wind_effect.webm
-│   │   └── dojo_crowd.webm
-│   └── ui/
-│       ├── menu_select.webm       ← redundant with sfx/menu (only keep in one)
-│       └── menu_back.webm         ← redundant with sfx/menu (only keep in one)
-└── music/
-    ├── intro_theme.webm
-    ├── combat_theme.webm
-    ├── combat_theme_geon.webm
-    ├── training_theme.webm
-    ├── meditation_theme.webm
-    ├── victory_theme.webm
-    ├── underground_rave_theme.webm
-    └── ambient_loop.webm
+Light Impact (경미한 충격):
+- Frequency: 200-400Hz base, 2-4kHz crack
+- Duration: 0.05-0.1s
+- Reverb: Minimal, tight space
+- Effect: Sharp crack + slight electronic pulse
+
+Medium Impact (중간 충격):
+- Frequency: 150-300Hz base, 1.5-3kHz crack
+- Duration: 0.1-0.15s
+- Reverb: Underground echo
+- Effect: Solid impact + cyberpunk resonance
+
+Heavy Impact (심각한 충격):
+- Frequency: 100-250Hz base, 1-2kHz crack
+- Duration: 0.15-0.25s
+- Reverb: Deep underground space
+- Effect: Devastating break + electronic distortion
+
+Critical/Vital Impact (급소 치명타):
+- Frequency: 80-200Hz base, 0.8-1.5kHz crack
+- Duration: 0.2-0.4s
+- Reverb: Haunting underground echo
+- Effect: Perfect strike + divine/electronic harmony
 ```
 
-* **Note**: For clarity, `sfx/ui/` contains two files (`menu_select.webm` and `menu_back.webm`) that are already listed under `sfx/menu/`. In practice, keep only one copy in `sfx/menu/` and remove duplicates. The directory tree above is illustrative; the table below references each asset’s **canonical** location.
+#### Traditional Korean + Cyberpunk Fusion
 
----
+```
+가야금 (Gayageum) Enhancement:
+- Base: Traditional plucked string resonance
+- Enhancement: Subtle digital reverb + neon glow effect
+- Processing: Light chorus + cyber echo
+- Use: Menu navigation, stance transitions
 
-## Audio Assets Table
+북 (Buk) War Drums:
+- Base: Deep traditional Korean percussion
+- Enhancement: Electronic sub-bass + digital compression
+- Processing: Industrial reverb + cyber punch
+- Use: Combat intensity, match start/end
 
-| #  | Name                         | Category | Folder Location | Format | Channels / Style                | Description / Usage                                                                                                                       |
-| -- | ---------------------------- | -------- | --------------- | ------ | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| 1  | **menu\_click**              | SFX      | `sfx/menu/`     | .webm  | Mono, One‐Shot                  | Button click sound (small “pop”) used when a menu item is selected—e.g., settings, loadout, etc.                                          |
-| 2  | **menu\_navigate**           | SFX      | `sfx/menu/`     | .webm  | Mono, One‐Shot                  | Soft “slide” or “beep” used when navigating between menu items.                                                                           |
-| 3  | **menu\_select**             | SFX      | `sfx/menu/`     | .webm  | Mono, One‐Shot                  | Confirmation sound for clicking “Enter” on a menu option; a short metallic “click.”                                                       |
-| 4  | **menu\_hover**              | SFX      | `sfx/menu/`     | .webm  | Mono, One‐Shot                  | Hover‐over sound for UI buttons (subtle chime).                                                                                           |
-| 5  | **menu\_back**               | SFX      | `sfx/menu/`     | .webm  | Mono, One‐Shot                  | Cancel/back action in menus (low whoosh).                                                                                                 |
-| 6  | **attack\_punch\_light**     | SFX      | `sfx/combat/`   | .webm  | Mono, One‐Shot                  | Light punch impact (e.g., jab). Dry “thwack” with minimal low‐end; played by `playAttackSound(damage)` when damage is small.              |
-| 7  | **attack\_punch\_medium**    | SFX      | `sfx/combat/`   | .webm  | Mono, One‐Shot                  | Medium‐strength punch; fuller mid‐range “smack.” Used when `playAttackSound(damage)` with medium damage.                                  |
-| 8  | **attack\_kick\_heavy**      | SFX      | `sfx/combat/`   | .webm  | Stereo, One‐Shot                | Heavy kick with sub “boom.” Used for larger‐damage attacks in `playAttackSound(damage)`.                                                  |
-| 9  | **attack\_light**            | SFX      | `sfx/combat/`   | .webm  | Mono, One‐Shot                  | Generic light‐damage attack (used internally by combo chains).                                                                            |
-| 10 | **attack\_medium**           | SFX      | `sfx/combat/`   | .webm  | Mono, One‐Shot                  | Generic medium‐damage attack.                                                                                                             |
-| 11 | **attack\_critical**         | SFX      | `sfx/combat/`   | .webm  | Stereo, One‐Shot                | Critical (high‐damage) attack: layered sub boom + high snap + reverberation. Used by `playAttackSound(damage)` when `damage` is critical. |
-| 12 | **attack\_special\_geon**    | SFX      | `sfx/combat/`   | .webm  | Stereo, One‐Shot                | “Geon” special move execution: electronic surge + distorted Korean drum (buk).                                                            |
-| 13 | **dodge**                    | SFX      | `sfx/combat/`   | .webm  | Mono, One‐Shot                  | Dodge maneuver sound: quick “woosh.” Called by `playAttackSound` or by specific dodge logic.                                              |
-| 14 | **block\_success**           | SFX      | `sfx/combat/`   | .webm  | Mono, One‐Shot                  | Successful block: dry metal‐on‐metal “clank.” Invoked by `playHitSound` when impact is blocked.                                           |
-| 15 | **block\_break**             | SFX      | `sfx/combat/`   | .webm  | Stereo, One‐Shot                | Block break (armor shatter): crunchy metallic break + debris.                                                                             |
-| 16 | **perfect\_strike**          | SFX      | `sfx/combat/`   | .webm  | Stereo, One‐Shot                | Ultra‐precision strike: high‐pitched “snap” + short pitch‐bend. Used by `playAttackSound` when a perfect/vital strike lands.              |
-| 17 | **hit\_light**               | SFX      | `sfx/hits/`     | .webm  | Mono, One‐Shot                  | Light hit feedback (character takes minor damage). Called by `playHitSound(damage, isVitalPoint)`.                                        |
-| 18 | **hit\_medium**              | SFX      | `sfx/hits/`     | .webm  | Mono, One‐Shot                  | Medium hit feedback (moderate damage).                                                                                                    |
-| 19 | **hit\_heavy**               | SFX      | `sfx/hits/`     | .webm  | Stereo, One‐Shot                | Heavy hit feedback (strong impact).                                                                                                       |
-| 20 | **hit\_critical**            | SFX      | `sfx/hits/`     | .webm  | Stereo, One‐Shot                | Critical hit (fatal or near‐fatal). Plays a deep sub boom + echo.                                                                         |
-| 21 | **hit\_flesh**               | SFX      | `sfx/hits/`     | .webm  | Mono, One‐Shot                  | Flesh‐on‐flesh impact (unarmored hit).                                                                                                    |
-| 22 | **hit\_block**               | SFX      | `sfx/hits/`     | .webm  | Mono, One‐Shot                  | Generic hit on a blocked surface.                                                                                                         |
-| 23 | **combo\_buildup**           | SFX      | `sfx/combo/`    | .webm  | Stereo, One‐Shot                | Combo chain buildup: rising “whoosh” + drum roll. Called by `playComboSound(comboCount)` when `comboCount` increments.                    |
-| 24 | **combo\_finish**            | SFX      | `sfx/combo/`    | .webm  | Stereo, One‐Shot                | Combo completion flourish: synth burst + impact echo. Called by `playComboSound(comboCount)` at final combo.                              |
-| 25 | **energy\_pulse**            | SFX      | `sfx/combo/`    | .webm  | Stereo, Loopable (1 bar)        | Subtle electro‐pulse you can loop under combos. Used as backing layer when combos engage.                                                 |
-| 26 | **match\_start**             | SFX      | `sfx/match/`    | .webm  | Stereo, One‐Shot                | Match start cue: drum fill + bell chime. Possibly triggered by `playSFX("match_start")` before combat begins.                             |
-| 27 | **countdown**                | SFX      | `sfx/match/`    | .webm  | Stereo, One‐Shot                | “3…2…1…Fight!” voice/note countdown. Called by `playSFX("countdown")` at match intro.                                                     |
-| 28 | **match\_end**               | SFX      | `sfx/match/`    | .webm  | Stereo, One‐Shot                | End‐of‐match “gong.”                                                                                                                      |
-| 29 | **victory**                  | SFX      | `sfx/match/`    | .webm  | Stereo, One‐Shot                | Player victory fanfare (short triumphant chord).                                                                                          |
-| 30 | **defeat**                   | SFX      | `sfx/match/`    | .webm  | Stereo, One‐Shot                | Defeat sound: low minor chord.                                                                                                            |
-| 31 | **footstep**                 | SFX      | `sfx/movement/` | .webm  | Mono, One‐Shot                  | Single dojo floor footstep.                                                                                                               |
-| 32 | **stance\_change**           | SFX      | `sfx/movement/` | .webm  | Mono, One‐Shot                  | Stance switch (cloth rustle + muffled “shhh”). Called by `playStanceChangeSound()`.                                                       |
-| 33 | **ki\_charge**               | SFX      | `sfx/ki/`       | .webm  | Stereo, One‐Shot                | Ki energy buildup (rising synth hum). Played by `playSFX("ki_charge")` when player charges Ki.                                            |
-| 34 | **ki\_release**              | SFX      | `sfx/ki/`       | .webm  | Stereo, One‐Shot                | Ki release explosion (zing + sub thump). Played by `playSFX("ki_release")`.                                                               |
-| 35 | **stamina\_depleted**        | SFX      | `sfx/stamina/`  | .webm  | Mono, One‐Shot                  | Warning beep when stamina is low. Called by `playSFX("stamina_depleted")`.                                                                |
-| 36 | **health\_low**              | SFX      | `sfx/health/`   | .webm  | Mono, One‐Shot                  | Low‐health heartbeat & beep. Called by `playSFX("health_low")`.                                                                           |
-| 37 | **dojang\_ambience**         | SFX      | `sfx/ambient/`  | .webm  | Stereo, Loopable (60s)          | Dojo ambient loop: distant chatter, shuffling, soft wind. Played by `playSFX("dojang_ambience")` on practice/training screens.            |
-| 38 | **wind\_effect**             | SFX      | `sfx/ambient/`  | .webm  | Stereo, Loopable (30s)          | Outdoor wind gust. Possibly used by `playSFX("wind_effect")` in open‐field scenes.                                                        |
-| 39 | **dojo\_crowd**              | SFX      | `sfx/ambient/`  | .webm  | Stereo, Loopable (60s)          | Crowd murmur in dojo stands. Used on fight screens for background ambience.                                                               |
-| 40 | **intro\_theme**             | Music    | `music/`        | .webm  | Stereo, Non‐Looped (4:00)       | Main menu / title screen music. Played by `playMusic("intro_theme")`.                                                                     |
-| 41 | **combat\_theme**            | Music    | `music/`        | .webm  | Stereo, Non‐Looped (3:30)       | Default combat music. Played by `playMusic("combat_theme")` during fights.                                                                |
-| 42 | **combat\_theme\_geon**      | Music    | `music/`        | .webm  | Stereo, Non‐Looped (3:30)       | Alternative “Geon” combat theme. Played by `playMusic("combat_theme_geon")` for special matches.                                          |
-| 43 | **training\_theme**          | Music    | `music/`        | .webm  | Stereo, Non‐Looped (3:00, Loop) | Dojo training music. Played by `playMusic("training_theme")` on practice screens.                                                         |
-| 44 | **meditation\_theme**        | Music    | `music/`        | .webm  | Stereo, Non‐Looped (2:30)       | Meditation/relaxation music. Played by `playMusic("meditation_theme")` on rest screens.                                                   |
-| 45 | **victory\_theme**           | Music    | `music/`        | .webm  | Stereo, Non‐Looped (1:30)       | Victory fanfare music. Played by `playMusic("victory_theme")` on win.                                                                     |
-| 46 | **underground\_rave\_theme** | Music    | `music/`        | .webm  | Stereo, Non‐Looped (4:00)       | Dark EBM/techno “Black Trigram Underground Rave.” Played by `playMusic("underground_rave_theme")` in special fight or underground menus.  |
-| 47 | **ambient\_loop**            | Music    | `music/`        | .webm  | Stereo, Loopable (120s)         | General “city underground” ambience. Played by `playMusic("ambient_loop")` on loading or transitional screens.                            |
+꽹과리 (Kkwaenggwari) Gongs:
+- Base: Bright metallic traditional sound
+- Enhancement: Synthetic harmonics + neon shimmer
+- Processing: Futuristic delay + spatial effect
+- Use: Critical hits, perfect techniques
 
----
-
-## Guidelines & Notes
-
-1. **File Format & Optimization**
-
-   * All files must be in **`.webm`**.
-   * **Opus** codec for music (`-c:a libopus -b:a 128k` for most tracks, `-b:a 160k` for high‐energy tracks).
-   * **Opus** or **Vorbis** for SFX (bitrates 64–96 kbps).
-   * Aim for small file sizes while retaining perceptible quality (e.g., \~1 MB per 1 second of music).
-
-2. **Channels / Stereo vs. Mono**
-
-   * **Mono** (one‐shot) for short UI or combat SFX (menu clicks, hits, footsteps).
-   * **Stereo** for spatially rich SFX (attack\_critical, block\_break) and all music tracks.
-   * **Loopable** assets (ambient loops, energy pulses) must loop seamlessly.
-
-3. **Volume & Loudness Standards**
-
-   * **Music**: target **−12 LUFS** (integrated).
-   * **SFX**: peaks around **−6 dB TP**. Normalize each one to its own peak before import.
-   * Common mastering chain:
-
-     1. **High‐pass filter** at 20 Hz.
-     2. **Low‐pass filter** at 18 kHz (SFX).
-     3. **Limiter** at **−0.3 dB** ceiling.
-     4. **Normalize** SFX to peak.
-     5. **Light bus compression** on music (2:1 ratio, threshold \~−14 dB) + **EQ** for clarity (boost 2 kHz +2 dB, cut muddy mids).
-
-4. **Naming Conventions**
-
-   * **SFX**: `category_name.webm` (e.g., `attack_punch_light.webm`).
-   * **Music**: descriptive (e.g., `intro_theme.webm`, `underground_rave_theme.webm`).
-
-5. **Integration with AudioManager**
-
-   * **`playMusic(trackName)`** expects `trackName` to match exactly one of the **Music** assets (`intro_theme`, `combat_theme`, `combat_theme_geon`, `training_theme`, `meditation_theme`, `victory_theme`, `underground_rave_theme`, `ambient_loop`).
-   * **`playAttackSound(damage)`** should map `damage` ranges to one of the attack SFX (`attack_punch_light`, `attack_punch_medium`, `attack_kick_heavy`, `attack_light`, `attack_medium`, `attack_critical`, `attack_special_geon`, `dodge`, `perfect_strike`).
-   * **`playHitSound(damage, isVitalPoint)`** should choose among `hit_light`, `hit_medium`, `hit_heavy`, `hit_critical`, `hit_flesh`, `hit_block` (and optionally add a distinct layer if `isVitalPoint === true`).
-   * **`playComboSound(comboCount)`** uses `combo_buildup` (when comboCount increments) and `combo_finish` (when comboCount resets), plus optionally `energy_pulse` as looping backing when combo ≥ 2.
-   * **`playStanceChangeSound()`** calls `stance_change.webm`.
-   * **`playSFX(soundId)`** must be able to reference any SFX by its filename (without extension), e.g., `playSFX("menu_click")`, `playSFX("match_start")`, `playSFX("defeat")`, `playSFX("footstep")`, `playSFX("ki_charge")`, `playSFX("health_low")`, `playSFX("dojang_ambience")`, etc.
-
-6. **Missing Assets / 404 Prevention**
-
-   * Ensure all asset names in the table above exactly match their filenames (including underscores).
-   * Verify that **no 404** occurs when playing an asset by calling `audioManager.playSFX("asset_name")` or `audioManager.playMusic("trackName")` in a debug console—you should see a console log with the correct `trackName` or `soundId`.
-   * Remove any references to assets not listed here; if code calls `playSFX("some_old_asset")` that asset must be added above or the call must be updated to an existing asset.
-
----
-
-### Example Usage in `AudioManager` Context
-
-```ts
-// In some React component or game logic:
-
-import { useAudio } from "./AudioManager";
-
-// Play background music when entering main menu:
-const audio = useAudio();
-audio.playMusic("intro_theme");
-
-// Play a light punch sound when damage is low:
-audio.playAttackSound(5); // mapping logic in code should choose "attack_punch_light"
-
-// Play a critical hit sound when vital point is hit:
-audio.playHitSound(50, true); // maps to "hit_critical" + possibly extra FX
-
-// Play combo buildup at comboCount = 2 and combo finish at combo end:
-audio.playComboSound(2);  // plays "combo_buildup"
-audio.playComboSound(0);  // plays "combo_finish"
-
-// Play stance change when user toggles guard stance:
-audio.playStanceChangeSound(); // plays "stance_change"
-
-// Play a generic UI click:
-audio.playSFX("menu_click");   // plays `public/assets/audio/sfx/menu/menu_click.webm`
+해금 (Haegeum) Fiddle:
+- Base: Traditional Korean string instrument
+- Enhancement: Digital glitch + cyberpunk distortion
+- Processing: Filtered sweep + electronic modulation
+- Use: Atmospheric tension, psychological pressure
 ```
 
-By adhering strictly to the **above directory structure**, **asset names**, and **volume/format guidelines**, the AudioManager will load and play every required sound or music track without generating any missing‐resource errors.
+#### Archetype-Specific Audio Design
+
+##### 🏯 무사 (Musa) - Traditional Warrior
+
+```
+Audio Signature: 군사적 절도 (Military Precision)
+- Impact Style: Clean, powerful, honorable
+- Frequency: Mid-range dominance (300-800Hz)
+- Effects: Military drum backing, disciplined strikes
+- Reverb: Formal dojang acoustics
+- Special: Honor-bound technique sounds with traditional backing
+```
+
+##### 🥷 암살자 (Amsalja) - Shadow Assassin
+
+```
+Audio Signature: 그림자 속삭임 (Shadow Whispers)
+- Impact Style: Silent, precise, deadly
+- Frequency: Higher precision (600-1200Hz)
+- Effects: Minimal audio, stealth enhancement
+- Reverb: Absorbed, muffled, secretive
+- Special: Near-silent techniques with sudden sharp impacts
+```
+
+##### 💻 해커 (Hacker) - Cyber Warrior
+
+```
+Audio Signature: 디지털 간섭 (Digital Interference)
+- Impact Style: Tech-enhanced, analytical
+- Frequency: Full spectrum with digital processing
+- Effects: Electronic glitches, data stream sounds
+- Reverb: Digital delay, processed echo
+- Special: Tech-assisted combat with electronic overlay
+```
+
+##### 🕵️ 정보요원 (Jeongbo Yowon) - Intelligence Operative
+
+```
+Audio Signature: 정신적 압박 (Psychological Pressure)
+- Impact Style: Calculated, intimidating
+- Frequency: Low-mid psychological impact (200-600Hz)
+- Effects: Subtle psychological tension, mind games
+- Reverb: Interrogation room echo
+- Special: Pressure-point strikes with psychological undertones
+```
+
+##### ⚡ 조직폭력배 (Jojik Pokryeokbae) - Organized Crime
+
+```
+Audio Signature: 거리의 잔혹성 (Street Brutality)
+- Impact Style: Brutal, improvised, desperate
+- Frequency: Harsh, gritty (100-500Hz + distortion)
+- Effects: Environmental usage, desperation sounds
+- Reverb: Alley echo, urban harshness
+- Special: Dirty fighting with improvised weapon integration
+```
+
+### 🎯 Vital Point Audio Design (Vital Point Sound Design)
+
+#### 70 Vital Points Sound Categories
+
+```
+신경계 타격 (Nervous System Strikes):
+- Base Sound: Electric zap + nerve disruption
+- Frequency: 800-2000Hz sharp spike
+- Duration: 0.1-0.3s with fade
+- Effect: Temporary paralysis audio cue
+
+골격 파괴 (Skeletal Destruction):
+- Base Sound: Deep bone crack + structural failure
+- Frequency: 100-400Hz base + 1-3kHz crack
+- Duration: 0.15-0.4s
+- Effect: Fracture realism with cyberpunk enhancement
+
+혈류 차단 (Blood Flow Restriction):
+- Base Sound: Circulation cut + pressure point
+- Frequency: Low pulsing 60-200Hz + high pressure release
+- Duration: 0.2-0.5s with pulse rhythm
+- Effect: Vascular disruption with heart rate change
+
+호흡 차단 (Respiratory Disruption):
+- Base Sound: Airway compression + breath interruption
+- Frequency: Mid-range compression 300-800Hz
+- Duration: Variable with breathing pattern
+- Effect: Realistic respiratory distress
+```
+
+### 🌃 Underground Dojang Environmental Audio
+
+#### Spatial Audio Design
+
+```
+지하 공간 울림 (Underground Space Echo):
+- Reverb Time: 1.2-2.5 seconds
+- Early Reflections: Concrete/stone surfaces
+- Late Reverb: Deep underground cavern feel
+- Frequency Response: Enhanced low-end (40-200Hz)
+
+네온 전기 웅웅거림 (Neon Electrical Hum):
+- Base Frequency: 60Hz electrical + harmonics
+- Modulation: Subtle flickering effect
+- Spatial: Positioned lighting ambience
+- Volume: Very low, atmospheric (5-10% mix)
+
+혈흔의 메아리 (Blood Stain Echoes):
+- Reverb Character: Haunting, metallic resonance
+- Frequency: Enhanced mid-range reflection
+- Decay: Slower, more ominous
+- Psychology: Subtle reminder of previous battles
+```
+
+## Conversion Commands (Enhanced for Dark Aesthetics)
+
+### High-Quality Combat SFX Conversion
+
+```bash
+# Traditional Korean + Cyberpunk fusion conversion
+ffmpeg -i input.wav \
+  -c:a libopus -b:a 96k \
+  -af "acompressor=threshold=0.089:ratio=9:attack=0.003:release=0.03,\
+       highpass=f=80,lowpass=f=8000,\
+       aecho=0.8:0.9:100:0.1" \
+  output.webm
+
+# Bone impact realism enhancement
+ffmpeg -i bone_impact.wav \
+  -c:a libopus -b:a 128k \
+  -af "acompressor=threshold=0.1:ratio=4:attack=0.001:release=0.01,\
+       bass=g=3:f=200:w=100,\
+       treble=g=2:f=2000:w=500" \
+  bone_enhanced.webm
+
+# Underground reverb processing
+ffmpeg -i dry_audio.wav \
+  -c:a libopus -b:a 96k \
+  -af "aecho=0.6:0.4:1000:0.3,\
+       aecho=0.4:0.2:2000:0.1,\
+       highpass=f=60,\
+       volume=0.8" \
+  underground_processed.webm
+```
+
+### Traditional Instrument + Cyber Enhancement
+
+```bash
+# Gayageum cyberpunk enhancement
+ffmpeg -i gayageum_traditional.wav \
+  -c:a libopus -b:a 128k \
+  -af "chorus=0.5:0.9:50:0.4:0.25:2,\
+       aecho=0.6:0.4:800:0.15,\
+       treble=g=1.5:f=4000:w=1000" \
+  gayageum_cyber.webm
+
+# Buk war drums industrial processing
+ffmpeg -i buk_drums.wav \
+  -c:a libopus -b:a 128k \
+  -af "acompressor=threshold=0.125:ratio=6:attack=0.003:release=0.05,\
+       bass=g=4:f=100:w=50,\
+       aecho=0.7:0.3:150:0.2" \
+  buk_industrial.webm
+```
+
+## Testing Asset Loading
+
+To verify assets are loading correctly with enhanced combat feedback:
+
+```javascript
+// Test Korean martial arts audio integration
+const testCombatAudio = async () => {
+  // Test basic combat sounds
+  const attackAudio = new Audio(
+    "./assets/audio/sfx/combat/attack_critical.webm"
+  );
+  await attackAudio
+    .play()
+    .then(() => console.log("✅ Critical attack loaded"))
+    .catch((e) => console.log("❌ Attack failed:", e));
+
+  // Test archetype-specific sounds
+  const musaAudio = new Audio("./assets/audio/sfx/archetype/musa_special.webm");
+  await musaAudio
+    .play()
+    .then(() => console.log("✅ Musa archetype loaded"))
+    .catch((e) => console.log("❌ Musa failed:", e));
+
+  // Test trigram philosophy sounds
+  const geonAudio = new Audio("./assets/audio/sfx/trigram/geon_heaven.webm");
+  await geonAudio
+    .play()
+    .then(() => console.log("✅ Geon trigram loaded"))
+    .catch((e) => console.log("❌ Geon failed:", e));
+
+  // Test vital point precision
+  const nerveAudio = new Audio(
+    "./assets/audio/sfx/vital_points/nerve_strike.webm"
+  );
+  await nerveAudio
+    .play()
+    .then(() => console.log("✅ Nerve strike loaded"))
+    .catch((e) => console.log("❌ Nerve failed:", e));
+};
+
+// Test underground atmosphere
+const testAtmosphere = async () => {
+  const undergroundAudio = new Audio(
+    "./assets/audio/music/underground_theme.webm"
+  );
+  await undergroundAudio
+    .play()
+    .then(() => console.log("✅ Underground theme loaded"))
+    .catch((e) => console.log("❌ Underground failed:", e));
+};
+```
+
+## 🎯 Enhanced Immediate Actions Required
+
+1. **Run the updated asset processing script with Korean martial arts styling**
+2. **Implement archetype-specific audio generation** for each fighter type
+3. **Create trigram philosophy sound mapping** for ☰☱☲☳☴☵☶☷ stances
+4. **Verify vital point precision audio feedback** for 70 target points
+5. **Test underground dojang atmospheric integration**
+6. **Enable enhanced fallback mode** with Korean traditional + cyberpunk fusion
+
+The enhanced audio system should create an immersive **Underground Dojang** experience that combines authentic Korean martial arts traditions with dark cyberpunk aesthetics, providing realistic combat feedback across 5 distinct fighter archetypes and 8 trigram philosophies.
+
+## 🌑 Dark Enhancement Priority
+
+1. **Critical Combat Audio** - Bone breaking, vital point strikes, archetype signatures
+2. **Traditional Fusion** - Korean instruments with cyberpunk processing
+3. **Underground Atmosphere** - Neon hum, blood echo, spatial depth
+4. **Psychological Warfare** - Intimidation, pressure, mental dominance
+5. **Perfect Strike Feedback** - Precise vital point audio confirmation
+
+_"In darkness, hear the sound of the perfect strike"_
