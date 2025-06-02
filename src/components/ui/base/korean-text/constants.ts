@@ -22,11 +22,11 @@ export const KOREAN_FONT_FAMILY = KOREAN_FONT_FAMILIES.PRIMARY;
 
 // Korean font weights
 export const KOREAN_FONT_WEIGHTS = {
-  light: "300",
-  regular: "400",
-  medium: "500",
-  bold: "700",
-  heavy: "900",
+  light: 300,
+  regular: 400,
+  medium: 500,
+  bold: 700,
+  heavy: 900,
 } as const;
 
 // Status translations
@@ -34,15 +34,40 @@ export const KOREAN_STATUS_TRANSLATIONS: Record<
   StatusKey,
   { korean: string; english: string }
 > = {
+  // Player vital stats
   health: { korean: "체력", english: "Health" },
   ki: { korean: "기력", english: "Ki" },
   stamina: { korean: "스태미나", english: "Stamina" },
   consciousness: { korean: "의식", english: "Consciousness" },
   pain: { korean: "고통", english: "Pain" },
   balance: { korean: "균형", english: "Balance" },
+
+  // Combat conditions
+  health_critical: { korean: "위험상태", english: "Critical Health" },
+  stamina_low: { korean: "체력부족", english: "Low Stamina" },
+  ki_depleted: { korean: "기력고갈", english: "Ki Depleted" },
+  stunned: { korean: "기절", english: "Stunned" },
+  bleeding: { korean: "출혈", english: "Bleeding" },
+  poisoned: { korean: "중독", english: "Poisoned" },
+  burning: { korean: "화상", english: "Burning" },
+  frozen: { korean: "빙결", english: "Frozen" },
+  slowed: { korean: "둔화", english: "Slowed" },
+  hastened: { korean: "가속", english: "Hastened" },
+  guard_break: { korean: "가드파괴", english: "Guard Break" },
+  counter_hit: { korean: "카운터", english: "Counter Hit" },
+  vulnerable: { korean: "취약", english: "Vulnerable" },
+
+  // General status indicators
+  ready: { korean: "준비", english: "Ready" },
+  active: { korean: "활성", english: "Active" },
+  inactive: { korean: "비활성", english: "Inactive" },
+  success: { korean: "성공", english: "Success" },
+  failure: { korean: "실패", english: "Failure" },
+  warning: { korean: "경고", english: "Warning" },
+  info: { korean: "정보", english: "Info" },
 } as const;
 
-// Martial arts colors
+// Martial arts colors (using existing Korean colors)
 export const MARTIAL_COLORS: Record<MartialVariant, number> = {
   technique: KOREAN_COLORS.GREEN,
   philosophy: KOREAN_COLORS.BLUE,
@@ -50,7 +75,7 @@ export const MARTIAL_COLORS: Record<MartialVariant, number> = {
   practitioner: KOREAN_COLORS.SILVER,
   master: KOREAN_COLORS.GOLD,
   honor: KOREAN_COLORS.ORANGE,
-  discipline: KOREAN_COLORS.PURPLE,
+  discipline: KOREAN_COLORS.CYAN, // Use CYAN instead of missing PURPLE
 } as const;
 
 // Korean martial arts terms

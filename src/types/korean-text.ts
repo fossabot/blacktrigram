@@ -1,18 +1,17 @@
 // Korean typography and text system types for Black Trigram
 
-import type { TrigramStance, StatusKey } from "./enums";
-import type { ColorValue } from "./common";
+import type { TrigramStance } from "./enums";
 
-// Core Korean text interface
+// Korean text object for bilingual support
 export interface KoreanText {
   readonly korean: string;
   readonly english: string;
 }
 
-// Font weight type using string literals
-export type KoreanFontWeight = "300" | "400" | "500" | "700" | "900";
+// Korean font weight type (numeric values for consistency)
+export type KoreanFontWeight = 300 | 400 | 500 | 700 | 900;
 
-// Text size type using string literals
+// Korean text size type
 export type KoreanTextSize =
   | "small"
   | "medium"
@@ -20,29 +19,32 @@ export type KoreanTextSize =
   | "xlarge"
   | "xxlarge";
 
-// Text variant type
+// Korean text variant for different use cases
 export type KoreanTextVariant =
-  | "body"
+  | "default"
   | "title"
   | "subtitle"
+  | "body"
   | "caption"
-  | "martial"
   | "technique"
-  | "status";
+  | "philosophy"
+  | "instruction"
+  | "martial";
 
-// Text emphasis type
+// Korean text emphasis effects
 export type KoreanTextEmphasis =
   | "none"
   | "bold"
   | "italic"
   | "underline"
   | "shadow"
-  | "glow";
+  | "glow"
+  | "outline";
 
-// Font weight numeric type
-export type FontWeight = 300 | 400 | 500 | 700 | 900;
+// Honor levels in Korean martial arts
+export type HonorLevel = "student" | "master" | "grandmaster";
 
-// Martial variant type
+// Martial arts text variants
 export type MartialVariant =
   | "technique"
   | "philosophy"
@@ -52,43 +54,66 @@ export type MartialVariant =
   | "honor"
   | "discipline";
 
-// Honor level type
-export type HonorLevel =
-  | "student"
-  | "intermediate"
-  | "advanced"
-  | "master"
-  | "grandmaster";
+// Status keys for Korean status display
+export type StatusKey =
+  // Player vital stats
+  | "health"
+  | "ki"
+  | "stamina"
+  | "consciousness"
+  | "pain"
+  | "balance"
+  // Combat conditions
+  | "health_critical"
+  | "stamina_low"
+  | "ki_depleted"
+  | "stunned"
+  | "bleeding"
+  | "poisoned"
+  | "burning"
+  | "frozen"
+  | "slowed"
+  | "hastened"
+  | "guard_break"
+  | "counter_hit"
+  | "vulnerable"
+  // General status indicators
+  | "ready"
+  | "active"
+  | "inactive"
+  | "success"
+  | "failure"
+  | "warning"
+  | "info";
 
-// Base Korean text props
+// Color value type (hex number or CSS string)
+export type ColorValue = number | string;
+
+// Font family options
+export type FontFamily = "primary" | "secondary" | "monospace";
+
+// Main Korean text component props
 export interface KoreanTextProps {
   readonly korean: string | KoreanText;
   readonly english?: string;
   readonly size?: KoreanTextSize | number;
   readonly variant?: KoreanTextVariant;
   readonly weight?: KoreanFontWeight;
-  readonly emphasis?: KoreanTextEmphasis;
-  readonly color?: string | number;
+  readonly color?: ColorValue;
   readonly align?: "left" | "center" | "right";
+  readonly emphasis?: KoreanTextEmphasis;
   readonly className?: string;
   readonly style?: React.CSSProperties;
-  readonly showBoth?: boolean;
   readonly separator?: string;
 }
 
-// Korean text header props
-export interface KoreanTextHeaderProps extends KoreanTextProps {
-  readonly title?: string | KoreanText;
-  readonly subtitle?: string | KoreanText;
-  readonly level?: 1 | 2 | 3 | 4 | 5 | 6;
-}
-
-// Korean title props
+// Korean title component props
 export interface KoreanTitleProps extends KoreanTextProps {
   readonly level?: 1 | 2 | 3 | 4 | 5 | 6;
+  readonly subtitle?: string;
 }
 
-// Korean martial text props
+// Korean martial arts text props
 export interface KoreanMartialTextProps extends KoreanTextProps {
   readonly martialVariant?: MartialVariant;
   readonly honorLevel?: HonorLevel;
@@ -114,5 +139,43 @@ export interface KoreanStatusTextProps extends KoreanTextProps {
   readonly warningThreshold?: number;
 }
 
-// Export ColorValue and StatusKey for use in other files
-export type { ColorValue, StatusKey };
+// Korean text header props (for KoreanHeader component)
+export interface KoreanTextHeaderProps {
+  readonly korean: string | KoreanText;
+  readonly subtitle?: string;
+  readonly level?: 1 | 2 | 3 | 4 | 5 | 6;
+  readonly className?: string;
+  readonly style?: React.CSSProperties;
+}
+
+// PIXI-specific Korean text configuration
+export interface KoreanPixiTextConfig {
+  readonly fontFamily?: string;
+  readonly fontSize?: number;
+  readonly fill?: ColorValue;
+  readonly fontWeight?: string | number;
+  readonly fontStyle?: "normal" | "italic" | "oblique";
+  readonly align?: "left" | "center" | "right";
+  readonly wordWrap?: boolean;
+  readonly wordWrapWidth?: number;
+  readonly lineHeight?: number;
+  readonly letterSpacing?: number;
+  readonly dropShadow?: boolean;
+  readonly dropShadowColor?: number;
+  readonly dropShadowBlur?: number;
+  readonly dropShadowAngle?: number;
+  readonly dropShadowDistance?: number;
+  readonly dropShadowAlpha?: number;
+  readonly stroke?: number;
+  readonly strokeThickness?: number;
+}
+
+// Korean text style configuration
+export interface KoreanTextStyle {
+  readonly fontFamily: string;
+  readonly fontSize: number;
+  readonly fontWeight: KoreanFontWeight;
+  readonly color: ColorValue;
+  readonly variant: KoreanTextVariant;
+  readonly emphasis: KoreanTextEmphasis;
+}

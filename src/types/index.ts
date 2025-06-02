@@ -12,12 +12,8 @@ export * from "./enums";
 export type { Position, CombatCondition } from "./common";
 export type { PlayerState, PlayerArchetypeData } from "./player";
 export type { VitalPoint } from "./anatomy";
-export type {
-  KoreanTechnique,
-  CombatResult,
-  CombatState,
-  AttackInput,
-} from "./combat";
+export type { KoreanTechnique, CombatResult, AttackInput } from "./combat";
+// Remove CombatState from combat.ts export since it's now in enums
 export type { HitEffect, StatusEffect, VitalPointEffect } from "./effects";
 export type {
   KoreanText,
@@ -33,7 +29,6 @@ export type {
   KoreanFontWeight,
   HonorLevel,
   MartialVariant,
-  FontWeight,
   ColorValue,
   StatusKey,
 } from "./korean-text";

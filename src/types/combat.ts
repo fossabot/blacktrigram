@@ -148,19 +148,7 @@ export interface CombatEvent {
   readonly winnerId?: string; // For match_end type
 }
 
-// Export missing types
-export type CombatState =
-  | "ready"
-  | "attacking"
-  | "defending"
-  | "stunned"
-  | "recovering"
-  | "helpless"
-  | "shaken"
-  | "vulnerable"
-  | "knocked_down";
-
-export type { DamageType } from "./enums";
+export type { CombatState, DamageType } from "./enums";
 
 // Attack input for combat system
 export interface AttackInput {

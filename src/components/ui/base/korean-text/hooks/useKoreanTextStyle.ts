@@ -11,7 +11,7 @@ export function useKoreanTextStyle(
       typeof props.size === "number"
         ? props.size
         : KOREAN_TEXT_SIZES[props.size as keyof typeof KOREAN_TEXT_SIZES] ||
-          KOREAN_TEXT_SIZES.MEDIUM;
+          KOREAN_TEXT_SIZES.medium;
 
     const color = props.color
       ? typeof props.color === "number"
@@ -24,7 +24,7 @@ export function useKoreanTextStyle(
       fontSize: `${fontSize}px`,
       color,
       textAlign: props.align || "left",
-      fontWeight: props.weight === "bold" ? 700 : 400,
+      fontWeight: props.weight || 400,
       ...props.style,
     };
   }, [props]);

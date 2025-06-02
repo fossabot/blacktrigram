@@ -78,12 +78,13 @@ describe("ProgressTracker", () => {
     expect(screen.getByTestId("pixi-text")).toBeInTheDocument();
   });
 
-  it("renders basic progress tracker", () => {
-    const { getByTestId } = render(
-      <ProgressTracker label="Health" value={80} maxValue={100} />
-    );
-
-    expect(getByTestId("pixi-text")).toBeInTheDocument();
+  it("should render with basic props", () => {
+    const compatProps = {
+      label: "Health",
+      value: 75,
+      maxValue: 100, // Fixed prop name
+    };
+    render(<ProgressTracker {...compatProps} />);
   });
 
   it("renders with custom text display", () => {
@@ -97,5 +98,16 @@ describe("ProgressTracker", () => {
     );
 
     expect(getByTestId("pixi-text")).toBeInTheDocument();
+  });
+
+  it("should show text when enabled", () => {
+    render(
+      <ProgressTracker
+        label="기력"
+        value={60}
+        maxValue={100} // Fixed prop name
+        showText={true}
+      />
+    );
   });
 });

@@ -50,20 +50,19 @@ export const DamageType = {
   ICE: "ice",
   POISON: "poison",
   PSYCHIC: "psychic",
+  BLOOD: "blood", // 혈액 - Blood flow disruption
 } as const;
 
 export type DamageType = (typeof DamageType)[keyof typeof DamageType];
 
 // Effect types for combat and status effects
 export const EffectType = {
-  // From GameUI.test.tsx
+  // Combat effects
   VULNERABLE: "vulnerable",
-  // From TrigramCalculator.ts & TransitionCalculator.ts
   EXHAUSTED: "exhausted",
   KI_REGEN_BOOST: "ki_regen_boost",
   KI_REGEN_DEBUFF: "ki_regen_debuff",
   FOCUSED: "focused",
-  // From KoreanAnatomy.ts
   STAMINA_DRAIN: "stamina_drain",
   VITAL_WEAKNESS: "vital_weakness",
   VITAL_STUNNING: "vital_stunning",
@@ -72,19 +71,17 @@ export const EffectType = {
   PAIN_SEVERE: "pain_severe",
   WINDED: "winded",
   CONSCIOUSNESS_LOSS: "consciousness_loss",
-  // General categories that might be used as specific types too
+  // General categories
   BUFF: "buff",
   DEBUFF: "debuff",
   CONDITION: "condition",
   ENVIRONMENTAL: "environmental",
   ARCHETYPE: "archetype",
   TECHNIQUE: "technique",
-  // Added from common.ts CombatCondition type if it was meant to be EffectType
   STUN: "stun",
   BLEED: "bleed",
   POISON: "poison",
   BURN: "burn",
-  // Missing values from technique files
   WEAKNESS: "weakness",
   PAIN: "pain",
   BLEEDING: "bleeding",
@@ -94,7 +91,6 @@ export const EffectType = {
 } as const;
 
 export type EffectType = (typeof EffectType)[keyof typeof EffectType];
-
 export type StatusEffectType = EffectType; // Alias
 
 export const EffectIntensity = {
@@ -117,9 +113,9 @@ export type EffectIntensity =
 export const CombatReadiness = {
   READY: 100,
   LIGHT_DAMAGE: 80,
-  MODERATE_DAMAGE: 60, // Corrected from MODERATE to MODERATE_DAMAGE
-  HEAVY_DAMAGE: 40, // Corrected from HEAVY to HEAVY_DAMAGE
-  CRITICAL_DAMAGE: 20, // Corrected from CRITICAL to CRITICAL_DAMAGE
+  MODERATE_DAMAGE: 60,
+  HEAVY_DAMAGE: 40,
+  CRITICAL_DAMAGE: 20,
   INCAPACITATED: 0,
 } as const;
 
@@ -146,9 +142,9 @@ export const GamePhase = {
   GAME_OVER: "game_over",
   SETTINGS: "settings",
   LOADING: "loading",
-  PHILOSOPHY: "philosophy", // Added
-  VICTORY: "victory", // Added
-  DEFEAT: "defeat", // Added
+  PHILOSOPHY: "philosophy",
+  VICTORY: "victory",
+  DEFEAT: "defeat",
 } as const;
 
 export type GamePhase = (typeof GamePhase)[keyof typeof GamePhase];
@@ -167,7 +163,7 @@ export const StatusKey = {
   HASTENED: "hastened",
   GUARD_BREAK: "guard_break",
   COUNTER_HIT: "counter_hit",
-  VULNERABLE: "vulnerable", // Also an EffectType, can be a StatusKey
+  VULNERABLE: "vulnerable",
   READY: "ready",
   ACTIVE: "active",
   INACTIVE: "inactive",
@@ -179,7 +175,7 @@ export const StatusKey = {
 
 export type StatusKey = (typeof StatusKey)[keyof typeof StatusKey];
 
-// Vital Point related enums (from anatomy.ts context, good to centralize in enums.ts)
+// Vital Point related enums
 export const VitalPointCategory = {
   NERVE: "nerve",
   BLOOD_VESSEL: "blood_vessel",
@@ -187,8 +183,7 @@ export const VitalPointCategory = {
   JOINT: "joint",
   ORGAN: "organ",
   MUSCLE: "muscle",
-  PRESSURE_POINT: "pressure_point", // Explicitly add if used as a category
-  // Missing categories from code
+  PRESSURE_POINT: "pressure_point",
   NERVE_POINTS: "nerve_points",
   JOINTS: "joints",
   VASCULAR: "vascular",
@@ -251,11 +246,12 @@ export const BodyRegion = {
   LEG_BACK_KNEE: "leg_back_knee",
   GENERAL: "general",
   INTERNAL: "internal",
+  PRESSURE_POINTS: "pressure_points", // 혈자리
 } as const;
 
 export type BodyRegion = (typeof BodyRegion)[keyof typeof BodyRegion];
 
-// UI-related enums, if they are general enough
+// UI-related enums
 export const ComponentSize = {
   SMALL: "small",
   MEDIUM: "medium",
@@ -268,12 +264,11 @@ export type ComponentSize = (typeof ComponentSize)[keyof typeof ComponentSize];
 export const KoreanFontWeight = {
   LIGHT: 300,
   REGULAR: 400,
-  MEDIUM: 500, // Added based on typography constants
+  MEDIUM: 500,
   BOLD: 700,
   HEAVY: 900,
 } as const;
 
-// Assuming KoreanFontWeight is a type for the values, not keys
 export type KoreanFontWeight =
   (typeof KoreanFontWeight)[keyof typeof KoreanFontWeight];
 
@@ -285,167 +280,127 @@ export const KoreanFontStyle = {
 export type KoreanFontStyle =
   (typeof KoreanFontStyle)[keyof typeof KoreanFontStyle];
 
-export const TrigramStance = {
-  GEON: "geon",
-  TAE: "tae",
-  LI: "li",
-  JIN: "jin",
-  SON: "son",
-  GAM: "gam",
-  GAN: "gan",
-  GON: "gon",
-} as const;
-
-export type TrigramStance = (typeof TrigramStance)[keyof typeof TrigramStance];
-
+// Player archetype constants and types for Korean martial arts
 export const PlayerArchetype = {
-  MUSA: "musa",
-  AMSALJA: "amsalja",
-  HACKER: "hacker",
-  JEONGBO_YOWON: "jeongbo", // Corrected to match usage in constants/player.ts
-  JOJIK_POKRYEOKBAE: "jojik", // Corrected to match usage in constants/player.ts
+  MUSA: "musa", // 무사 - Traditional Warrior
+  AMSALJA: "amsalja", // 암살자 - Shadow Assassin
+  HACKER: "hacker", // 해커 - Cyber Warrior
+  JEONGBO: "jeongbo", // 정보요원 - Intelligence Operative
+  JOJIK: "jojik", // 조직폭력배 - Organized Crime
 } as const;
 
 export type PlayerArchetype =
   (typeof PlayerArchetype)[keyof typeof PlayerArchetype];
 
-// Combat states for realistic body mechanics
-export type CombatState =
-  | "ready" // Combat ready, full capability
-  | "attacking" // Currently executing attack
-  | "defending" // Defensive posture
-  | "stunned" // Temporary incapacitation
-  | "recovering" // Recovering from stun/damage
-  | "helpless" // Complete vulnerability
-  | "shaken" // Compromised but functional
-  | "vulnerable" // Added based on GameUI.test.tsx error, if it's a combat state
-  | "knocked_down";
+// Eight Trigram stances (팔괘)
+export const TrigramStance = {
+  GEON: "geon", // 건 ☰ Heaven
+  TAE: "tae", // 태 ☱ Lake
+  LI: "li", // 리 ☲ Fire
+  JIN: "jin", // 진 ☳ Thunder
+  SON: "son", // 손 ☴ Wind
+  GAM: "gam", // 감 ☵ Water
+  GAN: "gan", // 간 ☶ Mountain
+  GON: "gon", // 곤 ☷ Earth
+} as const;
 
-// Eight Trigram stances (팔괘 - Korean I Ching combat system)
-// export type TrigramStance =
-//   | "geon" // ☰ 건 - Heaven: Direct bone-striking force
-//   | "tae" // ☱ 태 - Lake: Fluid joint manipulation
-//   | "li" // ☲ 리 - Fire: Precise nerve strikes
-//   | "jin" // ☳ 진 - Thunder: Stunning techniques
-//   | "son" // ☴ 손 - Wind: Continuous pressure
-//   | "gam" // ☵ 감 - Water: Blood flow restriction
-//   | "gan" // ☶ 간 - Mountain: Defensive counters
-//   | "gon"; // ☷ 곤 - Earth: Ground techniques
+export type TrigramStance = (typeof TrigramStance)[keyof typeof TrigramStance];
 
-// Vital point categories for anatomical targeting
-// export type VitalPointCategory =
-//   | "head" // Head and neck region
-//   | "neck" // Neck-specific targets
-//   | "torso" // Chest and abdomen
-//   | "limbs" // Arms and legs
-//   | "joints" // Joint manipulation points
-//   | "nerve_points" // Specific nerve targets
-//   | "vascular" // Blood vessel targets
-//   | "organ_points"; // Specific organ targets
+// Combat states
+export const CombatState = {
+  READY: "ready",
+  ATTACKING: "attacking",
+  DEFENDING: "defending",
+  STUNNED: "stunned",
+  VULNERABLE: "vulnerable",
+  INCAPACITATED: "incapacitated",
+  RECOVERING: "recovering",
+  HELPLESS: "helpless",
+  SHAKEN: "shaken",
+  KNOCKED_DOWN: "knocked_down",
+} as const;
 
-// Vital point severity levels
-// export type VitalPointSeverity =
-//   | "minor" // Light discomfort
-//   | "moderate" // Significant pain/disruption
-//   | "severe" // Serious incapacitation
-//   | "critical" // Life-threatening potential
-//   | "lethal"; // Potential for fatality
+export type CombatState = (typeof CombatState)[keyof typeof CombatState];
 
-// Input action types for Korean martial arts controls
-export type InputAction =
-  | "move_up"
-  | "move_down"
-  | "move_left"
-  | "move_right"
-  | "stance_geon"
-  | "stance_tae"
-  | "stance_li"
-  | "stance_jin"
-  | "stance_son"
-  | "stance_gam"
-  | "stance_gan"
-  | "stance_gon"
-  | "technique_execute"
-  | "guard_activate"
-  | "vital_target"
-  | "pause"
-  | "menu"
-  | "settings";
+// Combat condition types
+export const CombatConditionType = {
+  STUN: "stun", // 기절
+  BLEED: "bleed", // 출혈
+  PAIN: "pain", // 고통
+  VULNERABLE: "vulnerable", // 취약
+  DISORIENTED: "disoriented", // 혼란
+  WEAKENED: "weakened", // 약화
+} as const;
 
-// Korean martial arts technique categories
-export type TechniqueCategory =
-  | "striking" // 타격기 - Striking techniques
-  | "grappling" // 잡기기 - Grappling techniques
-  | "pressure_point" // 급소기 - Pressure point techniques
-  | "throw" // 던지기 - Throwing techniques
-  | "defensive" // 방어기 - Defensive techniques
-  | "stunning"; // 특수기 - Special/signature techniques
-
-// Training modes for Korean martial arts education
-export type TrainingMode =
-  | "fundamentals" // 기본기 - Basic techniques
-  | "anatomy" // 해부학 - Vital point study
-  | "philosophy" // 철학 - Martial arts philosophy
-  | "sparring" // 자유대련 - Free sparring
-  | "forms" // 품새 - Traditional forms
-  | "meditation" // 명상 - Mental cultivation
-  | "conditioning"; // 단련 - Physical conditioning
-
-// Korean font weights and styles
-// export type KoreanFontWeight =
-//   | "light" // 300 - Light Korean text
-//   | "regular" // 400 - Regular Korean text
-//   | "normal" // Alias for regular if needed
-//   | "medium" // 500 - Medium Korean text
-//   | "bold" // 700 - Bold Korean text
-//   | "heavy"; // 900 - Heavy Korean text
-
-// export type KoreanFontStyle = "normal" | "italic";
-
-// Component sizing
-// export type ComponentSize = "small" | "medium" | "large";
+export type CombatConditionType =
+  (typeof CombatConditionType)[keyof typeof CombatConditionType];
 
 // Animation timing for Korean martial arts techniques
+export const AnimationTiming = {
+  INSTANT: "instant",
+  FAST: "fast",
+  NORMAL: "normal",
+  SLOW: "slow",
+  MARTIAL_RHYTHM: "martial_rhythm", // Traditional martial arts timing
+} as const;
+
 export type AnimationTiming =
-  | "instant"
-  | "fast"
-  | "normal"
-  | "slow"
-  | "martial_rhythm"; // Traditional martial arts timing
+  (typeof AnimationTiming)[keyof typeof AnimationTiming];
 
 // Difficulty levels for Korean martial arts training
+export const DifficultyLevel = {
+  BEGINNER: "beginner", // 초급 - Beginner level
+  INTERMEDIATE: "intermediate", // 중급 - Intermediate level
+  ADVANCED: "advanced", // 고급 - Advanced level
+  EXPERT: "expert", // 전문가 - Expert level
+  MASTER: "master", // 대가 - Master level
+} as const;
+
 export type DifficultyLevel =
-  | "beginner" // 초급 - Beginner level
-  | "intermediate" // 중급 - Intermediate level
-  | "advanced" // 고급 - Advanced level
-  | "expert" // 전문가 - Expert level
-  | "master"; // 대가 - Master level
+  (typeof DifficultyLevel)[keyof typeof DifficultyLevel];
 
 // Match result types
-export type MatchResult =
-  | "victory" // 승리 - Victory
-  | "defeat" // 패배 - Defeat
-  | "draw" // 무승부 - Draw
-  | "timeout" // 시간초과 - Time out
-  | "forfeit"; // 기권 - Forfeit
+export const MatchResult = {
+  VICTORY: "victory", // 승리 - Victory
+  DEFEAT: "defeat", // 패배 - Defeat
+  DRAW: "draw", // 무승부 - Draw
+  TIMEOUT: "timeout", // 시간초과 - Time out
+  FORFEIT: "forfeit", // 기권 - Forfeit
+} as const;
+
+export type MatchResult = (typeof MatchResult)[keyof typeof MatchResult];
 
 // Korean martial arts philosophy aspects
+export const PhilosophyAspect = {
+  RESPECT: "respect", // 존중 - Honor the art and opponent
+  DISCIPLINE: "discipline", // 수련 - Dedicated practice and learning
+  PRECISION: "precision", // 정확 - Exact technique execution
+  WISDOM: "wisdom", // 지혜 - Understanding beyond physical
+  BALANCE: "balance", // 균형 - Harmony of mind, body, spirit
+  TRADITION: "tradition", // 전통 - Respect for martial heritage
+  INNOVATION: "innovation", // 혁신 - Modern adaptation of classics
+  MASTERY: "mastery", // 숙련 - Pursuit of technical perfection
+} as const;
+
 export type PhilosophyAspect =
-  | "respect" // 존중 - Honor the art and opponent
-  | "discipline" // 수련 - Dedicated practice and learning
-  | "precision" // 정확 - Exact technique execution
-  | "wisdom" // 지혜 - Understanding beyond physical
-  | "balance" // 균형 - Harmony of mind, body, spirit
-  | "tradition" // 전통 - Respect for martial heritage
-  | "innovation" // 혁신 - Modern adaptation of classics
-  | "mastery"; // 숙련 - Pursuit of technical perfection
+  (typeof PhilosophyAspect)[keyof typeof PhilosophyAspect];
 
 // UI component variants and layout directions
-export type ButtonVariant =
-  | "primary"
-  | "secondary"
-  | "accent"
-  | "danger"
-  | "success";
+export const ButtonVariant = {
+  PRIMARY: "primary",
+  SECONDARY: "secondary",
+  ACCENT: "accent",
+  DANGER: "danger",
+  SUCCESS: "success",
+} as const;
 
-export type LayoutDirection = "horizontal" | "vertical" | "grid";
+export type ButtonVariant = (typeof ButtonVariant)[keyof typeof ButtonVariant];
+
+export const LayoutDirection = {
+  HORIZONTAL: "horizontal",
+  VERTICAL: "vertical",
+  GRID: "grid",
+} as const;
+
+export type LayoutDirection =
+  (typeof LayoutDirection)[keyof typeof LayoutDirection];

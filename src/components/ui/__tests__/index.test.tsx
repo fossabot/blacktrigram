@@ -1,6 +1,6 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { KoreanHeader } from "../KoreanHeader";
+import { KoreanHeader } from "../base/KoreanHeader"; // Fixed import path
 import { ProgressTracker } from "../ProgressTracker";
 import { TrigramWheel } from "../TrigramWheel";
 
@@ -141,6 +141,20 @@ describe("UI Components", () => {
       );
 
       expect(getByTestId("pixi-container")).toBeInTheDocument();
+    });
+  });
+
+  describe("ProgressTracker Integration", () => {
+    it("should render with proper Korean styling", () => {
+      const { container } = render(
+        <ProgressTracker
+          label="기력"
+          value={60}
+          maxValue={100} // Fixed prop name
+          showText={true}
+        />
+      );
+      expect(container).toBeInTheDocument();
     });
   });
 });

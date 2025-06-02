@@ -54,7 +54,7 @@ export function createPlayerState(
     isAttacking: false,
     combatReadiness: CombatReadiness.READY,
     activeEffects: [],
-    combatState: "ready" as CombatState,
+    combatState: "ready", // Use string literal that matches CombatState enum
     conditions: [],
     ...overrides,
   };
@@ -122,7 +122,7 @@ export function updatePlayerCombatState(
 export function updatePlayerHealth(
   player: PlayerState,
   healthChange: number,
-  _damageType: DamageType = "blunt" // Prefix with underscore to indicate intentionally unused
+  _damageType: DamageType = "blunt"
 ): PlayerState {
   // If healthChange is positive, it's healing; if negative, it's damage
   const newHealth = Math.max(
@@ -144,14 +144,14 @@ export function updatePlayerHealth(
       newConsciousness = Math.max(0, newConsciousness - 10);
     }
 
-    // Determine combat state based on health and consciousness
+    // Determine combat state based on health and consciousness - use valid CombatState values
     let newCombatState: CombatState = "ready";
     if (newHealth <= 0 || newConsciousness <= 0) {
-      newCombatState = "helpless";
-    } else if (healthRatio < 0.3 || newConsciousness < 30) {
+      newCombatState = "incapacitated";
+    } else if (healthRatio < 0.3 || newConsciousness < 60) {
       newCombatState = "vulnerable";
-    } else if (healthRatio < 0.6 || newConsciousness < 60) {
-      newCombatState = "shaken";
+    } else if (healthRatio < 0.6) {
+      newCombatState = "stunned";
     }
 
     return {
@@ -166,11 +166,11 @@ export function updatePlayerHealth(
     // For healing, just update health and potentially improve combat state
     const newCombatState: CombatState =
       newHealth <= 0
-        ? "helpless"
+        ? "incapacitated"
         : newHealth <= 20
         ? "vulnerable"
         : newHealth <= 40
-        ? "shaken"
+        ? "stunned"
         : "ready";
 
     return {
@@ -247,8 +247,8 @@ export function canPerformAction(
   player: PlayerState,
   actionType: string // Consider using a more specific type for actionType
 ): boolean {
-  // Check if helpless
-  if (player.combatState === "helpless") {
+  // Check if incapacitated - use valid enum value
+  if (player.combatState === "incapacitated") {
     return false;
   }
 

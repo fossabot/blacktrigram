@@ -1,34 +1,40 @@
 import React from "react";
 import type { KoreanTitleProps } from "../../../../../types/korean-text";
+import { KoreanText } from "./KoreanText";
 
 export function KoreanTitle({
   korean,
   english,
   level = 1,
-  className,
-  style,
+  subtitle,
+  size,
+  weight = 700,
+  variant = "title",
   ...restProps
 }: KoreanTitleProps): React.ReactElement {
-  const titleText = typeof korean === "object" ? korean.korean : korean;
-  const subtitleText =
-    english || (typeof korean === "object" ? korean.english : "");
+  // Determine size based on level if not explicitly provided
+  const titleSize =
+    size || (level === 1 ? "xxlarge" : level === 2 ? "xlarge" : "large");
 
-  const combinedStyle: React.CSSProperties = {
-    fontFamily: "Noto Sans KR, Arial, sans-serif",
-    fontSize: level === 1 ? "2rem" : level === 2 ? "1.5rem" : "1.25rem",
-    fontWeight: "bold",
-    color: "#FFD700",
-    marginBottom: "1rem",
-    ...style,
-  };
-
-  return React.createElement(
-    `h${level}`,
-    {
-      className,
-      style: combinedStyle,
-      ...restProps,
-    },
-    titleText + (subtitleText ? ` (${subtitleText})` : "")
+  return (
+    <div>
+      <KoreanText
+        korean={korean}
+        english={english}
+        size={titleSize}
+        weight={weight}
+        variant={variant}
+        {...restProps}
+      />
+      {subtitle && (
+        <KoreanText
+          korean={subtitle}
+          size="medium"
+          weight={400}
+          variant="subtitle"
+          style={{ marginTop: "0.5rem", opacity: 0.8 }}
+        />
+      )}
+    </div>
   );
 }
