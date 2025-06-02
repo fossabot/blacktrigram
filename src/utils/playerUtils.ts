@@ -8,8 +8,8 @@ import {
   type EffectIntensity,
   type CombatState,
   type EffectType,
+  CombatReadiness,
 } from "../types";
-import { CombatReadiness } from "../types/enums";
 
 /**
  * Creates a new player state with Korean martial arts defaults

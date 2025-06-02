@@ -1,13 +1,12 @@
-// import { EffectType, Position } from "@/types"; // Marked as unused
+// Anatomical regions mapping for Korean martial arts vital point system
 import type { BodyRegion, KoreanText } from "../../types";
 
-// Placeholder for RegionData if not defined elsewhere or imported
+// Define RegionData interface locally
 interface RegionData {
   name: KoreanText;
-  vitalPoints: readonly string[]; // IDs of vital points in this region
-  vulnerability: number; // 0-1 scale
-  description?: KoreanText;
-  subRegions?: readonly BodyRegion[];
+  subRegions: readonly string[];
+  vitalPoints: readonly string[];
+  vulnerability: number;
 }
 
 export const ANATOMICAL_REGIONS_DATA: Readonly<Record<BodyRegion, RegionData>> =

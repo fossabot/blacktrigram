@@ -39,6 +39,8 @@ export const KOREAN_COLORS = {
   NEON_PINK: 0xff007f,
   ELECTRIC_BLUE: 0x0080ff,
   DIGITAL_GREEN: 0x00ff80,
+  DARK_BLUE: 0x1e293b,
+  ACCENT_BLUE: 0x00d2ff,
 
   // Stance colors (matching trigram elements)
   geon: 0xffd700, // Heaven - Gold

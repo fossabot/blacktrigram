@@ -19,12 +19,26 @@ export class DamageCalculator {
     baseDamage: number,
     archetype: PlayerArchetype,
     isCriticalHit: boolean = false,
-    damageType: DamageType // Added damageType parameter
+    damageType: DamageType
   ): number {
     let totalDamage = baseDamage;
 
     // Apply base damage multiplier from config
     totalDamage *= this.config.baseDamageMultiplier ?? 1.0;
+
+    // Apply damage type modifiers based on vital point and technique
+    if (damageType === "nerve" && vitalPoint.category === "nerve_points") {
+      totalDamage *= 1.3; // Nerve damage is more effective on nerve points
+    } else if (damageType === "blunt" && vitalPoint.category === "joints") {
+      totalDamage *= 1.2; // Blunt damage effective on joints
+    } else if (
+      damageType === "pressure" &&
+      vitalPoint.category === "vascular"
+    ) {
+      totalDamage *= 1.4; // Pressure attacks effective on blood vessels
+    } else if (damageType === "joint" && vitalPoint.category === "joints") {
+      totalDamage *= 1.5; // Joint techniques very effective on joint targets
+    }
 
     // Apply archetype-specific modifiers
     const archetypeMods = this.config.archetypeModifiers?.[archetype];

@@ -4,7 +4,6 @@ import { GameUI } from "./components/game/GameUI";
 import { TrainingScreen } from "./components/training/TrainingScreen";
 import { useAudio } from "./audio/AudioManager";
 import {
-  KOREAN_COLORS,
   type GamePhase,
   type TrigramStance,
   type PlayerState,
@@ -13,7 +12,7 @@ import {
 import { createPlayerState } from "./utils/playerUtils";
 import { CombatSystem } from "./systems/CombatSystem";
 import "./App.css";
-import { KOREAN_FONT_FAMILY_EXTENDED } from "./types/constants";
+import { KOREAN_COLORS, KOREAN_FONT_FAMILY_EXTENDED } from "./types/constants";
 import { AppState } from "./types/game";
 
 // Victory/Defeat Screen Component

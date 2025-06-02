@@ -13,8 +13,6 @@ import type {
   AnatomicalLocation,
 } from "../anatomy";
 import type { KoreanText } from "../korean-text";
-// This type import is problematic as it's from a component, consider moving KoreanTextType to types
-// import { KoreanTextType } from "@/components/ui/base/korean-text";
 
 // Define KoreanTextType locally or import from a shared type definition if available
 // For now, using KoreanText as a placeholder for KoreanTextType where it was used.
