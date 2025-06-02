@@ -80,10 +80,17 @@ export const EffectType = {
   ARCHETYPE: "archetype",
   TECHNIQUE: "technique",
   // Added from common.ts CombatCondition type if it was meant to be EffectType
-  STUN: "stun", // Example, if stun is an EffectType
-  BLEED: "bleed", // Example
-  POISON: "poison", // Example
-  BURN: "burn", // Example
+  STUN: "stun",
+  BLEED: "bleed",
+  POISON: "poison",
+  BURN: "burn",
+  // Missing values from technique files
+  WEAKNESS: "weakness",
+  PAIN: "pain",
+  BLEEDING: "bleeding",
+  CONFUSION: "confusion",
+  BALANCE_LOSS: "balance_loss",
+  PARALYSIS: "paralysis",
 } as const;
 
 export type EffectType = (typeof EffectType)[keyof typeof EffectType];
@@ -96,6 +103,12 @@ export const EffectIntensity = {
   HIGH: "high",
   SEVERE: "severe",
   NEGLIGIBLE: "negligible",
+  LIGHT: "light",
+  MODERATE: "moderate",
+  STRONG: "strong",
+  EXTREME: "extreme",
+  WEAK: "weak",
+  HEAVY: "heavy",
 } as const;
 
 export type EffectIntensity =
@@ -175,6 +188,12 @@ export const VitalPointCategory = {
   ORGAN: "organ",
   MUSCLE: "muscle",
   PRESSURE_POINT: "pressure_point", // Explicitly add if used as a category
+  // Missing categories from code
+  NERVE_POINTS: "nerve_points",
+  JOINTS: "joints",
+  VASCULAR: "vascular",
+  HEAD: "head",
+  TORSO: "torso",
 } as const;
 
 export type VitalPointCategory =
@@ -208,6 +227,11 @@ export const BodyRegion = {
   BACK_LOWER: "back_lower",
   INTERNAL: "internal", // For internal organs or effects
   GENERAL: "general", // For whole-body effects
+  // Missing regions from code
+  FACE_UPPER: "face_upper",
+  HEAD_SIDE: "head_side",
+  CHEST: "chest",
+  TORSO: "torso",
 } as const;
 
 export type BodyRegion = (typeof BodyRegion)[keyof typeof BodyRegion];

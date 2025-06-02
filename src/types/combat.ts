@@ -4,6 +4,7 @@ import type {
   TrigramStance,
   // DamageType as EnumDamageType, // Already aliased below
   PlayerArchetype,
+  DamageType,
 } from "./enums"; // Changed to import from enums
 import type { PlayerState } from "./player"; // Added for CombatAnalysis
 import type { DamageRange } from "./common"; // Added KoreanText
@@ -48,6 +49,7 @@ export interface KoreanTechnique {
   readonly description: KoreanText;
   readonly stance: TrigramStance;
   readonly type: CombatAttackType;
+  readonly damageType?: DamageType; // Added missing damageType property
   readonly damage?: number; // Base damage, if applicable directly
   readonly kiCost?: number;
   readonly staminaCost?: number;
@@ -59,8 +61,8 @@ export interface KoreanTechnique {
   readonly effects?: readonly StatusEffect[]; // Status effects applied by technique
   readonly damageMultiplier?: number; // Damage multiplier for this technique
   readonly critMultiplier?: number; // Critical hit damage multiplier
-  // Consider adding other relevant properties like:
-  // readonly properties?: readonly string[]; // e.g., "unblockable", "armor_piercing"
+  readonly critChance?: number; // Critical hit chance (0-1)
+  readonly properties?: readonly string[]; // e.g., "unblockable", "armor_piercing"
 }
 
 // Combat result from technique execution
