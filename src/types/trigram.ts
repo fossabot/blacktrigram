@@ -176,3 +176,11 @@ export interface TrigramTransitionRule {
   readonly effectiveness: number;
   readonly conditions?: string[];
 }
+
+// Extended stance transition result for StanceManager
+export interface StanceTransitionResult extends StanceTransition {
+  readonly success: boolean;
+  readonly reason?: string;
+  readonly newState: any; // PlayerState - using any to avoid circular dependency
+  readonly timestamp: number;
+}

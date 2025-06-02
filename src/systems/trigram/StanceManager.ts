@@ -6,6 +6,7 @@ import type {
   StanceTransition,
 } from "../../types";
 import type { TrigramCalculator } from "./TrigramCalculator";
+import type { StanceTransitionResult } from "../../types/trigram";
 
 // Import constants or define them if they are specific to this module
 import {
@@ -153,5 +154,34 @@ export class StanceManager {
       playerState, // Pass full player state
       maxDepth
     );
+  }
+
+  public executeStanceTransition(
+    playerState: PlayerState,
+    targetStance: TrigramStance
+  ): StanceTransitionResult {
+    const transitionCost = this.trigramCalculator.calculateTransitionCost(
+      playerState.stance,
+      targetStance,
+      playerState
+    );
+
+    const newPlayerState: PlayerState = {
+      ...playerState,
+      stance: targetStance,
+      ki: playerState.ki - transitionCost.ki,
+      stamina: playerState.stamina - transitionCost.stamina,
+      lastStanceChangeTime: Date.now(),
+    };
+
+    return {
+      from: playerState.stance,
+      to: targetStance,
+      cost: transitionCost,
+      effectiveness: 1.0,
+      success: true,
+      newState: newPlayerState,
+      timestamp: Date.now(),
+    };
   }
 }

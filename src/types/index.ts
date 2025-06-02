@@ -33,7 +33,7 @@ export type {
   StatusKey,
   ColorValue,
   PixiTextStyleConfig,
-  KoreanTextStyle,
+  KoreanPixiTextConfig,
 } from "./korean-text";
 export type {
   TrigramData,
@@ -92,3 +92,4 @@ export {
 
 // Export utility functions
 export { createPlayerState } from "../utils/playerUtils";
+export type { DamageRange } from "./common";

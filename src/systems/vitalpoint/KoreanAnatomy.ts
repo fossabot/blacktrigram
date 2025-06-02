@@ -629,7 +629,6 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
     baseDamage: 15,
     baseStun: 2500,
     damageMultiplier: 1.8,
-    tags: ["face", "nerve_cluster"],
   },
   {
     id: "chest_sternum_base",
@@ -641,8 +640,6 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
       korean: "가슴 중앙, 흉골 하단부.",
       english: "Center of chest, lower part of the sternum.",
     },
-    location: { x: 0.5, y: 0.45, region: "chest" },
-    severity: "severe",
     effects: [
       {
         id: "sternum_winded",
@@ -667,6 +664,8 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
         stackable: false,
       },
     ],
+    location: { x: 0.5, y: 0.45, region: "chest" },
+    severity: "severe",
     technique: ["striking", "pressure"],
     baseAccuracy: 0.75,
     baseDamage: 25,
@@ -685,7 +684,7 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
       english:
         "Thin bone and nerve concentration on the temporal region of the head. A strong blow can cause severe concussion or loss of consciousness.",
     } as KoreanText,
-    location: { x: 0.15, y: 0.08, z: 0.0, region: "head_side" as BodyRegion },
+    location: { x: 0.15, y: 0.08, region: "head_side" as BodyRegion },
     effects: [
       {
         id: "eff_concussion_strong",
@@ -716,7 +715,6 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
     damageMultiplier: 2.5,
     baseStun: 3000, // Milliseconds
     technique: ["striking", "pressure"], // Added
-    tags: ["knockout", "critical_hit", "precision_target"],
   },
   {
     id: "vp_solar_plexus_myungchi",
@@ -733,7 +731,6 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
     location: {
       x: 0.5,
       y: 0.35,
-      z: 0.0,
       region: "upper_abdomen_center" as BodyRegion,
     }, // "upper_abdomen_center" must be in BodyRegion enum
     effects: [
@@ -766,7 +763,6 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
     damageMultiplier: 1.8,
     baseStun: 1500,
     technique: ["striking", "pressure"], // Added
-    tags: ["respiratory_distress", "incapacitating_pain", "body_shot"],
   },
   {
     id: "head_mastoid_process_wangu",
@@ -811,6 +807,5 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
     baseDamage: 18,
     baseStun: 3000,
     damageMultiplier: 1.7,
-    tags: ["bone", "nerve_cluster", "balance_point"],
   },
 ];

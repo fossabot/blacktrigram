@@ -12,15 +12,12 @@ import type {
   FederatedPointerEvent,
   TextDropShadow,
 } from "pixi.js";
+import { TrigramStance, ColorValue } from "../../../types";
 import {
-  PlayerArchetype,
-  TrigramStance,
-  TrigramWheelProps,
-  ProgressTrackerProps,
-  KoreanPixiTextConfig,
-  TRIGRAM_DATA, // Corrected: Import from types/index.ts
-} from "../../../types";
-import { KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../../types/constants";
+  KOREAN_COLORS,
+  KOREAN_FONT_FAMILY_PRIMARY, // Use specific font constant
+  TRIGRAM_DATA,
+} from "../../../types/constants";
 
 // Fix prop interfaces to extend properly
 export interface KoreanButtonProps
@@ -120,21 +117,14 @@ export function KoreanButton({
   );
 
   const buttonTextStyle: ExtendedPixiTextStyle = useMemo(() => {
-    let textColor: number = KOREAN_COLORS.WHITE; // Type annotation
-    if (variant === "accent") {
-      textColor = KOREAN_COLORS.BLACK; // Ensure this is KOREAN_COLORS.BLACK
-    }
-    if (disabled) {
-      textColor = KOREAN_COLORS.GRAY_LIGHT;
-    }
     return {
-      fontFamily: KOREAN_FONT_FAMILY,
-      fontSize: fontSize,
-      fill: textColor,
+      fontFamily: KOREAN_FONT_FAMILY_PRIMARY, // Use string constant
+      fontSize: 16,
+      fill: KOREAN_COLORS.WHITE,
       fontWeight: "bold",
       align: "center",
     };
-  }, [fontSize, variant, disabled]);
+  }, []);
 
   const actualText = koreanText || text || "Button";
 
@@ -195,7 +185,7 @@ export function KoreanTitleText({
 
   const titleStyle = useCallback((): ExtendedPixiTextStyle => {
     const base: ExtendedPixiTextStyle = {
-      fontFamily: KOREAN_FONT_FAMILY,
+      fontFamily: KOREAN_FONT_FAMILY_PRIMARY, // Use string constant
       fontSize: 18,
       fill: emphasis ? KOREAN_COLORS.GOLD : KOREAN_COLORS.WHITE,
       fontWeight: "bold",
@@ -234,7 +224,7 @@ export function KoreanBodyText({
 }: KoreanBodyTextProps): React.ReactElement {
   const bodyStyle = useCallback((): ExtendedPixiTextStyle => {
     const base: ExtendedPixiTextStyle = {
-      fontFamily: KOREAN_FONT_FAMILY,
+      fontFamily: KOREAN_FONT_FAMILY_PRIMARY, // Use string constant
       fontSize: 14,
       fill: secondary ? KOREAN_COLORS.GRAY_LIGHT : KOREAN_COLORS.WHITE,
     };
@@ -277,7 +267,7 @@ export function KoreanHighlightText({
 
   const highlightStyle = useCallback((): ExtendedPixiTextStyle => {
     const base: ExtendedPixiTextStyle = {
-      fontFamily: KOREAN_FONT_FAMILY,
+      fontFamily: KOREAN_FONT_FAMILY_PRIMARY, // Use string constant
       fontSize: 16,
       fill: colors[type],
       fontWeight: "bold",
@@ -317,7 +307,7 @@ export function KoreanCombatStatus({
 }: KoreanCombatStatusProps): React.ReactElement {
   const statusStyle = useCallback((): ExtendedPixiTextStyle => {
     const base: ExtendedPixiTextStyle = {
-      fontFamily: KOREAN_FONT_FAMILY,
+      fontFamily: KOREAN_FONT_FAMILY_PRIMARY, // Use string constant
       fontSize: 12,
       fill: warning ? KOREAN_COLORS.CRITICAL_RED : KOREAN_COLORS.CYAN,
       fontWeight: "bold",
@@ -378,7 +368,7 @@ export function KoreanTrigramDisplay({
   const textStyle: ExtendedPixiTextStyle = useMemo(
     () => ({
       // useMemo for textStyle
-      fontFamily: KOREAN_FONT_FAMILY,
+      fontFamily: KOREAN_FONT_FAMILY_PRIMARY, // Use string constant
       fontSize: size / (showKorean && showEnglish ? 4 : 3), // Adjust size if both shown
       fill: trigramColor,
       align: "center",
@@ -468,7 +458,7 @@ export function KoreanHealthBar({
 
   const textStyle: ExtendedPixiTextStyle = useMemo(
     () => ({
-      fontFamily: KOREAN_FONT_FAMILY,
+      fontFamily: KOREAN_FONT_FAMILY_PRIMARY, // Use string constant
       fontSize: height * 0.7,
       fill: KOREAN_COLORS.WHITE, // Ensure this is KOREAN_COLORS.WHITE
       align: "center",

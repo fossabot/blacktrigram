@@ -15,6 +15,13 @@ export type KoreanTextSize =
   | "large"
   | "xlarge"
   | "xxlarge";
+export const KOREAN_TEXT_SIZES: Record<KoreanTextSize, number> = {
+  small: 12,
+  medium: 16,
+  large: 20,
+  xlarge: 24,
+  xxlarge: 32,
+};
 
 // Korean font weight type
 export type KoreanFontWeight = 300 | 400 | 500 | 700 | 900;
@@ -68,8 +75,6 @@ export type StatusKey =
 
 // Martial variant type
 export type MartialVariant = "practitioner" | "master" | "grandmaster";
-
-// Honor level type
 export type HonorLevel = "student" | "instructor" | "master";
 
 // Font weight type alias
@@ -84,7 +89,7 @@ export interface KoreanTextProps {
   readonly english?: string;
   readonly size?: KoreanTextSize | number;
   readonly weight?: KoreanFontWeight;
-  readonly color?: number;
+  readonly color?: number | string; // Allow both number and string for compatibility
   readonly variant?: KoreanTextVariant;
   readonly emphasis?: KoreanTextEmphasis;
   readonly align?: "left" | "center" | "right";
@@ -146,21 +151,23 @@ export interface PixiTextStyleConfig {
   align?: string;
   letterSpacing?: number;
   lineHeight?: number;
-  dropShadow?:
-    | boolean
-    | {
-        alpha: number;
-        angle: number;
-        blur: number;
-        color: number;
-        distance: number;
-      };
-  stroke?: {
-    color: number;
-    width: number;
-  };
+  dropShadow?: boolean;
+  dropShadowColor?: number | string;
+  dropShadowBlur?: number;
+  dropShadowAngle?: number;
+  dropShadowDistance?: number;
+  dropShadowAlpha?: number;
+  stroke?: number | string;
+  strokeThickness?: number;
   wordWrap?: boolean;
   wordWrapWidth?: number;
 }
 
-export type KoreanTextStyle = PixiTextStyleConfig;
+// For PIXI text config in UI
+export type KoreanPixiTextConfig = PixiTextStyleConfig;
+
+// Korean font family for PIXI (must be a string, not object)
+export const KOREAN_FONT_FAMILY = "Noto Sans KR, Arial, sans-serif";
+
+// Export font sizes
+export const KOREAN_FONT_SIZES = KOREAN_TEXT_SIZES; // Alias for backward compatibility
