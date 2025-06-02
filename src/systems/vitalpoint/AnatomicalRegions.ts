@@ -298,6 +298,17 @@ export const ANATOMICAL_REGIONS_DATA: Readonly<Record<BodyRegion, RegionData>> =
       vulnerability: 1.0,
       pressure_points: [] as const,
     },
+    pressure_points: {
+      name: { korean: "혈자리", english: "Pressure Points" },
+      subRegions: [] as const,
+      vitalPoints: [
+        "head_philtrum_injoong",
+        "vp_solar_plexus_myungchi",
+        "head_temple_kanjanori",
+      ] as const,
+      vulnerability: 1.3,
+      pressure_points: ["hegu", "taichong", "zusanli"] as const,
+    },
   } as const;
 
 // Export the type for use elsewhere if needed
