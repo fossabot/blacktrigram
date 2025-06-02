@@ -45,6 +45,56 @@ describe("UI Components", () => {
 
       expect(getByText("Test Title")).toBeInTheDocument();
     });
+
+    it("renders basic header", () => {
+      const { getByText } = render(<KoreanHeader title="Test Header" />);
+
+      expect(getByText("Test Header")).toBeInTheDocument();
+    });
+
+    it("renders header with subtitle", () => {
+      const { getByText } = render(
+        <KoreanHeader title="Main Title" subtitle="Subtitle text" />
+      );
+
+      expect(getByText("Main Title")).toBeInTheDocument();
+      expect(getByText("Subtitle text")).toBeInTheDocument();
+    });
+
+    it("applies custom styles", () => {
+      const customStyle = { fontSize: "2rem" };
+      const { getByText } = render(
+        <KoreanHeader title="Styled Header" style={customStyle} />
+      );
+
+      expect(getByText("Styled Header")).toBeInTheDocument();
+    });
+
+    it("uses different header levels", () => {
+      const { container } = render(
+        <KoreanHeader title="Level 3 Header" level={3} />
+      );
+
+      const h3Element = container.querySelector("h3");
+      expect(h3Element).toBeInTheDocument();
+    });
+
+    it("applies custom colors", () => {
+      const { getByText } = render(
+        <KoreanHeader title="Colored Header" color={0xff0000} />
+      );
+
+      expect(getByText("Colored Header")).toBeInTheDocument();
+    });
+
+    it("handles Korean text properly", () => {
+      const { getByText } = render(
+        <KoreanHeader title="무술 도장" subtitle="Martial Arts Dojang" />
+      );
+
+      expect(getByText("무술 도장")).toBeInTheDocument();
+      expect(getByText("Martial Arts Dojang")).toBeInTheDocument();
+    });
   });
 
   describe("ProgressTracker", () => {

@@ -1,105 +1,85 @@
 import React from "react";
-import { useKoreanTextStyle } from "../hooks/useKoreanTextStyle";
-import type {
-  KoreanText as IKoreanText,
-  KoreanTextProps,
-} from "../../../../../types"; // Renamed KoreanTextType to IKoreanText to avoid conflict
-import { hasKoreanText } from "../utils";
+import type { KoreanTextProps } from "../types";
+import { KOREAN_COLORS } from "../../../../../types";
 
-// Main KoreanText component - simplified and focused
 export function KoreanText({
-  text,
-  korean: propKorean, // Explicit korean prop
-  english: propEnglish, // Explicit english prop
-  englishText: propEnglishText, // Alternative english prop
-  showBoth = false,
-  bilingual = "stacked",
-  tooltip,
-  ariaLabel,
-  className = "",
-  onClick,
-  onHover,
-  style: inlineStyle, // Renamed from 'style' to avoid conflict with CSSProperties from hook
-  children, // Accept children
-  ...styleProps // Props for useKoreanTextStyle
-}: KoreanTextProps): React.JSX.Element {
-  const componentStyle = useKoreanTextStyle({
-    text,
-    korean: propKorean,
-    english: propEnglish,
-    ...styleProps,
-    style: inlineStyle,
-  });
+  korean,
+  english,
+  size = "medium",
+  variant = "default",
+  weight = "regular",
+  color,
+  align = "left",
+  className,
+  style,
+  emphasis = "none",
+}: KoreanTextProps): React.ReactElement {
+  const getFontSize = (size: KoreanTextProps["size"]): string => {
+    if (typeof size === "number") return `${size}px`;
 
-  const koreanContent =
-    typeof text === "object" && text && "korean" in text
-      ? (text as IKoreanText).korean
-      : propKorean ||
-        (typeof text === "string" && hasKoreanText(text) ? text : "");
-  const englishContent =
-    typeof text === "object" && text && "english" in text
-      ? (text as IKoreanText).english
-      : propEnglish ||
-        propEnglishText ||
-        (typeof text === "string" && !hasKoreanText(text) ? text : "");
+    const sizeMap = {
+      small: "0.875rem",
+      medium: "1rem",
+      large: "1.25rem",
+      xlarge: "1.5rem",
+      title: "2rem",
+    };
 
-  let content: React.ReactNode = children;
+    return sizeMap[size as keyof typeof sizeMap] || "1rem";
+  };
 
-  if (!children) {
-    if (showBoth && koreanContent && englishContent) {
-      if (bilingual === "stacked") {
-        content = (
-          <>
-            <span lang="ko">{koreanContent}</span>
-            <br />
-            <span lang="en" style={{ fontSize: "0.8em", opacity: 0.8 }}>
-              {englishContent}
-            </span>
-          </>
-        );
-      } else if (bilingual === "inline") {
-        content = (
-          <>
-            <span lang="ko">{koreanContent}</span> ({englishContent})
-          </>
-        );
-      } else {
-        // tooltip or default
-        content = <span lang="ko">{koreanContent}</span>;
-        // Tooltip logic would be more complex, potentially using a title attribute or a custom tooltip component
-      }
-    } else if (koreanContent) {
-      content = <span lang="ko">{koreanContent}</span>;
-    } else if (englishContent) {
-      content = <span lang="en">{englishContent}</span>;
-    } else if (typeof text === "string") {
-      content = text;
+  const getColor = (): string => {
+    if (color) {
+      return typeof color === "number"
+        ? `#${color.toString(16).padStart(6, "0")}`
+        : color;
     }
-  }
 
-  const finalClassName = `
-    black-trigram-korean-text
-    ${className}
-    ${
-      hasKoreanText(String(koreanContent || text || ""))
-        ? "korean-script"
-        : "latin-script"
+    const variantColors = {
+      default: KOREAN_COLORS.WHITE,
+      title: KOREAN_COLORS.GOLD,
+      subtitle: KOREAN_COLORS.CYAN,
+      body: KOREAN_COLORS.WHITE,
+      caption: KOREAN_COLORS.SILVER,
+      technique: KOREAN_COLORS.GOLD,
+      philosophy: KOREAN_COLORS.CYAN,
+      instruction: KOREAN_COLORS.WHITE,
+    };
+
+    const colorValue =
+      variantColors[variant as keyof typeof variantColors] ||
+      KOREAN_COLORS.WHITE;
+    return `#${colorValue.toString(16).padStart(6, "0")}`;
+  };
+
+  const getTextShadow = (): string => {
+    switch (emphasis) {
+      case "glow":
+        return `0 0 10px ${getColor()}, 0 0 20px ${getColor()}`;
+      case "shadow":
+        return "2px 2px 4px rgba(0,0,0,0.5)";
+      case "outline":
+        return `1px 1px 0 #000, -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000`;
+      default:
+        return "none";
     }
-  `.trim();
+  };
+
+  const textStyle: React.CSSProperties = {
+    fontFamily: "Noto Sans KR, Arial, sans-serif",
+    fontSize: getFontSize(size),
+    fontWeight: weight === "bold" ? 700 : weight === "regular" ? 400 : weight,
+    color: getColor(),
+    textAlign: align,
+    textShadow: getTextShadow(),
+    ...style,
+  };
+
+  const displayText = english ? `${korean} (${english})` : korean;
 
   return (
-    <span
-      style={componentStyle}
-      className={finalClassName}
-      onClick={onClick}
-      onMouseEnter={onHover ? () => onHover(true) : undefined}
-      onMouseLeave={onHover ? () => onHover(false) : undefined}
-      aria-label={
-        ariaLabel || (typeof tooltip === "string" ? tooltip : undefined)
-      }
-      title={typeof tooltip === "string" ? tooltip : undefined}
-    >
-      {content}
+    <span className={className} style={textStyle}>
+      {displayText}
     </span>
   );
 }

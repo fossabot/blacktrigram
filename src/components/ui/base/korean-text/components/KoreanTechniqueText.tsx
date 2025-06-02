@@ -2,27 +2,21 @@ import React from "react";
 import { Text as PixiText } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import type { KoreanTechniqueTextProps } from "../../../../../types/korean-text";
-import { useKoreanTextStyle } from "../hooks/useKoreanTextStyle"; // For web React styles
-import { getPixiTextStyle } from "../utils"; // For Pixi styles
-import { KOREAN_COLORS } from "../../../../../types/constants"; // Import KOREAN_COLORS
-
-// Removed unused PixiTextStyle variable
+import { useKoreanTextStyle } from "../hooks/useKoreanTextStyle";
+import { getPixiTextStyle } from "../utils";
+import { KOREAN_COLORS } from "../../../../../types/constants";
 
 export function KoreanTechniqueText({
-  korean, // From KoreanText (bilingual object or string)
-  english, // From KoreanText
-  koreanName: propKoreanName, // Specific prop
-  englishName: propEnglishName, // Specific prop
+  korean,
+  english,
+  koreanName: propKoreanName,
+  englishName: propEnglishName,
   trigram,
   showStanceSymbol,
-  showDamage,
   damage,
-  kiCost,
-  staminaCost,
   mastered,
   className,
   style: htmlStyle,
-  // Pixi specific props
   x,
   y,
   anchor,
@@ -32,7 +26,6 @@ export function KoreanTechniqueText({
   onpointertap,
   ...restKoreanTextProps
 }: KoreanTechniqueTextProps & {
-  // Add Pixi specific props
   x?: number;
   y?: number;
   anchor?: { x: number; y: number } | number;
@@ -40,7 +33,7 @@ export function KoreanTechniqueText({
   visible?: boolean;
   interactive?: boolean;
   onpointertap?: (event: PIXI.FederatedPointerEvent) => void;
-}): JSX.Element {
+}): React.ReactElement {
   const finalKorean =
     propKoreanName || (typeof korean === "object" ? korean.korean : korean);
   const finalEnglish =
@@ -58,11 +51,6 @@ export function KoreanTechniqueText({
   if (finalEnglish) {
     textContent += ` (${finalEnglish})`;
   }
-  if (showStanceSymbol && trigram) {
-    // Add trigram symbol logic if needed, e.g., from TRIGRAM_DATA
-    // textContent = `${TRIGRAM_DATA[trigram]?.symbol || ''} ${textContent}`;
-  }
-  // Add damage, kiCost, staminaCost to textContent if needed
 
   // For PIXI rendering:
   const pixiStyleOptions = getPixiTextStyle({
@@ -71,16 +59,18 @@ export function KoreanTechniqueText({
     trigram,
     ...restKoreanTextProps,
   });
-  // Ensure trigram color is applied if not handled by getPixiTextStyle's variant logic
+
   if (trigram && KOREAN_COLORS[trigram] && !pixiStyleOptions.fill) {
     pixiStyleOptions.fill = KOREAN_COLORS[trigram] as PIXI.FillInput;
   }
   if (mastered) {
-    pixiStyleOptions.fill = KOREAN_COLORS.GOLD as PIXI.FillInput; // Example: mastered techniques are gold
+    pixiStyleOptions.fill = KOREAN_COLORS.GOLD as PIXI.FillInput;
     pixiStyleOptions.fontWeight = "bold" as PIXI.TextStyleFontWeight;
   }
+
   const finalPixiStyle = new PIXI.TextStyle(pixiStyleOptions);
 
+  // Always return a JSX element
   if (x !== undefined || y !== undefined) {
     return (
       <PixiText
@@ -97,10 +87,10 @@ export function KoreanTechniqueText({
     );
   }
 
+  // Return DOM element when not using PIXI coordinates
   return (
     <span className={className} style={reactStyle}>
       {textContent}
-      {/* Optionally add more details like Ki cost, damage, etc. for web display */}
     </span>
   );
 }

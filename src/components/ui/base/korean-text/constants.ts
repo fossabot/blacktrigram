@@ -99,3 +99,55 @@ export const KOREAN_MARTIAL_ARTS_TERMS = {
   master: { korean: "사범", english: "Master" },
   student: { korean: "제자", english: "Student" },
 } as const;
+
+// Trigram text configuration for Korean martial arts
+export const TRIGRAM_TEXT_CONFIG = {
+  geon: {
+    color: 0xffd700, // Gold for Heaven
+    korean: "건",
+    english: "Heaven",
+    symbol: "☰",
+  },
+  tae: {
+    color: 0x87ceeb, // Sky blue for Lake
+    korean: "태",
+    english: "Lake",
+    symbol: "☱",
+  },
+  li: {
+    color: 0xff4500, // Orange red for Fire
+    korean: "리",
+    english: "Fire",
+    symbol: "☲",
+  },
+  jin: {
+    color: 0x9370db, // Medium purple for Thunder
+    korean: "진",
+    english: "Thunder",
+    symbol: "☳",
+  },
+  son: {
+    color: 0x98fb98, // Pale green for Wind
+    korean: "손",
+    english: "Wind",
+    symbol: "☴",
+  },
+  gam: {
+    color: 0x4169e1, // Royal blue for Water
+    korean: "감",
+    english: "Water",
+    symbol: "☵",
+  },
+  gan: {
+    color: 0x8b4513, // Saddle brown for Mountain
+    korean: "간",
+    english: "Mountain",
+    symbol: "☶",
+  },
+  gon: {
+    color: 0x654321, // Dark brown for Earth
+    korean: "곤",
+    english: "Earth",
+    symbol: "☷",
+  },
+} as const;

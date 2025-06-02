@@ -22,7 +22,6 @@ export interface ProgressTrackerProps extends BaseUIComponentProps {
   readonly label: string;
   readonly value: number;
   readonly maxValue: number;
-  readonly max?: number; // Alternative naming for compatibility
   readonly barColor?: ColorValue;
   readonly backgroundColor?: ColorValue;
   readonly borderColor?: ColorValue;

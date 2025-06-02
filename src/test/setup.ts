@@ -1,7 +1,7 @@
 // Test setup for Black Trigram Korean martial arts game
 
 import { beforeEach, vi } from "vitest";
-import "@testing-library/jest-dom/vitest";
+import "@testing-library/jest-dom";
 
 // Mock PIXI.js for testing
 beforeEach(() => {
@@ -24,7 +24,7 @@ vi.mock("pixi.js", () => ({
   Container: vi.fn(),
   Graphics: vi.fn(),
   Text: vi.fn(),
-  TextStyle: vi.fn(),
+  TextStyle: vi.fn().mockImplementation((style) => style),
   Sprite: vi.fn(),
   Texture: vi.fn(),
 }));

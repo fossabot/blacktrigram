@@ -1,6 +1,7 @@
 import React from "react";
-import type { KoreanTitleProps } from "../../../../../types/korean-text"; // Corrected path
-import { KoreanText } from "./KoreanText"; // Assuming KoreanText is the base component
+import type { KoreanTitleProps } from "../types";
+import { KoreanText } from "./KoreanText";
+import { KOREAN_COLORS } from "../../../../../types";
 
 export function KoreanTitle({
   korean,
@@ -8,49 +9,51 @@ export function KoreanTitle({
   level = 1,
   className,
   style,
-  variant = "primary", // Default variant for KoreanText if needed
-  size = "title", // Default size for KoreanText if needed
-  weight = 700, // Default weight
+  variant = "title",
+  size = "large",
+  weight = "bold",
   as: Component = `h${level}`,
+  color,
   ...rest
-}: KoreanTitleProps): JSX.Element {
-  const titleText = english ? { korean, english } : korean;
-
+}: KoreanTitleProps): React.ReactElement {
   // If 'as' is a DOM element type string like 'h1'
   if (typeof Component === "string") {
-    return (
-      <Component
-        className={className}
-        style={style as React.CSSProperties} // Cast if style is more generic initially
-        {...rest} // Spread other DOM-compatible props
-      >
-        {/* Render KoreanText component inside the heading */}
-        <KoreanText
-          korean={korean}
-          english={english}
-          variant={variant} // Pass appropriate variant
-          size={size} // Pass appropriate size
-          weight={weight}
-          // style prop for KoreanText might need specific handling if different from outer style
-        />
-      </Component>
+    const titleStyle: React.CSSProperties = {
+      color: color
+        ? typeof color === "number"
+          ? `#${color.toString(16).padStart(6, "0")}`
+          : color
+        : `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
+      fontFamily: "Noto Sans KR, Arial, sans-serif",
+      textAlign: "center",
+      textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
+      margin: "0 0 1rem 0",
+      fontWeight: typeof weight === "string" ? weight : "bold",
+      fontSize: level === 1 ? "2.5rem" : level === 2 ? "2rem" : "1.5rem",
+      ...style,
+    };
+
+    return React.createElement(
+      Component,
+      {
+        className,
+        style: titleStyle,
+        ...rest,
+      },
+      english ? `${korean} (${english})` : korean
     );
   }
 
-  // If 'as' is a React ComponentType (less common for simple headings)
-  // This branch might need more specific prop handling for the custom Component
+  // If 'as' is a React ComponentType
   return (
-    <Component
-      className={className}
-      style={style}
-      {...rest} // Spread other props compatible with the custom Component
-    >
+    <Component className={className} style={style} {...rest}>
       <KoreanText
         korean={korean}
         english={english}
         variant={variant}
         size={size}
         weight={weight}
+        color={color}
       />
     </Component>
   );

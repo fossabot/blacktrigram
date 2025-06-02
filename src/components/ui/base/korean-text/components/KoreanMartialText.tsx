@@ -1,34 +1,53 @@
 import React from "react";
-import { KOREAN_MARTIAL_TEXT_PRESETS, TRIGRAM_TEXT_CONFIG } from "../constants"; // Use TRIGRAM_TEXT_CONFIG
-import type { KoreanMartialTextProps } from "../types"; // Corrected path
-import { useKoreanTextStyle } from "../hooks/useKoreanTextStyle";
-import { KoreanText } from "./KoreanText"; // Import KoreanText for rendering
+import type { KoreanMartialTextProps } from "../../../../../types/korean-text";
+import { KoreanText } from "./KoreanText";
+import { KOREAN_COLORS } from "../../../../../types/constants";
 
 // Korean martial arts themed text component
 export function KoreanMartialText({
   korean,
   english,
-  martialVariant = "practitioner",
-  trigram,
-  honorLevel,
-  className,
-  style,
-  ...restProps
+  martialVariant = "technique",
+  honorLevel = "student",
+  ...rest
 }: KoreanMartialTextProps): React.ReactElement {
-  const preset = KOREAN_MARTIAL_TEXT_PRESETS[martialVariant];
-  const trigramInfo = trigram ? TRIGRAM_TEXT_CONFIG[trigram] : undefined;
-
-  const textStyleProps: KoreanMartialTextProps = {
-    korean,
-    english,
-    martialVariant,
-    trigram,
-    honorLevel,
-    size: preset.size,
-    weight: preset.weight,
-    color: trigramInfo?.color,
-    ...restProps,
+  // Apply martial arts specific styling
+  const getMartialColor = () => {
+    switch (martialVariant) {
+      case "technique":
+        return KOREAN_COLORS.GOLD;
+      case "philosophy":
+        return KOREAN_COLORS.CYAN;
+      case "master":
+        return KOREAN_COLORS.TRADITIONAL_RED;
+      case "honor":
+        return KOREAN_COLORS.GOLD;
+      default:
+        return KOREAN_COLORS.WHITE;
+    }
   };
 
-  return <KoreanText {...textStyleProps} className={className} style={style} />;
+  const getHonorPrefix = () => {
+    switch (honorLevel) {
+      case "master":
+        return "사범님 ";
+      case "grandmaster":
+        return "대사범님 ";
+      default:
+        return "";
+    }
+  };
+
+  const finalKorean = `${getHonorPrefix()}${korean}`;
+
+  return (
+    <KoreanText
+      korean={finalKorean}
+      english={english}
+      color={getMartialColor()}
+      weight="bold"
+      emphasis="shadow"
+      {...rest}
+    />
+  );
 }

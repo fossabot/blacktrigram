@@ -26,3 +26,17 @@ export const COMBAT_TIMING = {
   STANCE_CHANGE_DURATION_MS: 400,
   RECOVERY_TIME_MS: 500,
 } as const;
+
+// Korean font family constants for consistent typography
+export const KOREAN_FONT_FAMILY_PRIMARY = "Noto Sans KR, Arial, sans-serif";
+export const KOREAN_FONT_FAMILY_SECONDARY = "Malgun Gothic, sans-serif";
+export const KOREAN_FONT_FAMILY_MONOSPACE = "D2Coding, monospace";
+
+// Additional UI constants for Korean martial arts theme
+export const KOREAN_UI_CONSTANTS = {
+  HEADER_HEIGHT: 80,
+  SIDEBAR_WIDTH: 280,
+  CARD_BORDER_RADIUS: 8,
+  TRANSITION_DURATION: "0.3s",
+  BOX_SHADOW: "0 4px 8px rgba(0,0,0,0.3)",
+} as const;

@@ -117,30 +117,68 @@ export function updatePlayerCombatState(
 
 /**
  * Updates player health and adjusts combat state accordingly
+ * Includes Korean martial arts realism with consciousness and pain effects
  */
 export function updatePlayerHealth(
   player: PlayerState,
-  healthChange: number
+  healthChange: number,
+  _damageType: DamageType = "blunt" // Prefix with underscore to indicate intentionally unused
 ): PlayerState {
+  // If healthChange is positive, it's healing; if negative, it's damage
   const newHealth = Math.max(
     0,
     Math.min(player.maxHealth, player.health + healthChange)
   );
 
-  const newCombatState: CombatState = // Use CombatState type
-    newHealth <= 0
-      ? "helpless"
-      : newHealth <= 20
-      ? "helpless" // Consider a "critical" or "downed" state if distinct from helpless
-      : newHealth <= 40
-      ? "shaken"
-      : "ready";
+  // For damage (negative healthChange), calculate additional effects
+  if (healthChange < 0) {
+    const damage = Math.abs(healthChange);
 
-  return {
-    ...player,
-    health: newHealth,
-    combatState: newCombatState, // Property now exists
-  };
+    // Calculate consciousness based on health and pain
+    const healthRatio = newHealth / player.maxHealth;
+    let newConsciousness = player.consciousness;
+
+    if (healthRatio < 0.2) {
+      newConsciousness = Math.max(0, newConsciousness - 20);
+    } else if (healthRatio < 0.5) {
+      newConsciousness = Math.max(0, newConsciousness - 10);
+    }
+
+    // Determine combat state based on health and consciousness
+    let newCombatState: CombatState = "ready";
+    if (newHealth <= 0 || newConsciousness <= 0) {
+      newCombatState = "helpless";
+    } else if (healthRatio < 0.3 || newConsciousness < 30) {
+      newCombatState = "vulnerable";
+    } else if (healthRatio < 0.6 || newConsciousness < 60) {
+      newCombatState = "shaken";
+    }
+
+    return {
+      ...player,
+      health: newHealth,
+      consciousness: newConsciousness,
+      combatState: newCombatState,
+      pain: Math.min(100, player.pain + damage * 0.5),
+      bloodLoss: player.bloodLoss + damage * 0.1,
+    };
+  } else {
+    // For healing, just update health and potentially improve combat state
+    const newCombatState: CombatState =
+      newHealth <= 0
+        ? "helpless"
+        : newHealth <= 20
+        ? "vulnerable"
+        : newHealth <= 40
+        ? "shaken"
+        : "ready";
+
+    return {
+      ...player,
+      health: newHealth,
+      combatState: newCombatState,
+    };
+  }
 }
 
 /**
@@ -293,43 +331,4 @@ export function isPlayerDefeated(player: PlayerState): boolean {
     player.health <= 0 ||
     player.combatReadiness === CombatReadiness.INCAPACITATED
   );
-}
-
-/**
- * Update player health with Korean martial arts realism
- */
-export function updatePlayerHealth(
-  player: PlayerState,
-  damage: number,
-  damageType: DamageType = "blunt"
-): PlayerState {
-  const newHealth = Math.max(0, player.health - damage);
-
-  // Calculate consciousness based on health and pain
-  const healthRatio = newHealth / player.maxHealth;
-  let newConsciousness = player.consciousness;
-
-  if (healthRatio < 0.2) {
-    newConsciousness = Math.max(0, newConsciousness - 20);
-  } else if (healthRatio < 0.5) {
-    newConsciousness = Math.max(0, newConsciousness - 10);
-  }
-
-  // Determine combat state based on health and consciousness
-  let newCombatState: CombatState = "ready";
-  if (newHealth <= 0 || newConsciousness <= 0) {
-    newCombatState = "helpless";
-  } else if (healthRatio < 0.3 || newConsciousness < 30) {
-    newCombatState = "vulnerable";
-  } else if (healthRatio < 0.6 || newConsciousness < 60) {
-    newCombatState = "shaken";
-  }
-
-  return {
-    ...player,
-    health: newHealth,
-    consciousness: newConsciousness,
-    combatState: newCombatState,
-    pain: Math.min(100, player.pain + damage * 0.5),
-  };
 }

@@ -77,4 +77,25 @@ describe("ProgressTracker", () => {
 
     expect(screen.getByTestId("pixi-text")).toBeInTheDocument();
   });
+
+  it("renders basic progress tracker", () => {
+    const { getByTestId } = render(
+      <ProgressTracker label="Health" value={80} maxValue={100} />
+    );
+
+    expect(getByTestId("pixi-text")).toBeInTheDocument();
+  });
+
+  it("renders with custom text display", () => {
+    const { getByTestId } = render(
+      <ProgressTracker
+        label="Ki Energy"
+        value={60}
+        maxValue={100}
+        showText={true}
+      />
+    );
+
+    expect(getByTestId("pixi-text")).toBeInTheDocument();
+  });
 });
