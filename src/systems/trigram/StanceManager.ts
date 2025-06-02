@@ -4,18 +4,19 @@ import type {
   TrigramTransitionCost,
   TransitionPath,
   StanceTransition,
-  TRIGRAM_DATA, // Import if used directly for cooldowns
 } from "../../types";
-import type { TrigramCalculator } from "./TrigramCalculator"; // Assuming TrigramCalculator is in the same directory
+import type { TrigramCalculator } from "./TrigramCalculator";
 
 // Import constants or define them if they are specific to this module
 import {
   MAX_TRANSITION_COST_KI,
   MAX_TRANSITION_COST_STAMINA,
   MAX_TRANSITION_TIME_MILLISECONDS,
-  MIN_TRANSITION_EFFECTIVENESS,
-  // TRIGRAM_DATA // Already imported above if needed
+  // MIN_TRANSITION_EFFECTIVENESS is not used in this implementation
 } from "../../types/constants";
+
+// Default cooldown for stance changes (in milliseconds)
+const DEFAULT_STANCE_COOLDOWN_MS = 500;
 
 export class StanceManager {
   private trigramCalculator: TrigramCalculator;
@@ -34,8 +35,8 @@ export class StanceManager {
     targetStance: TrigramStance
   ): StanceTransition {
     const now = Date.now();
-    const currentStanceData = TRIGRAM_DATA[playerState.stance]; // Use imported TRIGRAM_DATA
-    const cooldown = currentStanceData?.stanceChangeCooldownMs || 500; // Default cooldown
+    // Use default cooldown since stanceChangeCooldownMs doesn't exist in TrigramData
+    const cooldown = DEFAULT_STANCE_COOLDOWN_MS;
 
     if (
       playerState.lastStanceChangeTime &&
@@ -106,8 +107,7 @@ export class StanceManager {
     targetStance: TrigramStance
   ): { possible: boolean; reason?: string; cost?: TrigramTransitionCost } {
     const now = Date.now();
-    const currentStanceData = TRIGRAM_DATA[playerState.stance];
-    const cooldown = currentStanceData?.stanceChangeCooldownMs || 500;
+    const cooldown = DEFAULT_STANCE_COOLDOWN_MS;
 
     if (
       playerState.lastStanceChangeTime &&

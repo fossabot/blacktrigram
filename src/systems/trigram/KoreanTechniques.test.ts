@@ -64,7 +64,9 @@ describe("KoreanTechniques", () => {
       // ... other property checks
       expect(t.range).toBeGreaterThan(0);
       expect(t.damageRange).toBeDefined();
-      expect(t.damageRange.min).toBeLessThanOrEqual(t.damageRange.max);
+      if (t.damageRange) {
+        expect(t.damageRange.min).toBeLessThanOrEqual(t.damageRange.max);
+      }
     });
   });
 

@@ -106,15 +106,8 @@ describe("StanceManager", () => {
       let result = stanceManager.changeStance(playerState, "tae");
       playerState = result.newState; // Update player state
 
-      // Attempt immediate second change
+      // Attempt immediate second change (should fail due to cooldown)
       vitestVi.spyOn(Date, "now").mockReturnValue(result.timestamp + 100); // Advance time slightly, but less than cooldown
-
-      // Mock getTrigramData to return stanceChangeCooldownMs
-      const taeData = TRIGRAM_DATA.tae;
-      mockTrigramCalculator.getTrigramData.mockReturnValueOnce({
-        ...taeData,
-        stanceChangeCooldownMs: taeData.stanceChangeCooldownMs || 500,
-      });
 
       result = stanceManager.changeStance(playerState, "li");
       expect(result.success).toBe(false);

@@ -1,13 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { TrigramCalculator } from "./TrigramCalculator";
-import type {
-  PlayerState,
-  TrigramStance,
-  TrigramData,
-  TrigramEffectivenessMatrix,
-  TrigramTransitionRule,
-  // KiFlowFactors, // Unused
-} from "../../types";
+import type { PlayerState, TrigramStance } from "../../types";
 import {
   TRIGRAM_DATA as AllTrigramData,
   STANCE_EFFECTIVENESS_MATRIX as GlobalEffectivenessMatrix,

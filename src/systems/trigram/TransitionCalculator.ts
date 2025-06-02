@@ -1,13 +1,9 @@
 import type {
   PlayerState,
   TrigramStance,
-  // TrigramData, // Unused
   TrigramTransitionRule,
   TrigramTransitionCost,
   TransitionPath,
-  StatusEffect,
-  EffectIntensity, // Added
-  EffectType, // Added
 } from "../../types";
 import {
   TRIGRAM_DATA as AllTrigramDataImport, // Use alias
@@ -104,10 +100,10 @@ export class TransitionCalculator {
 
     // Archetype specific transition costs (example)
     if (
-      playerState.archetype === "son" &&
+      playerState.archetype === "amsalja" && // Use actual PlayerArchetype enum value
       (toStance === "son" || fromStance === "son")
     ) {
-      // Amsalja (Son is wind) might be quicker with wind-related stances
+      // Amsalja (Shadow Assassin) might be quicker with wind-related stances (son = wind)
       timeModifier *= 0.8;
       staminaModifier *= 0.9;
     }
@@ -120,7 +116,7 @@ export class TransitionCalculator {
   }
 
   public calculateTransitionEffectiveness(
-    fromStance: TrigramStance,
+    _fromStance: TrigramStance, // Prefixed with underscore to indicate unused
     toStance: TrigramStance,
     playerState: PlayerState,
     opponentStance?: TrigramStance // Opponent's stance for context
