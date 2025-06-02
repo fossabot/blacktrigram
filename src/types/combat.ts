@@ -28,6 +28,8 @@ export type CombatAttackType =
   | "block"
   | "dodge"
   | "counter_attack"
+  | "counter" // Added for backward compatibility
+  | "defense" // Added for backward compatibility
   | "special_technique"
   | "combo_sequence"
   | "environmental"

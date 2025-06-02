@@ -1,10 +1,10 @@
 import type { KoreanTechnique, TrigramStance } from "../../types";
 
-// Define a map of techniques
+// Define a map of techniques with all required properties
 export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
   geon_heavenly_thunder: {
     id: "geon_heavenly_thunder",
-    name: "Geon Heavenly Thunder", // Internal name
+    name: "Geon Heavenly Thunder",
     koreanName: "천둥벽력",
     englishName: "Heavenly Thunder Strike",
     romanized: "Cheondung Byeokryeok",
@@ -16,12 +16,12 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
     type: "strike",
     damageType: "blunt",
     damageRange: { min: 25, max: 35, type: "blunt" },
-    range: 1.5, // Added
+    range: 1.5,
     kiCost: 20,
     staminaCost: 15,
     accuracy: 0.85,
-    executionTime: 500, // in ms
-    recoveryTime: 700, // in ms
+    executionTime: 500,
+    recoveryTime: 700,
     critChance: 0.1,
     critMultiplier: 1.6,
     effects: [
@@ -29,13 +29,14 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
         id: "stun_effect_geon",
         type: "stun",
         intensity: "moderate",
-        duration: 2000, // 2 seconds
+        duration: 2000,
         description: { korean: "일시적 기절", english: "Temporary stun" },
         stackable: false,
       },
     ],
     properties: ["heavy_impact", "bone_seeking"],
   },
+
   tae_flowing_strikes: {
     id: "tae_flowing_strikes",
     name: "Tae Flowing Strikes",
@@ -50,7 +51,7 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
     type: "strike",
     damageType: "blunt",
     damageRange: { min: 18, max: 28, type: "blunt" },
-    range: 1.2, // Added
+    range: 1.2,
     kiCost: 18,
     staminaCost: 12,
     accuracy: 0.9,
@@ -70,6 +71,7 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
     ],
     properties: ["fluid_motion", "combo_starter"],
   },
+
   li_flame_lance: {
     id: "li_flame_lance",
     name: "Li Flame Lance",
@@ -84,7 +86,7 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
     type: "strike",
     damageType: "piercing",
     damageRange: { min: 22, max: 30, type: "piercing" },
-    range: 1.8, // Added
+    range: 1.8,
     kiCost: 22,
     staminaCost: 18,
     accuracy: 0.92,
@@ -97,13 +99,14 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
         id: "burning_effect_li",
         type: "pain",
         intensity: "moderate",
-        duration: 3000, // 3 seconds DoT
+        duration: 3000,
         description: { korean: "화상 효과", english: "Burning effect" },
         stackable: true,
       },
     ],
     properties: ["armor_piercing", "fast_strike"],
   },
+
   jin_thunderclap_strike: {
     id: "jin_thunderclap_strike",
     name: "Jin Thunderclap Strike",
@@ -118,7 +121,7 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
     type: "strike",
     damageType: "blunt",
     damageRange: { min: 28, max: 40, type: "blunt" },
-    range: 1.6, // Added
+    range: 1.6,
     kiCost: 25,
     staminaCost: 20,
     accuracy: 0.8,
@@ -126,8 +129,9 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
     recoveryTime: 800,
     critChance: 0.12,
     critMultiplier: 1.8,
-    // No specific effects array, implies it relies on raw power or inherent stun from impact
+    properties: ["raw_power", "stun_capable"],
   },
+
   son_gale_barrage: {
     id: "son_gale_barrage",
     name: "Son Gale Barrage",
@@ -141,12 +145,12 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
     stance: "son",
     type: "strike",
     damageType: "slashing",
-    damageRange: { min: 15, max: 25, type: "slashing" }, // Per hit, if multi-hit
-    range: 1.4, // Added
+    damageRange: { min: 15, max: 25, type: "slashing" },
+    range: 1.4,
     kiCost: 15,
     staminaCost: 10,
     accuracy: 0.88,
-    executionTime: 300, // Fast execution
+    executionTime: 300,
     recoveryTime: 400,
     critChance: 0.05,
     critMultiplier: 1.4,
@@ -155,13 +159,14 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
         id: "bleed_effect_son",
         type: "bleeding",
         intensity: "light",
-        duration: 5000, // 5 seconds
+        duration: 5000,
         description: { korean: "출혈 효과", english: "Bleeding effect" },
         stackable: true,
       },
     ],
     properties: ["multi_hit", "pressure_attack"],
   },
+
   gam_riptide_counter: {
     id: "gam_riptide_counter",
     name: "Gam Riptide Counter",
@@ -173,16 +178,16 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
       english: "A flexible counter-attack using the flow of water.",
     },
     stance: "gam",
-    type: "counter",
+    type: "counter_attack",
     damageType: "pressure",
     damageRange: { min: 18, max: 25, type: "pressure" },
-    range: 1.0, // Added
+    range: 1.0,
     kiCost: 18,
     staminaCost: 12,
-    accuracy: 0.95, // Counters are often accurate if timed well
+    accuracy: 0.95,
     executionTime: 450,
     recoveryTime: 650,
-    critChance: 0.2, // Higher crit for successful counters
+    critChance: 0.2,
     critMultiplier: 1.6,
     effects: [
       {
@@ -196,6 +201,7 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
     ],
     properties: ["defensive_offensive", "timing_critical"],
   },
+
   gan_immovable_bulwark: {
     id: "gan_immovable_bulwark",
     name: "Gan Immovable Bulwark",
@@ -207,34 +213,34 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
       english: "A defensive posture as solid as a mountain.",
     },
     stance: "gan",
-    type: "defense",
-    damageType: "internal", // Reflects minor impact/recoil
+    type: "block",
+    damageType: "internal",
     damageRange: { min: 3, max: 8, type: "internal" },
-    range: 0.5, // Added
+    range: 0.5,
     kiCost: 10,
-    staminaCost: 20, // Blocks consume stamina
-    accuracy: 1.0, // Blocks are generally "accurate" if active
-    executionTime: 200, // Fast to activate
+    staminaCost: 20,
+    accuracy: 1.0,
+    executionTime: 200,
     recoveryTime: 300,
-    // No crit chance/multiplier for blocks typically
     effects: [
       {
         id: "stability_boost_gan",
-        type: "buff", // Using existing effect type
-        intensity: "heavy", // Using existing intensity level
-        duration: 1000, // While active or slightly after
+        type: "buff",
+        intensity: "heavy",
+        duration: 1000,
         description: { korean: "안정성 증가", english: "Increased stability" },
         stackable: false,
       },
     ],
     properties: ["high_defense", "stamina_heavy"],
   },
+
   gon_earthshatter_throw: {
     id: "gon_earthshatter_throw",
     name: "Gon Earthshatter Throw",
     koreanName: "대지포옹",
     englishName: "Earth-Embracing Throw",
-    romanized: "Daeji Poong", // Or Pung
+    romanized: "Daeji Poong",
     description: {
       korean: "대지의 힘을 이용한 강력한 던지기 기술.",
       english: "A powerful throw utilizing the strength of the earth.",
@@ -243,20 +249,20 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
     type: "throw",
     damageType: "impact",
     damageRange: { min: 22, max: 32, type: "impact" },
-    range: 0.8, // Added
+    range: 0.8,
     kiCost: 22,
     staminaCost: 18,
-    accuracy: 0.8, // Throws can be hard to land
-    executionTime: 700, // Throws often have longer execution
+    accuracy: 0.8,
+    executionTime: 700,
     recoveryTime: 900,
     critChance: 0.05,
     critMultiplier: 1.5,
     effects: [
       {
         id: "knockdown_effect_gon",
-        type: "stun", // Using existing effect type instead of KNOCKDOWN
+        type: "stun",
         intensity: "strong",
-        duration: 3000, // Duration of knockdown state
+        duration: 3000,
         description: { korean: "넘어뜨림", english: "Knockdown" },
         stackable: false,
       },
