@@ -1,13 +1,13 @@
-import type { Position } from "../../types/common";
-import {
+import type {
+  Position,
   AnatomicalLocation,
   CombatResult,
   PlayerState,
-  VITAL_POINTS_DATA,
-  type KoreanTechnique,
-  type VitalPoint,
-  type VitalPointSystemConfig,
+  KoreanTechnique,
+  VitalPoint,
+  VitalPointSystemConfig,
 } from "../../types";
+import { VITAL_POINTS_DATA } from "../../types/constants";
 
 // Placeholder math functions - MOVE THESE TO A DEDICATED utils/math.ts FILE
 function calculateDistance(pos1: Position, pos2: Position): number {
@@ -15,14 +15,6 @@ function calculateDistance(pos1: Position, pos2: Position): number {
   const dy = pos1.y - pos2.y;
   return Math.sqrt(dx * dx + dy * dy);
 }
-
-// function normalizeAngle(angle: number): number { // Commented out as normalizeAngle is not used
-//   let newAngle = angle % (2 * Math.PI);
-//   if (newAngle < 0) {
-//     newAngle += 2 * Math.PI;
-//   }
-//   return newAngle;
-// }
 
 export class HitDetection {
   private config: VitalPointSystemConfig;
@@ -37,41 +29,182 @@ export class HitDetection {
     vitalPoint: VitalPoint,
     technique: KoreanTechnique,
     distanceToTarget: number,
-    hitAngle: number // Assuming hitAngle is calculated and passed
+    hitAngle: number
   ): boolean {
-    const techniqueRange = technique.range || 1.0; // Default range if not specified
+    const techniqueRange = technique.range || 1.0;
     if (distanceToTarget > techniqueRange) {
-      return false; // Out of range
+      return false;
     }
 
     // Angle check (simplified)
+    const maxAngleDeviation = Math.PI / 4; // 45 degrees
+    if (Math.abs(hitAngle) > maxAngleDeviation) {
+      return false;
+    }
+
+    // Check if the vital point is within the technique's effective area
+    const vitalPointDistance = calculateDistance(
+      attackerPosition,
+      vitalPoint.location
+    );
+    if (vitalPointDistance > techniqueRange * 1.2) {
+      return false;
+    }
+
+    return true;
+  }
+
+  public calculateHitChance(
+    _attackerPosition: Position,
+    _targetBodyPosition: Position,
+    vitalPoint: VitalPoint,
+    technique: KoreanTechnique,
+    distanceToTarget: number,
+    attacker?: PlayerState,
+    defender?: PlayerState
+  ): number {
+    let baseChance = technique.accuracy || 0.85;
+
+    // Distance penalty
+    const maxRange = technique.range || 1.0;
+    if (distanceToTarget > maxRange * 0.8) {
+      baseChance *= 0.7;
+    }
+
+    // Vital point difficulty
+    switch (vitalPoint.severity) {
+      case "critical":
+        baseChance *= 0.6;
+        break;
+      case "severe":
+        baseChance *= 0.75;
+        break;
+      case "moderate":
+        baseChance *= 0.9;
+        break;
+    }
+
+    // Attacker/defender state modifiers
+    if (attacker && attacker.stamina < 30) {
+      baseChance *= 0.8;
+    }
+    if (defender && defender.combatState === "stunned") {
+      baseChance *= 1.3;
+    }
+
+    return Math.max(0.1, Math.min(0.95, baseChance));
+  }
+
+  public determineHitLocation(
+    _attackerPosition: Position,
+    _target: PlayerState,
+    technique: KoreanTechnique
+  ): { vitalPoint: VitalPoint | null; location: AnatomicalLocation } {
+    // Simple implementation - would be more complex in practice
+    const defaultLocation: AnatomicalLocation = {
+      region: "torso",
+      x: 0.5,
+      y: 0.5,
+    };
+
+    // For now, return a random vital point based on technique type
+    const availableVitalPoints = VITAL_POINTS_DATA.filter(
+      (vp) => vp.category === "torso" || vp.category === "head"
+    );
+
+    const randomVitalPoint =
+      availableVitalPoints[
+        Math.floor(Math.random() * availableVitalPoints.length)
+      ] || null;
+
+    return {
+      vitalPoint: randomVitalPoint,
+      location: randomVitalPoint?.location || defaultLocation,
+    };
+  }
+
+  public resolveHitOnVitalPoint(
+    vitalPoint: VitalPoint,
+    technique: KoreanTechnique
+  ): CombatResult {
+    const baseDamage =
+      Math.floor(
+        Math.random() *
+          (technique.damageRange.max - technique.damageRange.min + 1)
+      ) + technique.damageRange.min;
+
+    const totalDamage = baseDamage + (vitalPoint.baseDamage || 0);
+
+    return {
+      hit: true,
+      damage: totalDamage,
+      isVitalPoint: true,
+      vitalPointsHit: [vitalPoint],
+      effects: vitalPoint.effects || [],
+      technique,
+      damageType: technique.damageType,
+      location: vitalPoint.location,
+      painLevel:
+        vitalPoint.severity === "critical"
+          ? 8
+          : vitalPoint.severity === "severe"
+          ? 6
+          : 3,
+      consciousnessLoss: vitalPoint.severity === "critical" ? 15 : 5,
+      balanceLoss: vitalPoint.severity === "critical" ? 20 : 10,
+      bloodLoss: vitalPoint.severity === "severe" ? 5 : 1,
+      stunDuration: vitalPoint.severity === "critical" ? 3000 : 1000,
+      canCounter: false,
+      isCounterAttack: false,
+      isCritical: vitalPoint.severity === "critical",
+      multiplier: vitalPoint.severity === "critical" ? 2.0 : 1.0,
+    };
+  }
+
+  public determineClosestVitalPoint(
+    hitPosition: Position,
+    targetBodyPosition: Position,
+    availableVitalPoints: readonly VitalPoint[],
+    maxDistance: number = 0.1
+  ): VitalPoint | null {
+    let closestVitalPoint: VitalPoint | null = null;
+    let closestDistance = maxDistance;
+
+    for (const vitalPoint of availableVitalPoints) {
+      const vitalPointWorldPosition = {
+        x: targetBodyPosition.x + vitalPoint.location.x,
+        y: targetBodyPosition.y + vitalPoint.location.y,
+      };
+
+      const distance = calculateDistance(hitPosition, vitalPointWorldPosition);
+
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestVitalPoint = vitalPoint;
+      }
+    }
+
+    return closestVitalPoint;
     const angleToVitalPoint = Math.atan2(
       targetBodyPosition.y + vitalPoint.location.y - attackerPosition.y,
       targetBodyPosition.x + vitalPoint.location.x - attackerPosition.x
     );
     const angleDifference = Math.abs(hitAngle - angleToVitalPoint);
-    const maxAngleDiff = this.config.maxHitAngleDifference ?? Math.PI / 4; // Default if not in config
+    const maxAngleDiff = this.config.maxHitAngleDifference ?? Math.PI / 4;
 
-    if (angleDifference > maxAngleDiff) {
-      return false; // Hit angle is too off
-    }
-
-    // Add more sophisticated collision detection logic here if needed
-    // For example, considering hitboxes, target movement, etc.
-
-    return true; // Placeholder for actual hit detection logic
+    return angleDifference <= maxAngleDiff;
   }
 
   public calculateHitChance(
-    attackerPosition: Position,
-    targetBodyPosition: Position,
+    _attackerPosition: Position,
+    _targetBodyPosition: Position,
     vitalPoint: VitalPoint,
     technique: KoreanTechnique,
     distanceToTarget: number,
-    attacker?: PlayerState, // Made optional or ensure it's always passed
-    defender?: PlayerState // Made optional or ensure it's always passed
+    attacker?: PlayerState,
+    defender?: PlayerState
   ): number {
-    let baseHitChance = technique.accuracy ?? 0.8; // Base accuracy from technique
+    let baseHitChance = technique.accuracy ?? 0.8;
 
     // Modify by distance
     const optimalRange = technique.range ? technique.range * 0.75 : 0.75;
@@ -86,12 +219,10 @@ export class HitDetection {
 
     // Modify by attacker/defender states if provided
     if (attacker) {
-      // Example: attacker focus or status effects
       if (attacker.activeEffects.some((e) => e.type === "focused"))
         baseHitChance *= 1.1;
     }
     if (defender) {
-      // Example: defender evasiveness or combat state
       if (defender.combatState === "defending") baseHitChance *= 0.7;
       if (defender.activeEffects.some((e) => e.type === "evasion_boost"))
         baseHitChance *= 0.9;
@@ -101,18 +232,10 @@ export class HitDetection {
   }
 
   public determineHitLocation(
-    attackerPosition: Position,
-    target: PlayerState,
+    _attackerPosition: Position,
+    _target: PlayerState,
     technique: KoreanTechnique
-    // targetLocation: AnatomicalLocation, // Unused
-    // allVitalPoints: readonly VitalPoint[], // Unused
-    // hitRadius: number // Unused
   ): { vitalPoint: VitalPoint | null; location: AnatomicalLocation } {
-    // This is a simplified placeholder.
-    // A real system would use target's hitbox, technique's trajectory, etc.
-    // It might iterate through VITAL_POINTS_DATA or a spatial data structure.
-    console.log(attackerPosition, target, technique); // Use parameters
-
     // For now, let's assume it might hit the first vital point if the technique is precise.
     if (
       technique.precision &&
@@ -132,12 +255,10 @@ export class HitDetection {
   public resolveHitOnVitalPoint(
     vitalPoint: VitalPoint,
     technique: KoreanTechnique
-    // attacker: PlayerState, // Unused
-    // defender: PlayerState // Unused
   ): CombatResult {
-    // Placeholder: This should integrate with DamageCalculator
-    // For now, returning a simplified CombatResult
-    const damage = (technique.damage || 0) + (vitalPoint.baseDamage || 0);
+    const damage =
+      (technique.damageRange.min + technique.damageRange.max) / 2 +
+      (vitalPoint.baseDamage || 0);
     return {
       hit: true,
       damage: damage,
@@ -146,31 +267,29 @@ export class HitDetection {
       techniqueUsed: technique,
       effectiveness: 1.0,
       stunDuration: vitalPoint.baseStun || 0,
-      bloodLoss: 0, // Calculate based on effects
+      bloodLoss: 0,
       painLevel: damage / 5,
       consciousnessImpact: (vitalPoint.baseStun || 0) * 5,
       balanceEffect: damage / 10,
-      statusEffects: vitalPoint.effects?.map((e) => ({ ...e })) || [], // Map to StatusEffect
+      statusEffects: [],
       hitType: "vital",
     };
   }
 
   checkVitalPointHit(
     attackerPosition: Position,
-    targetPosition: Position, // This is the intended impact point on the target's body surface
-    targetBodyPosition: Position, // This is the origin/center of the target entity
+    targetPosition: Position,
+    targetBodyPosition: Position,
     technique: KoreanTechnique,
-    _targetAngle: number, // Angle the target entity is facing
+    _targetAngle: number,
     availableVitalPoints: readonly VitalPoint[]
   ): VitalPoint | null {
-    // 1. Check if the technique is within range (basic range check)
-    // Assuming technique.damageRange.max can be used as an effective range for simplicity.
-    const techniqueEffectiveRange = technique.damageRange.max * 0.1; // Corrected: Was technique.range, now uses damageRange.max
+    const techniqueEffectiveRange = technique.damageRange.max * 0.1;
     if (
       calculateDistance(attackerPosition, targetPosition) >
       techniqueEffectiveRange
     ) {
-      return null; // Out of range
+      return null;
     }
 
     for (const vp of availableVitalPoints) {
@@ -180,71 +299,45 @@ export class HitDetection {
         _targetAngle
       );
 
-      // 2. Check if the vital point is within the technique's area of effect / precision cone
+      const distanceToVP = calculateDistance(
+        targetPosition,
+        vitalPointGlobalPosition
+      );
+      const techniquePrecisionRadius = Math.max(
+        0.05,
+        technique.damageRange.min * 0.01
+      );
+      if (distanceToVP > techniquePrecisionRadius) {
+        continue;
+      }
+
       const distanceToVitalPoint = calculateDistance(
         targetPosition,
         vitalPointGlobalPosition
       );
-      // Assuming technique.damageRange.min can be used as a proxy for precision radius.
-      const techniquePrecisionRadius = Math.max(
-        0.05,
-        technique.damageRange.min * 0.01
-      ); // Corrected: Was technique.range, now uses damageRange.min
-      if (distanceToVitalPoint > techniquePrecisionRadius) {
-        continue; // Missed this specific vital point due to precision
-      }
 
-      // 3. Check angle of attack relative to vital point exposure (simplified)
-      // This requires knowing the attacker's facing angle and the vital point's orientation
-      const angleToTarget = Math.atan2(
-        vitalPointGlobalPosition.y - attackerPosition.y,
-        vitalPointGlobalPosition.x - attackerPosition.x
-      );
-      // Simplified: assume attackerAngle is derived from attacker's facing direction
-      // For now, let's assume a direct hit if within cone for simplicity
-      const _attackerAngle = angleToTarget; // Placeholder: should be attacker's actual attack vector angle (prefixed with _ as unused)
-
-      // Angle difference check (optional, can be complex)
-      // const angleDiff = Math.abs(normalizeAngle(attackerAngle - vitalPointOrientationAngle));
-      // if (angleDiff > (this.config.maxHitAngleDifference ?? Math.PI / 4)) continue;
-
-      // 4. Check if the hit position is close enough to the vital point's global position
-      const distanceToVitalPoint = calculateDistance(
-        targetPosition, // The actual point of impact from the attack
-        vitalPointGlobalPosition
-      );
-
-      // Consider a small radius around the vital point for hit detection
-      // This radius could be fixed or based on vitalPoint.size or technique.areaOfEffect
-      const vitalPointHitRadius = vp.baseAccuracy * 0.1; // Example: baseAccuracy influences hit radius
+      const vitalPointHitRadius = vp.baseAccuracy * 0.1;
 
       if (distanceToVitalPoint <= vitalPointHitRadius) {
-        // TODO: Add probability check based on technique.accuracy and vp.baseAccuracy
-        // For now, direct hit if within radius
         return vp;
       }
     }
     return null;
   }
 
-  // Method to determine the closest vital point to a given hit location
   public determineClosestVitalPoint(
-    hitPosition: Position, // The global coordinates of the impact
-    targetBodyPosition: Position, // The global origin/center of the target entity
+    hitPosition: Position,
+    targetBodyPosition: Position,
     availableVitalPoints: readonly VitalPoint[],
-    maxDistance: number = 0.1 // Maximum distance to consider a vital point "close"
+    maxDistance: number = 0.1
   ): VitalPoint | null {
     let closestPoint: VitalPoint | null = null;
     let minDistance = Infinity;
 
     for (const vp of availableVitalPoints) {
-      // Calculate the absolute global position of the vital point
-      // Assuming vp.location.x and vp.location.y are relative to targetBodyPosition
-      // and need to be rotated if the target entity has an orientation.
-      // For simplicity, assuming no rotation or targetAngle is already accounted for in vp.location.
       const vitalPointGlobalPosition: Position = {
-        x: targetBodyPosition.x + vp.location.x, // This might need adjustment based on how vp.location is defined
-        y: targetBodyPosition.y + vp.location.y, // (e.g., if it's already global or needs rotation)
+        x: targetBodyPosition.x + vp.location.x,
+        y: targetBodyPosition.y + vp.location.y,
       };
 
       const distance = calculateDistance(hitPosition, vitalPointGlobalPosition);
@@ -257,7 +350,6 @@ export class HitDetection {
     return closestPoint;
   }
 
-  // Method to get potential vital points in the path of an attack (e.g., for piercing attacks)
   getPotentialVitalPointsInPath(
     _startPosition: Position,
     _endPosition: Position,
@@ -266,21 +358,14 @@ export class HitDetection {
     availableVitalPoints: readonly VitalPoint[]
   ): readonly VitalPoint[] {
     const potentialPoints: VitalPoint[] = [];
-    // const techniqueAverageDamage = (_technique.damageRange.min + _technique.damageRange.max) / 2; // Corrected: Was _technique.damage
 
     for (const vp of availableVitalPoints) {
-      // Simplified: Check if vital point is roughly between start and end points
-      // This needs a proper line-segment intersection or proximity check.
-      // For now, let's assume if it's generally in the area, it's a potential point.
-      // This logic is highly placeholder.
       const vpGlobalPos = this.getGlobalVitalPointPosition(
         vp.location,
         _targetBodyPosition,
         0
-      ); // Assuming targetAngle 0 for simplicity
+      );
 
-      // Example: if vital point is within a certain distance of the attack line
-      // This is a very naive check.
       const distToStart = calculateDistance(_startPosition, vpGlobalPos);
       const distToEnd = calculateDistance(_endPosition, vpGlobalPos);
       const attackPathLength = calculateDistance(_startPosition, _endPosition);
@@ -289,111 +374,56 @@ export class HitDetection {
         distToStart + distToEnd <
         attackPathLength + (vp.baseAccuracy ?? 0.1)
       ) {
-        // vp.baseAccuracy as a radius proxy
         potentialPoints.push(vp);
       }
     }
     return potentialPoints;
   }
 
-  // Helper to calculate the global position of a vital point
-  private getGlobalVitalPointPosition(
-    vitalPointLocation: { x: number; y: number; region: string }, // Assuming region is string for now
+  private isVitalPointAccessible(
+    attackerPosition: Position,
     targetBodyPosition: Position,
-    _targetAngle: number // Prefixed with _ as unused
+    vitalPoint: VitalPoint,
+    defenderStance: string,
+    defenderState: PlayerState
+  ): boolean {
+    // Check if the vital point can be accessed based on defender's stance and state
+    const stanceProtection = {
+      geon: ["head", "neck"],
+      tae: ["torso"],
+      li: ["limbs"],
+      jin: ["head"],
+      son: ["torso", "limbs"],
+      gam: ["neck", "torso"],
+      gan: ["head", "torso"],
+      gon: ["limbs"],
+    };
+
+    const protectedRegions =
+      stanceProtection[defenderStance as keyof typeof stanceProtection] || [];
+    const vitalPointRegion = vitalPoint.location.region;
+
+    // If the vital point is in a protected region, reduce accessibility
+    if (protectedRegions.includes(vitalPointRegion)) {
+      return Math.random() > 0.7; // 30% chance to hit protected area
+    }
+
+    // Check defender's consciousness and balance
+    if (defenderState.consciousness < 50 || defenderState.balance < 30) {
+      return true; // Easy to hit when defender is impaired
+    }
+
+    return true; // Default: accessible
+  }
+
+  private getGlobalVitalPointPosition(
+    vitalPointLocation: { x: number; y: number; region: string },
+    targetBodyPosition: Position,
+    _targetAngle: number
   ): Position {
-    // Simple addition for now, assuming vitalPointLocation is relative to targetBodyPosition
-    // and targetAngle is 0 or already incorporated into vitalPointLocation.
-    // For rotation:
-    // const rotatedX = vitalPointLocation.x * Math.cos(targetAngle) - vitalPointLocation.y * Math.sin(targetAngle);
-    // const rotatedY = vitalPointLocation.x * Math.sin(targetAngle) + vitalPointLocation.y * Math.cos(targetAngle);
-    // return {
-    //   x: targetBodyPosition.x + rotatedX,
-    //   y: targetBodyPosition.y + rotatedY,
-    // };
     return {
       x: targetBodyPosition.x + vitalPointLocation.x,
       y: targetBodyPosition.y + vitalPointLocation.y,
     };
-  }
-
-  // Check if an attack angle is valid for a given vital point
-  private isAttackAngleValid(
-    _attackerPosition: Position,
-    _vitalPointGlobalPosition: Position,
-    _vitalPointOrientationAngle: number, // Angle the vital point is "facing" or most vulnerable from
-    _attackerAngle: number // Angle of the incoming attack - parameter itself is unused in current simplified logic
-  ): boolean {
-    // const angleDiff = Math.abs(normalizeAngle(_attackerAngle - _vitalPointOrientationAngle));
-    // return angleDiff <= (this.config.maxHitAngleDifference ?? Math.PI / 4); // Example: 45-degree cone
-    return true; // Simplified: always valid for now
-  }
-
-  public determineHitOnVitalPoint(
-    technique: KoreanTechnique,
-    vitalPoint: VitalPoint,
-    // isAttackAngleValid: boolean, // Unused
-    distanceFactor: number // 0-1, how close the hit was to the VP center
-  ): { hit: boolean; damageMultiplier: number; appliedEffects: StatusEffect[] } {
-    // Basic accuracy check based on technique
-    const baseAccuracy = technique.accuracy; // Assuming accuracy is 0-1
-    // Check if the attack is within the technique's effective range
-    // const distanceToTarget = calculateDistance(attackerPosition, targetBodyPosition);
-    // if (distanceToTarget > technique.range) {
-    //   return { ...createMissResult(technique), description: "Out of range" };
-    // }
-
-    // Simplified damage calculation for now
-    let damage = technique.damageRange
-      ? (technique.damageRange.min + technique.damageRange.max) / 2
-      : 10; // Default damage if not specified
-
-    // if (targetVitalPoint) {
-    //   const distanceToVitalPoint = calculateDistance(
-    //     { x: attackerPosition.x, y: attackerPosition.y }, // Simplified impact point
-    //     mapBodyRegionToWorld(targetVitalPoint.location, targetBodyPosition, targetFacingAngle)
-    //   );
-    //   // Check distance to vital point for damage modification
-    //   damage *= Math.max(0, 1 - distanceToVitalPoint * 0.1); // Closer hits do more damage
-    // }
-
-    return {
-      hit: true,
-      damageMultiplier: damage,
-      appliedEffects: vitalPoint.effects?.map((e) => ({ ...e })) || [],
-    };
-  }
-
-  function isVitalPointAccessible(
-    vitalPoint: VitalPoint,
-    technique: KoreanTechnique,
-    // _attackerAngle?: number, // Unused
-    targetFacingAngle?: number
-  ): boolean {
-    // Placeholder logic for accessibility based on facing angle
-    // This would depend on how vital points are oriented and how techniques interact with those orientations
-    return true; // Simplified: always accessible for now
-  }
-
-  function getClosestVitalPoint(
-    targetPosition: Position, // Point of impact on the target model
-    targetVitalPoints: readonly VitalPoint[],
-    targetBodyPosition: Position,
-    targetFacingAngle: number,
-    maxDistance: number = 0.1 // Max distance in normalized body coords to be considered "hit"
-  ): VitalPoint | null {
-    let closestVP: VitalPoint | null = null;
-    let minDistance = Infinity;
-
-    for (const vp of targetVitalPoints) {
-      const vpWorldPos = mapBodyRegionToWorld(vp.location, targetBodyPosition, targetFacingAngle);
-      const distanceToVitalPointCurrent = calculateDistance(targetPosition, vpWorldPos); // Renamed to avoid conflict
-
-      if (distanceToVitalPointCurrent < minDistance && distanceToVitalPointCurrent <= maxDistance) {
-        minDistance = distanceToVitalPointCurrent;
-        closestVP = vp;
-      }
-    }
-    return closestVP;
   }
 }

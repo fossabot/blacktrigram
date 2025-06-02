@@ -24,18 +24,29 @@ export interface CombatSystemInterface {
     technique: KoreanTechnique,
     attackerArchetype: PlayerArchetype,
     defenderState: PlayerState,
-    hitResult: CombatResult // Or a more specific type if CombatResult is too broad here
+    hitResult: CombatResult
   ) => {
     baseDamage: number;
     modifierDamage: number;
     totalDamage: number;
     effectsApplied: readonly StatusEffect[];
   };
-  // Add other combat system methods
+
   resolveAttack: (
     attacker: PlayerState,
     defender: PlayerState,
     technique: KoreanTechnique
+  ) => CombatResult;
+
+  checkWinCondition: (
+    player1: PlayerState,
+    player2: PlayerState
+  ) => { winner: 1 | 2; reason: string } | null;
+
+  calculateTechnique: (
+    technique: KoreanTechnique,
+    archetype: PlayerArchetype,
+    target?: PlayerState
   ) => CombatResult;
 }
 
@@ -44,18 +55,28 @@ export interface VitalPointSystemInterface {
   getVitalPointById: (id: string) => VitalPoint | undefined;
   getAllVitalPoints: () => readonly VitalPoint[];
   getVitalPointEffects: (
-    vitalPoint: VitalPoint, // Changed parameter
-    technique: KoreanTechnique, // Added parameter
-    isCriticalHit: boolean // Added parameter
-  ) => readonly StatusEffect[]; // Changed return type to StatusEffect[]
-  calculateVitalPointDamage: (
-    // Updated signature
     vitalPoint: VitalPoint,
-    technique: KoreanTechnique, // Changed from baseDamage: number
+    technique: KoreanTechnique,
+    isCriticalHit: boolean
+  ) => readonly StatusEffect[];
+  calculateVitalPointDamage: (
+    vitalPoint: VitalPoint,
+    technique: KoreanTechnique,
     attackerArchetype: PlayerArchetype,
-    isCriticalHit?: boolean // Added optional isCriticalHit
+    isCriticalHit?: boolean
   ) => number;
-  setConfig: (config: VitalPointSystemConfig) => void; // Added setConfig
+  setConfig: (config: VitalPointSystemConfig) => void;
+
+  // Add missing method that CombatSystem expects
+  calculateHit: (
+    technique: KoreanTechnique,
+    targetedVitalPointId?: string | null
+  ) => {
+    hit: boolean;
+    damage: number;
+    effects: readonly StatusEffect[];
+    vitalPointsHit: readonly string[];
+  };
 }
 
 // Trigram system interface
@@ -63,7 +84,12 @@ export interface TrigramSystemInterface {
   getCurrentStance(playerId: string): TrigramStance | undefined;
   changeStance(playerId: string, newStance: TrigramStance): boolean;
   getAvailableTechniques(stance: TrigramStance): readonly KoreanTechnique[];
-  // Add other trigram system methods
+
+  // Add missing method that CombatSystem expects
+  getStanceEffectiveness(
+    attackerStance: TrigramStance,
+    defenderStance: TrigramStance
+  ): number;
 }
 
 // Input system interface

@@ -253,32 +253,39 @@ export type PhilosophyAspect =
 //     | "immobilized";
 
 // UI and component enums
-export type ButtonVariant = "primary" | "secondary" | "accent" | "danger"; // Added accent, consolidated
-export type LayoutDirection = "horizontal" | "vertical";
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "accent"
+  | "danger"
+  | "success"; // Added accent, consolidated
+export type LayoutDirection = "horizontal" | "vertical" | "grid";
 
 // Korean typography
 export type KoreanTextStyle = "formal" | "casual" | "technical";
 
 // Audio
-export type AudioFormat = "webm" | "mp3" | "ogg";
+export type AudioFormat = "webm" | "mp3"; // Removed "ogg" to match audio.ts
 
 // Game screens
 export type GameScreen =
   | "intro"
+  | "menu"
   | "training"
   | "combat"
+  | "settings" // Added "menu" and "settings" to align with the first definition
   | "philosophy"
-  | "victory"
+  | "victory" // Added "victory" and "defeat"
   | "defeat";
 
 // Player archetype enums
 export enum CombatReadiness {
-  READY = 100,
-  LIGHT_DAMAGE = 80,
-  MODERATE = 60,
-  HEAVY = 40,
-  CRITICAL = 20,
-  INCAPACITATED = 0,
+  READY = 100, // Combat ready, full capability
+  LIGHT_DAMAGE = 80, // Light damage, reduced capability
+  MODERATE = 60, // Moderate damage, significant impairment
+  HEAVY = 40, // Heavy damage, severe limitation
+  CRITICAL = 20, // Critical damage, near incapacitation
+  INCAPACITATED = 0, // Incapacitated/Defeated
 }
 
 export enum ConsciousnessLevel {
@@ -289,67 +296,32 @@ export enum ConsciousnessLevel {
   UNCONSCIOUS = 0,
 }
 
-// Add missing EffectIntensity
 export type EffectIntensity =
+  | "minimal"
   | "weak"
   | "moderate"
   | "strong"
   | "extreme"
-  | "high" // Added from KoreanAnatomy.ts
-  | "severe"; // Added from KoreanAnatomy.ts
+  | "overwhelming";
 
 export type BodyRegion =
   | "head"
   | "neck"
   | "torso"
-  | "abdomen" // Often part of torso, but can be specific
-  | "chest" // Often part of torso
-  | "back" // Often part of torso
-  | "upper_back" // Added
-  | "lower_back" // Added
-  | "limbs"
   | "arms"
   | "legs"
-  | "left_arm"
-  | "right_arm"
-  | "left_leg"
-  | "right_leg"
-  | "joints"
+  | "abdomen"
+  | "chest"
+  | "back"
   | "hands"
   | "feet"
-  | "head_side"
-  | "upper_abdomen_center"
-  // Added from AnatomicalRegions.ts errors
-  | "face"
-  // | "face_upper" // Covered by face/head
-  | "eyes"
-  | "nose"
-  | "jaw"
-  | "temples"
-  | "throat"
-  | "philtrum"
-  | "mastoid_process"
-  | "occiput"
-  | "ribs"
-  | "clavicle"
-  | "solar_plexus"
-  | "kidneys"
-  | "liver"
-  | "spleen"
-  | "floating_ribs"
-  | "groin" // Common vital area
-  | "spine" // General spine area
-  | "achilles_tendon"; // Leg vital point
+  | "face_upper" // Added from KoreanVitalPoints
+  | "solar_plexus" // Added from KoreanVitalPoints
+  | "leg_back_knee"; // Added from KoreanVitalPoints
 
-// Define StatusKey and TrigramKey if they are simple unions
 export type StatusKey =
   | "health"
   | "ki"
   | "stamina"
   | "consciousness"
-  | "pain"
-  | "balance"
-  | "bloodLoss"
-  | "posture"; // Example, add all relevant status keys
-
-export type TrigramKey = TrigramStance; // If TrigramKey is just an alias for TrigramStance
+  | "balance";

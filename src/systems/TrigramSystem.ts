@@ -214,4 +214,56 @@ export class TrigramSystem {
     // Vital point bonus
     return effectiveness;
   }
+
+  /**
+   * Get effectiveness multiplier between two trigram stances
+   * @param attackerStance The attacker's current stance
+   * @param defenderStance The defender's current stance
+   * @returns Effectiveness multiplier (1.0 = neutral, >1.0 = advantage, <1.0 = disadvantage)
+   */
+  getStanceEffectiveness(
+    attackerStance: TrigramStance,
+    defenderStance: TrigramStance
+  ): number {
+    // Use the stance effectiveness matrix from constants
+    // For now, implement a basic circular effectiveness system
+    const stanceOrder = [
+      "geon",
+      "tae",
+      "li",
+      "jin",
+      "son",
+      "gam",
+      "gan",
+      "gon",
+    ];
+    const attackerIndex = stanceOrder.indexOf(attackerStance);
+    const defenderIndex = stanceOrder.indexOf(defenderStance);
+
+    if (attackerIndex === -1 || defenderIndex === -1) {
+      return 1.0; // Neutral if stance not found
+    }
+
+    // Calculate relative position in the trigram cycle
+    const difference = (attackerIndex - defenderIndex + 8) % 8;
+
+    // Determine effectiveness based on trigram relationships
+    switch (difference) {
+      case 0:
+        return 1.0; // Same stance - neutral
+      case 1:
+      case 7:
+        return 1.1; // Adjacent stances - slight advantage
+      case 2:
+      case 6:
+        return 1.2; // Strong advantage
+      case 3:
+      case 5:
+        return 0.9; // Slight disadvantage
+      case 4:
+        return 0.8; // Opposite stance - strong disadvantage
+      default:
+        return 1.0;
+    }
+  }
 }

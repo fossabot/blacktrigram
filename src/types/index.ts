@@ -38,6 +38,11 @@ export type {
 export { CombatReadiness, ConsciousnessLevel } from "./player"; // Enums with runtime values
 
 // =============================================================================
+// CONSTANTS - Game configuration and fixed values
+// =============================================================================
+export * from "./constants";
+
+// =============================================================================
 // COMMON TYPES - Base shared types
 // =============================================================================
 export type {
@@ -282,36 +287,6 @@ export type {
   EventBusInterface,
   SystemConfig,
 } from "./systems";
-
-// =============================================================================
-// CONSTANTS - Game constants and configuration
-// =============================================================================
-export {
-  KOREAN_COLORS,
-  KOREAN_FONT_FAMILY,
-  KOREAN_FONT_SIZES,
-  COMBAT_CONSTANTS,
-  TRIGRAM_STANCES_ORDER,
-  ARCHETYPE_ORDER,
-  KOREAN_TECHNIQUE_DAMAGE,
-  // TRIGRAM_DATA, // Remove from here
-  STANCE_EFFECTIVENESS_MATRIX, // This is in constants.ts, but also in trigram.ts. Ensure one source of truth.
-  VITAL_POINTS_DATA,
-  GAME_CONFIG as APP_GAME_CONFIG, // Aliased to avoid conflict with common.ts GameConfig
-  COMBAT_CONFIG,
-  DAMAGE_RANGES,
-  MAX_TRANSITION_COST_KI,
-  MAX_TRANSITION_COST_STAMINA,
-  MAX_TRANSITION_TIME_MILLISECONDS,
-  MIN_TRANSITION_EFFECTIVENESS,
-  PLAYER_ARCHETYPES_DATA,
-} from "./constants";
-
-// Import TRIGRAM_DATA from trigram.ts
-export {
-  TRIGRAM_DATA,
-  STANCE_EFFECTIVENESS_MATRIX as TRIGRAM_EFFECTIVENESS,
-} from "./trigram"; // Correctly re-export TRIGRAM_DATA and alias STANCE_EFFECTIVENESS_MATRIX
 
 // The previous export `TRIGRAM_DATA_FROM_TRIGRAM` was an alias.
 // This change ensures that `import { TRIGRAM_DATA } from "./types"` will work as expected.

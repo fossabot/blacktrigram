@@ -7,7 +7,10 @@ import type {
   ColorValue,
 } from "../../../../types"; // Assuming types are re-exported from here
 
-import { KOREAN_COLORS as APP_KOREAN_COLORS } from "../../../../types/constants"; // Alias to avoid conflict
+import {
+  KOREAN_COLORS as APP_KOREAN_COLORS,
+  KOREAN_COLORS,
+} from "../../../../types/constants"; // Alias to avoid conflict
 
 export const KOREAN_FONT_FAMILY = {
   PRIMARY: "Noto Sans KR, Arial, sans-serif",
@@ -29,6 +32,39 @@ export const KOREAN_TEXT_SIZES = {
   large: 24,
   xlarge: 32,
   title: 48,
+} as const;
+
+// Alias for compatibility
+export const KOREAN_FONT_SIZES = KOREAN_TEXT_SIZES;
+
+// Import KOREAN_COLORS from the main constants
+export { KOREAN_COLORS } from "../../../../types/constants";
+
+// Korean martial text presets
+export const KOREAN_MARTIAL_TEXT_PRESETS = {
+  technique: { size: "medium" as const, weight: 700 },
+  philosophy: { size: "large" as const, weight: 500 },
+  instruction: { size: "medium" as const, weight: 400 },
+  practitioner: { size: "medium" as const, weight: 500 },
+} as const;
+
+// Korean status text configuration
+export const KOREAN_STATUS_TEXT_CONFIG = {
+  default: { showPercentage: false, criticalThreshold: 0.3 },
+  health: { showPercentage: true, criticalThreshold: 0.2 },
+  ki: { showPercentage: false, criticalThreshold: 0.1 },
+} as const;
+
+// Trigram text configuration
+export const TRIGRAM_TEXT_CONFIG = {
+  geon: { color: KOREAN_COLORS.geon, symbol: "☰" },
+  tae: { color: KOREAN_COLORS.tae, symbol: "☱" },
+  li: { color: KOREAN_COLORS.li, symbol: "☲" },
+  jin: { color: KOREAN_COLORS.jin, symbol: "☳" },
+  son: { color: KOREAN_COLORS.son, symbol: "☴" },
+  gam: { color: KOREAN_COLORS.gam, symbol: "☵" },
+  gan: { color: KOREAN_COLORS.gan, symbol: "☶" },
+  gon: { color: KOREAN_COLORS.gon, symbol: "☷" },
 } as const;
 
 // Define MARTIAL_COLORS if it's specific to this module
@@ -65,5 +101,9 @@ export const KOREAN_MARTIAL_ARTS_TERMS: Record<
   },
   // ... other terms
 };
+
+// Additional configuration objects
+export const KOREAN_SIZE_CONFIG = KOREAN_TEXT_SIZES;
+export const TRIGRAM_CONFIG = TRIGRAM_TEXT_CONFIG;
 
 // ... other constants

@@ -93,7 +93,7 @@ export interface CombatResult {
   readonly hit: boolean; // Was the attack successful?
   readonly damage: number;
   readonly isVitalPoint: boolean;
-  readonly vitalPointsHit: readonly VitalPoint[];
+  readonly vitalPointsHit: readonly string[];
   readonly techniqueUsed: KoreanTechnique;
   readonly effectiveness: number; // e.g., stance effectiveness multiplier
   readonly stunDuration: number; // in milliseconds or game ticks

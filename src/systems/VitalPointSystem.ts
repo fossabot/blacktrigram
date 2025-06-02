@@ -118,65 +118,72 @@ export class VitalPointSystem implements VitalPointSystemInterface {
     return Math.max(0, Math.round(baseDamage));
   }
 
-  // Add a basic calculateHitResult or similar method if tests depend on it,
-  // or adjust tests to use existing/new methods.
-  // For now, this is a placeholder structure.
-  public calculateHit(
+  /**
+   * Calculate hit result for combat system integration
+   * @param technique The Korean martial arts technique being used
+   * @param targetedVitalPointId Optional specific vital point to target
+   * @returns Hit result with damage and effects
+   */
+  calculateHit(
     technique: KoreanTechnique,
-    targetVitalPointId?: string | null,
-    accuracyRoll?: number // 0-1
+    targetedVitalPointId?: string | null
   ): {
     hit: boolean;
-    isVitalPointHit: boolean;
-    vitalPoint?: VitalPoint;
-    damageDealt: number;
+    damage: number;
     effects: readonly StatusEffect[];
+    vitalPointsHit: readonly string[];
   } {
-    const vitalPoint = targetVitalPointId
-      ? this.getVitalPointById(targetVitalPointId)
-      : undefined;
-    const baseAccuracy =
-      technique.accuracy * (this.config.baseAccuracyMultiplier || 1.0);
-    const finalAccuracy = vitalPoint
-      ? baseAccuracy *
-        (vitalPoint.baseAccuracy || this.config.baseVitalPointAccuracy || 0.7)
-      : baseAccuracy;
-
-    const roll = accuracyRoll !== undefined ? accuracyRoll : Math.random();
-    const hit = roll <= finalAccuracy;
+    // Determine if the hit connects based on technique accuracy
+    const hit = Math.random() < technique.accuracy;
 
     if (!hit) {
       return {
         hit: false,
-        isVitalPointHit: false,
-        damageDealt: 0,
+        damage: 0,
         effects: [],
+        vitalPointsHit: [],
       };
     }
 
-    const isVitalPointHit = !!vitalPoint;
-    const isCritical = Math.random() < (technique.critChance || 0.05);
-    let damageDealt =
-      (technique.damageRange.min + technique.damageRange.max) / 2;
-    let effects: readonly StatusEffect[] = technique.effects || [];
+    // Calculate base damage from technique range
+    const baseDamage = Math.floor(
+      Math.random() *
+        (technique.damageRange.max - technique.damageRange.min + 1) +
+        technique.damageRange.min
+    );
 
-    if (isVitalPointHit && vitalPoint) {
-      damageDealt = this.calculateVitalPointDamage(
-        vitalPoint,
-        technique,
-        "musa",
-        isCritical
-      ); // Placeholder archetype
-      effects = this.getVitalPointEffects(vitalPoint, technique, isCritical);
-    } else if (isCritical) {
-      damageDealt *= technique.critMultiplier || 1.5;
+    let finalDamage = baseDamage;
+    let effects: StatusEffect[] = [];
+    let vitalPointsHit: string[] = [];
+
+    // Check if a vital point was hit
+    if (targetedVitalPointId) {
+      const vitalPoint = this.getVitalPointById(targetedVitalPointId);
+      if (vitalPoint && Math.random() < vitalPoint.baseAccuracy) {
+        // Vital point hit - apply multiplier and effects
+        finalDamage = Math.floor(baseDamage * vitalPoint.damageMultiplier);
+        effects = [...vitalPoint.effects];
+        vitalPointsHit = [vitalPoint.id];
+      }
+    } else {
+      // Random vital point check (lower chance)
+      const allVitalPoints = this.getAllVitalPoints();
+      const randomPoint =
+        allVitalPoints[Math.floor(Math.random() * allVitalPoints.length)];
+
+      if (Math.random() < 0.1) {
+        // 10% chance for random vital point hit
+        finalDamage = Math.floor(baseDamage * randomPoint.damageMultiplier);
+        effects = [...randomPoint.effects];
+        vitalPointsHit = [randomPoint.id];
+      }
     }
 
-    // Apply variance
-    const varianceAmount = damageDealt * (this.config.damageVariance || 0.1);
-    damageDealt += Math.random() * varianceAmount * 2 - varianceAmount;
-    damageDealt = Math.max(0, Math.round(damageDealt));
-
-    return { hit: true, isVitalPointHit, vitalPoint, damageDealt, effects };
+    return {
+      hit: true,
+      damage: finalDamage,
+      effects: effects as readonly StatusEffect[],
+      vitalPointsHit: vitalPointsHit as readonly string[],
+    };
   }
 }
