@@ -31,15 +31,6 @@ export const KOREAN_COLORS = {
   CRITICAL_RED: 0xe53e3e,
   ORANGE: 0xed8936,
   GREEN: 0x48bb78,
-  RED: 0xff0000,
-  YELLOW: 0xffff00,
-  SILVER: 0xc0c0c0,
-  NEON_GREEN: 0x39ff14,
-
-  // Gray scale
-  GRAY_DARK: 0x2d3748,
-  GRAY_LIGHT: 0xa0aec0,
-  GRAY_MEDIUM: 0x718096,
 
   // Trigram stance colors (팔괘 색상)
   geon: 0xffd700, // ☰ Heaven - Gold

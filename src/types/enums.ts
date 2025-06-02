@@ -1,4 +1,111 @@
-// String literal union types for Black Trigram Korean martial arts ga// Damage types for Korean martial arts
+// String literal union types for Black Trigram Korean martial arts game
+
+// Combat attack type constants - can be used as values
+export const CombatAttackTypeValues = {
+  STRIKE: "strike",
+  GRAPPLE: "grapple",
+  COUNTER: "counter",
+  DEFENSE: "defense",
+  THROW: "throw",
+  JOINT_LOCK: "joint_lock",
+  PRESSURE_POINT: "pressure_point",
+  BLOCK: "block",
+  COUNTER_ATTACK: "counter_attack",
+} as const;
+
+// Damage type constants - can be used as values
+export const DamageTypeValues = {
+  BLUNT: "blunt",
+  PIERCING: "piercing",
+  SLASHING: "slashing",
+  CRUSHING: "crushing",
+  NERVE: "nerve",
+  PRESSURE: "pressure",
+  SHARP: "sharp",
+  IMPACT: "impact",
+  INTERNAL: "internal",
+} as const;
+
+// Effect type constants - can be used as values
+export const EffectTypeValues = {
+  STUN: "stun",
+  PAIN: "pain",
+  BLEEDING: "bleeding",
+  WEAKNESS: "weakness",
+  BUFF: "buff",
+  DEBUFF: "debuff",
+  PARALYSIS: "paralysis",
+  CONFUSION: "confusion",
+  BALANCE_LOSS: "balance_loss",
+  BURNING: "burning",
+  BLEED: "bleed",
+  DISORIENTED: "disoriented",
+  STABILITY_BOOST: "stability_boost",
+  KNOCKDOWN: "knockdown",
+} as const;
+
+// Effect intensity constants - can be used as values
+export const EffectIntensityValues = {
+  LIGHT: "light",
+  WEAK: "weak",
+  MODERATE: "moderate",
+  HEAVY: "heavy",
+  STRONG: "strong",
+  CRITICAL: "critical",
+} as const;
+
+// Korean martial arts attack types
+export const CombatAttackType = {
+  STRIKE: "strike",
+  GRAPPLE: "grapple",
+  COUNTER: "counter",
+  DEFENSE: "defense",
+  THROW: "throw",
+  JOINT_LOCK: "joint_lock",
+  PRESSURE_POINT: "pressure_point",
+} as const;
+
+export type CombatAttackType =
+  (typeof CombatAttackType)[keyof typeof CombatAttackType];
+
+// Damage types for realistic combat
+export const DamageType = {
+  BLUNT: "blunt",
+  PIERCING: "piercing",
+  SLASHING: "slashing",
+  CRUSHING: "crushing",
+  NERVE: "nerve",
+  PRESSURE: "pressure",
+} as const;
+
+export type DamageType = (typeof DamageType)[keyof typeof DamageType];
+
+// Status effect types
+export const EffectType = {
+  STUN: "stun",
+  PAIN: "pain",
+  BLEEDING: "bleeding",
+  WEAKNESS: "weakness",
+  BUFF: "buff",
+  DEBUFF: "debuff",
+  PARALYSIS: "paralysis",
+  CONFUSION: "confusion",
+} as const;
+
+export type EffectType = (typeof EffectType)[keyof typeof EffectType];
+
+// Effect intensity levels
+export const EffectIntensity = {
+  LIGHT: "light",
+  MODERATE: "moderate",
+  HEAVY: "heavy",
+  CRITICAL: "critical",
+} as const;
+
+export type EffectIntensity =
+  (typeof EffectIntensity)[keyof typeof EffectIntensity];
+
+// Damage types for Korean martial arts
 export type DamageType =
   | "blunt" // 타격 (Tageok) - Blunt force trauma
   | "sharp" // 절단 (Jeoldan) - Cutting/slicing damage

@@ -3,8 +3,9 @@ import type {
   TrigramStance,
   DamageType,
   CombatAttackType,
-} from "../../types"; // CombatAttackType might be from enums or combat
-// KoreanText is not directly used here for defining techniques, but KoreanTechnique uses it.
+  EffectType,
+  EffectIntensity,
+} from "../../types";
 
 // Define a map of techniques
 export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
@@ -19,9 +20,9 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
       english: "A powerful strike imbued with heavenly force.",
     },
     stance: "geon",
-    type: CombatAttackType.STRIKE,
-    damageType: DamageType.BLUNT,
-    damageRange: { min: 25, max: 35, type: DamageType.BLUNT },
+    type: "strike",
+    damageType: "blunt",
+    damageRange: { min: 25, max: 35, type: "blunt" },
     range: 1.5, // Added
     kiCost: 20,
     staminaCost: 15,
@@ -33,8 +34,8 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
     effects: [
       {
         id: "stun_effect_geon",
-        type: EffectType.STUN,
-        intensity: EffectIntensity.MODERATE,
+        type: "stun",
+        intensity: "moderate",
         duration: 2000, // 2 seconds
         description: { korean: "일시적 기절", english: "Temporary stun" },
         stackable: false,
@@ -53,9 +54,9 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
       english: "Smooth and continuous attacks like flowing water.",
     },
     stance: "tae",
-    type: CombatAttackType.STRIKE,
-    damageType: DamageType.BLUNT,
-    damageRange: { min: 18, max: 28, type: DamageType.BLUNT },
+    type: "strike",
+    damageType: "blunt",
+    damageRange: { min: 18, max: 28, type: "blunt" },
     range: 1.2, // Added
     kiCost: 18,
     staminaCost: 12,
@@ -67,8 +68,8 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
     effects: [
       {
         id: "balance_loss_tae",
-        type: EffectType.BALANCE_LOSS,
-        intensity: EffectIntensity.MODERATE,
+        type: "weakness",
+        intensity: "moderate",
         duration: 1500,
         description: { korean: "균형 잃음", english: "Loss of balance" },
         stackable: true,
@@ -87,9 +88,9 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
       english: "A swift and precise thrust like a darting flame.",
     },
     stance: "li",
-    type: CombatAttackType.STRIKE, // Or "THRUST" if that's a type
-    damageType: DamageType.PIERCING,
-    damageRange: { min: 22, max: 30, type: DamageType.PIERCING },
+    type: "strike",
+    damageType: "piercing",
+    damageRange: { min: 22, max: 30, type: "piercing" },
     range: 1.8, // Added
     kiCost: 22,
     staminaCost: 18,
@@ -101,8 +102,8 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
     effects: [
       {
         id: "burning_effect_li",
-        type: EffectType.BURNING, // Assuming EffectType.BURNING exists
-        intensity: EffectIntensity.MODERATE,
+        type: "pain",
+        intensity: "moderate",
         duration: 3000, // 3 seconds DoT
         description: { korean: "화상 효과", english: "Burning effect" },
         stackable: true,
@@ -121,9 +122,9 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
       english: "A powerful and shocking attack like thunder.",
     },
     stance: "jin",
-    type: CombatAttackType.STRIKE,
-    damageType: DamageType.IMPACT, // Assuming DamageType.IMPACT exists
-    damageRange: { min: 28, max: 40, type: DamageType.IMPACT },
+    type: "strike",
+    damageType: "blunt",
+    damageRange: { min: 28, max: 40, type: "blunt" },
     range: 1.6, // Added
     kiCost: 25,
     staminaCost: 20,
@@ -145,9 +146,9 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
       english: "Swift and continuous barrage of attacks like the wind.",
     },
     stance: "son",
-    type: CombatAttackType.STRIKE, // Or "MULTI_HIT" if that's a type
-    damageType: DamageType.SHARP,
-    damageRange: { min: 15, max: 25, type: DamageType.SHARP }, // Per hit, if multi-hit
+    type: "strike",
+    damageType: "slashing",
+    damageRange: { min: 15, max: 25, type: "slashing" }, // Per hit, if multi-hit
     range: 1.4, // Added
     kiCost: 15,
     staminaCost: 10,
@@ -159,8 +160,8 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
     effects: [
       {
         id: "bleed_effect_son",
-        type: EffectType.BLEED,
-        intensity: EffectIntensity.WEAK,
+        type: "bleeding",
+        intensity: "light",
         duration: 5000, // 5 seconds
         description: { korean: "출혈 효과", english: "Bleeding effect" },
         stackable: true,
@@ -179,9 +180,9 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
       english: "A flexible counter-attack using the flow of water.",
     },
     stance: "gam",
-    type: CombatAttackType.COUNTER_ATTACK,
-    damageType: DamageType.PRESSURE,
-    damageRange: { min: 18, max: 25, type: DamageType.PRESSURE },
+    type: "counter",
+    damageType: "pressure",
+    damageRange: { min: 18, max: 25, type: "pressure" },
     range: 1.0, // Added
     kiCost: 18,
     staminaCost: 12,
@@ -193,8 +194,8 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
     effects: [
       {
         id: "disorient_effect_gam",
-        type: EffectType.DISORIENTED,
-        intensity: EffectIntensity.MODERATE,
+        type: "confusion",
+        intensity: "moderate",
         duration: 2500,
         description: { korean: "방향 감각 상실", english: "Disorientation" },
         stackable: false,
