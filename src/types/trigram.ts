@@ -4,6 +4,7 @@ import type { ColorValue } from "./common";
 import type { PlayerArchetype, TrigramStance } from "./enums";
 import type { KoreanTechnique } from "./combat"; // Import KoreanTechnique
 import { KoreanText } from "./korean-text";
+import type { PlayerState } from "./player"; // Added import for PlayerState
 
 // Core trigram data structure (I Ching 주역 팔괘)
 export interface TrigramData {
@@ -95,26 +96,30 @@ export interface TrigramTransition {
 export interface TrigramTransitionCost {
   readonly ki: number;
   readonly stamina: number;
-  readonly timeMs: number;
+  readonly timeMilliseconds: number;
 }
 
 export interface TrigramTransitionRule {
   readonly from: TrigramStance;
   readonly to: TrigramStance;
+  readonly cost: TrigramTransitionCost;
   readonly conditions?: readonly string[]; // e.g., "player_low_health"
   readonly costModifier?: number;
 }
 
 export interface TransitionMetrics {
-  readonly averageKiCost: number;
-  readonly averageStaminaCost: number;
-  readonly averageTimeMs: number;
+  readonly cost: TrigramTransitionCost;
+  readonly effectiveness: number;
+  readonly risk: number;
 }
 
 export interface TransitionPath {
-  readonly stances: readonly TrigramStance[];
+  readonly path: readonly TrigramStance[];
   readonly totalCost: TrigramTransitionCost;
-  readonly totalEffectiveness: number;
+  readonly overallEffectiveness: number;
+  readonly cumulativeRisk: number;
+  readonly name?: string;
+  readonly description?: KoreanText;
 }
 
 export interface KiFlowFactors {
@@ -123,15 +128,19 @@ export interface KiFlowFactors {
   playerHealthPercent: number;
   playerStaminaPercent: number;
   playerKiPercent: number;
+  playerLevelModifier?: number; // Added missing field
+  stanceAffinity?: number; // Added missing field
   activeEffects: readonly any[]; // Consider using a more specific type like StatusEffect[]
 }
 
 export interface StanceTransition {
+  readonly success: boolean;
   readonly from: TrigramStance;
   readonly to: TrigramStance;
-  readonly cost: number; // Could be Ki, Stamina, or a combined metric
-  readonly duration: number; // Time in ms or game ticks
-  readonly effectiveness: number; // Modifier for next action after transition
+  readonly cost: TrigramTransitionCost;
+  readonly newState: PlayerState;
+  readonly reason?: string;
+  readonly timestamp: number;
 }
 
 // Trigram combat analytics
