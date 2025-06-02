@@ -12,6 +12,16 @@ import {
 } from "../types";
 
 /**
+ * Initializes two player states for the game.
+ */
+export function initializePlayers(): readonly [PlayerState, PlayerState] {
+  return [
+    createPlayerState("player1", { x: 100, y: 300 }, "geon"),
+    createPlayerState("player2", { x: 700, y: 300 }, "tae"),
+  ];
+}
+
+/**
  * Creates a new player state with Korean martial arts defaults
  */
 export function createPlayerState(

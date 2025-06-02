@@ -2,13 +2,13 @@
 
 import type {
   TrigramStance,
-  DamageType as EnumDamageType,
+  // DamageType as EnumDamageType, // Already aliased below
   PlayerArchetype,
-  DamageType,
 } from "./enums"; // Changed to import from enums
-import type { KoreanText } from "./korean-text";
-import type { StatusEffect } from "./effects";
 import type { PlayerState } from "./player"; // Added for CombatAnalysis
+import type { DamageRange } from "./common"; // Added KoreanText
+import { StatusEffect } from "./effects";
+import { KoreanText } from "./korean-text";
 
 export type CombatAttackType =
   | "strike"
@@ -41,58 +41,22 @@ export type CombatAttackType =
 // Combat technique definition
 export interface KoreanTechnique {
   readonly id: string;
-  readonly name: string; // Internal name/key, can be same as id
+  readonly name: string; // Often English name or internal key
   readonly koreanName: string;
   readonly englishName: string;
   readonly romanized: string;
   readonly description: KoreanText;
   readonly stance: TrigramStance;
   readonly type: CombatAttackType;
-  readonly damageType: DamageType;
-  readonly damageRange: {
-    readonly min: number;
-    readonly max: number;
-    readonly type?: EnumDamageType;
-  };
-  readonly damageMultiplier?: number;
-  readonly range: number;
-  readonly kiCost: number;
-  readonly staminaCost: number;
-  readonly executionTime: number;
-  readonly recoveryTime: number;
-  readonly accuracy: number; // Base accuracy (0-1)
-  readonly speed?: number; // Execution speed, could be in frames or ms (can be derived from executionTime)
-  readonly precision?: number; // Modifier for hitting vital points
-  readonly critChance?: number;
-  readonly critMultiplier?: number;
-  readonly effects?: readonly StatusEffect[]; // Effects applied by the technique itself
-  readonly properties?: readonly string[]; // e.g., "unblockable", "armor_piercing"
-  readonly culturalContext?: {
-    readonly origin: string;
-    readonly philosophy: string;
-    readonly traditionalUse: string;
-  };
-  readonly comboChains?: readonly string[];
-  readonly counters?: readonly string[];
-  readonly prerequisites?: {
-    readonly minKi?: number;
-    readonly minStamina?: number;
-    readonly requiredStance?: TrigramStance;
-    readonly forbiddenStances?: readonly TrigramStance[];
-    readonly playerLevel?: number;
-  };
-  readonly timingProperties?: {
-    readonly startupFrames: number;
-    readonly activeFrames: number;
-    readonly recoveryFrames: number;
-    readonly cancelWindows?: readonly {
-      readonly startFrame: number;
-      readonly endFrame: number;
-    }[];
-  };
-  readonly targetAreas?: readonly string[];
-  readonly philosophy?: string;
-  readonly applications?: readonly string[];
+  readonly damage?: number; // Base damage, if applicable directly
+  readonly kiCost?: number;
+  readonly staminaCost?: number;
+  readonly damageRange?: DamageRange; // Added
+  readonly executionTime?: number; // Added (e.g., in frames or ms)
+  readonly recoveryTime?: number; // Added (e.g., in frames or ms)
+  // Consider adding other relevant properties like:
+  // readonly effects?: readonly StatusEffect[];
+  // readonly properties?: readonly string[]; // e.g., "unblockable", "armor_piercing"
 }
 
 // Combat result from technique execution

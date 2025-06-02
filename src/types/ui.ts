@@ -14,8 +14,10 @@ import type { PlayerState } from "./player"; // Added import for PlayerState
 
 export interface TrigramWheelProps {
   readonly selectedStance: TrigramStance;
-  readonly onStanceSelect?: (stance: TrigramStance) => void;
-  readonly onStanceChange: (stance: TrigramStance) => void;
+  readonly onStanceSelect?: (stance: TrigramStance) => void; // Kept optional if direct selection is not always handled
+  readonly onStanceChange: (stance: TrigramStance) => void; // Assumed to be the primary change handler
+  readonly playerState?: PlayerState; // Optional: if wheel needs player context (e.g. Ki/Stamina for stance costs)
+  readonly isEnabled?: boolean; // Added
   readonly x?: number;
   readonly y?: number;
   readonly radius?: number;

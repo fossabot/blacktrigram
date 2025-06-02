@@ -121,40 +121,48 @@ export class CombatSystem {
 
   /**
    * Check win condition for the combat match
+   * This is a simplified version. A more complex version would be in GameEngine or a dedicated MatchManager.
    */
   static checkWinCondition(
-    players: readonly [PlayerState, PlayerState],
-    timeRemaining: number
-  ): { gamePhase: "victory" | "defeat" | "combat"; winnerId: string | null } {
+    players: readonly [PlayerState, PlayerState]
+    // timeRemaining: number // Assuming time-based win condition is handled by game loop/engine
+  ): PlayerState | null {
+    // Returns the winning player or null for no winner yet / draw
     const [player1, player2] = players;
 
-    if (player1.consciousness <= 0) {
-      return { gamePhase: "victory", winnerId: "player2" };
+    if (player1.consciousness <= 0 || player1.health <= 0) {
+      return player2; // Player 2 wins
     }
-    if (player2.consciousness <= 0) {
-      return { gamePhase: "victory", winnerId: "player1" };
+    if (player2.consciousness <= 0 || player2.health <= 0) {
+      return player1; // Player 1 wins
     }
-    if (player1.health <= 0) {
-      return { gamePhase: "victory", winnerId: "player2" };
-    }
-    if (player2.health <= 0) {
-      return { gamePhase: "victory", winnerId: "player1" };
-    }
-    if (timeRemaining <= 0) {
-      // Determine winner by health percentage
-      const player1HealthPercent = player1.health / player1.maxHealth;
-      const player2HealthPercent = player2.health / player2.maxHealth;
+    // Add time-based win logic if needed, e.g., player with more health at timeout
+    // For now, only knockout determines the winner directly via this method.
+    return null; // No winner yet or draw if time runs out and health is equal (handled elsewhere)
+  }
 
-      if (player1HealthPercent > player2HealthPercent) {
-        return { gamePhase: "victory", winnerId: "player1" };
-      } else if (player2HealthPercent > player1HealthPercent) {
-        return { gamePhase: "victory", winnerId: "player2" };
-      } else {
-        return { gamePhase: "defeat", winnerId: null }; // Draw
-      }
-    }
+  /**
+   * Determines the round winner. This could be more complex,
+   * involving score, remaining health at timeout, etc.
+   * For now, it's a simple check based on who is not defeated.
+   */
+  static determineRoundWinner(
+    players: readonly [PlayerState, PlayerState]
+  ): PlayerState | null {
+    const [player1, player2] = players;
+    const player1Defeated = player1.health <= 0 || player1.consciousness <= 0;
+    const player2Defeated = player2.health <= 0 || player2.consciousness <= 0;
 
-    return { gamePhase: "combat", winnerId: null };
+    if (player1Defeated && !player2Defeated) {
+      return player2;
+    }
+    if (player2Defeated && !player1Defeated) {
+      return player1;
+    }
+    // If both are defeated (e.g. mutual KO) or neither, or time runs out,
+    // this simple version returns null. More complex logic (e.g. health comparison)
+    // would be needed for a draw or time-out decision.
+    return null;
   }
 
   /**

@@ -1,395 +1,263 @@
-import React, { useState, useCallback, useEffect } from "react";
-import { IntroScreen } from "./components/intro/IntroScreen";
+import React, { useState, useEffect, useCallback } from "react";
+import { Stage } from "@pixi/react";
+import type { PlayerState, GamePhase, AppState, TrigramStance } from "./types";
+import { KOREAN_COLORS, KOREAN_FONT_FAMILY_PRIMARY } from "./types"; // Value import, added KOREAN_FONT_FAMILY_PRIMARY
+
 import { GameUI } from "./components/game/GameUI";
+import { IntroScreen } from "./components/intro/IntroScreen";
 import { TrainingScreen } from "./components/training/TrainingScreen";
-import { useAudio } from "./audio/AudioManager";
-import {
-  type GamePhase,
-  type TrigramStance,
-  type PlayerState,
-  type EndScreenProps,
-} from "./types";
-import { createPlayerState } from "./utils/playerUtils";
+import { EndScreen } from "./components/ui/EndScreen"; // Corrected path
 import { CombatSystem } from "./systems/CombatSystem";
-import "./App.css";
-import { KOREAN_COLORS, KOREAN_FONT_FAMILY_EXTENDED } from "./types/constants";
-import { AppState } from "./types/game";
+import { initializePlayers } from "./utils/playerUtils"; // Ensure this is exported from playerUtils
+import { AudioManagerProvider } from "./audio/AudioManager"; // Corrected .tsx extension if it was missing
 
-// Victory/Defeat Screen Component
-function EndScreen({
-  message,
-  onRestart,
-  onMenu,
-}: EndScreenProps): React.ReactElement {
-  const audio = useAudio();
+const INITIAL_GAME_STATE: AppState = {
+  players: initializePlayers(),
+  gamePhase: "intro" as GamePhase, // Ensure initial phase is valid GamePhase
+  gameTime: 0,
+  currentRound: 1,
+  timeRemaining: 180,
+  isPaused: false,
+  winnerId: null,
+  combatLog: [],
+};
 
+const appStyle: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  minHeight: "100vh",
+  background: `linear-gradient(135deg, #${KOREAN_COLORS.DARK_BLUE.toString(
+    16
+  ).padStart(6, "0")}, #${KOREAN_COLORS.BLACK.toString(16).padStart(6, "0")})`,
+  color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
+  fontFamily: KOREAN_FONT_FAMILY_PRIMARY, // Corrected to use KOREAN_FONT_FAMILY_PRIMARY
+  padding: "20px",
+  boxSizing: "border-box",
+};
+
+const headerStyle: React.CSSProperties = {
+  color: `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
+  marginBottom: "20px",
+  fontSize: "2.5em",
+  textShadow: `2px 2px 4px #${KOREAN_COLORS.BLACK.toString(16).padStart(
+    6,
+    "0"
+  )}`,
+};
+
+// App Component
+function App(): JSX.Element {
+  const [appState, setAppState] = useState<AppState>(INITIAL_GAME_STATE);
+
+  // Game Loop Logic (simplified)
   useEffect(() => {
-    // Play victory or defeat music based on message
-    if (message.includes("승리") || message.includes("Victory")) {
-      audio.playMusic("victory_theme", true);
-      audio.playSFX("victory");
-    } else {
-      audio.playSFX("defeat");
-    }
-
-    return () => {
-      audio.stopMusic(true);
-    };
-  }, [message, audio]);
-
-  return (
-    <div
-      style={{
-        width: "100%",
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        background: `linear-gradient(135deg, #${KOREAN_COLORS.DARK_BLUE.toString(
-          16
-        ).padStart(6, "0")}, #${KOREAN_COLORS.BLACK.toString(16).padStart(
-          6,
-          "0"
-        )})`,
-        color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
-        fontFamily: KOREAN_FONT_FAMILY_EXTENDED.PRIMARY,
-      }}
-    >
-      <h1
-        style={{
-          fontSize: "3rem",
-          color: KOREAN_COLORS.GOLD.toString(16).padStart(6, "0"),
-          marginBottom: "2rem",
-        }}
-      >
-        {message}
-      </h1>
-      <button
-        onClick={() => {
-          audio.playSFX("menu_select");
-          onRestart();
-        }}
-        onMouseEnter={() => audio.playSFX("menu_hover")}
-        style={{
-          padding: "1rem 2rem",
-          fontSize: "1.2rem",
-          marginBottom: "1rem",
-          backgroundColor: KOREAN_COLORS.DOJANG_BLUE.toString(16).padStart(
-            6,
-            "0"
-          ),
-        }}
-      >
-        다시하기 (Play Again)
-      </button>
-      <button
-        onClick={() => {
-          audio.playSFX("menu_back");
-          onMenu();
-        }}
-        onMouseEnter={() => audio.playSFX("menu_hover")}
-        style={{
-          padding: "1rem 2rem",
-          fontSize: "1.2rem",
-          backgroundColor: KOREAN_COLORS.ACCENT_BLUE.toString(16).padStart(
-            6,
-            "0"
-          ),
-        }}
-      >
-        메뉴로 돌아가기 (Return to Menu)
-      </button>
-    </div>
-  );
-}
-
-export default function App(): React.ReactElement {
-  const audio = useAudio();
-
-  // Initialize player states using helper function
-  const player1Initial = createPlayerState(
-    "player1",
-    { x: 200, y: 400 },
-    "geon",
-    {
-      health: 100,
-      maxHealth: 100,
-      ki: 50,
-      maxKi: 100,
-      facing: "right",
-    }
-  );
-
-  const player2Initial = createPlayerState(
-    "player2",
-    { x: 600, y: 400 },
-    "gon",
-    {
-      health: 100,
-      maxHealth: 100,
-      ki: 50,
-      maxKi: 100,
-      facing: "left",
-    }
-  );
-
-  const [appState, setAppState] = useState<AppState>({
-    gamePhase: "intro",
-    players: [player1Initial, player2Initial],
-    gameTime: 0,
-    currentRound: 1,
-    timeRemaining: 90,
-    combatLog: [],
-    isPaused: false,
-    winnerId: null,
-  });
-
-  // Game loop for combat phase
-  useEffect(() => {
-    if (appState.gamePhase !== "combat" || appState.isPaused) return;
-
-    const gameLoop = setInterval(() => {
-      setAppState((prev) => {
-        const newTimeRemaining = Math.max(0, prev.timeRemaining - 1);
-        const { gamePhase: newGamePhase, winnerId: newWinnerId } =
-          CombatSystem.checkWinCondition(prev.players, newTimeRemaining);
-
-        if (newGamePhase === "victory" || newGamePhase === "defeat") {
-          // Play match end sound
-          audio.playSFX("match_end");
-
+    if (appState.gamePhase === "combat" && !appState.isPaused) {
+      const timer = setInterval(() => {
+        setAppState((prev) => {
+          if (prev.timeRemaining <= 0) {
+            const winner = CombatSystem.determineRoundWinner(prev.players); // Static call
+            return {
+              ...prev,
+              gamePhase: winner ? "victory" : "defeat", // Uses string literals, will be cast to GamePhase by setAppState
+              winnerId: winner ? winner.id : null,
+            };
+          }
           return {
             ...prev,
-            timeRemaining: newTimeRemaining,
-            gamePhase: newGamePhase,
-            winnerId: newWinnerId,
-            combatLog: [
-              ...prev.combatLog,
-              newWinnerId ? `${newWinnerId} 승리!` : "무승부!",
-            ],
+            gameTime: prev.gameTime + 1,
+            timeRemaining: prev.timeRemaining - 1,
           };
-        }
+        });
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [appState.gamePhase, appState.isPaused]); // Removed combatSystem from dependencies as methods are static
 
-        return {
-          ...prev,
-          gameTime: prev.gameTime + 1,
-          timeRemaining: newTimeRemaining,
-        };
-      });
-    }, 1000);
-
-    return () => clearInterval(gameLoop);
-  }, [appState.gamePhase, appState.isPaused, audio]);
-
-  const handleGamePhaseChange = useCallback((phase: GamePhase) => {
+  const handleGamePhaseChange = useCallback((phase: GamePhase | string) => {
     setAppState((prev) => ({
       ...prev,
-      gamePhase: phase,
-      winnerId: null,
-      ...(phase === "combat" && {
-        gameTime: 0,
-        timeRemaining: 90,
-        currentRound: 1,
-        combatLog: ["전투 시작! (Combat Started!)"],
-        players: [
-          createPlayerState("player1", { x: 200, y: 400 }, "geon"),
-          createPlayerState("player2", { x: 600, y: 400 }, "gon"),
-        ],
-        isPaused: false,
-      }),
+      gamePhase: phase as GamePhase,
+      ...(phase === "intro" || phase === "menu" || phase === "philosophy"
+        ? {
+            winnerId: null,
+            combatLog: [],
+            players: initializePlayers(),
+            currentRound: 1,
+            timeRemaining: 180,
+          }
+        : {}),
+      ...(phase === "combat" && prev.gamePhase !== "combat" // Reset only when entering combat
+        ? {
+            players: initializePlayers(),
+            timeRemaining: 180,
+            currentRound: 1,
+            winnerId: null,
+            combatLog: [],
+          }
+        : {}),
     }));
   }, []);
 
-  const handleStanceChange = useCallback(
-    (playerIndex: number, stance: TrigramStance): void => {
-      setAppState((prev) => ({
-        ...prev,
-        players: [
-          playerIndex === 0
-            ? { ...prev.players[0], stance, lastStanceChangeTime: Date.now() }
-            : prev.players[0],
-          playerIndex === 1
-            ? { ...prev.players[1], stance, lastStanceChangeTime: Date.now() }
-            : prev.players[1],
-        ] as [PlayerState, PlayerState],
-      }));
+  const handlePlayerUpdate = useCallback(
+    (playerIndex: number, updates: Partial<PlayerState>) => {
+      setAppState((prev) => {
+        const newPlayers = [...prev.players] as [PlayerState, PlayerState];
+        newPlayers[playerIndex] = { ...newPlayers[playerIndex], ...updates };
+
+        const winner = CombatSystem.checkWinCondition(newPlayers); // Static call
+        if (winner) {
+          return {
+            ...prev,
+            players: newPlayers,
+            gamePhase: "victory", // Assuming checkWinCondition implies one player won
+            winnerId: winner.id,
+          };
+        }
+        // If checkWinCondition returns null (no winner yet), check if a player is defeated
+        // This logic might be redundant if checkWinCondition handles all defeat scenarios
+        if (newPlayers[0].health <= 0 || newPlayers[0].consciousness <= 0) {
+          return {
+            ...prev,
+            players: newPlayers,
+            gamePhase: "defeat",
+            winnerId: newPlayers[1].id,
+          };
+        }
+        if (newPlayers[1].health <= 0 || newPlayers[1].consciousness <= 0) {
+          return {
+            ...prev,
+            players: newPlayers,
+            gamePhase: "defeat",
+            winnerId: newPlayers[0].id,
+          };
+        }
+
+        return { ...prev, players: newPlayers };
+      });
     },
-    []
+    [] // Removed combatSystem from dependencies
   );
 
+  const handleStanceChange = useCallback(
+    (playerIndex: number, stance: TrigramStance): void => {
+      handlePlayerUpdate(playerIndex, { stance });
+    },
+    [handlePlayerUpdate]
+  );
+
+  // Specific handler for TrainingScreen's onStanceChange (for player 0)
   const handleTrainingStanceChange = useCallback(
     (stance: TrigramStance): void => {
-      handleStanceChange(0, stance); // Always update player 0 in training
+      handleStanceChange(0, stance);
     },
     [handleStanceChange]
   );
 
-  const handleStartMatch = useCallback(() => {
-    audio.playSFX("match_start");
-    setAppState((prev) => ({
-      ...prev,
-      isPaused: false,
-      combatLog: [...prev.combatLog, "경기 시작! (Match Started!)"],
-    }));
-  }, [audio]);
+  const handleRestartGame = useCallback(() => {
+    // setAppState(INITIAL_GAME_STATE); // This creates a new object, fine
+    // More robust reset:
+    setAppState({
+      ...INITIAL_GAME_STATE,
+      players: initializePlayers(), // Ensure players are fresh
+      gamePhase: "intro" as GamePhase, // Start at intro
+    });
+  }, []);
 
-  const handleResetMatch = useCallback(() => {
-    audio.playSFX("match_start");
-    setAppState((prev) => ({
-      ...prev,
-      gamePhase: "combat", // Directly go to combat
-      gameTime: 0,
-      timeRemaining: 90,
-      currentRound: 1,
-      isPaused: false,
-      winnerId: null,
-      players: [
-        createPlayerState("player1", { x: 200, y: 400 }, "geon"),
-        createPlayerState("player2", { x: 600, y: 400 }, "gon"),
-      ],
-      combatLog: ["경기 재시작! (Match Reset!)"],
-    }));
-  }, [audio]);
-
-  const handleTogglePause = useCallback(() => {
-    audio.playSFX("menu_click");
-    setAppState((prev) => ({
-      ...prev,
-      isPaused: !prev.isPaused,
-      combatLog: [
-        ...prev.combatLog,
-        prev.isPaused ? "경기 재개 (Resumed)" : "일시정지 (Paused)",
-      ],
-    }));
-  }, [audio]);
-
-  const handlePlayerUpdate = useCallback(
-    (playerIndex: number, updates: Partial<PlayerState>): void => {
-      setAppState((prev) => {
-        const newPlayers = [
-          playerIndex === 0
-            ? { ...prev.players[0], ...updates }
-            : prev.players[0],
-          playerIndex === 1
-            ? { ...prev.players[1], ...updates }
-            : prev.players[1],
-        ] as [PlayerState, PlayerState];
-
-        const { gamePhase: newGamePhase, winnerId: newWinnerId } =
-          CombatSystem.checkWinCondition(newPlayers, prev.timeRemaining);
-        if (
-          prev.gamePhase === "combat" &&
-          (newGamePhase === "victory" || newGamePhase === "defeat")
-        ) {
-          // Play match end sound
-          audio.playSFX("match_end");
-
-          return {
-            ...prev,
-            players: newPlayers,
-            gamePhase: newGamePhase,
-            winnerId: newWinnerId,
-            combatLog: [
-              ...prev.combatLog,
-              newWinnerId ? `${newWinnerId} 승리!` : "무승부!",
-            ],
-          };
-        }
-
-        return {
-          ...prev,
-          players: newPlayers,
-        };
-      });
-    },
-    [audio]
-  );
-
-  const renderCurrentPhase = (): React.ReactElement => {
+  const renderGameContent = () => {
     switch (appState.gamePhase) {
       case "intro":
-        return <IntroScreen onGamePhaseChange={handleGamePhaseChange} />;
-
+        return (
+          <IntroScreen
+            onGamePhaseChange={handleGamePhaseChange}
+            currentSection="intro"
+          />
+        );
+      case "philosophy":
+        return (
+          <IntroScreen
+            onGamePhaseChange={handleGamePhaseChange}
+            currentSection="philosophy"
+          />
+        );
       case "training":
         return (
           <TrainingScreen
-            onGamePhaseChange={handleGamePhaseChange}
-            onStanceChange={handleTrainingStanceChange}
-            selectedStance={appState.players[0].stance}
-          />
-        );
-
-      case "philosophy":
-        return (
-          <GameUI
             players={appState.players}
-            gamePhase={appState.gamePhase}
             onGamePhaseChange={handleGamePhaseChange}
+            onPlayerUpdate={handlePlayerUpdate}
+            onStanceChange={handleTrainingStanceChange} // Use adapted handler
+            selectedStance={appState.players[0].stance}
             gameTime={appState.gameTime}
             currentRound={appState.currentRound}
-            timeRemaining={appState.timeRemaining}
-            onStanceChange={handleStanceChange}
-            combatLog={appState.combatLog}
-            onStartMatch={handleStartMatch}
-            onResetMatch={handleResetMatch}
-            onTogglePause={handleTogglePause}
-            onPlayerUpdate={handlePlayerUpdate}
           />
         );
-
       case "combat":
         return (
           <GameUI
             players={appState.players}
             gamePhase={appState.gamePhase}
-            onGamePhaseChange={handleGamePhaseChange}
             gameTime={appState.gameTime}
             currentRound={appState.currentRound}
             timeRemaining={appState.timeRemaining}
-            onStanceChange={handleStanceChange}
+            isPaused={appState.isPaused}
             combatLog={appState.combatLog}
-            onStartMatch={handleStartMatch}
-            onResetMatch={handleResetMatch}
-            onTogglePause={handleTogglePause}
             onPlayerUpdate={handlePlayerUpdate}
+            onStanceChange={handleStanceChange} // GameUI handles both players
+            onGamePhaseChange={handleGamePhaseChange}
           />
         );
-
       case "victory":
+      case "defeat": // Both victory and defeat use EndScreen
         return (
           <EndScreen
-            message={
-              appState.winnerId === "player1"
-                ? "플레이어 1 승리!"
-                : "플레이어 2 승리!"
-            }
-            onRestart={handleResetMatch}
+            winnerId={appState.winnerId}
+            onRestart={handleRestartGame}
             onMenu={() => handleGamePhaseChange("intro")}
           />
         );
-
-      case "defeat":
-        return (
-          <EndScreen
-            message={
-              appState.winnerId
-                ? `${
-                    appState.winnerId === "player1"
-                      ? "플레이어 2"
-                      : "플레이어 1"
-                  } 승리!`
-                : "무승부!"
-            }
-            onRestart={handleResetMatch}
-            onMenu={() => handleGamePhaseChange("intro")}
-          />
-        );
-
       default:
-        return <IntroScreen onGamePhaseChange={handleGamePhaseChange} />;
+        // Exhaustive check for unhandled game phases (optional)
+        // const _exhaustiveCheck: never = appState.gamePhase;
+        return (
+          <div style={headerStyle}>
+            Unknown Game Phase: {appState.gamePhase}
+          </div>
+        );
     }
   };
 
-  return renderCurrentPhase();
+  return (
+    <AudioManagerProvider>
+      <div style={appStyle}>
+        <Stage
+          width={window.innerWidth * 0.95} // Adjusted for potentially more space
+          height={window.innerHeight * 0.9} // Adjusted
+          options={{
+            backgroundColor: KOREAN_COLORS.BLACK,
+            antialias: true,
+            autoDensity: true, // Helps with scaling on different DPI screens
+            resolution: window.devicePixelRatio || 1, // Use device pixel ratio
+          }}
+        >
+          {renderGameContent()}
+        </Stage>
+        {/* Development phase switcher example (can be removed for production) */}
+        {/* <div style={{ marginTop: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          {(Object.keys(GamePhase) as Array<keyof typeof GamePhase>).map(key => (
+            <button 
+              key={GamePhase[key]}
+              style={{ padding: '8px 12px', cursor: 'pointer' }}
+              onClick={() => handleGamePhaseChange(GamePhase[key])}
+            >
+              {GamePhase[key]}
+            </button>
+          ))}
+        </div> */}
+      </div>
+    </AudioManagerProvider>
+  );
 }
+
+export default App;

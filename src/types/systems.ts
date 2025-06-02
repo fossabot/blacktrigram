@@ -1,11 +1,26 @@
 // System types for Black Trigram game engines
-import type { Position } from "./common"; // Corrected import for Position
-import type { AudioAsset, AudioPlaybackOptions } from "./audio"; // Added AudioAsset, removed AudioConfig
-import type { PlayerArchetype, TrigramStance } from "./enums"; // Added PlayerArchetype, TrigramStance
-import type { KoreanTechnique, CombatResult } from "./combat"; // Added KoreanTechnique, CombatResult
+import type { Position, Timestamp, EntityId, Velocity } from "./common"; // Corrected import for Position
+import type {
+  AudioAsset,
+  AudioPlaybackOptions,
+  SoundEffectId,
+  MusicTrackId,
+} from "./audio"; // Added AudioAsset, removed AudioConfig
+import type { PlayerArchetype, TrigramStance, InputAction } from "./enums"; // Added PlayerArchetype, TrigramStance
+import type { KoreanTechnique, CombatResult, CombatEvent } from "./combat"; // Added KoreanTechnique, CombatResult
 import type { PlayerState } from "./player"; // Added PlayerState
 import type { StatusEffect } from "./effects"; // Added StatusEffect
-import type { VitalPoint } from "./anatomy"; // Added VitalPoint
+import type { VitalPoint, TargetingResult, InjuryReport } from "./anatomy"; // Added VitalPoint
+import type {
+  TrigramData,
+  TrigramTransition,
+  StanceTransition,
+} from "./trigram";
+import type {
+  Application as PixiApplication,
+  DisplayObject,
+  Texture,
+} from "pixi.js"; // For RenderingSystemInterface
 
 // Configuration for the VitalPointSystem
 export interface VitalPointSystemConfig {
@@ -13,249 +28,254 @@ export interface VitalPointSystemConfig {
   readonly damageVariance?: number;
   readonly archetypeModifiers?: Record<PlayerArchetype, Record<string, number>>;
   readonly baseDamageMultiplier?: number;
-  readonly vitalPointSeverityMultiplier?: Record<string, number>; // e.g. { minor: 1.1, critical: 2.0 }
-  readonly maxHitAngleDifference?: number; // For 3D combat, max angle for a hit to register
-  readonly baseVitalPointAccuracy?: number; // Base accuracy for hitting any vital point
+  readonly vitalPointSeverityMultiplier?: Record<string, number>;
+  readonly maxHitAngleDifference?: number;
+  readonly baseVitalPointAccuracy?: number;
+}
+
+// Result from VitalPointSystem's hit calculation
+export interface VitalPointHitResult {
+  readonly hit: boolean;
+  readonly damage: number;
+  readonly effects: readonly StatusEffect[];
+  readonly vitalPointsHit: readonly string[]; // IDs of vital points hit
+  readonly bodyPartId?: string; // ID of the body part hit
+  readonly isCritical?: boolean;
+  // Removed isVitalPointHit, vitalPointsHit array serves this purpose
+  // Removed vitalPoint, vitalPointsHit provides IDs, details can be fetched if needed
+  // Removed damageDealt, use 'damage' field
 }
 
 // Combat system interface
 export interface CombatSystemInterface {
   calculateDamage: (
     technique: KoreanTechnique,
-    attackerArchetype: PlayerArchetype,
-    defenderState: PlayerState,
-    hitResult: CombatResult // Use CombatResult, not HitResult if it's just an alias
+    attacker: PlayerState, // Changed from PlayerArchetype to full PlayerState
+    defender: PlayerState,
+    hitResult: VitalPointHitResult // Changed from CombatResult to VitalPointHitResult for more specific input
   ) => {
     baseDamage: number;
     modifierDamage: number;
     totalDamage: number;
     effectsApplied: readonly StatusEffect[];
+    finalDefenderState?: Partial<PlayerState>; // Optional: predicted state after damage
   };
 
   resolveAttack: (
     attacker: PlayerState,
     defender: PlayerState,
-    technique: KoreanTechnique
-  ) => CombatResult;
-
-  checkWinCondition: (
-    player1: PlayerState,
-    player2: PlayerState
-  ) => { winner: "player1" | "player2" | "draw"; reason: string } | null; // Updated winner type
-
-  calculateTechnique: (
     technique: KoreanTechnique,
-    archetype: PlayerArchetype,
-    target?: PlayerState
-  ) => CombatResult;
+    targetedVitalPointId?: string // Optional: if player is specifically targeting a vital point
+  ) => CombatResult; // This should return the overall CombatResult
+
+  applyCombatResult: (
+    result: CombatResult,
+    attacker: PlayerState,
+    defender: PlayerState
+  ) => { updatedAttacker: PlayerState; updatedDefender: PlayerState };
+
+  getAvailableTechniques: (player: PlayerState) => readonly KoreanTechnique[];
 }
 
 // Vital point system interface
 export interface VitalPointSystemInterface {
   getVitalPointById: (id: string) => VitalPoint | undefined;
-  getAllVitalPoints: () => readonly VitalPoint[];
-  getVitalPointEffects: (
-    vitalPoint: VitalPoint,
-    technique: KoreanTechnique,
-    isCriticalHit: boolean
-  ) => readonly StatusEffect[];
-  calculateVitalPointDamage: (
-    vitalPoint: VitalPoint,
-    technique: KoreanTechnique,
-    attackerArchetype: PlayerArchetype,
-    isCriticalHit?: boolean
-  ) => number;
-  setConfig: (config: VitalPointSystemConfig) => void;
-
-  // Add missing method that CombatSystem expects
+  getVitalPointsForBodyPart: (bodyPartId: string) => readonly VitalPoint[];
   calculateHit: (
     technique: KoreanTechnique,
-    targetedVitalPointId?: string | null,
-    attackerPosition?: Position, // Optional for advanced hit calculation
-    targetPosition?: Position // Optional for advanced hit calculation
-  ) => {
-    hit: boolean;
-    damage: number;
-    effects: readonly StatusEffect[];
-    vitalPointsHit: readonly string[];
-    // Potentially add hitLocation: AnatomicalLocation if needed by CombatSystem
-  };
+    targetVitalPointId: string | null, // Explicitly allow null if no specific target
+    accuracyRoll: number, // Player's accuracy roll (0-1)
+    attackerPosition: Position,
+    defenderPosition: Position,
+    defenderStance: TrigramStance
+  ) => VitalPointHitResult; // Changed to use the new result type
+  applyVitalPointEffects: (
+    player: PlayerState,
+    vitalPoint: VitalPoint,
+    intensityMultiplier?: number
+  ) => PlayerState; // Returns updated player state
 }
 
 // Trigram system interface
 export interface TrigramSystemInterface {
-  getCurrentStance(playerId: string): TrigramStance | undefined;
-  changeStance(playerId: string, newStance: TrigramStance): boolean;
-  getAvailableTechniques(stance: TrigramStance): readonly KoreanTechnique[];
-
-  // Add missing method that CombatSystem expects
-  getStanceEffectiveness(
+  getCurrentStanceData: (stance: TrigramStance) => TrigramData;
+  getTechniqueForStance: (
+    stance: TrigramStance,
+    archetype?: PlayerArchetype
+  ) => KoreanTechnique | undefined;
+  calculateStanceEffectiveness: (
     attackerStance: TrigramStance,
     defenderStance: TrigramStance
-  ): number;
-  // Potentially add other methods like getKiCostForStanceChange, etc.
+  ) => number;
+  isValidTransition: (from: TrigramStance, to: TrigramStance) => boolean;
+  getTransitionCost: (
+    from: TrigramStance,
+    to: TrigramStance,
+    player?: PlayerState
+  ) => { ki: number; stamina: number; timeMs: number };
+  recommendStance: (
+    player: PlayerState,
+    opponent?: PlayerState
+  ) => TrigramStance;
 }
 
 // Input system interface
 export interface InputSystemInterface {
-  registerAction(actionName: string, callback: (event?: any) => void): void; // Allow event pass-through
-  handleKeyPress(key: string): void;
-  handleGamepadInput(gamepadState: GamepadState): void; // Added for gamepad
-  setKeyBinding(actionName: string, newKey: string): boolean;
-  getKeyBinding(actionName: string): string | undefined;
+  registerAction: (action: InputAction, callback: () => void) => void;
+  handleKeyPress: (key: string) => void;
+  handleGamePadInput: (gamepadState: GamepadState) => void;
+  getLastInputTime: () => Timestamp;
+  isActionActive: (action: InputAction) => boolean;
 }
 
 // Gamepad state
 export interface GamepadState {
-  readonly buttons: readonly boolean[]; // Array of button states (pressed/not pressed)
-  readonly axes: readonly number[]; // Array of axis values (e.g., joystick positions)
-  readonly id: string; // Gamepad identifier
-  readonly connected: boolean;
+  readonly id: string;
+  readonly axes: readonly number[];
+  readonly buttons: readonly { pressed: boolean; value: number }[];
 }
 
 // Audio system interface
 export interface AudioSystemInterface {
-  playSfx(id: string, options?: AudioPlaybackOptions): void;
-  playMusic(id: string, options?: AudioPlaybackOptions): void;
-  stopMusic(options?: AudioPlaybackOptions): void;
-  setVolume(type: "master" | "sfx" | "music", volume: number): void;
-  getVolume(type: "master" | "sfx" | "music"): number;
-  loadAssets(assets: readonly AudioAsset[]): Promise<void>;
-  isAssetLoaded(id: string): boolean;
+  playSFX: (id: SoundEffectId, options?: AudioPlaybackOptions) => void;
+  playMusic: (id: MusicTrackId, options?: AudioPlaybackOptions) => void;
+  stopMusic: (id?: MusicTrackId, fadeOutDuration?: number) => void;
+  setVolume: (type: "master" | "sfx" | "music", volume: number) => void;
+  loadAudioAsset: (asset: AudioAsset) => Promise<void>;
+  isMusicPlaying: (id?: MusicTrackId) => boolean;
 }
 
 // Animation system interface
 export interface AnimationSystemInterface {
-  playAnimation(
-    entityId: string,
-    animationName: string,
-    config?: AnimationConfig
-  ): void;
-  stopAnimation(entityId: string, animationName?: string): void; // Optional name to stop specific animation
-  getAnimationState(entityId: string): Record<string, AnimationState>; // Get state of all/specific animations
-  registerAnimation(
-    name: string,
-    frames: readonly AnimationFrame[],
-    loop?: boolean
-  ): void;
+  playAnimation: (entityId: EntityId, animationName: string) => void;
+  stopAnimation: (entityId: EntityId, animationName?: string) => void;
+  getCurrentFrame: (entityId: EntityId) => AnimationFrame | undefined;
+  addAnimation: (config: AnimationConfig) => void;
+  getAnimationState: (entityId: EntityId) => AnimationState | undefined;
 }
 
 // Animation configuration
 export interface AnimationConfig {
-  readonly speed?: number; // Playback speed multiplier
+  readonly name: string;
+  readonly frames: readonly { texture: Texture; duration: number }[]; // Texture from PIXI
   readonly loop?: boolean;
-  readonly onComplete?: () => void;
-  readonly startFrame?: number;
-  readonly endFrame?: number;
+  readonly speed?: number; // Playback speed multiplier
 }
 
 // Added AnimationFrame and AnimationState for AnimationSystemInterface
 export interface AnimationFrame {
-  readonly textureId: string; // ID of the texture/sprite for this frame
-  readonly duration: number; // Duration in milliseconds
+  readonly texture: Texture; // Texture from PIXI
+  readonly duration: number;
 }
 
 export interface AnimationState {
-  readonly currentFrame: number;
+  readonly currentAnimationName?: string;
+  readonly currentFrameIndex: number;
   readonly isPlaying: boolean;
-  readonly loop: boolean;
-  readonly speed: number;
+  readonly elapsedTimeInFrame: number;
 }
 
 // Physics system interface
 export interface PhysicsSystemInterface {
-  addEntity(entityId: string, config: PhysicsEntityConfig): void;
-  removeEntity(entityId: string): void;
-  update(deltaTime: number): void;
-  getEntityState(entityId: string): PhysicsEntityState | undefined;
-  applyForce(entityId: string, force: { x: number; y: number }): void;
-  setCollisionCallback(
-    entityIdA: string,
-    entityIdB: string,
-    callback: (collisionData: CollisionData) => void
-  ): void;
+  addEntity: (entityId: EntityId, config: PhysicsEntityConfig) => void;
+  removeEntity: (entityId: EntityId) => void;
+  update: (deltaTime: number) => void; // Update all physics entities
+  getEntityState: (entityId: EntityId) => PhysicsEntityState | undefined;
+  checkCollision: (
+    entityIdA: EntityId,
+    entityIdB: EntityId
+  ) => CollisionData | null;
+  applyForce: (entityId: EntityId, force: Velocity) => void;
 }
 
 // Physics entity configuration
 export interface PhysicsEntityConfig {
-  readonly mass: number;
+  readonly position: Position;
+  readonly velocity?: Velocity;
+  readonly mass?: number;
+  readonly friction?: number;
+  readonly restitution?: number; // Bounciness
   readonly shape:
     | { type: "circle"; radius: number }
     | { type: "rectangle"; width: number; height: number };
-  readonly position: Position;
-  readonly velocity?: Position; // Initial velocity
-  readonly restitution?: number; // Bounciness
-  readonly friction?: number;
-  readonly isStatic?: boolean; // Immovable object
+  readonly isStatic?: boolean; // Cannot be moved by forces
 }
 
 // Added PhysicsEntityState and CollisionData for PhysicsSystemInterface
 export interface PhysicsEntityState {
   readonly position: Position;
-  readonly velocity: Position;
-  readonly angularVelocity: number;
+  readonly velocity: Velocity;
+  readonly acceleration?: Velocity;
+  readonly angularVelocity?: number;
 }
 
 export interface CollisionData {
-  readonly entityAId: string;
-  readonly entityBId: string;
-  readonly contactPoint: Position;
-  readonly normal: Position; // Collision normal vector
-  readonly penetrationDepth: number;
+  readonly entityA: EntityId;
+  readonly entityB: EntityId;
+  readonly normal: Velocity; // Collision normal vector
+  readonly penetration: number; // How much they are overlapping
 }
 
 // Rendering system interface
 export interface RenderingSystemInterface {
-  addRenderable(entityId: string, config: RenderableConfig): void;
-  removeRenderable(entityId: string): void;
-  updateRenderable(entityId: string, updates: Partial<RenderableConfig>): void;
-  render(context: any): void; // Context could be PIXI.Container, CanvasRenderingContext2D, etc.
-  setCamera(position: Position, zoom: number): void;
+  readonly app: PixiApplication; // PIXI.Application instance
+  addRenderable: (entityId: EntityId, config: RenderableConfig) => void;
+  removeRenderable: (entityId: EntityId) => void;
+  updateRenderable: (
+    entityId: EntityId,
+    updates: Partial<RenderableConfig>
+  ) => void;
+  getDisplayObject: (entityId: EntityId) => DisplayObject | undefined;
+  render: () => void; // Main render loop call
 }
 
 // Renderable configuration
 export interface RenderableConfig {
-  readonly type: "sprite" | "graphics" | "text";
-  readonly textureId?: string; // For sprites
-  readonly drawCommands?: any[]; // For PIXI.Graphics or similar
-  readonly textContent?: string;
-  readonly style?: any; // PIXI.TextStyle or similar
-  readonly position: Position;
-  readonly rotation?: number;
-  readonly scale?: { x: number; y: number };
-  readonly alpha?: number;
-  readonly zIndex?: number;
+  readonly displayObject: DisplayObject; // The PIXI object to render
+  readonly zOrder?: number; // For sorting
   readonly visible?: boolean;
+  readonly alpha?: number;
+  readonly parent?: EntityId | "stage"; // ID of parent renderable or stage
 }
 
 // Game system manager
 export interface GameSystemManager {
-  registerSystem(name: string, system: any): void; // System can be any of the interfaces above
-  getSystem<T>(name: string): T | undefined;
-  updateAll(deltaTime: number): void;
-  initializeAll(): Promise<void>;
-  shutdownAll(): void;
+  readonly combatSystem: CombatSystemInterface;
+  readonly vitalPointSystem: VitalPointSystemInterface;
+  readonly trigramSystem: TrigramSystemInterface;
+  readonly inputSystem: InputSystemInterface;
+  readonly audioSystem: AudioSystemInterface;
+  readonly animationSystem?: AnimationSystemInterface;
+  readonly physicsSystem?: PhysicsSystemInterface;
+  readonly renderingSystem?: RenderingSystemInterface;
+  readonly eventBus: EventBusInterface;
+  initializeAll: () => Promise<void>;
+  updateAll: (deltaTime: number) => void; // For systems that need per-frame updates
 }
 
 // System event base type
 export interface SystemEvent {
-  readonly type: string; // e.g., "PLAYER_DAMAGE", "ENTITY_CREATED"
-  readonly timestamp: number;
+  readonly type: string; // e.g., "PLAYER_DAMAGE", "STANCE_CHANGED"
+  readonly timestamp: Timestamp;
   readonly payload?: any; // Data associated with the event
 }
 
 // Event bus interface for system communication
 export interface EventBusInterface {
-  publish(event: SystemEvent): void;
-  subscribe(
+  publish: (event: SystemEvent) => void;
+  subscribe: (
     eventType: string,
     callback: (event: SystemEvent) => void
-  ): () => void; // Returns an unsubscribe function
+  ) => void;
+  unsubscribe: (
+    eventType: string,
+    callback: (event: SystemEvent) => void
+  ) => void;
 }
 
 // General system configuration
 export interface SystemConfig {
+  // Common configuration options for all systems, if any
   readonly debugMode?: boolean;
   readonly performanceMonitoring?: boolean;
-  // Add other global system settings
 }

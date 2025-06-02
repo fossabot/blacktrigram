@@ -54,20 +54,7 @@ export type {
 } from "./common";
 
 // Export constants as values (not types)
-export {
-  GAME_CONFIG,
-  COMBAT_TIMING,
-  UI_LAYOUT,
-  TRIGRAM_DATA,
-  STANCE_EFFECTIVENESS_MATRIX,
-  VITAL_POINTS_DATA,
-} from "./constants";
-
-// Export KOREAN_COLORS separately from colors constants
-export { KOREAN_COLORS } from "./constants/colors";
+export * from "./constants";
 
 // Export utility functions as values (not types)
 export { createPlayerState } from "./common";
-
-// Export missing constants that are being imported as types
-export { TRIGRAM_STANCES_ORDER } from "./constants/trigram";

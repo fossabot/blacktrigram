@@ -1,13 +1,18 @@
 // Common shared types for Black Trigram Korean martial arts game
 
-import { GAME_CONFIG } from "./constants";
 import type {
   DamageType,
   EffectIntensity,
-  EffectType as StatusEffectType, // Changed StatusEffectType to EffectType
+  EffectType as EnumEffectType, // Renamed to avoid conflict with local EffectType if any
   TrigramStance, // Add import for TrigramStance
+  CombatReadiness, // Added for PlayerState in createPlayerState
+  CombatState, // Added for PlayerState in createPlayerState
+  PlayerArchetype, // Added for PlayerState in createPlayerState
 } from "./enums";
-import { PlayerState } from "./player";
+import type { PlayerState } from "./player"; // For createPlayerState
+import { GAME_CONFIG } from "./constants/game"; // For createPlayerState
+import type { KoreanText } from "./korean-text"; // For KoreanText in CombatCondition
+import type { StatusEffect } from "./effects"; // For StatusEffect in PlayerState
 
 // Basic shared types
 export interface Position {
@@ -38,22 +43,24 @@ export interface MatchState {
   scores: Record<PlayerId, number>;
   roundWinner?: PlayerId | null;
   matchWinner?: PlayerId | null;
-  // Add other relevant properties
 }
 
 // Damage range specification (Canonical definition)
 export interface DamageRange {
   readonly min: number;
   readonly max: number;
-  readonly type: DamageType;
+  readonly type?: DamageType; // Optional: specific damage type for this range
 }
 
 // Combat condition for status effects
 export interface CombatCondition {
-  readonly type: StatusEffectType; // Use StatusEffectType from enums
-  readonly duration: number;
+  readonly id: string;
+  readonly name: KoreanText; // Use KoreanText for bilingual support
+  readonly type: EnumEffectType; // Use EnumEffectType from enums
   readonly intensity: EffectIntensity;
-  readonly source: string;
+  readonly duration: number; // Duration in game ticks or seconds
+  readonly source?: string; // E.g., technique ID, environmental effect
+  readonly description?: KoreanText;
 }
 
 // Basic position and vector types for Korean martial arts combat
@@ -75,15 +82,15 @@ export interface Bounds {
 }
 
 // Color types for Korean martial arts styling
-export type ColorValue = number; // Hex color value
+export type ColorValue = number; // Hexadecimal color representation (e.g., 0xff0000)
 export type RGBAColor = readonly [number, number, number, number];
 
 // Time and duration types for martial arts training
-export type Duration = number; // in milliseconds
+export type Duration = number; // Typically in milliseconds or game ticks
 
 // Probability and percentage types for combat calculations
-export type Probability = number; // 0.0 to 1.0
-export type Percentage = number; // 0 to 100
+export type Probability = number; // Value between 0 and 1
+export type Percentage = number; // Value between 0 and 100
 
 // ID types for Korean martial arts entities
 export type PlayerId = "player1" | "player2";
@@ -107,11 +114,12 @@ export interface Range {
 }
 
 export interface Velocity {
-  readonly x: number;
-  readonly y: number;
+  readonly vx: number;
+  readonly vy: number;
 }
 
 // Utility function for creating player states
+// Moved PlayerState definition to player.ts, this function now uses it.
 export const createPlayerState = (
   playerId: string,
   position: Position,
@@ -120,7 +128,7 @@ export const createPlayerState = (
 ): PlayerState => ({
   id: playerId,
   name: playerId,
-  archetype: "musa",
+  archetype: "musa" as PlayerArchetype, // Default archetype
   position,
   stance,
   facing: "right",
@@ -132,13 +140,13 @@ export const createPlayerState = (
   maxStamina: GAME_CONFIG.MAX_STAMINA,
   consciousness: 100,
   pain: 0,
-  balance: 100,
+  balance: 100, // Assuming 100 is perfect balance
   bloodLoss: 0,
   lastStanceChangeTime: 0,
   isAttacking: false,
-  combatReadiness: 100,
-  activeEffects: [],
-  combatState: "ready",
-  conditions: [],
+  combatReadiness: 100 as CombatReadiness, // Full readiness
+  activeEffects: [] as readonly StatusEffect[],
+  combatState: "ready" as CombatState, // Initial combat state
+  conditions: [] as readonly CombatCondition[],
   ...overrides,
 });

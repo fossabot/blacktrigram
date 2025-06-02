@@ -1,18 +1,21 @@
 // Korean typography and text system types for Black Trigram
 
-// import { KoreanHeaderProps } from "."; // REMOVE: Circular dependency
-import { StatusKey } from "@/components/ui/base/korean-text/types";
-import type { ColorValue } from "./common"; // CommonColorValue is unused
-import type { KoreanFontWeight, KoreanTextStyle, TrigramStance } from "./enums"; // Adjusted path if necessary, or from './index' if re-exported
+import type { TrigramStance, StatusKey } from "./enums"; // For trigram prop
+import type { ColorValue } from "./common";
 
-// Korean text interface for bilingual display
+// Basic KoreanText definition
 export interface KoreanText {
   readonly korean: string;
   readonly english: string;
 }
 
-// Korean text size options
-export type KoreanTextSize = "small" | "medium" | "large" | "xlarge";
+export type KoreanFontWeight =
+  | "LIGHT"
+  | "REGULAR"
+  | "MEDIUM"
+  | "BOLD"
+  | "HEAVY";
+export type KoreanTextSize = "small" | "medium" | "large" | "xlarge" | "title";
 
 // Korean text variants for different contexts
 export type KoreanTextVariant =
@@ -37,169 +40,104 @@ export type KoreanTextEmphasis =
   | "glow"
   | "shadow"
   | "outline"
-  | "highlight"; // Added "highlight"
+  | "highlight";
 
 // Martial arts specific text variants
 export type MartialVariant =
   | "technique"
   | "philosophy"
   | "instruction"
-  | "combat";
+  | "combat"
+  | "practitioner"; // Added from KoreanMartialText.tsx error
 
 // Honor level for traditional Korean martial arts context
 export type HonorLevel = "student" | "practitioner" | "instructor" | "master";
 
-// Font weight for Korean typography
-export type FontWeight = 300 | 400 | 500 | 700 | 900;
+// Base style for Korean text components (React)
+export interface KoreanTextStyle {
+  // More specific style properties based on actual usage
+  readonly fontFamily?: string;
+  readonly fontSize?: KoreanTextSize;
+  readonly fontWeight?: KoreanFontWeight;
+  readonly fontStyle?: "normal" | "italic" | "oblique";
+  readonly color?: string | ColorValue; // Allow hex string or number
+  readonly textAlign?: "left" | "center" | "right" | "justify";
+  readonly lineHeight?: string | number;
+  readonly letterSpacing?: string | number;
+  readonly textTransform?: "none" | "capitalize" | "uppercase" | "lowercase";
+  readonly textDecoration?: string; // e.g., "underline", "line-through"
+  readonly textShadow?: string; // e.g., "2px 2px 4px #000000"
+  readonly emphasis?: KoreanTextEmphasis;
+  readonly variant?: KoreanTextVariant;
+  readonly [key: string]: any; // Keep for extensibility if absolutely necessary
+}
 
-// Font family options for Korean text
-export type FontFamily = "noto" | "malgun" | "nanumgothic" | "system";
-
-// Korean text component props interface
+// Korean text component props interface (for React components)
 export interface KoreanTextProps {
-  readonly text?: string | KoreanText; // Primary text content (Korean or bilingual object)
-  readonly korean?: string; // Explicit Korean text
-  readonly english?: string; // Explicit English text
-  readonly englishText?: string; // Alternative for English text, consider consolidating
+  readonly korean?: string | KoreanText; // Allow string or the KoreanText object
+  readonly english?: string;
+  readonly children?: React.ReactNode; // For React components
+  readonly size?: KoreanTextSize;
+  readonly weight?: KoreanFontWeight;
+  readonly color?: string | ColorValue;
+  readonly style?: KoreanTextStyle | React.CSSProperties; // Allow both for flexibility
+  readonly className?: string;
   readonly variant?: KoreanTextVariant;
   readonly emphasis?: KoreanTextEmphasis;
-  readonly size?: KoreanTextSize;
-  readonly weight?: FontWeight; // Added
-  readonly color?: string | number; // Allow hex number or CSS color string
-  readonly fontFamily?: string; // Added
-  readonly lineHeight?: string | number; // Added
-  readonly letterSpacing?: string | number; // Added
-  readonly align?: "left" | "center" | "right" | "justify";
-  readonly truncate?: boolean; // Added
-  readonly maxLines?: number; // Added
-  readonly animate?: boolean | KoreanTextAnimation; // Added
-  readonly gradientColors?: readonly string[]; // Added
-  readonly strokeColor?: string; // Added
-  readonly strokeWidth?: number; // Added
-  readonly style?: Partial<KoreanTextStyle> | React.CSSProperties; // Allow passing custom styles
-  readonly showBoth?: boolean; // Added
-  readonly bilingual?: "stacked" | "inline" | "tooltip"; // Added
-  readonly tooltip?: string | KoreanText; // Added
-  readonly ariaLabel?: string; // Added
-  readonly className?: string; // Added
-  readonly onClick?: (event: React.MouseEvent<HTMLElement>) => void; // Added
-  readonly onHover?: (hovering: boolean) => void; // Added
-  // For KoreanStatusText specific props, consider moving to KoreanStatusTextProps
-  readonly statusKey?: StatusKey; // Use StatusKey from enums
-  readonly value?: number | string;
-  readonly maxValue?: number;
-  readonly showPercentage?: boolean;
-  readonly criticalThreshold?: number;
-  readonly warningThreshold?: number;
-  // For KoreanTechniqueText specific props, consider moving to KoreanTechniqueTextProps
-  readonly stance?: TrigramStance; // Use TrigramStance from enums
-  readonly showStanceSymbol?: boolean;
-  readonly showDamage?: boolean;
-  readonly damage?: number | { min: number; max: number };
-  readonly kiCost?: number;
-  readonly staminaCost?: number;
-  readonly interactive?: boolean;
-  readonly disabled?: boolean;
-  readonly mastered?: boolean;
-  readonly children?: React.ReactNode; // Allow children for general use
+  readonly trigram?: TrigramStance; // For trigram-specific styling
+  readonly statusKey?: StatusKey; // For status-specific styling
+  readonly as?: keyof JSX.IntrinsicElements | React.ComponentType<any>; // For semantic HTML or custom component
+  readonly [key: string]: any; // Keep for other props like onClick, etc.
 }
 
 // Define KoreanTextHeaderProps for text-based headers (h1-h6)
 export interface KoreanTextHeaderProps extends KoreanTextProps {
   readonly level?: 1 | 2 | 3 | 4 | 5 | 6;
-  readonly as?: keyof JSX.IntrinsicElements; // e.g., 'h1', 'h2', 'div'
 }
 
 // Korean title props - updated to extend KoreanTextHeaderProps
-export interface KoreanTitleProps extends KoreanTextHeaderProps {
-  readonly korean: string; // Made mandatory for titles
-  readonly english?: string;
-  // level is inherited from KoreanTextHeaderProps
-  // color, fontFamily, style are inherited from KoreanTextProps (via KoreanTextHeaderProps)
-  // Other title-specific props can be added here
-}
-
-// REMOVE the second, problematic definition of KoreanTitleProps:
-// export interface KoreanTitleProps extends KoreanHeaderProps {
-//   // Specific properties for titles, if any
-// }
+export interface KoreanTitleProps extends KoreanTextHeaderProps {}
 
 // Define and export KoreanMartialTextProps
 export interface KoreanMartialTextProps extends KoreanTextProps {
-  readonly martialVariant: MartialVariant;
-  readonly trigram?: TrigramStance; // Added optional trigram, maps to stance
-  readonly honorLevel?: HonorLevel;
+  readonly martialVariant?: MartialVariant;
 }
 
 // Define and export KoreanTechniqueTextProps
 export interface KoreanTechniqueTextProps extends KoreanTextProps {
-  // 'korean' and 'english' from KoreanTextProps can be used for names.
-  // If specific prop names like 'koreanName' are used by the component, define them here:
-  readonly koreanName?: string; // Specific prop for the component, made optional if text.korean is primary
-  readonly englishName?: string; // Specific prop for the component, made optional if text.english is primary
-  readonly trigram?: TrigramStance; // Added optional trigram, maps to stance
-  // stance, showStanceSymbol, showDamage, damage, kiCost, staminaCost, mastered
-  // are already optional in KoreanTextProps. Make them mandatory if needed for this specific type.
+  readonly trigram?: TrigramStance;
+  // Add specific props for technique text if any, e.g., showRomanized, showStanceIcon
 }
 
 // Define and export KoreanStatusTextProps
 export interface KoreanStatusTextProps extends KoreanTextProps {
-  readonly statusKey: StatusKey; // Make mandatory
-  readonly value: number | string; // Make mandatory
-  // maxValue, showPercentage, criticalThreshold, warningThreshold
-  // are already optional in KoreanTextProps. Make them mandatory if needed.
+  readonly statusKey: StatusKey;
 }
 
 // Korean text animation configuration
 export interface KoreanTextAnimation {
-  readonly type: "fade" | "slide" | "glow" | "pulse" | "typewriter";
-  readonly duration: number;
+  readonly type: "fade" | "slide" | "typewriter";
+  readonly duration?: number;
   readonly delay?: number;
-  readonly iterations?: number | "infinite";
-  readonly direction?: "normal" | "reverse" | "alternate";
+  readonly direction?: "up" | "down" | "left" | "right";
 }
 
 // Korean text with animation support
 export interface AnimatedKoreanTextProps extends KoreanTextProps {
   readonly animation?: KoreanTextAnimation;
-  readonly animateOnMount?: boolean;
-  readonly animateOnChange?: boolean;
 }
 
 // Korean typography theme for cyberpunk martial arts
 export interface KoreanTypographyTheme {
-  readonly name: string;
-  readonly description: KoreanText;
-  readonly fonts: {
+  readonly baseFontFamily: string;
+  readonly titleFontFamily: string;
+  readonly sizes: Record<KoreanTextSize, number>;
+  readonly weights: Record<KoreanFontWeight, number>;
+  readonly colors: {
     readonly primary: string;
     readonly secondary: string;
-    readonly monospace: string;
-  };
-  readonly sizes: {
-    readonly small: number;
-    readonly medium: number;
-    readonly large: number;
-    readonly xlarge: number;
-    readonly title: number;
-  };
-  readonly weights: {
-    readonly light: KoreanFontWeight;
-    readonly regular: KoreanFontWeight;
-    readonly bold: KoreanFontWeight;
-    readonly heavy: KoreanFontWeight;
-  };
-  readonly colors: {
-    readonly primary: ColorValue;
-    readonly secondary: ColorValue;
-    readonly accent: ColorValue;
-    readonly danger: ColorValue;
-    readonly success: ColorValue;
-  };
-  readonly effects: {
-    readonly glow: boolean;
-    readonly shadow: boolean;
-    readonly outline: boolean;
-    readonly gradient: boolean;
+    readonly accent: string;
+    readonly error: string;
   };
 }
 
@@ -207,84 +145,87 @@ export interface KoreanTypographyTheme {
 export interface KoreanTextMetrics {
   readonly width: number;
   readonly height: number;
-  readonly koreanWidth: number;
-  readonly englishWidth: number;
-  readonly lineCount: number;
-  readonly characterCount: {
-    readonly korean: number;
-    readonly english: number;
-    readonly total: number;
-  };
+  readonly lines: number;
 }
 
 // Korean text rendering options
 export interface KoreanTextRenderOptions {
-  readonly antiAlias: boolean;
-  readonly subpixelRendering: boolean;
-  readonly kerning: boolean;
-  readonly ligatures: boolean;
-  readonly hinting: "none" | "light" | "normal" | "strong";
-  readonly resolution: number; // Device pixel ratio
+  readonly antiAlias?: boolean;
+  readonly resolution?: number;
 }
 
 // Korean text content with context
 export interface KoreanContentText extends KoreanText {
-  readonly context:
-    | "menu"
-    | "combat"
-    | "training"
-    | "philosophy"
-    | "victory"
-    | "defeat";
-  readonly tone:
-    | "formal"
-    | "casual"
-    | "ceremonial"
-    | "instructional"
-    | "motivational";
-  readonly audience: "beginner" | "intermediate" | "advanced" | "master";
+  readonly context?: string; // e.g., "UI Button", "Combat Log"
 }
 
 // Korean text localization support
 export interface KoreanTextLocalization {
-  readonly locale: "ko-KR" | "en-US" | "ko-KR-Hanja";
-  readonly direction: "ltr" | "rtl";
-  readonly script: "hangul" | "hanja" | "mixed";
-  readonly variant: "standard" | "traditional" | "modern";
+  readonly language: "ko" | "en" | "bilingual";
+  readonly translations: Record<string, KoreanText>; // Key-value store for translatable strings
 }
 
 // Korean text accessibility features
 export interface KoreanTextAccessibility {
-  readonly screenReader: string; // Screen reader friendly text
-  readonly pronunciation: string; // Phonetic pronunciation guide
-  readonly meaning: string; // Contextual meaning explanation
-  readonly difficulty: 1 | 2 | 3 | 4 | 5; // Reading difficulty level
+  readonly ariaLabel?: string;
+  readonly role?: string;
 }
 
-// Korean text validation
 export interface KoreanTextValidation {
-  readonly hasKorean: boolean;
-  readonly hasEnglish: boolean; // Added
-  readonly hasSpecialChars: boolean; // Added
-  readonly length: {
-    // Added
-    readonly korean: number;
-    readonly english: number;
-  };
-  readonly isValid: boolean; // Added
-  readonly errors: string[]; // Added
+  isValid: boolean;
+  message?: string;
 }
 
-// Korean text formatting utilities
-export interface KoreanTextFormatter {
-  readonly format: (text: KoreanText) => string; // Added
-  readonly measure: (text: string, style: KoreanTextStyle) => KoreanTextMetrics; // Added
-  readonly validate: (text: KoreanText) => KoreanTextValidation; // Added
-  readonly normalize: (text: string) => string; // Added
-  readonly romanize: (korean: string) => string; // Added
+export interface KoreanTextProcessor {
+  format(text: KoreanText): string;
 }
 
-// Preset Korean text styles for martial arts context
 export type KoreanMartialTextPresets = {
   readonly [key in MartialVariant]: KoreanTextStyle;
 };
+
+// For PixiJS specific text styling, separate from React component styles
+export interface PixiTextStyleConfig {
+  fontFamily?: string | string[];
+  fontSize?: number;
+  fontWeight?: string; // PIXI uses string weights like 'bold', 'normal'
+  fontStyle?: "normal" | "italic" | "oblique";
+  fill?: ColorValue | string | number[] | CanvasGradient | CanvasPattern; // PIXI's fill type
+  stroke?: ColorValue | string; // PIXI's stroke type
+  strokeThickness?: number;
+  wordWrap?: boolean;
+  wordWrapWidth?: number;
+  lineHeight?: number;
+  letterSpacing?: number;
+  align?: "left" | "center" | "right" | "justify";
+  dropShadow?: boolean;
+  dropShadowColor?: ColorValue | string;
+  dropShadowBlur?: number;
+  dropShadowAngle?: number;
+  dropShadowDistance?: number;
+  dropShadowAlpha?: number;
+  padding?: number;
+  textBaseline?:
+    | "top"
+    | "hanging"
+    | "middle"
+    | "alphabetic"
+    | "ideographic"
+    | "bottom";
+  whiteSpace?: "normal" | "pre" | "pre-line"; // Added based on PIXI.TextStyle
+  leading?: number; // Added based on PIXI.TextStyle
+  fillGradientType?: number; // PIXI.TEXT_GRADIENT, 0 = linear V, 1 = linear H
+  fillGradientStops?: number[]; // Array of stop positions (0-1)
+  // Add any other PIXI.TextStyle properties you might use
+}
+
+export interface KoreanPixiTextConfig extends PixiTextStyleConfig {
+  korean: string;
+  english?: string;
+  romanized?: string;
+  trigram?: TrigramStance;
+  statusKey?: StatusKey;
+  emphasis?: KoreanTextEmphasis;
+  variant?: KoreanTextVariant;
+  // any other custom props for PIXI text styling logic
+}
