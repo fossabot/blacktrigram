@@ -60,3 +60,12 @@ export interface VitalPointHitResult {
   readonly effects: readonly VitalPointEffect[];
   readonly vitalPointsHit: readonly string[];
 }
+
+// Add missing RegionData interface if not already present
+export interface RegionData {
+  readonly name: KoreanText;
+  readonly subRegions: readonly string[];
+  readonly vitalPoints: readonly string[];
+  readonly vulnerability: number;
+  readonly pressure_points: readonly string[];
+}

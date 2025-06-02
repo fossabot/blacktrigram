@@ -15,6 +15,7 @@ export type {
   VitalPoint,
   AnatomicalLocation,
   VitalPointHitResult,
+  RegionData, // Ensure this is exported
 } from "./anatomy";
 export type { KoreanTechnique, CombatResult, AttackInput } from "./combat";
 // Remove CombatState from combat.ts export since it's now in enums

@@ -1,18 +1,12 @@
 // Anatomical regions mapping for Korean martial arts vital point system
+// Import the canonical RegionData type from the type system
 import type { BodyRegion } from "../../types";
-import type { KoreanText } from "../../types/korean-text";
 
-// Match the interface exactly with what's expected in the type system
-interface RegionData {
-  readonly name: KoreanText;
-  readonly subRegions: readonly string[];
-  readonly vitalPoints: readonly string[];
-  readonly vulnerability: number;
-  readonly pressure_points: readonly string[];
-}
+// Use the canonical RegionData interface from anatomy.ts
+import type { RegionData } from "../../types/anatomy";
 
-// Use the canonical RegionData type from types/anatomy for strict typing
-
+// The data is already correctly structured with pressure_points,
+// but ensure all regions have this property defined
 export const ANATOMICAL_REGIONS_DATA: Readonly<Record<BodyRegion, RegionData>> =
   {
     head: {
@@ -288,23 +282,23 @@ export const ANATOMICAL_REGIONS_DATA: Readonly<Record<BodyRegion, RegionData>> =
       subRegions: [] as const,
       vitalPoints: [] as const,
       vulnerability: 1.0,
-      pressure_points: [] as const, // Add missing property
+      pressure_points: [] as const,
     },
     general: {
       name: { korean: "일반", english: "General" },
       subRegions: [] as const,
       vitalPoints: [] as const,
       vulnerability: 1.0,
-      pressure_points: [] as const, // Add missing property
+      pressure_points: [] as const,
     },
     internal: {
       name: { korean: "내부", english: "Internal" },
       subRegions: [] as const,
       vitalPoints: [] as const,
       vulnerability: 1.0,
-      pressure_points: [] as const, // Add missing property
+      pressure_points: [] as const,
     },
   } as const;
 
-// Ensure all regions have pressure_points (file already complete from previous fix)
-// No changes needed - file is correct
+// Export the type for use elsewhere if needed
+export type { RegionData } from "../../types/anatomy";

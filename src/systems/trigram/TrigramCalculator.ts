@@ -10,6 +10,7 @@ import type {
   EffectIntensity,
   KoreanTechnique,
   StatusEffect,
+  PlayerArchetype,
 } from "../../types";
 import { EffectType } from "../../types";
 import {
@@ -292,36 +293,61 @@ export class TrigramCalculator {
     };
   }
 
-  calculateOptimalKiFlow(playerState: PlayerState): number {
+  calculateOptimalKiFlow(
+    playerState: PlayerState,
+    opponentStance?: TrigramStance
+  ): number {
     const factors: KiFlowFactors = {
       playerLevelModifier: this.getPlayerLevelModifier(playerState),
       stanceAffinity: this.getStanceAffinity(
         playerState.stance,
         playerState.archetype
       ),
+      // Remove currentStance - not part of KiFlowFactors interface
     };
 
-    // Calculate optimal Ki flow based on factors
-    const baseFlow = 1.0;
-    const levelModifier = factors.playerLevelModifier || 1.0;
-    const affinityModifier = factors.stanceAffinity || 1.0;
+    const baseKiFlow = BASE_KI_FLOW_RATE_PER_STANCE[playerState.stance] || 1.0;
 
-    return baseFlow * levelModifier * affinityModifier;
+    let modifiedFlow = baseKiFlow;
+    if (factors.playerLevelModifier) {
+      modifiedFlow *= factors.playerLevelModifier;
+    }
+    if (factors.stanceAffinity) {
+      modifiedFlow *= factors.stanceAffinity;
+    }
+
+    // Apply opponent stance modifier if provided
+    if (opponentStance) {
+      const effectiveness = this.getStanceEffectiveness(
+        playerState.stance,
+        opponentStance
+      );
+      modifiedFlow *= effectiveness;
+    }
+
+    return Math.max(0.1, modifiedFlow); // Ensure minimum flow
   }
 
   // Add missing method
   private getPlayerLevelModifier(playerState: PlayerState): number {
-    // Implementation for player level modifier
-    // For now, return a default value based on player state
-    const healthRatio = playerState.health / playerState.maxHealth;
-    const staminaRatio = playerState.stamina / playerState.maxStamina;
+    // Implementation for player level modifier calculation
+    const baseLevel = 1.0;
+    const healthModifier = playerState.health / playerState.maxHealth;
+    const staminaModifier = playerState.stamina / playerState.maxStamina;
 
-    return (healthRatio + staminaRatio) / 2;
+    return baseLevel * Math.max(0.5, (healthModifier + staminaModifier) / 2);
   }
 
-  // Fix method signature - archetype parameter should be string, not TrigramStance
-  private getStanceAffinity(stance: TrigramStance, archetype: string): number {
-    const affinityMap: Record<string, Record<TrigramStance, number>> = {
+  // Fix method signature - should take stance and archetype separately
+  private getStanceAffinity(
+    stance: TrigramStance,
+    archetype: PlayerArchetype
+  ): number {
+    // Implementation for stance affinity calculation
+    const affinityMap: Record<
+      PlayerArchetype,
+      Record<TrigramStance, number>
+    > = {
       musa: {
         geon: 1.2,
         jin: 1.1,
@@ -348,9 +374,9 @@ export class TrigramCalculator {
         geon: 1.0,
         jin: 0.9,
         son: 1.0,
-        gam: 0.9,
-        gan: 0.8,
-        gon: 0.9,
+        gam: 0.8,
+        gan: 0.9,
+        gon: 0.8,
       },
       jeongbo: {
         gan: 1.2,
@@ -365,11 +391,11 @@ export class TrigramCalculator {
       jojik: {
         jin: 1.2,
         gam: 1.1,
-        geon: 0.9,
-        tae: 0.8,
+        geon: 0.8,
+        tae: 0.9,
         li: 1.0,
         son: 0.9,
-        gan: 1.0,
+        gan: 0.8,
         gon: 1.0,
       },
     };
