@@ -1,24 +1,25 @@
 // Component prop interfaces for Black Trigram Korean martial arts game
 
-import type { FederatedPointerEvent, Texture, DisplyObject } from "pixi.js"; // Import directly
+import type { FederatedPointerEvent, Texture, DisplayObject } from "pixi.js"; // Corrected DisplyObject
 import type React from "react";
 import type {
   PlayerState,
   PlayerArchetype,
   TrigramStance,
   GamePhase,
-  KoreanText,
+  KoreanText, // This is the type from korean-text.ts
   Position,
   HitEffect,
   CombatResult,
-} from "./index"; // Assuming index.ts re-exports these
+} from "./index";
 import type {
-  TrigramWheelProps as UITrigramWheelProps,
-  ProgressTrackerProps as UIProgressTrackerProps,
-} from "./ui";
-import type { BaseComponentProps } from "./components"; // Ensure this is correctly self-referencing or from a base types file
+  UITrigramWheelProps, // Use aliased import from index.ts
+  UIProgressTrackerProps, // Use aliased import from index.ts
+} from "./index"; // Adjusted to import from index.ts which should handle aliasing
 
-// Base component props
+// Base component props - if this is intended to be globally unique, define it once.
+// If it's a local type for this file, it's fine.
+// Assuming this is the primary definition for BaseComponentProps.
 export interface BaseComponentProps {
   readonly className?: string;
   readonly style?: React.CSSProperties;
@@ -110,7 +111,7 @@ export interface PlayerProps extends GameComponentProps {
 export interface PlayerVisualsProps extends GameComponentProps {
   readonly playerState: PlayerState;
   readonly archetype: PlayerArchetype;
-  readonly texture?: Texture | DisplayObject; // For character sprite/model
+  readonly texture?: Texture | DisplayObject; // Corrected: DisplayObject is now correctly typed
   readonly showHealthBar?: boolean;
   readonly showKiBar?: boolean;
   readonly showStaminaBar?: boolean;

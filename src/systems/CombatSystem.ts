@@ -71,11 +71,17 @@ export class CombatSystem {
     damage *= 1 + (Math.random() - 0.5) * variance;
 
     // Determine damage type
-    let damageType: DamageType = "blunt" as DamageType;
-    if ("damageRange" in technique && technique.damageRange) {
-      damageType = technique.damageRange.type || ("blunt" as DamageType);
+    let damageType: DamageType; // No longer assign {}
+    if (
+      "damageRange" in technique &&
+      technique.damageRange &&
+      technique.damageRange.type
+    ) {
+      damageType = technique.damageRange.type;
     } else if ("damageType" in technique && technique.damageType) {
       damageType = technique.damageType;
+    } else {
+      damageType = DamageType.BLUNT; // Default to a valid DamageType
     }
 
     return {

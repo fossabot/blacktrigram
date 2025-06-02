@@ -5,20 +5,20 @@ import type {
   AudioPlaybackOptions,
   SoundEffectId,
   MusicTrackId,
-} from "./audio"; // Added AudioAsset, removed AudioConfig
-import type { PlayerArchetype, TrigramStance, InputAction } from "./enums"; // Added PlayerArchetype, TrigramStance
-import type { KoreanTechnique, CombatResult, CombatEvent } from "./combat"; // Added KoreanTechnique, CombatResult
-import type { PlayerState } from "./player"; // Added PlayerState
-import type { StatusEffect } from "./effects"; // Added StatusEffect
-import type { VitalPoint, TargetingResult, InjuryReport } from "./anatomy"; // Added VitalPoint
+} from "./audio";
+import type { PlayerArchetype, TrigramStance, InputAction } from "./enums";
+import type { KoreanTechnique, CombatResult } from "./combat"; // Removed unused CombatEvent
+import type { PlayerState } from "./player";
+import type { StatusEffect } from "./effects";
+import type { VitalPoint } from "./anatomy"; // Removed unused TargetingResult, InjuryReport
 import type {
   TrigramData,
-  TrigramTransition,
-  StanceTransition,
+  // TrigramTransition, // Unused
+  // StanceTransition, // Unused
 } from "./trigram";
 import type {
   Application as PixiApplication,
-  DisplayObject,
+  DisplayObject as PixiDisplayObject, // Aliased to avoid potential name collision and make it clear it's from PIXI
   Texture,
 } from "pixi.js"; // For RenderingSystemInterface
 
@@ -225,13 +225,13 @@ export interface RenderingSystemInterface {
     entityId: EntityId,
     updates: Partial<RenderableConfig>
   ) => void;
-  getDisplayObject: (entityId: EntityId) => DisplayObject | undefined;
+  getDisplayObject: (entityId: EntityId) => PixiDisplayObject | undefined;
   render: () => void; // Main render loop call
 }
 
 // Renderable configuration
 export interface RenderableConfig {
-  readonly displayObject: DisplayObject; // The PIXI object to render
+  readonly displayObject: PixiDisplayObject; // The PIXI object to render - use aliased import
   readonly zOrder?: number; // For sorting
   readonly visible?: boolean;
   readonly alpha?: number;
