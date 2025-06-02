@@ -1,11 +1,7 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect} from "vitest";
 import { TrigramSystem } from "./TrigramSystem";
 import { TRIGRAM_DATA } from "../types"; // Corrected: Import from types/index.ts
-import type {
-  PlayerState,
-  TrigramStance,
-  TrigramSystemInterface,
-} from "../types"; // PlayerArchetype unused
+import type { TrigramStance } from "../types"; // PlayerArchetype unused
 
 describe("TrigramSystem", () => {
   describe("getAllStances", () => {

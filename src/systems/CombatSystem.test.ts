@@ -5,6 +5,7 @@ import type {
   KoreanTechnique,
   DamageRange,
   PlayerState,
+  DamageType,
 } from "../types";
 
 describe("CombatSystem", () => {
@@ -20,11 +21,7 @@ describe("CombatSystem", () => {
     },
     stance: "geon" as TrigramStance,
     type: "strike",
-    damageType: {
-      min: 15,
-      max: 25,
-      type: "blunt",
-    } as DamageRange,
+    damageType: "blunt" as DamageType,
     damageRange: {
       min: 15,
       max: 25,

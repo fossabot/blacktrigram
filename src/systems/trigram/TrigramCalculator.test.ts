@@ -7,7 +7,9 @@ import type {
   TrigramEffectivenessMatrix,
   TrigramTransitionRule,
   // KiFlowFactors, // Unused
-  TRIGRAM_DATA as AllTrigramData, // Use alias for clarity
+} from "../../types";
+import {
+  TRIGRAM_DATA as AllTrigramData,
   STANCE_EFFECTIVENESS_MATRIX as GlobalEffectivenessMatrix,
 } from "../../types";
 // import { MOCK_PLAYER_STATE_GEON } from '../../test/mocks/player'; // Correct or remove

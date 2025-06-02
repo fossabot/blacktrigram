@@ -604,7 +604,7 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
     effects: [
       {
         id: "disorientation_philtrum",
-        type: "disorientation",
+        type: "disorientation" as EffectType,
         duration: 5000, // 5 seconds
         intensity: "strong",
         description: {
@@ -617,7 +617,7 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
         id: "pain_philtrum",
         type: "pain_severe",
         duration: 10000, // 10 seconds
-        intensity: "high",
+        intensity: "high" as EffectIntensity,
         description: { korean: "극심한 통증", english: "Excruciating pain" },
         stackable: true,
       },

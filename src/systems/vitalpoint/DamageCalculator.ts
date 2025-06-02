@@ -44,7 +44,6 @@ export class DamageCalculator {
     const archetypeMods = this.config.archetypeModifiers?.[archetype];
     if (archetypeMods) {
       totalDamage *= 1 + (archetypeMods.damageBonus ?? 0);
-      // Accuracy and critical chance handled elsewhere, focus on damage calculation here
     }
 
     // Apply vital point severity multiplier
@@ -55,15 +54,12 @@ export class DamageCalculator {
     }
     totalDamage += vitalPoint.baseDamage || 0; // Add VP base damage
 
-    // Check for critical hit based on technique and vital point
+    // Check for critical hit
     if (isCriticalHit) {
       totalDamage *= 1.5; // Apply critical multiplier
     }
 
-    // Ensure damage is not negative
-    totalDamage = Math.max(0, totalDamage);
-
-    return Math.round(totalDamage);
+    return Math.max(0, Math.round(totalDamage));
   }
 
   public determineEffects(

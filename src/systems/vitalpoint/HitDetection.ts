@@ -3,8 +3,8 @@ import type {
   AnatomicalLocation,
   KoreanTechnique,
   Position,
-  HitResult,
-  StatusEffect, // Added import for StatusEffect
+  CombatResult,
+  StatusEffect,
 } from "../../types";
 import { VITAL_POINTS_DATA } from "../../types/constants";
 
@@ -67,7 +67,7 @@ export class HitDetection {
     technique: KoreanTechnique
     // targetPlayerArchetype: string // Removed unused parameter
     // Placeholder for defender\'s current state, e.g., stance, active blocks
-  ): HitResult {
+  ): CombatResult {
     const closestVitalPoint = this.determineClosestVitalPoint(
       hitLocation,
       this.vitalPoints
@@ -112,25 +112,29 @@ export class HitDetection {
     }
 
     return {
+      attacker: "musa" as const, // Placeholder - should be passed as parameter
+      defender: "musa" as const, // Placeholder - should be passed as parameter
       hit: damage > 0,
       damage,
+      damagePrevented: 0, // Required property
+      staminaUsed: technique.staminaCost || 0, // Required property
+      kiUsed: technique.kiCost || 0, // Required property
       effects, // Now matches CombatResult
       vitalPointsHit,
-      hitLocation,
-      // Properties from CombatResult that need to be defined:
       isVitalPoint: vitalPointsHit.length > 0,
-      techniqueUsed: technique, // Assuming technique object is desired
+      techniqueUsed: technique,
       effectiveness: 1, // Placeholder
       stunDuration: 0, // Placeholder
       bloodLoss: 0, // Placeholder
       painLevel: 0, // Placeholder
       consciousnessImpact: 0, // Placeholder
       balanceEffect: 0, // Placeholder
-      statusEffects: effects, // Assuming effects are statusEffects
+      statusEffects: effects,
       hitType:
-        vitalPointsHit.length > 0 ? "vital" : damage > 0 ? "normal" : "miss", // Placeholder logic
-      // criticalHit: false, // Add logic for critical hits
-      // blocked: false, // Add logic for blocks
+        vitalPointsHit.length > 0 ? "vital" : damage > 0 ? "normal" : "miss",
+      defenderDamaged: damage > 0, // Required property
+      attackerStance: "geon" as const, // Placeholder - should be passed as parameter
+      defenderStance: "geon" as const, // Placeholder - should be passed as parameter
     };
   }
 

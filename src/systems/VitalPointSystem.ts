@@ -2,7 +2,6 @@ import type {
   VitalPoint,
   VitalPointSystemConfig,
   VitalPointSystemInterface,
-  VitalPointEffect, // Make sure this is the correct type for effects
   KoreanTechnique, // Added
   PlayerArchetype, // Added
   StatusEffect, // Added

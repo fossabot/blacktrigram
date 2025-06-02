@@ -19,7 +19,6 @@ export type * from "./trigram";
 
 // Export constants as values (not types)
 export {
-  KOREAN_COLORS,
   GAME_CONFIG,
   COMBAT_TIMING,
   UI_LAYOUT,
@@ -27,6 +26,9 @@ export {
   STANCE_EFFECTIVENESS_MATRIX,
   VITAL_POINTS_DATA,
 } from "./constants";
+
+// Export KOREAN_COLORS separately from colors constants
+export { KOREAN_COLORS } from "./constants/colors";
 
 // Export enum values (not types)
 export { CombatReadiness, ConsciousnessLevel } from "./enums";

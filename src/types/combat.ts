@@ -4,11 +4,11 @@ import type {
   TrigramStance,
   DamageType as EnumDamageType,
   PlayerArchetype,
+  DamageType,
 } from "./enums"; // Changed to import from enums
 import type { KoreanText } from "./korean-text";
 import type { StatusEffect } from "./effects";
 import type { PlayerState } from "./player"; // Added for CombatAnalysis
-import { DamageRange } from "./common";
 
 export type CombatAttackType =
   | "strike"
@@ -46,7 +46,7 @@ export interface KoreanTechnique {
   readonly description: KoreanText;
   readonly stance: TrigramStance;
   readonly type: CombatAttackType;
-  readonly damageType: DamageRange;
+  readonly damageType: DamageType;
   readonly damageRange: {
     readonly min: number;
     readonly max: number;

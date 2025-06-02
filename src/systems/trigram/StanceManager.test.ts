@@ -5,13 +5,9 @@ import type {
   TrigramStance,
   // CombatReadiness, // Unused
   // PlayerCombatStateEnum, // Unused
-  KiFlowFactors,
-  StatusEffect,
   TransitionPath,
-  TrigramData,
-  TRIGRAM_DATA, // Import if used directly
-  STANCE_EFFECTIVENESS_MATRIX, // Import if used directly
 } from "../../types";
+import { TRIGRAM_DATA, STANCE_EFFECTIVENESS_MATRIX } from "../../types";
 // import { MOCK_PLAYER_STATE_GEON, MOCK_PLAYER_STATE_LI } from '../../test/mocks/player'; // Correct or remove if not used
 // import { MOCK_TRIGRAM_CALCULATOR } from '../../test/mocks/trigram'; // Correct or remove if not used
 

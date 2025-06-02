@@ -1,10 +1,10 @@
-import type {
-  PlayerState,
-  TrigramStance,
+import {
   DamageType,
   CombatState,
   PlayerArchetype,
-} from "../types/common";
+  TrigramStance,
+  PlayerState,
+} from "@/types";
 import type { VitalPoint } from "../types/anatomy";
 import type { KoreanTechnique } from "../types/combat";
 
@@ -71,11 +71,11 @@ export class CombatSystem {
     damage *= 1 + (Math.random() - 0.5) * variance;
 
     // Determine damage type
-    let damageType: DamageType = "blunt";
+    let damageType: DamageType = "blunt" as DamageType;
     if ("damageRange" in technique && technique.damageRange) {
-      damageType = technique.damageRange.type || "blunt";
+      damageType = technique.damageRange.type || ("blunt" as DamageType);
     } else if ("damageType" in technique && technique.damageType) {
-      damageType = technique.damageType as DamageType;
+      damageType = technique.damageType;
     }
 
     return {
