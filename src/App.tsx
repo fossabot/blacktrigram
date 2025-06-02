@@ -8,8 +8,8 @@ import { IntroScreen } from "./components/intro/IntroScreen";
 import { TrainingScreen } from "./components/training/TrainingScreen";
 import { EndScreen } from "./components/ui/EndScreen"; // Corrected path
 import { CombatSystem } from "./systems/CombatSystem";
-import { initializePlayers } from "./utils/playerUtils"; // Ensure this is exported from playerUtils
-import { AudioManagerProvider } from "./audio/AudioManager"; // Corrected .tsx extension if it was missing
+import { initializePlayers } from "./utils/playerUtils";
+import { useAudio } from "./audio/AudioManager";
 
 const INITIAL_GAME_STATE: AppState = {
   players: initializePlayers(),
@@ -48,8 +48,9 @@ const headerStyle: React.CSSProperties = {
 };
 
 // App Component
-function App(): JSX.Element {
+function App() {
   const [appState, setAppState] = useState<AppState>(INITIAL_GAME_STATE);
+  const audio = useAudio();
 
   // Game Loop Logic (simplified)
   useEffect(() => {
@@ -58,9 +59,15 @@ function App(): JSX.Element {
         setAppState((prev) => {
           if (prev.timeRemaining <= 0) {
             const winner = CombatSystem.determineRoundWinner(prev.players); // Static call
+            // Play victory/defeat sound
+            if (winner) {
+              audio.playSFX("victory");
+            } else {
+              audio.playSFX("defeat");
+            }
             return {
               ...prev,
-              gamePhase: winner ? "victory" : "defeat", // Uses string literals, will be cast to GamePhase by setAppState
+              gamePhase: winner ? "victory" : "defeat",
               winnerId: winner ? winner.id : null,
             };
           }
@@ -73,7 +80,7 @@ function App(): JSX.Element {
       }, 1000);
       return () => clearInterval(timer);
     }
-  }, [appState.gamePhase, appState.isPaused]); // Removed combatSystem from dependencies as methods are static
+  }, [appState.gamePhase, appState.isPaused, audio]);
 
   const handleGamePhaseChange = useCallback((phase: GamePhase | string) => {
     setAppState((prev) => ({
@@ -229,22 +236,21 @@ function App(): JSX.Element {
   };
 
   return (
-    <AudioManagerProvider>
-      <div style={appStyle}>
-        <Stage
-          width={window.innerWidth * 0.95} // Adjusted for potentially more space
-          height={window.innerHeight * 0.9} // Adjusted
-          options={{
-            backgroundColor: KOREAN_COLORS.BLACK,
-            antialias: true,
-            autoDensity: true, // Helps with scaling on different DPI screens
-            resolution: window.devicePixelRatio || 1, // Use device pixel ratio
-          }}
-        >
-          {renderGameContent()}
-        </Stage>
-        {/* Development phase switcher example (can be removed for production) */}
-        {/* <div style={{ marginTop: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
+    <div style={appStyle}>
+      <Stage
+        width={window.innerWidth * 0.95} // Adjusted for potentially more space
+        height={window.innerHeight * 0.9} // Adjusted
+        options={{
+          backgroundColor: KOREAN_COLORS.BLACK,
+          antialias: true,
+          autoDensity: true, // Helps with scaling on different DPI screens
+          resolution: window.devicePixelRatio || 1, // Use device pixel ratio
+        }}
+      >
+        {renderGameContent()}
+      </Stage>
+      {/* Development phase switcher example (can be removed for production) */}
+      {/* <div style={{ marginTop: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
           {(Object.keys(GamePhase) as Array<keyof typeof GamePhase>).map(key => (
             <button 
               key={GamePhase[key]}
@@ -255,8 +261,7 @@ function App(): JSX.Element {
             </button>
           ))}
         </div> */}
-      </div>
-    </AudioManagerProvider>
+    </div>
   );
 }
 
