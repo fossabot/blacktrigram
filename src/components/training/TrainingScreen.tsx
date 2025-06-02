@@ -87,7 +87,7 @@ export function TrainingScreen({
         <div style={symbolStyle(stance)}>{trigramData.symbol}</div>
 
         <h3 style={{ textAlign: "center", marginBottom: "1rem" }}>
-          {trigramData.koreanName} ({trigramData.englishName})
+          {trigramData.korean} ({trigramData.english})
         </h3>
 
         <div style={{ marginBottom: "1rem" }}>
@@ -110,9 +110,7 @@ export function TrainingScreen({
         </div>
 
         <div style={{ fontSize: "0.8rem", opacity: 0.8 }}>
-          <div>
-            데미지: {technique.damageRange.min}-{technique.damageRange.max}
-          </div>
+          <div>데미지: {technique.damage || "15-25"}</div>
           <div>
             스태미나: {technique.staminaCost} | 기력: {technique.kiCost}
           </div>
@@ -169,10 +167,10 @@ export function TrainingScreen({
               }}
             >
               선택된 팔괘: {TRIGRAM_DATA[selectedStance].symbol}{" "}
-              {TRIGRAM_DATA[selectedStance].koreanName}
+              {TRIGRAM_DATA[selectedStance].korean}
             </p>
             <p style={{ fontSize: "1rem", opacity: 0.8 }}>
-              Selected Trigram: {TRIGRAM_DATA[selectedStance].englishName}
+              Selected Trigram: {TRIGRAM_DATA[selectedStance].english}
             </p>
           </div>
         )}

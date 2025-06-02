@@ -1,3 +1,4 @@
+import * as PIXI from "pixi.js";
 import type {
   TextStyle as PixiTextStyle,
   TextMetrics as PixiTextMetrics,
@@ -53,32 +54,64 @@ export const formatKoreanNumber = (num: number): string => {
 export function validateKoreanText(text: string): {
   isValid: boolean;
   hasKorean: boolean;
-  characterCount: number;
-  warnings: string[];
+  errors: string[];
 } {
-  const warnings: string[] = [];
+  const errors: string[] = [];
 
-  if (text.length === 0) {
-    warnings.push("Empty text provided");
+  if (!text || text.trim().length === 0) {
+    errors.push("Text cannot be empty");
   }
 
-  if (text.length > 100) {
-    warnings.push("Text is very long, consider splitting");
-  }
-
-  const koreanCharCount = text.split("").filter(isKoreanCharacter).length;
-  const hasKoreanChars = koreanCharCount > 0;
-
-  if (!hasKoreanChars && text.includes("한글")) {
-    warnings.push("Text mentions Korean but contains no Korean characters");
-  }
+  // Check for Korean characters (Hangul)
+  const hasKorean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(text);
 
   return {
-    isValid: warnings.length === 0,
-    hasKorean: hasKoreanChars,
-    characterCount: text.length,
-    warnings,
+    isValid: errors.length === 0,
+    hasKorean,
+    errors,
   };
+}
+
+/**
+ * Create PIXI TextStyle for Korean text
+ */
+export function getPixiTextStyle(
+  props: KoreanTextProps,
+  baseColor: number = KOREAN_COLORS.WHITE
+): PIXI.TextStyle {
+  const style = new PIXI.TextStyle({
+    fontFamily: KOREAN_FONT_FAMILY,
+    fontSize: typeof props.size === "number" ? props.size : 16,
+    fill: baseColor,
+    fontWeight: "400",
+    align: props.align || "left",
+    wordWrap: true,
+    wordWrapWidth: 600,
+  });
+
+  // Add cyberpunk styling if needed
+  if (props.className?.includes("cyberpunk")) {
+    style.dropShadow = {
+      alpha: 0.7,
+      angle: Math.PI / 4,
+      blur: 4,
+      color: KOREAN_COLORS.CYAN,
+      distance: 2,
+    };
+    style.stroke = { color: KOREAN_COLORS.BLACK, width: 2 };
+  }
+
+  return style;
+}
+
+/**
+ * Measure Korean text dimensions
+ */
+export function measureKoreanText(
+  text: string,
+  style: PIXI.TextStyle
+): { width: number; height: number } {
+  return PIXI.TextMetrics.measureText(text, style);
 }
 
 // Korean text formatting utilities

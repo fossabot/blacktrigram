@@ -1,6 +1,6 @@
 import type {
-  KoreanTextStyleInterface, // Use the alias from korean-text.ts
-  // KoreanTextVariant, // Unused
+  KoreanTextStyle,
+  MartialVariant,
   TrigramStance,
   StatusKey, // Ensure StatusKey is defined in enums and imported correctly
   KoreanFontWeight,
@@ -12,20 +12,16 @@ import {
   KOREAN_COLORS,
 } from "../../../../types/constants"; // Alias to avoid conflict
 
-export const KOREAN_FONT_FAMILY = {
-  PRIMARY: "Noto Sans KR, Arial, sans-serif",
-  FALLBACK: "Arial, sans-serif",
+// Korean Font Weights (uppercase for consistency)
+export const KOREAN_FONT_WEIGHTS: Record<string, number> = {
+  LIGHT: 300,
+  REGULAR: 400,
+  MEDIUM: 500,
+  BOLD: 700,
+  HEAVY: 900,
 } as const;
 
-export const KOREAN_FONT_WEIGHTS: Record<KoreanFontWeight, number> = {
-  light: 300,
-  regular: 400,
-  normal: 400, // Map normal to regular
-  medium: 500,
-  bold: 700,
-  heavy: 900,
-};
-
+// Korean Text Sizes
 export const KOREAN_TEXT_SIZES = {
   small: 12,
   medium: 16,
@@ -34,11 +30,60 @@ export const KOREAN_TEXT_SIZES = {
   title: 48,
 } as const;
 
-// Alias for compatibility
-export const KOREAN_FONT_SIZES = KOREAN_TEXT_SIZES;
+// Korean Font Families
+export const KOREAN_FONT_FAMILIES = {
+  primary: "Noto Sans KR, Arial, sans-serif",
+  traditional: "Noto Serif KR, serif",
+  modern: "Nanum Gothic, sans-serif",
+} as const;
 
-// Import KOREAN_COLORS from the main constants
-export { KOREAN_COLORS } from "../../../../types/constants";
+// Martial Text Style Presets
+export const KOREAN_MARTIAL_TEXT_PRESETS: Record<
+  MartialVariant,
+  KoreanTextStyle
+> = {
+  technique: {
+    size: "medium",
+    weight: "BOLD",
+  },
+  philosophy: {
+    size: "large",
+    weight: "MEDIUM",
+  },
+  instruction: {
+    size: "medium",
+    weight: "REGULAR",
+  },
+  practitioner: {
+    size: "medium",
+    weight: "REGULAR",
+  },
+  master: {
+    size: "large",
+    weight: "BOLD",
+  },
+  honor: {
+    size: "medium",
+    weight: "MEDIUM",
+  },
+  discipline: {
+    size: "medium",
+    weight: "MEDIUM",
+  },
+} as const;
+
+// Status translations - simplified for available StatusKey values
+export const KOREAN_STATUS_TRANSLATIONS = {
+  health: { korean: "체력", english: "Health" },
+  ki: { korean: "기", english: "Ki" },
+  stamina: { korean: "지구력", english: "Stamina" },
+  consciousness: { korean: "의식", english: "Consciousness" },
+  pain: { korean: "고통", english: "Pain" },
+  balance: { korean: "균형", english: "Balance" },
+  bloodLoss: { korean: "출혈", english: "Blood Loss" },
+  posture: { korean: "자세", english: "Posture" },
+  // Add other status keys
+};
 
 // Korean martial text presets
 export const KOREAN_MARTIAL_TEXT_PRESETS = {
@@ -74,21 +119,7 @@ export const MARTIAL_COLORS: Record<string, ColorValue> = {
   // ... other martial-specific colors
 };
 
-export const KOREAN_STATUS_TRANSLATIONS: Record<
-  StatusKey,
-  { korean: string; english: string }
-> = {
-  health: { korean: "체력", english: "Health" },
-  ki: { korean: "기", english: "Ki" },
-  stamina: { korean: "지구력", english: "Stamina" },
-  consciousness: { korean: "의식", english: "Consciousness" },
-  pain: { korean: "고통", english: "Pain" },
-  balance: { korean: "균형", english: "Balance" },
-  bloodLoss: { korean: "출혈", english: "Blood Loss" },
-  posture: { korean: "자세", english: "Posture" },
-  // Add other status keys
-};
-
+// Korean martial arts terms
 export const KOREAN_MARTIAL_ARTS_TERMS: Record<
   string,
   { korean: string; english: string; romanized: string }

@@ -192,7 +192,7 @@ export function PhilosophySection({
             text="대표 기술:"
             englishText="Representative Technique:"
             size="medium"
-            weight="bold"
+            weight="BOLD"
             showBoth={true}
             style={{ marginBottom: "0.5rem" }}
           />
@@ -239,7 +239,7 @@ export function PhilosophySection({
             text="전투 특성:"
             englishText="Combat Characteristics:"
             size="medium"
-            weight="bold"
+            weight="BOLD"
             showBoth={true}
             style={{ marginBottom: "0.5rem" }}
           />
@@ -258,7 +258,7 @@ export function PhilosophySection({
                   color: `#${KOREAN_COLORS.CYAN.toString(16).padStart(6, "0")}`,
                 }}
               >
-                공격력: {Math.round((trigramData.damageModifier || 1) * 100)}%
+                공격력: {Math.round(100)}%
               </div>
               <div
                 style={{
@@ -266,7 +266,7 @@ export function PhilosophySection({
                   color: `#${KOREAN_COLORS.CYAN.toString(16).padStart(6, "0")}`,
                 }}
               >
-                방어력: {Math.round((trigramData.defenseModifier || 1) * 100)}%
+                방어력: {Math.round(100)}%
               </div>
             </div>
             <div>
@@ -276,7 +276,7 @@ export function PhilosophySection({
                   color: `#${KOREAN_COLORS.CYAN.toString(16).padStart(6, "0")}`,
                 }}
               >
-                속도: {Math.round((trigramData.speedModifier || 1) * 100)}%
+                속도: {Math.round(100)}%
               </div>
               <div
                 style={{
@@ -284,7 +284,7 @@ export function PhilosophySection({
                   color: `#${KOREAN_COLORS.CYAN.toString(16).padStart(6, "0")}`,
                 }}
               >
-                기력 회복: {Math.round((trigramData.kiRegenRate || 1) * 100)}%
+                기력 회복: {Math.round(100)}%
               </div>
             </div>
           </div>

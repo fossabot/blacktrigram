@@ -3,7 +3,8 @@
 import React, { useCallback } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import type { HitEffect, KOREAN_COLORS } from "../../types";
+import type { HitEffect } from "../../types";
+import { KOREAN_COLORS } from "../../types";
 
 interface HitEffectsLayerProps {
   readonly effects: readonly HitEffect[];
@@ -37,7 +38,7 @@ export function HitEffectsLayer({
                   const x = Math.cos(angle) * distance;
                   const y = Math.sin(angle) * distance;
 
-                  g.setFillStyle({ color: 0xffd700, alpha: alpha });
+                  g.setFillStyle({ color: KOREAN_COLORS.GOLD, alpha });
                   g.circle(x, y, 2);
                   g.fill();
                 }
@@ -52,13 +53,15 @@ export function HitEffectsLayer({
           x={0}
           y={-30}
           anchor={{ x: 0.5, y: 0.5 }}
-          style={{
-            fontFamily: "Noto Sans KR, Arial, sans-serif",
-            fontSize: 24,
-            fill: effect.color,
-            fontWeight: "bold",
-            alpha,
-          }}
+          style={
+            new PIXI.TextStyle({
+              fontFamily: "Noto Sans KR, Arial, sans-serif",
+              fontSize: 24,
+              fill: effect.color,
+              fontWeight: "bold",
+            })
+          }
+          alpha={alpha}
         />
       </Container>
     );

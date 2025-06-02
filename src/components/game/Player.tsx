@@ -3,13 +3,8 @@
 import React, { useCallback } from "react";
 import { Container, Graphics } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import { KOREAN_COLORS } from "../../types/constants"; // Import as value, not type
-import type {
-  PlayerState,
-  TrigramStance,
-  Position,
-  PlayerArchetype,
-} from "../../types";
+import { KOREAN_COLORS } from "../../types/constants";
+import type { PlayerState, PlayerArchetype } from "../../types";
 
 interface PlayerProps {
   readonly playerState: PlayerState;
@@ -21,10 +16,7 @@ interface PlayerProps {
 
 export function Player({
   playerState,
-  playerIndex,
-  onStateUpdate,
   isActive = true,
-  archetype = "musa",
 }: PlayerProps): React.ReactElement {
   // Draw player martial artist
   const drawPlayer = useCallback(
@@ -60,13 +52,6 @@ export function Player({
     [playerState.stance, playerState.health, playerState.maxHealth]
   );
 
-  const healthColor =
-    playerState.health > 50 ? KOREAN_COLORS.NEON_GREEN : KOREAN_COLORS.RED;
-  const kiColor = KOREAN_COLORS.ACCENT_BLUE;
-
-  const staminaColor =
-    playerState.stamina > 30 ? KOREAN_COLORS.YELLOW : KOREAN_COLORS.RED;
-
   return (
     <Container
       x={playerState.position.x}
@@ -74,14 +59,7 @@ export function Player({
       interactive={isActive}
       eventMode={isActive ? "static" : "passive"}
     >
-      <Graphics
-        draw={(g) => {
-          g.clear();
-          g.setFillStyle({ color: KOREAN_COLORS.WHITE, alpha: 0.9 });
-          g.rect(-25, -90, 50, 90);
-          g.fill();
-        }}
-      />
+      <Graphics draw={drawPlayer} />
     </Container>
   );
 }

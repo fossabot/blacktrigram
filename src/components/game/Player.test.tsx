@@ -1,24 +1,16 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, fireEvent } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { Player } from "./Player";
-import { type PlayerState, createPlayerState } from "../../types";
+import type { PlayerState } from "../../types";
 
-// Mock @pixi/react with proper JSX component types
+// Mock PIXI React components
 vi.mock("@pixi/react", () => ({
-  useTick: vi.fn((callback) => {
-    // Simulate tick callback
-    callback(0.016); // 60fps
-  }),
-}));
-
-// Mock PixiJS components with proper React component structure
-vi.mock("../ui/base/PixiComponents", () => ({
-  PixiContainerComponent: ({ children, onClick, ...props }: any) => (
-    <div data-testid="pixi-container" onClick={onClick} {...props}>
+  Container: ({ children, ...props }: any) => (
+    <div data-testid="pixi-container" {...props}>
       {children}
     </div>
   ),
-  PixiGraphicsComponent: ({ draw, ...props }: any) => {
+  Graphics: ({ draw, ...props }: any) => {
     if (draw) {
       const mockGraphics = {
         clear: vi.fn(),
@@ -33,67 +25,37 @@ vi.mock("../ui/base/PixiComponents", () => ({
     }
     return <div data-testid="pixi-graphics" {...props} />;
   },
-  PixiTextComponent: ({ text, ...props }: any) => (
-    <div data-testid="pixi-text" data-text={text} {...props}>
-      {text}
-    </div>
-  ),
 }));
 
 describe("Player Component", () => {
-  const mockPlayerState: PlayerState = createPlayerState(
-    "player1",
-    { x: 100, y: 200 },
-    "geon",
-    {
-      health: 80,
-      maxHealth: 100,
-      ki: 60,
-      maxKi: 100,
-      stamina: 90,
-      maxStamina: 100,
-      isAttacking: false,
-      isBlocking: false,
-    }
-  );
+  const mockPlayerState: PlayerState = {
+    id: "player1",
+    name: "Test Player",
+    archetype: "musa",
+    position: { x: 100, y: 200 },
+    stance: "geon",
+    health: 80,
+    maxHealth: 100,
+    ki: 60,
+    maxKi: 100,
+    stamina: 90,
+    maxStamina: 100,
+    consciousness: 100,
+    pain: 0,
+    balance: 100,
+    conditions: [],
+    equipment: [],
+  };
 
-  it("should render within PixiJS Application", () => {
-    const { container } = render(
-      <Player
-        playerState={mockPlayerState}
-        onAttack={() => {}}
-        isPlayer1={true}
-      />
-    );
+  const mockOnStateUpdate = vi.fn();
 
-    expect(container).toBeInTheDocument();
-  });
-
-  it("should handle attacks", () => {
-    let capturedPosition: { x: number; y: number } | null = null;
-
-    const handleAttack = (position: { x: number; y: number }) => {
-      capturedPosition = position;
-    };
-
-    render(
-      <Player
-        playerState={mockPlayerState}
-        onAttack={handleAttack}
-        isPlayer1={true}
-      />
-    );
-
-    // Test that component renders without errors
-    expect(capturedPosition).toBeNull(); // Initially no attacks
-  });
-
-  it("should render player with Korean martial arts styling", () => {
+  it("should render player component", () => {
     const { getByTestId } = render(
       <Player
         playerState={mockPlayerState}
-        isPlayer1={true}
-        onAttack={() => {}}
+        playerIndex={0}
+        onStateUpdate={mockOnStateUpdate}
+        isActive={true}
       />
     );
 
@@ -101,37 +63,38 @@ describe("Player Component", () => {
     expect(getByTestId("pixi-graphics")).toBeInTheDocument();
   });
 
-  it("should execute attack when clicked", () => {
-    const mockOnAttack = vi.fn();
-    const { getByTestId } = render(
+  it("should render with Korean stance data", () => {
+    const geonPlayer: PlayerState = {
+      ...mockPlayerState,
+      stance: "geon",
+    };
+
+    const { container } = render(
       <Player
-        playerState={mockPlayerState}
-        isPlayer1={true}
-        onAttack={mockOnAttack}
+        playerState={geonPlayer}
+        playerIndex={0}
+        onStateUpdate={mockOnStateUpdate}
+        isActive={false}
       />
     );
 
-    // Click on player container
-    const playerContainer = getByTestId("pixi-container");
-    fireEvent.click(playerContainer);
-
-    // Verify attack was called with correct damage and position
-    expect(mockOnAttack).toHaveBeenCalledWith(mockPlayerState.position);
+    expect(container).toBeInTheDocument();
   });
 
-  it("should display Korean stance information", () => {
-    const geonPlayer = createPlayerState(
-      "geonPlayer",
-      { x: 100, y: 100 },
-      "geon"
+  it("should handle different health levels", () => {
+    const lowHealthPlayer: PlayerState = {
+      ...mockPlayerState,
+      health: 25,
+    };
+
+    const { getByTestId } = render(
+      <Player
+        playerState={lowHealthPlayer}
+        playerIndex={0}
+        onStateUpdate={mockOnStateUpdate}
+      />
     );
 
-    const { container } = render(
-      <Player playerState={geonPlayer} onAttack={() => {}} isPlayer1={false} />
-    );
-
-    expect(container).toBeInTheDocument();
-    // Note: PixiJS content is rendered to canvas, so we can't test text content directly
-    // This test verifies the component mounts successfully with Korean stance data
+    expect(getByTestId("pixi-graphics")).toBeInTheDocument();
   });
 });

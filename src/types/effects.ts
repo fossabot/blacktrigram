@@ -171,14 +171,12 @@ export type HitEffectType =
 
 export interface HitEffect {
   readonly id: string;
-  readonly type: HitEffectType;
   readonly position: Position;
-  readonly duration?: Duration; // Optional: how long the visual effect lasts
-  readonly startTime?: number; // Optional: timestamp when the effect was created/started
-  readonly damage?: number; // Optional: damage value associated with the hit, for display
-  readonly korean?: KoreanText; // Optional: Korean text for the effect (e.g., "치명타!")
-  readonly scale?: number; // Optional: scale of the effect
-  readonly rotation?: number; // Optional: rotation of the effect
-  readonly tint?: number; // Optional: color tint for the effect
-  // Add any other visual properties needed for rendering the effect
+  readonly type: "light" | "medium" | "heavy" | "critical";
+  readonly damage: number; // Make required
+  readonly startTime: number; // Make required
+  readonly duration: number; // Make required
+  readonly korean: string; // Use string for simple Korean text labels
+  readonly color: number; // Make required for visual effects
+  readonly createdAt: number;
 }
