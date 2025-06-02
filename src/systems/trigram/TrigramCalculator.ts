@@ -278,17 +278,10 @@ export class TrigramCalculator {
     opponentStance?: TrigramStance
   ): KiFlowFactors {
     return {
-      currentStance: playerState.stance,
-      targetStance: opponentStance || playerState.stance, // Required field
-      playerHealthPercent: playerState.health / playerState.maxHealth,
-      playerStaminaPercent: playerState.stamina / playerState.maxStamina,
-      playerKiPercent: playerState.ki / playerState.maxKi,
-      activeEffects: playerState.activeEffects,
-      // Remove invalid property from KiFlowFactors
       playerLevelModifier: 1.0,
       stanceAffinity: this.getStanceAffinity(
-        playerState.archetype,
-        playerState.stance
+        playerState.stance,
+        playerState.archetype // Correct order: stance, archetype
       ),
     };
   }
@@ -301,9 +294,8 @@ export class TrigramCalculator {
       playerLevelModifier: this.getPlayerLevelModifier(playerState),
       stanceAffinity: this.getStanceAffinity(
         playerState.stance,
-        playerState.archetype
+        playerState.archetype // Correct order: stance, archetype
       ),
-      // Remove currentStance - not part of KiFlowFactors interface
     };
 
     const baseKiFlow = BASE_KI_FLOW_RATE_PER_STANCE[playerState.stance] || 1.0;
