@@ -1,40 +1,67 @@
 import React from "react";
-import type { KoreanTitleProps } from "../../../../../types/korean-text";
-import { KoreanText } from "./KoreanText";
+import type { KoreanTextHeaderProps } from "../../../../../types/korean-text";
+import { KOREAN_COLORS } from "../../../../../types/constants";
 
 export function KoreanTitle({
   korean,
   english,
-  level = 1,
   subtitle,
-  size,
-  weight = 700,
-  variant = "title",
-  ...restProps
-}: KoreanTitleProps): React.ReactElement {
-  // Determine size based on level if not explicitly provided
-  const titleSize =
-    size || (level === 1 ? "xxlarge" : level === 2 ? "xlarge" : "large");
+  level = 1,
+  color = KOREAN_COLORS.GOLD,
+  className,
+  style,
+}: KoreanTextHeaderProps): React.ReactElement {
+  const getFontSize = (level: number): string => {
+    const sizes = {
+      1: "2.5rem",
+      2: "2rem",
+      3: "1.75rem",
+      4: "1.5rem",
+      5: "1.25rem",
+      6: "1rem",
+    };
+    return sizes[level as keyof typeof sizes] || "2rem";
+  };
+
+  const titleStyle: React.CSSProperties = {
+    fontFamily: "Noto Sans KR, Arial, sans-serif",
+    fontSize: getFontSize(level),
+    fontWeight: level <= 2 ? 700 : 600,
+    color: `#${color.toString(16).padStart(6, "0")}`,
+    textAlign: "center",
+    margin: 0,
+    padding: "0.5rem 0",
+    textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
+    ...style,
+  };
+
+  const subtitleStyle: React.CSSProperties = {
+    fontFamily: "Noto Sans KR, Arial, sans-serif",
+    fontSize: `calc(${getFontSize(level)} * 0.6)`,
+    fontWeight: 400,
+    color: `#${KOREAN_COLORS.CYAN.toString(16).padStart(6, "0")}`,
+    textAlign: "center",
+    margin: "0.25rem 0 0 0",
+    opacity: 0.8,
+  };
+
+  const englishStyle: React.CSSProperties = {
+    fontFamily: "Noto Sans KR, Arial, sans-serif",
+    fontSize: `calc(${getFontSize(level)} * 0.5)`,
+    fontWeight: 300,
+    color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
+    textAlign: "center",
+    margin: "0.25rem 0 0 0",
+    opacity: 0.7,
+  };
+
+  const HeaderTag = `h${level}` as keyof JSX.IntrinsicElements;
 
   return (
-    <div>
-      <KoreanText
-        korean={korean}
-        english={english}
-        size={titleSize}
-        weight={weight}
-        variant={variant}
-        {...restProps}
-      />
-      {subtitle && (
-        <KoreanText
-          korean={subtitle}
-          size="medium"
-          weight={400}
-          variant="subtitle"
-          style={{ marginTop: "0.5rem", opacity: 0.8 }}
-        />
-      )}
+    <div className={className}>
+      <HeaderTag style={titleStyle}>{korean}</HeaderTag>
+      {english && <div style={englishStyle}>{english}</div>}
+      {subtitle && <div style={subtitleStyle}>{subtitle}</div>}
     </div>
   );
 }

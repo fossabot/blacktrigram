@@ -39,58 +39,45 @@ export function KoreanTechniqueText({
   const finalEnglish =
     propEnglishName || (typeof korean === "object" ? korean.english : english);
 
-  const reactStyle = useKoreanTextStyle({
-    korean: finalKorean,
-    english: finalEnglish,
-    trigram,
-    ...restKoreanTextProps,
-    style: htmlStyle,
-  });
+  // Get trigram color if available
+  const trigramColor = trigram
+    ? KOREAN_COLORS[trigram as keyof typeof KOREAN_COLORS]
+    : KOREAN_COLORS.GOLD;
 
-  let textContent = `${finalKorean}`;
-  if (finalEnglish) {
-    textContent += ` (${finalEnglish})`;
-  }
+  // Create PIXI text style
+  const pixiStyle = getPixiTextStyle(
+    {
+      korean: finalKorean,
+      english: finalEnglish,
+      size: "medium",
+      weight: "bold",
+      color: trigramColor,
+      ...restKoreanTextProps,
+    },
+    trigramColor
+  );
 
-  // For PIXI rendering:
-  const pixiStyleOptions = getPixiTextStyle({
-    korean: finalKorean,
-    english: finalEnglish,
-    trigram,
-    ...restKoreanTextProps,
-  });
+  // Format technique display text
+  const displayText =
+    showStanceSymbol && trigram
+      ? `${finalKorean} (${finalEnglish})`
+      : `${finalKorean} ${finalEnglish ? `(${finalEnglish})` : ""}`;
 
-  if (trigram && KOREAN_COLORS[trigram] && !pixiStyleOptions.fill) {
-    pixiStyleOptions.fill = KOREAN_COLORS[trigram] as PIXI.FillInput;
-  }
-  if (mastered) {
-    pixiStyleOptions.fill = KOREAN_COLORS.GOLD as PIXI.FillInput;
-    pixiStyleOptions.fontWeight = "bold" as PIXI.TextStyleFontWeight;
-  }
+  const enhancedText = damage ? `${displayText} [${damage}]` : displayText;
 
-  const finalPixiStyle = new PIXI.TextStyle(pixiStyleOptions);
+  const finalText = mastered ? `★ ${enhancedText}` : enhancedText;
 
-  // Always return a JSX element
-  if (x !== undefined || y !== undefined) {
-    return (
-      <PixiText
-        text={textContent}
-        style={finalPixiStyle}
-        x={x}
-        y={y}
-        anchor={anchor}
-        alpha={alpha}
-        visible={visible}
-        interactive={interactive}
-        onpointertap={onpointertap}
-      />
-    );
-  }
-
-  // Return DOM element when not using PIXI coordinates
   return (
-    <span className={className} style={reactStyle}>
-      {textContent}
-    </span>
+    <PixiText
+      text={finalText}
+      style={pixiStyle}
+      x={x}
+      y={y}
+      anchor={anchor}
+      alpha={alpha}
+      visible={visible}
+      interactive={interactive}
+      onpointertap={onpointertap}
+    />
   );
 }

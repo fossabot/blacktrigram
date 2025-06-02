@@ -1,17 +1,16 @@
+// Re-export Korean text types for local component use
 export type {
   KoreanText,
   KoreanTextProps,
-  KoreanTitleProps,
-  KoreanMartialTextProps,
-  KoreanTechniqueTextProps,
-  KoreanStatusTextProps,
   KoreanTextHeaderProps,
+  KoreanTechniqueTextProps,
+  KoreanMartialTextProps,
+  KoreanStatusTextProps,
   KoreanTextSize,
-  KoreanTextVariant,
-  KoreanTextEmphasis,
   KoreanFontWeight,
-  HonorLevel,
+  KoreanTextVariant,
   MartialVariant,
+  StatusKey,
 } from "../../../../types/korean-text";
 
 // Additional local types for Korean text system

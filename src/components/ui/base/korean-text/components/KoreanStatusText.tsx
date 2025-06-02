@@ -1,6 +1,5 @@
 import React from "react";
 import type { KoreanStatusTextProps } from "../../../../../types/korean-text";
-import { KoreanText } from "./KoreanText";
 import { KOREAN_STATUS_TRANSLATIONS } from "../constants";
 import { KOREAN_COLORS } from "../../../../../types/constants";
 
@@ -9,37 +8,67 @@ export function KoreanStatusText({
   value,
   maxValue,
   showPercentage = false,
-  criticalThreshold = 0.3,
-  warningThreshold = 0.6,
-  ...restKoreanTextProps
+  criticalThreshold = 20,
+  warningThreshold = 50,
+  size = "medium",
+  className,
+  style,
 }: KoreanStatusTextProps): React.ReactElement {
-  const percentage = maxValue ? value / maxValue : 1;
+  const statusText = KOREAN_STATUS_TRANSLATIONS[statusKey];
 
-  let statusColor = KOREAN_COLORS.WHITE;
-  if (percentage < criticalThreshold) {
-    statusColor = KOREAN_COLORS.CRITICAL_RED;
-  } else if (percentage < warningThreshold) {
-    statusColor = KOREAN_COLORS.GOLD;
-  }
-
-  const translation = KOREAN_STATUS_TRANSLATIONS[statusKey] || {
-    korean: statusKey,
-    english: statusKey,
+  const getStatusColor = (): number => {
+    if (value !== undefined && maxValue !== undefined) {
+      const percentage = (value / maxValue) * 100;
+      if (percentage <= criticalThreshold) {
+        return KOREAN_COLORS.TRADITIONAL_RED;
+      } else if (percentage <= warningThreshold) {
+        return KOREAN_COLORS.GOLD;
+      }
+    }
+    return KOREAN_COLORS.WHITE;
   };
 
-  let displayText = translation.korean;
-  if (maxValue !== undefined) {
-    displayText += `: ${value}/${maxValue}`;
-    if (showPercentage) {
-      displayText += ` (${Math.round(percentage * 100)}%)`;
+  const getFontSize = (): string => {
+    if (typeof size === "number") return `${size}px`;
+    const sizeMap = {
+      small: "0.875rem",
+      medium: "1rem",
+      large: "1.25rem",
+      xlarge: "1.5rem",
+      xxlarge: "2rem",
+    };
+    return sizeMap[size as keyof typeof sizeMap] || "1rem";
+  };
+
+  const textStyle: React.CSSProperties = {
+    fontFamily: "Noto Sans KR, Arial, sans-serif",
+    fontSize: getFontSize(),
+    color: `#${getStatusColor().toString(16).padStart(6, "0")}`,
+    ...style,
+  };
+
+  const formatValue = (): string => {
+    if (value === undefined) return "";
+
+    if (maxValue !== undefined) {
+      const percentage = Math.round((value / maxValue) * 100);
+      if (showPercentage) {
+        return ` ${value}/${maxValue} (${percentage}%)`;
+      } else {
+        return ` ${value}/${maxValue}`;
+      }
     }
-  }
+
+    return ` ${value}`;
+  };
+
+  const displayText = `${statusText.korean} (${
+    statusText.english
+  })${formatValue()}`;
 
   return (
-    <KoreanText
-      korean={displayText}
-      color={statusColor}
-      {...restKoreanTextProps}
-    />
+    <span className={className} style={textStyle}>
+      {displayText}
+    </span>
   );
 }

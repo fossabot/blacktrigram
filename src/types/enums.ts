@@ -88,6 +88,11 @@ export const EffectType = {
   CONFUSION: "confusion",
   BALANCE_LOSS: "balance_loss",
   PARALYSIS: "paralysis",
+  DOT: "dot", // Damage over time
+  HOT: "hot", // Heal over time
+  ROOT: "root",
+  SLOW: "slow",
+  FEAR: "fear",
 } as const;
 
 export type EffectType = (typeof EffectType)[keyof typeof EffectType];
@@ -105,6 +110,9 @@ export const EffectIntensity = {
   EXTREME: "extreme",
   WEAK: "weak",
   HEAVY: "heavy",
+  MINOR: "minor",
+  CRITICAL: "critical",
+  LETHAL: "lethal",
 } as const;
 
 export type EffectIntensity =
@@ -150,7 +158,12 @@ export const GamePhase = {
 export type GamePhase = (typeof GamePhase)[keyof typeof GamePhase];
 
 export const StatusKey = {
+  HEALTH: "health",
+  KI: "ki",
+  STAMINA: "stamina",
+  CONSCIOUSNESS: "consciousness",
   PAIN: "pain",
+  BALANCE: "balance",
   HEALTH_CRITICAL: "health_critical",
   STAMINA_LOW: "stamina_low",
   KI_DEPLETED: "ki_depleted",
@@ -404,3 +417,28 @@ export const LayoutDirection = {
 
 export type LayoutDirection =
   (typeof LayoutDirection)[keyof typeof LayoutDirection];
+
+// Input actions for game controls
+export const InputAction = {
+  MOVE_UP: "move_up",
+  MOVE_DOWN: "move_down",
+  MOVE_LEFT: "move_left",
+  MOVE_RIGHT: "move_right",
+  ATTACK: "attack",
+  DEFEND: "defend",
+  STANCE_CHANGE: "stance_change",
+  PAUSE: "pause",
+  MENU: "menu",
+} as const;
+
+export type InputAction = (typeof InputAction)[keyof typeof InputAction];
+
+// Export string literal types for compatibility
+export type GamePhaseType = `${GamePhase}`;
+export type PlayerArchetypeType = `${PlayerArchetype}`;
+export type TrigramStanceType = `${TrigramStance}`;
+export type CombatStateType = `${CombatState}`;
+export type DamageTypeType = `${DamageType}`;
+export type EffectTypeType = `${EffectType}`;
+export type EffectIntensityType = `${EffectIntensity}`;
+export type BodyRegionType = `${BodyRegion}`;
