@@ -166,8 +166,8 @@ export interface PixiTextStyleConfig {
 // For PIXI text config in UI
 export type KoreanPixiTextConfig = PixiTextStyleConfig;
 
-// Korean font family for PIXI (must be a string, not object)
+// Fix font family to be a string, not object
 export const KOREAN_FONT_FAMILY = "Noto Sans KR, Arial, sans-serif";
 
-// Export font sizes
-export const KOREAN_FONT_SIZES = KOREAN_TEXT_SIZES; // Alias for backward compatibility
+// Export the font sizes with proper name
+export const KOREAN_FONT_SIZES = KOREAN_TEXT_SIZES;

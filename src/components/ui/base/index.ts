@@ -1,24 +1,29 @@
 // Base UI component exports for Korean martial arts game
 
+// Export Korean text components (no duplicates)
 export {
   KoreanText,
-  KoreanMartialText,
+  KoreanTitle,
   KoreanTechniqueText,
   KoreanStatusText,
-  KoreanTitle,
-  KoreanTextUtils,
-  validateKoreanText,
-  type KoreanTextProps,
-  type KoreanMartialTextProps,
-  type KoreanTechniqueTextProps,
-  type KoreanStatusTextProps,
-  type KoreanTitleProps,
-  type KoreanTextSize,
-  type KoreanTextVariant,
-  type KoreanTextEmphasis,
-  type MartialVariant,
-  type HonorLevel,
+  KoreanMartialText,
 } from "./korean-text";
+
+// Export types from the main types system (avoid local re-exports)
+export type {
+  KoreanTextProps,
+  KoreanTitleProps,
+  KoreanTechniqueTextProps,
+  KoreanStatusTextProps,
+  KoreanMartialTextProps,
+  KoreanTextSize,
+  KoreanTextVariant,
+  KoreanTextEmphasis,
+  MartialVariant,
+  HonorLevel,
+  PixiTextStyleConfig,
+  KoreanPixiTextConfig,
+} from "../../../types/korean-text";
 
 export {
   BackgroundGrid,

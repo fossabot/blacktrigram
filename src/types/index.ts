@@ -11,7 +11,11 @@ export * from "./enums";
 // Export core types (avoid duplicates by being specific)
 export type { Position, CombatCondition } from "./common";
 export type { PlayerState, PlayerArchetypeData } from "./player";
-export type { VitalPoint } from "./anatomy";
+export type {
+  VitalPoint,
+  AnatomicalLocation,
+  VitalPointHitResult,
+} from "./anatomy";
 export type { KoreanTechnique, CombatResult, AttackInput } from "./combat";
 // Remove CombatState from combat.ts export since it's now in enums
 export type { HitEffect, StatusEffect, VitalPointEffect } from "./effects";
@@ -42,6 +46,8 @@ export type {
   TransitionPath,
   KiFlowFactors,
   StanceTransition,
+  TrigramEffectivenessMatrix,
+  TrigramTransitionRule,
 } from "./trigram";
 export type { AppState } from "./game";
 
@@ -67,7 +73,6 @@ export type { UITheme, ColorScheme } from "./ui";
 export type {
   VitalPointSystemInterface,
   VitalPointSystemConfig,
-  VitalPointHitResult,
 } from "./systems";
 
 // Export audio types

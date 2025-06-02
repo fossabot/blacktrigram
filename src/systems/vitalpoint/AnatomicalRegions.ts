@@ -1,13 +1,14 @@
 // Anatomical regions mapping for Korean martial arts vital point system
 import type { BodyRegion } from "../../types";
+import type { KoreanText } from "../../types/korean-text";
 
-// Define RegionData locally, matching the expected structure
+// Match the interface exactly with what's expected in the type system
 interface RegionData {
-  readonly name: { korean: string; english: string };
+  readonly name: KoreanText;
   readonly subRegions: readonly string[];
   readonly vitalPoints: readonly string[];
   readonly vulnerability: number;
-  readonly pressure_points: readonly string[]; // Required property
+  readonly pressure_points: readonly string[];
 }
 
 // Use the canonical RegionData type from types/anatomy for strict typing
@@ -19,7 +20,7 @@ export const ANATOMICAL_REGIONS_DATA: Readonly<Record<BodyRegion, RegionData>> =
       subRegions: ["face_upper", "temples", "occiput"] as const,
       vitalPoints: ["head_temple", "philtrum", "mastoid_process"] as const,
       vulnerability: 1.5,
-      pressure_points: ["philtrum"] as const,
+      pressure_points: ["baihui", "yintang", "taiyang"] as const,
     },
     face_upper: {
       name: { korean: "얼굴 상부", english: "Upper Face" },
@@ -40,14 +41,14 @@ export const ANATOMICAL_REGIONS_DATA: Readonly<Record<BodyRegion, RegionData>> =
       subRegions: ["chest", "abdomen", "back"] as const,
       vitalPoints: ["solar_plexus", "ribs_floating", "kidney_area"] as const,
       vulnerability: 1.0,
-      pressure_points: ["solar_plexus"] as const,
+      pressure_points: ["solar_plexus", "zhongwan", "qihai"] as const,
     },
     chest: {
       name: { korean: "가슴", english: "Chest" },
       subRegions: [] as const,
       vitalPoints: ["sternum_center", "clavicle_notch"] as const,
       vulnerability: 1.1,
-      pressure_points: ["sternum_center"] as const,
+      pressure_points: ["sternum_center", "shanzhong", "qimen"] as const,
     },
     abdomen: {
       name: { korean: "복부", english: "Abdomen" },
@@ -287,23 +288,23 @@ export const ANATOMICAL_REGIONS_DATA: Readonly<Record<BodyRegion, RegionData>> =
       subRegions: [] as const,
       vitalPoints: [] as const,
       vulnerability: 1.0,
-      pressure_points: [] as const,
+      pressure_points: [] as const, // Add missing property
     },
     general: {
       name: { korean: "일반", english: "General" },
       subRegions: [] as const,
       vitalPoints: [] as const,
       vulnerability: 1.0,
-      pressure_points: [] as const,
+      pressure_points: [] as const, // Add missing property
     },
     internal: {
       name: { korean: "내부", english: "Internal" },
       subRegions: [] as const,
       vitalPoints: [] as const,
       vulnerability: 1.0,
-      pressure_points: [] as const,
+      pressure_points: [] as const, // Add missing property
     },
   } as const;
 
-// This file should now be correct if `types/enums.ts` BodyRegion includes all used strings.
-// No changes needed here if the enum is comprehensive.
+// Ensure all regions have pressure_points (file already complete from previous fix)
+// No changes needed - file is correct

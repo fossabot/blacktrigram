@@ -37,25 +37,16 @@ export class TransitionCalculator {
     for (const from of stances) {
       for (const to of stances) {
         if (from === to) continue;
-        // Basic cost, can be refined
-        let kiCost = 10;
-        let staminaCost = 5;
-        let timeMs = 500;
-
-        // Example: Transitions involving 'gan' (mountain, defensive) might take longer or cost more stamina
-        if (from === "gan" || to === "gan") {
-          staminaCost += 5;
-          timeMs += 200;
-        }
-        // Example: Transitions to 'son' (wind, swift) might be faster
-        if (to === "son") {
-          timeMs = Math.max(200, timeMs - 150);
-        }
+        const kiCost = 10;
+        const staminaCost = 5;
+        const timeMs = 500;
 
         rules.push({
           from,
           to,
           cost: { ki: kiCost, stamina: staminaCost, timeMilliseconds: timeMs },
+          effectiveness: 1.0, // Add missing property
+          conditions: [], // Add optional property
         });
       }
     }
@@ -162,11 +153,21 @@ export class TransitionCalculator {
       playerState.stance
     ); // Using current stance as opponent for self-effectiveness
 
+    const path = [startStance, endStance];
+    const totalCost = cost;
+    const overallEffectiveness = effectiveness;
+    const cumulativeRisk = (cost.timeMilliseconds / 1000) * 0.1; // Example risk calculation
+
     return {
-      path: [startStance, endStance],
-      totalCost: cost,
-      overallEffectiveness: effectiveness,
-      cumulativeRisk: (cost.timeMilliseconds / 1000) * 0.1, // Example risk calculation
+      path,
+      totalCost,
+      overallEffectiveness,
+      cumulativeRisk,
+      name: `${path[0]} → ${path[path.length - 1]}`,
+      description: {
+        korean: `${path[0]}에서 ${path[path.length - 1]}로의 전환`,
+        english: `Transition from ${path[0]} to ${path[path.length - 1]}`,
+      },
     };
   }
 }

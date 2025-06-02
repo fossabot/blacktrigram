@@ -7,9 +7,9 @@ import type {
   TrigramTransitionCost,
   TransitionPath,
   KiFlowFactors,
-  StatusEffect,
   EffectIntensity,
   KoreanTechnique,
+  StatusEffect,
 } from "../../types";
 import { EffectType } from "../../types";
 import {
@@ -56,6 +56,8 @@ export class TrigramCalculator {
           from,
           to,
           cost: { ki: 10, stamina: 5, timeMilliseconds: 500 },
+          effectiveness: 1.0, // Add missing property
+          conditions: [], // Add optional property
         });
       }
     }
@@ -162,6 +164,11 @@ export class TrigramCalculator {
         totalCost: directCost,
         overallEffectiveness: effectiveness,
         cumulativeRisk: 0.1,
+        name: `${currentStance} → ${targetOpponentStance}`,
+        description: {
+          korean: `${currentStance}에서 ${targetOpponentStance}로의 전환`,
+          english: `Transition from ${currentStance} to ${targetOpponentStance}`,
+        },
       };
     }
     return null;
@@ -276,6 +283,97 @@ export class TrigramCalculator {
       playerStaminaPercent: playerState.stamina / playerState.maxStamina,
       playerKiPercent: playerState.ki / playerState.maxKi,
       activeEffects: playerState.activeEffects,
+      // Remove invalid property from KiFlowFactors
+      playerLevelModifier: 1.0,
+      stanceAffinity: this.getStanceAffinity(
+        playerState.archetype,
+        playerState.stance
+      ),
     };
+  }
+
+  calculateOptimalKiFlow(playerState: PlayerState): number {
+    const factors: KiFlowFactors = {
+      playerLevelModifier: this.getPlayerLevelModifier(playerState),
+      stanceAffinity: this.getStanceAffinity(
+        playerState.stance,
+        playerState.archetype
+      ),
+    };
+
+    // Calculate optimal Ki flow based on factors
+    const baseFlow = 1.0;
+    const levelModifier = factors.playerLevelModifier || 1.0;
+    const affinityModifier = factors.stanceAffinity || 1.0;
+
+    return baseFlow * levelModifier * affinityModifier;
+  }
+
+  // Add missing method
+  private getPlayerLevelModifier(playerState: PlayerState): number {
+    // Implementation for player level modifier
+    // For now, return a default value based on player state
+    const healthRatio = playerState.health / playerState.maxHealth;
+    const staminaRatio = playerState.stamina / playerState.maxStamina;
+
+    return (healthRatio + staminaRatio) / 2;
+  }
+
+  // Fix method signature - archetype parameter should be string, not TrigramStance
+  private getStanceAffinity(stance: TrigramStance, archetype: string): number {
+    const affinityMap: Record<string, Record<TrigramStance, number>> = {
+      musa: {
+        geon: 1.2,
+        jin: 1.1,
+        tae: 1.0,
+        li: 0.9,
+        son: 0.9,
+        gam: 0.8,
+        gan: 1.0,
+        gon: 1.0,
+      },
+      amsalja: {
+        son: 1.2,
+        gam: 1.1,
+        geon: 0.9,
+        tae: 1.0,
+        li: 1.0,
+        jin: 0.8,
+        gan: 1.0,
+        gon: 0.9,
+      },
+      hacker: {
+        li: 1.2,
+        tae: 1.1,
+        geon: 1.0,
+        jin: 0.9,
+        son: 1.0,
+        gam: 0.9,
+        gan: 0.8,
+        gon: 0.9,
+      },
+      jeongbo: {
+        gan: 1.2,
+        gon: 1.1,
+        geon: 1.0,
+        tae: 0.9,
+        li: 0.9,
+        jin: 0.8,
+        son: 1.0,
+        gam: 1.0,
+      },
+      jojik: {
+        jin: 1.2,
+        gam: 1.1,
+        geon: 0.9,
+        tae: 0.8,
+        li: 1.0,
+        son: 0.9,
+        gan: 1.0,
+        gon: 1.0,
+      },
+    };
+
+    return affinityMap[archetype]?.[stance] || 1.0;
   }
 }

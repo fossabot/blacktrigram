@@ -1,109 +1,99 @@
 import type {
   PlayerState,
   TrigramStance,
-  TrigramTransitionCost,
   TransitionPath,
-  // Import the correct type
+  TrigramTransitionCost,
 } from "../../types";
 import type { TrigramCalculator } from "./TrigramCalculator";
+
+// Fix StanceTransitionResult interface to include missing properties
+interface StanceTransitionResult {
+  readonly from: TrigramStance;
+  readonly to: TrigramStance;
+  readonly cost: TrigramTransitionCost;
+  readonly effectiveness: number;
+  readonly success: boolean;
+  readonly reason?: string;
+  readonly newState: PlayerState;
+  readonly timestamp: number;
+}
 
 // Import constants or define them if they are specific to this module
 import {
   MAX_TRANSITION_COST_KI,
   MAX_TRANSITION_COST_STAMINA,
   MAX_TRANSITION_TIME_MILLISECONDS,
-  // MIN_TRANSITION_EFFECTIVENESS is not used in this implementation
 } from "../../types/constants";
-import { StanceTransitionResult } from "@/types/trigram";
 
-// Default cooldown for stance changes (in milliseconds)
 const DEFAULT_STANCE_COOLDOWN_MS = 500;
 
 export class StanceManager {
   private trigramCalculator: TrigramCalculator;
-  // private config: StanceManagerConfig; // If you have specific config for StanceManager
 
-  constructor(
-    trigramCalculator: TrigramCalculator
-    // config?: StanceManagerConfig
-  ) {
+  constructor(trigramCalculator: TrigramCalculator) {
     this.trigramCalculator = trigramCalculator;
-    // this.config = { ...defaultConfig, ...config };
   }
 
   public changeStance(
     playerState: PlayerState,
     targetStance: TrigramStance
   ): StanceTransitionResult {
-    // Use correct return type
     const now = Date.now();
-    // Use default cooldown since stanceChangeCooldownMs doesn't exist in TrigramData
-    const cooldown = DEFAULT_STANCE_COOLDOWN_MS;
 
-    if (
-      playerState.lastStanceChangeTime &&
-      now - playerState.lastStanceChangeTime < cooldown
-    ) {
+    // Check cooldown
+    if (now - playerState.lastStanceChangeTime < DEFAULT_STANCE_COOLDOWN_MS) {
       return {
         from: playerState.stance,
         to: targetStance,
         cost: { ki: 0, stamina: 0, timeMilliseconds: 0 },
         effectiveness: 0,
         success: false,
+        reason: "Stance change on cooldown",
         newState: playerState,
-        reason: `cooldown_active: ${
-          cooldown - (now - playerState.lastStanceChangeTime)
-        }ms remaining`,
         timestamp: now,
       };
     }
 
-    const cost = this.trigramCalculator.calculateTransitionCost(
+    // Calculate transition cost
+    const transitionCost = this.trigramCalculator.calculateTransitionCost(
       playerState.stance,
       targetStance,
       playerState
     );
 
-    if (playerState.ki < cost.ki) {
+    // Check if player has enough resources
+    if (
+      playerState.ki < transitionCost.ki ||
+      playerState.stamina < transitionCost.stamina
+    ) {
       return {
         from: playerState.stance,
         to: targetStance,
-        cost,
+        cost: transitionCost,
         effectiveness: 0,
         success: false,
+        reason: "Insufficient resources",
         newState: playerState,
-        reason: "insufficient_ki",
-        timestamp: now,
-      };
-    }
-    if (playerState.stamina < cost.stamina) {
-      return {
-        from: playerState.stance,
-        to: targetStance,
-        cost,
-        effectiveness: 0,
-        success: false,
-        newState: playerState,
-        reason: "insufficient_stamina",
         timestamp: now,
       };
     }
 
-    const newPlayerState: PlayerState = {
+    // Successful transition
+    const newState: PlayerState = {
       ...playerState,
       stance: targetStance,
-      ki: playerState.ki - cost.ki,
-      stamina: playerState.stamina - cost.stamina,
+      ki: playerState.ki - transitionCost.ki,
+      stamina: playerState.stamina - transitionCost.stamina,
       lastStanceChangeTime: now,
     };
 
     return {
       from: playerState.stance,
       to: targetStance,
-      cost,
+      cost: transitionCost,
       effectiveness: 1.0,
       success: true,
-      newState: newPlayerState,
+      newState,
       timestamp: now,
     };
   }

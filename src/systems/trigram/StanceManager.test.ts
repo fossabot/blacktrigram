@@ -144,9 +144,14 @@ describe("StanceManager", () => {
     it("should call TrigramCalculator's calculateOptimalPath", () => {
       const mockPath: TransitionPath = {
         path: ["geon", "tae", "li"],
-        totalCost: { ki: 20, stamina: 10, timeMilliseconds: 600 },
+        totalCost: { ki: 15, stamina: 20, timeMilliseconds: 1000 },
         overallEffectiveness: 0.8,
-        cumulativeRisk: 0.1,
+        cumulativeRisk: 0.3,
+        name: "Test Transition Path",
+        description: {
+          korean: "테스트 전환 경로",
+          english: "Test Transition Path",
+        },
       };
       mockTrigramCalculator.calculateOptimalPath.mockReturnValue(mockPath);
       const opponentStance: TrigramStance = "gam";

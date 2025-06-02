@@ -36,11 +36,11 @@ export interface TrigramVisualEffect {
 }
 
 // Eight Trigram effectiveness matrix (상극상생)
-export interface TrigramEffectivenessMatrix {
-  readonly [attacker: string]: {
-    readonly [defender: string]: number;
+export type TrigramEffectivenessMatrix = {
+  readonly [K in TrigramStance]: {
+    readonly [T in TrigramStance]: number;
   };
-}
+};
 
 // Trigram stance state for players
 export interface TrigramStanceState {
@@ -122,13 +122,6 @@ export interface KiFlowFactors {
   readonly stanceAffinity?: number;
 }
 
-export interface StanceTransition {
-  readonly from: TrigramStance;
-  readonly to: TrigramStance;
-  readonly cost: TrigramTransitionCost;
-  readonly effectiveness: number;
-}
-
 // Trigram combat analytics
 export interface TrigramCombatStats {
   readonly stance: TrigramStance;
@@ -177,10 +170,9 @@ export interface TrigramTransitionRule {
   readonly conditions?: string[];
 }
 
-// Extended stance transition result for StanceManager
-export interface StanceTransitionResult extends StanceTransition {
-  readonly success: boolean;
-  readonly reason?: string;
-  readonly newState: any; // PlayerState - using any to avoid circular dependency
-  readonly timestamp: number;
+export interface StanceTransition {
+  readonly from: TrigramStance;
+  readonly to: TrigramStance;
+  readonly cost: TrigramTransitionCost;
+  readonly effectiveness: number;
 }

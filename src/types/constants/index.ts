@@ -18,12 +18,6 @@ export const KOREAN_FONT_SIZES = {
   XXLARGE: 32,
 } as const;
 
-export const KOREAN_FONT_FAMILY = {
-  PRIMARY: "Noto Sans KR, Arial, sans-serif",
-  SECONDARY: "Malgun Gothic, sans-serif",
-  MONOSPACE: "D2Coding, monospace",
-} as const;
-
 export const MARTIAL_COLORS = {
   practitioner: 0x4169e1,
   master: 0xffd700,
@@ -48,9 +42,12 @@ export const COMBAT_TIMING = {
   RECOVERY_TIME_MS: 500,
 } as const;
 
-// Korean font family constants
+// Typography constants - PIXI requires string values
 export const KOREAN_FONT_FAMILY_PRIMARY = "Noto Sans KR, Arial, sans-serif";
 export const KOREAN_FONT_FAMILY_SECONDARY = "Malgun Gothic, sans-serif";
+
+// Main font family for PIXI compatibility (string, not object)
+export const KOREAN_FONT_FAMILY = KOREAN_FONT_FAMILY_PRIMARY;
 
 // Additional UI constants for Korean martial arts theme
 export const KOREAN_UI_CONSTANTS = {

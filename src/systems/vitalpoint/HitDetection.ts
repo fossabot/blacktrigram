@@ -1,12 +1,6 @@
-import type {
-  VitalPoint,
-  AnatomicalLocation,
-  KoreanTechnique,
-  Position,
-  CombatResult,
-  StatusEffect,
-} from "../../types";
-import { VITAL_POINTS_DATA } from "../../types/constants";
+import { VITAL_POINTS_DATA, CombatResult, StatusEffect } from "@/types";
+import type { VitalPoint, Position, AnatomicalLocation } from "../../types";
+import type { KoreanTechnique } from "../../types/combat";
 
 // Placeholder math functions - MOVE THESE TO A DEDICATED utils/math.ts FILE
 export class HitDetection {
