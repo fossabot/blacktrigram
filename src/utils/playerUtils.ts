@@ -155,10 +155,10 @@ export function calculateMovementSpeed(player: PlayerState): number {
   player.conditions.forEach((condition: CombatCondition) => {
     // Explicitly type condition
     switch (condition.type) {
-      case "stunned":
+      case "stun":
         baseSpeed *= 0.1;
         break;
-      case "paralyzed":
+      case "paralysis":
         baseSpeed *= 0.0;
         break;
       case "exhausted":
@@ -184,7 +184,7 @@ export function canPerformAction(
 
   // Check for disabling conditions
   const disablingConditions = player.conditions.filter(
-    (c: CombatCondition) => c.type === "stunned" || c.type === "paralyzed"
+    (c: CombatCondition) => c.type === "stun" || c.type === "paralysis"
   );
 
   if (disablingConditions.length > 0) {
@@ -193,12 +193,6 @@ export function canPerformAction(
 
   // Action-specific checks
   switch (actionType) {
-    case "attack":
-      return !player.isAttacking && player.stamina > 10;
-    case "stance_change":
-      return !player.isAttacking && player.ki > 5;
-    case "block":
-      return !player.isAttacking;
     default:
       return true;
   }
