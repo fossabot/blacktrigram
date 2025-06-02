@@ -246,6 +246,12 @@ export const ANATOMICAL_REGIONS_DATA: Readonly<Record<BodyRegion, RegionData>> =
       ],
       vulnerability: 1.5, // Added
     },
+    leg_back_knee: {
+      name: { korean: "무릎 뒤", english: "Back of Knee" },
+      subRegions: [],
+      vitalPoints: ["popliteal_fossa", "knee_back_nerve"],
+      vulnerability: 1.6, // Added - vulnerable area behind knee
+    },
   } as const;
 
 // This file should now be correct if `types/enums.ts` BodyRegion includes all used strings.

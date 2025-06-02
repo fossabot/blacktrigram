@@ -5,6 +5,8 @@ import type {
   KoreanText,
   EffectType,
   BodyRegion,
+  VitalPointCategory,
+  VitalPointSeverity,
 } from "../../types";
 
 // Helper to create VitalPointEffect objects

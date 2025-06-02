@@ -1,14 +1,15 @@
 // Player utility functions for Korean martial arts game
 
-import { Position, StatusEffectType, CombatCondition } from "@/types/common";
+import { Position, CombatCondition } from "@/types/common";
 import { StatusEffect } from "@/types/effects";
 import {
   type PlayerState,
   type TrigramStance,
-  CombatReadiness, // Import as value
-  type EffectIntensity, // Import as type from enums via index.ts
-  type CombatState, // Import CombatState type from enums via index.ts
+  type EffectIntensity,
+  type CombatState,
+  type EffectType,
 } from "../types";
+import { CombatReadiness } from "../types/enums";
 
 /**
  * Creates a new player state with Korean martial arts defaults
@@ -115,7 +116,7 @@ export function updatePlayerHealth(
  */
 export function addCombatCondition(
   player: PlayerState,
-  type: StatusEffectType, // Changed parameter type
+  type: EffectType, // Use EffectType from enums
   duration: number,
   intensity: EffectIntensity, // Use EffectIntensity type
   source: string
