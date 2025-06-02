@@ -1,80 +1,61 @@
 import React from "react";
-import { Text } from "@pixi/react";
-import * as PIXI from "pixi.js";
 import type { KoreanTitleProps } from "../types";
-import { KOREAN_TEXT_SIZES, KOREAN_FONT_FAMILIES } from "../constants";
-import { KOREAN_COLORS } from "../../../../types";
+import { KOREAN_COLORS } from "../../../../../types/constants";
 
 export function KoreanTitle({
   korean,
   english,
-  subtitle,
   level = 1,
-  size = "large",
+  size,
   color = KOREAN_COLORS.GOLD,
-  align = "center",
+  className,
   style,
-  ...props
 }: KoreanTitleProps): React.ReactElement {
-  const fontSize =
-    typeof size === "number"
-      ? size
-      : KOREAN_TEXT_SIZES[size] || KOREAN_TEXT_SIZES.large;
+  const getFontSize = (level: number, customSize?: string | number): string => {
+    if (customSize) {
+      return typeof customSize === "number" ? `${customSize}px` : customSize;
+    }
 
-  const adjustedFontSize = fontSize * (2 - (level - 1) * 0.2);
+    const sizes = {
+      1: "2.5rem",
+      2: "2rem",
+      3: "1.75rem",
+      4: "1.5rem",
+      5: "1.25rem",
+      6: "1rem",
+    };
+    return sizes[level as keyof typeof sizes] || "1.5rem";
+  };
 
-  const titleStyle = new PIXI.TextStyle({
-    fontFamily: KOREAN_FONT_FAMILIES.PRIMARY,
-    fontSize: adjustedFontSize,
-    fill: color,
-    fontWeight: "bold",
-    align: align,
-    wordWrap: true,
-    wordWrapWidth: 600,
-  });
+  const getColor = (): string => {
+    return typeof color === "number"
+      ? `#${color.toString(16).padStart(6, "0")}`
+      : color;
+  };
 
-  const subtitleStyle = new PIXI.TextStyle({
-    fontFamily: KOREAN_FONT_FAMILIES.PRIMARY,
-    fontSize: adjustedFontSize * 0.7,
-    fill: color,
-    fontWeight: "normal",
-    align: align,
-    wordWrap: true,
-    wordWrapWidth: 600,
-  });
+  const titleStyle: React.CSSProperties = {
+    fontFamily: "Noto Sans KR, Arial, sans-serif",
+    fontSize: getFontSize(level, size),
+    fontWeight: level <= 2 ? "bold" : "normal",
+    color: getColor(),
+    margin: "0 0 1rem 0",
+    lineHeight: 1.2,
+    textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
+    ...style,
+  };
 
-  const HeaderTag =
-    level === 1
-      ? "h1"
-      : level === 2
-      ? "h2"
-      : level === 3
-      ? "h3"
-      : level === 4
-      ? "h4"
-      : level === 5
-      ? "h5"
-      : "h6";
+  const displayText = english ? `${korean}\n${english}` : korean;
 
   return (
-    <div style={style} {...props}>
-      <Text text={korean} style={titleStyle} anchor={{ x: 0.5, y: 0.5 }} />
-      {english && (
-        <Text
-          text={english}
-          style={subtitleStyle}
-          anchor={{ x: 0.5, y: 0.5 }}
-          y={adjustedFontSize * 0.8}
-        />
-      )}
-      {subtitle && (
-        <Text
-          text={subtitle}
-          style={subtitleStyle}
-          anchor={{ x: 0.5, y: 0.5 }}
-          y={adjustedFontSize * 1.4}
-        />
-      )}
+    <div className={className} style={titleStyle}>
+      {displayText.split("\n").map((line, index) => (
+        <div
+          key={index}
+          style={index > 0 ? { fontSize: "0.8em", opacity: 0.8 } : {}}
+        >
+          {line}
+        </div>
+      ))}
     </div>
   );
 }

@@ -17,6 +17,7 @@ export function KoreanText({
   align = "left",
   className,
   style,
+  ...restProps // Add restProps to destructuring
 }: KoreanTextProps): React.ReactElement {
   const getFontSize = (size: KoreanTextProps["size"]): string => {
     if (typeof size === "number") return `${size}px`;
