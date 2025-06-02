@@ -315,9 +315,34 @@ export type BodyRegion =
   | "back"
   | "hands"
   | "feet"
-  | "face_upper" // Added from KoreanVitalPoints
-  | "solar_plexus" // Added from KoreanVitalPoints
-  | "leg_back_knee"; // Added from KoreanVitalPoints
+  | "face_upper"
+  | "solar_plexus"
+  | "leg_back_knee"
+  | "temples"
+  | "occiput"
+  | "eyes"
+  | "nose"
+  | "throat"
+  | "upper_back"
+  | "lower_back"
+  | "left_arm"
+  | "right_arm"
+  | "left_leg"
+  | "right_leg"
+  | "head_side"
+  | "limbs" // Added
+  | "joints" // Added
+  | "upper_abdomen_center" // Added
+  | "jaw" // Added
+  | "philtrum" // Added
+  | "mastoid_process" // Added
+  | "ribs" // Added
+  | "clavicle" // Added
+  | "kidneys" // Added
+  | "liver" // Added
+  | "spleen" // Added
+  | "floating_ribs" // Added
+  | "face"; // Added
 
 export type StatusKey =
   | "health"

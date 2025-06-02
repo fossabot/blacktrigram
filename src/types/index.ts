@@ -27,7 +27,7 @@ export type {
   DifficultyLevel,
   MatchResult,
   PhilosophyAspect,
-  StatusEffectType, // This is a subset of EffectType, ensure consistency
+  EffectType as StatusEffectType, // Replaced direct import with alias for EffectType
   ButtonVariant,
   LayoutDirection,
   // KoreanTextStyle, // This is an interface in korean-text.ts, the enum was KoreanTextStyleType

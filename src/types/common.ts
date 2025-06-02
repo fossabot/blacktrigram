@@ -5,7 +5,7 @@ import type {
   DamageType,
   PlayerArchetype as EnumPlayerArchetype, // Aliased
   EffectIntensity,
-  StatusEffectType as EnumStatusEffectType, // Aliased
+  EffectType as EnumStatusEffectType, // Changed StatusEffectType to EffectType
 } from "./enums";
 
 // Basic shared types

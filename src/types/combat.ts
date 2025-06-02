@@ -3,7 +3,6 @@
 import type { TrigramStance } from "./enums"; // Changed to import from enums
 import type { KoreanText } from "./korean-text";
 import type { StatusEffect } from "./effects";
-import type { VitalPoint } from "./anatomy";
 import type { PlayerState } from "./player";
 import type { DamageType as EnumDamageType } from "./enums";
 
@@ -48,6 +47,7 @@ export interface KoreanTechnique {
   readonly type: CombatAttackType; // Made non-optional, provide a default like "strike"
   readonly damageType: EnumDamageType; // Added: Type of damage (blunt, sharp, etc.)
   readonly damageRange: { min: number; max: number; type?: EnumDamageType }; // Added: Min/max damage, optional type override
+  readonly damageMultiplier?: number; // Added optional damageMultiplier
   readonly range: number; // Added: Effective range of the technique
   readonly kiCost: number;
   readonly staminaCost: number;
@@ -102,6 +102,7 @@ export interface CombatResult {
   readonly consciousnessImpact: number; // Impact on consciousness
   readonly balanceEffect: number; // Effect on target's balance
   readonly statusEffects: readonly StatusEffect[]; // Status effects applied
+  readonly effects?: readonly StatusEffect[]; // Added optional effects
   readonly hitType:
     | "normal"
     | "vital"
