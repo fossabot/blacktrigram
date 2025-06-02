@@ -8,7 +8,7 @@ export function KoreanMartialText({
   martialVariant,
   honorLevel,
   ...props
-}: KoreanMartialTextProps): JSX.Element {
+}: KoreanMartialTextProps): React.JSX.Element {
   const text = typeof korean === "string" ? korean : korean.korean;
   const englishText =
     english || (typeof korean === "object" ? korean.english : undefined);

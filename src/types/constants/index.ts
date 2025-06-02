@@ -51,7 +51,6 @@ export const COMBAT_TIMING = {
 // Korean font family constants
 export const KOREAN_FONT_FAMILY_PRIMARY = "Noto Sans KR, Arial, sans-serif";
 export const KOREAN_FONT_FAMILY_SECONDARY = "Malgun Gothic, sans-serif";
-export const KOREAN_FONT_FAMILY = KOREAN_FONT_FAMILY_PRIMARY; // For compatibility
 
 // Additional UI constants for Korean martial arts theme
 export const KOREAN_UI_CONSTANTS = {

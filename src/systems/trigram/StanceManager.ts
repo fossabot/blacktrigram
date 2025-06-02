@@ -3,10 +3,9 @@ import type {
   TrigramStance,
   TrigramTransitionCost,
   TransitionPath,
-  StanceTransition,
+  // Import the correct type
 } from "../../types";
 import type { TrigramCalculator } from "./TrigramCalculator";
-import type { StanceTransitionResult } from "../../types/trigram";
 
 // Import constants or define them if they are specific to this module
 import {
@@ -15,6 +14,7 @@ import {
   MAX_TRANSITION_TIME_MILLISECONDS,
   // MIN_TRANSITION_EFFECTIVENESS is not used in this implementation
 } from "../../types/constants";
+import { StanceTransitionResult } from "@/types/trigram";
 
 // Default cooldown for stance changes (in milliseconds)
 const DEFAULT_STANCE_COOLDOWN_MS = 500;
@@ -34,7 +34,8 @@ export class StanceManager {
   public changeStance(
     playerState: PlayerState,
     targetStance: TrigramStance
-  ): StanceTransition {
+  ): StanceTransitionResult {
+    // Use correct return type
     const now = Date.now();
     // Use default cooldown since stanceChangeCooldownMs doesn't exist in TrigramData
     const cooldown = DEFAULT_STANCE_COOLDOWN_MS;
@@ -44,10 +45,11 @@ export class StanceManager {
       now - playerState.lastStanceChangeTime < cooldown
     ) {
       return {
-        success: false,
         from: playerState.stance,
         to: targetStance,
         cost: { ki: 0, stamina: 0, timeMilliseconds: 0 },
+        effectiveness: 0,
+        success: false,
         newState: playerState,
         reason: `cooldown_active: ${
           cooldown - (now - playerState.lastStanceChangeTime)
@@ -64,10 +66,11 @@ export class StanceManager {
 
     if (playerState.ki < cost.ki) {
       return {
-        success: false,
         from: playerState.stance,
         to: targetStance,
         cost,
+        effectiveness: 0,
+        success: false,
         newState: playerState,
         reason: "insufficient_ki",
         timestamp: now,
@@ -75,10 +78,11 @@ export class StanceManager {
     }
     if (playerState.stamina < cost.stamina) {
       return {
-        success: false,
         from: playerState.stance,
         to: targetStance,
         cost,
+        effectiveness: 0,
+        success: false,
         newState: playerState,
         reason: "insufficient_stamina",
         timestamp: now,
@@ -94,10 +98,11 @@ export class StanceManager {
     };
 
     return {
-      success: true,
       from: playerState.stance,
       to: targetStance,
       cost,
+      effectiveness: 1.0,
+      success: true,
       newState: newPlayerState,
       timestamp: now,
     };

@@ -12,7 +12,7 @@ import type {
   FederatedPointerEvent,
   TextDropShadow,
 } from "pixi.js";
-import { TrigramStance, ColorValue } from "../../../types";
+import { TrigramStance } from "../../../types";
 import {
   KOREAN_COLORS,
   KOREAN_FONT_FAMILY_PRIMARY, // Use specific font constant
@@ -46,27 +46,24 @@ export function KoreanButton({
 }: KoreanButtonProps): React.ReactElement {
   const [isHovered, setIsHovered] = useState(false);
 
-  const { autoWidth, autoHeight, fontSize } = useMemo(() => {
+  const { autoWidth, autoHeight } = useMemo(() => {
     // Use explicit dimensions if provided, otherwise calculate based on size
     switch (size) {
       case "small":
         return {
           autoWidth: explicitWidth ?? 80,
           autoHeight: explicitHeight ?? 24,
-          fontSize: 10,
         };
       case "large":
         return {
           autoWidth: explicitWidth ?? 160,
           autoHeight: explicitHeight ?? 40,
-          fontSize: 16,
         };
       case "medium":
       default:
         return {
           autoWidth: explicitWidth ?? 120,
           autoHeight: explicitHeight ?? 30,
-          fontSize: 14,
         };
     }
   }, [size, explicitWidth, explicitHeight]);
