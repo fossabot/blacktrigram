@@ -73,7 +73,7 @@ export function TrainingScreen({
   );
 
   const renderStanceCard = (stance: TrigramStance) => {
-    const trigramData = TRIGRAM_DATA[stance];
+    const trigramData = TRIGRAM_DATA[stance as keyof typeof TRIGRAM_DATA];
     const technique = trigramData.technique;
 
     return (
@@ -120,7 +120,9 @@ export function TrainingScreen({
     );
   };
 
-  const trigramData = TRIGRAM_DATA[selectedStance];
+  const trigramData = selectedStance
+    ? TRIGRAM_DATA[selectedStance as keyof typeof TRIGRAM_DATA]
+    : null;
   const stanceColor = KOREAN_COLORS.GOLD; // Use consistent color
 
   return (
@@ -144,7 +146,9 @@ export function TrainingScreen({
       </div>
 
       <div style={gridStyle}>
-        {(Object.keys(TRIGRAM_DATA) as TrigramStance[]).map(renderStanceCard)}
+        {(Object.keys(TRIGRAM_DATA) as TrigramStance[]).map((stance) =>
+          renderStanceCard(stance)
+        )}
       </div>
 
       <div

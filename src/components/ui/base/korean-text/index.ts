@@ -15,18 +15,18 @@ export {
   cssToPixiTextStyle,
 } from "./utils";
 
-// Constants (ensure these are exported from constants.ts)
+// Constants
 export {
   KOREAN_FONT_FAMILIES,
   KOREAN_TEXT_SIZES,
-  KOREAN_FONT_SIZES, // Alias
-  KOREAN_FONT_FAMILY, // Alias
+  KOREAN_FONT_SIZES,
+  KOREAN_FONT_FAMILY,
   KOREAN_MARTIAL_TEXT_PRESETS,
   KOREAN_STATUS_TRANSLATIONS,
   KOREAN_MARTIAL_ARTS_TERMS,
 } from "./constants";
 
-// Types (ensure these are exported from types.ts)
+// Types
 export type {
   KoreanTextProps,
   KoreanTitleProps,
@@ -40,6 +40,5 @@ export type {
   KoreanTextVariant,
   KoreanTextEmphasis,
   HonorLevel,
-  KoreanFontWeight,
   FontFamily,
 } from "./types";

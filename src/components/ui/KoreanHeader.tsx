@@ -1,14 +1,11 @@
 import React from "react";
-import type { KoreanText } from "../../types";
 import { KOREAN_COLORS } from "../../types";
 
-export interface KoreanHeaderProps {
-  readonly title: KoreanText | string;
-  readonly subtitle?: KoreanText | string;
+interface KoreanHeaderProps {
+  readonly title: string;
+  readonly subtitle?: string;
   readonly level?: 1 | 2 | 3 | 4 | 5 | 6;
-  readonly onBackButtonClick?: () => void;
-  readonly showLogo?: boolean;
-  readonly className?: string;
+  readonly color?: number;
   readonly style?: React.CSSProperties;
 }
 
@@ -16,38 +13,34 @@ export function KoreanHeader({
   title,
   subtitle,
   level = 1,
-  className,
+  color = KOREAN_COLORS.GOLD,
   style,
 }: KoreanHeaderProps): React.ReactElement {
-  const titleText = typeof title === "string" ? title : title.korean;
-  const subtitleText = subtitle
-    ? typeof subtitle === "string"
-      ? subtitle
-      : subtitle.korean
-    : undefined;
-
   const HeaderTag = `h${level}` as keyof JSX.IntrinsicElements;
 
   const headerStyle: React.CSSProperties = {
-    color: `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
+    color: `#${color.toString(16).padStart(6, "0")}`,
     fontFamily: "Noto Sans KR, Arial, sans-serif",
     textAlign: "center",
-    margin: "1rem 0",
+    textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
+    margin: "0 0 1rem 0",
+    fontWeight: 700,
     ...style,
   };
 
   const subtitleStyle: React.CSSProperties = {
-    color: `#${KOREAN_COLORS.CYAN.toString(16).padStart(6, "0")}`,
+    color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
     fontFamily: "Noto Sans KR, Arial, sans-serif",
-    fontSize: "0.8em",
-    fontWeight: "normal",
-    margin: "0.5rem 0",
+    fontSize: "0.7em",
+    fontWeight: 400,
+    opacity: 0.9,
+    marginTop: "0.5rem",
   };
 
   return (
-    <div className={className}>
-      <HeaderTag style={headerStyle}>{titleText}</HeaderTag>
-      {subtitleText && <div style={subtitleStyle}>{subtitleText}</div>}
+    <div>
+      <HeaderTag style={headerStyle}>{title}</HeaderTag>
+      {subtitle && <div style={subtitleStyle}>{subtitle}</div>}
     </div>
   );
 }

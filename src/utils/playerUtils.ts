@@ -11,6 +11,7 @@ import {
   type EffectType,
   type PlayerArchetype,
   CombatReadiness,
+  DamageType,
 } from "../types";
 
 /**
@@ -57,6 +58,25 @@ export function createPlayerState(
     conditions: [],
     ...overrides,
   };
+}
+
+/**
+ * Updates two player states for the game.
+ */
+export function updatePlayerStates(
+  player1: PlayerState,
+  player2: PlayerState
+): [PlayerState, PlayerState] {
+  const updatedPlayer1 = {
+    ...player1,
+    position: { x: player1.position.x, y: player1.position.y },
+  };
+  const updatedPlayer2 = {
+    ...player2,
+    position: { x: player2.position.x, y: player2.position.y },
+  };
+
+  return [updatedPlayer1, updatedPlayer2];
 }
 
 /**
@@ -273,4 +293,43 @@ export function isPlayerDefeated(player: PlayerState): boolean {
     player.health <= 0 ||
     player.combatReadiness === CombatReadiness.INCAPACITATED
   );
+}
+
+/**
+ * Update player health with Korean martial arts realism
+ */
+export function updatePlayerHealth(
+  player: PlayerState,
+  damage: number,
+  damageType: DamageType = "blunt"
+): PlayerState {
+  const newHealth = Math.max(0, player.health - damage);
+
+  // Calculate consciousness based on health and pain
+  const healthRatio = newHealth / player.maxHealth;
+  let newConsciousness = player.consciousness;
+
+  if (healthRatio < 0.2) {
+    newConsciousness = Math.max(0, newConsciousness - 20);
+  } else if (healthRatio < 0.5) {
+    newConsciousness = Math.max(0, newConsciousness - 10);
+  }
+
+  // Determine combat state based on health and consciousness
+  let newCombatState: CombatState = "ready";
+  if (newHealth <= 0 || newConsciousness <= 0) {
+    newCombatState = "helpless";
+  } else if (healthRatio < 0.3 || newConsciousness < 30) {
+    newCombatState = "vulnerable";
+  } else if (healthRatio < 0.6 || newConsciousness < 60) {
+    newCombatState = "shaken";
+  }
+
+  return {
+    ...player,
+    health: newHealth,
+    consciousness: newConsciousness,
+    combatState: newCombatState,
+    pain: Math.min(100, player.pain + damage * 0.5),
+  };
 }

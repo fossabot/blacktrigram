@@ -1,6 +1,6 @@
+import React, { ReactElement } from "react";
+import { render, RenderOptions } from "@testing-library/react";
 import { vi } from "vitest";
-import { render, type RenderOptions } from "@testing-library/react";
-import { type ReactElement } from "react";
 
 // Mock graphics context for PixiJS testing
 export const mockGraphicsContext = {
@@ -18,27 +18,50 @@ export const mockGraphicsContext = {
   lineStyle: vi.fn(),
 };
 
-// Mock audio functions for testing
-export const mockAudio = {
-  playSFX: vi.fn(),
+// Mock AudioManager for tests
+const mockAudioManager = {
   playMusic: vi.fn(),
-  setMasterVolume: vi.fn(),
-  getMasterVolume: vi.fn(() => 0.7),
-  isEnabled: vi.fn(() => true),
+  stopMusic: vi.fn(),
+  playSFX: vi.fn(),
   playAttackSound: vi.fn(),
   playHitSound: vi.fn(),
-  playComboSound: vi.fn(),
-  playStanceChangeSound: vi.fn(),
+  playTechniqueSound: vi.fn(),
+  setVolume: vi.fn(),
+  isEnabled: true,
 };
 
-// Custom render function for testing Korean martial arts components
-export function renderKoreanMartialArtsComponent(
+// Audio Provider wrapper for tests
+const AudioProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  return <div data-testid="audio-provider">{children}</div>;
+};
+
+// Custom render function that includes audio context
+const customRender = (
   ui: ReactElement,
   options?: Omit<RenderOptions, "wrapper">
-): ReturnType<typeof render> {
-  return render(ui, {
+) =>
+  render(ui, {
+    wrapper: AudioProvider,
     ...options,
   });
+
+// Mock audio context function
+export function mockAudioContext() {
+  return mockAudioManager;
+}
+
+// Re-export everything
+export * from "@testing-library/react";
+export { customRender as render };
+
+// Helper function to render with audio context
+export function renderWithAudio(
+  ui: ReactElement,
+  options?: Omit<RenderOptions, "wrapper">
+) {
+  return customRender(ui, options);
 }
 
 // Render function for PixiJS Stage components
@@ -49,9 +72,34 @@ export function renderInStage(ui: ReactElement): ReturnType<typeof render> {
 // Test utilities for Korean martial arts game testing
 export const testUtils = {
   mockGraphicsContext,
-  mockAudio,
-  renderKoreanMartialArtsComponent,
   renderInStage,
 };
 
-export * from "@testing-library/react";
+// Player state factory for tests
+export function createTestPlayerState(overrides = {}) {
+  return {
+    id: "test-player",
+    name: "Test Player",
+    archetype: "musa" as const,
+    position: { x: 100, y: 200 },
+    stance: "geon" as const,
+    facing: "right" as const,
+    health: 100,
+    maxHealth: 100,
+    ki: 100,
+    maxKi: 100,
+    stamina: 100,
+    maxStamina: 100,
+    consciousness: 100,
+    pain: 0,
+    balance: 100,
+    bloodLoss: 0,
+    lastStanceChangeTime: Date.now(),
+    isAttacking: false,
+    combatReadiness: 100,
+    activeEffects: [],
+    combatState: "ready" as const,
+    conditions: [],
+    ...overrides,
+  };
+}

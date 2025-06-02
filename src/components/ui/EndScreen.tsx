@@ -1,6 +1,11 @@
 import React from "react";
-import type { EndScreenProps } from "../../types/components";
 import { KOREAN_COLORS } from "../../types";
+
+interface EndScreenProps {
+  readonly winnerId: string | null;
+  readonly onRestart: () => void;
+  readonly onMenu: () => void;
+}
 
 export function EndScreen({
   winnerId,
@@ -8,15 +13,15 @@ export function EndScreen({
   onMenu,
 }: EndScreenProps): React.ReactElement {
   const containerStyle: React.CSSProperties = {
-    width: "100%",
-    height: "100vh",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
+    minHeight: "100vh",
     backgroundColor: `#${KOREAN_COLORS.BLACK.toString(16).padStart(6, "0")}`,
     color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
     fontFamily: "Noto Sans KR, Arial, sans-serif",
+    textAlign: "center",
   };
 
   const titleStyle: React.CSSProperties = {
@@ -25,7 +30,6 @@ export function EndScreen({
       ? `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`
       : `#${KOREAN_COLORS.TRADITIONAL_RED.toString(16).padStart(6, "0")}`,
     marginBottom: "2rem",
-    textAlign: "center",
   };
 
   const buttonStyle: React.CSSProperties = {
@@ -45,15 +49,21 @@ export function EndScreen({
   return (
     <div style={containerStyle}>
       <h1 style={titleStyle}>
-        {winnerId ? "승리! (Victory!)" : "패배! (Defeat!)"}
+        {winnerId ? "승리! (Victory!)" : "무승부 (Draw)"}
       </h1>
+
+      {winnerId && (
+        <p style={{ fontSize: "1.5rem", marginBottom: "2rem" }}>
+          승자: {winnerId}
+        </p>
+      )}
 
       <div>
         <button style={buttonStyle} onClick={onRestart}>
           다시 시작 (Restart)
         </button>
         <button style={buttonStyle} onClick={onMenu}>
-          메뉴 (Menu)
+          메뉴로 (Menu)
         </button>
       </div>
     </div>

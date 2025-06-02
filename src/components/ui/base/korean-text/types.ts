@@ -11,32 +11,28 @@ import type {
   KoreanTextVariant as GlobalKoreanTextVariant,
   KoreanTextEmphasis as GlobalKoreanTextEmphasis,
   HonorLevel as GlobalHonorLevel,
-  FontWeight as GlobalFontWeight,
-  FontFamily as GlobalFontFamily,
-  TrigramStance as GlobalTrigramStance,
-} from "../../../../types/korean-text"; // Correct path to global korean-text types
+  KoreanFontWeight,
+} from "../../../../types/korean-text";
 
+// Re-export global types
 export type KoreanTextProps = GlobalKoreanTextProps;
 export type KoreanTitleProps = GlobalKoreanTitleProps;
 export type KoreanMartialTextProps = GlobalKoreanMartialTextProps;
 export type KoreanTechniqueTextProps = GlobalKoreanTechniqueTextProps;
 export type KoreanStatusTextProps = GlobalKoreanStatusTextProps;
-export type KoreanTextHeaderProps = GlobalKoreanTextHeaderProps; // Use this instead of KoreanHeaderProps from global types
+export type KoreanTextHeaderProps = GlobalKoreanTextHeaderProps;
 export type KoreanText = GlobalKoreanText;
-export type KoreanTextSize = GlobalKoreanTextSize; // Export this
-export type MartialVariant = GlobalMartialVariant; // Export this
-export type KoreanTextVariant = GlobalKoreanTextVariant; // Export this
-export type KoreanTextEmphasis = GlobalKoreanTextEmphasis; // Export this
-export type HonorLevel = GlobalHonorLevel; // Export this
-export type FontWeight = GlobalFontWeight;
-export type FontFamily = GlobalFontFamily;
-export type TrigramStance = GlobalTrigramStance; // Assuming this is used by components here
+export type KoreanTextSize = GlobalKoreanTextSize;
+export type MartialVariant = GlobalMartialVariant;
+export type KoreanTextVariant = GlobalKoreanTextVariant;
+export type KoreanTextEmphasis = GlobalKoreanTextEmphasis;
+export type HonorLevel = GlobalHonorLevel;
 
-export type {
-  StatusKey, // Export this
-  // TrigramKey, // If this is a distinct type, define and export it. If it's same as TrigramStance, use TrigramStance.
-} from "../../../../types/enums";
+// Font types - use existing from global types
+export type { KoreanFontWeight };
 
-// Local component-specific augmentations or new types can go here if needed.
-// For example, if TrigramKey is specific to this module:
-// export type TrigramKey = TrigramStance; // Or its own definition
+// Font family type
+export type FontFamily = "primary" | "secondary" | "monospace";
+
+// Trigram stance type (import from trigram types instead of korean-text)
+export type { TrigramStance } from "../../../../types/trigram";

@@ -1,66 +1,48 @@
 import React from "react";
-import type { KoreanHeaderProps } from "../../../types";
-import { KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../../types";
+import { KOREAN_COLORS } from "../../../types";
+
+interface KoreanHeaderProps {
+  readonly title: string;
+  readonly subtitle?: string;
+  readonly level?: 1 | 2 | 3 | 4 | 5 | 6;
+  readonly color?: number;
+  readonly style?: React.CSSProperties;
+}
 
 export function KoreanHeader({
-  title = "흑괘 무술 도장",
-  subtitle = "Black Trigram Martial Arts",
+  title,
+  subtitle,
   level = 1,
+  color = KOREAN_COLORS.GOLD,
+  style,
 }: KoreanHeaderProps): React.ReactElement {
-  const headerSize = level === 1 ? "2.5rem" : level === 2 ? "2rem" : "1.5rem";
-  const subtitleSize = level === 1 ? "1.2rem" : level === 2 ? "1rem" : "0.9rem";
+  const HeaderTag = `h${level}` as keyof JSX.IntrinsicElements;
 
-  const titleText =
-    typeof title === "string" ? title : `${title.korean} (${title.english})`;
-  const subtitleText =
-    typeof subtitle === "string"
-      ? subtitle
-      : `${subtitle.korean} (${subtitle.english})`;
+  const headerStyle: React.CSSProperties = {
+    color: `#${color.toString(16).padStart(6, "0")}`,
+    fontFamily: "Noto Sans KR, Arial, sans-serif",
+    textAlign: "center",
+    textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
+    margin: "0 0 1rem 0",
+    fontWeight: 700,
+    fontSize: level === 1 ? "2.5rem" : level === 2 ? "2rem" : "1.5rem",
+    ...style,
+  };
+
+  const subtitleStyle: React.CSSProperties = {
+    color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
+    fontFamily: "Noto Sans KR, Arial, sans-serif",
+    fontSize: "0.7em",
+    fontWeight: 400,
+    opacity: 0.9,
+    marginTop: "0.5rem",
+  };
 
   return (
-    <header
-      style={{
-        textAlign: "center",
-        marginBottom: "2rem",
-        padding: "1rem",
-        fontFamily: KOREAN_FONT_FAMILY,
-        background: `linear-gradient(135deg, #${KOREAN_COLORS.DARK_BLUE.toString(
-          16
-        ).padStart(6, "0")}, #${KOREAN_COLORS.DOJANG_BLUE.toString(16).padStart(
-          6,
-          "0"
-        )})`,
-        borderRadius: "8px",
-        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)",
-      }}
-    >
-      <h1
-        style={{
-          fontSize: headerSize,
-          color: `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
-          margin: "0 0 0.5rem 0",
-          textShadow: "2px 2px 4px rgba(0, 0, 0, 0.5)",
-        }}
-      >
-        {titleText}
-      </h1>
-
-      {subtitle && (
-        <h2
-          style={{
-            fontSize: subtitleSize,
-            color: `#${KOREAN_COLORS.ACCENT_BLUE.toString(16).padStart(
-              6,
-              "0"
-            )}`,
-            margin: "0",
-            fontWeight: "normal",
-          }}
-        >
-          {subtitleText}
-        </h2>
-      )}
-    </header>
+    <div>
+      <HeaderTag style={headerStyle}>{title}</HeaderTag>
+      {subtitle && <div style={subtitleStyle}>{subtitle}</div>}
+    </div>
   );
 }
 
