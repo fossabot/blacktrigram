@@ -18,9 +18,8 @@ vi.mock("howler", () => ({
   },
 }));
 
-const { AudioProvider, useAudio } = await import(
-  "../../audio/AudioManager.tsx"
-);
+// Use the index barrel file for audio imports to avoid direct .tsx import
+const { AudioProvider, useAudio } = await import("../../audio");
 
 // Mock component that simulates game audio integration
 function MockGameComponent(): JSX.Element {

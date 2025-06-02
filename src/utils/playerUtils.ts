@@ -84,11 +84,11 @@ export function updatePlayerCombatState(
         : newHealth > 60
         ? CombatReadiness.LIGHT_DAMAGE
         : newHealth > 40
-        ? CombatReadiness.MODERATE
+        ? CombatReadiness.MODERATE_DAMAGE
         : newHealth > 20
-        ? CombatReadiness.HEAVY
+        ? CombatReadiness.HEAVY_DAMAGE
         : newHealth > 0
-        ? CombatReadiness.CRITICAL
+        ? CombatReadiness.CRITICAL_DAMAGE
         : CombatReadiness.INCAPACITATED,
   };
 }
@@ -132,7 +132,8 @@ export function addCombatCondition(
   source: string
 ): PlayerState {
   const newCondition: CombatCondition = {
-    // Explicitly type newCondition
+    id: `${type}_${Date.now()}_${Math.floor(Math.random() * 10000)}`,
+    name: { korean: type, english: type }, // Default bilingual name
     type,
     duration,
     intensity,
