@@ -5,8 +5,6 @@ import { TrainingScreen } from "./components/training/TrainingScreen";
 import { useAudio } from "./audio/AudioManager";
 import {
   KOREAN_COLORS,
-  KOREAN_FONT_FAMILY,
-  type AppState,
   type GamePhase,
   type TrigramStance,
   type PlayerState,
@@ -15,6 +13,8 @@ import {
 import { createPlayerState } from "./utils/playerUtils";
 import { CombatSystem } from "./systems/CombatSystem";
 import "./App.css";
+import { KOREAN_FONT_FAMILY_EXTENDED } from "./types/constants";
+import { AppState } from "./types/game";
 
 // Victory/Defeat Screen Component
 function EndScreen({
@@ -54,7 +54,7 @@ function EndScreen({
           "0"
         )})`,
         color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
-        fontFamily: KOREAN_FONT_FAMILY,
+        fontFamily: KOREAN_FONT_FAMILY_EXTENDED.PRIMARY,
       }}
     >
       <h1

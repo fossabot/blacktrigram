@@ -6,10 +6,8 @@ import type {
   VitalPointSeverity,
   EffectType,
   EffectIntensity,
-  BodyRegion as EnumBodyRegion, // Alias to avoid conflict
+  BodyRegion,
 } from "./enums"; // Ensure EffectIntensity is imported
-
-export type BodyRegion = EnumBodyRegion; // Use the aliased BodyRegion
 
 // Anatomical location on the body model
 export interface AnatomicalLocation {

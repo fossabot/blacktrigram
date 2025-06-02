@@ -1,6 +1,6 @@
 // System types for Black Trigram game engines
 import type { Position } from "./common"; // Corrected import for Position
-import type { AudioAsset } from "./audio"; // Added AudioAsset, removed AudioConfig
+import type { AudioAsset, AudioPlaybackOptions } from "./audio"; // Added AudioAsset, removed AudioConfig
 import type { PlayerArchetype, TrigramStance } from "./enums"; // Added PlayerArchetype, TrigramStance
 import type { KoreanTechnique, CombatResult } from "./combat"; // Added KoreanTechnique, CombatResult
 import type { PlayerState } from "./player"; // Added PlayerState
@@ -258,14 +258,4 @@ export interface SystemConfig {
   readonly debugMode?: boolean;
   readonly performanceMonitoring?: boolean;
   // Add other global system settings
-}
-
-// Added AudioPlaybackOptions for AudioSystemInterface
-export interface AudioPlaybackOptions {
-  readonly volume?: number;
-  readonly loop?: boolean;
-  readonly rate?: number; // Playback rate
-  readonly fadeIn?: number; // Fade-in duration in ms
-  readonly fadeOut?: number; // Fade-out duration in ms
-  readonly delay?: number; // Delay before playback starts in ms
 }

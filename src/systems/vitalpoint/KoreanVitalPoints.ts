@@ -1,12 +1,10 @@
+import { VitalPointEffect } from "@/types/anatomy";
+import { EffectIntensity } from "@/types/enums";
 import type {
   VitalPoint,
   KoreanText,
   EffectType,
-  VitalPointEffect,
   BodyRegion,
-  VitalPointCategory,
-  VitalPointSeverity,
-  EffectIntensity,
 } from "../../types";
 
 // Helper to create VitalPointEffect objects

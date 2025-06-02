@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi as vitestVi } from "vitest";
 import { CombatSystem } from "./CombatSystem";
 import { VitalPointSystem } from "./VitalPointSystem";
-import { TrigramSystem } from "./TrigramSystem"; // Assuming a mock or simple implementation
 import type {
   PlayerState,
   KoreanTechnique,
@@ -11,7 +10,7 @@ import type {
   TrigramStance,
   VitalPointSystemInterface,
   TrigramSystemInterface,
-  HitResult, // Added
+  DamageType,
 } from "../types";
 import {
   // TRIGRAM_DATA, // Unused
@@ -19,6 +18,8 @@ import {
   // KOREAN_COLORS, // Unused
   COMBAT_CONFIG,
 } from "../types/constants";
+import { HitResult } from "@/types/combat";
+import { DamageRange } from "@/types/common";
 
 // Define CombatResult locally if it's different from the imported one or for test purposes
 interface TestCombatResult extends ActualCombatResult {
@@ -65,8 +66,8 @@ const MOCK_TECHNIQUE_GEON_HEAVENLY_THUNDER: KoreanTechnique = {
   description: { korean: "강력한 일격", english: "Powerful strike" },
   stance: "geon",
   type: "strike",
-  damageType: "blunt",
-  damageRange: { min: 25, max: 35 },
+  damageType: "blunt" as DamageType,
+  damageRange: { min: 25, max: 35 } as DamageRange,
   range: 1.5,
   kiCost: 20,
   staminaCost: 15,
@@ -162,13 +163,11 @@ describe("CombatSystem", () => {
     });
 
     it("should handle a missed attack", () => {
-      vitestVi
-        .spyOn(vitalPointSystemMock, "calculateHit")
-        .mockReturnValue({
-          ...MOCK_HIT_RESULT_VITAL,
-          hit: false,
-          damage: 0,
-        } as any);
+      vitestVi.spyOn(vitalPointSystemMock, "calculateHit").mockReturnValue({
+        ...MOCK_HIT_RESULT_VITAL,
+        hit: false,
+        damage: 0,
+      } as any);
       const initialDefenderHealth = defender.health;
       const { updatedDefender, result } = combatSystem.resolveAttack(
         attacker,

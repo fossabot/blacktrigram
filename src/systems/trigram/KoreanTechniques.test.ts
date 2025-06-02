@@ -3,11 +3,9 @@ import { TECHNIQUES } from "./KoreanTechniques"; // Corrected import
 import type {
   KoreanTechnique,
   TrigramStance, // Unused, but fine to keep for context
-  CombatAttackType,
   DamageType,
-  EffectType,
-  EffectIntensity,
 } from "../../types";
+import { CombatAttackType } from "@/types/effects";
 
 const sampleTechniqueGeon: KoreanTechnique = {
   id: "geon_heavenly_thunder",

@@ -1,4 +1,19 @@
-// String literal union types for Black Trigram Korean martial arts game
+// String literal union types for Black Trigram Korean martial arts ga// Damage types for Korean martial arts
+export type DamageType =
+  | "blunt" // 타격 (Tageok) - Blunt force trauma
+  | "sharp" // 절단 (Jeoldan) - Cutting/slicing damage
+  | "piercing" // 관통 (Gwantong) - Penetrating trauma
+  | "nerve" // 신경 (Singyeong) - Nerve disruption
+  | "pressure" // 압박 (Apbak) - Pressure point strikes
+  | "joint" // 관절 (Gwanjeol) - Joint manipulation
+  | "blood" // 혈류 (Hyeollyu) - Blood flow disruption
+  | "energy" // 기력 (Giryeok) - Ki/energy damage
+  | "impact" // General impact damage
+  | "internal" // Internal trauma
+  | "light" // Light damage tier
+  | "medium" // Medium damage tier
+  | "heavy" // Heavy damage tier
+  | "critical"; // Critical damage tier
 
 // Game flow and state management
 export type GamePhase =
@@ -9,13 +24,16 @@ export type GamePhase =
   | "victory"
   | "defeat";
 
-export type ScreenType =
+// Screen types for overall UI navigation
+export type GameScreen =
   | "intro"
   | "menu"
   | "training"
   | "combat"
+  | "settings"
   | "philosophy"
-  | "settings";
+  | "victory"
+  | "defeat";
 
 // Player archetype specializations (5 Korean martial arts archetypes)
 export type PlayerArchetype =
@@ -35,22 +53,6 @@ export type CombatState =
   | "helpless" // Complete vulnerability
   | "shaken"; // Compromised but functional
 
-// Damage types for Korean martial arts
-export type DamageType =
-  | "blunt" // Blunt force trauma
-  | "sharp" // Cutting/piercing damage
-  | "energy" // Ki/energy based damage
-  | "pressure" // Pressure point damage
-  | "nerve" // Nerve disruption
-  | "blood" // Blood flow restriction
-  | "light" // Added based on usage in DamageCalculator
-  | "medium" // Added based on usage in DamageCalculator
-  | "heavy" // Added based on usage in DamageCalculator
-  | "critical" // Added based on usage in DamageCalculator
-  | "piercing" // Added
-  | "internal" // Added
-  | "impact"; // Added
-
 // Eight Trigram stances (팔괘 - Korean I Ching combat system)
 export type TrigramStance =
   | "geon" // ☰ 건 - Heaven: Direct bone-striking force
@@ -65,13 +67,13 @@ export type TrigramStance =
 // Vital point categories for anatomical targeting
 export type VitalPointCategory =
   | "head" // Head and neck region
-  | "neck" // Added neck as a distinct category
+  | "neck" // Neck-specific targets
   | "torso" // Chest and abdomen
   | "limbs" // Arms and legs
   | "joints" // Joint manipulation points
-  | "nerve_points" // Specific nerve targets (renamed from "nerve" to avoid conflict with DamageType)
+  | "nerve_points" // Specific nerve targets
   | "vascular" // Blood vessel targets
-  | "organ_points"; // Specific organ targets (renamed from "organ")
+  | "organ_points"; // Specific organ targets
 
 // Vital point severity levels
 export type VitalPointSeverity =
@@ -79,7 +81,7 @@ export type VitalPointSeverity =
   | "moderate" // Significant pain/disruption
   | "severe" // Serious incapacitation
   | "critical" // Life-threatening potential
-  | "lethal"; // Added for consistency if used, though 'critical' often covers this
+  | "lethal"; // Potential for fatality
 
 // Input action types for Korean martial arts controls
 export type InputAction =
@@ -133,10 +135,9 @@ export type EffectType =
   | "knockout" // Incapacitation effects
   | "buff"
   | "debuff"
-  | "damage" // e.g. damage over time
+  | "damage" // e.g., damage over time
   | "heal"
   | "special"
-  // Specific effects from various files, ensure consistency
   | "stun" // Merged from "stunned"
   | "paralysis" // Merged from "paralyzed"
   | "bleed" // Merged from "bleeding"
@@ -179,30 +180,31 @@ export type EffectType =
   | "ki_regen_boost"
   | "ki_regen_debuff";
 
-// Audio categories for Korean martial arts
-export type AudioCategory =
-  | "sfx" // Sound effects
-  | "music" // Background music
-  | "ambient" // Environmental audio
-  | "voice"; // Korean voice acting
+// Effect intensity levels
+export type EffectIntensity =
+  | "minimal"
+  | "weak"
+  | "moderate"
+  | "strong"
+  | "extreme"
+  | "overwhelming";
 
 // Korean font weights and styles
 export type KoreanFontWeight =
   | "light" // 300 - Light Korean text
-  | "regular" // 400 - Regular Korean text (used instead of 'normal' if 'normal' is not standard)
-  | "normal" // Added if it's a distinct weight, otherwise map to regular
+  | "regular" // 400 - Regular Korean text
+  | "normal" // Alias for regular if needed
   | "medium" // 500 - Medium Korean text
   | "bold" // 700 - Bold Korean text
   | "heavy"; // 900 - Heavy Korean text
 
-// Remove one of the KoreanFontStyle definitions, keep this one:
 export type KoreanFontStyle =
   | "traditional" // Traditional Korean styling
   | "modern" // Modern Korean typography
   | "martial" // Martial arts themed
   | "cyberpunk"; // Futuristic Korean styling
 
-// Remove one of the ComponentSize definitions, keep this one:
+// Component sizing
 export type ComponentSize = "small" | "medium" | "large" | "xlarge";
 
 // Animation timing for Korean martial arts techniques
@@ -240,52 +242,27 @@ export type PhilosophyAspect =
   | "innovation" // 혁신 - Modern adaptation of classics
   | "mastery"; // 숙련 - Pursuit of technical perfection
 
-// Status effect types for combat system (enum part)
-// This is now part of the main EffectType above.
-// export type StatusEffectType =
-//     | "stunned"
-//     | "bleeding"
-//     | "paralyzed"
-//     | "disoriented"
-//     | "exhausted"
-//     | "focused"
-//     | "enraged"
-//     | "immobilized";
-
-// UI and component enums
+// UI component variants and layout directions
 export type ButtonVariant =
   | "primary"
   | "secondary"
   | "accent"
   | "danger"
-  | "success"; // Added accent, consolidated
+  | "success";
+
 export type LayoutDirection = "horizontal" | "vertical" | "grid";
 
-// Korean typography
+// Korean text styling
 export type KoreanTextStyle = "formal" | "casual" | "technical";
 
-// Audio
-export type AudioFormat = "webm" | "mp3"; // Removed "ogg" to match audio.ts
-
-// Game screens
-export type GameScreen =
-  | "intro"
-  | "menu"
-  | "training"
-  | "combat"
-  | "settings" // Added "menu" and "settings" to align with the first definition
-  | "philosophy"
-  | "victory" // Added "victory" and "defeat"
-  | "defeat";
-
-// Player archetype enums
+// Enums for combat readiness and consciousness levels
 export enum CombatReadiness {
-  READY = 100, // Combat ready, full capability
+  READY = 100, // Full capability
   LIGHT_DAMAGE = 80, // Light damage, reduced capability
   MODERATE = 60, // Moderate damage, significant impairment
   HEAVY = 40, // Heavy damage, severe limitation
   CRITICAL = 20, // Critical damage, near incapacitation
-  INCAPACITATED = 0, // Incapacitated/Defeated
+  INCAPACITATED = 0, // Defeated/incapacitated
 }
 
 export enum ConsciousnessLevel {
@@ -296,14 +273,7 @@ export enum ConsciousnessLevel {
   UNCONSCIOUS = 0,
 }
 
-export type EffectIntensity =
-  | "minimal"
-  | "weak"
-  | "moderate"
-  | "strong"
-  | "extreme"
-  | "overwhelming";
-
+// Body region types for vital points and targeting
 export type BodyRegion =
   | "head"
   | "neck"
@@ -330,20 +300,21 @@ export type BodyRegion =
   | "left_leg"
   | "right_leg"
   | "head_side"
-  | "limbs" // Added
-  | "joints" // Added
-  | "upper_abdomen_center" // Added
-  | "jaw" // Added
-  | "philtrum" // Added
-  | "mastoid_process" // Added
-  | "ribs" // Added
-  | "clavicle" // Added
-  | "kidneys" // Added
-  | "liver" // Added
-  | "spleen" // Added
-  | "floating_ribs" // Added
-  | "face"; // Added
+  | "limbs"
+  | "joints"
+  | "upper_abdomen_center"
+  | "jaw"
+  | "philtrum"
+  | "mastoid_process"
+  | "ribs"
+  | "clavicle"
+  | "kidneys"
+  | "liver"
+  | "spleen"
+  | "floating_ribs"
+  | "face";
 
+// Status keys for tracking combatant condition
 export type StatusKey =
   | "health"
   | "ki"

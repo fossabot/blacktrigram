@@ -1,9 +1,14 @@
 // Combat mechanics types for Korean martial arts game
 
-import type { TrigramStance, DamageType as EnumDamageType } from "./enums"; // Changed to import from enums
+import type {
+  TrigramStance,
+  DamageType as EnumDamageType,
+  PlayerArchetype,
+} from "./enums"; // Changed to import from enums
 import type { KoreanText } from "./korean-text";
 import type { StatusEffect } from "./effects";
 import type { PlayerState } from "./player"; // Added for CombatAnalysis
+import { DamageRange } from "./common";
 
 export type CombatAttackType =
   | "strike"
@@ -30,7 +35,6 @@ export type CombatAttackType =
   | "mental_attack"
   | "cybernetic_attack"
   | "combination";
-// Removed redundant: "elbow", "pressure", "nerve"
 
 // Combat technique definition
 export interface KoreanTechnique {
@@ -42,7 +46,7 @@ export interface KoreanTechnique {
   readonly description: KoreanText;
   readonly stance: TrigramStance;
   readonly type: CombatAttackType;
-  readonly damageType: EnumDamageType;
+  readonly damageType: DamageRange;
   readonly damageRange: {
     readonly min: number;
     readonly max: number;
@@ -112,6 +116,17 @@ export interface CombatResult {
     | "blocked"
     | "dodged";
   readonly description?: string; // Optional narrative description of the result
+  readonly effects: readonly StatusEffect[];
+  readonly attacker: PlayerArchetype;
+  readonly defender: PlayerArchetype;
+  readonly damagePrevented: number;
+  readonly staminaUsed: number;
+  readonly kiUsed: number;
+  readonly defenderDamaged: boolean;
+  readonly attackerStance: TrigramStance;
+  readonly defenderStance: TrigramStance;
+  readonly hitPosition?: { x: number; y: number };
+  readonly isCritical?: boolean;
 }
 
 // Type alias for HitResult as requested by error messages

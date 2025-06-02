@@ -5,15 +5,13 @@ import type { KoreanText } from "./korean-text";
 import type { VitalPointEffect as VitalPointImpairment } from "./anatomy";
 import type {
   DamageType,
+  EffectIntensity,
+  EffectType,
   PlayerArchetype,
-  EffectIntensity as EnumEffectIntensity, // Import EffectIntensity from enums
-  EffectType as EnumEffectType, // Import EffectType from enums
 } from "./enums";
 
 // Effect types
-export type EffectType = EnumEffectType; // Use the imported enum type
 export type EffectDuration = "instant" | "temporary" | "permanent";
-export type EffectIntensity = EnumEffectIntensity; // Use the imported enum type
 
 // Status effect categories
 export type EffectCategory =
@@ -192,4 +190,17 @@ export interface EffectVisual {
   readonly duration: Duration;
   readonly position: "body" | "head" | "limbs" | "full";
   readonly layer: number; // Visual stacking order
+}
+
+// Hit effect types for visual feedback
+export type HitEffectType = "blood" | "spark" | "energy" | "critical";
+
+export interface HitEffect {
+  readonly id: string;
+  readonly type: HitEffectType;
+  readonly position: { x: number; y: number };
+  readonly intensity: number;
+  readonly startTime?: number;
+  readonly duration: number;
+  readonly color: number;
 }

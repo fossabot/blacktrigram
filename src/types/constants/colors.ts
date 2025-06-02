@@ -11,12 +11,16 @@ export const KOREAN_COLORS = {
 
   // Korean traditional colors
   TRADITIONAL_RED: 0xdc143c,
+  KOREAN_BLUE: 0x003f7f,
+  HANBOK_YELLOW: 0xffc72c,
   ELECTRIC_BLUE: 0x0eaefe,
   DOJANG_BLUE: 0x2c4570,
   ACCENT_BLUE: 0x00d2ff,
   GOLD: 0xffd700,
   DARK_BLUE: 0x1e293b,
   NEON_GREEN: 0x39ff14,
+  NEON_PINK: 0xff007f,
+  DIGITAL_GREEN: 0x00ff80,
 
   // Gray scale
   GRAY_DARK: 0x2d3748,

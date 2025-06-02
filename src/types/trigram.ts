@@ -7,17 +7,18 @@ import type {
 } from "./common";
 import type { KoreanText } from "./korean-text";
 import type {
+  DamageType,
   PlayerArchetype,
-  TrigramStance as TrigramStanceEnum,
+  TrigramStance,
   // CombatState, // Not directly used here, but PlayerState needs it
 } from "./enums";
 // import { KOREAN_COLORS } from "./constants"; // KOREAN_COLORS not used directly in type defs
 import type { StatusEffect } from "./effects";
 import type { PlayerState } from "./player";
-import type { KoreanTechnique as CombatKoreanTechnique } from "./combat"; // Import the standardized technique
-
-// Define local TrigramStance type that extends the enum
-export type TrigramStance = TrigramStanceEnum;
+import type {
+  KoreanTechnique as CombatKoreanTechnique,
+  KoreanTechnique,
+} from "./combat"; // Import the standardized technique
 
 // Core trigram data structure (I Ching 주역 팔괘)
 export interface TrigramData {
@@ -45,7 +46,6 @@ export interface TrigramData {
 // This is a more detailed definition than the one in combat.ts, consider consolidating
 // For now, keeping it as it might be specific to Trigram system's view of techniques
 // Using CombatKoreanTechnique from combat.ts as the standard.
-export type KoreanTechnique = CombatKoreanTechnique;
 
 // Trigram visual effects for combat
 export interface TrigramVisualEffect {
@@ -325,7 +325,7 @@ export const TRIGRAM_DATA: Readonly<Record<TrigramStance, TrigramData>> = {
       },
       stance: "geon",
       type: "strike",
-      damageType: "blunt",
+      damageType: "blunt" as DamageType,
       damageRange: { min: 25, max: 35, type: "blunt" },
       range: 1.5, // Added range
       kiCost: 20,

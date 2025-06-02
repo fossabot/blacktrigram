@@ -1,11 +1,11 @@
 // filepath: /workspaces/blacktrigram/src/types/constants/vital-points.ts
 // Anatomical vital points data for Black Trigram
 import type {
-  VitalPointCategory,
-  VitalPointSeverity,
   EffectType,
   EffectIntensity,
   BodyRegion,
+  VitalPointCategory,
+  VitalPointSeverity,
 } from "../enums";
 import type {
   VitalPoint,

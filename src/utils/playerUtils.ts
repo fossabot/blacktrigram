@@ -1,15 +1,13 @@
 // Player utility functions for Korean martial arts game
 
+import { Position, StatusEffectType, CombatCondition } from "@/types/common";
+import { StatusEffect } from "@/types/effects";
 import {
   type PlayerState,
   type TrigramStance,
-  type Position,
-  type StatusEffect, // Will now resolve to effects.ts#StatusEffect via index.ts
   CombatReadiness, // Import as value
   type EffectIntensity, // Import as type from enums via index.ts
   type CombatState, // Import CombatState type from enums via index.ts
-  type StatusEffectType, // Import StatusEffectType from enums via index.ts
-  type CombatCondition, // Import CombatCondition from common.ts via index.ts
 } from "../types";
 
 /**

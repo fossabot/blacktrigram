@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import type { FederatedPointerEvent } from "pixi.js"; // Import directly
-import type { PlayerState, Position, CombatResult, VitalPoint } from "./index";
+import type { PlayerState, CombatResult, VitalPoint, HitEffect } from "./index";
 import type {
   GamePhase,
   PlayerArchetype,
@@ -10,17 +10,7 @@ import type {
   ButtonVariant as EnumButtonVariant,
 } from "./enums";
 import type { KoreanText } from "./korean-text";
-
-// Hit effect visual data
-export interface HitEffect {
-  readonly id: string;
-  readonly position: Position;
-  readonly damage: number;
-  readonly type: "blood" | "spark" | "energy" | "critical";
-  readonly duration: number;
-  readonly color: number;
-  readonly intensity: number;
-}
+import { Position } from "./common";
 
 // Base component props
 export interface BaseComponentProps {

@@ -1,20 +1,9 @@
 // Korean typography and text system types for Black Trigram
 
 // import { KoreanHeaderProps } from "."; // REMOVE: Circular dependency
+import { StatusKey } from "@/components/ui/base/korean-text/types";
 import type { ColorValue } from "./common"; // CommonColorValue is unused
-import type {
-  TrigramStance as EnumTrigramStance,
-  KoreanFontWeight as EnumKoreanFontWeight,
-  KoreanFontStyle as EnumKoreanFontStyle,
-  ComponentSize as EnumComponentSize,
-  StatusKey as EnumStatusKey, // Assuming StatusKey is in enums
-} from "./enums"; // Adjusted path if necessary, or from './index' if re-exported
-
-export type TrigramStance = EnumTrigramStance; // Use imported TrigramStance
-export type KoreanFontWeight = EnumKoreanFontWeight;
-export type KoreanFontStyle = EnumKoreanFontStyle;
-export type ComponentSize = EnumComponentSize;
-export type StatusKey = EnumStatusKey; // Use imported StatusKey
+import type { KoreanFontWeight, KoreanTextStyle, TrigramStance } from "./enums"; // Adjusted path if necessary, or from './index' if re-exported
 
 // Korean text interface for bilingual display
 export interface KoreanText {
@@ -65,30 +54,6 @@ export type FontWeight = 300 | 400 | 500 | 700 | 900;
 
 // Font family options for Korean text
 export type FontFamily = "noto" | "malgun" | "nanumgothic" | "system";
-
-// Korean text styling configuration
-export interface KoreanTextStyle {
-  readonly fontFamily: string;
-  readonly fontSize: number;
-  readonly fontWeight: KoreanFontWeight;
-  readonly fontStyle?: KoreanFontStyle | "italic" | "normal" | "oblique"; // Allow CSS font-style values
-  readonly color: ColorValue;
-  readonly lineHeight: number;
-  readonly letterSpacing: number;
-  readonly textShadow?: {
-    readonly color: ColorValue;
-    readonly offsetX: number;
-    readonly offsetY: number;
-    readonly blur: number;
-  };
-  readonly outline?: {
-    readonly color: ColorValue;
-    readonly width: number;
-  };
-}
-
-// Alias for KoreanTextStyle for clarity if used elsewhere with "Interface" suffix
-export type KoreanTextStyleInterface = KoreanTextStyle;
 
 // Korean text component props interface
 export interface KoreanTextProps {

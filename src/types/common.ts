@@ -1,11 +1,16 @@
 // Common shared types for Black Trigram Korean martial arts game
 
+import { GAME_CONFIG } from "./constants";
 import type {
   CombatState as EnumCombatState, // Aliased to avoid conflict if CombatState is also defined locally
   DamageType,
   PlayerArchetype as EnumPlayerArchetype, // Aliased
   EffectIntensity,
   EffectType as EnumStatusEffectType, // Changed StatusEffectType to EffectType
+  TrigramStance as EnumTrigramStance,
+  CombatState,
+  PlayerArchetype,
+  TrigramStance, // Add import for TrigramStance
 } from "./enums";
 
 // Basic shared types
@@ -17,36 +22,11 @@ export interface Position {
 export type Timestamp = number;
 export type EntityId = string;
 
-// Add placeholder for GameConfig interface
-export interface GameConfig {
-  readonly MAX_HEALTH: number;
-  readonly MAX_KI: number;
-  readonly MAX_STAMINA: number;
-  readonly ROUND_TIME_SECONDS: number;
-  readonly MAX_ROUNDS: number;
-  readonly DAMAGE_VARIANCE_PERCENT: number; // e.g., 0.1 for +/- 10%
-  readonly CRITICAL_HIT_MULTIPLIER: number;
-  readonly BLOCK_DAMAGE_REDUCTION_PERCENT: number; // e.g., 0.5 for 50%
-  readonly STANCE_CHANGE_COOLDOWN_MS: number;
-  readonly VITAL_POINT_ACCURACY_MODIFIER: number; // e.g., 0.8 if harder to hit
-  readonly BASE_KI_RECOVERY_RATE: number; // Ki per second
-  readonly BASE_STAMINA_RECOVERY_RATE: number; // Stamina per second
-  // Add other game configuration properties as needed
-}
-
 export interface CombatStats {
   readonly damage: number;
   readonly accuracy: number;
   readonly speed: number;
 }
-
-// Trigram stance definitions (keep local if it's just the union, or import from enums)
-// For consistency, let's use the one from enums.ts
-import type { TrigramStance as EnumTrigramStance } from "./enums"; // Add this if removing local
-export type TrigramStance = EnumTrigramStance;
-export type PlayerArchetype = EnumPlayerArchetype;
-export type CombatState = EnumCombatState;
-export type StatusEffectType = EnumStatusEffectType;
 
 // Game state types
 export interface GameState {
@@ -84,19 +64,29 @@ export interface CombatCondition {
 // This PlayerState is a more generic one. The canonical one is in ./player.ts
 // To avoid conflicts, this could be CommonPlayerState or similar if used.
 // For now, assuming it's meant to be compatible or a subset.
-export interface PlayerState extends CombatStats {
-  readonly playerId: EntityId;
+export interface PlayerState {
+  readonly id: EntityId;
+  readonly name: string;
+  readonly archetype: PlayerArchetype; // Uses the aliased EnumPlayerArchetype
   readonly position: Position;
   readonly stance: TrigramStance; // Uses the aliased EnumTrigramStance
-  readonly archetype: PlayerArchetype; // Uses the aliased EnumPlayerArchetype
-  readonly combatState: CombatState; // Uses the aliased EnumCombatState
   readonly facing: "left" | "right";
+  readonly health: number;
+  readonly maxHealth: number;
+  readonly ki: number;
+  readonly maxKi: number;
+  readonly stamina: number;
+  readonly maxStamina: number;
+  readonly consciousness: number;
+  readonly pain: number;
+  readonly balance: number;
+  readonly bloodLoss: number;
+  readonly lastStanceChangeTime: Timestamp;
   readonly isAttacking: boolean;
-  readonly isBlocking: boolean;
-  readonly lastStanceChangeTime?: Timestamp;
+  readonly combatReadiness: number;
+  readonly activeEffects: readonly any[];
+  readonly combatState: CombatState; // Uses the aliased EnumCombatState
   readonly conditions: readonly CombatCondition[];
-  readonly comboCount: number;
-  readonly lastActionTime: Timestamp;
 }
 
 // Basic position and vector types for Korean martial arts combat
@@ -153,3 +143,35 @@ export interface Velocity {
   readonly x: number;
   readonly y: number;
 }
+
+// Utility function for creating player states
+export const createPlayerState = (
+  playerId: string,
+  position: Position,
+  stance: TrigramStance = "geon",
+  overrides: Partial<PlayerState> = {}
+): PlayerState => ({
+  id: playerId,
+  name: playerId,
+  archetype: "musa",
+  position,
+  stance,
+  facing: "right",
+  health: GAME_CONFIG.MAX_HEALTH,
+  maxHealth: GAME_CONFIG.MAX_HEALTH,
+  ki: GAME_CONFIG.MAX_KI,
+  maxKi: GAME_CONFIG.MAX_KI,
+  stamina: GAME_CONFIG.MAX_STAMINA,
+  maxStamina: GAME_CONFIG.MAX_STAMINA,
+  consciousness: 100,
+  pain: 0,
+  balance: 100,
+  bloodLoss: 0,
+  lastStanceChangeTime: 0,
+  isAttacking: false,
+  combatReadiness: 100,
+  activeEffects: [],
+  combatState: "ready",
+  conditions: [],
+  ...overrides,
+});
