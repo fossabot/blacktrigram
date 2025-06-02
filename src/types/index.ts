@@ -4,6 +4,16 @@
  */
 
 export type * from "./enums";
+
+// Also export the enum constants as values
+export {
+  CombatAttackType,
+  DamageType,
+  EffectType,
+  EffectIntensity,
+  CombatReadiness,
+  ConsciousnessLevel,
+} from "./enums";
 export type * from "./audio";
 export type * from "./combat";
 export type * from "./anatomy";
@@ -55,9 +65,6 @@ export {
 
 // Export KOREAN_COLORS separately from colors constants
 export { KOREAN_COLORS } from "./constants/colors";
-
-// Export enum values (not types)
-export { CombatReadiness, ConsciousnessLevel } from "./enums";
 
 // Export utility functions as values (not types)
 export { createPlayerState } from "./common";

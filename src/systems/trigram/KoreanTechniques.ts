@@ -1,11 +1,4 @@
-import type {
-  KoreanTechnique,
-  TrigramStance,
-  DamageType,
-  CombatAttackType,
-  EffectType,
-  EffectIntensity,
-} from "../../types";
+import type { KoreanTechnique, TrigramStance } from "../../types";
 
 // Define a map of techniques
 export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
@@ -214,9 +207,9 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
       english: "A defensive posture as solid as a mountain.",
     },
     stance: "gan",
-    type: CombatAttackType.BLOCK,
-    damageType: DamageType.INTERNAL, // Reflects minor impact/recoil
-    damageRange: { min: 3, max: 8, type: DamageType.INTERNAL },
+    type: "defense",
+    damageType: "internal", // Reflects minor impact/recoil
+    damageRange: { min: 3, max: 8, type: "internal" },
     range: 0.5, // Added
     kiCost: 10,
     staminaCost: 20, // Blocks consume stamina
@@ -227,8 +220,8 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
     effects: [
       {
         id: "stability_boost_gan",
-        type: EffectType.STABILITY_BOOST, // Assuming this effect type exists
-        intensity: EffectIntensity.STRONG,
+        type: "buff", // Using existing effect type
+        intensity: "heavy", // Using existing intensity level
         duration: 1000, // While active or slightly after
         description: { korean: "안정성 증가", english: "Increased stability" },
         stackable: false,
@@ -247,9 +240,9 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
       english: "A powerful throw utilizing the strength of the earth.",
     },
     stance: "gon",
-    type: CombatAttackType.THROW,
-    damageType: DamageType.IMPACT,
-    damageRange: { min: 22, max: 32, type: DamageType.IMPACT },
+    type: "throw",
+    damageType: "impact",
+    damageRange: { min: 22, max: 32, type: "impact" },
     range: 0.8, // Added
     kiCost: 22,
     staminaCost: 18,
@@ -261,8 +254,8 @@ export const TECHNIQUES: Readonly<Record<string, KoreanTechnique>> = {
     effects: [
       {
         id: "knockdown_effect_gon",
-        type: EffectType.KNOCKDOWN, // Assuming this effect type exists
-        intensity: EffectIntensity.STRONG,
+        type: "stun", // Using existing effect type instead of KNOCKDOWN
+        intensity: "strong",
         duration: 3000, // Duration of knockdown state
         description: { korean: "넘어뜨림", english: "Knockdown" },
         stackable: false,

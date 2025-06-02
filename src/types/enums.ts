@@ -1,7 +1,7 @@
 // String literal union types for Black Trigram Korean martial arts game
 
-// Combat attack type constants - can be used as values
-export const CombatAttackTypeValues = {
+// Korean martial arts attack types - both constant and type
+export const CombatAttackType = {
   STRIKE: "strike",
   GRAPPLE: "grapple",
   COUNTER: "counter",
@@ -13,8 +13,11 @@ export const CombatAttackTypeValues = {
   COUNTER_ATTACK: "counter_attack",
 } as const;
 
-// Damage type constants - can be used as values
-export const DamageTypeValues = {
+export type CombatAttackType =
+  (typeof CombatAttackType)[keyof typeof CombatAttackType];
+
+// Damage types for realistic combat - both constant and type
+export const DamageType = {
   BLUNT: "blunt",
   PIERCING: "piercing",
   SLASHING: "slashing",
@@ -26,8 +29,10 @@ export const DamageTypeValues = {
   INTERNAL: "internal",
 } as const;
 
-// Effect type constants - can be used as values
-export const EffectTypeValues = {
+export type DamageType = (typeof DamageType)[keyof typeof DamageType];
+
+// Status effect types - both constant and type
+export const EffectType = {
   STUN: "stun",
   PAIN: "pain",
   BLEEDING: "bleeding",
@@ -44,8 +49,10 @@ export const EffectTypeValues = {
   KNOCKDOWN: "knockdown",
 } as const;
 
-// Effect intensity constants - can be used as values
-export const EffectIntensityValues = {
+export type EffectType = (typeof EffectType)[keyof typeof EffectType];
+
+// Effect intensity levels - both constant and type
+export const EffectIntensity = {
   LIGHT: "light",
   WEAK: "weak",
   MODERATE: "moderate",
@@ -54,73 +61,8 @@ export const EffectIntensityValues = {
   CRITICAL: "critical",
 } as const;
 
-// Korean martial arts attack types
-export const CombatAttackType = {
-  STRIKE: "strike",
-  GRAPPLE: "grapple",
-  COUNTER: "counter",
-  DEFENSE: "defense",
-  THROW: "throw",
-  JOINT_LOCK: "joint_lock",
-  PRESSURE_POINT: "pressure_point",
-} as const;
-
-export type CombatAttackType =
-  (typeof CombatAttackType)[keyof typeof CombatAttackType];
-
-// Damage types for realistic combat
-export const DamageType = {
-  BLUNT: "blunt",
-  PIERCING: "piercing",
-  SLASHING: "slashing",
-  CRUSHING: "crushing",
-  NERVE: "nerve",
-  PRESSURE: "pressure",
-} as const;
-
-export type DamageType = (typeof DamageType)[keyof typeof DamageType];
-
-// Status effect types
-export const EffectType = {
-  STUN: "stun",
-  PAIN: "pain",
-  BLEEDING: "bleeding",
-  WEAKNESS: "weakness",
-  BUFF: "buff",
-  DEBUFF: "debuff",
-  PARALYSIS: "paralysis",
-  CONFUSION: "confusion",
-} as const;
-
-export type EffectType = (typeof EffectType)[keyof typeof EffectType];
-
-// Effect intensity levels
-export const EffectIntensity = {
-  LIGHT: "light",
-  MODERATE: "moderate",
-  HEAVY: "heavy",
-  CRITICAL: "critical",
-} as const;
-
 export type EffectIntensity =
   (typeof EffectIntensity)[keyof typeof EffectIntensity];
-
-// Damage types for Korean martial arts
-export type DamageType =
-  | "blunt" // 타격 (Tageok) - Blunt force trauma
-  | "sharp" // 절단 (Jeoldan) - Cutting/slicing damage
-  | "piercing" // 관통 (Gwantong) - Penetrating trauma
-  | "nerve" // 신경 (Singyeong) - Nerve disruption
-  | "pressure" // 압박 (Apbak) - Pressure point strikes
-  | "joint" // 관절 (Gwanjeol) - Joint manipulation
-  | "blood" // 혈류 (Hyeollyu) - Blood flow disruption
-  | "energy" // 기력 (Giryeok) - Ki/energy damage
-  | "impact" // General impact damage
-  | "internal" // Internal trauma
-  | "light" // Light damage tier
-  | "medium" // Medium damage tier
-  | "heavy" // Heavy damage tier
-  | "critical"; // Critical damage tier
 
 // Game flow and state management
 export type GamePhase =
@@ -229,72 +171,6 @@ export type TrainingMode =
   | "forms" // 품새 - Traditional forms
   | "meditation" // 명상 - Mental cultivation
   | "conditioning"; // 단련 - Physical conditioning
-
-// Visual effect types for Korean martial arts
-export type EffectType =
-  | "impact" // Strike impact effects
-  | "energy" // Ki energy visualization
-  | "blood" // Realistic blood effects
-  | "stance_aura" // Trigram stance auras
-  | "vital_highlight" // Vital point targeting
-  | "damage_number" // Floating damage text
-  | "combo_effect" // Combination technique effects
-  | "knockout" // Incapacitation effects
-  | "buff"
-  | "debuff"
-  | "damage" // e.g., damage over time
-  | "heal"
-  | "special"
-  | "stun" // Merged from "stunned"
-  | "paralysis" // Merged from "paralyzed"
-  | "bleed" // Merged from "bleeding"
-  | "poison"
-  | "blind"
-  | "silence"
-  | "disarm"
-  | "immobilize" // Merged from "immobilized"
-  | "fear"
-  | "charm"
-  | "sleep"
-  | "invulnerability"
-  | "resistance_change"
-  | "stat_modification"
-  | "consciousness_loss"
-  | "disoriented" // Merged from "disorientation"
-  | "pain_severe"
-  | "winded"
-  | "balance_loss"
-  | "mobility_impairment"
-  | "knockdown"
-  | "flow_state"
-  | "burning"
-  | "dazzled"
-  | "knockback"
-  | "evasion_boost"
-  | "redirect"
-  | "defense_boost"
-  | "armor"
-  | "ground_slam"
-  | "stability_boost"
-  | "stamina_drain"
-  | "vital_weakness"
-  | "vital_stunning"
-  | "damage_vulnerability"
-  | "vital_paralysis"
-  | "exhausted"
-  | "focused"
-  | "enraged"
-  | "ki_regen_boost"
-  | "ki_regen_debuff";
-
-// Effect intensity levels
-export type EffectIntensity =
-  | "minimal"
-  | "weak"
-  | "moderate"
-  | "strong"
-  | "extreme"
-  | "overwhelming";
 
 // Korean font weights and styles
 export type KoreanFontWeight =
