@@ -2,9 +2,11 @@ import type {
   VitalPoint,
   VitalPointSystemConfig,
   VitalPointSystemInterface,
-  KoreanTechnique, // Added
-  PlayerArchetype, // Added
-  StatusEffect, // Added
+  VitalPointHitResult,
+  KoreanTechnique,
+  PlayerArchetype,
+  PlayerState,
+  StatusEffect,
 } from "../types";
 import { VITAL_POINTS_DATA } from "../types/constants"; // Assuming VITAL_POINTS_DATA is here
 
@@ -49,6 +51,12 @@ export class VitalPointSystem implements VitalPointSystemInterface {
     );
   }
 
+  public getVitalPointsForBodyPart(bodyPartId: string): readonly VitalPoint[] {
+    return Array.from(this.vitalPoints.values()).filter(
+      (vp) => vp.location.region === bodyPartId
+    );
+  }
+
   public getVitalPointEffects(
     vitalPoint: VitalPoint,
     technique: KoreanTechnique,
@@ -58,24 +66,14 @@ export class VitalPointSystem implements VitalPointSystemInterface {
     if (vitalPoint.effects) {
       vitalPoint.effects.forEach((vpEffect) => {
         // Convert VitalPointEffect to StatusEffect
-        // This is a simplified conversion, you might need more logic
         effects.push({
           id: vpEffect.id || `${vitalPoint.id}_${technique.id}_effect`,
-          type: vpEffect.type, // Assuming VitalPointEffect.type maps to StatusEffectType
+          type: vpEffect.type,
           intensity: vpEffect.intensity,
-          duration: vpEffect.duration * (isCriticalHit ? 1.5 : 1), // Example: critical hits extend duration
+          duration: vpEffect.duration * (isCriticalHit ? 1.5 : 1),
           description: vpEffect.description,
           stackable:
             vpEffect.stackable !== undefined ? vpEffect.stackable : false,
-        });
-      });
-    }
-    // Add technique-specific effects if any, potentially modified by vital point
-    if (technique.effects) {
-      technique.effects.forEach((techEffect) => {
-        effects.push({
-          ...techEffect,
-          duration: techEffect.duration * (isCriticalHit ? 1.2 : 1), // Example modification
         });
       });
     }
@@ -85,11 +83,11 @@ export class VitalPointSystem implements VitalPointSystemInterface {
   public calculateVitalPointDamage(
     vitalPoint: VitalPoint,
     technique: KoreanTechnique,
-    attackerArchetype: PlayerArchetype, // Added archetype
+    attackerArchetype: PlayerArchetype,
     isCriticalHit: boolean = false
   ): number {
-    let baseDamage =
-      (technique.damageRange.min + technique.damageRange.max) / 2;
+    // Use base damage from technique or vital point
+    let baseDamage = technique.damage || vitalPoint.baseDamage || 10;
 
     // Apply severity multiplier
     const severityMultiplier =
@@ -98,7 +96,7 @@ export class VitalPointSystem implements VitalPointSystemInterface {
 
     // Apply critical hit multiplier
     if (isCriticalHit) {
-      baseDamage *= technique.critMultiplier || 1.5;
+      baseDamage *= 1.5; // Default critical multiplier
     }
 
     // Apply archetype specific modifiers if available in config
@@ -117,23 +115,13 @@ export class VitalPointSystem implements VitalPointSystemInterface {
     return Math.max(0, Math.round(baseDamage));
   }
 
-  /**
-   * Calculate hit result for combat system integration
-   * @param technique The Korean martial arts technique being used
-   * @param targetedVitalPointId Optional specific vital point to target
-   * @returns Hit result with damage and effects
-   */
-  calculateHit(
+  public calculateHit(
     technique: KoreanTechnique,
-    targetedVitalPointId?: string | null
-  ): {
-    hit: boolean;
-    damage: number;
-    effects: readonly StatusEffect[];
-    vitalPointsHit: readonly string[];
-  } {
-    // Determine if the hit connects based on technique accuracy
-    const hit = Math.random() < technique.accuracy;
+    targetedVitalPointId: string | null,
+    accuracyRoll: number
+  ): VitalPointHitResult {
+    // Determine if the hit connects based on accuracy roll
+    const hit = accuracyRoll > 0.5; // Simple threshold for now
 
     if (!hit) {
       return {
@@ -144,37 +132,20 @@ export class VitalPointSystem implements VitalPointSystemInterface {
       };
     }
 
-    // Calculate base damage from technique range
-    const baseDamage = Math.floor(
-      Math.random() *
-        (technique.damageRange.max - technique.damageRange.min + 1) +
-        technique.damageRange.min
-    );
-
-    let finalDamage = baseDamage;
+    let finalDamage = technique.damage || 10; // Default damage if not specified
     let effects: StatusEffect[] = [];
     let vitalPointsHit: string[] = [];
 
     // Check if a vital point was hit
     if (targetedVitalPointId) {
       const vitalPoint = this.getVitalPointById(targetedVitalPointId);
-      if (vitalPoint && Math.random() < vitalPoint.baseAccuracy) {
+      if (vitalPoint && accuracyRoll < vitalPoint.baseAccuracy) {
         // Vital point hit - apply multiplier and effects
-        finalDamage = Math.floor(baseDamage * vitalPoint.damageMultiplier);
-        effects = [...vitalPoint.effects];
+        finalDamage = Math.floor(
+          (technique.damage || 10) * vitalPoint.damageMultiplier
+        );
+        effects = [...vitalPoint.effects] as StatusEffect[];
         vitalPointsHit = [vitalPoint.id];
-      }
-    } else {
-      // Random vital point check (lower chance)
-      const allVitalPoints = this.getAllVitalPoints();
-      const randomPoint =
-        allVitalPoints[Math.floor(Math.random() * allVitalPoints.length)];
-
-      if (Math.random() < 0.1) {
-        // 10% chance for random vital point hit
-        finalDamage = Math.floor(baseDamage * randomPoint.damageMultiplier);
-        effects = [...randomPoint.effects];
-        vitalPointsHit = [randomPoint.id];
       }
     }
 
@@ -183,6 +154,28 @@ export class VitalPointSystem implements VitalPointSystemInterface {
       damage: finalDamage,
       effects: effects as readonly StatusEffect[],
       vitalPointsHit: vitalPointsHit as readonly string[],
+    };
+  }
+
+  public applyVitalPointEffects(
+    player: PlayerState,
+    vitalPoint: VitalPoint,
+    intensityMultiplier: number = 1.0
+  ): PlayerState {
+    const effects = vitalPoint.effects.map((effect) => ({
+      id: `${effect.id}_${Date.now()}`,
+      name: effect.description, // Keep as KoreanText for name
+      type: effect.type,
+      intensity: effect.intensity,
+      duration: Math.round(effect.duration * intensityMultiplier),
+      description: effect.description,
+      stackable: effect.stackable,
+      source: "vital_point" as const, // Add source property for CombatCondition
+    }));
+
+    return {
+      ...player,
+      conditions: [...player.conditions, ...effects],
     };
   }
 }

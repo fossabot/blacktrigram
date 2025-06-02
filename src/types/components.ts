@@ -1,6 +1,6 @@
 // Component prop interfaces for Black Trigram Korean martial arts game
 
-import type { FederatedPointerEvent, Texture, DisplayObject } from "pixi.js"; // Corrected DisplyObject
+import type { FederatedPointerEvent, Texture, Container } from "pixi.js"; // Using Container instead of DisplayObject
 import type React from "react";
 import type {
   PlayerState,
@@ -111,7 +111,7 @@ export interface PlayerProps extends GameComponentProps {
 export interface PlayerVisualsProps extends GameComponentProps {
   readonly playerState: PlayerState;
   readonly archetype: PlayerArchetype;
-  readonly texture?: Texture | DisplayObject; // Corrected: DisplayObject is now correctly typed
+  readonly texture?: Texture | Container; // Using Container instead of DisplayObject
   readonly showHealthBar?: boolean;
   readonly showKiBar?: boolean;
   readonly showStaminaBar?: boolean;

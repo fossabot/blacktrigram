@@ -54,6 +54,7 @@ export const DamageType = {
 
 export type DamageType = (typeof DamageType)[keyof typeof DamageType];
 
+// Effect types for combat and status effects
 export const EffectType = {
   // From GameUI.test.tsx
   VULNERABLE: "vulnerable",

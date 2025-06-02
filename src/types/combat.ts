@@ -54,8 +54,12 @@ export interface KoreanTechnique {
   readonly damageRange?: DamageRange; // Added
   readonly executionTime?: number; // Added (e.g., in frames or ms)
   readonly recoveryTime?: number; // Added (e.g., in frames or ms)
+  readonly accuracy?: number; // Base accuracy for the technique (0-1)
+  readonly range?: number; // Effective range of the technique
+  readonly effects?: readonly StatusEffect[]; // Status effects applied by technique
+  readonly damageMultiplier?: number; // Damage multiplier for this technique
+  readonly critMultiplier?: number; // Critical hit damage multiplier
   // Consider adding other relevant properties like:
-  // readonly effects?: readonly StatusEffect[];
   // readonly properties?: readonly string[]; // e.g., "unblockable", "armor_piercing"
 }
 

@@ -18,7 +18,7 @@ import type {
 } from "./trigram";
 import type {
   Application as PixiApplication,
-  DisplayObject as PixiDisplayObject, // Aliased to avoid potential name collision and make it clear it's from PIXI
+  Container as PixiDisplayObject, // Using Container as the base display object type
   Texture,
 } from "pixi.js"; // For RenderingSystemInterface
 
