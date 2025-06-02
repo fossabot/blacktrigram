@@ -27,6 +27,7 @@ export const DamageType = {
   SHARP: "sharp",
   IMPACT: "impact",
   INTERNAL: "internal",
+  JOINT: "joint",
 } as const;
 
 export type DamageType = (typeof DamageType)[keyof typeof DamageType];

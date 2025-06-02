@@ -40,28 +40,39 @@ Black Trigram is a **realistic 2D precision combat simulator** deeply rooted in 
 
 ### ✅ Implemented Systems
 
+#### Constant System (`src/types/constants` - 60 lines total)
+colors.ts
+combat.ts
+game.ts
+index.ts
+player.ts
+techniques.ts
+trigram.ts
+typography.ts
+vital-points.ts
+
 #### Type System (`src/types/` - 60 lines total)
 
 **Status**: ✅ **COMPLETE** - Comprehensive type definitions
 
 src/types/
-├── index.ts           # Main export hub
-├── components.ts      # All component prop interfaces
-├── korean-text.ts     # Korean typography system
-├── systems.ts         # Internal system types
-├── audio.ts          # Audio system types (enhanced)
-├── combat.ts         # Combat mechanics (includes HitResult)
-├── trigram.ts        # Eight trigram system
-├── anatomy.ts        # Vital points and body regions
-├── player.ts         # Player state and actions
-├── game.ts           # Game flow and screens
-├── ui.ts             # UI component interfaces
-├── effects.ts        # Status effects and conditions
-├── constants.ts      # Global constants
-├── enums.ts          # String literal unions
-├── common.ts         # Basic shared types
-├── system.ts         # System types
-└── pixi-react.d.ts   # PixiJS React integration
+natomy.ts
+audio.ts
+combat.ts
+common.ts
+components.ts
+constants
+constants.ts
+effects.ts
+enums.ts
+game.ts
+index.ts
+korean-text.ts
+pixi-react.d.ts
+player.ts
+systems.ts
+trigram.ts
+ui.ts
 
 #### Audio System (`src/audio/` - 108 lines total)
 
@@ -236,55 +247,6 @@ const effectiveness =
 
 ## 🎨 PixiJS + React Integration
 
-**Use @pixi/react components declaratively:**
-
-```typescript
-import { Stage, Container, Sprite, Graphics, Text, useTick } from "@pixi/react";
-import { useCallback } from "react";
-import { TRIGRAM_DATA, KOREAN_COLORS } from "../types";
-
-// Korean martial artist component following existing patterns
-function KoreanMartialArtist({
-  archetype,
-  stance,
-  position,
-}: {
-  archetype: PlayerArchetype;
-  stance: TrigramStance;
-  position: { x: number; y: number };
-}) {
-  const technique = TRIGRAM_DATA[stance].technique;
-  const stanceColor = KOREAN_COLORS[stance];
-
-  const drawMartialArtist = useCallback(
-    (g: PIXI.Graphics) => {
-      g.clear();
-      // Use existing color constants
-      g.setFillStyle({ color: KOREAN_COLORS.WHITE, alpha: 0.9 });
-      g.rect(-25, -90, 50, 90);
-      g.fill();
-
-      // Stance-specific aura using existing data
-      g.setStrokeStyle({ color: stanceColor, width: 8 });
-      g.circle(0, -45, 45);
-      g.stroke();
-    },
-    [stance, stanceColor]
-  );
-
-  return (
-    <Container x={position.x} y={position.y}>
-      <Graphics draw={drawMartialArtist} />
-      {/* Use existing Korean text components */}
-      <KoreanTechniqueText
-        korean={technique.koreanName}
-        english={technique.englishName}
-        trigram={stance}
-      />
-    </Container>
-  );
-}
-```
 
 ## 🧪 Testing Strategy
 
