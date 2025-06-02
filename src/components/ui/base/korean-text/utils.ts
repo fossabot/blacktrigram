@@ -62,15 +62,15 @@ export function validateKoreanText(text: string): {
 /**
  * Create PIXI TextStyle for Korean text (PIXI v8 compatible)
  */
-export function getPixiTextStyle(
+export const getPixiTextStyle = (
   props: KoreanTextProps,
   baseColor: number = KOREAN_COLORS.WHITE
-): PIXI.TextStyle {
+): PIXI.TextStyle => {
   const fontSize =
     typeof props.size === "number"
       ? props.size
       : KOREAN_TEXT_SIZES[props.size as keyof typeof KOREAN_TEXT_SIZES] ||
-        KOREAN_TEXT_SIZES.MEDIUM;
+        KOREAN_TEXT_SIZES.medium;
 
   const style = new PIXI.TextStyle({
     fontFamily: KOREAN_FONT_FAMILIES.PRIMARY,
@@ -95,7 +95,7 @@ export function getPixiTextStyle(
   }
 
   return style;
-}
+};
 
 /**
  * Measure Korean text dimensions

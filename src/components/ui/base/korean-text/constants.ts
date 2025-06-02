@@ -69,13 +69,9 @@ export const KOREAN_STATUS_TRANSLATIONS: Record<
 
 // Martial arts colors (using existing Korean colors)
 export const MARTIAL_COLORS: Record<MartialVariant, number> = {
-  technique: KOREAN_COLORS.GREEN,
-  philosophy: KOREAN_COLORS.BLUE,
-  instruction: KOREAN_COLORS.WHITE,
-  practitioner: KOREAN_COLORS.SILVER,
+  practitioner: KOREAN_COLORS.BLUE,
   master: KOREAN_COLORS.GOLD,
-  honor: KOREAN_COLORS.ORANGE,
-  discipline: KOREAN_COLORS.CYAN, // Use CYAN instead of missing PURPLE
+  grandmaster: KOREAN_COLORS.TRADITIONAL_RED,
 } as const;
 
 // Korean martial arts terms
@@ -138,4 +134,11 @@ export const TRIGRAM_TEXT_CONFIG = {
     english: "Earth",
     symbol: "☷",
   },
+} as const;
+
+// Korean martial colors (updated)
+export const KOREAN_MARTIAL_COLORS: Record<MartialVariant, number> = {
+  practitioner: KOREAN_COLORS.BLUE,
+  master: KOREAN_COLORS.GOLD,
+  grandmaster: KOREAN_COLORS.TRADITIONAL_RED,
 } as const;

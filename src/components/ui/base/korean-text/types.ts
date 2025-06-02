@@ -1,20 +1,25 @@
-// Re-export Korean text types for local component use
-export type {
-  KoreanText,
-  KoreanTextProps,
-  KoreanTextHeaderProps,
-  KoreanTechniqueTextProps,
-  KoreanMartialTextProps,
-  KoreanStatusTextProps,
-  KoreanTextSize,
-  KoreanFontWeight,
-  KoreanTextVariant,
-  MartialVariant,
-  StatusKey,
+// Local Korean text types for component-specific usage
+import type {
+  KoreanText as BaseKoreanText,
+  KoreanTextProps as BaseKoreanTextProps,
+  KoreanTextHeaderProps as BaseKoreanTextHeaderProps,
+  KoreanTechniqueTextProps as BaseKoreanTechniqueTextProps,
+  KoreanStatusTextProps as BaseKoreanStatusTextProps,
+  KoreanMartialTextProps as BaseKoreanMartialTextProps,
 } from "../../../../types/korean-text";
 
-// Additional local types for Korean text system
-export type FontFamily = "primary" | "secondary" | "monospace";
+// Re-export types from main types system with proper aliasing
+export type KoreanText = BaseKoreanText;
+export type KoreanTextProps = BaseKoreanTextProps;
+export type KoreanTextHeaderProps = BaseKoreanTextHeaderProps;
+export type KoreanTechniqueTextProps = BaseKoreanTechniqueTextProps;
+export type KoreanStatusTextProps = BaseKoreanStatusTextProps;
+export type KoreanMartialTextProps = BaseKoreanMartialTextProps;
 
-// Re-export trigram stance type
-export type { TrigramStance } from "../../../../types/trigram";
+// Local aliases for convenience
+export type KoreanTitleProps = BaseKoreanTextHeaderProps;
+
+// Component-specific extensions (if needed)
+export interface LocalKoreanTextProps extends BaseKoreanTextProps {
+  readonly testId?: string;
+}

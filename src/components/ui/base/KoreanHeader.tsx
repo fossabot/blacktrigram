@@ -10,7 +10,6 @@ export function KoreanHeader({
   subtitle,
   level = 1,
   color = KOREAN_COLORS.GOLD,
-  style,
 }: KoreanTextHeaderProps): React.ReactElement {
   const getFontSize = (level: number): number => {
     const sizes = { 1: 32, 2: 28, 3: 24, 4: 20, 5: 18, 6: 16 };

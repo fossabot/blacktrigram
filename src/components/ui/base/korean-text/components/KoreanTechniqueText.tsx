@@ -1,83 +1,63 @@
 import React from "react";
-import { Text as PixiText } from "@pixi/react";
+import { Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import type { KoreanTechniqueTextProps } from "../../../../../types/korean-text";
-import { useKoreanTextStyle } from "../hooks/useKoreanTextStyle";
-import { getPixiTextStyle } from "../utils";
-import { KOREAN_COLORS } from "../../../../../types/constants";
+import type { KoreanTechniqueTextProps } from "../types";
+import { KOREAN_TEXT_SIZES, KOREAN_FONT_FAMILIES } from "../constants";
+import { KOREAN_COLORS, TRIGRAM_DATA } from "../../../../types";
 
 export function KoreanTechniqueText({
   korean,
   english,
-  koreanName: propKoreanName,
-  englishName: propEnglishName,
+  koreanName,
+  englishName,
   trigram,
-  showStanceSymbol,
+  showStanceSymbol = false,
   damage,
-  mastered,
-  className,
-  style: htmlStyle,
-  x,
-  y,
-  anchor,
-  alpha,
-  visible,
-  interactive,
-  onpointertap,
-  ...restKoreanTextProps
-}: KoreanTechniqueTextProps & {
-  x?: number;
-  y?: number;
-  anchor?: { x: number; y: number } | number;
-  alpha?: number;
-  visible?: boolean;
-  interactive?: boolean;
-  onpointertap?: (event: PIXI.FederatedPointerEvent) => void;
-}): React.ReactElement {
-  const finalKorean =
-    propKoreanName || (typeof korean === "object" ? korean.korean : korean);
-  const finalEnglish =
-    propEnglishName || (typeof korean === "object" ? korean.english : english);
+  mastered = false,
+  size = "medium",
+  weight = 400,
+  color,
+  align = "left",
+  ...props
+}: KoreanTechniqueTextProps): React.ReactElement {
+  const fontSize =
+    typeof size === "number"
+      ? size
+      : KOREAN_TEXT_SIZES[size] || KOREAN_TEXT_SIZES.medium;
 
-  // Get trigram color if available
-  const trigramColor = trigram
-    ? KOREAN_COLORS[trigram as keyof typeof KOREAN_COLORS]
-    : KOREAN_COLORS.GOLD;
+  const stanceColor = trigram ? TRIGRAM_DATA[trigram]?.color : undefined;
+  const finalColor = color || stanceColor || KOREAN_COLORS.WHITE;
 
-  // Create PIXI text style
-  const pixiStyle = getPixiTextStyle(
-    {
-      korean: finalKorean,
-      english: finalEnglish,
-      size: "medium",
-      weight: "bold",
-      color: trigramColor,
-      ...restKoreanTextProps,
-    },
-    trigramColor
-  );
+  const techniqueStyle = new PIXI.TextStyle({
+    fontFamily: KOREAN_FONT_FAMILIES.PRIMARY,
+    fontSize,
+    fill: finalColor,
+    fontWeight: weight,
+    align,
+    wordWrap: true,
+    wordWrapWidth: 400,
+  });
 
-  // Format technique display text
-  const displayText =
-    showStanceSymbol && trigram
-      ? `${finalKorean} (${finalEnglish})`
-      : `${finalKorean} ${finalEnglish ? `(${finalEnglish})` : ""}`;
+  const koreanText = typeof korean === "string" ? korean : korean.korean;
+  const englishText =
+    english || (typeof korean === "object" ? korean.english : undefined);
 
-  const enhancedText = damage ? `${displayText} [${damage}]` : displayText;
-
-  const finalText = mastered ? `★ ${enhancedText}` : enhancedText;
+  const displayText = [
+    showStanceSymbol && trigram ? TRIGRAM_DATA[trigram]?.symbol : "",
+    koreanName || koreanText,
+    englishName || englishText ? `(${englishName || englishText})` : "",
+    damage ? `- ${damage} 피해` : "",
+    mastered ? "✓" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <PixiText
-      text={finalText}
-      style={pixiStyle}
-      x={x}
-      y={y}
-      anchor={anchor}
-      alpha={alpha}
-      visible={visible}
-      interactive={interactive}
-      onpointertap={onpointertap}
+    <Text
+      text={displayText}
+      style={techniqueStyle}
+      anchor={{ x: 0, y: 0.5 }}
+      {...props}
     />
   );
 }

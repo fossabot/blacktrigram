@@ -9,6 +9,27 @@ export * from "./trigram";
 export * from "./typography";
 export * from "./vital-points";
 
+// Add missing exports
+export const KOREAN_FONT_SIZES = {
+  SMALL: 12,
+  MEDIUM: 16,
+  LARGE: 20,
+  XLARGE: 24,
+  XXLARGE: 32,
+} as const;
+
+export const KOREAN_FONT_FAMILY = {
+  PRIMARY: "Noto Sans KR, Arial, sans-serif",
+  SECONDARY: "Malgun Gothic, sans-serif",
+  MONOSPACE: "D2Coding, monospace",
+} as const;
+
+export const MARTIAL_COLORS = {
+  practitioner: 0x4169e1,
+  master: 0xffd700,
+  grandmaster: 0xff4500,
+} as const;
+
 // UI layout constants
 export const UI_LAYOUT = {
   HEADER_HEIGHT: 80,

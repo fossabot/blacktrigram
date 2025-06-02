@@ -7,12 +7,12 @@ export function PhilosophySection({
   onGamePhaseChange,
 }: PhilosophySectionProps): React.ReactElement {
   const [selectedStance, setSelectedStance] = useState<TrigramStance | null>(
-    "geon"
+    null
   );
 
   const containerStyle: React.CSSProperties = {
     width: "100%",
-    height: "100vh",
+    minHeight: "100vh",
     padding: "2rem",
     backgroundColor: `#${KOREAN_COLORS.BLACK.toString(16).padStart(6, "0")}`,
     color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
@@ -27,43 +27,47 @@ export function PhilosophySection({
     marginTop: "2rem",
   };
 
-  const trigramCardStyle: React.CSSProperties = {
-    padding: "1.5rem",
-    borderRadius: "8px",
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    border: "2px solid rgba(255, 255, 255, 0.2)",
-    transition: "all 0.3s ease",
+  const trigramCardStyle = (stance: TrigramStance): React.CSSProperties => {
+    const isSelected = selectedStance === stance;
+    const trigramData = TRIGRAM_DATA[stance];
+
+    return {
+      padding: "1.5rem",
+      borderRadius: "8px",
+      backgroundColor: isSelected
+        ? `rgba(${parseInt(
+            trigramData.color.toString(16).slice(0, 2),
+            16
+          )}, ${parseInt(
+            trigramData.color.toString(16).slice(2, 4),
+            16
+          )}, ${parseInt(trigramData.color.toString(16).slice(4, 6), 16)}, 0.3)`
+        : "rgba(255, 255, 255, 0.1)",
+      border: isSelected
+        ? `3px solid #${trigramData.color.toString(16).padStart(6, "0")}`
+        : "2px solid rgba(255, 255, 255, 0.2)",
+      cursor: "pointer",
+      transition: "all 0.3s ease",
+      transform: isSelected ? "scale(1.02)" : "scale(1)",
+    };
   };
 
-  const renderStanceCard = (stance: TrigramStance) => {
-    const trigramData = TRIGRAM_DATA[stance as keyof typeof TRIGRAM_DATA];
-    if (!trigramData) return null;
-
-    return (
-      <div
-        key={stance}
-        onClick={() => setSelectedStance(stance)}
-        style={{
-          padding: "1rem",
-          margin: "0.5rem",
-          border:
-            selectedStance === stance ? "2px solid gold" : "1px solid gray",
-          borderRadius: "8px",
-          cursor: "pointer",
-        }}
-      >
-        <h3>
-          {trigramData.symbol} {trigramData.korean}
-        </h3>
-        <p>{trigramData.philosophy}</p>
-      </div>
-    );
+  const symbolStyle = (stance: TrigramStance): React.CSSProperties => {
+    const trigramData = TRIGRAM_DATA[stance];
+    return {
+      fontSize: "3rem",
+      color: `#${trigramData.color.toString(16).padStart(6, "0")}`,
+      textAlign: "center" as const,
+      marginBottom: "1rem",
+      textShadow: "0 0 10px rgba(255,255,255,0.3)",
+    };
   };
 
   return (
     <div style={containerStyle}>
       <KoreanHeader
-        korean="팔괘 철학 (Trigram Philosophy)"
+        korean="팔괘 철학"
+        english="Trigram Philosophy"
         subtitle="Traditional Korean martial arts wisdom through the Eight Trigrams"
         level={1}
       />
@@ -81,15 +85,14 @@ export function PhilosophySection({
 
       <div style={gridStyle}>
         {Object.entries(TRIGRAM_DATA).map(([stance, data]) => (
-          <div key={stance} style={trigramCardStyle}>
-            <div
-              style={{
-                fontSize: "3rem",
-                color: `#${data.color.toString(16).padStart(6, "0")}`,
-                textAlign: "center",
-                marginBottom: "1rem",
-              }}
-            >
+          <div
+            key={stance}
+            style={trigramCardStyle(stance as TrigramStance)}
+            onClick={() => setSelectedStance(stance as TrigramStance)}
+            onMouseEnter={() => setSelectedStance(stance as TrigramStance)}
+            onMouseLeave={() => setSelectedStance(null)}
+          >
+            <div style={symbolStyle(stance as TrigramStance)}>
               {data.symbol}
             </div>
 
@@ -104,9 +107,26 @@ export function PhilosophySection({
               </div>
             </div>
 
+            <div style={{ marginBottom: "1rem" }}>
+              <strong>무술 적용:</strong>
+              <div style={{ fontSize: "0.9rem", marginTop: "0.5rem" }}>
+                {data.technique.description.korean}
+              </div>
+              <div
+                style={{
+                  fontSize: "0.8rem",
+                  opacity: 0.8,
+                  marginTop: "0.25rem",
+                }}
+              >
+                {data.technique.description.english}
+              </div>
+            </div>
+
             <div style={{ fontSize: "0.8rem", opacity: 0.8 }}>
               <div>원소: {data.element}</div>
-              <div>특성: {data.description?.korean || "전통 무술 기법"}</div>
+              <div>기법: {data.technique.koreanName}</div>
+              <div>피해: {data.technique.damage}</div>
             </div>
           </div>
         ))}
@@ -123,21 +143,58 @@ export function PhilosophySection({
           paddingTop: "2rem",
         }}
       >
+        <div style={{ marginBottom: "2rem" }}>
+          <h3
+            style={{
+              color: `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
+            }}
+          >
+            팔괘의 상극상생 (Trigram Interactions)
+          </h3>
+          <p style={{ fontSize: "0.9rem", opacity: 0.8, marginTop: "1rem" }}>
+            각 팔괘는 서로 다른 팔괘와 상극 또는 상생의 관계를 가지며, 이는
+            전투에서 전략적 우위를 결정합니다.
+          </p>
+          <p style={{ fontSize: "0.8rem", opacity: 0.7, marginTop: "0.5rem" }}>
+            Each trigram has complementary or opposing relationships with
+            others, determining strategic advantages in combat.
+          </p>
+        </div>
+
         <button
           onClick={() => onGamePhaseChange("intro")}
           style={{
             padding: "1rem 2rem",
             fontSize: "1.1rem",
-            backgroundColor: `#${KOREAN_COLORS.ACCENT_BLUE.toString(
+            backgroundColor: `#${KOREAN_COLORS.DOJANG_BLUE.toString(
               16
             ).padStart(6, "0")}`,
             color: "white",
             border: "none",
             borderRadius: "4px",
             cursor: "pointer",
+            marginRight: "1rem",
           }}
         >
           메뉴로 돌아가기 (Return to Menu)
+        </button>
+
+        <button
+          onClick={() => onGamePhaseChange("training")}
+          style={{
+            padding: "1rem 2rem",
+            fontSize: "1.1rem",
+            backgroundColor: `#${KOREAN_COLORS.GOLD.toString(16).padStart(
+              6,
+              "0"
+            )}`,
+            color: "black",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
+        >
+          수련 시작 (Begin Training)
         </button>
       </div>
     </div>
