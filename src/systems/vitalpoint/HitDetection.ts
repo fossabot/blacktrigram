@@ -91,8 +91,8 @@ export class HitDetection {
         // Apply damage and effects from the vital point
         // This would be calculated by DamageCalculator, considering technique, archetype, etc.
         damage =
-          closestVitalPoint.baseDamage *
-          (technique.damageMultiplier ?? 1) * // Used optional chaining for technique.damageMultiplier
+          (closestVitalPoint.baseDamage ?? 0) * // Added nullish coalescing
+          (technique.damageMultiplier ?? 1) *
           closestVitalPoint.damageMultiplier;
         effects = [...closestVitalPoint.effects] as StatusEffect[]; // Ensure type compatibility
 
@@ -104,8 +104,9 @@ export class HitDetection {
     // If no vital point was hit, or if the hit was not precise enough,
     // apply base technique damage (could be to a general body region)
     if (vitalPointsHit.length === 0) {
+      const damageRange = technique.damageRange ?? { min: 0, max: 0 }; // Added nullish coalescing
       damage =
-        ((technique.damageRange.min + technique.damageRange.max) / 2) *
+        ((damageRange.min + damageRange.max) / 2) *
         (technique.damageMultiplier ?? 1); // Use average of min/max
       // Apply general effects of the technique if any
       effects = [...(technique.effects || [])] as StatusEffect[]; // Ensure type compatibility

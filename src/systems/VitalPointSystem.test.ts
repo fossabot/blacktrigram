@@ -131,10 +131,9 @@ describe("VitalPointSystem", () => {
         0.1
       ); // Force hit
       expect(result.hit).toBe(true);
-      expect(result.isVitalPointHit).toBe(true);
-      expect(result.vitalPoint).toBeDefined();
-      expect(result.vitalPoint?.id).toBe("head_temple");
-      expect(result.damageDealt).toBeGreaterThan(0);
+      expect(result.vitalPointsHit.length).toBeGreaterThan(0);
+      expect(result.vitalPointsHit).toContain("head_temple");
+      expect(result.damage).toBeGreaterThan(0);
     });
 
     it("should simulate a miss", () => {
@@ -144,15 +143,14 @@ describe("VitalPointSystem", () => {
         0.99
       ); // Force miss
       expect(result.hit).toBe(false);
-      expect(result.damageDealt).toBe(0);
+      expect(result.damage).toBe(0);
     });
 
     it("should simulate a non-vital point hit", () => {
       const result = system.calculateHit(MOCK_TECHNIQUE_STRIKE, null, 0.1); // Force hit, no vital target
       expect(result.hit).toBe(true);
-      expect(result.isVitalPointHit).toBe(false);
-      expect(result.vitalPoint).toBeUndefined();
-      expect(result.damageDealt).toBeGreaterThan(0);
+      expect(result.vitalPointsHit.length).toBe(0);
+      expect(result.damage).toBeGreaterThan(0);
     });
   });
 
@@ -161,7 +159,13 @@ describe("VitalPointSystem", () => {
     if (!temple) throw new Error("Temple vital point not found");
 
     const systemWithMusaBonus = new VitalPointSystem({
-      archetypeModifiers: { musa: { head: 1.5 } }, // Musa gets 50% damage bonus to head
+      archetypeModifiers: {
+        musa: { head: 1.5 }, // Musa gets 50% damage bonus to head
+        amsalja: { head: 1.0 },
+        hacker: { head: 1.0 },
+        jeongbo: { head: 1.0 },
+        jojik: { head: 1.0 },
+      },
     });
     const damageMusa = systemWithMusaBonus.calculateVitalPointDamage(
       temple,
@@ -170,7 +174,13 @@ describe("VitalPointSystem", () => {
     );
 
     const systemWithoutBonus = new VitalPointSystem({
-      archetypeModifiers: { musa: { head: 1.0 } },
+      archetypeModifiers: {
+        musa: { head: 1.0 },
+        amsalja: { head: 1.0 },
+        hacker: { head: 1.0 },
+        jeongbo: { head: 1.0 },
+        jojik: { head: 1.0 },
+      },
     });
     const damageNoBonus = systemWithoutBonus.calculateVitalPointDamage(
       temple,
