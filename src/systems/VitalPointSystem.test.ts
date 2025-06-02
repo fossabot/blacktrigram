@@ -5,10 +5,7 @@ import type {
   VitalPointSystemConfig,
   KoreanTechnique,
   PlayerArchetype,
-  // CombatResult, // Unused
-  StatusEffect,
 } from "../types";
-import { VITAL_POINTS_DATA, KOREAN_COLORS } from "../types/constants";
 
 // Mock data (simplified)
 const MOCK_TECHNIQUE_STRIKE: KoreanTechnique = {

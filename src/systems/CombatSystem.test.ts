@@ -121,30 +121,31 @@ describe("CombatSystem", () => {
       const player1 = createMockPlayer("player1", 0, 100);
       const player2 = createMockPlayer("player2", 50, 100);
 
-      const result = CombatSystem.checkWinCondition([player1, player2], 60);
+      const result = CombatSystem.checkWinCondition([player1, player2]);
 
-      expect(result.gamePhase).toBe("victory");
-      expect(result.winnerId).toBe("player2");
+      // checkWinCondition returns the winning player or null
+      expect(result).toBeDefined();
+      expect(result?.id).toBe("player2");
     });
 
     it("should detect when player 2 is defeated by consciousness", () => {
       const player1 = createMockPlayer("player1", 50, 100);
       const player2 = createMockPlayer("player2", 50, 0);
 
-      const result = CombatSystem.checkWinCondition([player1, player2], 60);
+      const result = CombatSystem.checkWinCondition([player1, player2]);
 
-      expect(result.gamePhase).toBe("victory");
-      expect(result.winnerId).toBe("player1");
+      expect(result).toBeDefined();
+      expect(result?.id).toBe("player1");
     });
 
     it("should continue combat when both players are functional", () => {
       const player1 = createMockPlayer("player1", 50, 80);
       const player2 = createMockPlayer("player2", 60, 90);
 
-      const result = CombatSystem.checkWinCondition([player1, player2], 60);
+      const result = CombatSystem.checkWinCondition([player1, player2]);
 
-      expect(result.gamePhase).toBe("combat");
-      expect(result.winnerId).toBeNull();
+      // No winner yet, should return null
+      expect(result).toBeNull();
     });
   });
 });
