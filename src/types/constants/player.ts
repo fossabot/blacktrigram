@@ -1,12 +1,5 @@
 import type { PlayerArchetype } from "../enums";
-import type { KoreanText } from "../korean-text";
-
-// Player archetype data interface
-export interface PlayerArchetypeData {
-  readonly name: KoreanText;
-  readonly description: KoreanText;
-  readonly bonuses: Record<string, number>;
-}
+import { PlayerArchetypeData } from "../player";
 
 // Player archetype order for UI
 export const ARCHETYPE_ORDER = [

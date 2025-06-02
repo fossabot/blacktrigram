@@ -185,10 +185,23 @@ export interface GameEngineProps {
   readonly gamePhase: GamePhase;
   readonly onGamePhaseChange: (phase: GamePhase) => void;
   readonly gameTime: number;
+  readonly isPaused: boolean;
   readonly onPlayerUpdate: (
     playerIndex: number,
     updates: Partial<PlayerState>
   ) => void;
+}
+
+export interface TrainingScreenProps {
+  readonly onGamePhaseChange: (phase: GamePhase) => void;
+  readonly onStanceChange: (stance: TrigramStance) => void; // Use aliased TrigramStance
+  readonly selectedStance: TrigramStance; // Use aliased TrigramStance
+}
+
+export interface EndScreenProps {
+  readonly message: string;
+  readonly onRestart: () => void;
+  readonly onMenu: () => void;
 }
 
 // Korean text component props (for UI components)

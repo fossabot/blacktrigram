@@ -3,35 +3,12 @@
 import type { Position, Timestamp, CombatCondition } from "./common";
 import type { KoreanText } from "./korean-text"; // Added correct import
 import type {
-  TrigramStance as EnumTrigramStance,
-  PlayerArchetype as EnumPlayerArchetype,
-  CombatState as EnumCombatState, // Added CombatState from enums
+  CombatReadiness,
+  CombatState,
+  PlayerArchetype,
+  TrigramStance,
 } from "./enums";
 import type { StatusEffect } from "./effects";
-
-// Player archetype
-export type PlayerArchetype = EnumPlayerArchetype; // Use imported PlayerArchetype
-export type TrigramStance = EnumTrigramStance; // Use imported TrigramStance
-export type CombatState = EnumCombatState; // Use imported CombatState
-
-// Combat readiness enum - declare as enum for runtime access
-export enum CombatReadiness {
-  READY = 100,
-  LIGHT_DAMAGE = 80,
-  MODERATE = 60,
-  HEAVY = 40,
-  CRITICAL = 20,
-  INCAPACITATED = 0,
-}
-
-// Consciousness level enum
-export enum ConsciousnessLevel {
-  ALERT = 100,
-  AWARE = 75,
-  DISORIENTED = 50,
-  STUNNED = 25,
-  UNCONSCIOUS = 0,
-}
 
 // Player Archetype Data (for constants)
 export interface PlayerArchetypeData {

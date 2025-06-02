@@ -2,16 +2,12 @@
 
 import { GAME_CONFIG } from "./constants";
 import type {
-  CombatState as EnumCombatState, // Aliased to avoid conflict if CombatState is also defined locally
   DamageType,
-  PlayerArchetype as EnumPlayerArchetype, // Aliased
   EffectIntensity,
-  EffectType as EnumStatusEffectType, // Changed StatusEffectType to EffectType
-  TrigramStance as EnumTrigramStance,
-  CombatState,
-  PlayerArchetype,
+  EffectType as StatusEffectType, // Changed StatusEffectType to EffectType
   TrigramStance, // Add import for TrigramStance
 } from "./enums";
+import { PlayerState } from "./player";
 
 // Basic shared types
 export interface Position {
@@ -58,35 +54,6 @@ export interface CombatCondition {
   readonly duration: number;
   readonly intensity: EffectIntensity;
   readonly source: string;
-}
-
-// Enhanced player state with realistic combat mechanics
-// This PlayerState is a more generic one. The canonical one is in ./player.ts
-// To avoid conflicts, this could be CommonPlayerState or similar if used.
-// For now, assuming it's meant to be compatible or a subset.
-export interface PlayerState {
-  readonly id: EntityId;
-  readonly name: string;
-  readonly archetype: PlayerArchetype; // Uses the aliased EnumPlayerArchetype
-  readonly position: Position;
-  readonly stance: TrigramStance; // Uses the aliased EnumTrigramStance
-  readonly facing: "left" | "right";
-  readonly health: number;
-  readonly maxHealth: number;
-  readonly ki: number;
-  readonly maxKi: number;
-  readonly stamina: number;
-  readonly maxStamina: number;
-  readonly consciousness: number;
-  readonly pain: number;
-  readonly balance: number;
-  readonly bloodLoss: number;
-  readonly lastStanceChangeTime: Timestamp;
-  readonly isAttacking: boolean;
-  readonly combatReadiness: number;
-  readonly activeEffects: readonly any[];
-  readonly combatState: CombatState; // Uses the aliased EnumCombatState
-  readonly conditions: readonly CombatCondition[];
 }
 
 // Basic position and vector types for Korean martial arts combat
