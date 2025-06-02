@@ -2,12 +2,13 @@
 
 import type { FederatedPointerEvent, Texture, Container } from "pixi.js"; // Using Container instead of DisplayObject
 import type React from "react";
+import type { ReactNode } from "react";
+import type { KoreanText } from "./korean-text";
+import type { GamePhase } from "./enums";
 import type {
   PlayerState,
   PlayerArchetype,
   TrigramStance,
-  GamePhase,
-  KoreanText, // This is the type from korean-text.ts
   Position,
   HitEffect,
   CombatResult,
@@ -22,7 +23,7 @@ export type { TrigramWheelProps, ProgressTrackerProps } from "./ui";
 export interface BaseComponentProps {
   readonly className?: string;
   readonly style?: React.CSSProperties;
-  readonly children?: React.ReactNode;
+  readonly children?: ReactNode;
 }
 
 // Game component props for combat components
@@ -202,15 +203,11 @@ export interface EndScreenProps extends BaseComponentProps {
 }
 
 // Game engine props
-export interface GameEngineProps {
-  readonly players: readonly [PlayerState, PlayerState];
+export interface GameEngineProps extends BaseComponentProps {
+  readonly players: readonly [any, any]; // TODO: proper player type
   readonly gamePhase: GamePhase;
-  readonly onPlayerUpdate: (
-    playerIndex: number,
-    updates: Partial<PlayerState>
-  ) => void;
-  readonly onGamePhaseChange: (phase: GamePhase | string) => void;
-  // Add other props as needed
+  readonly onPlayerUpdate: (playerIndex: number, updates: any) => void;
+  readonly onGamePhaseChange: (phase: GamePhase) => void;
 }
 
 // Korean text component props (for UI components)

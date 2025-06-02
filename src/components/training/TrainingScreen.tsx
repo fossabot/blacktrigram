@@ -128,7 +128,7 @@ export function TrainingScreen({
   return (
     <div style={containerStyle}>
       <KoreanHeader
-        title="무술 수련 (Martial Training)"
+        korean="무술 수련 (Martial Training)"
         subtitle="전통 한국 무예 연습 (Traditional Korean Martial Arts Practice)"
         level={1}
       />

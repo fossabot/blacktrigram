@@ -1,8 +1,10 @@
 import React from "react";
-import { KoreanText } from "../../ui/base/KoreanText";
-import { KOREAN_COLORS } from "../../../types";
+import { KoreanText } from "../../ui/base/korean-text";
+import { KOREAN_COLORS, type IntroSectionProps } from "../../../types";
 
-export function ControlsSection(): React.ReactElement {
+export function ControlsSection({
+  onGamePhaseChange,
+}: IntroSectionProps): React.ReactElement {
   const controls = [
     {
       key: "1-8",

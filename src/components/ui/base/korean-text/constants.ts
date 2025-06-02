@@ -1,16 +1,14 @@
-import type { MartialVariant } from "../../../../types";
+import type { MartialVariant, StatusKey } from "../../../../types";
+import { KOREAN_COLORS } from "../../../../types/constants";
 
 // Korean text size constants
 export const KOREAN_TEXT_SIZES = {
-  SMALL: 12,
-  MEDIUM: 16,
-  LARGE: 20,
-  XLARGE: 24,
-  XXLARGE: 32,
+  small: 12,
+  medium: 16,
+  large: 20,
+  xlarge: 24,
+  xxlarge: 32,
 } as const;
-
-// Alias for compatibility
-export const KOREAN_FONT_SIZES = KOREAN_TEXT_SIZES;
 
 // Korean font families
 export const KOREAN_FONT_FAMILIES = {
@@ -24,53 +22,18 @@ export const KOREAN_FONT_FAMILY = KOREAN_FONT_FAMILIES.PRIMARY;
 
 // Korean font weights
 export const KOREAN_FONT_WEIGHTS = {
-  LIGHT: "300",
-  REGULAR: "400",
-  MEDIUM: "500",
-  BOLD: "700",
-  HEAVY: "900",
-} as const;
-
-// Korean martial text presets
-export const KOREAN_MARTIAL_TEXT_PRESETS: Record<
-  MartialVariant,
-  {
-    size: keyof typeof KOREAN_TEXT_SIZES;
-    weight: keyof typeof KOREAN_FONT_WEIGHTS;
-  }
-> = {
-  technique: {
-    size: "MEDIUM",
-    weight: "BOLD",
-  },
-  philosophy: {
-    size: "LARGE",
-    weight: "MEDIUM",
-  },
-  instruction: {
-    size: "MEDIUM",
-    weight: "REGULAR",
-  },
-  practitioner: {
-    size: "MEDIUM",
-    weight: "REGULAR",
-  },
-  master: {
-    size: "LARGE",
-    weight: "BOLD",
-  },
-  honor: {
-    size: "MEDIUM",
-    weight: "MEDIUM",
-  },
-  discipline: {
-    size: "MEDIUM",
-    weight: "MEDIUM",
-  },
+  light: "300",
+  regular: "400",
+  medium: "500",
+  bold: "700",
+  heavy: "900",
 } as const;
 
 // Status translations
-export const KOREAN_STATUS_TRANSLATIONS = {
+export const KOREAN_STATUS_TRANSLATIONS: Record<
+  StatusKey,
+  { korean: string; english: string }
+> = {
   health: { korean: "체력", english: "Health" },
   ki: { korean: "기력", english: "Ki" },
   stamina: { korean: "스태미나", english: "Stamina" },
@@ -80,14 +43,14 @@ export const KOREAN_STATUS_TRANSLATIONS = {
 } as const;
 
 // Martial arts colors
-export const MARTIAL_COLORS = {
-  technique: 0x00ff00,
-  philosophy: 0x0066cc,
-  instruction: 0xffffff,
-  practitioner: 0xcccccc,
-  master: 0xffd700,
-  honor: 0xff6600,
-  discipline: 0x9900cc,
+export const MARTIAL_COLORS: Record<MartialVariant, number> = {
+  technique: KOREAN_COLORS.GREEN,
+  philosophy: KOREAN_COLORS.BLUE,
+  instruction: KOREAN_COLORS.WHITE,
+  practitioner: KOREAN_COLORS.SILVER,
+  master: KOREAN_COLORS.GOLD,
+  honor: KOREAN_COLORS.ORANGE,
+  discipline: KOREAN_COLORS.PURPLE,
 } as const;
 
 // Korean martial arts terms

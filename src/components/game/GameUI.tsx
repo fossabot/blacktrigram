@@ -235,7 +235,7 @@ export function GameUI({
         }}
       >
         <KoreanHeader
-          title="흑괘 무술 도장"
+          korean="흑괘 무술 도장"
           subtitle="Black Trigram Combat"
           level={2}
         />

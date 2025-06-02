@@ -1,14 +1,14 @@
 // UI Components index
-export { KoreanHeader } from "./KoreanHeader";
-export { ProgressTracker } from "./ProgressTracker";
 export { TrigramWheel } from "./TrigramWheel";
-export { BaseButton } from "./base/BaseButton";
+export { ProgressTracker } from "./ProgressTracker";
+export { KoreanHeader } from "./base/KoreanHeader";
+export { EndScreen } from "./EndScreen";
 
-// Export Korean text components
+// Korean text system
 export * from "./base/korean-text";
 
-// Export EndScreen if it exists
-export { EndScreen } from "./EndScreen";
+// Base components
+export * from "./base/BaseButton";
 
 // Re-export types
 export type { TrigramWheelProps, ProgressTrackerProps } from "../../types/ui";

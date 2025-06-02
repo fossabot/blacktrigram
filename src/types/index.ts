@@ -21,11 +21,21 @@ export type {
 export type { HitEffect, StatusEffect, VitalPointEffect } from "./effects";
 export type {
   KoreanText,
-  KoreanTextStyle,
   KoreanTextProps,
-  KoreanFontWeight,
-  MartialVariant,
+  KoreanTitleProps,
+  KoreanMartialTextProps,
+  KoreanTechniqueTextProps,
+  KoreanStatusTextProps,
+  KoreanTextHeaderProps,
+  KoreanTextSize,
   KoreanTextVariant,
+  KoreanTextEmphasis,
+  KoreanFontWeight,
+  HonorLevel,
+  MartialVariant,
+  FontWeight,
+  ColorValue,
+  StatusKey,
 } from "./korean-text";
 export type {
   TrigramData,

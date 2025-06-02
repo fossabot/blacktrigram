@@ -8,20 +8,14 @@ export function ProgressTracker({
   label,
   value,
   maxValue,
-  max, // Support both naming conventions
   width = 200,
   height = 20,
   showText = true,
   textColor = KOREAN_COLORS.WHITE,
 }: ProgressTrackerProps): React.ReactElement {
-  // Use maxValue or fall back to max for compatibility
-  const actualMaxValue = maxValue || max || 100;
-
   // Calculate percentage safely
   const percentage =
-    actualMaxValue > 0
-      ? Math.max(0, Math.min(100, (value / actualMaxValue) * 100))
-      : 0;
+    maxValue > 0 ? Math.max(0, Math.min(100, (value / maxValue) * 100)) : 0;
 
   const baseTextStyle: Partial<PIXI.TextStyle> = useMemo(
     () => ({
@@ -41,7 +35,7 @@ export function ProgressTracker({
   );
 
   const displayText = showText
-    ? `${label}: ${value}/${actualMaxValue} (${Math.round(percentage)}%)`
+    ? `${label}: ${value}/${maxValue} (${Math.round(percentage)}%)`
     : "";
 
   return (
