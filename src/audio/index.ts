@@ -1,2 +1,2 @@
 export * from "./AudioManager";
-export { AudioProvider, useAudio } from "./AudioManager.tsx";
+export { useAudio } from "./AudioManager";
