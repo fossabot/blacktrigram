@@ -1,50 +1,69 @@
-import { KOREAN_COLORS } from "../../../../types";
+import type {
+  KoreanTextStyleInterface, // Use the alias from korean-text.ts
+  // KoreanTextVariant, // Unused
+  TrigramStance,
+  StatusKey, // Ensure StatusKey is defined in enums and imported correctly
+  KoreanFontWeight,
+  ColorValue,
+} from "../../../../types"; // Assuming types are re-exported from here
 
-// Size configuration with Korean typography considerations
-export const KOREAN_SIZE_CONFIG = {
-  tiny: { fontSize: "0.65rem", lineHeight: 1.2 },
-  small: { fontSize: "0.8rem", lineHeight: 1.3 },
-  medium: { fontSize: "1rem", lineHeight: 1.4 },
-  large: { fontSize: "1.25rem", lineHeight: 1.45 },
-  xlarge: { fontSize: "1.5rem", lineHeight: 1.5 },
-  xxlarge: { fontSize: "2rem", lineHeight: 1.55 },
+import { KOREAN_COLORS as APP_KOREAN_COLORS } from "../../../../types/constants"; // Alias to avoid conflict
+
+export const KOREAN_FONT_FAMILY = {
+  PRIMARY: "Noto Sans KR, Arial, sans-serif",
+  FALLBACK: "Arial, sans-serif",
 } as const;
 
-// Korean martial arts color themes
-export const MARTIAL_COLORS = {
-  technique: KOREAN_COLORS.GOLD,
-  stance: KOREAN_COLORS.CYAN,
-  philosophy: KOREAN_COLORS.Purple,
-  honor: KOREAN_COLORS.TRADITIONAL_RED,
-  respect: KOREAN_COLORS.WHITE,
-  combat: KOREAN_COLORS.Red,
-  training: KOREAN_COLORS.Green,
-  mastery: KOREAN_COLORS.GOLD,
-  wisdom: KOREAN_COLORS.Purple,
+export const KOREAN_FONT_WEIGHTS: Record<KoreanFontWeight, number> = {
+  light: 300,
+  regular: 400,
+  normal: 400, // Map normal to regular
+  medium: 500,
+  bold: 700,
+  heavy: 900,
+};
+
+export const KOREAN_TEXT_SIZES = {
+  small: 12,
+  medium: 16,
+  large: 24,
+  xlarge: 32,
+  title: 48,
 } as const;
 
-// Korean text status translations
-export const KOREAN_STATUS_TRANSLATIONS = {
-  health: { korean: "체력", hanja: "體力" },
-  ki: { korean: "기력", hanja: "氣力" },
-  stamina: { korean: "스태미나", hanja: "持久力" },
-  victory: { korean: "승리", hanja: "勝利" },
-  defeat: { korean: "패배", hanja: "敗北" },
-  ready: { korean: "준비", hanja: "準備" },
-  attacking: { korean: "공격", hanja: "攻擊" },
-  defending: { korean: "방어", hanja: "防禦" },
-  stunned: { korean: "기절", hanja: "氣絕" },
-  recovering: { korean: "회복", hanja: "回復" },
-} as const;
+// Define MARTIAL_COLORS if it's specific to this module
+export const MARTIAL_COLORS: Record<string, ColorValue> = {
+  techniqueFocus: APP_KOREAN_COLORS.CYAN,
+  philosophyAccent: APP_KOREAN_COLORS.GOLD,
+  // ... other martial-specific colors
+};
 
-// Trigram symbols and colors
-export const TRIGRAM_CONFIG = {
-  geon: { symbol: "☰", color: KOREAN_COLORS.geon },
-  tae: { symbol: "☱", color: KOREAN_COLORS.tae },
-  li: { symbol: "☲", color: KOREAN_COLORS.li },
-  jin: { symbol: "☳", color: KOREAN_COLORS.jin },
-  son: { symbol: "☴", color: KOREAN_COLORS.son },
-  gam: { symbol: "☵", color: KOREAN_COLORS.gam },
-  gan: { symbol: "☶", color: KOREAN_COLORS.gan },
-  gon: { symbol: "☷", color: KOREAN_COLORS.gon },
-} as const;
+export const KOREAN_STATUS_TRANSLATIONS: Record<
+  StatusKey,
+  { korean: string; english: string }
+> = {
+  health: { korean: "체력", english: "Health" },
+  ki: { korean: "기", english: "Ki" },
+  stamina: { korean: "지구력", english: "Stamina" },
+  consciousness: { korean: "의식", english: "Consciousness" },
+  pain: { korean: "고통", english: "Pain" },
+  balance: { korean: "균형", english: "Balance" },
+  bloodLoss: { korean: "출혈", english: "Blood Loss" },
+  posture: { korean: "자세", english: "Posture" },
+  // Add other status keys
+};
+
+export const KOREAN_MARTIAL_ARTS_TERMS: Record<
+  string,
+  { korean: string; english: string; romanized: string }
+> = {
+  dojang: { korean: "도장", english: "Training Hall", romanized: "Dojang" },
+  sabum: {
+    korean: "사범",
+    english: "Master Instructor",
+    romanized: "Sabumnim",
+  },
+  // ... other terms
+};
+
+// ... other constants

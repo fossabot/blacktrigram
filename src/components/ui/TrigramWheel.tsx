@@ -1,182 +1,198 @@
-import React, { useCallback, useState } from "react";
-import { Application } from "@pixi/react";
-import type { Graphics as PixiGraphics } from "pixi.js";
-import {
-  PixiContainerComponent,
-  PixiGraphicsComponent,
-  PixiTextComponent,
-} from "./base/PixiComponents";
+import React, { useState, useCallback, useMemo } from "react";
+import { Container, Graphics, Text } from "@pixi/react";
+import type {
+  Graphics as PixiGraphics,
+  TextStyle as PixiTextStyle,
+} from "pixi.js";
 import {
   KOREAN_COLORS,
-  TRIGRAM_DATA,
   TRIGRAM_STANCES_ORDER,
-  type TrigramWheelProps,
-} from "../../types";
+  KOREAN_FONT_FAMILY,
+  TRIGRAM_DATA, // Import TRIGRAM_DATA from types/index.ts (which re-exports from types/trigram.ts)
+} from "../../../types";
+import type { TrigramStance, TrigramWheelProps } from "../../types";
+
+const WHEEL_RADIUS = 150;
+const ITEM_RADIUS = 30;
+const LABEL_OFFSET = 45;
 
 export function TrigramWheel({
   selectedStance,
-  onStanceSelect,
   onStanceChange,
-  radius = 150,
+  onStanceSelect,
+  x = 0,
+  y = 0,
+  radius = WHEEL_RADIUS,
   isEnabled = true,
-  playerKi = 100,
-  playerMaxKi = 100,
+  showLabels = true,
+  isInteractive = true,
 }: TrigramWheelProps): React.ReactElement {
-  const [hoveredStance, setHoveredStance] = useState<string | null>(null);
+  const [hoveredStance, setHoveredStance] = useState<TrigramStance | null>(
+    null
+  );
 
   const handleStanceClick = useCallback(
-    (stance: string) => {
-      if (isEnabled) {
-        onStanceChange(stance as any);
+    (stance: TrigramStance) => {
+      if (isEnabled && isInteractive) {
+        onStanceChange(stance);
         if (onStanceSelect) {
-          onStanceSelect(stance as any);
+          onStanceSelect(stance); // Call onStanceSelect if it's for selection confirmation/action
         }
       }
     },
-    [isEnabled, onStanceChange, onStanceSelect]
+    [onStanceChange, onStanceSelect, isEnabled, isInteractive]
   );
 
-  // Helper functions for drawing
+  const handlePointerOver = useCallback(
+    (stance: TrigramStance) => {
+      if (isEnabled && isInteractive) {
+        setHoveredStance(stance);
+        // if (onStanceSelect) onStanceSelect(stance);
+      }
+    },
+    [isEnabled, isInteractive]
+  );
+
+  const handlePointerOut = useCallback(() => {
+    if (isEnabled && isInteractive) {
+      setHoveredStance(null);
+    }
+  }, [isEnabled, isInteractive]);
+
   const drawWheelBackground = useCallback(
     (g: PixiGraphics) => {
       g.clear();
-      g.setStrokeStyle({ color: KOREAN_COLORS.GOLD, width: 2, alpha: 0.5 });
-      g.circle(0, 0, radius * 0.9);
-      g.stroke();
+      g.beginFill(KOREAN_COLORS.BLACK, 0.8);
+      g.drawCircle(0, 0, radius);
+      g.endFill();
     },
     [radius]
   );
 
-  const drawSelectedIndicator = useCallback(
-    (g: PixiGraphics) => {
-      if (!selectedStance) return;
+  const items = useMemo(() => {
+    return TRIGRAM_STANCES_ORDER.map((stance, index) => {
+      const angle =
+        (index / TRIGRAM_STANCES_ORDER.length) * 2 * Math.PI - Math.PI / 2;
+      const itemX = radius * Math.cos(angle);
+      const itemY = radius * Math.sin(angle);
+      const data = TRIGRAM_DATA[stance];
+      const color = data.color || KOREAN_COLORS.GRAY_LIGHT;
+      const isSelected = stance === selectedStance;
+      const isHovered = stance === hoveredStance;
 
+      return {
+        stance,
+        x: itemX,
+        y: itemY,
+        data,
+        color,
+        isSelected,
+        isHovered,
+      };
+    });
+  }, [radius, selectedStance, hoveredStance]);
+
+  const drawItem = useCallback(
+    (g: PixiGraphics, item: (typeof items)[0]) => {
       g.clear();
-      const selectedIndex = TRIGRAM_STANCES_ORDER.indexOf(selectedStance);
-      const angle = (selectedIndex / 8) * Math.PI * 2 - Math.PI / 2;
-      const indicatorRadius = radius * 0.75;
-      const x = Math.cos(angle) * indicatorRadius;
-      const y = Math.sin(angle) * indicatorRadius;
+      const alpha = !isEnabled ? 0.5 : 1;
+      g.beginFill(
+        item.color,
+        item.isSelected ? alpha : item.isHovered ? alpha * 0.7 : alpha * 0.4
+      );
+      g.drawCircle(0, 0, ITEM_RADIUS);
+      g.endFill();
 
-      g.setStrokeStyle({ color: KOREAN_COLORS.GOLD, width: 3 });
-      g.circle(x, y, 25);
-      g.stroke();
+      if (item.isSelected || item.isHovered) {
+        g.lineStyle(item.isSelected ? 3 : 1, KOREAN_COLORS.WHITE, alpha);
+        g.drawCircle(0, 0, ITEM_RADIUS);
+        g.closePath();
+      }
     },
-    [selectedStance, radius]
+    [isEnabled]
   );
 
+  const baseTextStyle: Partial<PixiTextStyle> = {
+    fontFamily: KOREAN_FONT_FAMILY,
+    fontSize: 14,
+    fill: KOREAN_COLORS.WHITE,
+    align: "center",
+  };
+
+  const selectedTextStyle: Partial<PixiTextStyle> = {
+    ...baseTextStyle,
+    fontWeight: "bold",
+    fill: KOREAN_COLORS.GOLD,
+    dropShadow: {
+      color: KOREAN_COLORS.BLACK,
+      alpha: 0.5,
+      angle: Math.PI / 4,
+      blur: 2,
+      distance: 2,
+    },
+  };
+
   return (
-    <Application
-      width={radius * 2.5}
-      height={radius * 2.5}
-      backgroundColor={0x000000}
-    >
-      <PixiContainerComponent x={radius * 1.25} y={radius * 1.25}>
-        {/* Background wheel */}
-        <PixiGraphicsComponent draw={drawWheelBackground} />
-
-        {/* Selection indicator */}
-        <PixiGraphicsComponent draw={drawSelectedIndicator} />
-
-        {/* Trigram positions */}
-        {TRIGRAM_STANCES_ORDER.map((stance, index) => {
-          const angle = (index / 8) * Math.PI * 2 - Math.PI / 2;
-          const stanceRadius = radius * 0.75;
-          const stanceX = Math.cos(angle) * stanceRadius;
-          const stanceY = Math.sin(angle) * stanceRadius;
-
-          const trigram = TRIGRAM_DATA[stance];
-          const technique = trigram.technique;
-          const hasEnoughKi = playerKi >= technique.kiCost;
-          const isSelected = stance === selectedStance;
-          const isHovered = stance === hoveredStance;
-
-          return (
-            <PixiContainerComponent
-              key={stance}
-              x={stanceX}
-              y={stanceY}
-              interactive={isEnabled && hasEnoughKi}
-              onClick={() => handleStanceClick(stance)}
-              onPointerEnter={() => setHoveredStance(stance)}
-              onPointerLeave={() => setHoveredStance(null)}
-            >
-              {/* Stance background */}
-              <PixiGraphicsComponent
-                draw={(g: PixiGraphics) => {
-                  g.clear();
-
-                  const bgAlpha = isSelected ? 0.8 : isHovered ? 0.6 : 0.4;
-                  const bgColor = hasEnoughKi
-                    ? trigram.color
-                    : KOREAN_COLORS.GRAY_DARK;
-
-                  g.setFillStyle({ color: bgColor, alpha: bgAlpha });
-                  g.circle(0, 0, 20);
-                  g.fill();
-
-                  if (isSelected) {
-                    g.setStrokeStyle({ color: KOREAN_COLORS.GOLD, width: 2 });
-                    g.circle(0, 0, 20);
-                    g.stroke();
-                  }
-                }}
+    <Container x={x} y={y}>
+      <Graphics draw={drawWheelBackground} />
+      {items.map((item) => (
+        <Container
+          key={item.stance}
+          x={item.x}
+          y={item.y}
+          interactive={isEnabled && isInteractive}
+          eventMode={isEnabled && isInteractive ? "static" : "passive"}
+          cursor={isEnabled && isInteractive ? "pointer" : "default"}
+          onpointertap={() => handleStanceClick(item.stance)}
+          onpointerover={() => handlePointerOver(item.stance)}
+          onpointerout={handlePointerOut}
+        >
+          <Graphics draw={(g) => drawItem(g, item)} />
+          {showLabels && (
+            <>
+              <Text
+                text={item.data.symbol}
+                x={0}
+                y={-LABEL_OFFSET / 2}
+                anchor={{ x: 0.5, y: 0.5 }}
+                style={
+                  item.isSelected || item.isHovered
+                    ? selectedTextStyle
+                    : baseTextStyle
+                }
               />
-
-              {/* Trigram symbol */}
-              <PixiTextComponent
-                text={trigram.symbol}
+              <Text
+                text={item.data.name.korean}
+                x={0}
+                y={LABEL_OFFSET / 2}
                 anchor={{ x: 0.5, y: 0.5 }}
                 style={{
-                  fontFamily: "serif",
-                  fontSize: 16,
-                  fill: hasEnoughKi
-                    ? KOREAN_COLORS.WHITE
-                    : KOREAN_COLORS.GRAY_LIGHT,
-                  fontWeight: "bold",
-                }}
-              />
-
-              {/* Ki cost indicator */}
-              <PixiTextComponent
-                text={technique.kiCost.toString()}
-                y={25}
-                anchor={{ x: 0.5, y: 0.5 }}
-                style={{
-                  fontFamily: "Arial, sans-serif",
+                  ...baseTextStyle,
                   fontSize: 10,
-                  fill: hasEnoughKi ? KOREAN_COLORS.CYAN : KOREAN_COLORS.Red,
-                  fontWeight: "bold",
+                  fill:
+                    item.isSelected || item.isHovered
+                      ? KOREAN_COLORS.GOLD
+                      : KOREAN_COLORS.GRAY_LIGHT,
                 }}
               />
-            </PixiContainerComponent>
-          );
-        })}
-
-        {/* Center yin-yang symbol */}
-        <PixiTextComponent
-          text="☯"
+            </>
+          )}
+        </Container>
+      ))}
+      {selectedStance && TRIGRAM_DATA[selectedStance] && (
+        <Text
+          text={TRIGRAM_DATA[selectedStance].name.english.toUpperCase()}
+          x={0}
+          y={0}
           anchor={{ x: 0.5, y: 0.5 }}
           style={{
-            fontFamily: "serif",
-            fontSize: 24,
-            fill: KOREAN_COLORS.GOLD,
-          }}
-        />
-
-        {/* Ki display */}
-        <PixiTextComponent
-          text={`기: ${playerKi}/${playerMaxKi}`}
-          y={radius + 20}
-          anchor={{ x: 0.5, y: 0.5 }}
-          style={{
-            fontFamily: "Noto Sans KR, Arial, sans-serif",
-            fontSize: 12,
+            ...baseTextStyle,
+            fontSize: 18,
             fill: KOREAN_COLORS.WHITE,
             fontWeight: "bold",
           }}
         />
-      </PixiContainerComponent>
-    </Application>
+      )}
+    </Container>
   );
 }

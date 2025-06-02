@@ -60,3 +60,31 @@ export const KOREAN_MARTIAL_THEME: KoreanUITheme = {
   textColor: KOREAN_COLORS.WHITE,
   fontFamily: KOREAN_FONT_FAMILY,
 } as const;
+
+// Additional exports for Korean text utilities and constants
+export {
+  KOREAN_FONT_SIZES,
+  MARTIAL_COLORS,
+  KOREAN_STATUS_TRANSLATIONS,
+  KOREAN_MARTIAL_ARTS_TERMS,
+} from "./korean-text/constants"; // Assuming these are correctly defined and exported
+export {
+  getKoreanTextStyleProps,
+  // KoreanTextUtils, // This was likely a namespace or utility object. If it's createPixiTextStyle, export that.
+  // validateKoreanText, // This was validateKoreanTextProps
+  createPixiTextStyle, // Exporting the actual utility function
+  validateKoreanTextProps, // Exporting the actual validation function
+  getTrigramColor,
+  getMartialColor,
+} from "./korean-text/utils"; // Assuming these are the correct utility functions
+
+export {
+  PlayerArchetype,
+  TrigramStance,
+  TrigramWheelProps,
+  ProgressTrackerProps,
+  KoreanPixiTextConfig,
+  TRIGRAM_DATA, // Corrected: Import from types/index.ts
+} from "../../../types";
+
+export { KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../../types/constants";

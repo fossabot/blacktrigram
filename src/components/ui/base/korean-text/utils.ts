@@ -1,4 +1,19 @@
-import type { PixiTextStyleOptions } from "./types";
+import type {
+  TextStyle as PixiTextStyle,
+  TextMetrics as PixiTextMetrics,
+} from "pixi.js"; // Import TextMetrics
+import type { KoreanTextProps, FontWeight, TrigramStance } from "./types";
+import {
+  KOREAN_COLORS,
+  KOREAN_FONT_FAMILY,
+  KOREAN_FONT_SIZES,
+  TRIGRAM_TEXT_CONFIG,
+} from "./constants";
+
+// Define PixiTextStyleOptions locally if not using a global one from types/ui.ts
+export interface PixiTextStyleOptions extends Partial<PixiTextStyle> {
+  // Add any custom options if needed, or ensure it matches PIXI.TextStyle
+}
 
 // Utility functions for Korean text processing
 export const isKoreanCharacter = (char: string): boolean => {
@@ -154,3 +169,87 @@ export const cssToPixiTextStyle = (
 
   return result;
 };
+
+export function getPixiTextStyle(
+  props: KoreanTextProps
+): Partial<PixiTextStyle> {
+  const {
+    size = "medium",
+    weight = "regular",
+    color,
+    fontFamily = KOREAN_FONT_FAMILY,
+    style: textStyleType,
+    trigram,
+    align, // PIXI.TextStyleAlign
+    // letterSpacing, // Add if used
+    // lineHeight, // Add if used
+    // wordWrap, // Add if used
+    // wordWrapWidth, // Add if used
+  } = props;
+
+  const styleOptions: Partial<PixiTextStyle> = {
+    fontFamily: fontFamily,
+    // fill: KOREAN_COLORS.WHITE, // Default fill
+  };
+
+  // Size
+  if (typeof size === "number") {
+    styleOptions.fontSize = size;
+  } else {
+    styleOptions.fontSize =
+      KOREAN_FONT_SIZES[size.toUpperCase() as keyof typeof KOREAN_FONT_SIZES] ||
+      KOREAN_FONT_SIZES.MEDIUM;
+  }
+
+  // Weight
+  const fontWeightMap: Record<FontWeight, PixiTextStyle["fontWeight"]> = {
+    light: "300",
+    regular: "400",
+    normal: "400",
+    medium: "500",
+    bold: "700",
+    heavy: "900",
+  };
+  styleOptions.fontWeight = fontWeightMap[weight] || fontWeightMap.regular;
+
+  // Color
+  let finalColor: number = KOREAN_COLORS.WHITE; // Default PIXI color
+  if (typeof color === "number") {
+    finalColor = color;
+  } else if (trigram && TRIGRAM_TEXT_CONFIG[trigram]) {
+    finalColor = TRIGRAM_TEXT_CONFIG[trigram].color;
+  }
+  styleOptions.fill = finalColor;
+
+  // Alignment
+  if (align) {
+    styleOptions.align = align;
+  }
+
+  // Style specific enhancements (e.g., cyberpunk glow)
+  if (textStyleType === "cyberpunk") {
+    styleOptions.dropShadow = true;
+    styleOptions.dropShadowColor = KOREAN_COLORS.CYAN;
+    styleOptions.dropShadowBlur = 4;
+    styleOptions.dropShadowAlpha = 0.7;
+    styleOptions.dropShadowDistance = 0;
+    // For stroke, PIXI uses 'stroke' and 'strokeThickness'
+    styleOptions.stroke = KOREAN_COLORS.BLACK;
+    styleOptions.strokeThickness = 2;
+  } else if (textStyleType === "traditional") {
+    // Example: styleOptions.fontVariant = 'small-caps';
+  }
+
+  return styleOptions;
+}
+
+// ...existing code...
+
+export function measurePixiText(
+  text: string,
+  style: Partial<PixiTextStyle>
+): PixiTextMetrics {
+  // Ensure style is a complete PIXI.TextStyle for accurate measurement
+  const completeStyle = new PixiTextStyle(style);
+  return PixiTextMetrics.measureText(text, completeStyle);
+}

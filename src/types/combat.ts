@@ -1,145 +1,147 @@
-// Types related to combat mechanics, damage, and techniques
+// Combat mechanics types for Korean martial arts game
 
-import type { Position, TrilingualName } from "./common";
-import type { AttackType, DamageType, TrigramStance } from "./enums";
-import type { StatusEffect, Condition } from "./effects";
+import type { TrigramStance } from "./enums"; // Changed to import from enums
+import type { KoreanText } from "./korean-text";
+import type { StatusEffect } from "./effects";
 import type { VitalPoint } from "./anatomy";
 import type { PlayerState } from "./player";
+import type { DamageType as EnumDamageType } from "./enums";
 
-export interface CollisionZone {
-  readonly center: Position;
-  readonly shape: "circle" | "rectangle";
-  readonly radius?: number;
-  readonly width?: number;
-  readonly height?: number;
-}
+export type CombatAttackType =
+  | "strike"
+  | "punch"
+  | "kick"
+  | "elbow_strike"
+  | "knee_strike"
+  | "grapple"
+  | "throw"
+  | "submission"
+  | "pressure_point"
+  | "nerve_strike"
+  | "bone_strike"
+  | "joint_lock"
+  | "sweep"
+  | "parry"
+  | "block"
+  | "dodge"
+  | "counter_attack"
+  | "special_technique"
+  | "combo_sequence"
+  | "environmental"
+  | "weapon_based"
+  | "mental_attack"
+  | "cybernetic_attack"
+  | "combination" // Added
+  | "elbow" // Added (could be merged with elbow_strike)
+  | "pressure" // Added (synonym for pressure_point)
+  | "nerve"; // Added (synonym for nerve_strike)
 
-export interface HitDetectionParams {
-  readonly attackPosition: Position;
-  readonly attackType: AttackType;
-  readonly accuracy: number;
-  readonly baseDamage: number;
-  readonly attackerSkill: number;
-  readonly defenderGuard: number;
-}
-
-export interface VitalPointHit {
-  readonly hit: boolean;
-  readonly vitalPoint: VitalPoint;
-  readonly damage: number;
-  readonly critical: boolean;
-  readonly description: string;
-  readonly effectiveness?: number;
-  readonly effectsApplied?: StatusEffect[];
-}
-
-export interface DamageResult {
-  readonly damage: number;
-  readonly baseDamage: number;
-  readonly isCritical: boolean;
-  readonly vitalPointHit: VitalPointHit | null;
-  readonly modifiers: readonly string[];
-  readonly description: string;
-  readonly damageType: DamageType;
-  koreanName?: string;
-  vitalPointName?: TrilingualName;
-  readonly vitalPointBonus?: number;
-  readonly meridianMultiplier?: number;
-}
-
-export interface HitEffect {
-  readonly id: string;
-  readonly position: Position;
-  readonly type:
-    | "light"
-    | "medium"
-    | "heavy"
-    | "critical"
-    | "block"
-    | "damage"
-    | "miss";
-  readonly damage: number;
-  readonly startTime: number;
-  readonly duration: number;
-  readonly korean?: string;
-  readonly color: number;
-  readonly createdAt: number;
-}
-
+// Combat technique definition
 export interface KoreanTechnique {
-  name: string; // Internal or English name
-  koreanName: string;
-  englishName: string;
-  description: { korean: string; english: string };
-  kiCost: number;
-  staminaCost: number;
-  range: number; // Effective range of the technique
-  accuracy: number; // Base accuracy
-  stance: TrigramStance; // Required stance
-  damage: number; // Base damage
-  type: AttackType;
-  effects?: StatusEffect[]; // Potential status effects
-  critChance?: number;
-  critMultiplier?: number;
-  properties?: string[]; // e.g., "unblockable", "piercing"
-  accuracyModifier?: number;
-  stunValue?: number;
-}
-
-// Enhanced Korean technique with combat chains and cultural context
-export interface EnhancedKoreanTechnique extends KoreanTechnique {
-  readonly culturalContext: {
-    readonly origin: string; // Which Korean martial art
-    readonly philosophy: string; // Associated philosophy
-    readonly traditionalUse: string; // Historical application
+  readonly id: string;
+  readonly name: string; // Internal name/key, can be same as id
+  readonly koreanName: string;
+  readonly englishName: string;
+  readonly romanized: string; // Added: Romanized Korean name
+  readonly description: KoreanText;
+  readonly stance: TrigramStance;
+  readonly type: CombatAttackType; // Made non-optional, provide a default like "strike"
+  readonly damageType: EnumDamageType; // Added: Type of damage (blunt, sharp, etc.)
+  readonly damageRange: { min: number; max: number; type?: EnumDamageType }; // Added: Min/max damage, optional type override
+  readonly range: number; // Added: Effective range of the technique
+  readonly kiCost: number;
+  readonly staminaCost: number;
+  readonly executionTime: number; // Added: Time to execute in ms or ticks
+  readonly recoveryTime: number; // Added: Time to recover after execution in ms or ticks
+  readonly accuracy: number; // Base accuracy (0-1)
+  readonly speed?: number; // Execution speed, could be in frames or ms (can be derived from executionTime)
+  readonly precision?: number; // Modifier for hitting vital points
+  readonly critChance?: number;
+  readonly critMultiplier?: number;
+  readonly effects?: readonly StatusEffect[];
+  readonly properties?: readonly string[]; // e.g., "unblockable", "armor_piercing"
+  readonly culturalContext?: {
+    readonly origin: string;
+    readonly philosophy: string;
+    readonly traditionalUse: string;
   };
-  readonly comboChains: readonly string[]; // Technique IDs that can follow
-  readonly counters: readonly string[]; // Techniques that counter this
-  readonly prerequisites: {
-    readonly minKi: number;
-    readonly minStamina: number;
+  readonly comboChains?: readonly string[]; // IDs of techniques that can follow
+  readonly counters?: readonly string[]; // IDs of techniques this counters
+  readonly prerequisites?: {
+    readonly minKi?: number;
+    readonly minStamina?: number;
     readonly requiredStance?: TrigramStance;
     readonly forbiddenStances?: readonly TrigramStance[];
+    readonly playerLevel?: number;
   };
-  readonly timingProperties: {
+  readonly timingProperties?: {
     readonly startupFrames: number;
     readonly activeFrames: number;
     readonly recoveryFrames: number;
-    readonly cancelWindows: readonly number[];
+    readonly cancelWindows?: readonly {
+      startFrame: number;
+      endFrame: number;
+    }[];
   };
+  readonly targetAreas?: readonly string[]; // e.g., "head", "torso", specific vital points by ID
+  readonly philosophy?: string; // Link to martial arts philosophy aspect
+  readonly applications?: readonly string[]; // Tactical applications
 }
 
+// Combat result from technique execution
 export interface CombatResult {
-  success: boolean; // Overall success of the combat action
-  damage: number; // Total damage dealt
-  technique: KoreanTechnique; // Technique used
-  hitType: string; // e.g., "direct_hit", "glancing_blow", "vital_point_strike"
-  message: string; // Descriptive message of the outcome
-  damageDealt?: number; // Alias for damage
-  attackerState?: PlayerState; // State of attacker post-action
-  defenderState?: PlayerState; // State of defender post-action
-  log?: string[]; // Combat log entries for this event
-  conditionsApplied?: Condition[]; // Conditions applied as a result
-}
-
-export interface AttackResult {
-  hit: boolean;
-  damage: number;
-  critical: boolean;
-  blocked: boolean;
-  conditionsApplied: Condition[];
-  attackerState: PlayerState; // Updated attacker state
-  defenderState: PlayerState; // Updated defender state
-  description: string; // Description of the attack outcome
-}
-
-// Hit detection specific result type for vital point system
-export interface HitResult {
-  readonly hit: boolean;
+  readonly hit: boolean; // Was the attack successful?
   readonly damage: number;
-  readonly vitalPoint: VitalPoint | null;
-  readonly effects: readonly StatusEffect[];
-  readonly hitType: "normal" | "vital" | "critical" | "miss";
-  readonly description: string;
-  readonly accuracy?: number;
+  readonly isVitalPoint: boolean;
+  readonly vitalPointsHit: readonly VitalPoint[];
+  readonly techniqueUsed: KoreanTechnique;
+  readonly effectiveness: number; // e.g., stance effectiveness multiplier
+  readonly stunDuration: number; // in milliseconds or game ticks
+  readonly bloodLoss: number;
+  readonly painLevel: number; // Pain inflicted
+  readonly consciousnessImpact: number; // Impact on consciousness
+  readonly balanceEffect: number; // Effect on target's balance
+  readonly statusEffects: readonly StatusEffect[]; // Status effects applied
+  readonly hitType:
+    | "normal"
+    | "vital"
+    | "critical"
+    | "miss"
+    | "blocked"
+    | "dodged"; // More comprehensive
+  readonly description?: string; // Textual description of the outcome
+}
+
+// Type alias for HitResult as requested by error messages
+export type HitResult = CombatResult;
+
+// Combat analysis for technique effectiveness
+export interface CombatAnalysis {
+  readonly attacker: PlayerState;
+  readonly defender: PlayerState;
+  readonly technique: KoreanTechnique;
+  readonly hitChance: number;
+  readonly damageRange: { min: number; max: number };
+  readonly advantages: readonly string[];
+  readonly disadvantages: readonly string[];
+}
+
+// Stance transition data
+export interface StanceTransition {
+  readonly from: TrigramStance; // Use TrigramStance from enums
+  readonly to: TrigramStance; // Use TrigramStance from enums
+  readonly cost: number;
+  readonly duration: number;
+  readonly effectiveness: number;
+}
+
+// Combat event for logging
+export interface CombatEvent {
+  readonly timestamp: number;
+  readonly type: "attack" | "hit" | "block" | "dodge" | "stance_change";
+  readonly attacker?: string;
+  readonly defender?: string;
+  readonly technique?: string;
+  readonly damage?: number;
+  readonly result: KoreanText;
 }

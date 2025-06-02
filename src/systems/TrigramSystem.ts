@@ -1,10 +1,15 @@
 import type {
+  // PlayerState, // Unused
   TrigramStance,
-  KoreanTechnique,
   TrigramData,
-  TransitionMetrics,
+  // TrigramTransitionCost, // Unused directly here, but TransitionMetrics uses it
   TransitionPath,
+  KoreanTechnique as CombatKoreanTechnique, // Use combat.ts definition
   KiFlowFactors,
+  // StanceTransition, // Unused
+  KoreanText,
+  TransitionMetrics,
+  TrigramTransitionCost, // Import for TransitionMetrics and TransitionPath
 } from "../types";
 import {
   TRIGRAM_DATA,
@@ -47,9 +52,11 @@ export class TrigramSystem {
       flow *= playerLevelModifier * stanceAffinity;
     }
 
-    if (flow !== undefined) {
-      flow += (factors.kiRecovery || 0) - (factors.kiConsumption || 0);
-    }
+    // kiRecovery and kiConsumption are not direct properties of KiFlowFactors.
+    // They might be derived from player stats or activeEffects.
+    // For now, assuming they are passed if needed or handled elsewhere.
+    // Example: if (factors.activeEffects) { flow += calculateKiRecoveryFromEffects(factors.activeEffects) }
+    // flow += (factors.kiRecoveryBase || 0) - (factors.kiConsumptionModifier || 0);
 
     return flow || 0;
   }
@@ -62,9 +69,15 @@ export class TrigramSystem {
     return TRIGRAM_DATA[stance];
   }
 
-  static getTechniqueForStance(stance: TrigramStance): KoreanTechnique | null {
-    const technique = TRIGRAM_DATA[stance]?.technique;
-    return technique || null; // Ensure it returns null if undefined
+  static getTechniqueForStance(
+    stance: TrigramStance
+  ): CombatKoreanTechnique | null {
+    // Assuming TRIGRAM_DATA[stance].technique aligns with CombatKoreanTechnique
+    // This might require ensuring TrigramData's technique property is of type CombatKoreanTechnique
+    const technique = TRIGRAM_DATA[stance]?.technique as
+      | CombatKoreanTechnique
+      | undefined;
+    return technique || null;
   }
 
   static calculateStanceAdvantage(
@@ -87,84 +100,118 @@ export class TrigramSystem {
   static calculateTransitionCost(
     fromStance: TrigramStance,
     toStance: TrigramStance
+    // playerState: PlayerState // If needed for more complex cost calculation
   ): TransitionMetrics {
     if (fromStance === toStance) {
+      const zeroCost: TrigramTransitionCost = {
+        ki: 0,
+        stamina: 0,
+        timeMilliseconds: 0,
+      };
       return {
-        staminaCost: 0,
-        kiCost: 0,
-        timeDelay: 0,
+        cost: zeroCost,
         effectiveness: 1,
-        cost: 0,
-        time: 0,
-        cooldown: 0,
+        risk: 0, // Added risk
+        // time: 0, // time is part of TrigramTransitionCost
+        // cooldown: 0, // cooldown might be separate
       };
     }
 
     const fromData = TRIGRAM_DATA[fromStance];
     const toData = TRIGRAM_DATA[toStance];
-    const orderDiff = Math.abs((fromData.order || 0) - (toData.order || 0));
+    const orderDiff = Math.abs((fromData.order ?? 0) - (toData.order ?? 0));
 
     const kiCost = Math.max(5, orderDiff * 3);
     const staminaCost = Math.max(3, orderDiff * 2);
-    const time = orderDiff * 100;
+    const timeMilliseconds = orderDiff * 100; // in ms
     const effectiveness = Math.max(0.5, 1 - orderDiff * 0.1);
 
+    const transitionCostValue: TrigramTransitionCost = {
+      ki: kiCost,
+      stamina: staminaCost,
+      timeMilliseconds,
+    };
+
     return {
-      staminaCost,
-      kiCost,
-      timeDelay: time,
+      cost: transitionCostValue,
       effectiveness,
-      cost: kiCost + staminaCost,
-      time,
-      cooldown: time * 2,
+      risk: (kiCost + staminaCost) / 20, // Example risk
+      // time: timeMilliseconds,
+      // cooldown: timeMilliseconds * 2,
     };
   }
 
   static findOptimalTransitionPath(
     fromStance: TrigramStance,
     toStance: TrigramStance
+    // playerState: PlayerState // If needed for pathfinding logic
   ): TransitionPath {
+    const directTransitionMetrics = this.calculateTransitionCost(
+      fromStance,
+      toStance
+    );
+
     if (fromStance === toStance) {
       return {
         path: [fromStance],
-        totalCost: 0,
-        success: true,
-        from: fromStance,
-        to: fromStance,
-        efficiency: 1,
-        totalKiCost: 0,
-        totalStaminaCost: 0,
-        description: "No transition needed",
+        totalCost: { ki: 0, stamina: 0, timeMilliseconds: 0 },
+        overallEffectiveness: 1.0,
+        cumulativeRisk: 0,
+        name: "Current Stance",
+        description: {
+          korean: "전환 불필요",
+          english: "No transition needed",
+        } as KoreanText,
       };
     }
 
-    return {
+    // Simplified: return direct path for now
+    // More complex pathfinding (A*, Dijkstra) would go here if intermediate steps are allowed
+    const directPath: TransitionPath = {
       path: [fromStance, toStance],
-      totalCost: 25,
-      success: true,
-      from: fromStance,
-      to: toStance,
-      efficiency: 0.5,
-      totalKiCost: 15,
-      totalStaminaCost: 10,
-      description: "Direct transition",
+      totalCost: directTransitionMetrics.cost,
+      overallEffectiveness: directTransitionMetrics.effectiveness,
+      cumulativeRisk: directTransitionMetrics.risk,
+      name: `Direct: ${TRIGRAM_DATA[fromStance].name.korean} -> ${TRIGRAM_DATA[toStance].name.korean}`,
+      description: {
+        korean: `${TRIGRAM_DATA[fromStance].name.korean} 에서 ${TRIGRAM_DATA[toStance].name.korean}(으)로 직접 전환`,
+        english: `Direct transition from ${TRIGRAM_DATA[fromStance].name.english} to ${TRIGRAM_DATA[toStance].name.english}`,
+      } as KoreanText,
     };
+
+    return directPath;
   }
 
-  static calculateDamage(
-    technique: KoreanTechnique,
-    distance: number,
-    stanceAdvantage: number
+  public static calculateTechniqueEffectiveness(
+    technique: CombatKoreanTechnique,
+    distance: number
+    // targetVitalPoint?: string // This parameter was unused
   ): number {
-    let damage = technique.damage * stanceAdvantage;
-    // Apply range modifier (example: damage decreases with distance beyond optimal range)
-    const optimalRange = technique.range * 0.75;
-    if (distance > optimalRange) {
-      damage *= Math.max(
-        0.3,
-        1 - (distance - optimalRange) / (technique.range * 2)
-      );
+    let effectiveness = technique.accuracy || 0.7; // Base effectiveness from accuracy
+
+    // Range penalty/bonus
+    if (technique.range !== undefined) {
+      // Check if range is defined
+      const optimalRange = technique.range * 0.75;
+      if (distance < optimalRange * 0.5 || distance > technique.range * 1.5) {
+        effectiveness *= 0.6; // Significantly out of optimal range
+      } else if (distance > technique.range) {
+        // Gradual falloff beyond optimal range up to max range
+        effectiveness *= Math.max(
+          0.2,
+          1 - (distance - optimalRange) / (technique.range * 2)
+        );
+      } else if (distance < optimalRange) {
+        // Slight penalty if too close for some techniques
+        effectiveness *= 0.9;
+      }
+    } else {
+      // Default for techniques with no defined range (e.g. grappling, self-buffs)
+      // No range penalty, or a small penalty if distance is large.
+      if (distance > 2) effectiveness *= 0.8; // Arbitrary distance unit
     }
-    return Math.max(0, damage);
+
+    // Vital point bonus
+    return effectiveness;
   }
 }

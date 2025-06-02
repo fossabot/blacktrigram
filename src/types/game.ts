@@ -1,20 +1,43 @@
 // Types related to game flow, UI props for game screens, and training
 
-import type { PlayerState } from "./player";
-import type { GamePhase, TrigramStance } from "./enums";
+import type {
+  GamePhase as EnumGamePhase,
+  TrigramStance as EnumTrigramStance,
+} from "./enums"; // Import from enums
+import type { PlayerState } from "./player"; // Import from player
 
-export interface TrainingProgress {
-  practiceCount: number;
-  mastery: number; // Typically a value between 0 and 1
+// Avoid duplicate identifier by aliasing
+export type GamePhase = EnumGamePhase;
+export type TrigramStance = EnumTrigramStance; // Added alias for TrigramStance
+
+export interface AppState {
+  readonly gamePhase: GamePhase;
+  readonly players: readonly [PlayerState, PlayerState];
+  readonly gameTime: number;
+  readonly currentRound: number;
+  readonly timeRemaining: number;
+  readonly combatLog: readonly string[];
+  readonly isPaused: boolean;
+  readonly winnerId: string | null;
+}
+
+export interface GameEngineProps {
+  readonly players: readonly [PlayerState, PlayerState];
+  readonly onPlayerUpdate: (
+    playerIndex: number,
+    updates: Partial<PlayerState>
+  ) => void;
+  readonly gamePhase: GamePhase;
+  readonly isPaused: boolean;
 }
 
 export interface GameUIProps {
   readonly players: readonly [PlayerState, PlayerState];
   readonly gamePhase: GamePhase;
   readonly onGamePhaseChange: (phase: GamePhase) => void;
-  readonly gameTime: number; // Overall game time elapsed
+  readonly gameTime: number;
   readonly currentRound: number;
-  readonly timeRemaining: number; // Time remaining in current round/match
+  readonly timeRemaining: number;
   readonly onStanceChange: (playerIndex: number, stance: TrigramStance) => void;
   readonly combatLog: readonly string[];
   readonly onStartMatch: () => void;
@@ -26,22 +49,14 @@ export interface GameUIProps {
   ) => void;
 }
 
-export interface GameEngineProps {
-  readonly players: readonly [PlayerState, PlayerState];
-  readonly gamePhase: GamePhase;
-  readonly onGamePhaseChange: (phase: GamePhase) => void; // Still needed for internal phase changes like pause
-  readonly onPlayerUpdate: (
-    playerIndex: number,
-    updates: Partial<PlayerState>
-  ) => void;
-  readonly onStanceChange: (playerIndex: number, stance: TrigramStance) => void;
-  readonly timeRemaining: number; // Pass timer for reference if needed by engine logic (e.g. effects)
-  readonly currentRound: number; // Pass round for reference
-}
-
 export interface TrainingScreenProps {
   readonly onGamePhaseChange: (phase: GamePhase) => void;
-  readonly onStanceChange: (stance: TrigramStance) => void; // For player to select/practice a stance
-  readonly selectedStance?: TrigramStance; // Currently selected/focused stance
-  readonly playerProgress?: Partial<Record<TrigramStance, TrainingProgress>>; // Progress for each stance
+  readonly onStanceChange: (stance: TrigramStance) => void; // Use aliased TrigramStance
+  readonly selectedStance: TrigramStance; // Use aliased TrigramStance
+}
+
+export interface EndScreenProps {
+  readonly message: string;
+  readonly onRestart: () => void;
+  readonly onMenu: () => void;
 }

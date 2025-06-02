@@ -1,134 +1,134 @@
-import React, { useState, useCallback } from "react";
-import { MenuSection } from "./components/MenuSection";
-import { ControlsSection } from "./components/ControlsSection";
-import { PhilosophySection } from "./components/PhilosophySection";
-import {
-  KOREAN_COLORS,
-  KOREAN_FONT_FAMILY,
-  type IntroScreenProps,
-} from "../../types";
+import React, { useState, useEffect } from "react";
+import type { IntroScreenProps, GamePhase } from "../../types";
+import { KOREAN_COLORS } from "../../types";
+import { useAudio } from "../../audio/AudioManager";
 import logo from "../../assets/black-trigram-256.png"; // Import the logo
 
 export function IntroScreen({
   onGamePhaseChange,
 }: IntroScreenProps): React.ReactElement {
   const [currentSection, setCurrentSection] = useState<string>("menu");
+  const [selectedMenuItem, setSelectedMenuItem] = useState<string>("");
+  const audio = useAudio();
 
-  const handleSectionChange = useCallback((section: string) => {
+  // Play intro music when component mounts
+  useEffect(() => {
+    audio.playMusic("intro_theme", true);
+
+    // Cleanup music when component unmounts
+    return () => {
+      audio.stopMusic(true);
+    };
+  }, [audio]);
+
+  const handleSectionChange = (section: string) => {
+    audio.playSFX("menu_select");
     setCurrentSection(section);
-  }, []);
+  };
+
+  const handleGamePhaseChange = (phase: string) => {
+    audio.playSFX("menu_select");
+    onGamePhaseChange(phase as GamePhase);
+  };
+
+  const containerStyle: React.CSSProperties = {
+    width: "100%",
+    height: "100vh",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    background: `linear-gradient(135deg, #${KOREAN_COLORS.DARK_BLUE.toString(
+      16
+    ).padStart(6, "0")}, #${KOREAN_COLORS.BLACK.toString(16).padStart(
+      6,
+      "0"
+    )})`,
+    color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
+    fontFamily: "Noto Sans KR, Arial, sans-serif",
+  };
+
+  const titleStyle: React.CSSProperties = {
+    margin: 0,
+    padding: "0.5rem 0",
+    fontFamily: "Noto Sans KR, Arial, sans-serif",
+    textAlign: "center",
+    color: `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
+    textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
+    fontSize: "2.5rem",
+    fontWeight: 700,
+    marginBottom: "2rem",
+  };
+
+  const menuItemStyle = (isSelected: boolean): React.CSSProperties => ({
+    padding: "1rem 2rem",
+    margin: "0.5rem 0",
+    fontSize: "1.2rem",
+    backgroundColor: isSelected
+      ? `#${KOREAN_COLORS.CYAN.toString(16).padStart(6, "0")}`
+      : `#${KOREAN_COLORS.DOJANG_BLUE.toString(16).padStart(6, "0")}`,
+    color: "white",
+    border: "none",
+    borderRadius: "4px",
+    cursor: "pointer",
+    transition: "all 0.2s ease",
+    minWidth: "200px",
+  });
+
+  const handleMenuClick = (phase: GamePhase) => {
+    setSelectedMenuItem(phase);
+    onGamePhaseChange(phase);
+  };
 
   return (
-    <div
-      className="intro-screen"
-      style={{
-        width: "100%",
-        height: "100vh",
-        background: `linear-gradient(135deg, #${KOREAN_COLORS.DARK_BLUE.toString(
-          16
-        ).padStart(6, "0")}, #${KOREAN_COLORS.BLACK.toString(16).padStart(
-          6,
-          "0"
-        )})`,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
-        fontFamily: KOREAN_FONT_FAMILY,
-        overflow: "hidden",
-      }}
-    >
-      {/* Header */}
-      <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-        <img
-          src={logo}
-          alt="Black Trigram Logo"
-          style={{
-            width: "128px",
-            height: "128px",
-            marginBottom: "1rem",
-          }}
-        />
-        <h1
-          style={{
-            fontSize: "3rem",
-            margin: "0 0 0.5rem 0",
-            color: `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
-            textShadow: "2px 2px 4px rgba(0,0,0,0.8)",
-          }}
+    <div style={containerStyle}>
+      <h1 style={titleStyle}>
+        흑괘 무술 도장
+        <div style={{ fontSize: "0.6em", opacity: 0.8, marginTop: "0.5rem" }}>
+          Black Trigram Martial Arts
+        </div>
+      </h1>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        <button
+          style={menuItemStyle(selectedMenuItem === "training")}
+          onClick={() => handleMenuClick("training")}
+          onMouseEnter={() => setSelectedMenuItem("training")}
+          onMouseLeave={() => setSelectedMenuItem("")}
         >
-          흑괘 무술 도장
-        </h1>
-        <h2
-          style={{
-            fontSize: "1.5rem",
-            margin: 0,
-            color: `#${KOREAN_COLORS.CYAN.toString(16).padStart(6, "0")}`,
-            opacity: 0.9,
-          }}
+          무술 수련 (Training)
+        </button>
+
+        <button
+          style={menuItemStyle(selectedMenuItem === "combat")}
+          onClick={() => handleMenuClick("combat")}
+          onMouseEnter={() => setSelectedMenuItem("combat")}
+          onMouseLeave={() => setSelectedMenuItem("")}
         >
-          Black Trigram Martial Arts Academy
-        </h2>
+          실전 대련 (Combat)
+        </button>
+
+        <button
+          style={menuItemStyle(selectedMenuItem === "philosophy")}
+          onClick={() => handleMenuClick("philosophy")}
+          onMouseEnter={() => setSelectedMenuItem("philosophy")}
+          onMouseLeave={() => setSelectedMenuItem("")}
+        >
+          팔괘 철학 (Philosophy)
+        </button>
       </div>
 
-      {/* Navigation */}
       <div
         style={{
-          display: "flex",
-          gap: "1rem",
-          marginBottom: "2rem",
-          flexWrap: "wrap",
-          justifyContent: "center",
+          position: "absolute",
+          bottom: "2rem",
+          textAlign: "center",
+          opacity: 0.7,
+          fontSize: "0.9rem",
         }}
       >
-        {[
-          { key: "menu", label: "메뉴 (Menu)" },
-          { key: "controls", label: "조작법 (Controls)" },
-          { key: "philosophy", label: "철학 (Philosophy)" },
-        ].map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => handleSectionChange(key)}
-            style={{
-              padding: "0.75rem 1.5rem",
-              background:
-                currentSection === key
-                  ? `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`
-                  : "rgba(255,255,255,0.1)",
-              color:
-                currentSection === key
-                  ? `#${KOREAN_COLORS.BLACK.toString(16).padStart(6, "0")}`
-                  : `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-              fontSize: "1rem",
-              transition: "all 0.3s ease",
-            }}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* Content */}
-      <div
-        style={{
-          maxWidth: "800px",
-          width: "100%",
-          padding: "0 2rem",
-          maxHeight: "60vh",
-          overflowY: "auto",
-        }}
-      >
-        {currentSection === "menu" && (
-          <MenuSection onGamePhaseChange={onGamePhaseChange} />
-        )}
-
-        {currentSection === "controls" && <ControlsSection />}
-
-        {currentSection === "philosophy" && <PhilosophySection />}
+        <p>어둠 속에서 완벽한 일격을 찾아라</p>
+        <p>Master the dark arts through perfect strikes</p>
       </div>
     </div>
   );

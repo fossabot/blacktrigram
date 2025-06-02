@@ -1,226 +1,169 @@
-import { useState } from "react";
+import React, { useCallback, useState, useMemo } from "react";
+import { Container, Graphics, Text } from "@pixi/react";
+import type {
+  Graphics as PixiGraphics,
+  TextStyle as PixiTextStyle,
+} from "pixi.js";
+import type { BaseButtonProps, KoreanText } from "../../../types";
 import { KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../../types";
 
-export interface BaseButtonProps {
-  readonly children: React.ReactNode;
-  readonly onClick?: () => void;
-  readonly variant?: "primary" | "secondary" | "danger" | "success";
-  readonly size?: "small" | "medium" | "large";
-  readonly disabled?: boolean;
-  readonly loading?: boolean;
-  readonly koreanText?: string;
-  readonly englishText?: string;
-  readonly icon?: string;
-  readonly style?: React.CSSProperties;
-}
+// Helper to get text string if KoreanText object is passed
+const getButtonText = (text: string | KoreanText | undefined): string => {
+  if (typeof text === "string") return text;
+  if (text && typeof text === "object" && "korean" in text) return text.korean;
+  return "";
+};
 
 export function BaseButton({
+  text,
   children,
   onClick,
+  onPointerOver,
+  onPointerOut,
+  // icon, // Icon handling needs specific Pixi implementation (e.g., Sprite)
+  // fullWidth = false, // fullWidth needs specific Pixi layout logic
   variant = "primary",
   size = "medium",
   disabled = false,
   loading = false,
-  koreanText,
-  englishText,
-  icon,
-  style = {},
 }: BaseButtonProps): React.ReactElement {
   const [isHovered, setIsHovered] = useState(false);
-  const [isPressed, setIsPressed] = useState(false);
 
-  const getVariantColors = () => {
-    switch (variant) {
-      case "primary":
-        return {
-          background: `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
-          color: `#${KOREAN_COLORS.BLACK.toString(16).padStart(6, "0")}`,
-          border: `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
-          hoverBackground: `#${KOREAN_COLORS.CYAN.toString(16).padStart(
-            6,
-            "0"
-          )}`,
-          hoverColor: `#${KOREAN_COLORS.BLACK.toString(16).padStart(6, "0")}`,
-        };
-      case "secondary":
-        return {
-          background: `#${KOREAN_COLORS.ACCENT_BLUE.toString(16).padStart(
-            6,
-            "0"
-          )}`,
-          color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
-          border: `#${KOREAN_COLORS.CYAN.toString(16).padStart(6, "0")}`,
-          hoverBackground: `#${KOREAN_COLORS.CYAN.toString(16).padStart(
-            6,
-            "0"
-          )}`,
-          hoverColor: `#${KOREAN_COLORS.BLACK.toString(16).padStart(6, "0")}`,
-        };
-      case "danger":
-        return {
-          background: `#${KOREAN_COLORS.Red.toString(16).padStart(6, "0")}`,
-          color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
-          border: `#${KOREAN_COLORS.Red.toString(16).padStart(6, "0")}`,
-          hoverBackground: `#${KOREAN_COLORS.CRITICAL_RED.toString(16).padStart(
-            6,
-            "0"
-          )}`,
-          hoverColor: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
-        };
-      case "success":
-        return {
-          background: `#${KOREAN_COLORS.Green.toString(16).padStart(6, "0")}`,
-          color: `#${KOREAN_COLORS.BLACK.toString(16).padStart(6, "0")}`,
-          border: `#${KOREAN_COLORS.Green.toString(16).padStart(6, "0")}`,
-          hoverBackground: `#${KOREAN_COLORS.CYAN.toString(16).padStart(
-            6,
-            "0"
-          )}`,
-          hoverColor: `#${KOREAN_COLORS.BLACK.toString(16).padStart(6, "0")}`,
-        };
-      default:
-        return {
-          background: `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
-          color: `#${KOREAN_COLORS.BLACK.toString(16).padStart(6, "0")}`,
-          border: `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
-          hoverBackground: `#${KOREAN_COLORS.CYAN.toString(16).padStart(
-            6,
-            "0"
-          )}`,
-          hoverColor: `#${KOREAN_COLORS.BLACK.toString(16).padStart(6, "0")}`,
-        };
+  const handlePointerOver = () => {
+    if (!disabled && !loading) {
+      setIsHovered(true);
+      if (onPointerOver) onPointerOver();
     }
   };
 
-  const getSizeStyles = () => {
+  const handlePointerOut = () => {
+    if (!disabled && !loading) {
+      setIsHovered(false);
+      if (onPointerOut) onPointerOut();
+    }
+  };
+
+  // Updated handleClick to accept FederatedPointerEvent to match onpointerdown prop type
+  // Removed unused 'event' parameter by prefixing with an underscore
+  const handleClick = (_event: import("pixi.js").FederatedPointerEvent) => {
+    if (onClick) onClick(); // Original onClick doesn't expect event, adjust if it should
+  };
+
+  const { width, height, fontSize } = useMemo(() => {
+    // Removed unused 'padding'
     switch (size) {
       case "small":
-        return {
-          padding: "0.4rem 0.8rem",
-          fontSize: "0.8rem",
-        };
+        return { width: 100, height: 30, fontSize: 12 };
       case "large":
-        return {
-          padding: "1rem 2rem",
-          fontSize: "1.1rem",
-        };
+        return { width: 200, height: 50, fontSize: 20 };
+      case "medium":
       default:
-        return {
-          padding: "0.7rem 1.5rem",
-          fontSize: "1rem",
-        };
+        return { width: 150, height: 40, fontSize: 16 };
     }
-  };
+  }, [size]);
 
-  const colors = getVariantColors();
-  const sizeStyles = getSizeStyles();
+  const drawButton = useCallback(
+    (g: PixiGraphics) => {
+      g.clear();
+      const alpha = disabled || loading ? 0.5 : 1;
+      let bgColor: number;
+      let borderColor: number = KOREAN_COLORS.GOLD;
+      // let textColor: number = KOREAN_COLORS.WHITE; // Text color is handled by PIXI.Text style
 
-  const buttonStyle: React.CSSProperties = {
-    fontFamily: KOREAN_FONT_FAMILY,
-    border: `2px solid ${colors.border}`,
-    borderRadius: "6px",
-    cursor: disabled ? "not-allowed" : "pointer",
-    transition: "all 0.3s ease",
-    fontWeight: "bold",
-    position: "relative",
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "0.5rem",
-    background: disabled
-      ? `#${KOREAN_COLORS.GRAY_DARK.toString(16).padStart(6, "0")}`
-      : isPressed
-      ? colors.hoverBackground
-      : isHovered
-      ? colors.hoverBackground
-      : colors.background,
-    color: disabled
-      ? `#${KOREAN_COLORS.GRAY_LIGHT.toString(16).padStart(6, "0")}`
-      : isPressed || isHovered
-      ? colors.hoverColor
-      : colors.color,
-    opacity: disabled ? 0.6 : 1,
-    transform: isPressed ? "scale(0.98)" : "scale(1)",
-    boxShadow: isHovered && !disabled ? `0 0 10px ${colors.border}66` : "none",
-    ...sizeStyles,
-    ...style,
-  };
+      switch (variant) {
+        case "secondary":
+          bgColor = KOREAN_COLORS.GRAY_DARK;
+          borderColor = KOREAN_COLORS.CYAN;
+          // textColor = KOREAN_COLORS.WHITE;
+          break;
+        case "accent":
+          bgColor = KOREAN_COLORS.GOLD;
+          borderColor = KOREAN_COLORS.BLACK;
+          // textColor = KOREAN_COLORS.BLACK;
+          break;
+        case "danger":
+          bgColor = KOREAN_COLORS.RED;
+          borderColor = KOREAN_COLORS.WHITE;
+          // textColor = KOREAN_COLORS.WHITE;
+          break;
+        case "primary":
+        default:
+          bgColor = KOREAN_COLORS.DOJANG_BLUE;
+          borderColor = KOREAN_COLORS.GOLD;
+          // textColor = KOREAN_COLORS.WHITE;
+          break;
+      }
 
-  const handleClick = () => {
-    if (!disabled && !loading && onClick) {
-      onClick();
+      if (isHovered && !disabled && !loading) {
+        borderColor = KOREAN_COLORS.CYAN;
+      }
+
+      g.setFillStyle({ color: bgColor, alpha: alpha });
+      g.roundRect(0, 0, width, height, 8);
+      g.fill();
+
+      g.setStrokeStyle({ color: borderColor, width: 2, alpha: alpha });
+      g.roundRect(0, 0, width, height, 8);
+      g.stroke();
+    },
+    [width, height, variant, disabled, loading, isHovered]
+  );
+
+  const actualText = children ? String(children) : getButtonText(text);
+  const textStyle = useMemo((): Partial<PixiTextStyle> => {
+    let baseTextColor: number = KOREAN_COLORS.WHITE;
+    switch (variant) {
+      case "accent":
+        baseTextColor = KOREAN_COLORS.BLACK; // Corrected color assignment
+        break;
+      case "primary":
+      case "secondary":
+      case "danger":
+      default:
+        baseTextColor = KOREAN_COLORS.WHITE;
+        break;
     }
-  };
+    return {
+      fontFamily: KOREAN_FONT_FAMILY,
+      fontSize: fontSize,
+      fill: disabled || loading ? KOREAN_COLORS.GRAY_LIGHT : baseTextColor,
+      fontWeight: "bold",
+      align: "center",
+      // dropShadow: false, // Explicitly set to false or undefined if not used
+    };
+  }, [fontSize, disabled, loading, variant]);
 
   return (
-    <button
-      style={buttonStyle}
-      onClick={handleClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => {
-        setIsHovered(false);
-        setIsPressed(false);
-      }}
-      onMouseDown={() => setIsPressed(true)}
-      onMouseUp={() => setIsPressed(false)}
-      disabled={disabled}
+    <Container
+      interactive={!disabled && !loading}
+      eventMode={!disabled && !loading ? "static" : "passive"}
+      cursor={!disabled && !loading ? "pointer" : "default"}
+      onpointerdown={!disabled && !loading && onClick ? handleClick : undefined}
+      onpointerover={handlePointerOver}
+      onpointerout={handlePointerOut}
     >
-      {/* Loading spinner */}
+      <Graphics draw={drawButton} />
+      {actualText &&
+        !loading && ( // Don't show main text if loading
+          <Text
+            text={actualText}
+            x={width / 2}
+            y={height / 2}
+            anchor={{ x: 0.5, y: 0.5 }}
+            style={textStyle}
+          />
+        )}
       {loading && (
-        <span
-          style={{
-            display: "inline-block",
-            width: "1rem",
-            height: "1rem",
-            border: `2px solid ${colors.color}33`,
-            borderTop: `2px solid ${colors.color}`,
-            borderRadius: "50%",
-            animation: "spin 1s linear infinite",
-          }}
+        <Text
+          text="로딩중..."
+          x={width / 2}
+          y={height / 2}
+          anchor={{ x: 0.5, y: 0.5 }}
+          style={textStyle}
         />
       )}
-
-      {/* Icon */}
-      {icon && !loading && <span style={{ fontSize: "1.2em" }}>{icon}</span>}
-
-      {/* Button content */}
-      <span>
-        {koreanText && englishText ? (
-          <div style={{ textAlign: "center" }}>
-            <div>{koreanText}</div>
-            <div
-              style={{
-                fontSize: "0.8em",
-                opacity: 0.8,
-                fontStyle: "italic",
-              }}
-            >
-              {englishText}
-            </div>
-          </div>
-        ) : (
-          children
-        )}
-      </span>
-    </button>
+      {/* Icon rendering would typically involve a Sprite component */}
+      {/* {icon && <Sprite texture={PIXI.Texture.from(icon)} />} */}
+    </Container>
   );
-}
-
-// Add CSS animation for loading spinner
-const spinKeyframes = `
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-`;
-
-// Inject the CSS if it doesn't exist
-if (
-  typeof document !== "undefined" &&
-  !document.getElementById("button-animations")
-) {
-  const style = document.createElement("style");
-  style.id = "button-animations";
-  style.textContent = spinKeyframes;
-  document.head.appendChild(style);
 }

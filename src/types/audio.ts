@@ -208,3 +208,35 @@ export interface AudioAnalytics {
   readonly averageLoadTime: number;
   readonly memoryUsage: number;
 }
+
+// Added missing types
+export type SoundLibrary = {
+  readonly [K in SoundEffectId]?: HTMLAudioElement | AudioBuffer;
+};
+
+export interface MusicPlaylist {
+  readonly id: string;
+  readonly name: string;
+  readonly tracks: readonly MusicTrackId[];
+  readonly shuffle: boolean;
+  readonly repeat: "none" | "track" | "playlist";
+}
+
+export interface AudioSystemControls extends IAudioManager {
+  // Could extend IAudioManager or define specific control methods
+  setVolume(category: AudioCategory | "master", volume: number): void;
+  isMuted(category?: AudioCategory | "master"): boolean;
+  toggleMute(category?: AudioCategory | "master"): void;
+  // Add other specific control methods if needed
+}
+
+export interface ProceduralSoundConfig {
+  readonly type: "sine" | "square" | "sawtooth" | "triangle" | "noise";
+  readonly frequency?: number;
+  readonly duration: number;
+  readonly attack?: number; // ADSR envelope
+  readonly decay?: number;
+  readonly sustain?: number;
+  readonly release?: number;
+  readonly volume?: number;
+}

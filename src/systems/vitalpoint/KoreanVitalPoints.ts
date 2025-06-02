@@ -1,105 +1,149 @@
-import type { VitalPoint } from "../../types";
+import type {
+  VitalPoint,
+  KoreanText,
+  EffectType,
+  VitalPointEffect,
+  BodyRegion,
+  VitalPointCategory,
+  VitalPointSeverity,
+  EffectIntensity,
+} from "../../types";
 
-export const KOREAN_VITAL_POINTS_DATA: Record<string, VitalPoint> = {
-  in_jung: {
-    id: "in_jung",
-    name: { korean: "인중", english: "Philtrum", chinese: "人中" },
-    koreanName: "인중 (Injung)",
-    position: { x: 0, y: -70 }, // Example position relative to a character model center/head
-    region: "head",
-    difficulty: 0.8,
-    damageMultiplier: 2.5,
-    effects: [
-      {
-        type: "consciousness_loss",
-        duration: 5000,
-        magnitude: 0.8,
-        chance: 0.7,
-        source: "in_jung_hit",
-      },
-      {
-        type: "disorientation",
-        duration: 10000,
-        magnitude: 1.0,
-        chance: 0.9,
-        source: "in_jung_hit",
-      },
-    ],
-    category: "nerve",
+// Helper to create VitalPointEffect objects
+function createEffect(
+  id: string,
+  type: EffectType,
+  duration: number,
+  intensity: EffectIntensity,
+  descriptionKorean: string,
+  descriptionEnglish: string,
+  stackable: boolean = false
+): VitalPointEffect {
+  return {
+    id,
+    type,
+    duration,
+    intensity,
     description: {
-      korean:
-        "코와 윗입술 사이의 급소. 강타 시 의식 불명 또는 방향 감각 상실을 유발할 수 있음.",
-      english:
-        "Vital point between the nose and upper lip. A strong hit can cause unconsciousness or disorientation.",
-    },
-    meridian: "GV", // Governor Vessel
-  },
-  myung_chi: {
-    id: "myung_chi",
-    name: { korean: "명치", english: "Solar Plexus", chinese: "鸠尾" },
-    koreanName: "명치 (Myungchi)",
-    position: { x: 0, y: -20 }, // Example position
-    region: "torso",
-    difficulty: 0.6,
-    damageMultiplier: 2.0,
-    effects: [
-      {
-        type: "winded",
-        duration: 8000,
-        magnitude: 1.0,
-        chance: 0.85,
-        source: "myung_chi_hit",
-      },
-      {
-        type: "pain_severe",
-        duration: 12000,
-        magnitude: 0.7,
-        chance: 0.75,
-        source: "myung_chi_hit",
-      },
-    ],
-    category: "organ", // Related to diaphragm and internal organs
+      korean: descriptionKorean,
+      english: descriptionEnglish,
+    } as KoreanText,
+    stackable,
+  };
+}
+
+export const KOREAN_VITAL_POINTS: readonly VitalPoint[] = [
+  {
+    id: "KP001",
+    name: { korean: "인중", english: "Philtrum" } as KoreanText,
+    korean: "인중",
+    english: "Philtrum",
+    category: "head" as VitalPointCategory,
     description: {
-      korean:
-        "가슴 중앙 바로 아래 오목한 부분. 강타 시 호흡 곤란 및 극심한 고통 유발.",
+      korean: "코와 윗입술 사이의 홈. 강타 시 심한 통증과 방향 감각 상실 유발.",
       english:
-        "Hollow spot just below the center of the chest. A strong hit causes difficulty breathing and severe pain.",
-    },
-    meridian: "CV", // Conception Vessel
+        "Groove between the nose and upper lip. Strong impact causes severe pain and disorientation.",
+    } as KoreanText,
+    effects: [
+      createEffect(
+        "KP001_Effect1",
+        "disorientation" as EffectType,
+        10,
+        "strong" as EffectIntensity,
+        "방향 감각 상실",
+        "Disorientation"
+      ),
+      createEffect(
+        "KP001_Effect2",
+        "pain_severe" as EffectType,
+        15,
+        "strong" as EffectIntensity,
+        "극심한 통증",
+        "Severe Pain"
+      ),
+    ],
+    location: { x: 0.5, y: 0.15, region: "face_upper" as BodyRegion },
+    severity: "severe" as VitalPointSeverity,
+    technique: ["striking", "pressure"],
+    baseAccuracy: 0.65,
+    baseDamage: 15,
+    baseStun: 2,
+    damageMultiplier: 1.6,
   },
-  // Add more vital points here following the VitalPoint interface
-  // For example, a joint-related vital point:
-  oh_geum: {
-    id: "oh_geum",
-    name: { korean: "오금", english: "Hollow of Knee", chinese: "委中" },
-    koreanName: "오금 (Ohgeum)",
-    position: { x: 0, y: 80 }, // Example position for back of knee
-    region: "legs",
-    difficulty: 0.5,
+  {
+    id: "KP002",
+    name: { korean: "명치", english: "Solar Plexus" } as KoreanText,
+    korean: "명치",
+    english: "Solar Plexus",
+    category: "torso" as VitalPointCategory,
+    description: {
+      korean: "가슴 중앙 바로 아래. 강타 시 호흡 곤란 및 일시적 마비 유발.",
+      english:
+        "Just below the center of the chest. Strong impact causes difficulty breathing and temporary paralysis.",
+    } as KoreanText,
+    effects: [
+      createEffect(
+        "KP002_Effect1",
+        "winded" as EffectType,
+        12,
+        "extreme" as EffectIntensity,
+        "호흡 곤란",
+        "Winded"
+      ),
+      createEffect(
+        "KP002_Effect2",
+        "paralysis" as EffectType,
+        5,
+        "moderate" as EffectIntensity,
+        "일시적 마비",
+        "Temporary Paralysis",
+        true
+      ),
+    ],
+    location: { x: 0.5, y: 0.4, region: "solar_plexus" as BodyRegion }, // Updated region
+    severity: "critical" as VitalPointSeverity,
+    technique: ["striking", "pressure"],
+    baseAccuracy: 0.75,
+    baseDamage: 25,
+    baseStun: 3,
     damageMultiplier: 1.8,
-    effects: [
-      {
-        type: "balance_loss",
-        duration: 3000,
-        magnitude: 0.9,
-        chance: 0.9,
-        source: "oh_geum_hit",
-      },
-      {
-        type: "mobility_impairment",
-        duration: 7000,
-        magnitude: 0.6,
-        chance: 0.7,
-        source: "oh_geum_hit",
-      },
-    ],
-    category: "joint",
-    description: {
-      korean:
-        "무릎 뒤쪽 오목한 부분. 타격 시 균형 상실 및 일시적 다리 사용 불능 유발.",
-      english:
-        "Hollow area at the back of the knee. A strike can cause loss of balance and temporary leg immobility.",
-    },
-    meridian: "BL", // Bladder Meridian
   },
-};
+  {
+    id: "KP003",
+    name: { korean: "오금", english: "Hollow of Knee" } as KoreanText,
+    korean: "오금",
+    english: "Hollow of Knee",
+    category: "limbs" as VitalPointCategory,
+    description: {
+      korean: "무릎 뒤쪽 오목한 부분. 타격 시 다리 기능 상실 및 균형 잃음.",
+      english:
+        "Hollow area behind the knee. Impact causes loss of leg function and balance.",
+    } as KoreanText,
+    effects: [
+      createEffect(
+        "KP003_Effect1",
+        "balance_loss" as EffectType,
+        8,
+        "strong" as EffectIntensity,
+        "균형 상실",
+        "Balance Loss"
+      ),
+      createEffect(
+        "KP003_Effect2",
+        "mobility_impairment" as EffectType,
+        20,
+        "severe" as EffectIntensity,
+        "다리 기능 저하",
+        "Leg Mobility Impairment"
+      ),
+    ],
+    location: { x: 0.5, y: 0.75, region: "leg_back_knee" as BodyRegion },
+    severity: "severe" as VitalPointSeverity,
+    technique: ["striking", "kicking"],
+    baseAccuracy: 0.7,
+    baseDamage: 18,
+    baseStun: 1,
+    damageMultiplier: 1.5,
+  },
+  // ... more vital points
+];

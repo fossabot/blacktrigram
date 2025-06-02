@@ -1,159 +1,134 @@
 import { useMemo } from "react";
-import { KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../../../../types";
-import { KOREAN_SIZE_CONFIG } from "../constants";
-import { hasKoreanText } from "../utils";
-import type { KoreanTextProps } from "../types";
-
-export function useKoreanTextStyle({
-  size = "medium",
-  color,
-  weight = "normal",
-  align = "left",
-  variant = "primary",
-  emphasis = "none",
-  gradientColors,
-  strokeColor,
-  strokeWidth,
-  letterSpacing = "normal",
-  lineHeight = "normal",
-  truncate = false,
-  maxLines,
-  animate = false,
-  onClick,
-  style = {},
-  text,
-}: Pick<
+import type {
   KoreanTextProps,
-  | "size"
-  | "color"
-  | "weight"
-  | "align"
-  | "variant"
-  | "emphasis"
-  | "gradientColors"
-  | "strokeColor"
-  | "strokeWidth"
-  | "letterSpacing"
-  | "lineHeight"
-  | "truncate"
-  | "maxLines"
-  | "animate"
-  | "onClick"
-  | "style"
-  | "text"
->): { effectiveColor: string; textStyle: React.CSSProperties } {
-  // Compute effective color based on variant
-  const effectiveColor = useMemo(() => {
-    if (color) return color;
+  KoreanTextStyle,
+  // KoreanTextStyleInterface, // Unused alias
+  FontWeight,
+  // KoreanTextVariant, // Unused
+  // MartialVariant, // Unused
+  // TrigramStance, // Unused
+  ColorValue,
+} from "../../../../../types/korean-text"; // Correct path
+import {
+  KOREAN_FONT_FAMILY,
+  KOREAN_FONT_WEIGHTS,
+  KOREAN_TEXT_SIZES,
+  // MARTIAL_COLORS, // Use if martialVariant logic is added
+} from "../constants";
+import { KOREAN_COLORS } from "../../../../../types/constants";
 
-    const variantColors = {
-      primary: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
-      secondary: `#${KOREAN_COLORS.GRAY_LIGHT.toString(16).padStart(6, "0")}`,
-      accent: `#${KOREAN_COLORS.CYAN.toString(16).padStart(6, "0")}`,
-      warning: `#${KOREAN_COLORS.Orange.toString(16).padStart(6, "0")}`,
-      danger: `#${KOREAN_COLORS.Red.toString(16).padStart(6, "0")}`,
-      success: `#${KOREAN_COLORS.Green.toString(16).padStart(6, "0")}`,
-    };
+// Helper to map FontWeight (e.g., 300, 400) to CSS compatible values if needed,
+// or directly use the number if CSSProperties accepts it.
+// const mapWeightToCss = (weight: FontWeight): React.CSSProperties['fontWeight'] => weight;
 
-    return variantColors[variant];
-  }, [color, variant]);
+// Helper to map KoreanTextSize to pixel values
+// const mapSizeToCss = (size: KoreanTextProps['size']): number => {
+//   return KOREAN_TEXT_SIZES[size || 'medium'] || KOREAN_TEXT_SIZES.medium;
+// };
 
-  // Build style object with Korean typography optimizations
-  const textStyle = useMemo((): React.CSSProperties => {
-    const sizeConfig = KOREAN_SIZE_CONFIG[size];
-
-    const baseStyle: React.CSSProperties = {
-      fontFamily: KOREAN_FONT_FAMILY,
-      fontSize: sizeConfig.fontSize,
-      lineHeight: {
-        compact: sizeConfig.lineHeight * 0.9,
-        normal: sizeConfig.lineHeight,
-        relaxed: sizeConfig.lineHeight * 1.1,
-        loose: sizeConfig.lineHeight * 1.2,
-      }[lineHeight],
-      color: effectiveColor,
-      fontWeight: weight,
-      textAlign: align,
-      letterSpacing: {
-        tight: "-0.025em",
-        normal: "normal",
-        wide: "0.025em",
-        wider: "0.05em",
-      }[letterSpacing],
-      transition: animate ? "all 0.3s ease" : undefined,
-      cursor: onClick ? "pointer" : undefined,
-      userSelect: onClick ? "none" : undefined,
-      wordBreak: hasKoreanText(text) ? "keep-all" : "normal",
-      overflowWrap: "break-word",
-      ...style,
-    };
-
-    // Apply emphasis effects
-    switch (emphasis) {
-      case "glow":
-        baseStyle.textShadow = `0 0 8px ${effectiveColor}66, 0 0 16px ${effectiveColor}33`;
-        break;
-      case "shadow":
-        baseStyle.textShadow = "2px 2px 4px rgba(0, 0, 0, 0.7)";
-        break;
-      case "underline":
-        baseStyle.textDecoration = "underline";
-        baseStyle.textDecorationColor = effectiveColor;
-        break;
-      case "highlight":
-        baseStyle.backgroundColor = `${effectiveColor}22`;
-        baseStyle.padding = "0.125em 0.25em";
-        baseStyle.borderRadius = "0.25em";
-        break;
-    }
-
-    // Apply gradient if specified
-    if (gradientColors) {
-      baseStyle.background = `linear-gradient(135deg, ${gradientColors[0]}, ${gradientColors[1]})`;
-      baseStyle.backgroundClip = "text";
-      baseStyle.WebkitBackgroundClip = "text";
-      baseStyle.WebkitTextFillColor = "transparent";
-    }
-
-    // Apply stroke if specified
-    if (strokeColor && strokeWidth) {
-      baseStyle.WebkitTextStroke = `${strokeWidth}px ${strokeColor}`;
-    }
-
-    // Apply truncation
-    if (truncate) {
-      baseStyle.overflow = "hidden";
-      baseStyle.textOverflow = "ellipsis";
-      baseStyle.whiteSpace = "nowrap";
-    }
-
-    // Apply max lines
-    if (maxLines && !truncate) {
-      baseStyle.display = "-webkit-box";
-      baseStyle.WebkitLineClamp = maxLines;
-      baseStyle.WebkitBoxOrient = "vertical";
-      baseStyle.overflow = "hidden";
-    }
-
-    return baseStyle;
-  }, [
-    size,
+export function useKoreanTextStyle(
+  props: KoreanTextProps
+): React.CSSProperties {
+  const {
+    variant = "body",
+    emphasis = "none",
+    size = "medium",
+    weight = KOREAN_FONT_WEIGHTS.regular as FontWeight, // Ensure weight is of type FontWeight
+    color,
+    fontFamily = KOREAN_FONT_FAMILY.PRIMARY,
     lineHeight,
-    effectiveColor,
-    weight,
-    align,
     letterSpacing,
-    animate,
-    onClick,
-    emphasis,
-    gradientColors,
-    strokeColor,
-    strokeWidth,
-    truncate,
-    maxLines,
-    style,
-    text,
-  ]);
+    align,
+    style: propStyle, // Style from props
+    // martialVariant, // Add if used
+    trigram, // Add if used
+    // statusKey, // Add if used for status-specific colors
+  } = props;
 
-  return { effectiveColor, textStyle };
+  return useMemo(() => {
+    const baseStyle: React.CSSProperties = {
+      fontFamily,
+      fontSize: KOREAN_TEXT_SIZES[size] || KOREAN_TEXT_SIZES.medium,
+      fontWeight: weight, // Directly use number for fontWeight
+      lineHeight: lineHeight,
+      letterSpacing: letterSpacing,
+      textAlign: align,
+      color:
+        typeof color === "number"
+          ? `#${color.toString(16).padStart(6, "0")}`
+          : color,
+    };
+
+    // Variant-based styling
+    switch (variant) {
+      case "primary":
+        baseStyle.color = baseStyle.color || KOREAN_COLORS.CYAN;
+        break;
+      case "secondary":
+        baseStyle.color = baseStyle.color || KOREAN_COLORS.GRAY_LIGHT;
+        break;
+      case "accent":
+        baseStyle.color = baseStyle.color || KOREAN_COLORS.GOLD;
+        break;
+      // ... other variants
+    }
+
+    if (trigram && KOREAN_COLORS[trigram]) {
+      baseStyle.color = baseStyle.color || KOREAN_COLORS[trigram];
+    }
+
+    // Emphasis-based styling
+    if (emphasis === "bold") {
+      baseStyle.fontWeight = KOREAN_FONT_WEIGHTS.bold;
+    } else if (emphasis === "italic") {
+      baseStyle.fontStyle = "italic";
+    } else if (emphasis === "underline") {
+      baseStyle.textDecoration = "underline";
+    } else if (emphasis === "highlight" && trigram) {
+      baseStyle.textShadow = `0 0 8px #${(
+        KOREAN_COLORS[trigram] || KOREAN_COLORS.YELLOW
+      )
+        .toString(16)
+        .padStart(6, "0")}`;
+    }
+    // ... other emphasis styles (glow, shadow, outline)
+
+    // Special handling for "title" size or variant if it implies different weight/style
+    if (
+      size === "title" ||
+      variant === ("primary" as any) /* if 'title' was a variant */
+    ) {
+      baseStyle.fontWeight = KOREAN_FONT_WEIGHTS.heavy;
+      baseStyle.letterSpacing = baseStyle.letterSpacing || "0.05em";
+    }
+
+    // Cyberpunk style override (example)
+    if (props.style && (props.style as any).textShadow === "cyberpunk") {
+      // Example check
+      baseStyle.textShadow = `0 0 5px ${KOREAN_COLORS.CYAN}, 0 0 10px ${KOREAN_COLORS.CYAN}`;
+      baseStyle.color = KOREAN_COLORS.ELECTRIC_BLUE;
+    }
+
+    // Traditional style override (example)
+    if (props.style && (props.style as any).fontFamily === "traditional") {
+      // Example check
+      baseStyle.fontFamily = "MingLiU, Batang, serif"; // Example traditional font
+      baseStyle.color = KOREAN_COLORS.TRADITIONAL_RED;
+    }
+
+    return { ...baseStyle, ...propStyle };
+  }, [
+    variant,
+    emphasis,
+    size,
+    weight,
+    color,
+    fontFamily,
+    lineHeight,
+    letterSpacing,
+    align,
+    propStyle,
+    trigram,
+    props.style,
+  ]);
 }

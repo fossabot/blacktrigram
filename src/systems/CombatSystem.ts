@@ -1,201 +1,293 @@
-import { audioManager } from "../audio/AudioManager"; // Use default export
-import {
+import type {
   PlayerState,
   KoreanTechnique,
+  CombatResult,
+  HitResult, // Added
+  CombatAnalysis,
+  PlayerArchetype,
   VitalPoint,
-  HitResult,
-  Condition,
-  GamePhase,
+  // VitalPointEffect, // Unused
   StatusEffect,
-  AttackResult, // Explicitly import AttackResult
-  // ... other imports
+  CombatSystemInterface,
+  VitalPointSystemInterface,
+  TrigramSystemInterface, // Corrected import
+  CombatConfig, // Added for constructor
 } from "../types";
-import { TrigramSystem } from "./TrigramSystem";
-import { VitalPointSystem } from "./VitalPointSystem";
+import { PLAYER_ARCHETYPES_DATA, TRIGRAM_DATA } from "../types/constants"; // Import PLAYER_ARCHETYPES_DATA and TRIGRAM_DATA
+// import { EnumDamageType } from "../types/enums"; // Unused
+// import { calculateDistance } from '../utils/geometry'; // Unused or move to VitalPointSystem
+// import { randomInRange } from '../utils/rng'; // Unused or move to VitalPointSystem
 
-// If VitalPointSystem is a class instance or configured globally:
-// VitalPointSystem.setConfig(initialVitalPointConfig); // Example
+export class CombatSystem implements CombatSystemInterface {
+  private vitalPointSystem: VitalPointSystemInterface;
+  private trigramSystem: TrigramSystemInterface;
+  private config: CombatConfig;
+  // private currentPhase: GamePhase; // If CombatSystem manages phases
 
-export class CombatSystem {
-  static resolveAttack(
+  constructor(
+    vitalPointSystem: VitalPointSystemInterface,
+    trigramSystem: TrigramSystemInterface,
+    config: CombatConfig
+    // initialPhase: GamePhase = "combat" // Example if managing phase
+  ) {
+    this.vitalPointSystem = vitalPointSystem;
+    this.trigramSystem = trigramSystem;
+    this.config = config;
+    // this.currentPhase = initialPhase;
+  }
+
+  // public updatePhase(newPhase: GamePhase): void {
+  //   this.currentPhase = newPhase;
+  // }
+
+  public resolveAttack(
     attacker: PlayerState,
     defender: PlayerState,
     technique: KoreanTechnique,
-    targetedVitalPoints: VitalPoint[] = []
-  ): AttackResult {
-    const distance = Math.abs(attacker.position.x - defender.position.x);
-
-    let baseHitChance = 0.9; // General hit chance for the attack to connect at all
-
-    if (Math.random() > baseHitChance) {
-      if (audioManager.playSFX) audioManager.playSFX("hit_light"); // Assuming 'hit_light' can signify a miss/glance
-      return {
+    targetedVitalPointId?: string | null // Changed from VitalPoint to ID
+  ): {
+    updatedAttacker: PlayerState;
+    updatedDefender: PlayerState;
+    result: CombatResult;
+  } {
+    // 1. Check if attacker can perform the technique (Ki, Stamina, conditions)
+    if (
+      attacker.ki < technique.kiCost ||
+      attacker.stamina < technique.staminaCost
+    ) {
+      const missResult: CombatResult = {
         hit: false,
         damage: 0,
-        critical: false,
-        blocked: false,
-        conditionsApplied: [],
-        attackerState: attacker,
-        defenderState: defender,
-        description: "Attack missed",
+        isVitalPoint: false,
+        vitalPointsHit: [],
+        techniqueUsed: technique,
+        effectiveness: 0,
+        stunDuration: 0,
+        bloodLoss: 0,
+        painLevel: 0,
+        consciousnessImpact: 0,
+        balanceEffect: 0,
+        statusEffects: [],
+        hitType: "miss",
+        description: "Insufficient resources",
       };
-    }
-
-    if (defender.isBlocking) {
-      const blockEffectiveness = 0.7;
-      const damageAfterBlock =
-        (technique.damage || 0) * (1 - blockEffectiveness);
-      if (audioManager.playSFX) audioManager.playSFX("block_success");
       return {
-        hit: true,
-        damage: Math.floor(damageAfterBlock),
-        critical: false,
-        blocked: true,
-        conditionsApplied: [],
-        attackerState: attacker,
-        defenderState: {
-          ...defender,
-          stamina: Math.max(0, defender.stamina - 5),
-        },
-        description: "Attack blocked",
+        updatedAttacker: attacker,
+        updatedDefender: defender,
+        result: missResult,
       };
     }
 
-    let finalDamage: number;
-    let isCriticalHit: boolean = false;
-    const conditionsApplied: Condition[] = [];
-    let attackDescription = "";
+    // Deduct costs from attacker
+    let updatedAttacker = {
+      ...attacker,
+      ki: attacker.ki - technique.kiCost,
+      stamina: attacker.stamina - technique.staminaCost,
+      isAttacking: true, // Set attacking state
+    };
 
-    let vitalPointHitDetail: HitResult | null = null;
-    if (targetedVitalPoints.length > 0 && targetedVitalPoints[0]) {
-      vitalPointHitDetail = VitalPointSystem.checkVitalPointHit(
-        targetedVitalPoints[0],
-        technique,
-        distance
-      );
+    // 2. Determine Hit/Miss using VitalPointSystem (which should handle accuracy, range, etc.)
+    // The VitalPointSystem's calculateHit method should return a HitResult like structure
+    const hitCheckResult = this.vitalPointSystem.calculateHit(
+      technique,
+      targetedVitalPointId
+    );
+
+    if (!hitCheckResult.hit) {
+      const missResult: CombatResult = {
+        hit: false,
+        damage: 0,
+        isVitalPoint: false,
+        vitalPointsHit: [],
+        techniqueUsed: technique,
+        effectiveness: 0,
+        stunDuration: 0,
+        bloodLoss: 0,
+        painLevel: 0,
+        consciousnessImpact: 0,
+        balanceEffect: 0,
+        statusEffects: [],
+        hitType: "miss",
+      };
+      updatedAttacker = { ...updatedAttacker, isAttacking: false };
+      return { updatedAttacker, updatedDefender: defender, result: missResult };
     }
 
-    if (vitalPointHitDetail?.hit && vitalPointHitDetail.vitalPoint) {
-      // Successful vital point hit
-      finalDamage = vitalPointHitDetail.damage; // Damage from VP system already includes technique base, VP multi, and curve multi
-      isCriticalHit = vitalPointHitDetail.hitType === "critical";
-      attackDescription = `${technique.name} struck ${vitalPointHitDetail.vitalPoint.name.english}`;
-      if (vitalPointHitDetail.hitType === "critical")
-        attackDescription += " (Critical!)";
-      else if (vitalPointHitDetail.hitType === "vital")
-        attackDescription += " (Precise!)";
-
-      // Add effects from vital point hit. These effects have already passed their chance roll in VitalPointSystem.
-      if (vitalPointHitDetail.effects) {
-        vitalPointHitDetail.effects.forEach((effect) => {
-          conditionsApplied.push({
-            type: effect.type,
-            duration: effect.duration,
-            magnitude: effect.magnitude || 1.0,
-            source: effect.source || attacker.playerId, // Use effect's source, fallback to attackerId
-          });
-        });
-      }
-    } else {
-      // General body hit (or vital point miss, treated as general hit)
-      finalDamage = technique.damage || 0;
-      const techniqueCritChance = technique.critChance || 0.1;
-      isCriticalHit = Math.random() < techniqueCritChance;
-      if (isCriticalHit) {
-        finalDamage *= technique.critMultiplier || 1.5;
-      }
-      attackDescription = `${technique.name} landed`;
-      if (isCriticalHit) {
-        attackDescription += " (Critical!)";
-      }
-    }
-
-    // Apply stance advantage
-    const stanceAdvantage = TrigramSystem.calculateStanceAdvantage(
+    // 3. Calculate Damage and Effects
+    const stanceEffectiveness = this.trigramSystem.getStanceEffectiveness(
       attacker.stance,
       defender.stance
     );
-    finalDamage *= stanceAdvantage;
-    finalDamage = Math.floor(finalDamage);
 
-    attackDescription += ` for ${finalDamage} damage.`;
+    const damageOutput = this.calculateDamage(
+      technique,
+      attacker.archetype,
+      defender,
+      hitCheckResult as unknown as HitResult // Cast if calculateHit returns a slightly different structure
+    );
 
-    // Apply technique effects (these might apply regardless of VP hit, or be additive)
-    if (technique.effects) {
-      technique.effects.forEach((effect: StatusEffect) => {
-        const effectSource = effect.source || attacker.playerId;
-        // Avoid duplicate conditions if an effect of the same type and source already exists
-        const isDuplicate = conditionsApplied.some(
-          (c) => c.type === effect.type && c.source === effectSource
-        );
-        // Technique effects need their chance evaluated here
-        if (!isDuplicate && Math.random() < (effect.chance || 1.0)) {
-          conditionsApplied.push({
-            type: effect.type,
-            duration: effect.duration,
-            magnitude: effect.magnitude || 1.0,
-            source: effectSource,
-          });
-        }
-      });
-    }
+    let finalDamage = damageOutput.totalDamage * stanceEffectiveness;
+    finalDamage = Math.max(0, Math.round(finalDamage));
 
-    if (audioManager.playAttackSound)
-      audioManager.playAttackSound(technique.damage || 10);
-    if (audioManager.playHitSound)
-      audioManager.playHitSound(finalDamage, isCriticalHit);
+    // Apply block reduction if defender is blocking
+    // This needs defender's state (isBlocking) and block effectiveness
+    // if (defender.isBlocking) { finalDamage *= (1 - (this.config.BLOCK_REDUCTION || 0.5)); }
 
-    return {
+    // 4. Update Defender State
+    const newDefenderHealth = Math.max(0, defender.health - finalDamage);
+    const newDefenderConsciousness = Math.max(
+      0,
+      defender.consciousness -
+        (hitCheckResult.effects.find((e) => e.type === "consciousness_loss")
+          ?.intensity || 0)
+    ); // Simplified
+    // ... update other defender stats based on effects
+
+    let updatedDefender: PlayerState = {
+      ...defender,
+      health: newDefenderHealth,
+      consciousness: newDefenderConsciousness,
+      // pain: defender.pain + (hitCheckResult.effects.find(e => e.type === 'pain_severe')?.intensity || 0), // Simplified
+      activeEffects: [
+        ...defender.activeEffects,
+        ...hitCheckResult.effects,
+        ...damageOutput.effectsApplied,
+      ],
+      // combatState: newDefenderHealth <= 0 ? "helpless" : defender.combatState,
+    };
+
+    // Update combat readiness and state
+    // updatedDefender = updatePlayerCombatState(updatedDefender, finalDamage, hitCheckResult.isVitalPointHit);
+
+    const combatOutcome: CombatResult = {
       hit: true,
       damage: finalDamage,
-      critical: isCriticalHit,
-      blocked: false,
-      conditionsApplied,
-      attackerState: { ...attacker, ki: attacker.ki - (technique.kiCost || 5) },
-      defenderState: {
-        ...defender,
-        health: Math.max(0, defender.health - finalDamage),
-        conditions: [...defender.conditions, ...conditionsApplied],
-      },
-      description: attackDescription,
+      isVitalPoint: hitCheckResult.isVitalPointHit,
+      vitalPointsHit: hitCheckResult.vitalPoint
+        ? [hitCheckResult.vitalPoint]
+        : [],
+      techniqueUsed: technique,
+      effectiveness: stanceEffectiveness,
+      stunDuration:
+        hitCheckResult.effects.find((e) => e.type === "stun")?.duration || 0, // Simplified
+      bloodLoss:
+        hitCheckResult.effects.find((e) => e.type === "bleed")?.intensity || 0, // Simplified
+      painLevel:
+        damageOutput.effectsApplied.find((e) => e.type === "pain_severe")
+          ?.intensity || 0, // Simplified
+      consciousnessImpact:
+        hitCheckResult.effects.find((e) => e.type === "consciousness_loss")
+          ?.intensity || 0, // Simplified
+      balanceEffect:
+        hitCheckResult.effects.find((e) => e.type === "balance_loss")
+          ?.intensity || 0, // Simplified
+      statusEffects: [
+        ...hitCheckResult.effects,
+        ...damageOutput.effectsApplied,
+      ],
+      hitType: hitCheckResult.isVitalPointHit
+        ? finalDamage > technique.damageRange.max * 1.2
+          ? "critical"
+          : "vital"
+        : "normal", // Simplified critical check
+    };
+
+    updatedAttacker = { ...updatedAttacker, isAttacking: false }; // Reset attacking state
+
+    return { updatedAttacker, updatedDefender, result: combatOutcome };
+  }
+
+  public calculateDamage(
+    technique: KoreanTechnique,
+    attackerArchetype: PlayerArchetype,
+    defenderState: PlayerState, // Added defenderState for context (e.g., resistances)
+    hitResult: HitResult // Use HitResult from VitalPointSystem
+  ): {
+    baseDamage: number;
+    modifierDamage: number;
+    totalDamage: number;
+    effectsApplied: readonly StatusEffect[];
+  } {
+    let baseDamage = hitResult.damage; // Damage from VitalPointSystem's hit calculation
+    let modifierDamage = 0;
+
+    // Archetype bonuses
+    const archetypeData = PLAYER_ARCHETYPES_DATA[attackerArchetype];
+    if (archetypeData?.bonuses) {
+      // Example: specific bonus for damageType or technique type
+      const damageBonusMultiplier =
+        (archetypeData.bonuses[
+          `${technique.damageType}_damage_multiplier`
+        ] as number) ||
+        (archetypeData.bonuses[
+          `${technique.type}_damage_multiplier`
+        ] as number) ||
+        (archetypeData.bonuses[`damage_multiplier`] as number) ||
+        1.0;
+      modifierDamage += baseDamage * (damageBonusMultiplier - 1.0);
+    }
+
+    // Technique specific properties (e.g. armor piercing might ignore some defense)
+    // ...
+
+    // Defender resistances (placeholder)
+    // const resistance = defenderState.resistances?.[technique.damageType] || 0;
+    // baseDamage *= (1 - resistance);
+
+    const totalDamage = baseDamage + modifierDamage;
+
+    // Effects from the technique itself, potentially modified by hitResult context
+    const effectsApplied = technique.effects || [];
+    // Could also add effects based on damage thresholds, etc.
+
+    return {
+      baseDamage: Math.round(baseDamage),
+      modifierDamage: Math.round(modifierDamage),
+      totalDamage: Math.round(totalDamage),
+      effectsApplied,
     };
   }
 
-  static checkWinCondition(
-    players: readonly [PlayerState, PlayerState],
-    timeRemaining: number
-  ): { gamePhase: GamePhase; winnerId: string | null } {
-    const [player1, player2] = players;
+  public getCombatAnalysis(
+    attacker: PlayerState,
+    defender: PlayerState,
+    technique: KoreanTechnique
+  ): CombatAnalysis {
+    const hitChance =
+      technique.accuracy *
+      (this.trigramSystem.getStanceEffectiveness(
+        attacker.stance,
+        defender.stance
+      ) > 1
+        ? 1.1
+        : 1.0); // Simplified
+    const damageRange = {
+      min: technique.damageRange.min * (this.config.DAMAGE_MULTIPLIER || 1.0),
+      max: technique.damageRange.max * (this.config.DAMAGE_MULTIPLIER || 1.0),
+    };
 
-    if (player1.health <= 0 && player2.health <= 0) {
-      return { gamePhase: "defeat", winnerId: null }; // Draw or mutual defeat
-    }
-    if (player1.health <= 0) {
-      return { gamePhase: "victory", winnerId: player2.playerId };
-    }
-    if (player2.health <= 0) {
-      return { gamePhase: "victory", winnerId: player1.playerId };
-    }
+    const advantages: string[] = [];
+    const disadvantages: string[] = [];
 
-    if (timeRemaining <= 0) {
-      if (player1.health > player2.health) {
-        return { gamePhase: "victory", winnerId: player1.playerId };
-      }
-      if (player2.health > player1.health) {
-        return { gamePhase: "victory", winnerId: player2.playerId };
-      }
-      // Draw condition if health is equal, P1 wins by default or specific rule
-      return { gamePhase: "defeat", winnerId: null }; // Or player1.playerId for tie-break
-    }
+    const stanceEffectiveness = this.trigramSystem.getStanceEffectiveness(
+      attacker.stance,
+      defender.stance
+    );
+    if (stanceEffectiveness > 1.1) advantages.push("Stance advantage");
+    if (stanceEffectiveness < 0.9) disadvantages.push("Stance disadvantage");
 
-    return { gamePhase: "combat", winnerId: null }; // Game continues
+    if (technique.kiCost > attacker.ki * 0.5)
+      disadvantages.push("High Ki cost relative to current Ki");
+    // ... more analysis logic
+
+    return {
+      attacker,
+      defender,
+      technique,
+      hitChance: Math.max(0, Math.min(1, hitChance)),
+      damageRange,
+      advantages,
+      disadvantages,
+    };
   }
-
-  // ... other combat system methods
-  // calculateEffectiveDamage, applyConditions, checkWinCondition, etc.
 }
-
-// function calculateEffectiveDamage is declared but its value is never read.
-// This function seems to be part of the internal logic of resolveAttack or a helper.
-// If it's meant to be exported, it should be part of the CombatSystem object.
-// For now, assuming it's a helper or its logic is incorporated above.

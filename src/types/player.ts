@@ -1,77 +1,67 @@
 // Types related to player state and actions
 
-import type { Position, Velocity } from "./common";
-import type { TrigramStance } from "./enums";
-import type { Condition } from "./effects";
+import type { Position, Timestamp, CombatCondition } from "./common";
+import type { KoreanText } from "./korean-text"; // Added correct import
+import type {
+  TrigramStance as EnumTrigramStance,
+  PlayerArchetype as EnumPlayerArchetype,
+  CombatState as EnumCombatState, // Added CombatState from enums
+} from "./enums";
+import type { StatusEffect } from "./effects";
 
-export interface PlayerState {
-  playerId: string;
-  position: Position;
-  velocity: Velocity;
-  health: number;
-  maxHealth: number;
-  ki: number;
-  maxKi: number;
-  stance: TrigramStance;
-  isAttacking: boolean;
-  isBlocking: boolean;
-  isMoving: boolean;
-  stamina: number;
-  maxStamina: number;
-  lastStanceChangeTime?: number | undefined;
-  targetId?: string | null | undefined;
-  conditions: Condition[];
-  facing?: "left" | "right" | undefined;
-  lastDamageTaken?: number | undefined;
-  comboCount?: number | undefined;
-  lastHitTime?: number | undefined;
-  visible?: boolean | undefined;
+// Player archetype
+export type PlayerArchetype = EnumPlayerArchetype; // Use imported PlayerArchetype
+export type TrigramStance = EnumTrigramStance; // Use imported TrigramStance
+export type CombatState = EnumCombatState; // Use imported CombatState
+
+// Combat readiness enum - declare as enum for runtime access
+export enum CombatReadiness {
+  READY = 100,
+  LIGHT_DAMAGE = 80,
+  MODERATE = 60,
+  HEAVY = 40,
+  CRITICAL = 20,
+  INCAPACITATED = 0,
 }
 
-export function createPlayerState(
-  id: string,
-  position: Position,
-  stance: TrigramStance = "geon",
-  overrides: Partial<Omit<PlayerState, "playerId" | "position" | "stance">> = {}
-): PlayerState {
-  const playerState: PlayerState = {
-    playerId: id,
-    position: { ...position },
-    stance: stance,
-    velocity: overrides.velocity ?? { x: 0, y: 0 },
-    health: overrides.health ?? 100,
-    maxHealth: overrides.maxHealth ?? 100,
-    ki: overrides.ki ?? 50,
-    maxKi: overrides.maxKi ?? 100,
-    isAttacking: overrides.isAttacking ?? false,
-    isBlocking: overrides.isBlocking ?? false,
-    isMoving: overrides.isMoving ?? false,
-    stamina: overrides.stamina ?? 100,
-    maxStamina: overrides.maxStamina ?? 100,
-    conditions: overrides.conditions ?? [],
-  };
+// Consciousness level enum
+export enum ConsciousnessLevel {
+  ALERT = 100,
+  AWARE = 75,
+  DISORIENTED = 50,
+  STUNNED = 25,
+  UNCONSCIOUS = 0,
+}
 
-  if (overrides.lastStanceChangeTime !== undefined) {
-    playerState.lastStanceChangeTime = overrides.lastStanceChangeTime;
-  }
-  if (overrides.targetId !== undefined) {
-    playerState.targetId = overrides.targetId;
-  }
-  if (overrides.facing !== undefined) {
-    playerState.facing = overrides.facing;
-  }
-  if (overrides.lastDamageTaken !== undefined) {
-    playerState.lastDamageTaken = overrides.lastDamageTaken;
-  }
-  if (overrides.comboCount !== undefined) {
-    playerState.comboCount = overrides.comboCount;
-  }
-  if (overrides.lastHitTime !== undefined) {
-    playerState.lastHitTime = overrides.lastHitTime;
-  }
-  if (overrides.visible !== undefined) {
-    playerState.visible = overrides.visible;
-  }
+// Player Archetype Data (for constants)
+export interface PlayerArchetypeData {
+  readonly name: KoreanText;
+  readonly description: KoreanText;
+  readonly bonuses: Record<string, number | string>; // Example, adjust as needed
+}
 
-  return playerState;
+// Player state interface
+export interface PlayerState {
+  readonly id: string;
+  readonly name: string;
+  readonly archetype: PlayerArchetype;
+  readonly position: Position;
+  readonly stance: TrigramStance;
+  readonly facing: "left" | "right";
+  readonly health: number;
+  readonly maxHealth: number;
+  readonly ki: number;
+  readonly maxKi: number;
+  readonly stamina: number;
+  readonly maxStamina: number;
+  readonly consciousness: number;
+  readonly pain: number;
+  readonly balance: number; // Typically a scale, e.g., 0-100
+  readonly bloodLoss: number;
+  readonly lastStanceChangeTime: Timestamp;
+  readonly isAttacking: boolean;
+  readonly combatReadiness: CombatReadiness; // Enum value
+  readonly activeEffects: readonly StatusEffect[];
+  readonly combatState: CombatState; // Enum value from enums.ts
+  readonly conditions: readonly CombatCondition[]; // Array of CombatCondition from common.ts
 }

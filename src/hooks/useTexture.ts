@@ -1,48 +1,44 @@
 import { useState, useEffect } from "react";
-import { Texture, Assets } from "pixi.js";
-import type { TextureState } from "../types";
+import { Texture, Assets } from "pixi.js"; // Import Texture and Assets
 
-export function useTexture(url: string): TextureState {
-  const [state, setState] = useState<TextureState>({
+interface UseTextureState {
+  texture: Texture | null;
+  loading: boolean;
+  error: Error | null;
+}
+
+export function useTexture(url: string | undefined): UseTextureState {
+  const [state, setState] = useState<UseTextureState>({
     texture: null,
     loading: true,
     error: null,
   });
 
   useEffect(() => {
-    let cancelled = false;
+    if (!url) {
+      setState({ texture: Texture.EMPTY, loading: false, error: null });
+      return;
+    }
 
-    const loadTexture = async (): Promise<void> => {
-      try {
-        setState((prev) => ({ ...prev, loading: true, error: null }));
+    let isMounted = true;
+    setState({ texture: null, loading: true, error: null });
 
-        const texture = await Assets.load(url);
-
-        if (!cancelled) {
-          setState({
-            texture,
-            loading: false,
-            error: null,
-          });
+    Assets.load(url)
+      .then((loadedTexture: Texture) => {
+        if (isMounted) {
+          setState({ texture: loadedTexture, loading: false, error: null });
         }
-      } catch (error) {
-        if (!cancelled) {
-          setState({
-            texture: null,
-            loading: false,
-            error:
-              error instanceof Error
-                ? error
-                : new Error("Failed to load texture"),
-          });
+      })
+      .catch((e: Error) => {
+        if (isMounted) {
+          console.error(`Failed to load texture: ${url}`, e);
+          setState({ texture: Texture.EMPTY, loading: false, error: e });
         }
-      }
-    };
-
-    loadTexture();
+      });
 
     return () => {
-      cancelled = true;
+      isMounted = false;
+      // Optional: Assets.unload(url) if PixiJS supports it and it's needed
     };
   }, [url]);
 

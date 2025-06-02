@@ -1,85 +1,106 @@
 import React from "react";
-import { KoreanText } from "./KoreanText";
-import { TRIGRAM_CONFIG } from "../constants";
-import { KOREAN_COLORS } from "../../../../../types";
-import type { KoreanTechniqueTextProps } from "../types";
+import { Text as PixiText } from "@pixi/react";
+import * as PIXI from "pixi.js";
+import type { KoreanTechniqueTextProps } from "../../../../../types/korean-text";
+import { useKoreanTextStyle } from "../hooks/useKoreanTextStyle"; // For web React styles
+import { getPixiTextStyle } from "../utils"; // For Pixi styles
+import { KOREAN_COLORS } from "../../../../../types/constants"; // Import KOREAN_COLORS
 
-// Korean technique display component
+// Removed unused PixiTextStyle variable
+
 export function KoreanTechniqueText({
-  techniqueName,
-  englishName,
-  stance,
-  showStanceSymbol = true,
-  showDamage = false,
+  korean, // From KoreanText (bilingual object or string)
+  english, // From KoreanText
+  koreanName: propKoreanName, // Specific prop
+  englishName: propEnglishName, // Specific prop
+  trigram,
+  showStanceSymbol,
+  showDamage,
   damage,
   kiCost,
-  size = "medium",
-  interactive = false,
-  disabled = false,
-  mastered = false,
-}: KoreanTechniqueTextProps): React.ReactElement {
-  const stanceConfig = TRIGRAM_CONFIG[stance];
-  const stanceColor = `#${stanceConfig.color.toString(16).padStart(6, "0")}`;
+  staminaCost,
+  mastered,
+  className,
+  style: htmlStyle,
+  // Pixi specific props
+  x,
+  y,
+  anchor,
+  alpha,
+  visible,
+  interactive,
+  onpointertap,
+  ...restKoreanTextProps
+}: KoreanTechniqueTextProps & {
+  // Add Pixi specific props
+  x?: number;
+  y?: number;
+  anchor?: { x: number; y: number } | number;
+  alpha?: number;
+  visible?: boolean;
+  interactive?: boolean;
+  onpointertap?: (event: PIXI.FederatedPointerEvent) => void;
+}): JSX.Element {
+  const finalKorean =
+    propKoreanName || (typeof korean === "object" ? korean.korean : korean);
+  const finalEnglish =
+    propEnglishName || (typeof korean === "object" ? korean.english : english);
 
-  const displayText = showStanceSymbol
-    ? `${stanceConfig.symbol} ${techniqueName}`
-    : techniqueName;
+  const reactStyle = useKoreanTextStyle({
+    korean: finalKorean,
+    english: finalEnglish,
+    trigram,
+    ...restKoreanTextProps,
+    style: htmlStyle,
+  });
 
-  const techniqueInfo = [];
-  if (showDamage && damage) techniqueInfo.push(`피해: ${damage}`);
-  if (kiCost) techniqueInfo.push(`기력: ${kiCost}`);
+  let textContent = `${finalKorean}`;
+  if (finalEnglish) {
+    textContent += ` (${finalEnglish})`;
+  }
+  if (showStanceSymbol && trigram) {
+    // Add trigram symbol logic if needed, e.g., from TRIGRAM_DATA
+    // textContent = `${TRIGRAM_DATA[trigram]?.symbol || ''} ${textContent}`;
+  }
+  // Add damage, kiCost, staminaCost to textContent if needed
 
-  const fullEnglishText = [
-    englishName,
-    ...techniqueInfo,
-    mastered ? "숙련됨" : "",
-  ]
-    .filter(Boolean)
-    .join(" • ");
+  // For PIXI rendering:
+  const pixiStyleOptions = getPixiTextStyle({
+    korean: finalKorean,
+    english: finalEnglish,
+    trigram,
+    ...restKoreanTextProps,
+  });
+  // Ensure trigram color is applied if not handled by getPixiTextStyle's variant logic
+  if (trigram && KOREAN_COLORS[trigram] && !pixiStyleOptions.fill) {
+    pixiStyleOptions.fill = KOREAN_COLORS[trigram] as PIXI.FillInput;
+  }
+  if (mastered) {
+    pixiStyleOptions.fill = KOREAN_COLORS.GOLD as PIXI.FillInput; // Example: mastered techniques are gold
+    pixiStyleOptions.fontWeight = "bold" as PIXI.TextStyleFontWeight;
+  }
+  const finalPixiStyle = new PIXI.TextStyle(pixiStyleOptions);
 
-  const baseProps = {
-    text: displayText,
-    size,
-    color: disabled
-      ? `#${KOREAN_COLORS.GRAY_DARK.toString(16).padStart(6, "0")}`
-      : stanceColor,
-    weight: mastered ? "bold" : "normal",
-    emphasis: mastered ? "glow" : interactive ? "shadow" : "none",
-    showBoth: true,
-    bilingual: "stacked",
-    animate: interactive,
-    className: `technique-text stance-${stance}`,
-  } as const;
+  if (x !== undefined || y !== undefined) {
+    return (
+      <PixiText
+        text={textContent}
+        style={finalPixiStyle}
+        x={x}
+        y={y}
+        anchor={anchor}
+        alpha={alpha}
+        visible={visible}
+        interactive={interactive}
+        onpointertap={onpointertap}
+      />
+    );
+  }
 
   return (
-    <div
-      className={`technique-display ${disabled ? "disabled" : ""} ${
-        mastered ? "mastered" : ""
-      }`}
-    >
-      {fullEnglishText ? (
-        <KoreanText {...baseProps} englishText={fullEnglishText} />
-      ) : (
-        <KoreanText {...baseProps} />
-      )}
-
-      {(showDamage || kiCost) && (
-        <div
-          className="technique-stats"
-          style={{
-            fontSize: "0.75em",
-            color: `#${KOREAN_COLORS.GRAY_LIGHT.toString(16).padStart(6, "0")}`,
-            marginTop: "0.25em",
-          }}
-        >
-          {showDamage && damage && <span>데미지: {damage}</span>}
-          {kiCost && (
-            <span style={{ marginLeft: showDamage ? "1em" : "0" }}>
-              기력 소모: {kiCost}
-            </span>
-          )}
-        </div>
-      )}
-    </div>
+    <span className={className} style={reactStyle}>
+      {textContent}
+      {/* Optionally add more details like Ki cost, damage, etc. for web display */}
+    </span>
   );
 }

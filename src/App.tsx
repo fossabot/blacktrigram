@@ -2,16 +2,17 @@ import React, { useState, useCallback, useEffect } from "react";
 import { IntroScreen } from "./components/intro/IntroScreen";
 import { GameUI } from "./components/game/GameUI";
 import { TrainingScreen } from "./components/training/TrainingScreen";
+import { useAudio } from "./audio/AudioManager";
 import {
-  createPlayerState,
-  type GamePhase,
-  type PlayerState,
-  type TrigramStance,
-  type AppState,
-  type EndScreenProps,
   KOREAN_COLORS,
   KOREAN_FONT_FAMILY,
+  type AppState,
+  type GamePhase,
+  type TrigramStance,
+  type PlayerState,
+  type EndScreenProps,
 } from "./types";
+import { createPlayerState } from "./utils/playerUtils";
 import { CombatSystem } from "./systems/CombatSystem";
 import "./App.css";
 
@@ -21,6 +22,22 @@ function EndScreen({
   onRestart,
   onMenu,
 }: EndScreenProps): React.ReactElement {
+  const audio = useAudio();
+
+  useEffect(() => {
+    // Play victory or defeat music based on message
+    if (message.includes("승리") || message.includes("Victory")) {
+      audio.playMusic("victory_theme", true);
+      audio.playSFX("victory");
+    } else {
+      audio.playSFX("defeat");
+    }
+
+    return () => {
+      audio.stopMusic(true);
+    };
+  }, [message, audio]);
+
   return (
     <div
       style={{
@@ -50,7 +67,11 @@ function EndScreen({
         {message}
       </h1>
       <button
-        onClick={onRestart}
+        onClick={() => {
+          audio.playSFX("menu_select");
+          onRestart();
+        }}
+        onMouseEnter={() => audio.playSFX("menu_hover")}
         style={{
           padding: "1rem 2rem",
           fontSize: "1.2rem",
@@ -64,7 +85,11 @@ function EndScreen({
         다시하기 (Play Again)
       </button>
       <button
-        onClick={onMenu}
+        onClick={() => {
+          audio.playSFX("menu_back");
+          onMenu();
+        }}
+        onMouseEnter={() => audio.playSFX("menu_hover")}
         style={{
           padding: "1rem 2rem",
           fontSize: "1.2rem",
@@ -81,6 +106,8 @@ function EndScreen({
 }
 
 export default function App(): React.ReactElement {
+  const audio = useAudio();
+
   // Initialize player states using helper function
   const player1Initial = createPlayerState(
     "player1",
@@ -113,7 +140,7 @@ export default function App(): React.ReactElement {
     players: [player1Initial, player2Initial],
     gameTime: 0,
     currentRound: 1,
-    timeRemaining: 90, // Initial round time
+    timeRemaining: 90,
     combatLog: [],
     isPaused: false,
     winnerId: null,
@@ -130,6 +157,9 @@ export default function App(): React.ReactElement {
           CombatSystem.checkWinCondition(prev.players, newTimeRemaining);
 
         if (newGamePhase === "victory" || newGamePhase === "defeat") {
+          // Play match end sound
+          audio.playSFX("match_end");
+
           return {
             ...prev,
             timeRemaining: newTimeRemaining,
@@ -151,18 +181,17 @@ export default function App(): React.ReactElement {
     }, 1000);
 
     return () => clearInterval(gameLoop);
-  }, [appState.gamePhase, appState.isPaused]);
+  }, [appState.gamePhase, appState.isPaused, audio]);
 
   const handleGamePhaseChange = useCallback((phase: GamePhase) => {
     setAppState((prev) => ({
       ...prev,
       gamePhase: phase,
-      winnerId: null, // Reset winner on phase change
-      // Reset game state when entering combat
+      winnerId: null,
       ...(phase === "combat" && {
         gameTime: 0,
-        timeRemaining: 90, // Reset timer for combat
-        currentRound: 1, // Reset round for new combat session
+        timeRemaining: 90,
+        currentRound: 1,
         combatLog: ["전투 시작! (Combat Started!)"],
         players: [
           createPlayerState("player1", { x: 200, y: 400 }, "geon"),
@@ -190,7 +219,6 @@ export default function App(): React.ReactElement {
     []
   );
 
-  // Add separate handler for training screen
   const handleTrainingStanceChange = useCallback(
     (stance: TrigramStance): void => {
       handleStanceChange(0, stance); // Always update player 0 in training
@@ -199,14 +227,16 @@ export default function App(): React.ReactElement {
   );
 
   const handleStartMatch = useCallback(() => {
+    audio.playSFX("match_start");
     setAppState((prev) => ({
       ...prev,
       isPaused: false,
       combatLog: [...prev.combatLog, "경기 시작! (Match Started!)"],
     }));
-  }, []);
+  }, [audio]);
 
   const handleResetMatch = useCallback(() => {
+    audio.playSFX("match_start");
     setAppState((prev) => ({
       ...prev,
       gamePhase: "combat", // Directly go to combat
@@ -221,9 +251,10 @@ export default function App(): React.ReactElement {
       ],
       combatLog: ["경기 재시작! (Match Reset!)"],
     }));
-  }, []);
+  }, [audio]);
 
   const handleTogglePause = useCallback(() => {
+    audio.playSFX("menu_click");
     setAppState((prev) => ({
       ...prev,
       isPaused: !prev.isPaused,
@@ -232,7 +263,7 @@ export default function App(): React.ReactElement {
         prev.isPaused ? "경기 재개 (Resumed)" : "일시정지 (Paused)",
       ],
     }));
-  }, []);
+  }, [audio]);
 
   const handlePlayerUpdate = useCallback(
     (playerIndex: number, updates: Partial<PlayerState>): void => {
@@ -246,13 +277,15 @@ export default function App(): React.ReactElement {
             : prev.players[1],
         ] as [PlayerState, PlayerState];
 
-        // Check win condition after player update (e.g., health change)
         const { gamePhase: newGamePhase, winnerId: newWinnerId } =
           CombatSystem.checkWinCondition(newPlayers, prev.timeRemaining);
         if (
           prev.gamePhase === "combat" &&
           (newGamePhase === "victory" || newGamePhase === "defeat")
         ) {
+          // Play match end sound
+          audio.playSFX("match_end");
+
           return {
             ...prev,
             players: newPlayers,
@@ -271,10 +304,9 @@ export default function App(): React.ReactElement {
         };
       });
     },
-    []
+    [audio]
   );
 
-  // Wrap the entire app with AudioManagerProvider
   const renderCurrentPhase = (): React.ReactElement => {
     switch (appState.gamePhase) {
       case "intro":
@@ -289,18 +321,9 @@ export default function App(): React.ReactElement {
           />
         );
 
-      case "philosophy": // Philosophy can be part of GameUI or a separate screen
-        // For now, let's assume GameUI can handle it or it's a distinct screen.
-        // If Philosophy is meant to be a sub-section of Intro, that's handled by IntroScreen.
-        // If it's a game mode like training/combat, GameUI might be appropriate.
-        // Let's route it to IntroScreen for simplicity if it's just content display.
-        // Or, if it's interactive like training, it needs its own screen or GameUI adaptation.
-        // Given the existing structure, if "philosophy" is a main phase, GameUI might be okay.
-        // However, the prompt implies IntroScreen's PhilosophySection.
-        // Let's assume 'philosophy' from MenuSection leads to a view within IntroScreen or a dedicated screen.
-        // For now, to avoid breaking existing logic if 'philosophy' is a top-level phase:
+      case "philosophy":
         return (
-          <GameUI // Or a dedicated PhilosophyScreen if it's complex
+          <GameUI
             players={appState.players}
             gamePhase={appState.gamePhase}
             onGamePhaseChange={handleGamePhaseChange}
@@ -347,7 +370,7 @@ export default function App(): React.ReactElement {
           />
         );
 
-      case "defeat": // Could be a draw or specific loss scenario
+      case "defeat":
         return (
           <EndScreen
             message={
@@ -369,6 +392,5 @@ export default function App(): React.ReactElement {
     }
   };
 
-  // Remove AudioManagerProvider wrapper for now
   return renderCurrentPhase();
 }

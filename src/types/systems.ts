@@ -1,203 +1,183 @@
-// Types specific to system implementations
-// These are internal types for system modules, distinct from general combat types
+// System types for Black Trigram game engines
+import type { Position } from "./common"; // Corrected import for Position
+import type { AudioConfig, AudioAsset } from "./audio"; // Added AudioConfig, AudioAsset
+import type { PlayerArchetype, TrigramStance } from "./enums"; // Added PlayerArchetype, TrigramStance
+import type { KoreanTechnique, CombatResult } from "./combat"; // Added KoreanTechnique, CombatResult
+import type { PlayerState } from "./player"; // Added PlayerState
+import type { StatusEffect } from "./effects"; // Added StatusEffect
+import type { VitalPoint } from "./anatomy"; // Added VitalPoint
 
-// ===== Combat System Internal Types =====
-
-export interface CombatSystemState {
-  readonly isProcessing: boolean;
-  readonly currentCombat: string | null;
-  readonly combatQueue: readonly string[];
-  readonly lastProcessedTime: number;
-}
-
-export interface DamageCalculationContext {
-  readonly attackerState: import("./player").PlayerState;
-  readonly defenderState: import("./player").PlayerState;
-  readonly technique: import("./combat").KoreanTechnique;
-  readonly environmentFactors: readonly string[];
-  readonly stanceEffectiveness: number;
-}
-
-// ===== Vital Point System Internal Types =====
-
+// Configuration for the VitalPointSystem
 export interface VitalPointSystemConfig {
-  // New / primary properties
-  readonly precisionThreshold: number;
-  readonly criticalHitRange: number;
-  readonly damageMultiplierCurve: readonly number[]; // Replaces damageMultiplier (number)
-  readonly meridianBonusFactors: Record<string, number>;
-
-  // Properties from old config, now optional for transition
-  readonly baseAccuracy?: number;
-  readonly distanceModifier?: number;
-  readonly targetingDifficulty?: number;
-  // damageMultiplier (number) is intentionally omitted; use damageMultiplierCurve
-  readonly effectChance?: number;
-  readonly angleModifier?: number;
+  readonly baseAccuracyMultiplier?: number;
+  readonly damageVariance?: number;
+  readonly archetypeModifiers?: Record<PlayerArchetype, Record<string, number>>;
+  readonly baseDamageMultiplier?: number; // Added baseDamageMultiplier
+  readonly vitalPointSeverityMultiplier?: Record<string, number>; // Added from VitalPointSystem.ts DEFAULT_CONFIG
+  readonly maxHitAngleDifference?: number; // Added from VitalPointSystem.ts DEFAULT_CONFIG
+  readonly baseVitalPointAccuracy?: number; // Added from VitalPointSystem.ts DEFAULT_CONFIG
 }
 
-export interface HitDetectionContext {
-  readonly attackPosition: import("./common").Position;
-  readonly targetBounds: {
-    readonly x: number;
-    readonly y: number;
-    readonly width: number;
-    readonly height: number;
+// Combat system interface
+export interface CombatSystemInterface {
+  calculateDamage: (
+    technique: KoreanTechnique,
+    attackerArchetype: PlayerArchetype,
+    defenderState: PlayerState,
+    hitResult: CombatResult // Or a more specific type if CombatResult is too broad here
+  ) => {
+    baseDamage: number;
+    modifierDamage: number;
+    totalDamage: number;
+    effectsApplied: readonly StatusEffect[];
   };
-  readonly accuracy: number;
-  readonly vitalPointModifiers: Record<string, number>;
+  // Add other combat system methods
+  resolveAttack: (
+    attacker: PlayerState,
+    defender: PlayerState,
+    technique: KoreanTechnique
+  ) => CombatResult;
 }
 
-// ===== Trigram System Internal Types =====
-
-export interface StanceTransitionContext {
-  readonly currentStance: import("./enums").TrigramStance;
-  readonly targetStance: import("./enums").TrigramStance;
-  readonly playerKi: number;
-  readonly playerStamina: number;
-  readonly timeInCurrentStance: number;
-  readonly combatState: string;
+// Vital point system interface
+export interface VitalPointSystemInterface {
+  getVitalPointById: (id: string) => VitalPoint | undefined;
+  getAllVitalPoints: () => readonly VitalPoint[];
+  getVitalPointEffects: (
+    vitalPoint: VitalPoint, // Changed parameter
+    technique: KoreanTechnique, // Added parameter
+    isCriticalHit: boolean // Added parameter
+  ) => readonly StatusEffect[]; // Changed return type to StatusEffect[]
+  calculateVitalPointDamage: (
+    // Updated signature
+    vitalPoint: VitalPoint,
+    technique: KoreanTechnique, // Changed from baseDamage: number
+    attackerArchetype: PlayerArchetype,
+    isCriticalHit?: boolean // Added optional isCriticalHit
+  ) => number;
+  setConfig: (config: VitalPointSystemConfig) => void; // Added setConfig
 }
 
-export interface TrigramSystemState {
-  readonly activeTransitions: Map<string, import("./trigram").StanceTransition>;
-  readonly stanceHistories: Map<
-    string,
-    readonly import("./enums").TrigramStance[]
-  >;
-  readonly lastUpdateTime: number;
+// Trigram system interface
+export interface TrigramSystemInterface {
+  getCurrentStance(playerId: string): TrigramStance | undefined;
+  changeStance(playerId: string, newStance: TrigramStance): boolean;
+  getAvailableTechniques(stance: TrigramStance): readonly KoreanTechnique[];
+  // Add other trigram system methods
 }
 
-// ===== AI System Internal Types =====
-
-export interface AIDecisionContext {
-  readonly playerStates: readonly [
-    import("./player").PlayerState,
-    import("./player").PlayerState
-  ];
-  readonly gamePhase: import("./enums").GamePhase;
-  readonly availableActions: readonly string[];
-  readonly threatAssessment: Record<string, number>;
-  readonly opportunityScores: Record<string, number>;
+// Input system interface
+export interface InputSystemInterface {
+  registerAction(actionName: string, callback: () => void): void;
+  handleKeyPress(key: string): void;
+  getGamepadState(gamepadIndex: number): GamepadState | undefined;
+  // Add other input system methods
 }
 
-export interface AIBehaviorTree {
-  readonly rootNode: AIBehaviorNode;
-  readonly evaluationCache: Map<string, unknown>;
-  readonly lastEvaluationTime: number;
-}
-
-export interface AIBehaviorNode {
+// Gamepad state
+export interface GamepadState {
+  readonly buttons: readonly boolean[];
+  readonly axes: readonly number[];
+  readonly connected: boolean;
   readonly id: string;
-  readonly type: "selector" | "sequence" | "action" | "condition";
-  readonly children: readonly AIBehaviorNode[];
-  readonly action?: string;
-  readonly condition?: string;
-  readonly priority: number;
 }
 
-// ===== Physics System Internal Types =====
-
-export interface PhysicsSystemState {
-  readonly entities: Map<string, PhysicsEntity>;
-  readonly collisions: readonly CollisionPair[];
-  readonly lastPhysicsUpdate: number;
-  readonly deltaTime: number;
+// Audio system interface
+export interface AudioSystemInterface {
+  playSfx(soundId: string, volume?: number): void;
+  playMusic(trackId: string, loop?: boolean, volume?: number): void;
+  stopMusic(trackId?: string): void;
+  setMasterVolume(volume: number): void;
+  loadAudioConfig(config: AudioConfig): void;
+  loadAudioAsset(asset: AudioAsset): Promise<void>;
+  // Add other audio system methods
 }
 
-export interface PhysicsEntity {
-  readonly id: string;
-  readonly position: import("./common").Position;
-  readonly velocity: import("./common").Velocity;
+// Animation system interface
+export interface AnimationSystemInterface {
+  playAnimation(config: AnimationConfig): string; // Returns animation instance ID
+  stopAnimation(animationId: string): void;
+  update(deltaTime: number): void;
+  // Add other animation system methods
+}
+
+// Animation configuration
+export interface AnimationConfig {
+  readonly targetId: string; // ID of the entity to animate
+  readonly animationName: string; // e.g., "player_idle", "hit_effect_blood"
+  readonly loop?: boolean;
+  readonly speed?: number;
+  readonly onComplete?: () => void;
+}
+
+// Physics system interface
+export interface PhysicsSystemInterface {
+  addEntity(entityId: string, config: PhysicsEntityConfig): void;
+  removeEntity(entityId: string): void;
+  update(deltaTime: number): void;
+  applyForce(entityId: string, force: Position): void;
+  // Add other physics system methods
+}
+
+// Physics entity configuration
+export interface PhysicsEntityConfig {
+  readonly position: Position;
   readonly mass: number;
-  readonly boundingBox: {
-    readonly width: number;
-    readonly height: number;
-  };
-  readonly isStatic: boolean;
+  readonly velocity?: Position;
+  readonly restitution?: number; // Bounciness
+  readonly friction?: number;
+  readonly isStatic?: boolean;
+  readonly collisionGroup?: string;
 }
 
-export interface CollisionPair {
-  readonly entityA: string;
-  readonly entityB: string;
-  readonly contactPoint: import("./common").Position;
-  readonly normal: import("./common").Vector2D;
-  readonly penetration: number;
+// Rendering system interface
+export interface RenderingSystemInterface {
+  addRenderable(entityId: string, config: RenderableConfig): void;
+  removeRenderable(entityId: string): void;
+  updateRenderable(entityId: string, updates: Partial<RenderableConfig>): void;
+  renderScene(): void;
+  // Add other rendering system methods
 }
 
-// ===== Rendering System Internal Types =====
-
-export interface RenderingSystemState {
-  readonly renderQueue: readonly RenderCommand[];
-  readonly activeEffects: Map<string, import("./combat").HitEffect>;
-  readonly frameMetrics: FrameMetrics;
-  readonly lastRenderTime: number;
+// Renderable configuration
+export interface RenderableConfig {
+  readonly spriteName?: string; // For sprite-based rendering
+  readonly shape?: "rectangle" | "circle"; // For basic shape rendering
+  readonly color?: number; // Hex color
+  readonly dimensions?: { width: number; height: number };
+  readonly position: Position;
+  readonly zIndex?: number;
+  readonly alpha?: number;
+  readonly visible?: boolean;
 }
 
-export interface RenderCommand {
-  readonly type: "sprite" | "graphics" | "text" | "effect";
-  readonly id: string;
-  readonly layer: number;
-  readonly position: import("./common").Position;
-  readonly data: unknown;
-  readonly priority: number;
+// Game system manager
+export interface GameSystemManager {
+  registerSystem(name: string, system: any): void; // Use specific system interface type if possible
+  getSystem<T>(name: string): T | undefined;
+  initializeAll(): Promise<void>;
+  updateAll(deltaTime: number): void;
+  // Add other manager methods
 }
 
-export interface FrameMetrics {
-  readonly fps: number;
-  readonly frameTime: number;
-  readonly renderTime: number;
-  readonly updateTime: number;
-  readonly memoryUsage: number;
-}
-
-// ===== Performance Monitoring Types =====
-
-export interface SystemPerformanceMetrics {
-  readonly systemId: string;
-  readonly averageUpdateTime: number;
-  readonly peakUpdateTime: number;
-  readonly memoryFootprint: number;
-  readonly updateCount: number;
-  readonly errorCount: number;
-  readonly lastHealthCheck: number;
-}
-
-export interface PerformanceThresholds {
-  readonly maxUpdateTime: number;
-  readonly maxMemoryUsage: number;
-  readonly maxErrorRate: number;
-  readonly frameBudget: number;
-}
-
-// ===== System Integration Types =====
-
-export interface SystemMessage {
-  readonly type: string;
-  readonly sender: string;
-  readonly recipient: string;
-  readonly payload: unknown;
+// System event base type
+export interface SystemEvent {
+  readonly type: string; // e.g., "PLAYER_DAMAGE", "GAME_PAUSED"
+  readonly payload?: any;
   readonly timestamp: number;
-  readonly priority: "low" | "normal" | "high" | "critical";
 }
 
-export interface SystemRegistry {
-  readonly systems: Map<string, SystemInterface>;
-  readonly dependencies: Map<string, readonly string[]>;
-  readonly initializationOrder: readonly string[];
+// Event bus interface for system communication
+export interface EventBusInterface {
+  publish(event: SystemEvent): void;
+  subscribe(
+    eventType: string,
+    callback: (event: SystemEvent) => void
+  ): () => void; // Returns unsubscribe function
 }
 
-export interface SystemInterface {
-  readonly id: string;
-  readonly initialize: () => Promise<void>;
-  readonly update: (deltaTime: number) => void;
-  readonly shutdown: () => Promise<void>;
-  readonly handleMessage: (message: SystemMessage) => void;
-  readonly getPerformanceMetrics: () => SystemPerformanceMetrics;
+// General system configuration
+export interface SystemConfig {
+  readonly debugMode?: boolean;
+  // Add other common system configurations
 }
-
-// ===== Future System Types =====
-
-// Add system-specific types here as needed
-// These should be internal implementation details, not part of the public API
-// Note: HitResult is already defined in combat.ts as it's part of the public API
