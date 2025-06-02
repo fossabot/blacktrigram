@@ -10,6 +10,7 @@ import type { PlayerState } from "./player"; // Added for CombatAnalysis
 import type { DamageRange } from "./common"; // Added KoreanText
 import { StatusEffect } from "./effects";
 import { KoreanText } from "./korean-text";
+import { VitalPoint } from "./anatomy";
 
 export type CombatAttackType =
   | "strike"
@@ -145,4 +146,26 @@ export interface CombatEvent {
   readonly effectId?: string; // For effect_applied type
   readonly roundNumber?: number; // For round_end type
   readonly winnerId?: string; // For match_end type
+}
+
+// Export missing types
+export type CombatState =
+  | "ready"
+  | "attacking"
+  | "defending"
+  | "stunned"
+  | "recovering"
+  | "helpless"
+  | "shaken"
+  | "vulnerable"
+  | "knocked_down";
+
+export type { DamageType } from "./enums";
+
+// Attack input for combat system
+export interface AttackInput {
+  readonly attacker: PlayerState;
+  readonly defender: PlayerState;
+  readonly technique: KoreanTechnique;
+  readonly targetPoint?: VitalPoint;
 }

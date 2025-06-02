@@ -2,12 +2,10 @@ import React, { useState, useEffect } from "react";
 import type { IntroScreenProps, GamePhase } from "../../types";
 import { KOREAN_COLORS } from "../../types";
 import { useAudio } from "../../audio/AudioManager";
-import logo from "../../assets/black-trigram-256.png"; // Import the logo
 
 export function IntroScreen({
   onGamePhaseChange,
 }: IntroScreenProps): React.ReactElement {
-  const [currentSection, setCurrentSection] = useState<string>("menu");
   const [selectedMenuItem, setSelectedMenuItem] = useState<string>("");
   const audio = useAudio();
 
@@ -21,14 +19,10 @@ export function IntroScreen({
     };
   }, [audio]);
 
-  const handleSectionChange = (section: string) => {
+  const handleMenuClick = (phase: GamePhase) => {
     audio.playSFX("menu_select");
-    setCurrentSection(section);
-  };
-
-  const handleGamePhaseChange = (phase: string) => {
-    audio.playSFX("menu_select");
-    onGamePhaseChange(phase as GamePhase);
+    setSelectedMenuItem(phase);
+    onGamePhaseChange(phase);
   };
 
   const containerStyle: React.CSSProperties = {
@@ -74,11 +68,6 @@ export function IntroScreen({
     transition: "all 0.2s ease",
     minWidth: "200px",
   });
-
-  const handleMenuClick = (phase: GamePhase) => {
-    setSelectedMenuItem(phase);
-    onGamePhaseChange(phase);
-  };
 
   return (
     <div style={containerStyle}>

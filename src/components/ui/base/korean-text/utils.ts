@@ -1,20 +1,7 @@
 import * as PIXI from "pixi.js";
-import type {
-  TextStyle as PixiTextStyle,
-  TextMetrics as PixiTextMetrics,
-} from "pixi.js"; // Import TextMetrics
-import type { KoreanTextProps, FontWeight, TrigramStance } from "./types";
-import {
-  KOREAN_COLORS,
-  KOREAN_FONT_FAMILY,
-  KOREAN_FONT_SIZES,
-  TRIGRAM_TEXT_CONFIG,
-} from "./constants";
-
-// Define PixiTextStyleOptions locally if not using a global one from types/ui.ts
-export interface PixiTextStyleOptions extends Partial<PixiTextStyle> {
-  // Add any custom options if needed, or ensure it matches PIXI.TextStyle
-}
+import type { KoreanTextProps } from "./types";
+import { KOREAN_FONT_FAMILIES, KOREAN_TEXT_SIZES } from "./constants";
+import { KOREAN_COLORS } from "../../../../types/constants";
 
 // Utility functions for Korean text processing
 export const isKoreanCharacter = (char: string): boolean => {
@@ -62,8 +49,8 @@ export function validateKoreanText(text: string): {
     errors.push("Text cannot be empty");
   }
 
-  // Check for Korean characters (Hangul)
-  const hasKorean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(text);
+  const koreanRegex = /[가-힣]/;
+  const hasKorean = koreanRegex.test(text);
 
   return {
     isValid: errors.length === 0,
@@ -73,15 +60,21 @@ export function validateKoreanText(text: string): {
 }
 
 /**
- * Create PIXI TextStyle for Korean text
+ * Create PIXI TextStyle for Korean text (PIXI v8 compatible)
  */
 export function getPixiTextStyle(
   props: KoreanTextProps,
   baseColor: number = KOREAN_COLORS.WHITE
 ): PIXI.TextStyle {
+  const fontSize =
+    typeof props.size === "number"
+      ? props.size
+      : KOREAN_TEXT_SIZES[props.size as keyof typeof KOREAN_TEXT_SIZES] ||
+        KOREAN_TEXT_SIZES.MEDIUM;
+
   const style = new PIXI.TextStyle({
-    fontFamily: KOREAN_FONT_FAMILY,
-    fontSize: typeof props.size === "number" ? props.size : 16,
+    fontFamily: KOREAN_FONT_FAMILIES.PRIMARY,
+    fontSize,
     fill: baseColor,
     fontWeight: "400",
     align: props.align || "left",
@@ -89,7 +82,7 @@ export function getPixiTextStyle(
     wordWrapWidth: 600,
   });
 
-  // Add cyberpunk styling if needed
+  // Add cyberpunk styling with PIXI v8 dropShadow object format
   if (props.className?.includes("cyberpunk")) {
     style.dropShadow = {
       alpha: 0.7,
@@ -109,9 +102,16 @@ export function getPixiTextStyle(
  */
 export function measureKoreanText(
   text: string,
-  style: PIXI.TextStyle
+  style: Partial<PIXI.TextStyle>
 ): { width: number; height: number } {
-  return PIXI.TextMetrics.measureText(text, style);
+  // Simple fallback measurement
+  const avgCharWidth = (style.fontSize as number) * 0.6;
+  const lineHeight = (style.fontSize as number) * 1.2;
+
+  return {
+    width: text.length * avgCharWidth,
+    height: lineHeight,
+  };
 }
 
 // Korean text formatting utilities
@@ -155,8 +155,8 @@ export const KoreanTextUtils = {
 // Helper to convert React CSS styles to PixiJS compatible styles
 export const cssToPixiTextStyle = (
   cssStyle: React.CSSProperties
-): PixiTextStyleOptions => {
-  const result: PixiTextStyleOptions = {};
+): Partial<PIXI.TextStyle> => {
+  const result: Partial<PIXI.TextStyle> = {};
 
   if (cssStyle.fontFamily && typeof cssStyle.fontFamily === "string") {
     result.fontFamily = cssStyle.fontFamily;
@@ -170,13 +170,9 @@ export const cssToPixiTextStyle = (
     }
   }
 
-  // Fix: Use proper type narrowing with known string literal types
   if (cssStyle.fontWeight !== undefined) {
     const fontWeight = cssStyle.fontWeight;
-    if (typeof fontWeight === "number") {
-      result.fontWeight = fontWeight;
-    } else if (typeof fontWeight === "string") {
-      // Only allow valid PixiJS font weight values
+    if (typeof fontWeight === "string") {
       const validWeights = ["normal", "bold", "bolder", "lighter"] as const;
       if (validWeights.includes(fontWeight as any)) {
         result.fontWeight = fontWeight as
@@ -190,7 +186,6 @@ export const cssToPixiTextStyle = (
 
   if (cssStyle.fontStyle !== undefined) {
     const fontStyle = cssStyle.fontStyle;
-    // Only allow valid PixiJS font style values
     const validStyles = ["normal", "italic", "oblique"] as const;
     if (
       typeof fontStyle === "string" &&
@@ -202,87 +197,3 @@ export const cssToPixiTextStyle = (
 
   return result;
 };
-
-export function getPixiTextStyle(
-  props: KoreanTextProps
-): Partial<PixiTextStyle> {
-  const {
-    size = "medium",
-    weight = "regular",
-    color,
-    fontFamily = KOREAN_FONT_FAMILY,
-    style: textStyleType,
-    trigram,
-    align, // PIXI.TextStyleAlign
-    // letterSpacing, // Add if used
-    // lineHeight, // Add if used
-    // wordWrap, // Add if used
-    // wordWrapWidth, // Add if used
-  } = props;
-
-  const styleOptions: Partial<PixiTextStyle> = {
-    fontFamily: fontFamily,
-    // fill: KOREAN_COLORS.WHITE, // Default fill
-  };
-
-  // Size
-  if (typeof size === "number") {
-    styleOptions.fontSize = size;
-  } else {
-    styleOptions.fontSize =
-      KOREAN_FONT_SIZES[size.toUpperCase() as keyof typeof KOREAN_FONT_SIZES] ||
-      KOREAN_FONT_SIZES.MEDIUM;
-  }
-
-  // Weight
-  const fontWeightMap: Record<FontWeight, PixiTextStyle["fontWeight"]> = {
-    light: "300",
-    regular: "400",
-    normal: "400",
-    medium: "500",
-    bold: "700",
-    heavy: "900",
-  };
-  styleOptions.fontWeight = fontWeightMap[weight] || fontWeightMap.regular;
-
-  // Color
-  let finalColor: number = KOREAN_COLORS.WHITE; // Default PIXI color
-  if (typeof color === "number") {
-    finalColor = color;
-  } else if (trigram && TRIGRAM_TEXT_CONFIG[trigram]) {
-    finalColor = TRIGRAM_TEXT_CONFIG[trigram].color;
-  }
-  styleOptions.fill = finalColor;
-
-  // Alignment
-  if (align) {
-    styleOptions.align = align;
-  }
-
-  // Style specific enhancements (e.g., cyberpunk glow)
-  if (textStyleType === "cyberpunk") {
-    styleOptions.dropShadow = true;
-    styleOptions.dropShadowColor = KOREAN_COLORS.CYAN;
-    styleOptions.dropShadowBlur = 4;
-    styleOptions.dropShadowAlpha = 0.7;
-    styleOptions.dropShadowDistance = 0;
-    // For stroke, PIXI uses 'stroke' and 'strokeThickness'
-    styleOptions.stroke = KOREAN_COLORS.BLACK;
-    styleOptions.strokeThickness = 2;
-  } else if (textStyleType === "traditional") {
-    // Example: styleOptions.fontVariant = 'small-caps';
-  }
-
-  return styleOptions;
-}
-
-// ...existing code...
-
-export function measurePixiText(
-  text: string,
-  style: Partial<PixiTextStyle>
-): PixiTextMetrics {
-  // Ensure style is a complete PIXI.TextStyle for accurate measurement
-  const completeStyle = new PixiTextStyle(style);
-  return PixiTextMetrics.measureText(text, completeStyle);
-}

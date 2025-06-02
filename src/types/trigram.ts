@@ -4,7 +4,6 @@ import type { ColorValue } from "./common";
 import type { PlayerArchetype, TrigramStance } from "./enums";
 import type { KoreanTechnique } from "./combat"; // Import KoreanTechnique
 import { KoreanText } from "./korean-text";
-import type { PlayerState } from "./player"; // Added import for PlayerState
 
 // Core trigram data structure (I Ching 주역 팔괘)
 export interface TrigramData {
@@ -93,18 +92,14 @@ export interface TrigramTransition {
   readonly effectivenessModifier: number;
 }
 
+// Export the stance type
+export type { TrigramStance } from "./enums";
+
+// Missing trigram system types
 export interface TrigramTransitionCost {
   readonly ki: number;
   readonly stamina: number;
   readonly timeMilliseconds: number;
-}
-
-export interface TrigramTransitionRule {
-  readonly from: TrigramStance;
-  readonly to: TrigramStance;
-  readonly cost: TrigramTransitionCost;
-  readonly conditions?: readonly string[]; // e.g., "player_low_health"
-  readonly costModifier?: number;
 }
 
 export interface TransitionMetrics {
@@ -118,29 +113,20 @@ export interface TransitionPath {
   readonly totalCost: TrigramTransitionCost;
   readonly overallEffectiveness: number;
   readonly cumulativeRisk: number;
-  readonly name?: string;
-  readonly description?: KoreanText;
+  readonly name: string;
+  readonly description: KoreanText;
 }
 
 export interface KiFlowFactors {
-  currentStance: TrigramStance;
-  targetStance: TrigramStance; // Added missing field
-  playerHealthPercent: number;
-  playerStaminaPercent: number;
-  playerKiPercent: number;
-  playerLevelModifier?: number; // Added missing field
-  stanceAffinity?: number; // Added missing field
-  activeEffects: readonly any[]; // Consider using a more specific type like StatusEffect[]
+  readonly playerLevelModifier?: number;
+  readonly stanceAffinity?: number;
 }
 
 export interface StanceTransition {
-  readonly success: boolean;
   readonly from: TrigramStance;
   readonly to: TrigramStance;
   readonly cost: TrigramTransitionCost;
-  readonly newState: PlayerState;
-  readonly reason?: string;
-  readonly timestamp: number;
+  readonly effectiveness: number;
 }
 
 // Trigram combat analytics
@@ -180,4 +166,13 @@ export interface TrigramMasteryCertificate {
   readonly masteredStances: readonly TrigramStance[];
   readonly dateAwarded: string; // ISO Date string
   readonly issuingMaster: string;
+}
+
+// Missing types that are referenced in various files
+export interface TrigramTransitionRule {
+  readonly from: TrigramStance;
+  readonly to: TrigramStance;
+  readonly cost: TrigramTransitionCost;
+  readonly effectiveness: number;
+  readonly conditions?: string[];
 }

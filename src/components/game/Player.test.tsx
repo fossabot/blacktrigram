@@ -34,6 +34,7 @@ describe("Player Component", () => {
     archetype: "musa",
     position: { x: 100, y: 200 },
     stance: "geon",
+    facing: "right", // Add missing property
     health: 80,
     maxHealth: 100,
     ki: 60,
@@ -43,8 +44,13 @@ describe("Player Component", () => {
     consciousness: 100,
     pain: 0,
     balance: 100,
+    bloodLoss: 0, // Add missing property
+    lastStanceChangeTime: Date.now(), // Add missing property
+    isAttacking: false, // Add missing property
+    combatReadiness: 100, // Add missing property
+    activeEffects: [], // Add missing property
+    combatState: "ready", // Add missing property
     conditions: [],
-    equipment: [],
   };
 
   const mockOnStateUpdate = vi.fn();

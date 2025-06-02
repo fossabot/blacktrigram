@@ -1,7 +1,7 @@
 import React, { useCallback } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
+import { Container, Graphics } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import { KOREAN_COLORS } from "../../types/constants"; // Import as value, not type
+import { KOREAN_COLORS } from "../../types/constants";
 import type { PlayerState } from "../../types";
 
 interface PlayerVisualsProps {

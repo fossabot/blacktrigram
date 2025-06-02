@@ -240,3 +240,21 @@ export interface ProceduralSoundConfig {
   readonly release?: number;
   readonly volume?: number;
 }
+
+// Missing audio types
+export interface AudioContextState {
+  readonly initialized: boolean;
+  readonly suspended: boolean;
+  readonly volume: number;
+}
+
+export type SoundEffect = SoundEffectId; // Alias for compatibility
+
+export interface AudioManagerInterface {
+  readonly isInitialized: boolean;
+  readonly volume: number;
+  playMusic(trackId: string, loop?: boolean): void;
+  stopMusic(fadeOut?: boolean): void;
+  playSFX(effectId: SoundEffectId): void;
+  setVolume(volume: number): void;
+}

@@ -1,43 +1,46 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render } from "@testing-library/react";
 import { GameEngine } from "./GameEngine";
-import {
-  createPlayerState,
-  type PlayerState,
-  type GamePhase,
-} from "../../types";
+import type { PlayerState } from "../../types";
+import { createPlayerState } from "../../utils/playerUtils";
 
-// Mock PlayerContainer for isolation
-vi.mock("./Player", () => ({
-  PlayerContainer: (props: Record<string, unknown>) => (
-    <div data-testid="player-container" {...props} />
+// Mock PIXI React components
+vi.mock("@pixi/react", () => ({
+  Stage: ({ children, ...props }: any) => (
+    <div data-testid="pixi-stage" {...props}>
+      {children}
+    </div>
+  ),
+  Container: ({ children, ...props }: any) => (
+    <div data-testid="pixi-container" {...props}>
+      {children}
+    </div>
   ),
 }));
 
 describe("GameEngine", () => {
-  let mockProps: any;
+  let mockPlayers: [PlayerState, PlayerState];
 
   beforeEach(() => {
-    mockProps = {
-      players: [
-        createPlayerState("player1", { x: 100, y: 300 }),
-        createPlayerState("player2", { x: 200, y: 300 }),
-      ] as [PlayerState, PlayerState],
-      gamePhase: "combat" as GamePhase,
-      onPlayersChange: vi.fn(),
-      onGamePhaseChange: vi.fn(),
-      onExit: vi.fn(),
-    };
+    mockPlayers = [
+      createPlayerState("player1", { x: 100, y: 300 }, "geon"), // Fixed: Added stance parameter
+      createPlayerState("player2", { x: 200, y: 300 }, "tae"), // Fixed: Added stance parameter
+    ];
   });
 
-  it("renders without crashing", () => {
-    const { container } = render(<GameEngine {...mockProps} />);
-    expect(container).toBeInTheDocument();
-  });
+  it("should render game engine", () => {
+    const mockOnPlayerUpdate = vi.fn();
+    const mockOnGamePhaseChange = vi.fn();
 
-  it("renders game UI components", () => {
-    const { getAllByTestId } = render(<GameEngine {...mockProps} />);
-    // Update test expectations based on actual rendered components
-    expect(getAllByTestId("game-container")).toHaveLength(1);
+    const { getByTestId } = render(
+      <GameEngine
+        players={mockPlayers}
+        gamePhase="combat"
+        onPlayerUpdate={mockOnPlayerUpdate}
+        onGamePhaseChange={mockOnGamePhaseChange}
+      />
+    );
+
+    expect(getByTestId("pixi-stage")).toBeInTheDocument();
   });
 });

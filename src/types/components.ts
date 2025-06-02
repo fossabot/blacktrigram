@@ -12,10 +12,9 @@ import type {
   HitEffect,
   CombatResult,
 } from "./index";
-import type {
-  UITrigramWheelProps, // Use aliased import from index.ts
-  UIProgressTrackerProps, // Use aliased import from index.ts
-} from "./index"; // Adjusted to import from index.ts which should handle aliasing
+
+// Export aliases for backward compatibility
+export type { TrigramWheelProps, ProgressTrackerProps } from "./ui";
 
 // Base component props - if this is intended to be globally unique, define it once.
 // If it's a local type for this file, it's fine.
@@ -131,12 +130,6 @@ export interface DojangBackgroundProps extends GameComponentProps {
   readonly weather?: "clear" | "rain" | "snow";
 }
 
-// Trigram wheel component props (using the one from ui.ts via alias)
-export type TrigramWheelProps = UITrigramWheelProps;
-
-// Progress tracker props for health/ki/stamina bars (using the one from ui.ts via alias)
-export type ProgressTrackerProps = UIProgressTrackerProps;
-
 // Korean header component props
 export interface KoreanHeaderProps extends BaseComponentProps {
   readonly title: KoreanText | string;
@@ -185,6 +178,17 @@ export interface AudioControlProps extends BaseComponentProps {
     sfx: boolean;
     music: boolean;
   };
+}
+
+// Menu section props
+export interface MenuSectionProps extends BaseComponentProps {
+  readonly title: string;
+  readonly onSelect: (option: string) => void;
+}
+
+// Philosophy section props
+export interface PhilosophySectionProps extends BaseComponentProps {
+  readonly onGamePhaseChange: (phase: string) => void;
 }
 
 // End screen props for victory/defeat

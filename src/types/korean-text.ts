@@ -9,27 +9,39 @@ export interface KoreanText {
   readonly english: string;
 }
 
+export type KoreanTextSize = "small" | "medium" | "large" | "xlarge" | "title";
+
+/**
+ * Martial arts text variants for Korean martial arts terminology
+ */
+export type MartialVariant =
+  | "technique"
+  | "philosophy"
+  | "instruction"
+  | "practitioner"
+  | "master"
+  | "honor"
+  | "discipline";
+
+/**
+ * Korean text variant types
+ */
+export type KoreanTextVariant =
+  | "body"
+  | "heading"
+  | "title"
+  | "caption"
+  | "button";
+
+/**
+ * Font weight enum (consistent with constants)
+ */
 export type KoreanFontWeight =
   | "LIGHT"
   | "REGULAR"
   | "MEDIUM"
   | "BOLD"
   | "HEAVY";
-export type KoreanTextSize = "small" | "medium" | "large" | "xlarge" | "title";
-
-// Korean text variants for different contexts
-export type KoreanTextVariant =
-  | "body"
-  | "primary"
-  | "secondary"
-  | "accent"
-  | "warning"
-  | "danger"
-  | "success"
-  | "label"
-  | "caption"
-  | "error"
-  | "info";
 
 // Korean text emphasis levels
 export type KoreanTextEmphasis =
@@ -41,14 +53,6 @@ export type KoreanTextEmphasis =
   | "shadow"
   | "outline"
   | "highlight";
-
-// Martial arts specific text variants
-export type MartialVariant =
-  | "technique"
-  | "philosophy"
-  | "instruction"
-  | "combat"
-  | "practitioner"; // Added from KoreanMartialText.tsx error
 
 // Honor level for traditional Korean martial arts context
 export type HonorLevel = "student" | "practitioner" | "instructor" | "master";

@@ -9,22 +9,21 @@ export { KoreanStatusText } from "./components/KoreanStatusText";
 export { useKoreanTextStyle } from "./hooks/useKoreanTextStyle";
 export {
   getPixiTextStyle,
-  getDynamicTextStyle,
-  validateKoreanTextProps,
-  // mapFontWeightToPixi, // Export if needed elsewhere
-  // createKoreanTextBitmap, // Export if needed elsewhere
-} from "./utils"; // Assuming these are in utils.ts
+  validateKoreanText,
+  KoreanTextUtils,
+  measureKoreanText,
+  cssToPixiTextStyle,
+} from "./utils";
 
 // Constants (ensure these are exported from constants.ts)
 export {
-  KOREAN_COLORS,
-  KOREAN_FONT_FAMILY,
-  KOREAN_FONT_SIZES,
+  KOREAN_FONT_FAMILIES,
+  KOREAN_TEXT_SIZES,
+  KOREAN_FONT_SIZES, // Alias
+  KOREAN_FONT_FAMILY, // Alias
   KOREAN_MARTIAL_TEXT_PRESETS,
-  KOREAN_STATUS_TEXT_CONFIG,
-  TRIGRAM_TEXT_CONFIG,
-  KOREAN_SIZE_CONFIG, // Make sure this is defined and exported in constants.ts
-  TRIGRAM_CONFIG, // Make sure this is defined and exported in constants.ts
+  KOREAN_STATUS_TRANSLATIONS,
+  KOREAN_MARTIAL_ARTS_TERMS,
 } from "./constants";
 
 // Types (ensure these are exported from types.ts)
@@ -35,16 +34,12 @@ export type {
   KoreanTechniqueTextProps,
   KoreanStatusTextProps,
   KoreanTextHeaderProps,
-  KoreanText as KoreanTextType, // Alias if 'KoreanText' component name conflicts
+  KoreanText as KoreanTextType,
   KoreanTextSize,
   MartialVariant,
   KoreanTextVariant,
   KoreanTextEmphasis,
   HonorLevel,
-  FontWeight,
+  KoreanFontWeight,
   FontFamily,
-  TrigramStance,
-  // KoreanTextStyle, // This was an interface, use KoreanTextStyleInterface from global types if needed
-  // KoreanTextStyleType, // This was an enum, ensure it's defined and exported if needed
-  // PixiTextStyleConfig, // If this is a local type, ensure it's exported
 } from "./types";

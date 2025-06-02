@@ -13,3 +13,6 @@ export interface AppState {
   readonly isPaused: boolean;
   readonly winnerId: string | null;
 }
+
+// Export GamePhase
+export type { GamePhase } from "./enums";

@@ -1,24 +1,30 @@
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
-// Remove Stage import since it doesn't exist in @pixi/react
+import { render } from "@testing-library/react";
 import { TrainingScreen } from "../TrainingScreen";
-
-// Mock the missing Stage component
-vi.mock("@pixi/react", () => ({
-  Application: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="pixi-app">{children}</div>
-  ),
-}));
+import type { TrainingScreenProps } from "../../../types";
+import { createPlayerState } from "../../../utils/playerUtils";
 
 describe("TrainingScreen", () => {
-  const defaultProps = {
+  const defaultProps: TrainingScreenProps = {
+    players: [
+      createPlayerState("Player1", { x: 100, y: 200 }, "geon"),
+      createPlayerState("Player2", { x: 300, y: 200 }, "li"),
+    ],
     onGamePhaseChange: vi.fn(),
+    onPlayerUpdate: vi.fn(),
     onStanceChange: vi.fn(),
+    selectedStance: "geon",
+    gameTime: 0,
+    currentRound: 1,
   };
 
-  it("should render training interface", () => {
+  it("renders without crashing", () => {
     render(<TrainingScreen {...defaultProps} />);
+  });
 
-    expect(screen.getByText("무술 수련장")).toBeInTheDocument();
+  it("displays Korean and English text", () => {
+    const { getByText } = render(<TrainingScreen {...defaultProps} />);
+    expect(getByText(/무술 수련/)).toBeInTheDocument();
+    expect(getByText(/Martial Training/)).toBeInTheDocument();
   });
 });

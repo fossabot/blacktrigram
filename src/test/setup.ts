@@ -1,7 +1,9 @@
 import { beforeAll, afterEach, afterAll, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
-import "@testing-library/jest-dom/vitest";
 import React, { type ReactElement } from "react";
+
+// Add missing jest-dom matchers for vitest
+import "@testing-library/jest-dom/vitest";
 
 // Mock extend spy for tracking calls - single declaration
 export const extendSpy = vi.fn();

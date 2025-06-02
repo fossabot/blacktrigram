@@ -1,12 +1,12 @@
 import {
-  DamageType,
+  DamageType as DamageTypeEnum,
   CombatState,
   PlayerArchetype,
   TrigramStance,
   PlayerState,
 } from "@/types";
 import type { VitalPoint } from "../types/anatomy";
-import type { KoreanTechnique } from "../types/combat";
+import type { DamageType, KoreanTechnique } from "../types/combat";
 
 export interface CombatResult {
   readonly damage: number;
@@ -71,7 +71,7 @@ export class CombatSystem {
     damage *= 1 + (Math.random() - 0.5) * variance;
 
     // Determine damage type
-    let damageType: DamageType; // No longer assign {}
+    let damageType: DamageType;
     if (
       "damageRange" in technique &&
       technique.damageRange &&
@@ -81,7 +81,7 @@ export class CombatSystem {
     } else if ("damageType" in technique && technique.damageType) {
       damageType = technique.damageType;
     } else {
-      damageType = DamageType.BLUNT; // Default to a valid DamageType
+      damageType = DamageTypeEnum.BLUNT; // Use the enum value
     }
 
     return {

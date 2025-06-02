@@ -1,20 +1,20 @@
 // Types related to player state and actions
 
-import type { Position, Timestamp, CombatCondition } from "./common"; // Combined imports
 import type {
   CombatReadiness,
   CombatState,
   PlayerArchetype,
   TrigramStance,
 } from "./enums";
+import type { Position, CombatCondition } from "./common";
 import type { StatusEffect } from "./effects";
-import { KoreanText } from "./korean-text";
+import type { KoreanText } from "./korean-text";
 
 // Player Archetype Data (for constants)
 export interface PlayerArchetypeData {
   readonly name: KoreanText;
-  readonly description: KoreanText;
-  readonly bonuses: Record<string, number | string>; // Example, adjust as needed
+  readonly description: KoreanText; // Changed from string to KoreanText
+  readonly bonuses: Record<string, number>;
   readonly preferredTrigrams?: readonly TrigramStance[];
   readonly techniques?: Record<string, string>; // technique name: description
 }
@@ -37,9 +37,8 @@ export interface PlayerState {
   readonly pain: number; // Typically 0-100, affects performance
   readonly balance: number; // Typically a scale, e.g., 0-100, or an enum for states
   readonly bloodLoss: number; // Cumulative effect, 0-100
-  readonly lastStanceChangeTime: Timestamp;
+  readonly lastStanceChangeTime: number;
   readonly isAttacking: boolean;
-  readonly isBlocking?: boolean; // Added from Player.test.tsx
   readonly combatReadiness: CombatReadiness; // Enum value
   readonly activeEffects: readonly StatusEffect[];
   readonly combatState: CombatState; // Enum value from enums.ts

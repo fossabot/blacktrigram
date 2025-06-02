@@ -4,15 +4,8 @@ import type {
   DamageType,
   EffectIntensity,
   EffectType as EnumEffectType, // Renamed to avoid conflict with local EffectType if any
-  TrigramStance, // Add import for TrigramStance
-  CombatReadiness, // Added for PlayerState in createPlayerState
-  CombatState, // Added for PlayerState in createPlayerState
-  PlayerArchetype, // Added for PlayerState in createPlayerState
 } from "./enums";
-import type { PlayerState } from "./player"; // For createPlayerState
-import { GAME_CONFIG } from "./constants/game"; // For createPlayerState
 import type { KoreanText } from "./korean-text"; // For KoreanText in CombatCondition
-import type { StatusEffect } from "./effects"; // For StatusEffect in PlayerState
 
 // Basic shared types
 export interface Position {
@@ -118,35 +111,5 @@ export interface Velocity {
   readonly vy: number;
 }
 
-// Utility function for creating player states
-// Moved PlayerState definition to player.ts, this function now uses it.
-export const createPlayerState = (
-  playerId: string,
-  position: Position,
-  stance: TrigramStance = "geon",
-  overrides: Partial<PlayerState> = {}
-): PlayerState => ({
-  id: playerId,
-  name: playerId,
-  archetype: "musa" as PlayerArchetype, // Default archetype
-  position,
-  stance,
-  facing: "right",
-  health: GAME_CONFIG.MAX_HEALTH,
-  maxHealth: GAME_CONFIG.MAX_HEALTH,
-  ki: GAME_CONFIG.MAX_KI,
-  maxKi: GAME_CONFIG.MAX_KI,
-  stamina: GAME_CONFIG.MAX_STAMINA,
-  maxStamina: GAME_CONFIG.MAX_STAMINA,
-  consciousness: 100,
-  pain: 0,
-  balance: 100, // Assuming 100 is perfect balance
-  bloodLoss: 0,
-  lastStanceChangeTime: 0,
-  isAttacking: false,
-  combatReadiness: 100 as CombatReadiness, // Full readiness
-  activeEffects: [] as readonly StatusEffect[],
-  combatState: "ready" as CombatState, // Initial combat state
-  conditions: [] as readonly CombatCondition[],
-  ...overrides,
-});
+// Remove createPlayerState - it should be in utils/playerUtils.ts
+// Keep only common shared types here

@@ -1,13 +1,15 @@
 // Player utility functions for Korean martial arts game
 
-import { Position, CombatCondition } from "@/types/common";
-import { StatusEffect } from "@/types/effects";
+import { Position, CombatCondition } from "../types/common";
+import { StatusEffect } from "../types/effects";
+import { GAME_CONFIG } from "../types/constants";
 import {
   type PlayerState,
   type TrigramStance,
   type EffectIntensity,
   type CombatState,
   type EffectType,
+  type PlayerArchetype,
   CombatReadiness,
 } from "../types";
 
@@ -33,16 +35,16 @@ export function createPlayerState(
   return {
     id,
     name: id === "player1" ? "플레이어 1" : "플레이어 2",
-    archetype: "musa",
+    archetype: "musa" as PlayerArchetype,
     position,
     stance,
     facing: position.x < 400 ? "right" : "left",
-    health: 100,
-    maxHealth: 100,
-    ki: 50,
-    maxKi: 100,
-    stamina: 100,
-    maxStamina: 100,
+    health: GAME_CONFIG.MAX_HEALTH,
+    maxHealth: GAME_CONFIG.MAX_HEALTH,
+    ki: GAME_CONFIG.MAX_KI,
+    maxKi: GAME_CONFIG.MAX_KI,
+    stamina: GAME_CONFIG.MAX_STAMINA,
+    maxStamina: GAME_CONFIG.MAX_STAMINA,
     consciousness: 100,
     pain: 0,
     balance: 100,
@@ -51,8 +53,8 @@ export function createPlayerState(
     isAttacking: false,
     combatReadiness: CombatReadiness.READY,
     activeEffects: [],
-    combatState: "ready" as CombatState, // Initialize new property
-    conditions: [], // Initialize new property
+    combatState: "ready" as CombatState,
+    conditions: [],
     ...overrides,
   };
 }

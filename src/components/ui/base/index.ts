@@ -1,15 +1,13 @@
 // Base UI component exports for Korean martial arts game
 
-import { KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../../types";
-
 export {
   KoreanText,
   KoreanMartialText,
   KoreanTechniqueText,
   KoreanStatusText,
+  KoreanTitle,
   KoreanTextUtils,
   validateKoreanText,
-  KoreanTitle,
   type KoreanTextProps,
   type KoreanMartialTextProps,
   type KoreanTechniqueTextProps,
@@ -20,7 +18,7 @@ export {
   type KoreanTextEmphasis,
   type MartialVariant,
   type HonorLevel,
-} from "./KoreanText";
+} from "./korean-text";
 
 export {
   BackgroundGrid,
@@ -35,13 +33,7 @@ export {
   PixiTextComponent,
 } from "./PixiComponents";
 
-// Re-export commonly used Korean martial arts constants
-export {
-  KOREAN_COLORS,
-  KOREAN_FONT_FAMILY,
-  TRIGRAM_DATA,
-  TRIGRAM_STANCES_ORDER,
-} from "../../../types";
+export { BaseButton, type BaseButtonProps } from "./BaseButton";
 
 // Utility type for Korean UI theming
 export interface KoreanUITheme {
@@ -54,37 +46,9 @@ export interface KoreanUITheme {
 
 // Default Korean martial arts theme
 export const KOREAN_MARTIAL_THEME: KoreanUITheme = {
-  primaryColor: KOREAN_COLORS.GOLD,
-  accentColor: KOREAN_COLORS.CYAN,
-  backgroundColor: KOREAN_COLORS.BLACK,
-  textColor: KOREAN_COLORS.WHITE,
-  fontFamily: KOREAN_FONT_FAMILY,
+  primaryColor: 0xffd700, // GOLD
+  accentColor: 0x00ffff, // CYAN
+  backgroundColor: 0x000000, // BLACK
+  textColor: 0xffffff, // WHITE
+  fontFamily: "Noto Sans KR, Arial, sans-serif",
 } as const;
-
-// Additional exports for Korean text utilities and constants
-export {
-  KOREAN_FONT_SIZES,
-  MARTIAL_COLORS,
-  KOREAN_STATUS_TRANSLATIONS,
-  KOREAN_MARTIAL_ARTS_TERMS,
-} from "./korean-text/constants"; // Assuming these are correctly defined and exported
-export {
-  getKoreanTextStyleProps,
-  // KoreanTextUtils, // This was likely a namespace or utility object. If it's createPixiTextStyle, export that.
-  // validateKoreanText, // This was validateKoreanTextProps
-  createPixiTextStyle, // Exporting the actual utility function
-  validateKoreanTextProps, // Exporting the actual validation function
-  getTrigramColor,
-  getMartialColor,
-} from "./korean-text/utils"; // Assuming these are the correct utility functions
-
-export {
-  PlayerArchetype,
-  TrigramStance,
-  TrigramWheelProps,
-  ProgressTrackerProps,
-  KoreanPixiTextConfig,
-  TRIGRAM_DATA, // Corrected: Import from types/index.ts
-} from "../../../types";
-
-export { KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../../types/constants";
