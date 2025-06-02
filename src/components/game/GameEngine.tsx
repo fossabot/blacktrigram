@@ -1,64 +1,50 @@
 // Complete game engine for Black Trigram Korean martial arts
 
-import React, { useRef, useCallback, useEffect } from "react";
+import React, { useRef, useCallback, useEffect, useState } from "react";
 import { Stage, Container } from "@pixi/react";
-import * as PIXI from "pixi.js"; // Import PIXI properly
-import type {
-  PlayerState,
-  GamePhase,
-  CombatResult,
-  GameEngineProps,
-} from "../../types";
+import * as PIXI from "pixi.js";
 import { Player } from "./Player";
 import { DojangBackground } from "./DojangBackground";
 import { HitEffectsLayer } from "./HitEffectsLayer";
-
-interface GameEngineProps {
-  readonly players: readonly [PlayerState, PlayerState];
-  readonly gamePhase: GamePhase;
-  readonly onGamePhaseChange: (phase: GamePhase) => void;
-  readonly gameTime: number;
-  readonly onPlayerUpdate: (
-    playerIndex: number,
-    updates: Partial<PlayerState>
-  ) => void;
-}
+import type { GameEngineProps } from "../../types/components";
 
 export function GameEngine({
   players,
   gamePhase,
-  gameTime,
   onPlayerUpdate,
 }: GameEngineProps): React.ReactElement {
   const appRef = useRef<PIXI.Application | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const [hitEffects, setHitEffects] = useState<any[]>([]); // TODO: type HitEffect[]
 
+  // Main game loop (60fps)
+  const gameLoop = useCallback(() => {
+    if (gamePhase === "combat") {
+      setHitEffects((effects) =>
+        effects.filter((e) => Date.now() - e.startTime < e.duration)
+      );
+    }
+    animationFrameRef.current = requestAnimationFrame(gameLoop);
+  }, [gamePhase]);
+
+  useEffect(() => {
+    animationFrameRef.current = requestAnimationFrame(gameLoop);
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [gameLoop]);
+
+  // Mount Pixi app and configure visuals
   const handleAppMount = useCallback((app: PIXI.Application) => {
     appRef.current = app;
-
-    // Configure app for Korean martial arts visuals
-    app.renderer.background.color = 0x1a1a1a; // Dark dojang background
+    app.renderer.background.color = 0x1a1a1a;
     app.stage.interactive = true;
     app.stage.eventMode = "static";
-
+    // Future: add resize, input listeners
     console.log("🥋 Game engine initialized for Korean martial arts");
   }, []);
-
-  const handleCombatResult = useCallback(
-    (attackerIndex: number, damage: number, isVitalPoint: boolean = false) => {
-      const defenderIndex = attackerIndex === 0 ? 1 : 0;
-      const defender = players[defenderIndex];
-
-      const newHealth = Math.max(0, defender.health - damage);
-      const newPain = Math.min(100, defender.pain + damage * 0.8);
-
-      onPlayerUpdate(defenderIndex, {
-        health: newHealth,
-        pain: newPain,
-        isAttacking: false,
-      });
-    },
-    [players, onPlayerUpdate]
-  );
 
   return (
     <Stage
@@ -72,7 +58,7 @@ export function GameEngine({
       }}
       onMount={handleAppMount}
     >
-      <Container>
+      <Container data-testid="game-container">
         <DojangBackground />
         <Player
           playerState={players[0]}
@@ -86,8 +72,7 @@ export function GameEngine({
           onStateUpdate={(updates) => onPlayerUpdate(1, updates)}
           isActive={gamePhase === "combat"}
         />
-        <HitEffectsLayer effects={[]} />{" "}
-        {/* Will be populated by combat system */}
+        <HitEffectsLayer effects={hitEffects} />
       </Container>
     </Stage>
   );

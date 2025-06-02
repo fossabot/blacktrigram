@@ -1,37 +1,38 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render } from "@testing-library/react";
-import { Application } from "@pixi/react";
 import { Player } from "../Player";
-import { createPlayerState, type PlayerState } from "../../../types";
+import {
+  createPlayerState,
+  type PlayerState,
+  PlayerArchetype,
+} from "../../../types";
 
 describe("Player", () => {
   let defaultProps: {
     playerState: PlayerState;
-    isPlayer1: boolean;
-    onAttack: (position: { x: number; y: number }) => void;
+    playerIndex: number;
+    onStateUpdate: (updates: Partial<PlayerState>) => void;
+    isActive?: boolean;
+    archetype?: PlayerArchetype;
   };
 
   beforeEach(() => {
-    // Fix: Update handleAttack to match new signature
-    const handleAttack = vi.fn((position: { x: number; y: number }) => {
-      console.log(`Attack at position: ${position.x}, ${position.y}`);
+    const handleStateUpdate = vi.fn((_updates: Partial<PlayerState>) => {
+      // Mock state update
     });
 
     defaultProps = {
       playerState: createPlayerState("player1", { x: 200, y: 400 }, "geon"),
-      isPlayer1: true,
-      onAttack: handleAttack, // Now correctly typed
+      playerIndex: 0,
+      onStateUpdate: handleStateUpdate,
+      isActive: true,
+      archetype: "musa" as PlayerArchetype,
     };
   });
 
   it("should render player with Korean martial arts styling", () => {
-    render(
-      <Application>
-        <Player {...defaultProps} />
-      </Application>
-    );
+    render(<Player {...defaultProps} />);
 
-    // Player should be rendered (canvas-based, so we check props)
     expect(defaultProps.playerState.stance).toBe("geon");
     expect(defaultProps.playerState.position).toEqual({ x: 200, y: 400 });
   });
@@ -45,48 +46,33 @@ describe("Player", () => {
       },
     };
 
-    render(
-      <Application>
-        <Player {...playerWithDifferentStance} />
-      </Application>
-    );
+    render(<Player {...playerWithDifferentStance} />);
 
     expect(playerWithDifferentStance.playerState.stance).toBe("li");
   });
 
-  it("should trigger attack with position when interacted", () => {
-    render(
-      <Application>
-        <Player {...defaultProps} />
-      </Application>
-    );
+  it("should trigger state update when interacted", () => {
+    render(<Player {...defaultProps} />);
 
-    // Verify attack handler is properly typed
-    expect(typeof defaultProps.onAttack).toBe("function");
+    expect(typeof defaultProps.onStateUpdate).toBe("function");
 
-    // Simulate attack call
-    defaultProps.onAttack({ x: 200, y: 400 });
+    // Simulate state update call
+    defaultProps.onStateUpdate({ health: 90 });
 
-    expect(defaultProps.onAttack).toHaveBeenCalledWith({
-      x: 200,
-      y: 400,
-    });
+    expect(defaultProps.onStateUpdate).toHaveBeenCalledWith({ health: 90 });
   });
 
   it("should display Korean player names correctly", () => {
     const player2Props = {
       ...defaultProps,
-      isPlayer1: false,
+      playerIndex: 1,
       playerState: createPlayerState("player2", { x: 600, y: 400 }, "gon"),
+      archetype: "jojik" as PlayerArchetype, // Use valid PlayerArchetype
     };
 
-    render(
-      <Application>
-        <Player {...player2Props} />
-      </Application>
-    );
+    render(<Player {...player2Props} />);
 
-    expect(player2Props.isPlayer1).toBe(false);
+    expect(player2Props.playerIndex).toBe(1);
     expect(player2Props.playerState.stance).toBe("gon");
   });
 });
