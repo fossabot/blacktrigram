@@ -5,20 +5,28 @@ import { Player } from "./Player";
 import { DojangBackground } from "./DojangBackground";
 import { HitEffectsLayer } from "./HitEffectsLayer";
 import type { GameEngineProps } from "../../types/components";
+import type { TrigramStance } from "../../types/enums";
+import { Container } from "@pixi/react";
+import { useAudio } from "../../audio/AudioManager";
 
 export function GameEngine({
   players,
   gamePhase,
   onPlayerUpdate,
-}: GameEngineProps): React.ReactElement {
+  onGamePhaseChange,
+  width = 800,
+  height = 600,
+}: GameEngineProps): JSX.Element {
+  const audio = useAudio();
   const animationFrameRef = useRef<number | null>(null);
-  const [hitEffects, setHitEffects] = useState<any[]>([]); // TODO: type HitEffect[]
+  const [combatEffects, setCombatEffects] = useState<any[]>([]); // TODO: type HitEffect[]
+  const [gameTime, setGameTime] = useState(0);
 
   // Main game loop (60fps)
   const gameLoop = useCallback(() => {
     if (gamePhase === "combat") {
-      setHitEffects((effects) =>
-        effects.filter((e) => Date.now() - e.startTime < e.duration)
+      setCombatEffects((effects) =>
+        effects.filter((e) => Date.now() - e.createdAt < 1000)
       );
     }
     animationFrameRef.current = requestAnimationFrame(gameLoop);
@@ -33,22 +41,66 @@ export function GameEngine({
     };
   }, [gameLoop]);
 
+  // Game loop for updates
+  useEffect(() => {
+    if (gamePhase !== "combat") return;
+
+    const gameLoop = setInterval(() => {
+      setGameTime((prev) => prev + 16); // ~60fps
+    }, 16);
+
+    return () => clearInterval(gameLoop);
+  }, [gamePhase]);
+
+  // Handle stance changes
+  const handleStanceChange = useCallback(
+    (playerIndex: number, stance: TrigramStance) => {
+      audio.playStanceChangeSound();
+
+      const now = Date.now();
+      onPlayerUpdate(playerIndex, {
+        stance,
+        lastStanceChangeTime: now,
+      });
+    },
+    [audio, onPlayerUpdate]
+  );
+
+  // Handle combat events
+  const handleCombatEvent = useCallback((effect: any) => {
+    setCombatEffects((prev) => [
+      ...prev,
+      {
+        ...effect,
+        createdAt: Date.now(),
+      },
+    ]);
+  }, []);
+
   return (
-    <pixiContainer data-testid="game-container">
-      <DojangBackground />
-      <Player
-        playerState={players[0]}
-        playerIndex={0}
-        onStateUpdate={(updates) => onPlayerUpdate(0, updates)}
-        isActive={gamePhase === "combat"}
+    <Container>
+      {/* Background environment */}
+      <DojangBackground
+        timeOfDay="night"
+        weather="clear"
+        width={width}
+        height={height}
       />
-      <Player
-        playerState={players[1]}
-        playerIndex={1}
-        onStateUpdate={(updates) => onPlayerUpdate(1, updates)}
-        isActive={gamePhase === "combat"}
-      />
-      <HitEffectsLayer effects={hitEffects} />
-    </pixiContainer>
+
+      {/* Players */}
+      {players.map((player, index) => (
+        <Player
+          key={player.id}
+          playerState={player}
+          playerIndex={index}
+          onStateUpdate={(updates) => onPlayerUpdate(index, updates)}
+          x={index === 0 ? width * 0.25 : width * 0.75}
+          y={height * 0.75}
+        />
+      ))}
+
+      {/* Combat effects overlay */}
+      <HitEffectsLayer effects={combatEffects} />
+    </Container>
   );
 }

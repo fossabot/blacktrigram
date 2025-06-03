@@ -1,36 +1,69 @@
-// Test imports to check core type system functionality
-import type {
-  PlayerArchetype,
-  TrigramStance,
-  GamePhase,
-  CombatState,
-  DamageType,
-  EffectType,
-} from "./types";
+// Test utility types for Black Trigram Korean martial arts game
 
-import { KOREAN_COLORS, GAME_CONFIG } from "./types";
+import type { PlayerState, TrigramStance, PlayerArchetype } from "./types";
 
-// Test that the types work correctly
-const testArchetype: PlayerArchetype = "musa";
-const testStance: TrigramStance = "geon";
-const testPhase: GamePhase = "combat";
-const testCombatState: CombatState = "ready";
-const testDamageType: DamageType = "blunt";
-const testEffect: EffectType = "stun";
+// Mock player state for testing Korean martial arts combat
+export interface MockPlayerState extends PlayerState {
+  readonly _isMock: true;
+}
 
-// Test constants
-const testColor = KOREAN_COLORS.GOLD;
-const testConfig = GAME_CONFIG.MAX_HEALTH;
+// Test combat scenario configuration
+export interface TestCombatScenario {
+  readonly player1: Partial<PlayerState>;
+  readonly player2: Partial<PlayerState>;
+  readonly scenario: string;
+  readonly expectedOutcome?: string;
+}
 
-console.log("Type system test passed!", {
-  testArchetype,
-  testStance,
-  testPhase,
-  testCombatState,
-  testDamageType,
-  testEffect,
-  testColor,
-  testConfig,
-});
+// Test archetype configuration for Korean martial arts
+export interface TestArchetypeConfig {
+  readonly archetype: PlayerArchetype;
+  readonly preferredStances: readonly TrigramStance[];
+  readonly testDamageMultiplier: number;
+  readonly mockBehavior: "aggressive" | "defensive" | "balanced";
+}
 
-export {}; // Make this a module
+// Test vital point configuration
+export interface TestVitalPointConfig {
+  readonly id: string;
+  readonly testAccuracy: number;
+  readonly testDamage: number;
+  readonly mockEffects: readonly string[];
+}
+
+// Test combat result for assertion
+export interface TestCombatResult {
+  readonly damage: number;
+  readonly hit: boolean;
+  readonly critical: boolean;
+  readonly vitalPoint: boolean;
+  readonly attacker: PlayerArchetype;
+  readonly defender: PlayerArchetype;
+}
+
+// Test game state for integration testing
+export interface TestGameState {
+  readonly gamePhase: string;
+  readonly player1: MockPlayerState;
+  readonly player2: MockPlayerState;
+  readonly timeRemaining: number;
+  readonly currentRound: number;
+}
+
+// Mock audio manager for testing
+export interface MockAudioManager {
+  readonly playMusic: jest.Mock | (() => void);
+  readonly stopMusic: jest.Mock | (() => void);
+  readonly playSFX: jest.Mock | (() => void);
+  readonly playAttackSound: jest.Mock | (() => void);
+  readonly playHitSound: jest.Mock | (() => void);
+  readonly setVolume: jest.Mock | (() => void);
+  readonly isEnabled: boolean;
+}
+
+// Test utilities for Korean martial arts game
+export interface TestUtils {
+  readonly createMockPlayer: (archetype: PlayerArchetype) => MockPlayerState;
+  readonly createMockCombat: () => TestCombatScenario;
+  readonly mockAudioManager: MockAudioManager;
+}

@@ -22,7 +22,11 @@ export interface TrigramData {
   readonly defenseModifier?: number;
   readonly speedModifier?: number;
   readonly stanceChangeCooldownMs?: number; // Added based on StanceManager.ts usage
-  // Add other relevant fields like image paths, sound cues, etc.
+  // Enhanced properties
+  readonly preferredTechniques?: readonly KoreanTechnique[]; // Made optional
+  readonly kiCost: number;
+  readonly transitionTime: number;
+  readonly effectiveness: Record<TrigramStance, number>;
 }
 
 // Korean martial arts technique definition

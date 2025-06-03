@@ -11,12 +11,15 @@ import type { StatusEffect } from "./effects";
 import type { KoreanText } from "./korean-text";
 
 // Player Archetype Data (for constants)
+// Player archetype data with Korean martial arts specializations
 export interface PlayerArchetypeData {
   readonly name: KoreanText;
-  readonly description: KoreanText; // Changed from string to KoreanText
+  readonly description: KoreanText;
   readonly bonuses: Record<string, number>;
   readonly preferredTrigrams?: readonly TrigramStance[];
-  readonly techniques?: Record<string, string>; // technique name: description
+  readonly specialTechniques?: readonly string[];
+  readonly philosophy?: string;
+  readonly combatStyle?: string;
 }
 
 // Player state interface

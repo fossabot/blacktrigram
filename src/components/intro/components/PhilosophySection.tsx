@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { KoreanHeader } from "../../ui/base/KoreanHeader";
 import type { PhilosophySectionProps, TrigramStance } from "../../../types";
 import { TRIGRAM_DATA, KOREAN_COLORS } from "../../../types";
+import { KoreanText } from "../../ui/base/korean-text/KoreanText";
 
 export function PhilosophySection({
   onGamePhaseChange,
@@ -9,6 +10,29 @@ export function PhilosophySection({
   const [selectedStance, setSelectedStance] = useState<TrigramStance | null>(
     null
   );
+
+  const philosophies = [
+    {
+      korean: "존중",
+      english: "Respect",
+      description: "Honor the art and opponent",
+    },
+    {
+      korean: "수련",
+      english: "Discipline",
+      description: "Dedicated practice and learning",
+    },
+    {
+      korean: "정확",
+      english: "Precision",
+      description: "Exact technique execution",
+    },
+    {
+      korean: "지혜",
+      english: "Wisdom",
+      description: "Understanding beyond physical technique",
+    },
+  ];
 
   const containerStyle: React.CSSProperties = {
     width: "100%",
@@ -195,6 +219,36 @@ export function PhilosophySection({
           }}
         >
           수련 시작 (Begin Training)
+        </button>
+      </div>
+
+      <div className="philosophy-section">
+        <KoreanText
+          korean="흑괘의 철학"
+          english="Philosophy of Black Trigram"
+          size="xlarge"
+          weight={700}
+        />
+
+        <div className="philosophy-grid">
+          {philosophies.map((philosophy, index) => (
+            <div key={index} className="philosophy-card">
+              <KoreanText
+                korean={philosophy.korean}
+                english={philosophy.english}
+                size="large"
+                weight={500}
+              />
+              <p>{philosophy.description}</p>
+            </div>
+          ))}
+        </div>
+
+        <button
+          onClick={() => onGamePhaseChange("intro")}
+          className="back-button"
+        >
+          Back to Intro
         </button>
       </div>
     </div>

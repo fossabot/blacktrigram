@@ -1,40 +1,72 @@
-// Combat mechanics configuration
-export const COMBAT_CONSTANTS = {
-  BASE_HEALTH: 100,
-  BASE_KI: 100,
-  BASE_STAMINA: 100,
-  ROUND_TIME: 90,
-  MAX_ROUNDS: 3,
-  CRITICAL_THRESHOLD: 35,
-  HEAVY_THRESHOLD: 25,
-  MEDIUM_THRESHOLD: 15,
-} as const;
+// Combat system constants for Korean martial arts
 
+// Combat configuration
 export const COMBAT_CONFIG = {
-  baseHealthRecovery: 0.1,
-  baseKiRecovery: 0.2,
-  baseStaminaRecovery: 0.3,
-  criticalThreshold: 0.15,
-  maxCombatTime: 180,
-  roundTimeLimit: 90,
-  DAMAGE_MULTIPLIER: 1.0,
-  BLOCK_REDUCTION: 0.5,
+  MAX_HEALTH: 100,
+  MAX_KI: 100,
+  MAX_STAMINA: 100,
+  MAX_CONSCIOUSNESS: 100,
+  MAX_BALANCE: 100,
+
+  // Damage thresholds
+  LIGHT_DAMAGE_THRESHOLD: 15,
+  MEDIUM_DAMAGE_THRESHOLD: 25,
+  HEAVY_DAMAGE_THRESHOLD: 35,
+  CRITICAL_DAMAGE_THRESHOLD: 45,
+
+  // Status effect durations (ms)
+  STUN_DURATION: 2000,
+  PAIN_DURATION: 5000,
+  BLEED_DURATION: 10000,
+
+  // Combat timing
+  ATTACK_WINDOW: 300,
+  COUNTER_WINDOW: 200,
+  BLOCK_WINDOW: 400,
+  RECOVERY_TIME: 500,
 } as const;
 
+// Damage ranges by attack type
 export const DAMAGE_RANGES = {
-  light: { min: 5, max: 15 },
-  medium: { min: 10, max: 25 },
-  heavy: { min: 20, max: 40 },
-  critical: { min: 30, max: 60 },
+  STRIKE: { min: 10, max: 20, type: "blunt" },
+  PUNCH: { min: 8, max: 18, type: "blunt" },
+  KICK: { min: 12, max: 22, type: "blunt" },
+  ELBOW: { min: 15, max: 25, type: "blunt" },
+  KNEE: { min: 18, max: 28, type: "blunt" },
+  GRAPPLE: { min: 5, max: 15, type: "joint" },
+  THROW: { min: 20, max: 30, type: "crushing" },
+  PRESSURE_POINT: { min: 25, max: 40, type: "nerve" },
+  NERVE_STRIKE: { min: 30, max: 45, type: "nerve" },
+  BONE_STRIKE: { min: 35, max: 50, type: "blunt" },
 } as const;
 
-// Player limits
-export const MAX_PLAYER_HEALTH = 100;
-export const MAX_PLAYER_STAMINA = 100;
-export const MAX_PLAYER_KI = 100;
+// Combat effectiveness modifiers
+export const COMBAT_MODIFIERS = {
+  ARCHETYPE_BONUS: {
+    MUSA: { damageResistance: 1.2, jointTechniques: 1.5 },
+    AMSALJA: { stealthMultiplier: 1.8, oneStrikeKill: 2.0 },
+    HACKER: { precisionAnalysis: 1.6, environmentalControl: 1.4 },
+    JEONGBO: { psychologicalWarfare: 1.5, strategicAnalysis: 1.4 },
+    JOJIK: { dirtyFighting: 1.8, survivalInstinct: 1.6 },
+  },
 
-// Trigram stance transitions
-export const MAX_TRANSITION_COST_KI = 50;
-export const MAX_TRANSITION_COST_STAMINA = 40;
-export const MAX_TRANSITION_TIME_MILLISECONDS = 1500;
-export const MIN_TRANSITION_EFFECTIVENESS = 0.2;
+  VITAL_POINT_MULTIPLIER: 2.5,
+  COUNTER_ATTACK_MULTIPLIER: 1.8,
+  CRITICAL_HIT_MULTIPLIER: 2.0,
+  PERFECT_TECHNIQUE_MULTIPLIER: 3.0,
+} as const;
+
+// Enhanced combat mechanics for Korean martial arts
+export const PAIN_RESPONSE_SYSTEM = {
+  SHOCK_PAIN_MULTIPLIER: 1.5,
+  CUMULATIVE_TRAUMA_FACTOR: 0.8,
+  PAIN_OVERLOAD_THRESHOLD: 85,
+  INCAPACITATION_THRESHOLD: 95,
+} as const;
+
+export const VITAL_POINT_MODIFIERS = {
+  HEAD: { damage: 2.0, consciousness: 3.0, stun: 2.5 },
+  NECK: { damage: 2.5, consciousness: 4.0, stun: 3.0 },
+  TORSO: { damage: 1.5, consciousness: 1.5, stun: 1.2 },
+  LIMBS: { damage: 1.2, consciousness: 0.8, stun: 1.0 },
+} as const;

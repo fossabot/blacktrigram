@@ -15,7 +15,12 @@ export type {
   VitalPoint,
   AnatomicalLocation,
   VitalPointHitResult,
-  RegionData, // Ensure this is exported
+  RegionData,
+  AnatomicalRegion,
+  BodyPart,
+  AnatomyModel,
+  AnatomicalHit,
+  KoreanAnatomySystem,
 } from "./anatomy";
 export type { KoreanTechnique, CombatResult, AttackInput } from "./combat";
 // Remove CombatState from combat.ts export since it's now in enums
@@ -58,6 +63,10 @@ export type {
   GameEngineProps,
   IntroScreenProps,
   TrainingScreenProps,
+  CombatScreenProps,
+  CombatHUDProps,
+  CombatArenaProps,
+  CombatControlsProps,
   ProgressTrackerProps,
   TrigramWheelProps,
   BaseComponentProps,

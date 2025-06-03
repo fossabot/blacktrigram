@@ -1,35 +1,47 @@
-// Vital points and anatomy system for Korean martial arts
+// Anatomical system types for precise Korean martial arts targeting
 
+import type { KoreanText } from "./korean-text";
+import type { VitalPointEffect } from "./effects";
 import type {
-  EffectType,
-  EffectIntensity,
-  VitalPointCategory,
-  VitalPointSeverity,
-  BodyRegion,
+  VitalPointCategory as EnumVitalPointCategory,
+  VitalPointSeverity as EnumVitalPointSeverity,
 } from "./enums";
-import type { Position } from "./common";
-import { KoreanText } from "./korean-text";
 
+// Use enum types directly
+export type VitalPointCategory = EnumVitalPointCategory;
+export type VitalPointSeverity = EnumVitalPointSeverity;
+
+// Anatomical regions for vital point targeting
+export type AnatomicalRegion =
+  | "head"
+  | "neck"
+  | "torso"
+  | "arms"
+  | "legs"
+  | "face_upper"
+  | "temples"
+  | "eyes"
+  | "philtrum"
+  | "throat"
+  | "solar_plexus"
+  | "chest"
+  | "liver"
+  | "limbs";
+
+// 3D anatomical location with depth
 export interface AnatomicalLocation {
-  readonly x: number; // Relative position (0-1)
-  readonly y: number; // Relative position (0-1)
-  readonly region: BodyRegion;
+  readonly region: AnatomicalRegion;
+  readonly x: number; // 0-1 horizontal position
+  readonly y: number; // 0-1 vertical position
+  readonly z?: number; // 0-1 depth (optional for 2D)
 }
 
-export interface VitalPointEffect {
-  readonly id: string;
-  readonly type: EffectType;
-  readonly duration: number;
-  readonly intensity: EffectIntensity;
-  readonly description: KoreanText;
-  readonly stackable: boolean;
-}
-
+// Complete vital point definition
 export interface VitalPoint {
   readonly id: string;
   readonly name: KoreanText;
-  readonly korean: string; // Deprecated, use name.korean
-  readonly english: string; // Deprecated, use name.english
+  readonly korean: string;
+  readonly english: string;
   readonly category: VitalPointCategory;
   readonly description: KoreanText;
   readonly effects: readonly VitalPointEffect[];
@@ -42,30 +54,67 @@ export interface VitalPoint {
   readonly damageMultiplier: number;
 }
 
-export interface HitEffect {
-  readonly id: string;
-  readonly type: "light" | "medium" | "heavy" | "critical";
-  readonly position: Position;
-  readonly damage: number;
-  readonly color: number;
-  readonly startTime: number;
-  readonly duration: number;
-  readonly korean: string; // Korean damage text
-  readonly createdAt: number; // Timestamp
+// Vital point location for hit detection
+export interface VitalPointLocation {
+  readonly region: AnatomicalRegion;
+  readonly coordinates: {
+    readonly x: number;
+    readonly y: number;
+    readonly z?: number;
+  };
+  readonly hitbox: {
+    readonly width: number;
+    readonly height: number;
+    readonly depth?: number;
+  };
 }
 
+// Body part definitions for combat targeting
+export interface BodyPart {
+  readonly id: string;
+  readonly name: KoreanText;
+  readonly region: AnatomicalRegion;
+  readonly vitalPoints: readonly string[]; // VitalPoint IDs
+  readonly resistance: number; // 0-1 damage resistance
+  readonly mobility: number; // 0-1 how easily targeted
+}
+
+// Human anatomy model for combat simulation
+export interface AnatomyModel {
+  readonly bodyParts: readonly BodyPart[];
+  readonly vitalPoints: readonly VitalPoint[];
+  readonly bloodVessels: readonly string[];
+  readonly nerveClusters: readonly string[];
+  readonly pressurePoints: readonly string[];
+}
+
+// Hit detection for anatomical targeting
+export interface AnatomicalHit {
+  readonly targetPoint: VitalPoint;
+  readonly accuracy: number;
+  readonly penetration: number;
+  readonly angle: number;
+  readonly force: number;
+}
+
+// Korean martial arts specific anatomy
+export interface KoreanAnatomySystem {
+  readonly acupuncturePoints: readonly VitalPoint[];
+  readonly meridianLines: readonly string[];
+  readonly kiFlowPoints: readonly VitalPoint[];
+  readonly traditionalNames: Record<string, KoreanText>;
+}
+
+// Missing types that were referenced in index.ts
 export interface VitalPointHitResult {
   readonly hit: boolean;
+  readonly vitalPoint: VitalPoint;
   readonly damage: number;
-  readonly effects: readonly VitalPointEffect[];
-  readonly vitalPointsHit: readonly string[];
+  readonly effectiveness: number;
 }
 
-// Add missing RegionData interface if not already present
 export interface RegionData {
-  readonly name: KoreanText;
-  readonly subRegions: readonly string[];
-  readonly vitalPoints: readonly string[];
-  readonly vulnerability: number;
-  readonly pressure_points: readonly string[];
+  readonly region: AnatomicalRegion;
+  readonly vitalPoints: readonly VitalPoint[];
+  readonly resistance: number;
 }

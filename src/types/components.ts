@@ -1,6 +1,6 @@
-// Component prop interfaces for Black Trigram Korean martial arts game
+// Combat component prop interfaces for Black Trigram Korean martial arts game
 
-import type { FederatedPointerEvent, Texture, Container } from "pixi.js"; // Using Container instead of DisplayObject
+import type { FederatedPointerEvent, Graphics } from "pixi.js";
 import type React from "react";
 import type { ReactNode } from "react";
 import type { KoreanText } from "./korean-text";
@@ -14,16 +14,17 @@ import type {
   CombatResult,
 } from "./index";
 
-// Export aliases for backward compatibility
-export type { TrigramWheelProps, ProgressTrackerProps } from "./ui";
-
-// Base component props - if this is intended to be globally unique, define it once.
-// If it's a local type for this file, it's fine.
-// Assuming this is the primary definition for BaseComponentProps.
+// Base component props
 export interface BaseComponentProps {
   readonly className?: string;
   readonly style?: React.CSSProperties;
   readonly children?: ReactNode;
+  readonly x?: number;
+  readonly y?: number;
+  readonly width?: number;
+  readonly height?: number;
+  readonly visible?: boolean;
+  readonly interactive?: boolean;
 }
 
 // Game component props for combat components
@@ -34,12 +35,8 @@ export interface GameComponentProps extends BaseComponentProps {
   readonly onStateChange?: (updates: Partial<PlayerState>) => void;
   readonly isActive?: boolean;
   // Common props for game world components
-  readonly x?: number;
-  readonly y?: number;
   readonly alpha?: number;
-  readonly visible?: boolean;
   readonly scale?: number | { x: number; y: number };
-  readonly interactive?: boolean;
   readonly onClick?: (event: FederatedPointerEvent) => void;
   // Add other common PIXI interaction events if needed
   readonly onPointerDown?: (event: FederatedPointerEvent) => void;
@@ -99,45 +96,65 @@ export interface GameUIProps extends BaseComponentProps {
 
 // Player component props
 export interface PlayerProps extends GameComponentProps {
-  readonly playerState: PlayerState; // Renamed from 'player' for clarity if GameComponentProps also has 'player'
-  readonly playerIndex: number; // Added
-  readonly onStateUpdate: (updates: Partial<PlayerState>) => void; // Added
-  readonly onAttack?: (targetPosition?: Position) => void; // Added, made targetPosition optional
-  readonly isPlayer1?: boolean; // Added
-  // readonly archetype: PlayerArchetype; // Already in PlayerState, or could be a direct prop if needed
-}
-
-// Player visuals component props
-export interface PlayerVisualsProps extends GameComponentProps {
   readonly playerState: PlayerState;
-  readonly archetype: PlayerArchetype;
-  readonly texture?: Texture | Container; // Using Container instead of DisplayObject
-  readonly showHealthBar?: boolean;
-  readonly showKiBar?: boolean;
-  readonly showStaminaBar?: boolean;
-  readonly isPlayerControlled?: boolean; // If this visual represents the main player
+  readonly playerIndex: number;
+  readonly onStateUpdate: (updates: Partial<PlayerState>) => void;
+  readonly onAttack?: (targetPosition?: Position) => void;
+  readonly isPlayer1?: boolean;
 }
 
-// Hit effects layer props
-export interface HitEffectsLayerProps extends GameComponentProps {
-  readonly effects: readonly HitEffect[];
-  readonly onEffectComplete?: (effectId: string) => void;
+// Progress tracker props - fixed positioning
+export interface ProgressTrackerProps extends BaseComponentProps {
+  readonly label: string;
+  readonly value: number;
+  readonly maxValue: number;
+  readonly barColor: number;
+  readonly width: number;
+  readonly height: number;
 }
 
 // Dojang background props
 export interface DojangBackgroundProps extends GameComponentProps {
-  readonly textureName?: string; // e.g., "dojang_day", "dojang_night_cyberpunk"
   readonly timeOfDay?: "day" | "night";
   readonly weather?: "clear" | "rain" | "snow";
+  readonly textureName?: string;
 }
 
-// Korean header component props
-export interface KoreanHeaderProps extends BaseComponentProps {
-  readonly title: KoreanText | string;
-  readonly subtitle?: KoreanText | string;
-  readonly level?: 1 | 2 | 3 | 4 | 5 | 6; // For h1-h6 semantics
-  readonly onBackButtonClick?: () => void;
+// Trigram wheel props - fixed for Korean martial arts
+export interface TrigramWheelProps extends BaseComponentProps {
+  readonly size: number;
+  readonly position: Position;
+  readonly selectedStance: TrigramStance;
+  readonly onStanceChange: (stance: TrigramStance) => void;
+  readonly interactive?: boolean;
+  readonly showLabels?: boolean;
+}
+
+// Korean header component props - Fixed title prop
+export interface KoreanHeaderProps {
+  readonly title: KoreanText;
+  readonly subtitle?: string | KoreanText;
+  readonly level?: 1 | 2 | 3;
   readonly showLogo?: boolean;
+  readonly style?: Record<string, any>;
+  readonly onBackButtonClick?: () => void;
+  readonly className?: string;
+  readonly korean?: string; // For backward compatibility
+  readonly english?: string; // For backward compatibility
+}
+
+// HitEffectsLayer props
+export interface HitEffectsLayerProps extends BaseComponentProps {
+  readonly effects: readonly any[];
+  readonly duration?: number; // Added missing prop
+}
+
+// Graphics drawing callback type
+export type GraphicsDrawCallback = (graphics: Graphics) => void;
+
+// Component with graphics drawing
+export interface GraphicsComponentProps extends BaseComponentProps {
+  readonly draw: GraphicsDrawCallback;
 }
 
 // Combat log component props
@@ -251,4 +268,55 @@ export interface BackgroundGridProps extends GameComponentProps {
 export interface CyberpunkBackgroundProps extends GameComponentProps {
   readonly theme?: "dark_alley" | "neon_city" | "data_stream";
   readonly animated?: boolean;
+}
+
+// Combat screen component props - Fixed combatLog prop
+export interface CombatScreenProps extends BaseComponentProps {
+  readonly players: readonly [PlayerState, PlayerState];
+  readonly onGamePhaseChange: (phase: GamePhase | string) => void;
+  readonly onPlayerUpdate: (
+    playerIndex: number,
+    updates: Partial<PlayerState>
+  ) => void;
+  readonly gameTime: number;
+  readonly currentRound: number;
+  readonly timeRemaining: number;
+  readonly isPaused: boolean;
+  readonly matchState?: {
+    currentRound: number;
+    scores: Record<string, number>;
+    roundWinner?: string | null;
+    matchWinner?: string | null;
+  };
+}
+
+// Combat HUD props
+export interface CombatHUDProps extends BaseComponentProps {
+  readonly players: readonly [PlayerState, PlayerState];
+  readonly timeRemaining: number;
+  readonly currentRound: number;
+  readonly isPaused?: boolean;
+}
+
+// Combat arena props
+export interface CombatArenaProps extends BaseComponentProps {
+  readonly players: readonly [PlayerState, PlayerState];
+  readonly onPlayerUpdate: (
+    playerIndex: number,
+    updates: Partial<PlayerState>
+  ) => void;
+  readonly onTechniqueExecute: (
+    playerIndex: number,
+    technique: any
+  ) => Promise<void>; // Updated signature
+  readonly combatEffects: readonly HitEffect[];
+  readonly isExecutingTechnique: boolean;
+}
+
+// Combat controls props
+export interface CombatControlsProps extends BaseComponentProps {
+  readonly players: readonly [PlayerState, PlayerState];
+  readonly onStanceChange: (playerIndex: number, stance: TrigramStance) => void;
+  readonly isExecutingTechnique: boolean;
+  readonly isPaused: boolean;
 }

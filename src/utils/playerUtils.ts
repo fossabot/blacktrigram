@@ -1,63 +1,72 @@
 // Player utility functions for Korean martial arts game
 
-import { Position, CombatCondition } from "../types/common";
-import { StatusEffect } from "../types/effects";
-import { GAME_CONFIG } from "../types/constants";
-import {
-  type PlayerState,
-  type TrigramStance,
-  type EffectIntensity,
-  type CombatState,
-  type EffectType,
-  type PlayerArchetype,
-  CombatReadiness,
+import type {
+  PlayerState,
+  PlayerArchetype,
+  TrigramStance,
+  CombatState,
+  CombatCondition,
   DamageType,
+  EffectIntensity,
+  EffectType,
+  Position,
+  StatusEffect,
 } from "../types";
-
-/**
- * Initializes two player states for the game.
- */
-export function initializePlayers(): readonly [PlayerState, PlayerState] {
-  return [
-    createPlayerState("player1", { x: 100, y: 300 }, "geon"),
-    createPlayerState("player2", { x: 700, y: 300 }, "tae"),
-  ];
-}
+import { PLAYER_ARCHETYPES } from "../types/constants";
+import { CombatReadiness } from "../types/enums"; // Import as value, not type
 
 /**
  * Creates a new player state with Korean martial arts defaults
  */
 export function createPlayerState(
-  id: string,
-  position: Position,
+  name: string,
+  archetype: PlayerArchetype,
   stance: TrigramStance,
   overrides: Partial<PlayerState> = {}
 ): PlayerState {
+  const basePosition: Position = { x: 400, y: 300 };
+
   return {
-    id,
-    name: id === "player1" ? "플레이어 1" : "플레이어 2",
-    archetype: "musa" as PlayerArchetype,
-    position,
+    id: `${name.toLowerCase().replace(/\s+/g, "_")}_${Date.now()}`,
+    name,
+    archetype,
+    position: basePosition,
     stance,
-    facing: position.x < 400 ? "right" : "left",
-    health: GAME_CONFIG.MAX_HEALTH,
-    maxHealth: GAME_CONFIG.MAX_HEALTH,
-    ki: GAME_CONFIG.MAX_KI,
-    maxKi: GAME_CONFIG.MAX_KI,
-    stamina: GAME_CONFIG.MAX_STAMINA,
-    maxStamina: GAME_CONFIG.MAX_STAMINA,
+    facing: "right",
+
+    // Health and stamina
+    health: 100,
+    maxHealth: 100,
+    ki: 100,
+    maxKi: 100,
+    stamina: 100,
+    maxStamina: 100,
+
+    // Combat state
     consciousness: 100,
     pain: 0,
     balance: 100,
     bloodLoss: 0,
     lastStanceChangeTime: Date.now(),
     isAttacking: false,
-    combatReadiness: CombatReadiness.READY,
+    combatReadiness: 100,
     activeEffects: [],
-    combatState: "ready", // Use string literal that matches CombatState enum
+    combatState: "ready",
     conditions: [],
+
+    // Apply any overrides
     ...overrides,
   };
+}
+
+/**
+ * Initialize both players for combat
+ */
+export function initializePlayers(): readonly [PlayerState, PlayerState] {
+  return [
+    createPlayerState("player1", "musa", "geon"),
+    createPlayerState("player2", "amsalja", "tae"),
+  ] as const;
 }
 
 /**
@@ -100,19 +109,18 @@ export function updatePlayerCombatState(
     consciousness: newConsciousness,
     isAttacking: false,
     bloodLoss: player.bloodLoss + (vitalPointHit ? damage * 0.3 : damage * 0.1),
-    combatReadiness:
-      newHealth > 80
-        ? CombatReadiness.READY
-        : newHealth > 60
-        ? CombatReadiness.LIGHT_DAMAGE
-        : newHealth > 40
-        ? CombatReadiness.MODERATE_DAMAGE
-        : newHealth > 20
-        ? CombatReadiness.HEAVY_DAMAGE
-        : newHealth > 0
-        ? CombatReadiness.CRITICAL_DAMAGE
-        : CombatReadiness.INCAPACITATED,
+    combatReadiness: calculateCombatReadiness(newHealth),
   };
+}
+
+// Calculate combat readiness based on health percentage
+function calculateCombatReadiness(health: number): CombatReadiness {
+  if (health <= 0) return CombatReadiness.INCAPACITATED;
+  if (health <= 20) return CombatReadiness.CRITICAL_DAMAGE;
+  if (health <= 40) return CombatReadiness.HEAVY_DAMAGE;
+  if (health <= 60) return CombatReadiness.MODERATE_DAMAGE;
+  if (health <= 80) return CombatReadiness.LIGHT_DAMAGE;
+  return CombatReadiness.READY;
 }
 
 /**
@@ -121,64 +129,40 @@ export function updatePlayerCombatState(
  */
 export function updatePlayerHealth(
   player: PlayerState,
-  healthChange: number,
-  _damageType: DamageType = "blunt"
+  damage: number,
+  damageType: DamageType = "blunt"
 ): PlayerState {
-  // If healthChange is positive, it's healing; if negative, it's damage
-  const newHealth = Math.max(
+  // Calculate effective damage based on archetype resistance
+  const archetypeData = PLAYER_ARCHETYPES[player.archetype];
+  const resistance = archetypeData?.bonuses?.damageResistance || 1.0;
+  const effectiveDamage = Math.max(0, damage / resistance);
+
+  // Apply damage with minimum health of 0
+  const newHealth = Math.max(0, player.health - effectiveDamage);
+
+  // Calculate new pain level (increases with damage taken)
+  const painIncrease = effectiveDamage * 0.5;
+  const newPain = Math.min(100, player.pain + painIncrease);
+
+  // Calculate consciousness impact
+  const consciousnessLoss = effectiveDamage * 0.3;
+  const newConsciousness = Math.max(
     0,
-    Math.min(player.maxHealth, player.health + healthChange)
+    player.consciousness - consciousnessLoss
   );
 
-  // For damage (negative healthChange), calculate additional effects
-  if (healthChange < 0) {
-    const damage = Math.abs(healthChange);
+  // Calculate blood loss for severe damage
+  const bloodLossIncrease = effectiveDamage > 25 ? effectiveDamage * 0.2 : 0;
+  const newBloodLoss = Math.min(100, player.bloodLoss + bloodLossIncrease);
 
-    // Calculate consciousness based on health and pain
-    const healthRatio = newHealth / player.maxHealth;
-    let newConsciousness = player.consciousness;
-
-    if (healthRatio < 0.2) {
-      newConsciousness = Math.max(0, newConsciousness - 20);
-    } else if (healthRatio < 0.5) {
-      newConsciousness = Math.max(0, newConsciousness - 10);
-    }
-
-    // Determine combat state based on health and consciousness - use valid CombatState values
-    let newCombatState: CombatState = "ready";
-    if (newHealth <= 0 || newConsciousness <= 0) {
-      newCombatState = "incapacitated";
-    } else if (healthRatio < 0.3 || newConsciousness < 60) {
-      newCombatState = "vulnerable";
-    } else if (healthRatio < 0.6) {
-      newCombatState = "stunned";
-    }
-
-    return {
-      ...player,
-      health: newHealth,
-      consciousness: newConsciousness,
-      combatState: newCombatState,
-      pain: Math.min(100, player.pain + damage * 0.5),
-      bloodLoss: player.bloodLoss + damage * 0.1,
-    };
-  } else {
-    // For healing, just update health and potentially improve combat state
-    const newCombatState: CombatState =
-      newHealth <= 0
-        ? "incapacitated"
-        : newHealth <= 20
-        ? "vulnerable"
-        : newHealth <= 40
-        ? "stunned"
-        : "ready";
-
-    return {
-      ...player,
-      health: newHealth,
-      combatState: newCombatState,
-    };
-  }
+  return {
+    ...player,
+    health: newHealth,
+    pain: newPain,
+    consciousness: newConsciousness,
+    bloodLoss: newBloodLoss,
+    combatReadiness: calculateCombatReadiness(newHealth), // Now returns correct enum value
+  };
 }
 
 /**
@@ -245,24 +229,21 @@ export function calculateMovementSpeed(player: PlayerState): number {
  */
 export function canPerformAction(
   player: PlayerState,
-  actionType: string // Consider using a more specific type for actionType
+  actionType: string
 ): boolean {
-  // Check if incapacitated - use valid enum value
-  if (player.combatState === "incapacitated") {
+  // Check basic incapacitation
+  if (player.health <= 0 || player.consciousness <= 0) {
     return false;
   }
 
-  // Check for disabling conditions
-  const disablingConditions = player.conditions.filter(
-    (c: CombatCondition) => c.type === "stun" || c.type === "paralysis"
-  );
-
-  if (disablingConditions.length > 0) {
-    return false;
-  }
-
-  // Action-specific checks
+  // Check specific action requirements
   switch (actionType) {
+    case "attack":
+      return player.stamina >= 10 && player.combatState !== "incapacitated";
+    case "stance_change":
+      return player.ki >= 5 && player.combatState !== "stunned";
+    case "block":
+      return player.stamina >= 5;
     default:
       return true;
   }
@@ -321,6 +302,17 @@ export function updateStatusEffects(
     ...player,
     activeEffects: updatedEffects,
   };
+}
+
+/**
+ * Checks if the player is incapacitated
+ */
+export function isPlayerIncapacitated(player: PlayerState): boolean {
+  return (
+    player.health <= 0 ||
+    player.consciousness <= 0 ||
+    player.combatReadiness === CombatReadiness.INCAPACITATED
+  );
 }
 
 /**

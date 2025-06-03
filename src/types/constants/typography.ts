@@ -1,16 +1,24 @@
-// Typography constants for Korean martial arts game
+// Korean typography constants for authentic martial arts presentation
 
-// Korean font families optimized for martial arts display
+// Korean font families prioritized for martial arts game
 export const KOREAN_FONT_FAMILIES = {
   PRIMARY: "Noto Sans KR, Arial, sans-serif",
   SECONDARY: "Malgun Gothic, sans-serif",
-  MONOSPACE: "D2Coding, monospace",
   TRADITIONAL: "Batang, serif",
+  MODERN: "Apple SD Gothic Neo, sans-serif",
 } as const;
 
-// Font sizes for Korean text (in pixels)
+// Font weights for Korean text
+export const KOREAN_FONT_WEIGHTS = {
+  LIGHT: 300,
+  REGULAR: 400,
+  MEDIUM: 500,
+  BOLD: 700,
+  HEAVY: 900,
+} as const;
+
+// Font sizes for different UI elements
 export const KOREAN_FONT_SIZES = {
-  TINY: 10,
   SMALL: 12,
   MEDIUM: 16,
   LARGE: 20,
@@ -19,55 +27,34 @@ export const KOREAN_FONT_SIZES = {
   TITLE: 48,
 } as const;
 
-// Korean font weights (numeric for cross-platform compatibility)
-export const KOREAN_FONT_WEIGHTS = {
-  light: 300,
-  regular: 400,
-  medium: 500,
-  bold: 700,
-  heavy: 900,
-} as const;
-
-// Line height ratios for Korean text readability
-export const KOREAN_LINE_HEIGHT = {
-  TIGHT: 1.2,
-  NORMAL: 1.4,
-  RELAXED: 1.6,
-  LOOSE: 1.8,
-} as const;
-
-// Letter spacing for Korean characters
-export const KOREAN_LETTER_SPACING = {
-  TIGHT: -0.5,
-  NORMAL: 0,
-  WIDE: 1,
-  EXTRA_WIDE: 2,
-} as const;
-
-// Text shadow configurations for cyberpunk styling
-export const KOREAN_TEXT_SHADOWS = {
-  NONE: "none",
-  SUBTLE: "1px 1px 2px rgba(0,0,0,0.3)",
-  STRONG: "2px 2px 4px rgba(0,0,0,0.5)",
-  GLOW: "0 0 10px currentColor",
-  NEON: "0 0 20px currentColor, 0 0 40px currentColor",
-} as const;
-
-// Cyberpunk Korean text effects
-export const KOREAN_TEXT_EFFECTS = {
-  GLITCH: {
-    textShadow: "2px 0 #ff0000, -2px 0 #00ffff",
-    animation: "glitch 0.3s infinite",
+// Typography styles for different contexts
+export const KOREAN_TEXT_STYLES = {
+  BODY: {
+    fontFamily: KOREAN_FONT_FAMILIES.PRIMARY,
+    fontSize: KOREAN_FONT_SIZES.MEDIUM,
+    fontWeight: KOREAN_FONT_WEIGHTS.REGULAR,
   },
-  HOLOGRAM: {
-    textShadow: "0 0 5px currentColor, 0 0 10px currentColor",
-    opacity: 0.9,
+  TITLE: {
+    fontFamily: KOREAN_FONT_FAMILIES.PRIMARY,
+    fontSize: KOREAN_FONT_SIZES.TITLE,
+    fontWeight: KOREAN_FONT_WEIGHTS.BOLD,
   },
-  MATRIX: {
-    textShadow: "0 0 10px #00ff00, 0 0 20px #00ff00",
-    color: "#00ff00",
+  TECHNIQUE: {
+    fontFamily: KOREAN_FONT_FAMILIES.TRADITIONAL,
+    fontSize: KOREAN_FONT_SIZES.LARGE,
+    fontWeight: KOREAN_FONT_WEIGHTS.MEDIUM,
+  },
+  STATUS: {
+    fontFamily: KOREAN_FONT_FAMILIES.MODERN,
+    fontSize: KOREAN_FONT_SIZES.SMALL,
+    fontWeight: KOREAN_FONT_WEIGHTS.REGULAR,
+  },
+  MARTIAL: {
+    fontFamily: KOREAN_FONT_FAMILIES.TRADITIONAL,
+    fontSize: KOREAN_FONT_SIZES.XLARGE,
+    fontWeight: KOREAN_FONT_WEIGHTS.HEAVY,
   },
 } as const;
 
-// Legacy export for backward compatibility
-export const KOREAN_FONT_FAMILY = "Noto Sans KR, Arial, sans-serif";
+// Export primary font family for PIXI compatibility
+export const KOREAN_FONT_FAMILY = KOREAN_FONT_FAMILIES.PRIMARY;

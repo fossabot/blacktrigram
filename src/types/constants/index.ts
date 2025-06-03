@@ -1,13 +1,17 @@
 // filepath: /workspaces/blacktrigram/src/types/constants/index.ts
+// Re-export all constants from subdirectories
+
 // Export all constants from their respective files
 export * from "./colors";
-export * from "./combat";
-export * from "./game";
 export * from "./player";
 export * from "./techniques";
 export * from "./trigram";
 export * from "./typography";
 export * from "./vital-points";
+
+// Export specific constants to resolve conflicts
+export { GAME_CONFIG, GAME_PHASES } from "./game";
+export { COMBAT_CONFIG, DAMAGE_RANGES } from "./combat";
 
 // Add missing exports
 export const KOREAN_FONT_SIZES = {

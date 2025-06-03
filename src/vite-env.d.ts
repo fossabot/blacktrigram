@@ -10,6 +10,14 @@ declare global {
       pixiText: any;
       pixiSprite: any;
     }
+
+    // Fix JSX.Element for React 18
+    interface Element extends React.ReactElement<any, any> {}
+  }
+
+  // Fix PIXI global namespace
+  namespace PIXI {
+    export { Graphics, Container, Text, Sprite } from "pixi.js";
   }
 }
 

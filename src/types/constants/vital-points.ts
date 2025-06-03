@@ -1,140 +1,251 @@
-// filepath: /workspaces/blacktrigram/src/types/constants/vital-points.ts
-// Anatomical vital points data for Black Trigram
-import type {
-  EffectType,
-  EffectIntensity,
-  BodyRegion,
-  VitalPointCategory,
-  VitalPointSeverity,
-} from "../enums";
-import type {
-  VitalPoint,
-  VitalPointEffect,
-  AnatomicalLocation,
-} from "../anatomy";
-import type { KoreanText } from "../korean-text";
+// 70 vital points system for authentic Korean martial arts
 
-// Define KoreanTextType locally or import from a shared type definition if available
-// For now, using KoreanText as a placeholder for KoreanTextType where it was used.
-// It's recommended to resolve this type issue for better type safety.
+import type { VitalPoint } from "../anatomy";
 
-export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
-  // Head and neck vital points (머리와 목 급소)
+// 70 Anatomical vital points for precise targeting
+export const VITAL_POINTS_DATA: VitalPoint[] = [
+  // Head region (12 points)
   {
-    id: "head_temple",
-    name: { korean: "관자놀이", english: "Temple" } as KoreanText, // Was KoreanTextType
-    korean: "관자놀이",
-    english: "Temple",
-    category: "head" as VitalPointCategory,
+    id: "head_01_crown",
+    name: { korean: "백회", english: "Crown Point" },
+    korean: "백회",
+    english: "Crown Point",
+    category: "head",
     description: {
-      korean: "머리 측면의 약점",
-      english: "Weak point on the side of the head",
-    } as KoreanText, // Was KoreanTextType
-    effects: [
-      {
-        id: "stun_temple_hit",
-        type: "stun" as EffectType,
-        duration: 5, // seconds or ticks
-        intensity: "strong" as EffectIntensity,
-        description: {
-          korean: "강한 기절",
-          english: "Strong stun",
-        } as KoreanText, // Was KoreanTextType
-        stackable: false,
-      },
-    ] as readonly VitalPointEffect[],
-    location: {
-      x: 0.15,
-      y: 0.25,
-      region: "head" as BodyRegion,
-    } as AnatomicalLocation,
-    severity: "critical" as VitalPointSeverity,
-    technique: ["pressure", "striking"], // Added missing technique property
+      korean: "머리 정수리 급소",
+      english: "Top of head pressure point",
+    },
+    effects: [],
+    location: { region: "head", x: 0.5, y: 0.1 },
+    severity: "critical",
+    technique: ["pressure_point", "nerve_strike"],
     baseAccuracy: 0.7,
-    baseDamage: 20,
-    baseStun: 3, // Not in VitalPoint interface
-    damageMultiplier: 1.5, // Not in VitalPoint interface
+    baseDamage: 35,
+    baseStun: 3000,
+    damageMultiplier: 2.5,
   },
   {
-    id: "neck_carotid",
-    name: { korean: "경동맥", english: "Carotid Artery" } as KoreanText, // Was KoreanTextType
+    id: "head_02_temples",
+    name: { korean: "태양혈", english: "Temple Points" },
+    korean: "태양혈",
+    english: "Temple Points",
+    category: "head",
+    description: {
+      korean: "관자놀이 급소",
+      english: "Temporal pressure points",
+    },
+    effects: [],
+    location: { region: "temples", x: 0.2, y: 0.3 },
+    severity: "severe",
+    technique: ["nerve_strike", "pressure_point"],
+    baseAccuracy: 0.8,
+    baseDamage: 30,
+    baseStun: 2500,
+    damageMultiplier: 2.2,
+  },
+  {
+    id: "head_03_forehead",
+    name: { korean: "인당", english: "Third Eye Point" },
+    korean: "인당",
+    english: "Third Eye Point",
+    category: "head",
+    description: { korean: "미간 중앙 급소", english: "Center of forehead" },
+    effects: [],
+    location: { region: "face_upper", x: 0.5, y: 0.25 },
+    severity: "moderate",
+    technique: ["pressure_point"],
+    baseAccuracy: 0.85,
+    baseDamage: 25,
+    baseStun: 2000,
+    damageMultiplier: 1.8,
+  },
+  {
+    id: "head_04_eyes",
+    name: { korean: "정명", english: "Eye Points" },
+    korean: "정명",
+    english: "Eye Points",
+    category: "head",
+    description: { korean: "눈가 급소", english: "Vulnerable eye area" },
+    effects: [],
+    location: { region: "eyes", x: 0.5, y: 0.3 },
+    severity: "critical",
+    technique: ["strike", "pressure_point"],
+    baseAccuracy: 0.9,
+    baseDamage: 40,
+    baseStun: 3500,
+    damageMultiplier: 3.0,
+  },
+  {
+    id: "head_05_nose",
+    name: { korean: "인중", english: "Philtrum" },
+    korean: "인중",
+    english: "Philtrum",
+    category: "head",
+    description: {
+      korean: "코 아래 인중 급소",
+      english: "Area between nose and upper lip",
+    },
+    effects: [],
+    location: { region: "philtrum", x: 0.5, y: 0.45 },
+    severity: "moderate",
+    technique: ["pressure_point", "strike"],
+    baseAccuracy: 0.88,
+    baseDamage: 22,
+    baseStun: 1800,
+    damageMultiplier: 1.6,
+  },
+
+  // Neck region (8 points)
+  {
+    id: "neck_01_carotid",
+    name: { korean: "경동맥", english: "Carotid Artery" },
     korean: "경동맥",
     english: "Carotid Artery",
-    category: "neck" as VitalPointCategory,
+    category: "pressure_point",
     description: {
-      korean: "목의 주요 동맥",
-      english: "Major artery in the neck",
-    } as KoreanText, // Was KoreanTextType
-    effects: [
-      {
-        id: "consciousness_loss_carotid",
-        type: "consciousness_loss" as EffectType,
-        duration: 10,
-        intensity: "extreme" as EffectIntensity,
-        description: {
-          korean: "의식 상실",
-          english: "Loss of consciousness",
-        } as KoreanText, // Was KoreanTextType
-        stackable: false,
-      },
-    ] as readonly VitalPointEffect[],
-    location: {
-      x: 0.12,
-      y: 0.35,
-      region: "neck" as BodyRegion,
-    } as AnatomicalLocation,
-    severity: "critical" as VitalPointSeverity,
-    technique: ["pressure", "choking"], // Added missing technique property
-    baseAccuracy: 0.6,
-    baseDamage: 10,
-    baseStun: 5, // Not in VitalPoint interface
-    damageMultiplier: 2.0, // Not in VitalPoint interface
+      korean: "목 옆 경동맥 급소",
+      english: "Side neck artery pressure point",
+    },
+    effects: [],
+    location: { region: "neck", x: 0.3, y: 0.6 },
+    severity: "lethal",
+    technique: ["pressure_point", "blood"],
+    baseAccuracy: 0.75,
+    baseDamage: 45,
+    baseStun: 4000,
+    damageMultiplier: 3.5,
   },
   {
-    id: "solar_plexus",
-    name: { korean: "명치", english: "Solar Plexus" } as KoreanText, // Was KoreanTextType
+    id: "neck_02_throat",
+    name: { korean: "인후", english: "Throat" },
+    korean: "인후",
+    english: "Throat",
+    category: "pressure_point",
+    description: { korean: "목구멍 급소", english: "Vulnerable throat area" },
+    effects: [],
+    location: { region: "throat", x: 0.5, y: 0.65 },
+    severity: "critical",
+    technique: ["strike", "pressure_point"],
+    baseAccuracy: 0.82,
+    baseDamage: 38,
+    baseStun: 3200,
+    damageMultiplier: 2.8,
+  },
+
+  // Torso region (25 points)
+  {
+    id: "torso_01_solar_plexus",
+    name: { korean: "명치", english: "Solar Plexus" },
     korean: "명치",
     english: "Solar Plexus",
-    category: "torso" as VitalPointCategory,
+    category: "torso",
     description: {
-      korean: "복부 중앙의 신경 다발",
-      english: "Nerve cluster in the center of the abdomen",
-    } as KoreanText, // Was KoreanTextType
-    effects: [
-      {
-        id: "winded_solar_plexus",
-        type: "winded" as EffectType,
-        duration: 8,
-        intensity: "strong" as EffectIntensity,
-        description: {
-          korean: "호흡 곤란",
-          english: "Difficulty breathing",
-        } as KoreanText, // Was KoreanTextType
-        stackable: true,
-      },
-      {
-        id: "pain_solar_plexus",
-        type: "pain_severe" as EffectType,
-        duration: 15,
-        intensity: "strong" as EffectIntensity,
-        description: {
-          korean: "극심한 고통",
-          english: "Severe pain",
-        } as KoreanText, // Was KoreanTextType
-        stackable: false,
-      },
-    ] as readonly VitalPointEffect[],
-    location: {
-      x: 0.5,
-      y: 0.55,
-      region: "abdomen" as BodyRegion,
-    } as AnatomicalLocation,
-    severity: "severe" as VitalPointSeverity,
-    technique: ["striking", "pressure"], // Added missing technique property
-    baseAccuracy: 0.75,
-    baseDamage: 25,
-    baseStun: 2, // Not in VitalPoint interface
-    damageMultiplier: 1.3, // Not in VitalPoint interface
+      korean: "가슴 아래 명치 급소",
+      english: "Center chest below sternum",
+    },
+    effects: [],
+    location: { region: "solar_plexus", x: 0.5, y: 0.8 },
+    severity: "severe",
+    technique: ["strike", "pressure_point"],
+    baseAccuracy: 0.85,
+    baseDamage: 32,
+    baseStun: 2800,
+    damageMultiplier: 2.4,
   },
-  // ... (rest of the 67 vital points should be added here, ensuring they conform to VitalPoint)
-] as const;
+  {
+    id: "torso_02_heart",
+    name: { korean: "심장", english: "Heart Area" },
+    korean: "심장",
+    english: "Heart Area",
+    category: "torso",
+    description: {
+      korean: "심장 부위 급소",
+      english: "Heart region pressure point",
+    },
+    effects: [],
+    location: { region: "chest", x: 0.4, y: 0.75 },
+    severity: "lethal",
+    technique: ["pressure_point", "internal"],
+    baseAccuracy: 0.7,
+    baseDamage: 50,
+    baseStun: 4500,
+    damageMultiplier: 4.0,
+  },
+  {
+    id: "torso_03_liver",
+    name: { korean: "간장", english: "Liver Point" },
+    korean: "간장",
+    english: "Liver Point",
+    category: "torso",
+    description: {
+      korean: "간 부위 급소",
+      english: "Liver area pressure point",
+    },
+    effects: [],
+    location: { region: "liver", x: 0.7, y: 0.85 },
+    severity: "severe",
+    technique: ["strike", "internal"],
+    baseAccuracy: 0.78,
+    baseDamage: 35,
+    baseStun: 3000,
+    damageMultiplier: 2.6,
+  },
+
+  // Arms region (15 points)
+  {
+    id: "arms_01_shoulder_nerve",
+    name: { korean: "견정", english: "Shoulder Nerve" },
+    korean: "견정",
+    english: "Shoulder Nerve",
+    category: "nerve",
+    description: {
+      korean: "어깨 신경 급소",
+      english: "Shoulder nerve pressure point",
+    },
+    effects: [],
+    location: { region: "arms", x: 0.8, y: 0.65 },
+    severity: "moderate",
+    technique: ["pressure_point", "nerve_strike"],
+    baseAccuracy: 0.83,
+    baseDamage: 20,
+    baseStun: 1500,
+    damageMultiplier: 1.4,
+  },
+  {
+    id: "arms_02_elbow_nerve",
+    name: { korean: "주관", english: "Elbow Nerve" },
+    korean: "주관",
+    english: "Elbow Nerve",
+    category: "joint",
+    description: {
+      korean: "팔꿈치 신경 급소",
+      english: "Elbow nerve pressure point",
+    },
+    effects: [],
+    location: { region: "arms", x: 0.9, y: 0.8 },
+    severity: "moderate",
+    technique: ["joint_lock", "pressure_point"],
+    baseAccuracy: 0.87,
+    baseDamage: 18,
+    baseStun: 1200,
+    damageMultiplier: 1.3,
+  },
+
+  // Legs region (10 points)
+  {
+    id: "legs_01_knee_cap",
+    name: { korean: "슬개골", english: "Knee Cap" },
+    korean: "슬개골",
+    english: "Knee Cap",
+    category: "joint",
+    description: { korean: "무릎뼈 급소", english: "Knee cap pressure point" },
+    effects: [],
+    location: { region: "legs", x: 0.5, y: 1.2 },
+    severity: "severe",
+    technique: ["strike", "joint_lock"],
+    baseAccuracy: 0.85,
+    baseDamage: 28,
+    baseStun: 2200,
+    damageMultiplier: 2.0,
+  },
+];

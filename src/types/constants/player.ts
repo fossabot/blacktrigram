@@ -1,83 +1,96 @@
-import type { PlayerArchetype } from "../enums";
-import { PlayerArchetypeData } from "../player";
+// Player archetype constants
 
-// Player archetype order for UI
-export const ARCHETYPE_ORDER = [
-  "musa", // 무사 - Traditional Warrior
-  "amsalja", // 암살자 - Shadow Assassin
-  "hacker", // 해커 - Cyber Warrior
-  "jeongbo", // 정보요원 - Intelligence Operative
-  "jojik", // 조직폭력배 - Organized Crime
-] as const satisfies readonly PlayerArchetype[];
+import type { PlayerArchetypeData } from "../player";
 
-// Player archetype definitions (플레이어 원형 데이터)
-export const PLAYER_ARCHETYPES_DATA: Record<
-  PlayerArchetype,
-  PlayerArchetypeData
-> = {
+export const PLAYER_ARCHETYPES: Record<string, PlayerArchetypeData> = {
   musa: {
     name: { korean: "무사", english: "Traditional Warrior" },
     description: {
-      korean: "전통 무예의 길",
-      english: "Path of traditional martial arts",
+      korean: "명예로운 전통 무사",
+      english: "Honor through strength, disciplined combat",
     },
     bonuses: {
-      strength: 1.2,
-      honor: 1.5,
-      discipline: 1.3,
       damageResistance: 1.2,
+      jointTechniques: 1.5,
+      militaryDiscipline: 1.3,
+      staminaRegeneration: 1.1,
     },
+    preferredTrigrams: ["geon", "jin"],
+    philosophy: "Honor through strength, disciplined combat",
+    combatStyle: "Direct confrontation, overwhelming force",
   },
   amsalja: {
     name: { korean: "암살자", english: "Shadow Assassin" },
     description: {
-      korean: "그림자의 길",
-      english: "Path of shadows",
+      korean: "은밀한 암살자",
+      english: "Efficiency through invisibility, one perfect strike",
     },
     bonuses: {
-      stealth: 1.8,
-      precision: 2.0,
-      speed: 1.5,
       stealthMultiplier: 1.8,
+      oneStrikeKill: 2.0,
+      silentMovement: 1.5,
+      vitalPointAccuracy: 1.4,
     },
+    preferredTrigrams: ["son", "gam"],
+    philosophy: "Efficiency through invisibility, one perfect strike",
+    combatStyle: "Stealth approaches, instant takedowns",
   },
   hacker: {
     name: { korean: "해커", english: "Cyber Warrior" },
     description: {
-      korean: "정보의 길",
-      english: "Path of information",
+      korean: "사이버 전사",
+      english: "Information as power, technological advantage",
     },
     bonuses: {
-      analysis: 1.6,
-      technology: 1.4,
-      adaptation: 1.3,
       precisionAnalysis: 1.6,
+      environmentalControl: 1.4,
+      dataOptimization: 1.3,
+      techEnhancement: 1.2,
     },
+    preferredTrigrams: ["li", "tae"],
+    philosophy: "Information as power, technological advantage",
+    combatStyle: "Environmental manipulation, tech-assisted strikes",
   },
   jeongbo: {
     name: { korean: "정보요원", english: "Intelligence Operative" },
     description: {
-      korean: "지식의 길",
-      english: "Path of knowledge",
+      korean: "정보 요원",
+      english: "Knowledge through observation, strategic thinking",
     },
     bonuses: {
-      observation: 1.4,
-      strategy: 1.5,
-      psychology: 1.7,
       psychologicalWarfare: 1.5,
+      strategicAnalysis: 1.4,
+      painCompliance: 1.7,
+      interrogationSkills: 1.3,
     },
+    preferredTrigrams: ["gan", "gon"],
+    philosophy: "Knowledge through observation, strategic thinking",
+    combatStyle: "Psychological manipulation, precise timing",
   },
   jojik: {
     name: { korean: "조직폭력배", english: "Organized Crime" },
     description: {
-      korean: "생존의 길",
-      english: "Path of survival",
+      korean: "조직 폭력배",
+      english: "Survival through ruthlessness, practical violence",
     },
     bonuses: {
-      brutality: 1.8,
-      survival: 1.6,
-      street: 1.5,
       dirtyFighting: 1.8,
+      survivalInstinct: 1.6,
+      streetSmart: 1.5,
+      brutalEfficiency: 1.4,
     },
+    preferredTrigrams: ["jin", "gam"],
+    philosophy: "Survival through ruthlessness, practical violence",
+    combatStyle: "Dirty fighting, improvised weapons",
   },
+} as const;
+
+export const PLAYER_STATS_BASE = {
+  HEALTH: 100,
+  KI: 100,
+  STAMINA: 100,
+  CONSCIOUSNESS: 100,
+  PAIN: 0,
+  BALANCE: 100,
+  BLOOD_LOSS: 0,
 } as const;

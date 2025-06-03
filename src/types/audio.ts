@@ -22,6 +22,13 @@ export type SoundEffectId =
   | "attack_punch_light"
   | "attack_punch_medium"
   | "attack_special_geon"
+  | "attack_special_tae"
+  | "attack_special_li"
+  | "attack_special_jin"
+  | "attack_special_son"
+  | "attack_special_gam"
+  | "attack_special_gan"
+  | "attack_special_gon"
 
   // Hit impact sounds
   | "hit_light"

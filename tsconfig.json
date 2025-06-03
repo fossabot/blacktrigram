@@ -27,22 +27,8 @@
       "@/*": ["src/*"]
     },
 
-    /* Composite */
-    "composite": true, // Add or ensure this is true if referenced projects disable emit
-    "declaration": true, // Often used with composite
-    "declarationMap": true, // Often used with composite
-    "sourceMap": true, // Often used with composite
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
-
-    "allowJs": true, // Allow JavaScript files to be compiled
-
-    /* Vitest */
     "types": ["node", "vitest/globals"] // Add vitest/globals for vi namespace
   },
-  "include": [
-    "src",
-    "vite.config.ts",
-    "vitest.config.ts",
-    "src/types/pixi-react.d.ts"
-  ]
+  "include": ["src/**/*", "src/**/*.tsx", "src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "build"]
 }

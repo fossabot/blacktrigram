@@ -2,15 +2,15 @@
 
 import type {
   TrigramStance,
-  // DamageType as EnumDamageType, // Already aliased below
   PlayerArchetype,
   DamageType,
-} from "./enums"; // Changed to import from enums
+  CombatState,
+} from "./enums"; // Remove unused VitalPointCategory and VitalPointSeverity
 import type { PlayerState } from "./player"; // Added for CombatAnalysis
-import type { DamageRange } from "./common"; // Added KoreanText
-import { StatusEffect } from "./effects";
+import type { DamageRange, Position } from "./common";
+import { StatusEffect } from "./effects"; // Remove unused VitalPointEffect
 import { KoreanText } from "./korean-text";
-import { VitalPoint } from "./anatomy";
+import type { VitalPoint as AnatomyVitalPoint } from "./anatomy"; // Remove unused VitalPointLocation
 
 export type CombatAttackType =
   | "strike"
@@ -68,28 +68,14 @@ export interface KoreanTechnique {
 
 // Combat result from technique execution
 export interface CombatResult {
-  readonly hit: boolean;
   readonly damage: number;
+  readonly damageType: DamageType;
   readonly isVitalPoint: boolean;
-  readonly vitalPointsHit: readonly string[];
-  readonly techniqueUsed: KoreanTechnique; // Should store the technique object
-  readonly effectiveness: number;
-  readonly stunDuration: number;
-  readonly bloodLoss: number;
-  readonly painLevel: number;
-  readonly consciousnessImpact: number;
-  readonly balanceEffect: number;
-  readonly statusEffects: readonly StatusEffect[]; // All effects resulting from the hit (technique + vital point)
-  // readonly effects?: readonly StatusEffect[]; // Removed redundant field
-  readonly hitType:
-    | "normal"
-    | "vital"
-    | "critical"
-    | "miss"
-    | "blocked"
-    | "dodged";
-  readonly description?: string; // Optional narrative description of the result
+  readonly newState: CombatState;
   readonly effects: readonly StatusEffect[];
+  readonly hit: boolean;
+  readonly critical: boolean;
+  readonly vitalPointsHit: readonly AnatomyVitalPoint[];
   readonly attacker: PlayerArchetype;
   readonly defender: PlayerArchetype;
   readonly damagePrevented: number;
@@ -98,8 +84,19 @@ export interface CombatResult {
   readonly defenderDamaged: boolean;
   readonly attackerStance: TrigramStance;
   readonly defenderStance: TrigramStance;
-  readonly hitPosition?: { x: number; y: number };
-  readonly isCritical?: boolean;
+
+  // Enhanced pain and consciousness system
+  readonly painLevel: number;
+  readonly consciousnessImpact: number;
+  readonly balanceEffect: number;
+  readonly bloodLoss: number;
+  readonly stunDuration: number;
+  readonly statusEffects: readonly StatusEffect[];
+  readonly hitType: "miss" | "normal" | "critical" | "vital";
+  readonly techniqueUsed: KoreanTechnique;
+  readonly effectiveness: number;
+  readonly hitPosition: Position;
+  readonly vitalPoint?: AnatomyVitalPoint; // Made optional for non-vital hits
 }
 
 // Type alias for HitResult as requested by error messages
@@ -155,5 +152,5 @@ export interface AttackInput {
   readonly attacker: PlayerState;
   readonly defender: PlayerState;
   readonly technique: KoreanTechnique;
-  readonly targetPoint?: VitalPoint;
+  readonly targetPoint?: AnatomyVitalPoint;
 }

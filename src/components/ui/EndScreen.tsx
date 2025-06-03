@@ -1,91 +1,94 @@
 import React from "react";
-import { KoreanHeader } from "./base/KoreanHeader";
-import { KOREAN_COLORS } from "../../types";
+import type { EndScreenProps } from "../../types/components";
+import { KOREAN_COLORS, KOREAN_FONT_FAMILY_PRIMARY } from "../../types";
 
-interface EndScreenProps {
-  readonly winnerId: string | null;
-  readonly onRestart: () => void;
-  readonly onMenu: () => void;
-}
+const endScreenStyle: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  minHeight: "100vh",
+  background: `linear-gradient(135deg, #${KOREAN_COLORS.DARK_BLUE.toString(
+    16
+  ).padStart(6, "0")}, #${KOREAN_COLORS.BLACK.toString(16).padStart(6, "0")})`,
+  color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
+  fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
+  padding: "20px",
+  textAlign: "center",
+};
+
+const titleStyle: React.CSSProperties = {
+  fontSize: "3rem",
+  marginBottom: "20px",
+  color: `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
+};
+
+const buttonStyle: React.CSSProperties = {
+  padding: "12px 24px",
+  margin: "10px",
+  fontSize: "1.2rem",
+  backgroundColor: `#${KOREAN_COLORS.TRADITIONAL_RED.toString(16).padStart(
+    6,
+    "0"
+  )}`,
+  color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
+  border: "none",
+  borderRadius: "5px",
+  cursor: "pointer",
+  fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
+};
 
 export function EndScreen({
   winnerId,
   onRestart,
   onMenu,
 }: EndScreenProps): React.ReactElement {
-  const isVictory = Boolean(winnerId);
-
-  const containerStyle: React.CSSProperties = {
-    width: "100%",
-    height: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: `#${KOREAN_COLORS.BLACK.toString(16).padStart(6, "0")}`,
-    color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
-    fontFamily: "Noto Sans KR, Arial, sans-serif",
-  };
-
-  const resultColor = isVictory
-    ? KOREAN_COLORS.GOLD
-    : KOREAN_COLORS.TRADITIONAL_RED;
+  const isVictory = winnerId !== null;
+  const titleText = isVictory ? "승리! (Victory!)" : "패배 (Defeat)";
 
   return (
-    <div style={containerStyle}>
-      <KoreanHeader korean="경기 종료" subtitle="Match Complete" level={1} />
+    <div style={endScreenStyle}>
+      <h1 style={titleStyle}>{titleText}</h1>
 
-      <div style={{ marginTop: "2rem", textAlign: "center" }}>
-        <p
-          style={{
-            fontSize: "1.5rem",
-            color: `#${resultColor.toString(16).padStart(6, "0")}`,
-          }}
-        >
-          {isVictory
-            ? "무술의 길에서 승리하였습니다"
-            : "더 많은 수련이 필요합니다"}
+      {winnerId && (
+        <p style={{ fontSize: "1.5rem", marginBottom: "30px" }}>
+          승자: {winnerId === "player1" ? "플레이어 1" : "플레이어 2"}
         </p>
-        <p style={{ fontSize: "1rem", opacity: 0.8 }}>
-          {isVictory
-            ? "You have achieved victory on the martial path"
-            : "More training is needed"}
-        </p>
-      </div>
+      )}
 
-      <div style={{ marginTop: "3rem", display: "flex", gap: "1rem" }}>
+      <div>
         <button
+          style={buttonStyle}
           onClick={onRestart}
-          style={{
-            padding: "1rem 2rem",
-            fontSize: "1.1rem",
-            backgroundColor: `#${KOREAN_COLORS.DOJANG_BLUE.toString(
+          onMouseOver={(e) => {
+            e.currentTarget.style.backgroundColor = `#${KOREAN_COLORS.GOLD.toString(
               16
-            ).padStart(6, "0")}`,
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
+            ).padStart(6, "0")}`;
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.backgroundColor = `#${KOREAN_COLORS.TRADITIONAL_RED.toString(
+              16
+            ).padStart(6, "0")}`;
           }}
         >
           다시 시작 (Restart)
         </button>
 
         <button
+          style={buttonStyle}
           onClick={onMenu}
-          style={{
-            padding: "1rem 2rem",
-            fontSize: "1.1rem",
-            backgroundColor: `#${KOREAN_COLORS.ACCENT_BLUE.toString(
+          onMouseOver={(e) => {
+            e.currentTarget.style.backgroundColor = `#${KOREAN_COLORS.DOJANG_BLUE.toString(
               16
-            ).padStart(6, "0")}`,
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
+            ).padStart(6, "0")}`;
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.backgroundColor = `#${KOREAN_COLORS.TRADITIONAL_RED.toString(
+              16
+            ).padStart(6, "0")}`;
           }}
         >
-          메뉴 (Menu)
+          메뉴로 (To Menu)
         </button>
       </div>
     </div>

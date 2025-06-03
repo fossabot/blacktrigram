@@ -12,16 +12,25 @@ import type {
   TextStyle,
   Application,
 } from "pixi.js";
-// import type { ReactNode, ComponentProps } from "react"; // ComponentProps is used inside the module declare
 
 // PIXI.js React integration type declarations
 declare module "@pixi/react" {
   import type {
     ReactNode,
     RefObject,
-    ComponentProps as ReactComponentProps, // Aliased to avoid conflict
+    ComponentProps as ReactComponentProps,
   } from "react";
   import type * as PIXI from "pixi.js";
+
+  // Application component props (this is the React component, not the PIXI.Application class)
+  interface ApplicationProps extends ReactComponentProps<"canvas"> {
+    width?: number;
+    height?: number;
+    options?: Partial<PIXI.ApplicationOptions>;
+    onMount?: (app: PIXI.Application) => void;
+    onUnmount?: (app: PIXI.Application) => void;
+    children?: React.ReactNode;
+  }
 
   // Base PIXI component props
   interface PixiComponentProps {
@@ -117,18 +126,8 @@ declare module "@pixi/react" {
     tint?: number;
   }
 
-  // Stage component props
-  interface StageProps extends ReactComponentProps<"canvas"> {
-    width?: number;
-    height?: number;
-    options?: Partial<PIXI.ApplicationOptions>;
-    onMount?: (app: PIXI.Application) => void;
-    onUnmount?: (app: PIXI.Application) => void;
-    children?: React.ReactNode;
-  }
-
-  // Component exports
-  export const Stage: React.ComponentType<StageProps>;
+  // Component exports - Application is the React component wrapper
+  export const Application: React.ComponentType<ApplicationProps>;
   export const Container: React.ComponentType<ContainerProps>;
   export const Graphics: React.ComponentType<GraphicsProps>;
   export const Text: React.ComponentType<TextProps>;

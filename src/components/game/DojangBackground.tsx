@@ -1,156 +1,70 @@
 // Underground dojang background for Korean martial arts
 
 import React, { useCallback } from "react";
-import * as PIXI from "pixi.js";
-import { KOREAN_COLORS } from "../../types";
+import { Container, Graphics } from "@pixi/react";
+import type { DojangBackgroundProps } from "../../types/components";
+import { KOREAN_COLORS } from "../../types/constants";
 
-interface DojangBackgroundProps {
-  width?: number;
-  height?: number;
-}
-
-// Underground cyberpunk dojang background with traditional and neon elements
 export function DojangBackground({
-  width = 960,
-  height = 720,
-}: DojangBackgroundProps): React.ReactElement {
-  // Draw main dojang background
+  timeOfDay = "night",
+  width = 800,
+  height = 600,
+  weather = "clear",
+}: DojangBackgroundProps): JSX.Element {
   const drawBackground = useCallback(
-    (g: PIXI.Graphics) => {
+    (g: any) => {
       g.clear();
-      // Main floor
-      g.beginFill(KOREAN_COLORS.BLACK, 1);
-      g.drawRect(0, 0, width, height);
+
+      // Base dojang floor using available colors
+      g.beginFill(KOREAN_COLORS.GAN_BROWN); // Using available brown color
+      g.drawRect(0, height * 0.7, width, height * 0.3);
       g.endFill();
 
-      // Simulate a gradient with two rectangles (PIXI.Graphics has no gradient fill)
-      g.beginFill(KOREAN_COLORS.DOJANG_BLUE, 0.85);
-      g.drawRect(0, height - 180, width, 120);
-      g.endFill();
-      g.beginFill(KOREAN_COLORS.GOLD, 0.55);
-      g.drawRect(0, height - 60, width, 60);
+      // Dojang walls using available colors
+      g.beginFill(KOREAN_COLORS.GON_DARK_BROWN); // Using available dark brown
+      g.drawRect(0, 0, width, height * 0.7);
       g.endFill();
 
-      // Floor tiles (traditional)
-      g.lineStyle(1, KOREAN_COLORS.DARK_BLUE, 0.5);
-      for (let x = 0; x < width; x += 60) {
-        for (let y = height - 180; y < height; y += 60) {
-          g.drawRect(x, y, 60, 60);
+      // Traditional Korean patterns (simplified)
+      g.lineStyle(2, KOREAN_COLORS.DANCHEONG_GOLD, 0.7);
+      for (let i = 0; i < 3; i++) {
+        const y = height * 0.1 + i * height * 0.15;
+        g.moveTo(width * 0.1, y);
+        g.lineTo(width * 0.9, y);
+      }
+
+      // Atmospheric lighting based on time of day
+      if (timeOfDay === "night") {
+        // Moonlight effect using available neon colors
+        g.beginFill(KOREAN_COLORS.NEON_CYAN, 0.1);
+        g.drawRect(0, 0, width, height);
+        g.endFill();
+
+        // Subtle neon accent strips
+        g.lineStyle(1, KOREAN_COLORS.NEON_CYAN, 0.6);
+        g.moveTo(0, height * 0.2);
+        g.lineTo(width, height * 0.2);
+        g.moveTo(0, height * 0.8);
+        g.lineTo(width, height * 0.8);
+      }
+
+      // Weather effects
+      if (weather === "rain") {
+        g.lineStyle(1, KOREAN_COLORS.GAM_BLUE, 0.3);
+        for (let i = 0; i < 20; i++) {
+          const x = Math.random() * width;
+          const y = Math.random() * height;
+          g.moveTo(x, y);
+          g.lineTo(x + 2, y + 20);
         }
       }
-      g.lineStyle(0);
-
-      // Neon accent lines (cyberpunk)
-      g.lineStyle(3, KOREAN_COLORS.CYAN, 0.7);
-      g.moveTo(0, height - 180);
-      g.lineTo(width, height - 180);
-      g.moveTo(0, height - 100);
-      g.lineTo(width, height - 100);
-      g.lineStyle(0);
-
-      // Blood stains (atmosphere)
-      g.beginFill(0x8b0000, 0.15);
-      g.drawEllipse(width * 0.7, height - 120, 60, 18);
-      g.drawEllipse(width * 0.3, height - 80, 40, 12);
-      g.endFill();
     },
-    [width, height]
-  );
-
-  // Neon glow and calligraphy
-  const drawNeonEffects = useCallback(
-    (g: PIXI.Graphics) => {
-      g.clear();
-      // Neon glow borders
-      const neonColors = [
-        KOREAN_COLORS.CYAN,
-        KOREAN_COLORS.TRADITIONAL_RED,
-        KOREAN_COLORS.DOJANG_BLUE,
-      ];
-      neonColors.forEach((color, i) => {
-        g.lineStyle(2, color, 0.25 + 0.1 * i);
-        g.drawRoundedRect(
-          16 + i * 10,
-          16 + i * 10,
-          width - 32 - i * 20,
-          height - 32 - i * 20,
-          24 - i * 4
-        );
-      });
-      g.lineStyle(0);
-    },
-    [width, height]
+    [width, height, timeOfDay, weather]
   );
 
   return (
-    <pixiContainer>
-      <pixiGraphics draw={drawBackground} />
-      <pixiGraphics draw={drawNeonEffects} />
-      {/* Trigram symbols in neon */}
-      <pixiText
-        text={"☰ ☱ ☲ ☳☴ ☵ ☶ ☷"}
-        x={width / 2}
-        y={height - 140}
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={
-          new PIXI.TextStyle({
-            fontFamily: "Orbitron, monospace",
-            fontSize: 36,
-            fill: KOREAN_COLORS.CYAN,
-            letterSpacing: 8,
-            dropShadow: true,
-          })
-        }
-      />
-      {/* Korean calligraphy - large, glowing */}
-      <pixiText
-        text="흑괘 무술 도장"
-        x={width / 2}
-        y={60}
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={
-          new PIXI.TextStyle({
-            fontFamily: "Noto Sans KR, Arial, sans-serif",
-            fontSize: 44,
-            fill: KOREAN_COLORS.GOLD,
-            fontWeight: "bold",
-            dropShadow: true,
-          })
-        }
-      />
-      {/* English subtitle */}
-      <pixiText
-        text="Black Trigram Dojang"
-        x={width / 2}
-        y={100}
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={
-          new PIXI.TextStyle({
-            fontFamily: "Orbitron, monospace",
-            fontSize: 20,
-            fill: KOREAN_COLORS.CYAN,
-            fontWeight: "normal",
-            letterSpacing: 2,
-          })
-        }
-      />
-      {/* Traditional Korean pattern overlay (subtle) */}
-      <pixiContainer alpha={0.18}>
-        <pixiText
-          text={"✦ ✹ ✦ ✹ ✦"}
-          x={width / 2}
-          y={height - 40}
-          anchor={{ x: 0.5, y: 0.5 }}
-          style={
-            new PIXI.TextStyle({
-              fontFamily: "Noto Sans KR, Arial, sans-serif",
-              fontSize: 24,
-              fill: KOREAN_COLORS.GOLD,
-              letterSpacing: 12,
-            })
-          }
-        />
-      </pixiContainer>
-    </pixiContainer>
+    <Container>
+      <Graphics draw={drawBackground} />
+    </Container>
   );
 }
