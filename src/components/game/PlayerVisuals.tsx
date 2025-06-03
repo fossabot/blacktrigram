@@ -1,87 +1,96 @@
-import React, { useMemo } from "react";
+import React, { useCallback } from "react";
 import { Container, Graphics } from "@pixi/react";
+import type { Graphics as PixiGraphics } from "pixi.js";
 import type { PlayerProps } from "../../types";
 import { KOREAN_COLORS } from "../../types";
 
 export function PlayerVisuals({
   playerState,
+  isPlayer1 = true,
+  x = 0,
+  y = 0,
+  width = 60,
+  height = 100,
 }: PlayerProps): React.ReactElement {
-  const { position, health, maxHealth, stance, conditions } = playerState;
+  // Draw player body with Korean martial arts styling
+  const drawPlayerBody = useCallback(
+    (g: PixiGraphics) => {
+      g.clear();
 
-  const stanceVisuals = useMemo(() => {
-    return {
-      color: getStanceColor(stance),
-      symbol: getStanceSymbol(stance),
-    };
-  }, [stance]);
+      // Player body (rectangle for now, can be enhanced later)
+      g.setFillStyle({ color: KOREAN_COLORS.HANBOK_WHITE, alpha: 0.9 });
+      g.setStrokeStyle({ color: KOREAN_COLORS.BLACK, width: 2 });
+      g.rect(-width / 2, -height / 2, width, height);
+      g.fill();
+      g.stroke();
 
-  const playerVisuals = useMemo(() => {
-    const healthPercent = health / maxHealth;
+      // Health visualization
+      const healthPercentage = playerState.health / playerState.maxHealth;
+      let healthColor: number;
 
-    return {
-      mainColor: KOREAN_COLORS.WHITE,
-      healthPercent,
-      hasConditions: conditions.length > 0,
-    };
-  }, [playerState, stanceVisuals]); // Fixed dependency order
+      if (healthPercentage > 0.7) {
+        healthColor = KOREAN_COLORS.STAMINA_GREEN; // Fixed: was HEALTH_GREEN
+      } else if (healthPercentage > 0.3) {
+        healthColor = KOREAN_COLORS.YELLOW; // Fixed: was HEALTH_YELLOW
+      } else {
+        healthColor = KOREAN_COLORS.HEALTH_RED;
+      }
 
-  const drawPlayerVisuals = (g: any) => {
-    g.clear();
+      // Health bar
+      g.setFillStyle({ color: healthColor });
+      g.rect(-width / 2, -height / 2 - 10, width * healthPercentage, 4);
+      g.fill();
 
-    // Main player body
-    g.setFillStyle({ color: playerVisuals.mainColor });
-    g.circle(0, 0, 25);
-    g.fill();
+      // Stance indicator (small colored circle)
+      const stanceColors = {
+        geon: KOREAN_COLORS.HEAVEN_GOLD, // Fixed: was GEON_GOLD
+        tae: KOREAN_COLORS.CYAN, // Fixed: was TAE_CYAN
+        li: KOREAN_COLORS.FIRE_RED, // Fixed: was LI_ORANGE
+        jin: KOREAN_COLORS.PURPLE, // Fixed: was JIN_PURPLE
+        son: KOREAN_COLORS.WIND_GREEN, // Fixed: was SON_GREEN
+        gam: KOREAN_COLORS.WATER_BLUE, // Fixed: was GAM_BLUE
+        gan: KOREAN_COLORS.MOUNTAIN_BROWN, // Fixed: was GAN_BROWN
+        gon: KOREAN_COLORS.EARTH_ORANGE, // Fixed: was GON_YELLOW
+      };
 
-    // Stance aura
-    g.setFillStyle({ color: stanceVisuals.color, alpha: 0.3 });
-    g.circle(0, 0, 40);
-    g.fill();
+      const stanceColor = stanceColors[playerState.stance];
+      g.setFillStyle({ color: stanceColor });
+      g.circle(0, -height / 2 + 15, 8);
+      g.fill();
 
-    // Health indicator
-    const healthColor =
-      playerVisuals.healthPercent > 0.6
-        ? KOREAN_COLORS.HEALTH_GREEN
-        : playerVisuals.healthPercent > 0.3
-        ? KOREAN_COLORS.HEALTH_YELLOW
-        : KOREAN_COLORS.HEALTH_RED;
+      // Facing direction indicator
+      if (playerState.facing === "left") {
+        g.setFillStyle({ color: KOREAN_COLORS.WHITE });
+        g.circle(-width / 4, -height / 4, 3);
+        g.fill();
+      } else {
+        g.setFillStyle({ color: KOREAN_COLORS.WHITE });
+        g.circle(width / 4, -height / 4, 3);
+        g.fill();
+      }
 
-    g.setFillStyle({ color: healthColor });
-    g.rect(-20, -35, 40 * playerVisuals.healthPercent, 4);
-    g.fill();
-  };
+      // Combat state effects
+      if (playerState.isAttacking) {
+        g.setStrokeStyle({ color: KOREAN_COLORS.CRITICAL_HIT, width: 3 });
+        g.circle(0, 0, width / 2 + 5);
+        g.stroke();
+      }
+
+      // Status effects visualization
+      if (playerState.activeEffects.length > 0) {
+        playerState.activeEffects.forEach((effect, index) => {
+          g.setFillStyle({ color: KOREAN_COLORS.VITAL_POINT, alpha: 0.6 });
+          g.circle(-width / 2 + 10 + index * 8, height / 2 - 10, 3);
+          g.fill();
+        });
+      }
+    },
+    [playerState, width, height]
+  );
 
   return (
-    <Container x={position.x} y={position.y}>
-      <Graphics draw={drawPlayerVisuals} />
+    <Container x={x} y={y}>
+      <Graphics draw={drawPlayerBody} />
     </Container>
   );
-}
-
-function getStanceColor(stance: string): number {
-  const colors: Record<string, number> = {
-    geon: KOREAN_COLORS.GEON_GOLD,
-    tae: KOREAN_COLORS.TAE_CYAN,
-    li: KOREAN_COLORS.LI_ORANGE,
-    jin: KOREAN_COLORS.JIN_PURPLE,
-    son: KOREAN_COLORS.SON_GREEN,
-    gam: KOREAN_COLORS.GAM_BLUE,
-    gan: KOREAN_COLORS.GAN_BROWN,
-    gon: KOREAN_COLORS.GON_YELLOW,
-  };
-  return colors[stance] || KOREAN_COLORS.WHITE;
-}
-
-function getStanceSymbol(stance: string): string {
-  const symbols: Record<string, string> = {
-    geon: "☰",
-    tae: "☱",
-    li: "☲",
-    jin: "☳",
-    son: "☴",
-    gam: "☵",
-    gan: "☶",
-    gon: "☷",
-  };
-  return symbols[stance] || "○";
 }

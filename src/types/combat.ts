@@ -5,65 +5,41 @@ import type {
   PlayerArchetype,
   DamageType,
   CombatState,
-} from "./enums"; // Remove unused VitalPointCategory and VitalPointSeverity
-import type { PlayerState } from "./player"; // Added for CombatAnalysis
+  CombatAttackType as EnumCombatAttackType,
+} from "./enums";
+import type { PlayerState } from "./player";
 import type { DamageRange, Position } from "./common";
-import { StatusEffect } from "./effects"; // Remove unused VitalPointEffect
+import { StatusEffect } from "./effects";
 import { KoreanText } from "./korean-text";
-import type { VitalPoint as AnatomyVitalPoint } from "./anatomy"; // Remove unused VitalPointLocation
+import type { VitalPoint as AnatomyVitalPoint } from "./anatomy";
 
-export type CombatAttackType =
-  | "strike"
-  | "punch"
-  | "kick"
-  | "elbow_strike"
-  | "knee_strike"
-  | "grapple"
-  | "throw"
-  | "submission"
-  | "pressure_point" // Main term for pressure-based attacks
-  | "nerve_strike" // Main term for nerve-based attacks
-  | "bone_strike"
-  | "joint_lock"
-  | "sweep"
-  | "parry"
-  | "block"
-  | "dodge"
-  | "counter_attack"
-  | "counter" // Added for backward compatibility
-  | "defense" // Added for backward compatibility
-  | "special_technique"
-  | "combo_sequence"
-  | "environmental"
-  | "weapon_based"
-  | "mental_attack"
-  | "cybernetic_attack"
-  | "combination";
+// Use the enum type directly
+export type CombatAttackType = EnumCombatAttackType;
 
 // Combat technique definition
 export interface KoreanTechnique {
   readonly id: string;
-  readonly name: string; // Often English name or internal key
+  readonly name: string;
   readonly koreanName: string;
   readonly englishName: string;
   readonly romanized: string;
   readonly description: KoreanText;
   readonly stance: TrigramStance;
   readonly type: CombatAttackType;
-  readonly damageType?: DamageType; // Added missing damageType property
-  readonly damage?: number; // Base damage, if applicable directly
+  readonly damageType?: DamageType;
+  readonly damage?: number;
   readonly kiCost?: number;
   readonly staminaCost?: number;
-  readonly damageRange?: DamageRange; // Added
-  readonly executionTime?: number; // Added (e.g., in frames or ms)
-  readonly recoveryTime?: number; // Added (e.g., in frames or ms)
-  readonly accuracy?: number; // Base accuracy for the technique (0-1)
-  readonly range?: number; // Effective range of the technique
-  readonly effects?: readonly StatusEffect[]; // Status effects applied by technique
-  readonly damageMultiplier?: number; // Damage multiplier for this technique
-  readonly critMultiplier?: number; // Critical hit damage multiplier
-  readonly critChance?: number; // Critical hit chance (0-1)
-  readonly properties?: readonly string[]; // e.g., "unblockable", "armor_piercing"
+  readonly damageRange?: DamageRange;
+  readonly executionTime?: number;
+  readonly recoveryTime?: number;
+  readonly accuracy?: number;
+  readonly range?: number;
+  readonly effects?: readonly StatusEffect[];
+  readonly damageMultiplier?: number;
+  readonly critMultiplier?: number;
+  readonly critChance?: number;
+  readonly properties?: readonly string[];
 }
 
 // Combat result from technique execution
@@ -96,7 +72,7 @@ export interface CombatResult {
   readonly techniqueUsed: KoreanTechnique;
   readonly effectiveness: number;
   readonly hitPosition: Position;
-  readonly vitalPoint?: AnatomyVitalPoint; // Made optional for non-vital hits
+  readonly vitalPoint?: AnatomyVitalPoint;
 }
 
 // Type alias for HitResult as requested by error messages
@@ -113,16 +89,6 @@ export interface CombatAnalysis {
   readonly disadvantages: readonly string[];
 }
 
-// Stance transition data (already defined in trigram.ts, consider if needed here or import)
-// For now, keeping it distinct if combat system has its own view of transitions.
-// export interface StanceTransition {
-//   readonly from: TrigramStance;
-//   readonly to: TrigramStance;
-//   readonly cost: number; // Could be Ki, Stamina, or a combined metric
-//   readonly duration: number; // Time in ms or game ticks
-//   readonly effectiveness: number; // Modifier for next action after transition
-// }
-
 // Combat event for logging
 export interface CombatEvent {
   readonly timestamp: number;
@@ -135,14 +101,14 @@ export interface CombatEvent {
     | "effect_applied"
     | "round_end"
     | "match_end";
-  readonly attackerId?: string; // Changed from attacker to attackerId
-  readonly defenderId?: string; // Changed from defender to defenderId
-  readonly techniqueId?: string; // Changed from technique to techniqueId
+  readonly attackerId?: string;
+  readonly defenderId?: string;
+  readonly techniqueId?: string;
   readonly damage?: number;
-  readonly resultText: KoreanText; // Changed from result to resultText for clarity
-  readonly effectId?: string; // For effect_applied type
-  readonly roundNumber?: number; // For round_end type
-  readonly winnerId?: string; // For match_end type
+  readonly resultText: KoreanText;
+  readonly effectId?: string;
+  readonly roundNumber?: number;
+  readonly winnerId?: string;
 }
 
 export type { CombatState, DamageType } from "./enums";

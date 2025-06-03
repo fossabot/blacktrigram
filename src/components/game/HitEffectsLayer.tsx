@@ -1,56 +1,54 @@
 // Hit effects layer for combat feedback
 
 import React from "react";
+import type { HitEffect } from "../../types";
 import { Container, Text } from "@pixi/react";
-import type { HitEffectsLayerProps } from "../../types/components";
-import { KOREAN_COLORS } from "../../types/constants";
+import { KOREAN_COLORS } from "../../types";
+
+// Add missing interface
+interface HitEffectsLayerProps {
+  readonly effects: readonly HitEffect[];
+  readonly duration?: number;
+  readonly fadeOutDuration?: number;
+  readonly maxEffects?: number;
+}
 
 export function HitEffectsLayer({
   effects,
-  duration = 2000,
-  fadeOutDuration = 500,
-  maxEffects = 10,
-}: HitEffectsLayerProps): JSX.Element {
-  const getCriticalHitColor = () => KOREAN_COLORS.CRITICAL_HIT;
-  const getVitalPointColor = () => KOREAN_COLORS.VITAL_POINT;
-
+}: HitEffectsLayerProps): React.ReactElement {
   return (
     <Container>
-      {effects.map((effect) => {
-        const damageColor = effect.damage > 20 ? 0xff4444 : 0xffaa00;
-
-        return (
-          <Container
-            key={effect.id}
-            x={effect.position.x}
-            y={effect.position.y}
-          >
-            <Text
-              text={`-${effect.damage}`}
-              style={{
-                fontSize: 16 + effect.damage * 0.5,
-                fill: damageColor,
-                stroke: 0x000000,
-                strokeWidth: 2,
-                fontWeight: "bold" as any, // Cast to any to bypass type check
-              }}
-              anchor={0.5}
-            />
+      {effects.map((effect: HitEffect, index: number) => (
+        <Container
+          key={`${effect.id}-${index}`}
+          x={effect.position.x}
+          y={effect.position.y}
+        >
+          {effect.type === "critical" && (
             <Text
               text={effect.korean}
               style={{
-                fontSize: 12,
-                fill: damageColor,
-                stroke: 0x000000,
-                strokeWidth: 1,
-                fontWeight: "normal" as any, // Cast to any to bypass type check
+                fontSize: 24,
+                fill: KOREAN_COLORS.CRITICAL_HIT,
+                stroke: KOREAN_COLORS.BLACK,
+                strokeThickness: 2, // Fixed: PIXI uses strokeThickness
+                fontWeight: "bold",
               }}
-              anchor={0.5}
-              y={20}
             />
-          </Container>
-        );
-      })}
+          )}
+          {effect.type !== "critical" && (
+            <Text
+              text={`${effect.damage}`}
+              style={{
+                fontSize: 18,
+                fill: effect.color,
+                stroke: KOREAN_COLORS.BLACK,
+                strokeThickness: 1, // Fixed: PIXI uses strokeThickness
+              }}
+            />
+          )}
+        </Container>
+      ))}
     </Container>
   );
 }

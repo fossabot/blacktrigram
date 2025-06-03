@@ -22,27 +22,21 @@ export function createPlayerState(
   name: string,
   archetype: PlayerArchetype,
   stance: TrigramStance,
-  overrides: Partial<PlayerState> = {}
+  position?: Position
 ): PlayerState {
-  const basePosition: Position = { x: 400, y: 300 };
-
   return {
-    id: `${name.toLowerCase().replace(/\s+/g, "_")}_${Date.now()}`,
+    id: `player_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     name,
     archetype,
-    position: basePosition,
-    stance,
+    position: position || { x: 0, y: 0 },
     facing: "right",
-
-    // Health and stamina
+    stance,
     health: 100,
     maxHealth: 100,
     ki: 100,
     maxKi: 100,
     stamina: 100,
     maxStamina: 100,
-
-    // Combat state
     consciousness: 100,
     pain: 0,
     balance: 100,
@@ -53,9 +47,6 @@ export function createPlayerState(
     activeEffects: [],
     combatState: "ready",
     conditions: [],
-
-    // Apply any overrides
-    ...overrides,
   };
 }
 

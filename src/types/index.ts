@@ -23,7 +23,6 @@ export type {
   KoreanAnatomySystem,
 } from "./anatomy";
 export type { KoreanTechnique, CombatResult, AttackInput } from "./combat";
-// Remove CombatState from combat.ts export since it's now in enums
 export type { HitEffect, StatusEffect, VitalPointEffect } from "./effects";
 export type {
   KoreanText,
@@ -57,7 +56,7 @@ export type {
 } from "./trigram";
 export type { AppState } from "./game";
 
-// Export component types
+// Export component types - FIXED: Include PlayerProps
 export type {
   GameUIProps,
   GameEngineProps,
@@ -74,6 +73,7 @@ export type {
   PhilosophySectionProps,
   EndScreenProps,
   KoreanHeaderProps,
+  PlayerProps, // Added missing PlayerProps
 } from "./components";
 
 // Export UI types

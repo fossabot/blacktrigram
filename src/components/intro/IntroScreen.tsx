@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import type { IntroScreenProps, GamePhase } from "../../types";
+import type { IntroScreenProps } from "../../types";
 import { KOREAN_COLORS } from "../../types";
 import { useAudio } from "../../audio/AudioManager";
 import { KoreanHeader } from "../ui/base/KoreanHeader";
@@ -10,7 +10,6 @@ export function IntroScreen({
   onSectionChange,
   currentSection = "main",
 }: IntroScreenProps): React.ReactElement {
-  const [selectedMenuItem, setSelectedMenuItem] = useState<string>("");
   const [activeSection, setActiveSection] = useState(currentSection);
   const audio = useAudio();
 
@@ -23,12 +22,6 @@ export function IntroScreen({
       audio.stopMusic(true);
     };
   }, [audio]);
-
-  const handleMenuClick = (phase: GamePhase) => {
-    audio.playSFX("menu_select");
-    setSelectedMenuItem(phase);
-    onGamePhaseChange(phase);
-  };
 
   const handleSectionChange = useCallback(
     (section: string) => {
@@ -51,33 +44,6 @@ export function IntroScreen({
     fontFamily: "Noto Sans KR, Arial, sans-serif",
   };
 
-  const titleStyle: React.CSSProperties = {
-    margin: 0,
-    padding: "0.5rem 0",
-    fontFamily: "Noto Sans KR, Arial, sans-serif",
-    textAlign: "center",
-    color: `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
-    textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
-    fontSize: "2.5rem",
-    fontWeight: 700,
-    marginBottom: "2rem",
-  };
-
-  const menuItemStyle = (isSelected: boolean): React.CSSProperties => ({
-    padding: "1rem 2rem",
-    margin: "0.5rem 0",
-    fontSize: "1.2rem",
-    backgroundColor: isSelected
-      ? `#${KOREAN_COLORS.CYAN.toString(16).padStart(6, "0")}`
-      : `#${KOREAN_COLORS.DOJANG_BLUE.toString(16).padStart(6, "0")}`,
-    color: "white",
-    border: "none",
-    borderRadius: "4px",
-    cursor: "pointer",
-    transition: "all 0.2s ease",
-    minWidth: "200px",
-  });
-
   if (activeSection === "philosophy") {
     return (
       <div style={containerStyle}>
@@ -87,7 +53,15 @@ export function IntroScreen({
   }
 
   return (
-    <div style={containerStyle}>
+    <div
+      style={{
+        ...containerStyle,
+        backgroundColor: `#${KOREAN_COLORS.DOJANG_BLUE.toString(16).padStart(
+          6,
+          "0"
+        )}`,
+      }}
+    >
       <KoreanHeader
         title={{ korean: "흑괘", english: "Black Trigram" }}
         subtitle="Korean Martial Arts Combat Simulator"

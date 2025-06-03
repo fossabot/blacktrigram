@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from "react";
 import type { TrainingScreenProps } from "../../types";
-import { KOREAN_COLORS, TRIGRAM_DATA } from "../../types";
+import { KOREAN_COLORS, TRIGRAM_DATA } from "../../types"; // Removed unused TRIGRAM_STANCES_ORDER
 import { KoreanHeader } from "../ui/base/KoreanHeader";
 import { KoreanText } from "../ui/base/korean-text/KoreanText";
 import { TrigramWheel } from "../ui/TrigramWheel";
@@ -9,8 +9,8 @@ export function TrainingScreen({
   players,
   onGamePhaseChange,
   onPlayerUpdate,
-  onStanceChange,
   selectedStance,
+  onStanceChange,
   gameTime, // Keep to avoid unused warning
   currentRound, // Keep to avoid unused warning
 }: TrainingScreenProps): React.JSX.Element {
@@ -35,14 +35,6 @@ export function TrainingScreen({
     color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
     padding: "2rem",
     fontFamily: "Noto Sans KR, Arial, sans-serif",
-  };
-
-  const cardStyle: React.CSSProperties = {
-    backgroundColor: "rgba(255, 255, 255, 0.1)",
-    padding: "1.5rem",
-    borderRadius: "8px",
-    border: `1px solid #${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
-    marginBottom: "1.5rem",
   };
 
   const descriptionStyle: React.CSSProperties = {
@@ -123,8 +115,8 @@ export function TrainingScreen({
                   }}
                 >
                   <KoreanText
-                    korean={trigramData.korean}
-                    english={trigramData.english}
+                    korean={trigramData.name.korean} // Fixed: access name.korean
+                    english={trigramData.name.english} // Fixed: access name.english
                     size="large"
                     weight={700}
                     style={{ marginBottom: "1rem" }}

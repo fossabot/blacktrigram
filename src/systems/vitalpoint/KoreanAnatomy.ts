@@ -593,7 +593,8 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
     id: "head_philtrum_injoong",
     name: { korean: "인중", english: "Philtrum" },
     korean: "인중",
-    english: "Philtrum",
+    englishName: "Philtrum", // Added required property
+    koreanName: "인중", // Added required property
     category: "head",
     description: {
       korean:
@@ -604,9 +605,9 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
     effects: [
       {
         id: "disorientation_philtrum",
-        type: "disorientation" as EffectType,
-        duration: 5000, // 5 seconds
-        intensity: "strong",
+        type: "disoriented" as EffectType,
+        duration: 5000,
+        intensity: "strong" as EffectIntensity,
         description: {
           korean: "심한 방향 감각 상실",
           english: "Severe disorientation",
@@ -615,8 +616,8 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
       },
       {
         id: "pain_philtrum",
-        type: "pain_severe",
-        duration: 10000, // 10 seconds
+        type: "pain_severe" as EffectType,
+        duration: 10000,
         intensity: "high" as EffectIntensity,
         description: { korean: "극심한 통증", english: "Excruciating pain" },
         stackable: true,
@@ -624,17 +625,19 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
     ],
     location: { x: 0.5, y: 0.15, region: "face_upper" },
     severity: "severe",
-    technique: ["pressure", "strike"],
+    techniques: ["pressure", "strike"], // Fixed: renamed from technique
     baseAccuracy: 0.65,
-    baseDamage: 15,
+    baseDamage: 15, // Added required property
     baseStun: 2500,
     damageMultiplier: 1.8,
+    damage: 15, // Added required property
   },
   {
     id: "chest_sternum_base",
     name: { korean: "단중혈 부근", english: "Base of Sternum (CV17 area)" },
     korean: "단중혈 부근",
-    english: "Base of Sternum (CV17 area)",
+    englishName: "Base of Sternum (CV17 area)", // Added required property
+    koreanName: "단중혈 부근", // Added required property
     category: "torso",
     description: {
       korean: "가슴 중앙, 흉골 하단부.",
@@ -643,9 +646,9 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
     effects: [
       {
         id: "sternum_winded",
-        type: "winded",
-        intensity: "strong",
-        duration: 10,
+        type: "winded" as EffectType,
+        intensity: "strong" as EffectIntensity,
+        duration: 10000,
         description: {
           korean: "심한 호흡 곤란 유발",
           english: "Causes severe difficulty breathing",
@@ -654,9 +657,9 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
       },
       {
         id: "sternum_pain",
-        type: "pain_severe",
-        intensity: "strong",
-        duration: 20,
+        type: "pain_severe" as EffectType,
+        intensity: "strong" as EffectIntensity,
+        duration: 20000,
         description: {
           korean: "극심한 흉부 통증",
           english: "Intense chest pain",
@@ -666,17 +669,19 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
     ],
     location: { x: 0.5, y: 0.45, region: "chest" },
     severity: "severe",
-    technique: ["striking", "pressure"],
+    techniques: ["striking", "pressure"], // Fixed: renamed from technique
     baseAccuracy: 0.75,
-    baseDamage: 25,
-    baseStun: 3,
+    baseDamage: 25, // Added required property
+    baseStun: 3000,
     damageMultiplier: 1.4,
+    damage: 25, // Added required property
   },
   {
     id: "vp_head_temple_kanjanori",
     name: { korean: "관자놀이", english: "Temple (Kanjanori)" } as KoreanText,
     korean: "관자놀이",
-    english: "Temple (Kanjanori)",
+    englishName: "Temple (Kanjanori)", // Added required property
+    koreanName: "관자놀이", // Added required property
     category: "head" as VitalPointCategory,
     description: {
       korean:
@@ -711,16 +716,18 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
     ],
     severity: "critical" as VitalPointSeverity,
     baseAccuracy: 0.75,
-    baseDamage: 25, // Higher base for critical point
+    baseDamage: 25, // Added required property
     damageMultiplier: 2.5,
-    baseStun: 3000, // Milliseconds
-    technique: ["striking", "pressure"], // Added
+    baseStun: 3000,
+    techniques: ["striking", "pressure"], // Fixed: renamed from technique
+    damage: 25, // Added required property
   },
   {
     id: "vp_solar_plexus_myungchi",
     name: { korean: "명치", english: "Solar Plexus (Myungchi)" } as KoreanText,
     korean: "명치",
-    english: "Solar Plexus (Myungchi)",
+    englishName: "Solar Plexus (Myungchi)", // Added required property
+    koreanName: "명치", // Added required property
     category: "torso" as VitalPointCategory,
     description: {
       korean:
@@ -732,7 +739,7 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
       x: 0.5,
       y: 0.35,
       region: "upper_abdomen_center" as BodyRegion,
-    }, // "upper_abdomen_center" must be in BodyRegion enum
+    },
     effects: [
       {
         id: "eff_winded_severe",
@@ -759,16 +766,18 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
     ],
     severity: "severe" as VitalPointSeverity,
     baseAccuracy: 0.85,
-    baseDamage: 20,
+    baseDamage: 20, // Added required property
     damageMultiplier: 1.8,
     baseStun: 1500,
-    technique: ["striking", "pressure"], // Added
+    techniques: ["striking", "pressure"], // Fixed: renamed from technique
+    damage: 20, // Added required property
   },
   {
     id: "head_mastoid_process_wangu",
     name: { korean: "완골", english: "Mastoid Process" },
     korean: "완골",
-    english: "Mastoid Process",
+    englishName: "Mastoid Process", // Added required property
+    koreanName: "완골", // Added required property
     category: "head",
     description: {
       korean:
@@ -779,9 +788,9 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
     effects: [
       {
         id: "balance_loss_mastoid",
-        type: "balance_loss",
+        type: "balance_loss" as EffectType,
         duration: 7000,
-        intensity: "strong",
+        intensity: "strong" as EffectIntensity,
         description: {
           korean: "심각한 균형 상실",
           english: "Severe loss of balance",
@@ -790,9 +799,9 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
       },
       {
         id: "consciousness_reduction_mastoid",
-        type: "consciousness_loss", // Assuming this maps to a general consciousness effect
+        type: "consciousness_loss" as EffectType,
         duration: 3000,
-        intensity: "moderate",
+        intensity: "moderate" as EffectIntensity,
         description: {
           korean: "의식 저하",
           english: "Reduced consciousness",
@@ -800,12 +809,13 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
         stackable: true,
       },
     ],
-    location: { x: 0.2, y: 0.2, region: "head_side" }, // Side of the head
+    location: { x: 0.2, y: 0.2, region: "head_side" },
     severity: "severe",
-    technique: ["strike", "pressure"],
+    techniques: ["strike", "pressure"], // Fixed: renamed from technique
     baseAccuracy: 0.6,
-    baseDamage: 18,
+    baseDamage: 18, // Added required property
     baseStun: 3000,
     damageMultiplier: 1.7,
+    damage: 18, // Added required property
   },
 ];

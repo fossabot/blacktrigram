@@ -4,13 +4,11 @@ import * as PIXI from "pixi.js";
 import type { TrigramStance, TrigramWheelProps } from "../../types";
 import { TRIGRAM_DATA, KOREAN_COLORS } from "../../types";
 
-const wheelBackgroundColor = KOREAN_COLORS.NEON_CYAN;
-
 export function TrigramWheel({
-  size = 200,
-  position = { x: 0, y: 0 },
   selectedStance,
   onStanceChange,
+  size = 200, // Added default value
+  position = { x: 0, y: 0 }, // Added default value
   interactive = true,
 }: TrigramWheelProps): React.ReactElement {
   const stances = Object.keys(TRIGRAM_DATA) as TrigramStance[];
@@ -85,5 +83,3 @@ export function TrigramWheel({
     </pixiContainer>
   );
 }
-
-const selectedStanceColor = KOREAN_COLORS.GOLD;

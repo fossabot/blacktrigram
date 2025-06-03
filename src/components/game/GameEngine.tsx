@@ -1,7 +1,7 @@
 // Complete game engine for Black Trigram Korean martial arts
 
 import { useRef, useCallback, useEffect, useState } from "react";
-import type { GameEngineProps } from "../../types";
+import type { GameEngineProps, HitEffect } from "../../types";
 import { CombatArena } from "../combat/components/CombatArena";
 import { CombatHUD } from "../combat/components/CombatHUD";
 import { CombatControls } from "../combat/components/CombatControls";
@@ -12,7 +12,7 @@ export function GameEngine({
   onPlayerUpdate,
 }: GameEngineProps): React.ReactElement {
   const engineRef = useRef<HTMLDivElement>(null);
-  const [combatEffects, setCombatEffects] = useState<any[]>([]);
+  const [combatEffects, setCombatEffects] = useState<readonly HitEffect[]>([]);
   const [isExecutingTechnique, setIsExecutingTechnique] = useState(false);
 
   // Game loop
@@ -36,12 +36,15 @@ export function GameEngine({
     };
   }, [gamePhase]);
 
-  const handleTechniqueExecute = useCallback(
-    async (playerIndex: number, technique: any) => {
+  const handleTechniqueExecution = useCallback(
+    async (_playerIndex: number, _technique: any) => {
       setIsExecutingTechnique(true);
-      // Execute technique logic
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      setIsExecutingTechnique(false);
+      // Implementation placeholder
+      console.log("Technique execution system not yet implemented");
+
+      setTimeout(() => {
+        setIsExecutingTechnique(false);
+      }, 500);
     },
     []
   );
@@ -61,7 +64,7 @@ export function GameEngine({
       <CombatArena
         players={players}
         onPlayerUpdate={onPlayerUpdate}
-        onTechniqueExecute={handleTechniqueExecute}
+        onTechniqueExecute={handleTechniqueExecution}
         combatEffects={combatEffects}
         isExecutingTechnique={isExecutingTechnique}
       />
