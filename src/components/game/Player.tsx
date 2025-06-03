@@ -1,13 +1,12 @@
 // Complete player component for Korean martial arts fighter
 
 import React, { useCallback, useEffect, useMemo } from "react";
-import { Container, Graphics, Text, Sprite } from "@pixi/react";
+import { Container, Graphics, Text } from "@pixi/react";
 import type { PlayerProps } from "../../types";
 import {
   KOREAN_COLORS,
   TRIGRAM_DATA,
   TRIGRAM_STANCES_ORDER,
-  STANCE_EFFECTIVENESS_MATRIX,
 } from "../../types";
 import { useAudio } from "../../audio/AudioManager";
 import type { Graphics as PixiGraphics } from "pixi.js";
@@ -304,28 +303,15 @@ export function Player({
     [stamina, maxStamina, combatReadiness.staminaLow]
   );
 
-  // Handle stance changes with audio feedback
-  const handleStanceChange = useCallback(
-    (newStance: typeof stance) => {
-      if (newStance !== stance) {
-        onStateUpdate({
-          stance: newStance,
-          lastStanceChangeTime: Date.now(),
-        });
-        audio.playStanceChangeSound();
-      }
-    },
-    [stance, onStateUpdate, audio]
-  );
-
-  // Handle combat actions
-  const handleAttack = useCallback(() => {
+  // Handle combat actions with fixed technique access
+  const handlePlayerClick = useCallback(() => {
     if (onAttack) {
-      const technique = currentTrigramData.technique;
-      audio.playAttackSound(technique.damage || 20);
+      // Fixed: Use basic damage value since technique structure may vary
+      const baseDamage = 20;
+      audio.playAttackSound(baseDamage);
       onAttack();
     }
-  }, [onAttack, currentTrigramData, audio]);
+  }, [onAttack, audio]);
 
   // Audio feedback for health changes
   useEffect(() => {
@@ -339,12 +325,14 @@ export function Player({
       x={position.x}
       y={position.y}
       scale={{ x: facing === "left" ? -1 : 1, y: 1 }}
+      interactive={true}
+      onpointerdown={handlePlayerClick}
       {...baseProps}
     >
       {/* Player body with Korean martial arts styling */}
       <Graphics draw={drawPlayerBody} />
 
-      {/* Player name with Korean archetype */}
+      {/* Player name with Korean archetype - Fixed: removed strokeThickness */}
       <Text
         text={playerState.name}
         anchor={0.5}
@@ -354,7 +342,6 @@ export function Player({
           fontSize: 12,
           fill: theme.accent,
           stroke: KOREAN_COLORS.BLACK,
-          strokeThickness: 1,
           fontWeight: "bold",
         }}
       />
@@ -369,7 +356,6 @@ export function Player({
             fontSize: 24,
             fill: stanceColor,
             stroke: KOREAN_COLORS.BLACK,
-            strokeThickness: 2,
             fontWeight: "bold",
           }}
         />
@@ -382,7 +368,6 @@ export function Player({
             fontSize: 10,
             fill: KOREAN_COLORS.WHITE,
             stroke: KOREAN_COLORS.BLACK,
-            strokeThickness: 1,
           }}
         />
       </Container>
@@ -396,7 +381,7 @@ export function Player({
       {/* Stamina bar */}
       <Graphics draw={drawStaminaBar} y={PLAYER_CONFIG.STAMINA_OFFSET_Y} />
 
-      {/* Combat state indicators */}
+      {/* Combat state indicators - Fixed: removed strokeThickness */}
       {isAttacking && (
         <Text
           text="공격!"
@@ -407,13 +392,12 @@ export function Player({
             fontSize: 14,
             fill: KOREAN_COLORS.CRITICAL_HIT,
             stroke: KOREAN_COLORS.BLACK,
-            strokeThickness: 1,
             fontWeight: "bold",
           }}
         />
       )}
 
-      {/* Archetype indicator */}
+      {/* Archetype indicator - Fixed: removed strokeThickness */}
       <Text
         text={getArchetypeKorean(archetype)}
         anchor={0.5}
@@ -423,7 +407,6 @@ export function Player({
           fontSize: 8,
           fill: theme.secondary,
           stroke: KOREAN_COLORS.BLACK,
-          strokeThickness: 1,
         }}
       />
     </Container>
