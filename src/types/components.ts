@@ -118,6 +118,7 @@ export interface DojangBackgroundProps extends GameComponentProps {
   readonly timeOfDay?: "day" | "night";
   readonly weather?: "clear" | "rain" | "snow";
   readonly textureName?: string;
+  readonly lighting?: "dim" | "bright" | "atmospheric"; // Added missing lighting prop
 }
 
 // Trigram wheel props - fixed for Korean martial arts

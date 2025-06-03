@@ -56,6 +56,7 @@ export function CombatControls({
               style={{
                 fontSize: 14,
                 fill: `#${KOREAN_COLORS.GOLD.toString(16)}`,
+                borderColor: KOREAN_COLORS.GOLD,
               }}
             />
           </Container>

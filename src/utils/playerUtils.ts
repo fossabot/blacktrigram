@@ -4,16 +4,16 @@ import type {
   PlayerState,
   PlayerArchetype,
   TrigramStance,
-  CombatState,
-  CombatCondition,
   DamageType,
   EffectIntensity,
   EffectType,
-  Position,
+  CombatCondition,
   StatusEffect,
 } from "../types";
+// Import CombatReadiness as a value, not a type since we need to use it as values
+import { CombatReadiness } from "../types/enums";
+import type { Position } from "../types/common";
 import { PLAYER_ARCHETYPES } from "../types/constants";
-import { CombatReadiness } from "../types/enums"; // Import as value, not type
 
 /**
  * Creates a new player state with Korean martial arts defaults
@@ -130,7 +130,7 @@ function calculateCombatReadiness(health: number): CombatReadiness {
 export function updatePlayerHealth(
   player: PlayerState,
   damage: number,
-  damageType: DamageType = "blunt"
+  _damageType: DamageType = "blunt" // Prefixed with underscore to indicate intentionally unused
 ): PlayerState {
   // Calculate effective damage based on archetype resistance
   const archetypeData = PLAYER_ARCHETYPES[player.archetype];
@@ -161,7 +161,7 @@ export function updatePlayerHealth(
     pain: newPain,
     consciousness: newConsciousness,
     bloodLoss: newBloodLoss,
-    combatReadiness: calculateCombatReadiness(newHealth), // Now returns correct enum value
+    combatReadiness: calculateCombatReadiness(newHealth),
   };
 }
 
@@ -170,9 +170,9 @@ export function updatePlayerHealth(
  */
 export function addCombatCondition(
   player: PlayerState,
-  type: EffectType, // Use EffectType from enums
+  type: EffectType,
   duration: number,
-  intensity: EffectIntensity, // Use EffectIntensity type
+  intensity: EffectIntensity,
   source: string
 ): PlayerState {
   const newCondition: CombatCondition = {
@@ -186,7 +186,7 @@ export function addCombatCondition(
 
   return {
     ...player,
-    conditions: [...player.conditions, newCondition], // Property now exists
+    conditions: [...player.conditions, newCondition],
   };
 }
 
@@ -207,7 +207,6 @@ export function calculateMovementSpeed(player: PlayerState): number {
 
   // Apply status effect modifiers
   player.conditions.forEach((condition: CombatCondition) => {
-    // Explicitly type condition
     switch (condition.type) {
       case "stun":
         baseSpeed *= 0.1;
@@ -275,11 +274,11 @@ export function canChangeStance(
  */
 export function applyStatusEffect(
   player: PlayerState,
-  effect: StatusEffect // This StatusEffect is now from effects.ts
+  effect: StatusEffect
 ): PlayerState {
   return {
     ...player,
-    activeEffects: [...player.activeEffects, effect], // Should now be type-compatible
+    activeEffects: [...player.activeEffects, effect],
   };
 }
 
@@ -292,11 +291,10 @@ export function updateStatusEffects(
 ): PlayerState {
   const updatedEffects = player.activeEffects
     .map((effect: StatusEffect) => ({
-      // Explicitly type effect
       ...effect,
       duration: effect.duration - deltaTime,
     }))
-    .filter((effect: StatusEffect) => effect.duration > 0); // Explicitly type effect
+    .filter((effect: StatusEffect) => effect.duration > 0);
 
   return {
     ...player,

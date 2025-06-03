@@ -23,6 +23,8 @@ export function CombatHUD({
     return `#${KOREAN_COLORS.TRADITIONAL_RED.toString(16).padStart(6, "0")}`;
   };
 
+  const accentColor = KOREAN_COLORS.GOLD;
+
   const renderPlayerHUD = (player: any, index: number, isLeft: boolean) => (
     <div
       style={{

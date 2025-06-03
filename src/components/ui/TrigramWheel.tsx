@@ -4,6 +4,8 @@ import * as PIXI from "pixi.js";
 import type { TrigramStance, TrigramWheelProps } from "../../types";
 import { TRIGRAM_DATA, KOREAN_COLORS } from "../../types";
 
+const wheelBackgroundColor = KOREAN_COLORS.NEON_CYAN;
+
 export function TrigramWheel({
   size = 200,
   position = { x: 0, y: 0 },
@@ -83,3 +85,5 @@ export function TrigramWheel({
     </pixiContainer>
   );
 }
+
+const selectedStanceColor = KOREAN_COLORS.GOLD;

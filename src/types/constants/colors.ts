@@ -1,81 +1,189 @@
-// Korean martial arts color constants for cyberpunk aesthetic
+// Korean martial arts color palette for Black Trigram
 
-// Primary Korean color palette for martial arts theme
 export const KOREAN_COLORS = {
-  // Traditional Korean colors
-  TRADITIONAL_RED: 0xce1126, // 태극기 빨강
-  TRADITIONAL_BLUE: 0x003478, // 태극기 파랑
-  HANBOK_WHITE: 0xf5f5dc, // 한복 흰색
+  // Traditional Korean colors (단청색)
+  TRADITIONAL_RED: 0xcd4c3a, // 전통 적색 - 단청의 붉은색
+  TRADITIONAL_BLUE: 0x003468, // 전통 청색 - 단청의 파란색
+  HANBOK_WHITE: 0xf5f5dc, // 한복 흰색 - 자연스러운 흰색
   DANCHEONG_GREEN: 0x00a651, // 단청 녹색
   DANCHEONG_GOLD: 0xffd700, // 단청 금색
+  DANCHEONG_PURPLE: 0x9370db, // 단청 자주색 - 추가된 색상
 
-  // Cyberpunk fusion colors
-  NEON_CYAN: 0x00ffff, // 사이버펑크 청록
-  ELECTRIC_PURPLE: 0x9d00ff, // 전기 보라
-  DIGITAL_GOLD: 0xffb000, // 디지털 금
-  SHADOW_BLACK: 0x0a0a0a, // 그림자 검정
-  TECH_WHITE: 0xe0e0e0, // 기술 흰색
+  // Cyberpunk neon colors for modern adaptation
+  NEON_CYAN: 0x00ffff, // 네온 청록색
+  CYAN: 0x00ffff, // 청록색 - 추가된 색상
+  NEON_RED: 0xff0040, // 네온 적색
+  NEON_GREEN: 0x00ff00, // 네온 녹색
+  NEON_PURPLE: 0xbf00ff, // 네온 자주색
+  ELECTRIC_BLUE: 0x0080ff, // 전기 청색
 
-  // Trigram-specific colors (팔괘 색상)
-  GEON_GOLD: 0xffd700, // 건괘 - 금색 (하늘)
-  TAE_SILVER: 0xc0c0c0, // 태괘 - 은색 (호수)
-  LI_RED: 0xff4500, // 리괘 - 빨강 (불)
-  JIN_PURPLE: 0x9370db, // 진괘 - 보라 (천둥)
-  SON_GREEN: 0x32cd32, // 손괘 - 녹색 (바람)
-  GAM_BLUE: 0x4169e1, // 감괘 - 파랑 (물)
-  GAN_BROWN: 0x8b4513, // 간괘 - 갈색 (산)
-  GON_DARK_BROWN: 0x654321, // 곤괘 - 어두운 갈색 (땅)
+  // Natural material colors for authentic dojang environment
+  WOOD_BROWN: 0x8b4513, // 나무 갈색 - 추가된 색상
+  BAMBOO_GREEN: 0x98fb98, // 대나무 녹색
+  STONE_GRAY: 0x708090, // 돌 회색
+  EARTH_BROWN: 0xa0522d, // 흙 갈색
+  RICE_PAPER: 0xfffff0, // 한지 색상
 
-  // UI and game colors
-  HEALTH_GREEN: 0x00ff00, // 체력 녹색
-  HEALTH_YELLOW: 0xffff00, // 체력 노랑 (경고)
-  HEALTH_RED: 0xff0000, // 체력 빨강 (위험)
-  KI_BLUE: 0x4169e1, // 기력 파랑
-  STAMINA_ORANGE: 0xff8c00, // 체력 주황
-  PAIN_RED: 0xdc143c, // 고통 빨강
+  // Combat and status colors
+  HEALTH_GREEN: 0x32cd32, // 체력 녹색
+  HEALTH_YELLOW: 0xffd700, // 체력 황색 - 추가된 색상
+  HEALTH_RED: 0xff4500, // 체력 적색 - 추가된 색상
+  DANGER_RED: 0xff4500, // 위험 적색
+  WARNING_ORANGE: 0xffa500, // 경고 주황색
+  KI_BLUE: 0x4169e1, // 기력 청색
+  STAMINA_YELLOW: 0xffd700, // 체력 황색
+  STAMINA_ORANGE: 0xffa500, // 체력 주황색 - 추가된 색상
 
-  // Combat effect colors
-  CRITICAL_HIT: 0xff69b4, // 치명타 분홍
-  VITAL_POINT: 0xff1493, // 급소 타격 진분홍
-  BLOCK_SUCCESS: 0x87ceeb, // 성공적 막기 하늘색
-  COUNTER_ATTACK: 0xffa500, // 반격 주황
+  // Special combat effect colors
+  CRITICAL_HIT: 0xff0040, // 치명타 색상 - 추가된 색상
+  VITAL_POINT: 0xffd700, // 급소 색상 - 추가된 색상
 
-  // Environmental colors
-  DOJANG_FLOOR: 0x8b7355, // 도장 바닥 베이지
-  DOJANG_WALL: 0x2f2f2f, // 도장 벽 어두운 회색
-  NEON_ACCENT: 0x00ffff, // 네온 강조색
-  BLOOD_EFFECT: 0x8b0000, // 피 효과 어두운 빨강
+  // UI and interface colors
+  BLACK: 0x000000, // 검정
+  WHITE: 0xffffff, // 흰색
+  GRAY: 0x808080, // 회색
+  LIGHT_GRAY: 0xd3d3d3, // 연한 회색
+  DARK_GRAY: 0x2f2f2f, // 어두운 회색
+  GOLD: 0xffd700, // 금색 - 추가된 색상
 
-  // Common colors for convenience
-  WHITE: 0xffffff,
-  BLACK: 0x000000,
-  GRAY: 0x808080,
-  TRANSPARENT: 0x000000, // Use with alpha
+  // Trigram stance colors (팔괘 색상)
+  GEON_GOLD: 0xffd700, // 건괘 - 하늘/금
+  TAE_CYAN: 0x87ceeb, // 태괘 - 연못/청록
+  TAE_SILVER: 0xc0c0c0, // 태괘 은색 - 추가된 색상
+  LI_ORANGE: 0xff4500, // 리괘 - 불/주황
+  JIN_PURPLE: 0x9370db, // 진괘 - 천둥/자주
+  SON_GREEN: 0x98fb98, // 손괘 - 바람/녹색
+  GAM_BLUE: 0x4169e1, // 감괘 - 물/청색
+  GAN_BROWN: 0x8b4513, // 간괘 - 산/갈색
+  GON_YELLOW: 0xdaa520, // 곤괘 - 땅/황색
+  GON_DARK_BROWN: 0x654321, // 곤괘 어두운 갈색 - 추가된 색상
 
-  // Add missing color aliases for backward compatibility
-  GOLD: 0xffd700, // Alias for DIGITAL_GOLD
-  CYAN: 0x00ffff, // Alias for NEON_CYAN
-  DOJANG_BLUE: 0x4169e1, // Alias for GAM_BLUE
+  // Dojang environment colors
+  DOJANG_FLOOR: 0xdeb887, // 도장 바닥색
+  DOJANG_WALL: 0xf5f5dc, // 도장 벽면색
+  DOJANG_BLUE: 0x4169e1, // 도장 청색
+  ACCENT_BLUE: 0x0080ff, // 강조 청색
+
+  // Additional cyberpunk integration
+  MATRIX_GREEN: 0x00ff41, // 매트릭스 녹색
+  HOLOGRAM_BLUE: 0x00d4ff, // 홀로그램 청색
+  DATA_STREAM: 0x40e0d0, // 데이터 스트림
+  CYBER_PINK: 0xff1493, // 사이버 분홍
+  NEON_ORANGE: 0xff6600, // 네온 주황
+
+  // Status and effect colors
+  POISON_GREEN: 0x9acd32, // 독 녹색
+  BURN_ORANGE: 0xff6347, // 화상 주황
+  FREEZE_BLUE: 0x87cefa, // 빙결 청색
+  STUN_YELLOW: 0xffff00, // 기절 황색
+  BLEED_RED: 0xdc143c, // 출혈 적색
 } as const;
 
-// Color utility functions
-export function getTrigramColor(trigram: string): number {
-  const colorMap: Record<string, number> = {
+// Type for Korean colors
+export type KoreanColor = keyof typeof KOREAN_COLORS;
+
+// Color palette groups for easy theming
+export const COLOR_PALETTES = {
+  TRADITIONAL: [
+    KOREAN_COLORS.TRADITIONAL_RED,
+    KOREAN_COLORS.TRADITIONAL_BLUE,
+    KOREAN_COLORS.DANCHEONG_GREEN,
+    KOREAN_COLORS.DANCHEONG_GOLD,
+    KOREAN_COLORS.HANBOK_WHITE,
+  ],
+  CYBERPUNK: [
+    KOREAN_COLORS.NEON_CYAN,
+    KOREAN_COLORS.NEON_RED,
+    KOREAN_COLORS.ELECTRIC_BLUE,
+    KOREAN_COLORS.NEON_PURPLE,
+    KOREAN_COLORS.MATRIX_GREEN,
+  ],
+  NATURAL: [
+    KOREAN_COLORS.WOOD_BROWN,
+    KOREAN_COLORS.BAMBOO_GREEN,
+    KOREAN_COLORS.STONE_GRAY,
+    KOREAN_COLORS.EARTH_BROWN,
+    KOREAN_COLORS.RICE_PAPER,
+  ],
+  TRIGRAMS: [
+    KOREAN_COLORS.GEON_GOLD,
+    KOREAN_COLORS.TAE_CYAN,
+    KOREAN_COLORS.LI_ORANGE,
+    KOREAN_COLORS.JIN_PURPLE,
+    KOREAN_COLORS.SON_GREEN,
+    KOREAN_COLORS.GAM_BLUE,
+    KOREAN_COLORS.GAN_BROWN,
+    KOREAN_COLORS.GON_YELLOW,
+  ],
+} as const;
+
+// Utility function to get color by trigram stance
+export function getTrigramColor(stance: string): number {
+  const stanceColors: Record<string, number> = {
     geon: KOREAN_COLORS.GEON_GOLD,
-    tae: KOREAN_COLORS.TAE_SILVER,
-    li: KOREAN_COLORS.LI_RED,
+    tae: KOREAN_COLORS.TAE_CYAN,
+    li: KOREAN_COLORS.LI_ORANGE,
     jin: KOREAN_COLORS.JIN_PURPLE,
     son: KOREAN_COLORS.SON_GREEN,
     gam: KOREAN_COLORS.GAM_BLUE,
     gan: KOREAN_COLORS.GAN_BROWN,
-    gon: KOREAN_COLORS.GON_DARK_BROWN,
+    gon: KOREAN_COLORS.GON_YELLOW,
   };
 
-  return colorMap[trigram] || KOREAN_COLORS.WHITE;
+  return stanceColors[stance] || KOREAN_COLORS.WHITE;
 }
 
-export function getHealthColor(percentage: number): number {
-  if (percentage > 60) return KOREAN_COLORS.HEALTH_GREEN;
-  if (percentage > 30) return KOREAN_COLORS.HEALTH_YELLOW;
-  return KOREAN_COLORS.HEALTH_RED;
-}
+// Export individual color constants for backwards compatibility
+export const {
+  TRADITIONAL_RED,
+  TRADITIONAL_BLUE,
+  HANBOK_WHITE,
+  DANCHEONG_GREEN,
+  DANCHEONG_GOLD,
+  DANCHEONG_PURPLE,
+  NEON_CYAN,
+  NEON_RED,
+  NEON_GREEN,
+  NEON_PURPLE,
+  ELECTRIC_BLUE,
+  WOOD_BROWN,
+  BAMBOO_GREEN,
+  STONE_GRAY,
+  EARTH_BROWN,
+  RICE_PAPER,
+  HEALTH_GREEN,
+  HEALTH_YELLOW,
+  HEALTH_RED,
+  DANGER_RED,
+  WARNING_ORANGE,
+  KI_BLUE,
+  STAMINA_YELLOW,
+  BLACK,
+  WHITE,
+  GRAY,
+  LIGHT_GRAY,
+  DARK_GRAY,
+  GEON_GOLD,
+  TAE_CYAN,
+  TAE_SILVER,
+  LI_ORANGE,
+  JIN_PURPLE,
+  SON_GREEN,
+  GAM_BLUE,
+  GAN_BROWN,
+  GON_YELLOW,
+  DOJANG_FLOOR,
+  DOJANG_WALL,
+  DOJANG_BLUE,
+  ACCENT_BLUE,
+  MATRIX_GREEN,
+  HOLOGRAM_BLUE,
+  DATA_STREAM,
+  CYBER_PINK,
+  NEON_ORANGE,
+  POISON_GREEN,
+  BURN_ORANGE,
+  FREEZE_BLUE,
+  STUN_YELLOW,
+  BLEED_RED,
+} = KOREAN_COLORS;

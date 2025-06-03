@@ -1,94 +1,138 @@
 import React from "react";
 import type { EndScreenProps } from "../../types/components";
-import { KOREAN_COLORS, KOREAN_FONT_FAMILY_PRIMARY } from "../../types";
-
-const endScreenStyle: React.CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
-  minHeight: "100vh",
-  background: `linear-gradient(135deg, #${KOREAN_COLORS.DARK_BLUE.toString(
-    16
-  ).padStart(6, "0")}, #${KOREAN_COLORS.BLACK.toString(16).padStart(6, "0")})`,
-  color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
-  fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
-  padding: "20px",
-  textAlign: "center",
-};
-
-const titleStyle: React.CSSProperties = {
-  fontSize: "3rem",
-  marginBottom: "20px",
-  color: `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
-};
-
-const buttonStyle: React.CSSProperties = {
-  padding: "12px 24px",
-  margin: "10px",
-  fontSize: "1.2rem",
-  backgroundColor: `#${KOREAN_COLORS.TRADITIONAL_RED.toString(16).padStart(
-    6,
-    "0"
-  )}`,
-  color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
-  border: "none",
-  borderRadius: "5px",
-  cursor: "pointer",
-  fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
-};
+import { KoreanText } from "./base/korean-text/KoreanText";
+import { KOREAN_COLORS } from "../../types/constants";
 
 export function EndScreen({
   winnerId,
   onRestart,
   onMenu,
-}: EndScreenProps): React.ReactElement {
-  const isVictory = winnerId !== null;
-  const titleText = isVictory ? "승리! (Victory!)" : "패배 (Defeat)";
+  className = "",
+  style = {},
+}: EndScreenProps): JSX.Element {
+  const isVictory = winnerId === "player1"; // Assume player1 is human player
 
   return (
-    <div style={endScreenStyle}>
-      <h1 style={titleStyle}>{titleText}</h1>
+    <div
+      className={`end-screen ${className}`}
+      style={{
+        backgroundColor: `#${KOREAN_COLORS.TRADITIONAL_BLUE.toString(
+          16
+        ).padStart(6, "0")}`,
+        padding: "2rem",
+        textAlign: "center",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        ...style,
+      }}
+    >
+      <div className="end-screen-header">
+        {isVictory ? (
+          <KoreanText
+            korean="승리"
+            english="Victory"
+            variant="title"
+            size="xxlarge"
+            color={KOREAN_COLORS.DANCHEONG_GOLD}
+          />
+        ) : (
+          <KoreanText
+            korean="패배"
+            english="Defeat"
+            variant="title"
+            size="xxlarge"
+            color={KOREAN_COLORS.TRADITIONAL_RED}
+          />
+        )}
+      </div>
 
-      {winnerId && (
-        <p style={{ fontSize: "1.5rem", marginBottom: "30px" }}>
-          승자: {winnerId === "player1" ? "플레이어 1" : "플레이어 2"}
-        </p>
-      )}
+      <div className="end-screen-message">
+        {isVictory ? (
+          <KoreanText
+            korean="무술의 길에서 한 걸음 더 나아갔습니다"
+            english="You have taken another step on the martial path"
+            variant="body"
+            size="large"
+            color={KOREAN_COLORS.HANBOK_WHITE}
+          />
+        ) : (
+          <KoreanText
+            korean="패배는 성장의 기회입니다"
+            english="Defeat is an opportunity for growth"
+            variant="body"
+            size="large"
+            color={KOREAN_COLORS.HANBOK_WHITE}
+          />
+        )}
+      </div>
 
-      <div>
+      <div className="end-screen-philosophy">
+        <KoreanText
+          korean="무술은 끝없는 수련의 길입니다"
+          english="Martial arts is the path of endless cultivation"
+          variant="body"
+          size="medium"
+          color={KOREAN_COLORS.HANBOK_WHITE}
+        />
+      </div>
+
+      <div className="end-screen-actions">
         <button
-          style={buttonStyle}
           onClick={onRestart}
-          onMouseOver={(e) => {
-            e.currentTarget.style.backgroundColor = `#${KOREAN_COLORS.GOLD.toString(
-              16
-            ).padStart(6, "0")}`;
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.backgroundColor = `#${KOREAN_COLORS.TRADITIONAL_RED.toString(
-              16
-            ).padStart(6, "0")}`;
+          className="end-screen-btn primary"
+          style={{
+            margin: "0.5rem",
+            padding: "1rem 2rem",
+            backgroundColor: `#${KOREAN_COLORS.GEON_GOLD.toString(16).padStart(
+              6,
+              "0"
+            )}`,
+            color: `#${KOREAN_COLORS.BLACK.toString(16).padStart(6, "0")}`,
+            border: "none",
+            borderRadius: "0.5rem",
+            fontSize: "1.1rem",
+            fontWeight: "bold",
+            cursor: "pointer",
           }}
         >
-          다시 시작 (Restart)
+          <KoreanText
+            korean="다시 도전"
+            english="Try Again"
+            variant="body"
+            size="medium"
+          />
         </button>
 
         <button
-          style={buttonStyle}
           onClick={onMenu}
-          onMouseOver={(e) => {
-            e.currentTarget.style.backgroundColor = `#${KOREAN_COLORS.DOJANG_BLUE.toString(
-              16
-            ).padStart(6, "0")}`;
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.backgroundColor = `#${KOREAN_COLORS.TRADITIONAL_RED.toString(
-              16
-            ).padStart(6, "0")}`;
+          className="end-screen-btn secondary"
+          style={{
+            margin: "0.5rem",
+            padding: "1rem 2rem",
+            backgroundColor: `#${KOREAN_COLORS.GAN_BROWN.toString(16).padStart(
+              6,
+              "0"
+            )}`,
+            color: `#${KOREAN_COLORS.HANBOK_WHITE.toString(16).padStart(
+              6,
+              "0"
+            )}`,
+            border: "none",
+            borderRadius: "0.5rem",
+            fontSize: "1.1rem",
+            fontWeight: "bold",
+            cursor: "pointer",
           }}
         >
-          메뉴로 (To Menu)
+          <KoreanText
+            korean="메뉴로"
+            english="To Menu"
+            variant="body"
+            size="medium"
+          />
         </button>
       </div>
     </div>

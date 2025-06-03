@@ -10,6 +10,18 @@ import type {
 
 import { KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../../types";
 
+// Add stance color mapping for trigram colors
+const STANCE_COLORS = {
+  geon: KOREAN_COLORS.GEON_GOLD, // Heaven - Gold
+  tae: KOREAN_COLORS.TAE_CYAN, // Lake - Cyan
+  li: KOREAN_COLORS.LI_ORANGE, // Fire - Orange (changed from TRADITIONAL_RED)
+  jin: KOREAN_COLORS.JIN_PURPLE, // Thunder - Purple (using existing NEON_PURPLE or add JIN_PURPLE)
+  son: KOREAN_COLORS.SON_GREEN, // Wind - Green
+  gam: KOREAN_COLORS.GAM_BLUE, // Water - Blue
+  gan: KOREAN_COLORS.GAN_BROWN, // Mountain - Brown (using WOOD_BROWN)
+  gon: KOREAN_COLORS.GON_YELLOW, // Earth - Yellow/Gold
+} as const;
+
 // Base Props for Pixi Components
 export interface PixiBaseProps {
   x?: number;
@@ -202,7 +214,7 @@ export function PixiButton({
     (g: PixiGraphicsType) => {
       g.clear();
       g.setFillStyle({
-        color: isHovered ? KOREAN_COLORS.ACCENT_BLUE : color,
+        color: isHovered ? KOREAN_COLORS.NEON_CYAN : color, // Use NEON_CYAN instead of ACCENT_BLUE
         alpha: 1,
       });
       g.roundRect(0, 0, width, height, 8);
@@ -259,7 +271,7 @@ export function PixiComponentExamples(): React.ReactElement {
 
   const textStyleLarge: ExtendedPixiTextStyle = {
     fontSize: 24,
-    fill: KOREAN_COLORS.CYAN,
+    fill: KOREAN_COLORS.NEON_CYAN,
     // dropShadow: { color: KOREAN_COLORS.BLACK, distance: 2, blur: 2, angle: Math.PI/4 },
   };
 
@@ -281,21 +293,21 @@ export function PixiComponentExamples(): React.ReactElement {
       />
       <PixiKoreanText
         korean="건 (Geon)"
-        baseStyle={{ fontSize: 20, fill: KOREAN_COLORS.geon }} // Pass fontSize here
+        baseStyle={{ fontSize: 20, fill: STANCE_COLORS.geon }} // Use STANCE_COLORS
         x={0}
         y={110}
       />
       <PixiKoreanText
         korean="태 (Tae)"
         english="Lake"
-        baseStyle={{ fontSize: 18, fill: KOREAN_COLORS.tae }} // Pass fontSize here
+        baseStyle={{ fontSize: 18, fill: STANCE_COLORS.tae }} // Use STANCE_COLORS
         x={0}
         y={140}
         showEnglish={true}
       />
       <PixiKoreanText
         korean="리 (Li) - Fire"
-        baseStyle={{ fontSize: 16, fill: KOREAN_COLORS.li }} // Pass fontSize here
+        baseStyle={{ fontSize: 16, fill: STANCE_COLORS.li }} // Use STANCE_COLORS
         x={0}
         y={170}
         showEnglish={false} // Example of hiding English part

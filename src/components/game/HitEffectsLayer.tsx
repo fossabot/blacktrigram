@@ -1,95 +1,143 @@
 // Hit effects layer for combat feedback
 
-import React, { useCallback } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
+import React from "react";
+import { Container, Text, Graphics } from "@pixi/react";
+import { KOREAN_COLORS } from "../../types";
 import type { HitEffectsLayerProps } from "../../types/components";
-import { KOREAN_COLORS } from "../../types/constants";
+
+interface HitEffect {
+  id: string;
+  x: number;
+  y: number;
+  damage: number;
+  type: "light" | "medium" | "heavy" | "critical";
+  startTime: number;
+  duration: number;
+}
 
 export function HitEffectsLayer({
   effects,
   duration = 1000,
-}: HitEffectsLayerProps): JSX.Element {
-  const drawEffect = useCallback((g: any, effect: any) => {
-    g.clear();
+}: HitEffectsLayerProps): React.JSX.Element {
+  const currentTime = Date.now();
 
-    // Effect based on type
-    switch (effect.type) {
-      case "critical":
-        // Bright flash effect
-        g.beginFill(KOREAN_COLORS.CRITICAL_HIT, 0.8);
-        g.drawCircle(0, 0, 30);
-        g.endFill();
-        break;
+  // Filter active effects based on duration
+  const activeEffects = effects.filter((effect: any) => {
+    const effectStartTime = effect.startTime || effect.createdAt || currentTime;
+    const effectDuration = effect.duration || duration;
+    return currentTime - effectStartTime < effectDuration;
+  });
 
-      case "vital":
-        // Pulsing vital point effect
-        g.beginFill(KOREAN_COLORS.VITAL_POINT, 0.6);
-        g.drawStar(0, 0, 6, 20, 10);
-        g.endFill();
-        break;
+  const renderDamageNumber = React.useCallback(
+    (effect: any, index: number) => {
+      const effectStartTime =
+        effect.startTime || effect.createdAt || currentTime;
+      const elapsed = currentTime - effectStartTime;
+      const progress = elapsed / (effect.duration || duration);
 
-      case "heavy":
-        // Impact ripple
-        g.lineStyle(3, KOREAN_COLORS.HEALTH_RED, 0.7);
-        g.drawCircle(0, 0, 25);
-        g.lineStyle(2, KOREAN_COLORS.HEALTH_RED, 0.5);
-        g.drawCircle(0, 0, 35);
-        break;
+      // Calculate animation values
+      const opacity = Math.max(0, 1 - progress);
+      const yOffset = progress * 50; // Float upward
+      const scale = 1 + progress * 0.5; // Grow slightly
 
-      default:
-        // Basic hit effect
-        g.beginFill(KOREAN_COLORS.WHITE, 0.6);
-        g.drawCircle(0, 0, 15);
-        g.endFill();
-    }
-  }, []);
+      // Determine color based on effect type or damage
+      let color = KOREAN_COLORS.WHITE;
+      if (effect.type === "critical" || effect.damage > 35) {
+        color = KOREAN_COLORS.CRITICAL_HIT;
+      } else if (effect.type === "heavy" || effect.damage > 25) {
+        color = KOREAN_COLORS.DANGER_RED;
+      } else if (effect.type === "medium" || effect.damage > 15) {
+        color = KOREAN_COLORS.WARNING_ORANGE;
+      }
 
-  return (
-    <Container>
-      {effects.map((effect, index) => (
+      const damageTextStyle = {
+        fontSize: 18 + (effect.damage || 0) * 0.2,
+        fill: color,
+        stroke: KOREAN_COLORS.BLACK,
+        strokeWidth: 2,
+        fontWeight: 700 as const, // Use number instead of string
+        fontFamily: "Arial, sans-serif",
+      };
+
+      return (
         <Container
-          key={index}
-          x={effect.position?.x || 0}
-          y={effect.position?.y || 0}
+          key={effect.id || index}
+          x={effect.x || effect.position?.x || 0}
+          y={(effect.y || effect.position?.y || 0) - yOffset}
+          alpha={opacity}
+          scale={{ x: scale, y: scale }}
         >
-          <Graphics draw={(g) => drawEffect(g, effect)} />
+          <Text
+            text={`-${Math.round(effect.damage || 0)}`}
+            style={damageTextStyle}
+          />
 
-          {/* Damage number */}
-          {effect.damage && (
+          {/* Add Korean text for critical hits */}
+          {(effect.type === "critical" || effect.damage > 35) && (
             <Text
-              text={`${effect.damage}`}
-              y={-40}
-              anchor={0.5}
+              text="치명타!"
+              y={25}
               style={{
-                fontFamily: "Arial, sans-serif",
-                fontSize: 16,
-                fill:
-                  effect.type === "critical"
-                    ? KOREAN_COLORS.CRITICAL_HIT
-                    : KOREAN_COLORS.WHITE,
-                fontWeight: "bold",
-                stroke: KOREAN_COLORS.BLACK,
-                strokeThickness: 2,
-              }}
-            />
-          )}
-
-          {/* Korean effect text */}
-          {effect.korean && (
-            <Text
-              text={effect.korean}
-              y={20}
-              anchor={0.5}
-              style={{
-                fontFamily: "Arial, sans-serif",
                 fontSize: 12,
-                fill: KOREAN_COLORS.DANCHEONG_GOLD,
-                align: "center",
+                fill: KOREAN_COLORS.GOLD,
+                fontFamily: "Arial, sans-serif",
               }}
             />
           )}
         </Container>
-      ))}
+      );
+    },
+    [currentTime, duration]
+  );
+
+  const renderImpactEffect = React.useCallback(
+    (effect: any, index: number) => {
+      const effectStartTime =
+        effect.startTime || effect.createdAt || currentTime;
+      const elapsed = currentTime - effectStartTime;
+      const progress = elapsed / (effect.duration || duration);
+
+      if (progress > 1) return null;
+
+      const opacity = Math.max(0, 1 - progress);
+      const radius = 10 + progress * 30;
+
+      const drawImpact = (g: any) => {
+        g.clear();
+        g.lineStyle(3, effect.color || KOREAN_COLORS.WARNING_ORANGE, opacity);
+        g.drawCircle(0, 0, radius);
+
+        // Add inner flash for critical hits
+        if (effect.type === "critical") {
+          g.beginFill(KOREAN_COLORS.CRITICAL_HIT, opacity * 0.3);
+          g.drawCircle(0, 0, radius * 0.5);
+          g.endFill();
+        }
+      };
+
+      return (
+        <Graphics
+          key={`impact-${effect.id || index}`}
+          x={effect.x || effect.position?.x || 0}
+          y={effect.y || effect.position?.y || 0}
+          draw={drawImpact}
+        />
+      );
+    },
+    [currentTime, duration]
+  );
+
+  return (
+    <Container>
+      {/* Render damage numbers */}
+      {activeEffects.map((effect: any, index: number) =>
+        renderDamageNumber(effect, index)
+      )}
+
+      {/* Render impact effects */}
+      {activeEffects.map((effect: any, index: number) =>
+        renderImpactEffect(effect, index)
+      )}
     </Container>
   );
 }
