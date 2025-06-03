@@ -4,7 +4,7 @@ import {
   PlayerArchetype,
   TrigramStance,
   PlayerState,
-} from "@/types";
+} from "../types";
 import type { VitalPoint } from "../types/anatomy";
 import type { DamageType, KoreanTechnique } from "../types/combat";
 

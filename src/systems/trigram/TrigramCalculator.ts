@@ -274,8 +274,8 @@ export class TrigramCalculator {
   }
 
   public getKiFlowFactors(
-    playerState: PlayerState,
-    opponentStance?: TrigramStance
+    playerState: PlayerState
+    // opponentStance?: TrigramStance // Remove unused parameter
   ): KiFlowFactors {
     return {
       playerLevelModifier: 1.0,
