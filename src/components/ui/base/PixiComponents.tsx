@@ -1,22 +1,14 @@
 // Reusable PIXI.js components for Black Trigram Korean martial arts game
 
-import React, { useCallback, useMemo, type ReactNode, useState } from "react"; // Added useState
-import {
-  Container as PixiReactContainer,
-  Graphics as PixiReactGraphics,
-  Text as PixiReactText,
-} from "@pixi/react";
+import React, { useCallback, useMemo, type ReactNode, useState } from "react";
 import type * as PIXI from "pixi.js";
 import type {
   FederatedPointerEvent,
   TextStyle as PixiTextStyleType,
   Graphics as PixiGraphicsType,
-  // PixiContainerType, // Unused import
 } from "pixi.js";
 
 import { KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../../types";
-// Unused imports: KoreanTextType, Position
-// import type { KoreanText as KoreanTextType, Position } from "../../../types";
 
 // Base Props for Pixi Components
 export interface PixiBaseProps {
@@ -30,8 +22,9 @@ export interface PixiBaseProps {
   zIndex?: number;
   scale?: number | { x: number; y: number };
   rotation?: number;
-  pivot?: number | { x: number; y: number };
-  skew?: number | { x: number; y: number };
+  // Fix: Only allow {x, y} or PIXI.PointData for pivot/skew
+  pivot?: { x: number; y: number } | PIXI.PointData;
+  skew?: { x: number; y: number } | PIXI.PointData;
   onpointerdown?: (event: FederatedPointerEvent) => void;
   onpointerup?: (event: FederatedPointerEvent) => void;
   onpointerover?: (event: FederatedPointerEvent) => void;
@@ -51,7 +44,7 @@ export function PixiContainerComponent({
   children,
   ...props
 }: PixiContainerComponentProps): React.ReactElement {
-  return <PixiReactContainer {...props}>{children}</PixiReactContainer>;
+  return <pixiContainer {...props}>{children}</pixiContainer>;
 }
 
 // Graphics Component
@@ -74,7 +67,7 @@ export function PixiGraphicsComponent({
     },
     [draw, geometry]
   );
-  return <PixiReactGraphics {...props} draw={handleDraw} />;
+  return <pixiGraphics {...props} draw={handleDraw} />;
 }
 
 // Extended Text Style
@@ -126,7 +119,7 @@ export function PixiTextComponent({
     return finalStyle as PixiTextStyleType;
   }, [style]);
 
-  return <PixiReactText text={text} style={memoizedStyle} {...props} />;
+  return <pixiText text={text} style={memoizedStyle} {...props} />;
 }
 
 // Korean Text Component (using the base PixiTextComponent)

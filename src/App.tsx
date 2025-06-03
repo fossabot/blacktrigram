@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { Stage } from "@pixi/react";
+import { extend } from "@pixi/react"; // Removed Stage import
+import { Container, Graphics, Text, Sprite } from "pixi.js";
+
 import type { PlayerState, GamePhase, AppState, TrigramStance } from "./types";
 import { KOREAN_COLORS, KOREAN_FONT_FAMILY_PRIMARY } from "./types"; // Value import, added KOREAN_FONT_FAMILY_PRIMARY
 
@@ -10,6 +12,21 @@ import { EndScreen } from "./components/ui/EndScreen"; // Corrected path
 import { CombatSystem } from "./systems/CombatSystem";
 import { initializePlayers } from "./utils/playerUtils";
 import { useAudio } from "./audio/AudioManager";
+
+// Declare the extended components for TypeScript
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      pixiContainer: any;
+      pixiGraphics: any;
+      pixiText: any;
+      pixiSprite: any;
+    }
+  }
+}
+
+// Extend PixiJS components for @pixi/react
+extend({ Container, Graphics, Text, Sprite });
 
 const INITIAL_GAME_STATE: AppState = {
   players: initializePlayers(),
@@ -237,18 +254,13 @@ function App() {
 
   return (
     <div style={appStyle}>
-      <Stage
-        width={window.innerWidth * 0.95} // Adjusted for potentially more space
-        height={window.innerHeight * 0.9} // Adjusted
-        options={{
-          backgroundColor: KOREAN_COLORS.BLACK,
-          antialias: true,
-          autoDensity: true, // Helps with scaling on different DPI screens
-          resolution: window.devicePixelRatio || 1, // Use device pixel ratio
-        }}
+      <pixiContainer
+        width={window.innerWidth * 0.95}
+        height={window.innerHeight * 0.9}
+        // No options prop, handled by parent container or Application if used
       >
         {renderGameContent()}
-      </Stage>
+      </pixiContainer>
       {/* Development phase switcher example (can be removed for production) */}
       {/* <div style={{ marginTop: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
           {(Object.keys(GamePhase) as Array<keyof typeof GamePhase>).map(key => (

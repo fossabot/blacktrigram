@@ -1,7 +1,6 @@
 // Hit effects layer for combat feedback
 
 import React, { useCallback } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import type { HitEffect } from "../../types";
 import { KOREAN_COLORS } from "../../types";
@@ -19,8 +18,12 @@ export function HitEffectsLayer({
     const alpha = 1 - progress;
 
     return (
-      <Container key={effect.id} x={effect.position.x} y={effect.position.y}>
-        <Graphics
+      <pixiContainer
+        key={effect.id}
+        x={effect.position.x}
+        y={effect.position.y}
+      >
+        <pixiGraphics
           draw={useCallback(
             (g: PIXI.Graphics) => {
               g.clear();
@@ -48,7 +51,7 @@ export function HitEffectsLayer({
           )}
         />
 
-        <Text
+        <pixiText
           text={effect.damage.toString()}
           x={0}
           y={-30}
@@ -63,9 +66,9 @@ export function HitEffectsLayer({
           }
           alpha={alpha}
         />
-      </Container>
+      </pixiContainer>
     );
   };
 
-  return <Container>{effects.map(renderEffect)}</Container>;
+  return <pixiContainer>{effects.map(renderEffect)}</pixiContainer>;
 }

@@ -1,16 +1,17 @@
 /// <reference types="pixi.js" />
 /// <reference types="react" />
 
-import type {} from // Graphics, // Not directly used in this file's top-level scope
-// Container as PixiContainer, // Not directly used
-// Text as PixiText, // Not directly used
-// Sprite, // Not directly used
-// Texture, // Not directly used
-// DisplayObject, // Not directly used
-// FederatedPointerEvent, // Not directly used
-// TextStyle, // Not directly used
-// Application, // Not directly used
-"pixi.js";
+import type {
+  Container,
+  Graphics,
+  Text,
+  Sprite,
+  Texture,
+  DisplayObject,
+  FederatedPointerEvent,
+  TextStyle,
+  Application,
+} from "pixi.js";
 // import type { ReactNode, ComponentProps } from "react"; // ComponentProps is used inside the module declare
 
 // PIXI.js React integration type declarations

@@ -1,5 +1,5 @@
 import React, { useCallback } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
+// Remove: import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import type { TrigramStance, TrigramWheelProps } from "../../types";
 import { TRIGRAM_DATA, KOREAN_COLORS } from "../../types";
@@ -31,8 +31,8 @@ export function TrigramWheel({
   );
 
   return (
-    <Container x={position.x} y={position.y}>
-      <Graphics draw={drawWheel} />
+    <pixiContainer x={position.x} y={position.y}>
+      <pixiGraphics draw={drawWheel} />
       {stances.map((stance, index) => {
         const angle = (index / stances.length) * Math.PI * 2;
         const radius = size / 3;
@@ -41,15 +41,15 @@ export function TrigramWheel({
         const trigramData = TRIGRAM_DATA[stance];
 
         return (
-          <Container
+          <pixiContainer
             key={stance}
             x={x}
             y={y}
             interactive={interactive}
             eventMode={interactive ? "static" : "passive"}
-            onpointerdown={() => onStanceChange && onStanceChange(stance)} // Fixed event name
+            onPointerDown={() => onStanceChange && onStanceChange(stance)}
           >
-            <Graphics
+            <pixiGraphics
               draw={useCallback(
                 (g: PIXI.Graphics) => {
                   g.clear();
@@ -66,7 +66,7 @@ export function TrigramWheel({
                 [stance, selectedStance, trigramData.color]
               )}
             />
-            <Text
+            <pixiText
               text={trigramData.symbol}
               anchor={{ x: 0.5, y: 0.5 }}
               style={
@@ -77,9 +77,9 @@ export function TrigramWheel({
                 })
               }
             />
-          </Container>
+          </pixiContainer>
         );
       })}
-    </Container>
+    </pixiContainer>
   );
 }

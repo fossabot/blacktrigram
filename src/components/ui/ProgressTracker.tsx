@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Text } from "@pixi/react";
+// Remove: import { Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import type { ProgressTrackerProps } from "../../types/ui";
 import { KOREAN_COLORS } from "@/types";
@@ -41,7 +41,7 @@ export function ProgressTracker({
   return (
     <>
       {showText && (
-        <Text
+        <pixiText
           text={displayText}
           style={baseTextStyle}
           x={width / 2}

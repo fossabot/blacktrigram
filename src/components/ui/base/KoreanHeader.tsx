@@ -1,5 +1,5 @@
 import React from "react";
-import { Text as PixiText } from "@pixi/react";
+// Remove: import { Text as PixiText } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import type { KoreanTextHeaderProps } from "../../../types/korean-text";
 import { KOREAN_COLORS } from "../../../types/constants";
@@ -36,7 +36,7 @@ export function KoreanHeader({
   const fullText = subtitle ? `${displayText}\n${subtitle}` : displayText;
 
   return (
-    <PixiText text={fullText} style={pixiStyle} anchor={{ x: 0.5, y: 0.5 }} />
+    <pixiText text={fullText} style={pixiStyle} anchor={{ x: 0.5, y: 0.5 }} />
   );
 }
 

@@ -1,7 +1,6 @@
 // Underground dojang background for Korean martial arts
 
 import React, { useCallback } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import { KOREAN_COLORS } from "../../types";
 
@@ -84,11 +83,11 @@ export function DojangBackground({
   );
 
   return (
-    <Container>
-      <Graphics draw={drawBackground} />
-      <Graphics draw={drawNeonEffects} />
+    <pixiContainer>
+      <pixiGraphics draw={drawBackground} />
+      <pixiGraphics draw={drawNeonEffects} />
       {/* Trigram symbols in neon */}
-      <Text
+      <pixiText
         text={"☰ ☱ ☲ ☳☴ ☵ ☶ ☷"}
         x={width / 2}
         y={height - 140}
@@ -104,7 +103,7 @@ export function DojangBackground({
         }
       />
       {/* Korean calligraphy - large, glowing */}
-      <Text
+      <pixiText
         text="흑괘 무술 도장"
         x={width / 2}
         y={60}
@@ -120,7 +119,7 @@ export function DojangBackground({
         }
       />
       {/* English subtitle */}
-      <Text
+      <pixiText
         text="Black Trigram Dojang"
         x={width / 2}
         y={100}
@@ -136,8 +135,8 @@ export function DojangBackground({
         }
       />
       {/* Traditional Korean pattern overlay (subtle) */}
-      <Container alpha={0.18}>
-        <Text
+      <pixiContainer alpha={0.18}>
+        <pixiText
           text={"✦ ✹ ✦ ✹ ✦"}
           x={width / 2}
           y={height - 40}
@@ -151,7 +150,7 @@ export function DojangBackground({
             })
           }
         />
-      </Container>
-    </Container>
+      </pixiContainer>
+    </pixiContainer>
   );
 }

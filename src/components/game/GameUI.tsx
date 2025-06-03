@@ -1,5 +1,4 @@
 import React, { useCallback } from "react";
-import { Stage } from "@pixi/react";
 import { GameEngine } from "./GameEngine";
 import { KoreanHeader } from "../ui/base/KoreanHeader";
 import type { GameUIProps } from "../../types";
@@ -318,21 +317,13 @@ export function GameUI({
       </div>
       {/* Game Area */}
       <div style={{ flex: 1, position: "relative", minHeight: 600 }}>
-        <Stage
-          width={window.innerWidth}
-          height={window.innerHeight - 100}
-          options={{
-            backgroundColor: KOREAN_COLORS.DARK_BLUE,
-            antialias: true,
-          }}
-        >
-          <GameEngine
-            players={players}
-            gamePhase={gamePhase}
-            onPlayerUpdate={onPlayerUpdate}
-            onGamePhaseChange={onGamePhaseChange}
-          />
-        </Stage>
+        {/* Remove <Stage> and just render GameEngine */}
+        <GameEngine
+          players={players}
+          gamePhase={gamePhase}
+          onPlayerUpdate={onPlayerUpdate}
+          onGamePhaseChange={onGamePhaseChange}
+        />
         {/* UI Overlay */}
         <div
           style={{

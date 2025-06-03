@@ -1,7 +1,6 @@
 // Complete player component for Korean martial arts fighter
 
 import React, { useCallback } from "react";
-import { Container, Graphics } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import { KOREAN_COLORS } from "../../types/constants";
 import type { PlayerState, PlayerArchetype } from "../../types";
@@ -53,13 +52,13 @@ export function Player({
   );
 
   return (
-    <Container
+    <pixiContainer
       x={playerState.position.x}
       y={playerState.position.y}
       interactive={isActive}
       eventMode={isActive ? "static" : "passive"}
     >
-      <Graphics draw={drawPlayer} />
-    </Container>
+      <pixiGraphics draw={drawPlayer} />
+    </pixiContainer>
   );
 }

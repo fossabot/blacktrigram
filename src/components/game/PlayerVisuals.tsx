@@ -1,5 +1,4 @@
 import React, { useCallback } from "react";
-import { Container, Graphics } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import { KOREAN_COLORS } from "../../types/constants";
 import type { PlayerState } from "../../types";
@@ -87,10 +86,10 @@ export function PlayerVisuals({
   );
 
   return (
-    <Container>
-      <Graphics draw={drawHealthBar} />
-      <Graphics draw={drawStanceAura} />
-      <Graphics draw={drawKiEnergy} />
-    </Container>
+    <pixiContainer>
+      <pixiGraphics draw={drawHealthBar} />
+      <pixiGraphics draw={drawStanceAura} />
+      <pixiGraphics draw={drawKiEnergy} />
+    </pixiContainer>
   );
 }
