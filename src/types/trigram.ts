@@ -7,26 +7,23 @@ import { KoreanText } from "./korean-text";
 
 // Core trigram data structure (I Ching 주역 팔괘)
 export interface TrigramData {
-  readonly stance: TrigramStance;
-  readonly korean: string; // Korean name of the stance
-  readonly english: string; // English name of the stance
-  readonly symbol: string; // e.g., "☰"
+  readonly korean: string;
+  readonly english: string;
+  readonly symbol: string;
   readonly element: string;
-  readonly color: ColorValue;
-  readonly philosophy: string;
-  readonly description?: KoreanText; // Optional detailed description
-  readonly technique: KoreanTechnique; // Technique associated with the stance
-  // Optional fields based on usage in PhilosophySection.tsx
-  readonly direction?: string;
-  readonly damageModifier?: number;
-  readonly defenseModifier?: number;
-  readonly speedModifier?: number;
-  readonly stanceChangeCooldownMs?: number; // Added based on StanceManager.ts usage
-  // Enhanced properties
-  readonly preferredTechniques?: readonly KoreanTechnique[]; // Made optional
-  readonly kiCost: number;
-  readonly transitionTime: number;
-  readonly effectiveness: Record<TrigramStance, number>;
+  readonly nature: string;
+  readonly direction: string;
+  readonly season: string;
+  readonly bodyPart: string;
+  readonly emotion: string;
+  readonly virtue: string;
+  readonly weakness: string;
+  readonly strongAgainst: readonly TrigramStance[];
+  readonly technique: KoreanTechnique | readonly KoreanTechnique[];
+  readonly philosophy: KoreanText; // Changed from string to KoreanText
+  readonly combatStyle: string;
+  readonly preferredRange: "close" | "medium" | "long";
+  readonly kiFlow: "internal" | "external" | "balanced";
 }
 
 // Korean martial arts technique definition
@@ -99,13 +96,14 @@ export interface TrigramTransition {
 // Export the stance type
 export type { TrigramStance } from "./enums";
 
-// Missing trigram system types
+// Trigram stance transition cost - 팔괘 전환 비용
 export interface TrigramTransitionCost {
-  readonly ki: number;
-  readonly stamina: number;
-  readonly timeMilliseconds: number;
+  readonly kiCost: number; // Added missing kiCost property
+  readonly staminaCost: number;
+  readonly time: number; // Time in seconds for transition
 }
 
+// Missing trigram system types
 export interface TransitionMetrics {
   readonly cost: TrigramTransitionCost;
   readonly effectiveness: number;
@@ -174,9 +172,13 @@ export interface TrigramTransitionRule {
   readonly conditions?: string[];
 }
 
+// Stance transition data for Korean martial arts
 export interface StanceTransition {
   readonly from: TrigramStance;
   readonly to: TrigramStance;
-  readonly cost: TrigramTransitionCost;
-  readonly effectiveness: number;
+  readonly cost: number; // Ki/Stamina cost for transition
+  readonly effectiveness: number; // Effectiveness modifier (0-1)
+  readonly difficulty: number; // Difficulty level (0-1)
+  readonly duration: number; // Added missing duration property (time in seconds or frames)
+  readonly requirements?: readonly string[]; // Optional technique requirements
 }

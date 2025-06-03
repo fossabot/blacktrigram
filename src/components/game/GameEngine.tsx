@@ -1,106 +1,84 @@
 // Complete game engine for Black Trigram Korean martial arts
 
-import React, { useRef, useCallback, useEffect, useState } from "react";
-import { Player } from "./Player";
-import { DojangBackground } from "./DojangBackground";
-import { HitEffectsLayer } from "./HitEffectsLayer";
-import type { GameEngineProps } from "../../types/components";
-import type { TrigramStance } from "../../types/enums";
-import { Container } from "@pixi/react";
-import { useAudio } from "../../audio/AudioManager";
+import { useRef, useCallback, useEffect, useState } from "react";
+import type { GameEngineProps } from "../../types";
+import { CombatArena } from "../combat/components/CombatArena";
+import { CombatHUD } from "../combat/components/CombatHUD";
+import { CombatControls } from "../combat/components/CombatControls";
 
 export function GameEngine({
   players,
   gamePhase,
   onPlayerUpdate,
-  onGamePhaseChange,
-  width = 800,
-  height = 600,
-}: GameEngineProps): JSX.Element {
-  const audio = useAudio();
-  const animationFrameRef = useRef<number | null>(null);
-  const [combatEffects, setCombatEffects] = useState<any[]>([]); // TODO: type HitEffect[]
-  const [gameTime, setGameTime] = useState(0);
+}: GameEngineProps): React.ReactElement {
+  const engineRef = useRef<HTMLDivElement>(null);
+  const [combatEffects, setCombatEffects] = useState<any[]>([]);
+  const [isExecutingTechnique, setIsExecutingTechnique] = useState(false);
 
-  // Main game loop (60fps)
-  const gameLoop = useCallback(() => {
-    if (gamePhase === "combat") {
-      setCombatEffects((effects) =>
-        effects.filter((e) => Date.now() - e.createdAt < 1000)
-      );
-    }
-    animationFrameRef.current = requestAnimationFrame(gameLoop);
-  }, [gamePhase]);
-
+  // Game loop
   useEffect(() => {
-    animationFrameRef.current = requestAnimationFrame(gameLoop);
+    let animationFrame: number;
+
+    const gameLoop = () => {
+      // Game logic updates here
+      // setGameTime((prev) => prev + 16); // ~60 FPS
+      animationFrame = requestAnimationFrame(gameLoop);
+    };
+
+    if (gamePhase === "combat") {
+      animationFrame = requestAnimationFrame(gameLoop);
+    }
+
     return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
       }
     };
-  }, [gameLoop]);
-
-  // Game loop for updates
-  useEffect(() => {
-    if (gamePhase !== "combat") return;
-
-    const gameLoop = setInterval(() => {
-      setGameTime((prev) => prev + 16); // ~60fps
-    }, 16);
-
-    return () => clearInterval(gameLoop);
   }, [gamePhase]);
 
-  // Handle stance changes
-  const handleStanceChange = useCallback(
-    (playerIndex: number, stance: TrigramStance) => {
-      audio.playStanceChangeSound();
-
-      const now = Date.now();
-      onPlayerUpdate(playerIndex, {
-        stance,
-        lastStanceChangeTime: now,
-      });
+  const handleTechniqueExecute = useCallback(
+    async (playerIndex: number, technique: any) => {
+      setIsExecutingTechnique(true);
+      // Execute technique logic
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      setIsExecutingTechnique(false);
     },
-    [audio, onPlayerUpdate]
+    []
   );
 
-  // Handle combat events
-  const handleCombatEvent = useCallback((effect: any) => {
-    setCombatEffects((prev) => [
-      ...prev,
-      {
-        ...effect,
-        createdAt: Date.now(),
-      },
-    ]);
-  }, []);
+  const handleStanceChange = useCallback(
+    (playerIndex: number, stance: any) => {
+      onPlayerUpdate(playerIndex, { stance });
+    },
+    [onPlayerUpdate]
+  );
 
   return (
-    <Container>
-      {/* Background environment */}
-      <DojangBackground
-        timeOfDay="night"
-        weather="clear"
-        width={width}
-        height={height}
+    <div
+      ref={engineRef}
+      style={{ position: "relative", width: "100%", height: "100%" }}
+    >
+      <CombatArena
+        players={players}
+        onPlayerUpdate={onPlayerUpdate}
+        onTechniqueExecute={handleTechniqueExecute}
+        combatEffects={combatEffects}
+        isExecutingTechnique={isExecutingTechnique}
       />
 
-      {/* Players */}
-      {players.map((player, index) => (
-        <Player
-          key={player.id}
-          playerState={player}
-          playerIndex={index}
-          onStateUpdate={(updates) => onPlayerUpdate(index, updates)}
-          x={index === 0 ? width * 0.25 : width * 0.75}
-          y={height * 0.75}
-        />
-      ))}
+      <CombatHUD
+        players={players}
+        timeRemaining={180}
+        currentRound={1}
+        isPaused={false}
+      />
 
-      {/* Combat effects overlay */}
-      <HitEffectsLayer effects={combatEffects} />
-    </Container>
+      <CombatControls
+        players={players}
+        onStanceChange={handleStanceChange}
+        isExecutingTechnique={isExecutingTechnique}
+        isPaused={false}
+      />
+    </div>
   );
 }

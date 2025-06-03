@@ -14,9 +14,14 @@ export interface StatusEffect {
   readonly source?: string; // Optional source identifier
 }
 
-export interface VitalPointEffect extends StatusEffect {
-  // Inherits all StatusEffect properties
-  // Can add vital-point-specific properties if needed
+export interface VitalPointEffect {
+  readonly id: string;
+  readonly type: EffectType;
+  readonly intensity: EffectIntensity;
+  readonly duration: number; // in milliseconds
+  readonly description: KoreanText;
+  readonly stackable: boolean;
+  readonly source?: string; // Optional source identifier
 }
 
 export interface HitEffect {

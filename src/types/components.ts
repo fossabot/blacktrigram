@@ -94,13 +94,24 @@ export interface GameUIProps extends BaseComponentProps {
   readonly onTogglePause?: () => void; // Added from GameUI.tsx (duplicate, ensure one)
 }
 
-// Player component props
+// Player props interface - add missing interface
 export interface PlayerProps extends GameComponentProps {
   readonly playerState: PlayerState;
   readonly playerIndex: number;
   readonly onStateUpdate: (updates: Partial<PlayerState>) => void;
   readonly onAttack?: (targetPosition?: Position) => void;
   readonly isPlayer1?: boolean;
+  readonly archetype: PlayerArchetype;
+  readonly stance: TrigramStance;
+  readonly position: Position;
+  readonly facing: "left" | "right";
+  readonly isAttacking?: boolean;
+  readonly health: number;
+  readonly maxHealth: number;
+  readonly ki: number;
+  readonly maxKi: number;
+  readonly stamina: number;
+  readonly maxStamina: number;
 }
 
 // Progress tracker props - fixed positioning
@@ -144,10 +155,12 @@ export interface KoreanHeaderProps {
   readonly english?: string; // For backward compatibility
 }
 
-// HitEffectsLayer props
+// Hit effects layer props - add this missing interface
 export interface HitEffectsLayerProps extends BaseComponentProps {
-  readonly effects: readonly any[];
-  readonly duration?: number; // Added missing prop
+  readonly effects: readonly HitEffect[];
+  readonly duration?: number;
+  readonly fadeOutDuration?: number;
+  readonly maxEffects?: number;
 }
 
 // Graphics drawing callback type

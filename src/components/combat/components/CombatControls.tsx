@@ -1,15 +1,7 @@
-import { Container } from "@pixi/react";
-import type { PlayerState, TrigramStance } from "../../../types";
-import { KOREAN_COLORS, TRIGRAM_DATA } from "../../../types";
-import { TrigramWheel } from "../../ui/TrigramWheel";
+import React from "react";
+import type { CombatControlsProps } from "../../../types";
+import { KOREAN_COLORS } from "../../../types";
 import { KoreanText } from "../../ui/base/korean-text/KoreanText";
-
-interface CombatControlsProps {
-  readonly players: readonly [PlayerState, PlayerState];
-  readonly onStanceChange: (playerIndex: number, stance: TrigramStance) => void;
-  readonly isExecutingTechnique: boolean;
-  readonly isPaused: boolean;
-}
 
 export function CombatControls({
   players,
@@ -17,51 +9,72 @@ export function CombatControls({
   isExecutingTechnique,
   isPaused,
 }: CombatControlsProps): React.ReactElement {
-  return (
-    <Container>
-      {/* Player 1 Trigram Wheel */}
-      <TrigramWheel
-        size={120}
-        position={{ x: 120, y: 450 }}
-        selectedStance={players[0].stance}
-        onStanceChange={(stance) => onStanceChange(0, stance)}
-        interactive={!isExecutingTechnique && !isPaused}
+  const renderStanceSelector = (playerIndex: number) => (
+    <div
+      style={{
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        border: `2px solid #${KOREAN_COLORS.CYAN.toString(16).padStart(
+          6,
+          "0"
+        )}`,
+        borderRadius: "8px",
+        padding: "16px",
+        margin: "8px",
+      }}
+    >
+      <KoreanText
+        korean={`플레이어 ${playerIndex + 1} 자세`}
+        english={`Player ${playerIndex + 1} Stance`}
+        style={{ marginBottom: "12px", fontWeight: "bold" }}
       />
 
-      {/* Player 2 Trigram Wheel */}
-      <TrigramWheel
-        size={120}
-        position={{ x: 680, y: 450 }}
-        selectedStance={players[1].stance}
-        onStanceChange={(stance) => onStanceChange(1, stance)}
-        interactive={false} // AI controlled for now
-      />
-
-      {/* Combat instructions */}
-      <Container x={400} y={520}>
-        {players.map((player, index) => (
-          <Container key={player.id} y={index * 30}>
-            <KoreanText
-              korean={`${
-                TRIGRAM_DATA[player.stance as keyof typeof TRIGRAM_DATA]
-                  ?.symbol || "☰"
-              } ${
-                TRIGRAM_DATA[player.stance as keyof typeof TRIGRAM_DATA]
-                  ?.korean || player.stance
-              }`}
-              english={`Player ${index + 1}: ${
-                TRIGRAM_DATA[player.stance as keyof typeof TRIGRAM_DATA]
-                  ?.english || player.stance
-              }`}
+      {/* Stance buttons */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+        {["geon", "tae", "li", "jin", "son", "gam", "gan", "gon"].map(
+          (stance) => (
+            <button
+              key={stance}
+              onClick={() => onStanceChange(playerIndex, stance as any)}
+              disabled={isExecutingTechnique || isPaused}
               style={{
-                fontSize: 14,
-                fill: `#${KOREAN_COLORS.GOLD.toString(16)}`,
-                borderColor: KOREAN_COLORS.GOLD,
+                padding: "8px 12px",
+                backgroundColor:
+                  players[playerIndex]?.stance === stance
+                    ? `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`
+                    : "transparent",
+                border: `1px solid #${KOREAN_COLORS.GOLD.toString(16).padStart(
+                  6,
+                  "0"
+                )}`,
+                borderRadius: "4px",
+                color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
+                cursor:
+                  isExecutingTechnique || isPaused ? "not-allowed" : "pointer",
+                opacity: isExecutingTechnique || isPaused ? 0.5 : 1,
               }}
-            />
-          </Container>
-        ))}
-      </Container>
-    </Container>
+            >
+              {stance.toUpperCase()}
+            </button>
+          )
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        bottom: "20px",
+        left: "50%",
+        transform: "translateX(-50%)",
+        display: "flex",
+        gap: "20px",
+        pointerEvents: "auto",
+      }}
+    >
+      {renderStanceSelector(0)}
+      {renderStanceSelector(1)}
+    </div>
   );
 }

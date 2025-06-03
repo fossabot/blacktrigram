@@ -28,6 +28,12 @@ export const CombatAttackType = {
   MENTAL_ATTACK: "mental_attack",
   CYBERNETIC_ATTACK: "cybernetic_attack",
   COMBINATION: "combination",
+  // Add missing types from trigram techniques
+  BUFF: "buff",
+  DEBUFF: "debuff",
+  HEALING: "healing",
+  STEALTH: "stealth",
+  MOVEMENT: "movement",
 } as const;
 
 export type CombatAttackType =

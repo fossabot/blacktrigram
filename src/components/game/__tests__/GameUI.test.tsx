@@ -19,8 +19,8 @@ describe("GameUI", () => {
   beforeEach(() => {
     baseProps = {
       players: [
-        createPlayerState("player1", { x: 200, y: 400 }, "geon"),
-        createPlayerState("player2", { x: 600, y: 400 }, "gon"),
+        createPlayerState("player1", "musa", "geon"), // Fixed parameter order
+        createPlayerState("player2", "amsalja", "gon"), // Fixed parameter order
       ],
       gamePhase: "combat",
       onGamePhaseChange: vi.fn(),
@@ -32,7 +32,7 @@ describe("GameUI", () => {
       onStartMatch: vi.fn(),
       onResetMatch: vi.fn(),
       onTogglePause: vi.fn(),
-      onPlayerUpdate: vi.fn(), // Add missing prop
+      onPlayerUpdate: vi.fn(),
     };
   });
 

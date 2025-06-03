@@ -1,376 +1,169 @@
-import React, { useState } from "react";
+import React from "react";
+import type { PhilosophySectionProps } from "../../../types";
+import { KOREAN_COLORS } from "../../../types";
 import { KoreanHeader } from "../../ui/base/KoreanHeader";
-import type { PhilosophySectionProps, TrigramStance } from "../../../types";
-import { TRIGRAM_DATA, KOREAN_COLORS } from "../../../types";
-import { KoreanText } from "../../ui/base/korean-text";
+import { KoreanText } from "../../ui/base/korean-text/KoreanText";
 
 export function PhilosophySection({
   onGamePhaseChange,
-  className = "",
-  style = {},
 }: PhilosophySectionProps): React.ReactElement {
-  const [selectedStance, setSelectedStance] = useState<TrigramStance | null>(
-    null
-  );
-
-  const philosophies = [
+  const philosophyContent = [
     {
-      korean: "존중",
-      english: "Respect",
-      description: "Honor the art and opponent",
+      korean: "균형의 원리",
+      english: "The Principle of Balance",
+      description: "모든 무술의 기초는 몸과 마음의 균형에 있습니다.",
     },
     {
-      korean: "수련",
-      english: "Discipline",
-      description: "Dedicated practice and learning",
+      korean: "팔괘의 지혜",
+      english: "Wisdom of the Eight Trigrams",
+      description: "여덟 개의 괘를 통해 자연의 힘을 이해하고 활용합니다.",
     },
     {
-      korean: "정확",
-      english: "Precision",
-      description: "Exact technique execution",
-    },
-    {
-      korean: "지혜",
-      english: "Wisdom",
-      description: "Understanding beyond physical technique",
-    },
-    {
-      korean: "균형",
-      english: "Balance",
-      description: "Harmony of mind, body, spirit",
+      korean: "기의 순환",
+      english: "Circulation of Ki",
+      description: "생명 에너지의 흐름을 조절하여 완벽한 기법을 구사합니다.",
     },
   ];
 
-  const containerStyle: React.CSSProperties = {
-    width: "100%",
-    minHeight: "100vh",
-    padding: "2rem",
-    backgroundColor: `#${KOREAN_COLORS.BLACK.toString(16).padStart(6, "0")}`,
-    color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
-    fontFamily: "Noto Sans KR, Arial, sans-serif",
-    overflow: "auto",
-  };
-
-  const gridStyle: React.CSSProperties = {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-    gap: "2rem",
-    marginTop: "2rem",
-  };
-
-  const trigramCardStyle = (stance: TrigramStance): React.CSSProperties => {
-    const isSelected = selectedStance === stance;
-    const trigramData = TRIGRAM_DATA[stance];
-
-    return {
-      padding: "1.5rem",
-      borderRadius: "8px",
-      backgroundColor: isSelected
-        ? `rgba(${parseInt(
-            trigramData.color.toString(16).slice(0, 2),
-            16
-          )}, ${parseInt(
-            trigramData.color.toString(16).slice(2, 4),
-            16
-          )}, ${parseInt(trigramData.color.toString(16).slice(4, 6), 16)}, 0.3)`
-        : "rgba(255, 255, 255, 0.1)",
-      border: isSelected
-        ? `3px solid #${trigramData.color.toString(16).padStart(6, "0")}`
-        : "2px solid rgba(255, 255, 255, 0.2)",
-      cursor: "pointer",
-      transition: "all 0.3s ease",
-      transform: isSelected ? "scale(1.02)" : "scale(1)",
-    };
-  };
-
-  const symbolStyle = (stance: TrigramStance): React.CSSProperties => {
-    const trigramData = TRIGRAM_DATA[stance];
-    return {
-      fontSize: "3rem",
-      color: `#${trigramData.color.toString(16).padStart(6, "0")}`,
-      textAlign: "center" as const,
-      marginBottom: "1rem",
-      textShadow: "0 0 10px rgba(255,255,255,0.3)",
-    };
-  };
-
   return (
-    <div className={`philosophy-section ${className}`} style={style}>
+    <div style={{ maxWidth: "800px", margin: "0 auto", padding: "2rem" }}>
       <KoreanHeader
-        korean="팔괘 철학"
-        english="Trigram Philosophy"
-        subtitle="Traditional Korean martial arts wisdom through the Eight Trigrams"
+        title={{
+          korean: "흑괘의 철학",
+          english: "Philosophy of Black Trigram",
+        }} // Fixed: Provide title prop
+        subtitle="무술의 정신적 기초"
         level={1}
       />
 
-      <div style={{ textAlign: "center", margin: "2rem 0" }}>
-        <p style={{ fontSize: "1.1rem", marginBottom: "1rem" }}>
-          팔괘는 우주의 기본 원리를 나타내며, 각각 고유한 무술 철학을 담고
-          있습니다.
-        </p>
-        <p style={{ fontSize: "0.9rem", opacity: 0.8 }}>
-          The Eight Trigrams represent fundamental principles of the universe,
-          each containing unique martial philosophy.
-        </p>
-      </div>
-
-      <div style={gridStyle}>
-        {Object.entries(TRIGRAM_DATA).map(([stance, data]) => (
+      <div style={{ marginTop: "2rem" }}>
+        {philosophyContent.map((content, index) => (
           <div
-            key={stance}
-            style={trigramCardStyle(stance as TrigramStance)}
-            onClick={() => setSelectedStance(stance as TrigramStance)}
-            onMouseEnter={() => setSelectedStance(stance as TrigramStance)}
-            onMouseLeave={() => setSelectedStance(null)}
+            key={index}
+            style={{
+              backgroundColor: "rgba(0, 0, 0, 0.3)",
+              padding: "1.5rem",
+              margin: "1rem 0",
+              borderRadius: "8px",
+              border: `1px solid #${KOREAN_COLORS.GOLD.toString(16).padStart(
+                6,
+                "0"
+              )}`,
+            }}
           >
-            <div style={symbolStyle(stance as TrigramStance)}>
-              {data.symbol}
-            </div>
-
-            <h3 style={{ textAlign: "center", marginBottom: "1rem" }}>
-              {data.korean} ({data.english})
-            </h3>
-
-            <div style={{ marginBottom: "1rem" }}>
-              <strong>철학:</strong>
-              <div style={{ fontSize: "0.9rem", marginTop: "0.5rem" }}>
-                {data.philosophy}
-              </div>
-            </div>
-
-            <div style={{ marginBottom: "1rem" }}>
-              <strong>무술 적용:</strong>
-              <div style={{ fontSize: "0.9rem", marginTop: "0.5rem" }}>
-                {data.technique.description.korean}
-              </div>
-              <div
-                style={{
-                  fontSize: "0.8rem",
-                  opacity: 0.8,
-                  marginTop: "0.25rem",
-                }}
-              >
-                {data.technique.description.english}
-              </div>
-            </div>
-
-            <div style={{ fontSize: "0.8rem", opacity: 0.8 }}>
-              <div>원소: {data.element}</div>
-              <div>기법: {data.technique.koreanName}</div>
-              <div>피해: {data.technique.damage}</div>
-            </div>
+            <KoreanText
+              korean={content.korean}
+              english={content.english}
+              size="large"
+              weight={700}
+              style={{ marginBottom: "1rem" }}
+            />
+            <p
+              style={{
+                color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
+                lineHeight: "1.6",
+                margin: 0,
+              }}
+            >
+              {content.description}
+            </p>
           </div>
         ))}
       </div>
 
-      <div
-        style={{
-          marginTop: "3rem",
-          textAlign: "center",
-          borderTop: `1px solid #${KOREAN_COLORS.CYAN.toString(16).padStart(
-            6,
-            "0"
-          )}`,
-          paddingTop: "2rem",
-        }}
-      >
-        <div style={{ marginBottom: "2rem" }}>
-          <h3
-            style={{
-              color: `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
-            }}
-          >
-            팔괘의 상극상생 (Trigram Interactions)
-          </h3>
-          <p style={{ fontSize: "0.9rem", opacity: 0.8, marginTop: "1rem" }}>
-            각 팔괘는 서로 다른 팔괘와 상극 또는 상생의 관계를 가지며, 이는
-            전투에서 전략적 우위를 결정합니다.
-          </p>
-          <p style={{ fontSize: "0.8rem", opacity: 0.7, marginTop: "0.5rem" }}>
-            Each trigram has complementary or opposing relationships with
-            others, determining strategic advantages in combat.
-          </p>
-        </div>
-
-        <button
-          onClick={() => onGamePhaseChange("intro")}
-          style={{
-            padding: "1rem 2rem",
-            fontSize: "1.1rem",
-            backgroundColor: `#${KOREAN_COLORS.DOJANG_BLUE.toString(
-              16
-            ).padStart(6, "0")}`,
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
-            marginRight: "1rem",
-          }}
-        >
-          메뉴로 돌아가기 (Return to Menu)
-        </button>
-
+      <div style={{ textAlign: "center", marginTop: "3rem" }}>
         <button
           onClick={() => onGamePhaseChange("training")}
           style={{
             padding: "1rem 2rem",
-            fontSize: "1.1rem",
             backgroundColor: `#${KOREAN_COLORS.GOLD.toString(16).padStart(
               6,
               "0"
             )}`,
-            color: "black",
+            color: `#${KOREAN_COLORS.BLACK.toString(16).padStart(6, "0")}`,
             border: "none",
             borderRadius: "4px",
+            fontSize: "1.2rem",
             cursor: "pointer",
+            margin: "0.5rem",
           }}
         >
-          수련 시작 (Begin Training)
+          훈련으로 이동 (Go to Training)
+        </button>
+
+        <button
+          onClick={() => onGamePhaseChange("menu")}
+          style={{
+            padding: "1rem 2rem",
+            backgroundColor: "transparent",
+            color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
+            border: `1px solid #${KOREAN_COLORS.WHITE.toString(16).padStart(
+              6,
+              "0"
+            )}`,
+            borderRadius: "4px",
+            fontSize: "1.2rem",
+            cursor: "pointer",
+            margin: "0.5rem",
+          }}
+        >
+          메뉴로 돌아가기 (Back to Menu)
         </button>
       </div>
 
-      <div className="philosophy-section">
+      {/* Philosophy sections */}
+      <div style={{ marginTop: "3rem" }}>
         <KoreanHeader
-          title="흑괘의 철학"
-          korean="흑괘의 철학"
-          english="Philosophy of Black Trigram"
-          subtitle="Traditional Korean martial arts wisdom"
-          level={1}
+          title={{ korean: "팔괘", english: "Eight Trigrams" }} // Fixed: Provide proper KoreanText object
+          level={2}
         />
 
         <div
           style={{
-            background: `linear-gradient(135deg, ${KOREAN_COLORS.NEON_CYAN}20, ${KOREAN_COLORS.TRADITIONAL_RED}10)`,
-            padding: "2rem",
-            borderRadius: "8px",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+            gap: "1rem",
             marginTop: "1rem",
           }}
         >
-          <KoreanText
-            korean="흑괘"
-            english="Black Trigram"
-            size="xlarge"
-            weight={700}
-            style={{ marginBottom: "1rem" }}
-          />
-
-          <p style={{ fontSize: "1rem", marginBottom: "1rem" }}>
-            흑괘는 모든 색의 조화를 상징하며, 무한한 가능성과 잠재력을
-            나타냅니다. 이 괘는 우주의 모든 원소와 힘이 결합된 상태로, 궁극적인
-            통합과 완성을 의미합니다.
-          </p>
-          <p style={{ fontSize: "0.9rem", opacity: 0.8 }}>
-            The Black Trigram symbolizes the harmony of all colors, representing
-            infinite possibilities and potential. It signifies the ultimate
-            integration and completion, where all elements and forces of the
-            universe are united.
-          </p>
-
-          <div style={{ marginTop: "2rem" }}>
-            <strong>상극:</strong>
-            <div style={{ fontSize: "0.9rem", marginTop: "0.5rem" }}>
-              {/* Add specific interactions for the Black Trigram */}
-              {/* Example: "흑괘는 태양과 대지의 기운을 흡수하여 모든 생명의 근원이
-              됩니다." */}
-            </div>
-          </div>
-
-          <div style={{ marginTop: "1rem" }}>
-            <strong>상생:</strong>
-            <div style={{ fontSize: "0.9rem", marginTop: "0.5rem" }}>
-              {/* Add specific interactions for the Black Trigram */}
-              {/* Example: "흑괘는 달과 하늘의 기운을 모아 조화를 이룹니다." */}
-            </div>
-          </div>
-        </div>
-
-        <div className="philosophy-grid">
-          {philosophies.map((philosophy, index) => (
-            <div key={index} className="philosophy-card">
-              <KoreanText
-                korean={philosophy.korean}
-                english={philosophy.english}
-                size="large"
-                weight={500}
-              />
-              <p>{philosophy.description}</p>
-            </div>
-          ))}
-        </div>
-
-        <button
-          onClick={() => onGamePhaseChange("intro")}
-          className="back-button"
-        >
-          Back to Intro
-        </button>
-
-        <div
-          style={{
-            marginTop: "3rem",
-            textAlign: "center",
-            borderTop: `1px solid #${KOREAN_COLORS.CYAN.toString(16).padStart(
-              6,
-              "0"
-            )}`,
-            paddingTop: "2rem",
-          }}
-        >
-          <div style={{ marginBottom: "2rem" }}>
-            <h3
+          {[
+            { korean: "건", english: "Heaven", element: "Metal" },
+            { korean: "태", english: "Lake", element: "Metal" },
+            { korean: "리", english: "Fire", element: "Fire" },
+            { korean: "진", english: "Thunder", element: "Wood" },
+            { korean: "손", english: "Wind", element: "Wood" },
+            { korean: "감", english: "Water", element: "Water" },
+            { korean: "간", english: "Mountain", element: "Earth" },
+            { korean: "곤", english: "Earth", element: "Earth" },
+          ].map((trigram, index) => (
+            <div
+              key={index}
               style={{
-                color: `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+                padding: "1rem",
+                borderRadius: "4px",
+                textAlign: "center",
               }}
             >
-              팔괘의 상극상생 (Trigram Interactions)
-            </h3>
-            <p style={{ fontSize: "0.9rem", opacity: 0.8, marginTop: "1rem" }}>
-              각 팔괘는 서로 다른 팔괘와 상극 또는 상생의 관계를 가지며, 이는
-              전투에서 전략적 우위를 결정합니다.
-            </p>
-            <p
-              style={{ fontSize: "0.8rem", opacity: 0.7, marginTop: "0.5rem" }}
-            >
-              Each trigram has complementary or opposing relationships with
-              others, determining strategic advantages in combat.
-            </p>
-          </div>
-
-          <button
-            onClick={() => onGamePhaseChange("intro")}
-            style={{
-              padding: "1rem 2rem",
-              fontSize: "1.1rem",
-              backgroundColor: `#${KOREAN_COLORS.DOJANG_BLUE.toString(
-                16
-              ).padStart(6, "0")}`,
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-              marginRight: "1rem",
-            }}
-          >
-            메뉴로 돌아가기 (Return to Menu)
-          </button>
-
-          <button
-            onClick={() => onGamePhaseChange("training")}
-            style={{
-              padding: "1rem 2rem",
-              fontSize: "1.1rem",
-              backgroundColor: `#${KOREAN_COLORS.GOLD.toString(16).padStart(
-                6,
-                "0"
-              )}`,
-              color: "black",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-            }}
-          >
-            수련 시작 (Begin Training)
-          </button>
+              <KoreanText
+                korean={trigram.korean}
+                english={trigram.english}
+                size="medium"
+                weight={700} // Changed from 600 to 700 (valid KoreanFontWeight)
+                color={KOREAN_COLORS.TRADITIONAL_BLUE}
+                className="philosophy-text"
+              />
+              <p
+                style={{
+                  margin: "0.5rem 0 0 0",
+                  fontSize: "0.9rem",
+                  color: `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
+                }}
+              >
+                {trigram.element}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </div>

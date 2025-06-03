@@ -1,11 +1,15 @@
 // Anatomical system types for precise Korean martial arts targeting
 
 import type { KoreanText } from "./korean-text";
-import type { VitalPointEffect } from "./effects";
+import type { StatusEffect } from "./effects";
 import type {
+  DamageType,
+  EffectIntensity,
+  EffectType,
   VitalPointCategory as EnumVitalPointCategory,
   VitalPointSeverity as EnumVitalPointSeverity,
 } from "./enums";
+import { Position } from "./common";
 
 // Use enum types directly
 export type VitalPointCategory = EnumVitalPointCategory;
@@ -66,19 +70,23 @@ export interface AnatomicalLocation {
 // Complete vital point definition
 export interface VitalPoint {
   readonly id: string;
-  readonly name: KoreanText;
-  readonly korean: string;
-  readonly english: string;
-  readonly category: VitalPointCategory;
-  readonly description: KoreanText;
-  readonly effects: readonly VitalPointEffect[];
+  readonly name: KoreanText; // Add missing name property
+  readonly koreanName: string;
+  readonly englishName: string;
   readonly location: AnatomicalLocation;
+  readonly category: VitalPointCategory;
   readonly severity: VitalPointSeverity;
-  readonly technique: readonly string[];
-  readonly baseAccuracy: number;
-  readonly baseDamage: number;
-  readonly baseStun: number;
-  readonly damageMultiplier: number;
+  readonly effects: readonly string[];
+  readonly description: KoreanText;
+  readonly techniques: readonly string[];
+  readonly damage: {
+    readonly base: number;
+    readonly multiplier: number;
+    readonly type: DamageType;
+  };
+  readonly successRate: number;
+  readonly requiredAccuracy: number;
+  readonly statusEffects: readonly StatusEffect[];
 }
 
 // Vital point location for hit detection
@@ -132,16 +140,37 @@ export interface KoreanAnatomySystem {
   readonly traditionalNames: Record<string, KoreanText>;
 }
 
-// Missing types that were referenced in index.ts
+// Fix VitalPointHitResult to include the expected properties
 export interface VitalPointHitResult {
   readonly hit: boolean;
-  readonly vitalPoint: VitalPoint;
   readonly damage: number;
-  readonly effectiveness: number;
+  readonly vitalPoint: VitalPoint;
+  readonly effects: readonly StatusEffect[]; // Add missing effects property
+  readonly vitalPointsHit: readonly VitalPoint[]; // Add missing vitalPointsHit property
+  readonly severity: VitalPointSeverity;
+  readonly criticalHit: boolean;
+  readonly location: Position;
+  readonly techniqueEffectiveness: number;
+  readonly painLevel: number;
+  readonly stunDuration: number;
+  readonly consciousnessImpact: number;
+  readonly bloodLoss: number;
+  readonly description: KoreanText;
 }
 
 export interface RegionData {
   readonly region: AnatomicalRegion;
   readonly vitalPoints: readonly VitalPoint[];
   readonly resistance: number;
+}
+
+// Export VitalPointEffect that was missing
+export interface VitalPointEffect {
+  readonly id: string;
+  readonly type: EffectType;
+  readonly intensity: EffectIntensity;
+  readonly duration: number;
+  readonly description: KoreanText;
+  readonly stackable: boolean;
+  readonly source?: string;
 }

@@ -13,7 +13,7 @@ import type {
 // Import CombatReadiness as a value, not a type since we need to use it as values
 import { CombatReadiness } from "../types/enums";
 import type { Position } from "../types/common";
-import { PLAYER_ARCHETYPES } from "../types/constants";
+import { PLAYER_ARCHETYPE_DATA } from "../types/constants"; // Fixed: changed from PLAYER_ARCHETYPES
 
 /**
  * Creates a new player state with Korean martial arts defaults
@@ -76,16 +76,8 @@ export function updatePlayerStates(
   player1: PlayerState,
   player2: PlayerState
 ): [PlayerState, PlayerState] {
-  const updatedPlayer1 = {
-    ...player1,
-    position: { x: player1.position.x, y: player1.position.y },
-  };
-  const updatedPlayer2 = {
-    ...player2,
-    position: { x: player2.position.x, y: player2.position.y },
-  };
-
-  return [updatedPlayer1, updatedPlayer2];
+  // Implementation for updating player states
+  return [player1, player2];
 }
 
 /**
@@ -130,10 +122,10 @@ function calculateCombatReadiness(health: number): CombatReadiness {
 export function updatePlayerHealth(
   player: PlayerState,
   damage: number,
-  _damageType: DamageType = "blunt" // Prefixed with underscore to indicate intentionally unused
+  _damageType: DamageType = "blunt"
 ): PlayerState {
   // Calculate effective damage based on archetype resistance
-  const archetypeData = PLAYER_ARCHETYPES[player.archetype];
+  const archetypeData = PLAYER_ARCHETYPE_DATA[player.archetype]; // Fixed: use correct constant name
   const resistance = archetypeData?.bonuses?.damageResistance || 1.0;
   const effectiveDamage = Math.max(0, damage / resistance);
 

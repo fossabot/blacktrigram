@@ -40,6 +40,15 @@ export const DAMAGE_RANGES = {
   BONE_STRIKE: { min: 35, max: 50, type: "blunt" },
 } as const;
 
+// Damage ranges for combat levels
+export const DAMAGE_RANGES_LEVELS = {
+  light: { min: 5, max: 15 },
+  medium: { min: 15, max: 25 },
+  heavy: { min: 25, max: 40 },
+  critical: { min: 40, max: 60 },
+  vital_point: { min: 50, max: 80 },
+} as const;
+
 // Combat effectiveness modifiers
 export const COMBAT_MODIFIERS = {
   ARCHETYPE_BONUS: {
@@ -69,4 +78,91 @@ export const VITAL_POINT_MODIFIERS = {
   NECK: { damage: 2.5, consciousness: 4.0, stun: 3.0 },
   TORSO: { damage: 1.5, consciousness: 1.5, stun: 1.2 },
   LIMBS: { damage: 1.2, consciousness: 0.8, stun: 1.0 },
+} as const;
+
+// Transition cost limits for stance changes
+export const MAX_TRANSITION_COST_KI = 50;
+export const MAX_TRANSITION_COST_STAMINA = 30;
+export const MAX_TRANSITION_TIME_MILLISECONDS = 1000;
+
+// Combat timing constants
+export const COMBAT_TIMING = {
+  ATTACK_COOLDOWN: 500, // milliseconds
+  STANCE_CHANGE_DURATION: 800, // milliseconds
+  BLOCK_WINDOW: 200, // milliseconds
+  COUNTER_WINDOW: 300, // milliseconds
+  COMBO_TIMEOUT: 2000, // milliseconds
+} as const;
+
+// Damage calculation constants
+export const DAMAGE_CONSTANTS = {
+  BASE_DAMAGE_MIN: 5,
+  BASE_DAMAGE_MAX: 40,
+  CRITICAL_MULTIPLIER: 2.0,
+  VITAL_POINT_MULTIPLIER: 1.5,
+  GLANCING_BLOW_MULTIPLIER: 0.3,
+} as const;
+
+// Combat state thresholds
+export const COMBAT_THRESHOLDS = {
+  HEALTH_CRITICAL: 20, // percentage
+  STAMINA_LOW: 25, // percentage
+  KI_DEPLETED: 10, // percentage
+  PAIN_SEVERE: 80, // percentage
+  CONSCIOUSNESS_DANGER: 30, // percentage
+} as const;
+
+// Vital point targeting constants
+export const VITAL_POINT_CONSTANTS = {
+  BASE_ACCURACY: 0.7, // 70% base hit chance
+  PRECISION_BONUS: 0.2, // 20% bonus for aimed shots
+  DISTANCE_PENALTY: 0.1, // 10% penalty per unit distance
+  STANCE_MODIFIER_MAX: 0.3, // Maximum 30% modifier from stance
+} as const;
+
+// Korean martial arts specific combat values
+export const KOREAN_COMBAT_VALUES = {
+  RESPECT_BONUS: 1.1, // 10% damage bonus for honorable combat
+  DISHONOR_PENALTY: 0.8, // 20% damage penalty for dishonorable combat
+  MASTERY_THRESHOLD: 1000, // Experience points for technique mastery
+  PERFECT_TECHNIQUE_BONUS: 1.25, // 25% bonus for perfect execution
+} as const;
+
+// Export all constants
+export const COMBAT_CONSTANTS = {
+  ...COMBAT_TIMING,
+  ...DAMAGE_CONSTANTS,
+  ...COMBAT_THRESHOLDS,
+  ...VITAL_POINT_CONSTANTS,
+  ...KOREAN_COMBAT_VALUES,
+  MAX_TRANSITION_COST_KI,
+  MAX_TRANSITION_COST_STAMINA,
+  MAX_TRANSITION_TIME_MILLISECONDS,
+} as const;
+
+// Status effect durations
+export const STATUS_EFFECT_DURATIONS = {
+  stun: 2000, // milliseconds
+  bleed: 5000,
+  pain: 3000,
+  vulnerable: 4000,
+  exhausted: 6000,
+} as const;
+
+// Effectiveness multipliers
+export const EFFECTIVENESS_MULTIPLIERS = {
+  superior: 1.5,
+  effective: 1.2,
+  normal: 1.0,
+  ineffective: 0.8,
+  weak: 0.6,
+} as const;
+
+// Combat distances
+export const COMBAT_DISTANCES = {
+  melee: 1.5, // meters
+  close: 2.0,
+  medium: 3.0,
+  long: 4.5,
+  maximum: 6.0,
 } as const;

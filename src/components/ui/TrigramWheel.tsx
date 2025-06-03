@@ -9,9 +9,9 @@ const wheelBackgroundColor = KOREAN_COLORS.NEON_CYAN;
 export function TrigramWheel({
   size = 200,
   position = { x: 0, y: 0 },
-  interactive = true,
   selectedStance,
   onStanceChange,
+  interactive = true,
 }: TrigramWheelProps): React.ReactElement {
   const stances = Object.keys(TRIGRAM_DATA) as TrigramStance[];
 

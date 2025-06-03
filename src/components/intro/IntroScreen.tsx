@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import type { IntroScreenProps, GamePhase } from "../../types";
 import { KOREAN_COLORS } from "../../types";
 import { useAudio } from "../../audio/AudioManager";
+import { KoreanHeader } from "../ui/base/KoreanHeader";
+import { PhilosophySection } from "./components/PhilosophySection";
 
 export function IntroScreen({
   onGamePhaseChange,
+  onSectionChange,
+  currentSection = "main",
 }: IntroScreenProps): React.ReactElement {
   const [selectedMenuItem, setSelectedMenuItem] = useState<string>("");
+  const [activeSection, setActiveSection] = useState(currentSection);
   const audio = useAudio();
 
   // Play intro music when component mounts
@@ -25,20 +30,24 @@ export function IntroScreen({
     onGamePhaseChange(phase);
   };
 
+  const handleSectionChange = useCallback(
+    (section: string) => {
+      setActiveSection(section);
+      onSectionChange?.(section);
+    },
+    [onSectionChange]
+  );
+
   const containerStyle: React.CSSProperties = {
-    width: "100%",
-    height: "100vh",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    background: `linear-gradient(135deg, #${KOREAN_COLORS.DARK_BLUE.toString(
+    minHeight: "100vh",
+    background: `linear-gradient(135deg, #${KOREAN_COLORS.TRADITIONAL_BLUE.toString(
       16
-    ).padStart(6, "0")}, #${KOREAN_COLORS.BLACK.toString(16).padStart(
+    ).padStart(6, "0")} 0%, #${KOREAN_COLORS.BLACK.toString(16).padStart(
       6,
       "0"
-    )})`,
+    )} 100%)`,
     color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
+    padding: "2rem",
     fontFamily: "Noto Sans KR, Arial, sans-serif",
   };
 
@@ -69,55 +78,59 @@ export function IntroScreen({
     minWidth: "200px",
   });
 
+  if (activeSection === "philosophy") {
+    return (
+      <div style={containerStyle}>
+        <PhilosophySection onGamePhaseChange={onGamePhaseChange} />
+      </div>
+    );
+  }
+
   return (
     <div style={containerStyle}>
-      <h1 style={titleStyle}>
-        흑괘 무술 도장
-        <div style={{ fontSize: "0.6em", opacity: 0.8, marginTop: "0.5rem" }}>
-          Black Trigram Martial Arts
-        </div>
-      </h1>
+      <KoreanHeader
+        title={{ korean: "흑괘", english: "Black Trigram" }}
+        subtitle="Korean Martial Arts Combat Simulator"
+        level={1}
+      />
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <div style={{ textAlign: "center", marginTop: "4rem" }}>
         <button
-          style={menuItemStyle(selectedMenuItem === "training")}
-          onClick={() => handleMenuClick("training")}
-          onMouseEnter={() => setSelectedMenuItem("training")}
-          onMouseLeave={() => setSelectedMenuItem("")}
+          onClick={() => handleSectionChange("philosophy")}
+          style={{
+            padding: "1rem 2rem",
+            backgroundColor: `#${KOREAN_COLORS.GOLD.toString(16).padStart(
+              6,
+              "0"
+            )}`,
+            color: `#${KOREAN_COLORS.BLACK.toString(16).padStart(6, "0")}`,
+            border: "none",
+            borderRadius: "4px",
+            fontSize: "1.2rem",
+            cursor: "pointer",
+            margin: "0.5rem",
+          }}
         >
-          무술 수련 (Training)
+          철학 보기 (View Philosophy)
         </button>
 
         <button
-          style={menuItemStyle(selectedMenuItem === "combat")}
-          onClick={() => handleMenuClick("combat")}
-          onMouseEnter={() => setSelectedMenuItem("combat")}
-          onMouseLeave={() => setSelectedMenuItem("")}
+          onClick={() => onGamePhaseChange("training")}
+          style={{
+            padding: "1rem 2rem",
+            backgroundColor: `#${KOREAN_COLORS.DOJANG_BLUE.toString(
+              16
+            ).padStart(6, "0")}`,
+            color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
+            border: "none",
+            borderRadius: "4px",
+            fontSize: "1.2rem",
+            cursor: "pointer",
+            margin: "0.5rem",
+          }}
         >
-          실전 대련 (Combat)
+          훈련 시작 (Start Training)
         </button>
-
-        <button
-          style={menuItemStyle(selectedMenuItem === "philosophy")}
-          onClick={() => handleMenuClick("philosophy")}
-          onMouseEnter={() => setSelectedMenuItem("philosophy")}
-          onMouseLeave={() => setSelectedMenuItem("")}
-        >
-          팔괘 철학 (Philosophy)
-        </button>
-      </div>
-
-      <div
-        style={{
-          position: "absolute",
-          bottom: "2rem",
-          textAlign: "center",
-          opacity: 0.7,
-          fontSize: "0.9rem",
-        }}
-      >
-        <p>어둠 속에서 완벽한 일격을 찾아라</p>
-        <p>Master the dark arts through perfect strikes</p>
       </div>
     </div>
   );

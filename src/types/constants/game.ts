@@ -3,64 +3,238 @@
 
 export const DEFAULT_GAME_SPEED = 1.0;
 
-// Game configuration constants for Korean martial arts simulator
+// Core game configuration for Black Trigram Korean martial arts simulator
 
 // Main game configuration
 export const GAME_CONFIG = {
-  // Match settings
-  ROUND_DURATION: 180000, // 3 minutes in milliseconds
-  MAX_ROUNDS: 3,
-  SUDDEN_DEATH_DURATION: 60000, // 1 minute
-
-  // Player settings
-  MAX_PLAYERS: 2,
-  DEFAULT_HEALTH: 100,
-  DEFAULT_KI: 100,
-  DEFAULT_STAMINA: 100,
-
-  // Performance settings
+  // Display and rendering
+  CANVAS_WIDTH: 1920,
+  CANVAS_HEIGHT: 1080,
   TARGET_FPS: 60,
-  MAX_PARTICLES: 100,
-  MAX_SOUND_CHANNELS: 8,
+  PIXEL_RATIO: window.devicePixelRatio || 1,
 
-  // UI settings
-  UI_FADE_DURATION: 300,
-  NOTIFICATION_DURATION: 3000,
+  // Game timing and flow
+  MATCH_DURATION: 180000, // 3 minutes in milliseconds
+  ROUND_COUNT: 3, // Best of 3 rounds
+  COUNTDOWN_DURATION: 3000, // 3 seconds countdown
+  ROUND_BREAK_DURATION: 15000, // 15 seconds between rounds
 
-  // Training settings
-  TRAINING_ROUNDS: 5,
-  PRACTICE_TIME_LIMIT: 600000, // 10 minutes
+  // Combat mechanics
+  MAX_COMBO_COUNT: 8, // Maximum combo chain
+  COMBO_RESET_TIME: 2000, // Time before combo resets
+  BLOCK_WINDOW: 300, // Block timing window in ms
+  PERFECT_BLOCK_WINDOW: 100, // Perfect block timing in ms
+  COUNTER_WINDOW: 500, // Counter-attack window in ms
 
-  // Add missing properties for backward compatibility
-  MAX_HEALTH: 100, // Alias for DEFAULT_HEALTH
-  MAX_KI: 100, // Alias for DEFAULT_KI
-  MAX_STAMINA: 100, // Alias for DEFAULT_STAMINA
+  // Korean martial arts specific
+  KI_REGENERATION_RATE: 1.5, // Ki points per second
+  STAMINA_REGENERATION_RATE: 2.0, // Stamina points per second
+  STANCE_CHANGE_COOLDOWN: 500, // Minimum time between stance changes
+  VITAL_POINT_BONUS_MULTIPLIER: 2.5, // Damage multiplier for vital points
+
+  // Player physics
+  GRAVITY: 980, // Pixels per second squared
+  FRICTION: 0.8, // Ground friction coefficient
+  AIR_RESISTANCE: 0.98, // Air resistance coefficient
+  BOUNCE_DAMPENING: 0.6, // Bounce reduction factor
+
+  // Audio configuration
+  MASTER_VOLUME: 0.8,
+  SFX_VOLUME: 0.7,
+  MUSIC_VOLUME: 0.5,
+  FADE_DURATION: 1000,
+
+  // Performance optimization
+  MAX_PARTICLES: 50, // Maximum visual effect particles
+  MAX_SOUND_INSTANCES: 8, // Maximum concurrent sounds
+  GARBAGE_COLLECTION_INTERVAL: 30000, // 30 seconds
+
+  // UI and accessibility
+  UI_SCALE: 1.0, // UI scaling factor
+  TEXT_FADE_DURATION: 2000, // Text effect fade time
+  NOTIFICATION_DURATION: 3000, // Notification display time
+  TOOLTIP_DELAY: 500, // Tooltip appearance delay
+
+  // Development and debugging
+  DEBUG_MODE: false, // Enable debug features
+  SHOW_HITBOXES: false, // Show collision boxes
+  SHOW_PERFORMANCE: false, // Show FPS and memory
+  LOG_COMBAT_EVENTS: false, // Log combat to console
 } as const;
 
-// Game phases for state management
-export const GAME_PHASES = {
-  INTRO: "intro",
-  MENU: "menu",
-  TRAINING: "training",
-  COMBAT: "combat",
-  PAUSED: "paused",
-  GAME_OVER: "game_over",
-  VICTORY: "victory",
-  DEFEAT: "defeat",
+// Korean martial arts philosophy integration
+export const PHILOSOPHY_CONFIG = {
+  // 팔괘 (Eight Trigrams) display timing
+  TRIGRAM_DISPLAY_DURATION: 2000,
+  TRIGRAM_TRANSITION_TIME: 500,
+
+  // 음양 (Yin-Yang) balance indicators
+  BALANCE_INDICATOR_SENSITIVITY: 0.1,
+  BALANCE_RESTORATION_TIME: 3000,
+
+  // 기 (Ki) energy visualization
+  KI_PARTICLE_COUNT: 20,
+  KI_FLOW_ANIMATION_SPEED: 1.5,
+  KI_AURA_INTENSITY: 0.7,
+
+  // 도장 (Dojang) environment
+  DOJANG_LIGHTING_CYCLE: 300000, // 5 minutes day/night cycle
+  MEDITATION_MODE_DURATION: 60000, // 1 minute meditation
+  RESPECT_BOW_DURATION: 1500, // Traditional bow timing
 } as const;
 
-// Korean martial arts specific settings
-export const MARTIAL_ARTS_CONFIG = {
-  // Trigram transition settings
-  STANCE_CHANGE_DURATION: 400,
-  KI_COST_PER_STANCE_CHANGE: 5,
+// Difficulty settings for Korean martial arts training
+export const DIFFICULTY_SETTINGS = {
+  BEGINNER: {
+    korean: "초급",
+    english: "Beginner",
 
-  // Vital point system
-  TOTAL_VITAL_POINTS: 70,
-  VITAL_POINT_ACCURACY_THRESHOLD: 0.8,
+    // Combat assistance
+    autoBlock: true,
+    vitalPointHighlight: true,
+    techniqueHints: true,
+    slowerCombat: true,
 
-  // Philosophy integration
-  RESPECT_BONUS: 1.1,
-  DISCIPLINE_BONUS: 1.15,
-  PRECISION_BONUS: 1.2,
+    // Damage modifiers
+    playerDamageMultiplier: 1.5,
+    enemyDamageMultiplier: 0.7,
+
+    // Timing assistance
+    extendedBlockWindow: 1.5,
+    extendedCounterWindow: 1.3,
+
+    // Learning aids
+    showCombatAnalysis: true,
+    displayTechniqueNames: true,
+    culturalContext: true,
+  },
+
+  INTERMEDIATE: {
+    korean: "중급",
+    english: "Intermediate",
+
+    // Reduced assistance
+    autoBlock: false,
+    vitalPointHighlight: false,
+    techniqueHints: true,
+    slowerCombat: false,
+
+    // Balanced damage
+    playerDamageMultiplier: 1.0,
+    enemyDamageMultiplier: 1.0,
+
+    // Standard timing
+    extendedBlockWindow: 1.0,
+    extendedCounterWindow: 1.0,
+
+    // Some learning aids
+    showCombatAnalysis: true,
+    displayTechniqueNames: false,
+    culturalContext: true,
+  },
+
+  EXPERT: {
+    korean: "전문가",
+    english: "Expert",
+
+    // No assistance
+    autoBlock: false,
+    vitalPointHighlight: false,
+    techniqueHints: false,
+    slowerCombat: false,
+
+    // Realistic damage
+    playerDamageMultiplier: 1.0,
+    enemyDamageMultiplier: 1.2,
+
+    // Precise timing required
+    extendedBlockWindow: 0.8,
+    extendedCounterWindow: 0.9,
+
+    // Minimal aids
+    showCombatAnalysis: false,
+    displayTechniqueNames: false,
+    culturalContext: false,
+  },
+
+  MASTER: {
+    korean: "대가",
+    english: "Master",
+
+    // Maximum challenge
+    autoBlock: false,
+    vitalPointHighlight: false,
+    techniqueHints: false,
+    slowerCombat: false,
+
+    // Punishing damage
+    playerDamageMultiplier: 0.8,
+    enemyDamageMultiplier: 1.5,
+
+    // Strict timing
+    extendedBlockWindow: 0.7,
+    extendedCounterWindow: 0.8,
+
+    // No aids
+    showCombatAnalysis: false,
+    displayTechniqueNames: false,
+    culturalContext: false,
+  },
+} as const;
+
+// Achievement and progression system
+export const ACHIEVEMENT_CONFIG = {
+  // Korean martial arts mastery levels
+  TECHNIQUE_MASTERY_THRESHOLD: 100, // Uses before mastery
+  STANCE_MASTERY_THRESHOLD: 50, // Successful stance changes
+  COMBO_MASTERY_THRESHOLD: 25, // Perfect combos executed
+
+  // Cultural understanding achievements
+  PHILOSOPHY_COMPLETION: 8, // All trigram philosophies learned
+  RESPECT_POINTS_MAX: 1000, // Maximum respect/honor points
+  MEDITATION_HOURS: 10, // Hours in meditation mode
+
+  // Combat achievements
+  PERFECT_ROUNDS: 10, // Rounds won without taking damage
+  VITAL_POINT_MASTERY: 70, // All vital points discovered
+  ARCHETYPE_MASTERY: 5, // All player archetypes mastered
+
+  // Progression milestones
+  TOTAL_MATCHES: 100, // Career matches played
+  WIN_STREAK_RECORD: 10, // Consecutive wins
+  COMEBACK_VICTORIES: 5, // Wins from critical health
+} as const;
+
+// Game state persistence
+export const SAVE_CONFIG = {
+  AUTOSAVE_INTERVAL: 60000, // Autosave every minute
+  MAX_SAVE_SLOTS: 3, // Number of save slots
+  SAVE_COMPRESSION: true, // Compress save data
+  CLOUD_SYNC: false, // Cloud save sync (future feature)
+
+  // Data retention
+  MATCH_HISTORY_LIMIT: 50, // Recent matches to keep
+  REPLAY_STORAGE_LIMIT: 10, // Replay files to store
+  SCREENSHOT_LIMIT: 20, // Screenshots to keep
+} as const;
+
+// Performance monitoring thresholds
+export const PERFORMANCE_THRESHOLDS = {
+  // Frame rate monitoring
+  MIN_FPS: 30, // Minimum acceptable FPS
+  TARGET_FPS: 60, // Target FPS
+  FPS_SAMPLE_SIZE: 60, // Frames to average for FPS calculation
+
+  // Memory usage alerts
+  MAX_MEMORY_MB: 512, // Maximum memory usage in MB
+  MEMORY_WARNING_THRESHOLD: 0.8, // Warning at 80% of max
+  GARBAGE_COLLECTION_THRESHOLD: 0.9, // Force GC at 90% of max
+
+  // Audio performance
+  MAX_AUDIO_LATENCY: 100, // Maximum audio latency in ms
+  AUDIO_BUFFER_SIZE: 4096, // Audio buffer size
+
+  // Rendering performance
+  MAX_DRAW_CALLS: 100, // Maximum draw calls per frame
+  TEXTURE_CACHE_LIMIT: 50, // Maximum cached textures
 } as const;
