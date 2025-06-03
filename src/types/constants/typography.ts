@@ -1,7 +1,5 @@
 // Typography constants for Korean martial arts game
 
-import { KOREAN_FONT_FAMILY_PRIMARY } from ".";
-
 // Korean font families optimized for martial arts display
 export const KOREAN_FONT_FAMILIES = {
   PRIMARY: "Noto Sans KR, Arial, sans-serif",
@@ -72,4 +70,4 @@ export const KOREAN_TEXT_EFFECTS = {
 } as const;
 
 // Legacy export for backward compatibility
-export const KOREAN_FONT_FAMILY = KOREAN_FONT_FAMILY_PRIMARY;
+export const KOREAN_FONT_FAMILY = "Noto Sans KR, Arial, sans-serif";
