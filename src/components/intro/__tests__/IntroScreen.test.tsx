@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
+import type { PlayerArchetype } from "../../../types";
 import { IntroScreen } from "../IntroScreen";
 
 // Mock PixiJS components by removing conflicting declarations
@@ -12,23 +13,35 @@ vi.mock("@pixi/react", () => ({
 }));
 
 describe("IntroScreen", () => {
-  const mockOnGamePhaseChange = vi.fn();
+  const mockOnStartTraining = vi.fn();
+  const mockOnStartCombat = vi.fn();
+  const mockOnArchetypeSelect = vi.fn();
+  const defaultArchetype: PlayerArchetype = "musa";
 
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
+  function renderIntroScreen() {
+    render(
+      <IntroScreen
+        onStartTraining={mockOnStartTraining}
+        onStartCombat={mockOnStartCombat}
+        onArchetypeSelect={mockOnArchetypeSelect}
+        selectedArchetype={defaultArchetype}
+      />
+    );
+  }
+
   it("should render the main title correctly", () => {
-    render(<IntroScreen onGamePhaseChange={mockOnGamePhaseChange} />);
+    renderIntroScreen();
 
     expect(screen.getByText("흑괘 무술 도장")).toBeInTheDocument();
-    expect(
-      screen.getByText("Black Trigram Martial Arts Academy")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Black Trigram Martial Arts")).toBeInTheDocument();
   });
 
   it("should render navigation buttons", () => {
-    render(<IntroScreen onGamePhaseChange={mockOnGamePhaseChange} />);
+    renderIntroScreen();
 
     expect(screen.getByText("메뉴 (Menu)")).toBeInTheDocument();
     expect(screen.getByText("조작법 (Controls)")).toBeInTheDocument();
@@ -36,7 +49,7 @@ describe("IntroScreen", () => {
   });
 
   it("should switch between sections correctly", () => {
-    render(<IntroScreen onGamePhaseChange={mockOnGamePhaseChange} />);
+    renderIntroScreen();
 
     // Click on Controls section
     fireEvent.click(screen.getByText("조작법 (Controls)"));
@@ -52,17 +65,17 @@ describe("IntroScreen", () => {
   });
 
   it("should handle game phase changes from menu", () => {
-    render(<IntroScreen onGamePhaseChange={mockOnGamePhaseChange} />);
+    renderIntroScreen();
 
     // Should start in menu section by default
     const trainingButton = screen.getByText(/수련 모드/);
     fireEvent.click(trainingButton);
 
-    expect(mockOnGamePhaseChange).toHaveBeenCalledWith("training");
+    expect(mockOnStartTraining).toHaveBeenCalled();
   });
 
   it("should show Korean martial arts terminology", () => {
-    render(<IntroScreen onGamePhaseChange={mockOnGamePhaseChange} />);
+    renderIntroScreen();
 
     // Switch to philosophy section
     fireEvent.click(screen.getByText("철학 (Philosophy)"));

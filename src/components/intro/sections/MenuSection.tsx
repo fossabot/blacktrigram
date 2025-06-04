@@ -18,7 +18,7 @@ export function MenuSection({
       korean: "수련",
       english: "Training",
       action: () => {
-        audio?.playSFX("menu_select");
+        if (audio) audio.playSFX("menu_select");
         onGamePhaseChange("training" as GamePhase);
       },
       description:
@@ -34,7 +34,7 @@ export function MenuSection({
       korean: "실전",
       english: "Combat",
       action: () => {
-        audio?.playSFX("menu_select");
+        if (audio) audio.playSFX("menu_select");
         onGamePhaseChange("combat" as GamePhase);
       },
       description:
@@ -50,7 +50,7 @@ export function MenuSection({
       korean: "철학",
       english: "Philosophy",
       action: () => {
-        audio?.playSFX("menu_select");
+        if (audio) audio.playSFX("menu_select");
         onGamePhaseChange("philosophy" as GamePhase);
       },
       description:
@@ -66,7 +66,7 @@ export function MenuSection({
       korean: "아키타입",
       english: "Archetypes",
       action: () => {
-        audio?.playSFX("menu_select");
+        if (audio) audio.playSFX("menu_select");
         onGamePhaseChange("archetypes" as GamePhase);
       },
       description:
@@ -82,7 +82,7 @@ export function MenuSection({
       korean: "설정",
       english: "Settings",
       action: () => {
-        audio?.playSFX("menu_hover");
+        if (audio) audio.playSFX("menu_hover");
         // TODO: Implement settings screen
         console.log("Settings screen - 설정 화면 (준비 중)");
       },
@@ -97,7 +97,7 @@ export function MenuSection({
   ];
 
   const handleMenuHover = () => {
-    audio?.playSFX("menu_hover");
+    if (audio) audio.playSFX("menu_hover");
   };
 
   return (

@@ -1,11 +1,11 @@
 import React, { useState, useCallback, useEffect } from "react";
 import type { CombatScreenProps } from "../../types/components";
-import { CombatArena } from "./CombatArena";
-import { CombatHUD } from "./CombatHUD";
-import { CombatControls } from "./CombatControls";
+import { CombatArena } from "../combat/components/CombatArena";
+import { CombatHUD } from "../combat/components/CombatHUD";
+import { CombatControls } from "../combat/components/CombatControls";
 import { KoreanText } from "../ui/base/korean-text/KoreanText";
 import { KOREAN_COLORS } from "../../types/constants";
-import type { HitEffect, CombatResult } from "../../types";
+import type { HitEffect, CombatResult, TrigramStance } from "../../types";
 
 export function CombatScreen({
   players,
@@ -15,14 +15,12 @@ export function CombatScreen({
   currentRound,
   timeRemaining,
   isPaused,
-  ...props
 }: CombatScreenProps): React.JSX.Element {
   const [combatEffects, setCombatEffects] = useState<HitEffect[]>([]);
   const [isExecutingTechnique, setIsExecutingTechnique] = useState(false);
-  const [showVitalPoints, setShowVitalPoints] = useState(false);
   const [combatLog, setCombatLog] = useState<string[]>([]);
 
-  const [player1, player2] = players;
+  const [player1] = players;
 
   // Handle technique execution
   const handleTechniqueExecute = useCallback(
@@ -67,7 +65,7 @@ export function CombatScreen({
           damage,
           timestamp: gameTime,
           duration: 1000,
-          color: damage > 30 ? KOREAN_COLORS.CRITICAL_HIT : KOREAN_COLORS.RED,
+          color: KOREAN_COLORS.WHITE, // If HitEffect expects a number, leave as is
           playerId: defender.id,
         };
 
@@ -111,8 +109,10 @@ export function CombatScreen({
     <div
       style={{
         minHeight: "100vh",
-        background: `linear-gradient(135deg, ${KOREAN_COLORS.BLACK} 0%, #1a1a2e 50%, #16213e 100%)`,
-        color: KOREAN_COLORS.WHITE,
+        background: `linear-gradient(135deg, #${KOREAN_COLORS.BLACK.toString(
+          16
+        )} 0%, #1a1a2e 50%, #16213e 100%)`,
+        color: "#" + KOREAN_COLORS.WHITE.toString(16),
         position: "relative",
       }}
     >
@@ -138,7 +138,7 @@ export function CombatScreen({
           onCombatResult={handleCombatResult}
           combatEffects={combatEffects}
           isExecutingTechnique={isExecutingTechnique}
-          showVitalPoints={showVitalPoints}
+          showVitalPoints={false}
           showDebugInfo={process.env.NODE_ENV === "development"}
         />
       </div>
@@ -147,12 +147,12 @@ export function CombatScreen({
       <CombatControls
         players={players}
         player={player1}
-        onStanceChange={(playerIndex, stance) => {
-          onPlayerUpdate(playerIndex, { stance });
+        onStanceChange={(playerIndex: number, stance: string) => {
+          onPlayerUpdate(playerIndex, { stance: stance as TrigramStance });
         }}
         isExecutingTechnique={isExecutingTechnique}
         isPaused={isPaused}
-        showVitalPoints={showVitalPoints}
+        showVitalPoints={false}
       />
 
       {/* Pause Overlay */}
@@ -184,14 +184,14 @@ export function CombatScreen({
               english="Paused"
               size="xlarge"
               weight="bold"
-              color={KOREAN_COLORS.CYAN}
+              color={"#" + KOREAN_COLORS.CYAN.toString(16)}
             />
             <div style={{ marginTop: "1rem", textAlign: "center" }}>
               <button
                 onClick={() => onGamePhaseChange("intro")}
                 style={{
-                  backgroundColor: KOREAN_COLORS.RED,
-                  color: KOREAN_COLORS.WHITE,
+                  backgroundColor: "#" + KOREAN_COLORS.RED.toString(16),
+                  color: "#" + KOREAN_COLORS.WHITE.toString(16),
                   border: "none",
                   padding: "0.75rem 1.5rem",
                   borderRadius: "5px",
@@ -223,7 +223,7 @@ export function CombatScreen({
           english="Combat Log"
           size="small"
           weight="bold"
-          color={KOREAN_COLORS.CYAN}
+          color={"#" + KOREAN_COLORS.CYAN.toString(16)}
         />
         {combatLog.map((entry, index) => (
           <div key={index} style={{ fontSize: "12px", marginTop: "0.25rem" }}>
