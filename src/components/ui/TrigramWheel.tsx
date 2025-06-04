@@ -10,7 +10,7 @@ export interface TrigramWheelProps {
   readonly onStanceSelect: (stance: TrigramStance) => void;
   readonly size?: number;
   readonly interactive?: boolean;
-  readonly time?: number; // Added time prop to match working component
+  readonly time?: number;
 }
 
 export function TrigramWheel({
@@ -18,7 +18,7 @@ export function TrigramWheel({
   onStanceSelect,
   size = 200,
   interactive = true,
-  time = 0, // Default value for time
+  time = 0,
 }: TrigramWheelProps): JSX.Element {
   const [hoveredStance, setHoveredStance] = useState<TrigramStance | null>(
     null
@@ -110,7 +110,7 @@ export function TrigramWheel({
               draw={(g: PixiGraphics) => {
                 g.clear();
                 const bgAlpha = isActive ? 0.8 : isHovered ? 0.7 : 0.5;
-                const bgColor = isActive ? stanceColor : KOREAN_COLORS.BLACK; // Changed from DARK_BLUE to BLACK
+                const bgColor = isActive ? stanceColor : KOREAN_COLORS.BLACK;
 
                 g.setFillStyle({ color: bgColor, alpha: bgAlpha });
                 g.circle(0, 0, isActive ? 12 : 8);

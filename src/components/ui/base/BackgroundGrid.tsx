@@ -1,5 +1,4 @@
 import { useCallback } from "react";
-import { Graphics } from "@pixi/react";
 import type { Graphics as PixiGraphics } from "pixi.js";
 import { KOREAN_COLORS } from "../../../types";
 
@@ -56,7 +55,7 @@ export function BackgroundGrid({
     [width, height, gridSize, lineWidth, color, alpha, animated]
   );
 
-  return <Graphics draw={drawGrid} />;
+  return <pixiGraphics draw={drawGrid} />;
 }
 
 export interface CyberpunkBackgroundProps {
@@ -104,5 +103,5 @@ export function CyberpunkBackground({
     [width, height]
   );
 
-  return <Graphics draw={drawBackground} />;
+  return <pixiGraphics draw={drawBackground} />;
 }

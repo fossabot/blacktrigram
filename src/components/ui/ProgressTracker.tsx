@@ -8,60 +8,49 @@ export interface ProgressTrackerProps {
   readonly total?: number;
   readonly value?: number;
   readonly maxValue?: number;
-
   readonly width?: number;
   readonly height?: number;
   readonly showPercentage?: boolean;
+  readonly showText?: boolean; // Alias for showPercentage
   readonly showLabel?: boolean;
   readonly label?: string;
   readonly color?: number;
+  readonly barColor?: number; // Alias for color
   readonly backgroundColor?: number;
-  // Additional props from other interfaces
-  readonly barColor?: number;
-  readonly borderColor?: number;
-  readonly showText?: boolean;
-  readonly textColor?: number;
-  readonly borderWidth?: number;
-  readonly x?: number;
-  readonly y?: number;
+  readonly borderColor?: number; // Added for compatibility
 }
 
 export function ProgressTracker({
-  // Accept both naming conventions and use progress/total internally
-  progress: propProgress,
-  total: propTotal,
+  // Use progress/value and total/maxValue with appropriate fallbacks
+  progress,
+  total,
   value,
   maxValue,
-
   width = 200,
   height = 30,
   showPercentage = true,
+  showText, // Alias for showPercentage
   showLabel = false,
   label = "Progress",
   color,
-  barColor = KOREAN_COLORS.CYAN,
+  barColor, // Alias for color
   backgroundColor = KOREAN_COLORS.GRAY_DARK,
   borderColor = KOREAN_COLORS.WHITE,
-  showText = showPercentage, // For backward compatibility
-  x = 0,
-  y = 0,
 }: ProgressTrackerProps): React.ReactElement {
-  // Use progress/total if provided, otherwise fall back to value/maxValue
-  const progress =
-    propProgress !== undefined ? propProgress : value !== undefined ? value : 0;
-  const total =
-    propTotal !== undefined
-      ? propTotal
-      : maxValue !== undefined
-      ? maxValue
-      : 100;
-
-  // Use barColor if color is not provided
-  const fillColor = color !== undefined ? color : barColor;
+  // Use progress/value and total/maxValue with appropriate fallbacks
+  const actualProgress = progress !== undefined ? progress : value ?? 0;
+  const actualTotal = total !== undefined ? total : maxValue ?? 100;
+  const actualColor =
+    color !== undefined ? color : barColor ?? KOREAN_COLORS.CYAN;
+  const actualShowPercentage =
+    showPercentage !== undefined ? showPercentage : showText;
 
   const percentage = useMemo(() => {
-    return Math.min(100, Math.round((progress / total) * 100));
-  }, [progress, total]);
+    return Math.min(
+      100,
+      Math.round((actualProgress / Math.max(actualTotal, 1)) * 100)
+    );
+  }, [actualProgress, actualTotal]);
 
   const drawProgressBar = useCallback(
     (g: PixiGraphics) => {
@@ -75,7 +64,7 @@ export function ProgressTracker({
       // Draw progress fill
       if (percentage > 0) {
         const fillWidth = (width * percentage) / 100;
-        g.setFillStyle({ color: fillColor, alpha: 0.8 });
+        g.setFillStyle({ color: actualColor, alpha: 0.8 });
         g.roundRect(0, 0, fillWidth, height, 5);
         g.fill();
       }
@@ -85,14 +74,14 @@ export function ProgressTracker({
       g.roundRect(0, 0, width, height, 5);
       g.stroke();
     },
-    [width, height, percentage, fillColor, backgroundColor, borderColor]
+    [width, height, percentage, actualColor, backgroundColor, borderColor]
   );
 
   return (
-    <pixiContainer x={x} y={y}>
+    <pixiContainer>
       <pixiGraphics draw={drawProgressBar} />
 
-      {showText && (
+      {actualShowPercentage && (
         <pixiText
           text={`${percentage}%`}
           x={width / 2}

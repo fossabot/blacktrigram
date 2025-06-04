@@ -1,14 +1,13 @@
 // Reusable PIXI.js components for Black Trigram Korean martial arts game
 
 import React, { useCallback, useMemo, useState } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
-import { TextStyle } from "pixi.js";
+import { TextStyle } from "pixi.js"; // Import TextStyle as a value
 import type {
   FederatedPointerEvent,
   Graphics as GraphicsType,
   TextDropShadow,
   TextStyleFontWeight,
-} from "pixi.js";
+} from "pixi.js"; // Keep these as type imports
 import type { TrigramStance } from "../../../types";
 import {
   KOREAN_COLORS,
@@ -17,8 +16,7 @@ import {
 } from "../../../types/constants";
 
 // Extended TextStyle interface for better type safety
-export interface ExtendedPixiTextStyle
-  extends Partial<Omit<TextStyle, "dropShadow" | "fontWeight" | "stroke">> {
+export interface ExtendedPixiTextStyle {
   readonly fontFamily?: string;
   readonly fontSize?: number;
   readonly fill?: number | string;
@@ -26,7 +24,7 @@ export interface ExtendedPixiTextStyle
   readonly align?: "left" | "center" | "right";
   readonly dropShadow?: TextDropShadow;
   readonly stroke?: { color: number; width: number } | number | string;
-  readonly strokeThickness?: number; // Explicitly include strokeThickness
+  readonly strokeThickness?: number;
 }
 
 // Base component interfaces
@@ -62,7 +60,7 @@ export function PixiContainerComponent({
   children,
   ...props
 }: PixiContainerComponentProps): React.ReactElement {
-  return <Container {...props}>{children}</Container>;
+  return <pixiContainer {...props}>{children}</pixiContainer>;
 }
 
 export function PixiGraphicsComponent({
@@ -79,7 +77,7 @@ export function PixiGraphicsComponent({
     [draw]
   );
 
-  return <Graphics draw={drawCallback} {...props} />;
+  return <pixiGraphics draw={drawCallback} {...props} />;
 }
 
 export function PixiTextComponent({
@@ -87,90 +85,20 @@ export function PixiTextComponent({
   style,
   ...props
 }: PixiTextComponentProps): React.ReactElement {
-  const textStyle = useMemo(() => {
-    if (!style) return new TextStyle();
-
-    // Helper function to convert weight to proper type
-    const convertFontWeight = (
-      weight?: string | number
-    ): TextStyleFontWeight => {
-      if (typeof weight === "number") {
-        if (weight <= 300) return "100";
-        if (weight <= 400) return "normal";
-        if (weight <= 500) return "500";
-        if (weight <= 700) return "bold";
-        return "900";
-      }
-      if (typeof weight === "string") {
-        // Ensure string weights are valid TextStyleFontWeight values
-        const validWeights: TextStyleFontWeight[] = [
-          "100",
-          "200",
-          "300",
-          "400",
-          "500",
-          "600",
-          "700",
-          "800",
-          "900",
-          "normal",
-          "bold",
-          "lighter",
-          "bolder",
-        ];
-        return validWeights.includes(weight as TextStyleFontWeight)
-          ? (weight as TextStyleFontWeight)
-          : "normal";
-      }
-      return "normal";
-    };
-
-    const pixiStyle = new TextStyle({
-      fontFamily: style.fontFamily || KOREAN_FONT_FAMILY_PRIMARY,
-      fontSize: style.fontSize || 16,
-      fill: style.fill || KOREAN_COLORS.WHITE,
-      fontWeight: convertFontWeight(style.fontWeight),
-      align: style.align || "left",
-    });
-
-    // Handle dropShadow - only accept TextDropShadow objects
-    if (style.dropShadow) {
-      pixiStyle.dropShadow = style.dropShadow;
-    }
-
-    // Handle stroke
-    if (style.stroke) {
-      if (typeof style.stroke === "object" && "color" in style.stroke) {
-        pixiStyle.stroke = style.stroke.color;
-        // Use type assertion to handle strokeThickness
-        (pixiStyle as any).strokeThickness = style.stroke.width;
-      } else {
-        pixiStyle.stroke = style.stroke;
-      }
-    }
-
-    // Handle strokeThickness
-    if (style.strokeThickness !== undefined) {
-      // Use type assertion to handle strokeThickness
-      (pixiStyle as any).strokeThickness = style.strokeThickness;
-    }
-
-    return pixiStyle;
-  }, [style]);
-
-  return <Text text={text} style={textStyle} {...props} />;
+  // Instead of creating a TextStyle instance, we'll pass the style props directly
+  return <pixiText text={text} style={style || {}} {...props} />;
 }
 
 // Example stance colors - use lowercase property names from KOREAN_COLORS
 const STANCE_COLORS = {
-  geon: KOREAN_COLORS.geon, // Gold for Heaven
-  tae: KOREAN_COLORS.tae, // Sky Blue for Lake
-  li: KOREAN_COLORS.li, // Orange Red for Fire
-  jin: KOREAN_COLORS.jin, // Medium Purple for Thunder
-  son: KOREAN_COLORS.son, // Pale Green for Wind
-  gam: KOREAN_COLORS.gam, // Royal Blue for Water
-  gan: KOREAN_COLORS.gan, // Saddle Brown for Mountain
-  gon: KOREAN_COLORS.gon, // Dark Brown for Earth
+  geon: KOREAN_COLORS.geon,
+  tae: KOREAN_COLORS.tae,
+  li: KOREAN_COLORS.li,
+  jin: KOREAN_COLORS.jin,
+  son: KOREAN_COLORS.son,
+  gam: KOREAN_COLORS.gam,
+  gan: KOREAN_COLORS.gan,
+  gon: KOREAN_COLORS.gon,
 } as const;
 
 // Interface definitions
@@ -276,17 +204,17 @@ export const TrigramButton = React.memo(function TrigramButton({
   );
 
   return (
-    <Container
+    <pixiContainer
       x={x}
       y={y}
       interactive={true}
-      eventMode="static"
-      pointertap={onClick}
-      pointerover={() => setIsHovered(true)}
-      pointerout={() => setIsHovered(false)}
+      cursor="pointer"
+      onPointerDown={onClick}
+      onPointerOver={() => setIsHovered(true)}
+      onPointerOut={() => setIsHovered(false)}
     >
-      <Graphics draw={drawButton} />
-      <Text
+      <pixiGraphics draw={drawButton} />
+      <pixiText
         text={trigram.symbol}
         style={{
           fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
@@ -296,7 +224,7 @@ export const TrigramButton = React.memo(function TrigramButton({
         }}
         anchor={0.5}
       />
-    </Container>
+    </pixiContainer>
   );
 });
 
@@ -307,7 +235,7 @@ export const StatusBar = React.memo(function StatusBar({
   height = 20,
   x = 0,
   y = 0,
-  color = KOREAN_COLORS.CYAN, // Use CYAN instead of NEON_CYAN
+  color = KOREAN_COLORS.CYAN,
   backgroundColor = KOREAN_COLORS.GRAY_DARK,
   showText = true,
 }: StatusBarProps): React.ReactElement {
@@ -337,10 +265,10 @@ export const StatusBar = React.memo(function StatusBar({
   );
 
   return (
-    <Container x={x} y={y}>
-      <Graphics draw={drawBar} />
+    <pixiContainer x={x} y={y}>
+      <pixiGraphics draw={drawBar} />
       {showText && (
-        <Text
+        <pixiText
           text={`${Math.round(current)} / ${maximum}`}
           style={{
             fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
@@ -353,7 +281,7 @@ export const StatusBar = React.memo(function StatusBar({
           y={height / 2}
         />
       )}
-    </Container>
+    </pixiContainer>
   );
 });
 
@@ -406,11 +334,11 @@ export const KoreanTextDisplay = React.memo(function KoreanTextDisplay({
   const displayText = bilingual && english ? `${korean} (${english})` : korean;
 
   return (
-    <Container x={x} y={y}>
-      <Graphics draw={drawBackground} />
-      <Graphics draw={backgroundBar} />
-      <Graphics draw={accentLine} />
-      <Text
+    <pixiContainer x={x} y={y}>
+      <pixiGraphics draw={drawBackground} />
+      <pixiGraphics draw={backgroundBar} />
+      <pixiGraphics draw={accentLine} />
+      <pixiText
         text={displayText}
         style={{
           fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
@@ -429,7 +357,7 @@ export const KoreanTextDisplay = React.memo(function KoreanTextDisplay({
             : undefined,
         }}
       />
-    </Container>
+    </pixiContainer>
   );
 });
 
@@ -438,7 +366,7 @@ export const CyberpunkGlow = React.memo(function CyberpunkGlow({
   y = 0,
   radius = 50,
   intensity = 1.0,
-  color = KOREAN_COLORS.CYAN, // Use CYAN instead of NEON_CYAN
+  color = KOREAN_COLORS.CYAN,
 }: CyberpunkGlowProps): React.ReactElement {
   const drawGlow = useCallback(
     (g: GraphicsType) => {
@@ -468,9 +396,9 @@ export const CyberpunkGlow = React.memo(function CyberpunkGlow({
   );
 
   return (
-    <Container x={x} y={y}>
-      <Graphics draw={drawGlow} />
-    </Container>
+    <pixiContainer x={x} y={y}>
+      <pixiGraphics draw={drawGlow} />
+    </pixiContainer>
   );
 });
 
@@ -479,7 +407,7 @@ export const BackgroundGrid = React.memo(function BackgroundGrid({
   width,
   height,
   gridSize = 50,
-  color = KOREAN_COLORS.GRAY_MEDIUM, // Use GRAY_MEDIUM instead of GRAY
+  color = KOREAN_COLORS.GRAY_MEDIUM,
   alpha = 0.3,
 }: {
   width: number;
@@ -508,7 +436,7 @@ export const BackgroundGrid = React.memo(function BackgroundGrid({
     [width, height, gridSize, color, alpha]
   );
 
-  return <Graphics draw={drawGrid} />;
+  return <pixiGraphics draw={drawGrid} />;
 });
 
 // Highlight text component with Korean and English support
@@ -607,7 +535,9 @@ export function KoreanPixiText({
     ...style,
   };
 
-  return <Text text={text} x={x} y={y} style={defaultStyle} anchor={anchor} />;
+  return (
+    <pixiText text={text} x={x} y={y} style={defaultStyle} anchor={anchor} />
+  );
 }
 
 // Trigram symbol component
@@ -663,7 +593,7 @@ export function CombatHUDBackground({
     [width, height, alpha]
   );
 
-  return <Graphics draw={draw} />;
+  return <pixiGraphics draw={draw} />;
 }
 
 export function HealthBar({
@@ -698,7 +628,7 @@ export function HealthBar({
     [x, y, width, height, healthPercentage, color]
   );
 
-  return <Graphics draw={draw} />;
+  return <pixiGraphics draw={draw} />;
 }
 
 export function KiBar({
@@ -732,7 +662,7 @@ export function KiBar({
     [x, y, width, height, kiPercentage]
   );
 
-  return <Graphics draw={draw} />;
+  return <pixiGraphics draw={draw} />;
 }
 
 export function StanceIndicator({
@@ -762,7 +692,7 @@ export function StanceIndicator({
     [x, y, radius, color, isActive]
   );
 
-  return <Graphics draw={draw} />;
+  return <pixiGraphics draw={draw} />;
 }
 
 // Damage number display
@@ -845,7 +775,7 @@ export function TrigramWheelBackground({
     [centerX, centerY, radius]
   );
 
-  return <Graphics draw={draw} />;
+  return <pixiGraphics draw={draw} />;
 }
 
 // Export all components
