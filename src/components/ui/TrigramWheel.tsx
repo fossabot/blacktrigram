@@ -139,6 +139,19 @@ export function TrigramWheel({
               }}
               data-testid={`trigram-symbol-${stance}`}
             />
+
+            {/* Korean name text */}
+            <pixiText
+              text={TRIGRAM_DATA[stance].name}
+              anchor={{ x: 0.5, y: -1.5 }}
+              style={{
+                fontFamily: "Noto Sans KR",
+                fontSize: 8,
+                fill: isActive ? stanceColor : KOREAN_COLORS.WHITE,
+                fontWeight: isActive ? "bold" : "normal",
+              }}
+              data-testid={`trigram-korean-${stance}`}
+            />
           </pixiContainer>
         );
       })}
@@ -155,6 +168,36 @@ export function TrigramWheel({
         }}
         data-testid="yin-yang-symbol"
       />
+
+      {/* Active stance indicator */}
+      {currentStance && (
+        <pixiText
+          text={`현재: ${TRIGRAM_DATA[currentStance].name}`}
+          anchor={{ x: 0.5, y: 2.5 }}
+          style={{
+            fontFamily: "Noto Sans KR",
+            fontSize: 10,
+            fill: KOREAN_COLORS.CYAN,
+            fontWeight: "bold",
+          }}
+          data-testid="current-stance-indicator"
+        />
+      )}
+
+      {/* Hovered stance info */}
+      {hoveredStance && hoveredStance !== currentStance && (
+        <pixiText
+          text={`${TRIGRAM_DATA[hoveredStance].name.korean} - ${TRIGRAM_DATA[hoveredStance].name.english}`}
+          anchor={{ x: 0.5, y: 3.0 }}
+          style={{
+            fontFamily: "Noto Sans KR",
+            fontSize: 8,
+            fill: KOREAN_COLORS.GOLD,
+            fontWeight: "normal",
+          }}
+          data-testid="hovered-stance-info"
+        />
+      )}
     </pixiContainer>
   );
 }

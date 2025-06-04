@@ -293,6 +293,84 @@ export function TrainingScreen({
                   interactive={true}
                 />
               </div>
+
+              {/* Current Stance Information */}
+              <div style={{ marginTop: "2rem" }}>
+                <KoreanText
+                  korean="선택된 팔괘"
+                  english="Selected Trigram"
+                  size="medium"
+                  weight="bold"
+                  color={"#" + KOREAN_COLORS.CYAN.toString(16)}
+                />
+                <div
+                  style={{
+                    marginTop: "1rem",
+                    padding: "1rem",
+                    backgroundColor: "rgba(255,255,255,0.1)",
+                    borderRadius: "5px",
+                  }}
+                >
+                  <KoreanText
+                    korean={
+                      TRIGRAM_DATA[player.stance]?.symbol +
+                      " " +
+                      (TRIGRAM_DATA[player.stance]?.name?.korean || "")
+                    }
+                    english={TRIGRAM_DATA[player.stance]?.name?.english || ""}
+                    size="large"
+                    color={
+                      "#" +
+                      (KOREAN_COLORS[player.stance]
+                        ? KOREAN_COLORS[player.stance].toString(16)
+                        : KOREAN_COLORS.WHITE.toString(16))
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* Technique Information */}
+              {currentTechnique && (
+                <div style={{ marginTop: "2rem" }}>
+                  <KoreanText
+                    korean="기법"
+                    english="Technique"
+                    size="medium"
+                    weight="bold"
+                    color={"#" + KOREAN_COLORS.CYAN.toString(16)}
+                  />
+                  <div
+                    style={{
+                      marginTop: "1rem",
+                      padding: "1rem",
+                      backgroundColor: "rgba(255,255,255,0.1)",
+                      borderRadius: "5px",
+                    }}
+                  >
+                    <KoreanText
+                      korean={`기법: ${currentTechnique.koreanName}`}
+                      english={`Technique: ${currentTechnique.englishName}`}
+                      size="medium"
+                    />
+                    <KoreanText
+                      korean={`설명: ${
+                        currentTechnique.description?.korean || ""
+                      }`}
+                      english={`Description: ${
+                        currentTechnique.description?.english || ""
+                      }`}
+                      size="small"
+                      style={{ marginTop: "0.5rem" }}
+                    />
+                    <KoreanText
+                      korean={`데미지: ${currentTechnique.damage || 0}`}
+                      english={`Damage: ${currentTechnique.damage || 0}`}
+                      size="small"
+                      style={{ marginTop: "0.5rem" }}
+                    />
+                  </div>
+                </div>
+              )}
             </>
           )}
 
@@ -453,6 +531,21 @@ export function TrainingScreen({
               }}
             >
               <KoreanText korean="회복" english="Restore" />
+            </button>
+
+            <button
+              onClick={onReturnToMenu}
+              style={{
+                backgroundColor: "transparent",
+                color: "#" + KOREAN_COLORS.WHITE.toString(16),
+                border: `2px solid #${KOREAN_COLORS.WHITE.toString(16)}`,
+                padding: "1rem",
+                borderRadius: "5px",
+                cursor: "pointer",
+                fontFamily: '"Noto Sans KR", Arial, sans-serif',
+              }}
+            >
+              <KoreanText korean="메뉴로 돌아가기" english="Return to Menu" />
             </button>
           </div>
         </div>

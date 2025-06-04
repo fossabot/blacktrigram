@@ -98,7 +98,6 @@ export default function App(): React.JSX.Element {
   const [appState, dispatch] = useReducer(appReducer, initialAppState);
   const [selectedArchetype, setSelectedArchetype] =
     useState<PlayerArchetype>("musa");
-  const [selectedStance, setSelectedStance] = useState<TrigramStance>("geon");
 
   // Handle game phase changes with proper type conversion
   const handlePhaseChange = useCallback((phase: GamePhase | string) => {
@@ -128,7 +127,6 @@ export default function App(): React.JSX.Element {
   // Handle stance selection
   const handleStanceSelect = useCallback(
     (stance: TrigramStance) => {
-      setSelectedStance(stance);
       handlePlayerUpdate(0, { stance });
     },
     [handlePlayerUpdate]
@@ -190,12 +188,9 @@ export default function App(): React.JSX.Element {
         return (
           <TrainingScreen
             players={appState.players}
-            onGamePhaseChange={handlePhaseChange}
             onPlayerUpdate={handlePlayerUpdate}
             onStanceChange={handleStanceSelect}
-            selectedStance={selectedStance}
             gameTime={appState.gameTime}
-            currentRound={appState.currentRound}
             onReturnToMenu={() => handlePhaseChange("intro")}
             onStartCombat={() => handlePhaseChange("combat")}
           />
