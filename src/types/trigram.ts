@@ -71,14 +71,13 @@ export interface TrigramData {
   readonly philosophy: KoreanText; // Added philosophy property
   readonly combatRole: KoreanText; // Added combat role property
   readonly technique: KoreanTechnique; // Associated signature technique
+  readonly color: number; // Add missing color property
   readonly strengths?: readonly string[]; // Added strengths property
-  readonly color: string | number; // Hex color or PixiJS color
-  readonly description: KoreanText;
+  readonly weaknesses?: readonly string[]; // Add missing weaknesses property
+  readonly offensiveBonus?: number;
+  readonly defensiveBonus?: number;
   readonly kiFlowModifier?: number; // How this stance affects Ki recovery or usage
   readonly staminaModifier?: number; // How this stance affects Stamina recovery or usage
-  readonly defensiveBonus?: number;
-  readonly offensiveBonus?: number;
-  readonly relatedPhilosophies?: string[]; // IDs to KoreanPhilosophy
 }
 
 // Effectiveness matrix for stance combinations

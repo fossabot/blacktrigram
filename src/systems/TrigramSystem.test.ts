@@ -130,7 +130,12 @@ describe("TrigramSystem", () => {
 
       // Mock calculateTransitionCost if it's part of TrigramCalculator used by TrigramSystem
       // For this test, we assume the MOCK_TRANSITION_RULES define a cost for geon->li that's > 1 ki.
-      const path = trigramSystem.calculateOptimalPath(testPlayer, from, to);
+      const path = trigramSystem.calculateOptimalPath(
+        "geon",
+        "li",
+        testPlayer,
+        "tae" // opponentStance
+      );
       expect(path).toBeNull();
     });
 
@@ -140,14 +145,7 @@ describe("TrigramSystem", () => {
       const from: TrigramStance = "geon";
       const to: TrigramStance = "gam"; // Target that might be 'far'
       const testPlayer = createMockPlayerState(from, 100, 100);
-      // Need to ensure MOCK_TRANSITION_RULES and TrigramCalculator logic supports multi-step paths
-      const path = trigramSystem.calculateOptimalPath(
-        testPlayer,
-        from,
-        to,
-        undefined, // opponentStance
-        3 // maxDepth
-      ); // Allow up to 3 steps
+      const path = trigramSystem.calculateOptimalPath(testPlayer, from, to); // Allow up to 3 steps
       // Assertions depend heavily on the mocked data and pathfinding logic
       // For now, just check if a path is returned or not based on simple direct cost
       expect(path).toBeNull();

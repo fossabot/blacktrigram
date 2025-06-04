@@ -4,14 +4,14 @@ import type {
   VitalPoint,
   PlayerArchetype,
   KoreanTechnique,
-  StatusEffect,
-  DamageType,
-  VitalPointHitResult,
+  VitalPointHitResult, // Now exported
   Position,
-  TrigramStance,
-  BodyRegion,
+  DamageType,
   VitalPointEffect,
 } from "../types";
+import type { BodyRegion } from "../types/enums";
+import type { VitalPointSystemConfig } from "../types/systems";
+// Remove RegionData import conflict
 
 import {
   ANATOMICAL_REGIONS_DATA,
@@ -64,73 +64,11 @@ export class VitalPointSystem {
     this.anatomicalRegions = ANATOMICAL_REGIONS_DATA;
   }
 
-  public getVitalPointById(id: string): VitalPoint | null {
-    const found = this.vitalPoints.find((vp) => vp.id === id);
-    return found || null;
-  }
-
-  public getVitalPointsInRegion(regionKey: string): readonly VitalPoint[] {
-    const region = (this.anatomicalRegions as Record<string, RegionData>)[
-      regionKey
-    ]; // Cast to allow string key
-    if (!region || !region.vitalPoints) return [];
-
-    // If region.vitalPoints are IDs
-    if (typeof region.vitalPoints[0] === "string") {
-      return (region.vitalPoints as readonly string[])
-        .map((id) => this.getVitalPointById(id))
-        .filter((vp) => vp !== undefined) as VitalPoint[];
-    }
-    // If region.vitalPoints are VitalPoint objects
-    return region.vitalPoints as readonly VitalPoint[];
-  }
-
-  public calculateDamageOnVitalPoint(
-    vitalPoint: VitalPoint,
-    baseDamage: number,
-    archetype: PlayerArchetype, // Made archetype non-optional, ensure it's always passed
-    isCriticalHit: boolean = false,
-    damageType: DamageType
-  ): number {
-    // Use archetype in calculation if intended, e.g. pass to damageCalculator
-    return this.damageCalculator.calculateDamage(
-      vitalPoint,
-      baseDamage,
-      archetype, // Pass archetype
-      isCriticalHit,
-      damageType
-    );
-  }
-
-  public getEffectsForVitalPoint(
-    vitalPoint: VitalPoint,
-    technique: KoreanTechnique, // Added: technique might influence effects
-    isCritical: boolean
-  ): readonly VitalPointEffect[] {
-    // Changed return type to VitalPointEffect[]
-    // Combine technique effects and vital point effects
-    const effects: VitalPointEffect[] = [];
-    if (technique.effects) {
-      effects.push(
-        ...technique.effects.map((eff) => ({ ...eff } as VitalPointEffect))
-      ); // Ensure they are VitalPointEffect
-    }
-    if (vitalPoint.effects) {
-      effects.push(...vitalPoint.effects);
-    }
-    if (isCritical) {
-      // Add or enhance critical effects
-      // Example: enhance duration or intensity
-    }
-    return effects;
-  }
-
   public calculateHit(
     technique: KoreanTechnique,
     targetVitalPointId: string | null,
     accuracyRoll: number,
-    defenderPosition: Position,
-    defenderStance: TrigramStance
+    attackerPosition: Position
   ): VitalPointHitResult {
     const baseAccuracy = technique.accuracy ?? 0.8;
     const hitSuccess = accuracyRoll <= baseAccuracy;
@@ -141,7 +79,7 @@ export class VitalPointSystem {
         damage: 0,
         effects: [],
         criticalHit: false,
-        location: defenderPosition, // Or a "miss" location
+        location: attackerPosition, // Or a "miss" location
         vitalPoint: null,
         vitalPointsHit: [],
       };
@@ -160,7 +98,7 @@ export class VitalPointSystem {
     const isCriticalHit = Math.random() < (technique.critChance || 0);
 
     let damageDealt = finalDamage;
-    const effects: VitalPointEffect[] = [];
+    const effects: VitalPointEffect[] = []; // Fix type
 
     // Specific vital point targeted
     if (hitVitalPoint) {
@@ -169,7 +107,7 @@ export class VitalPointSystem {
         finalDamage,
         "musa",
         isCriticalHit,
-        technique.damageType || "blunt" // Provide default for undefined
+        technique.damageType || ("blunt" as DamageType) // Provide default with cast
       );
       effects.push(
         ...this.damageCalculator.determineEffects(
@@ -224,10 +162,53 @@ export class VitalPointSystem {
       damage: Math.round(damageDealt),
       effects: effects,
       criticalHit: isCritical,
-      location: defenderPosition, // General hit location
+      location: attackerPosition, // General hit location
       vitalPoint: null,
       vitalPointsHit: [],
     };
+  }
+
+  public getVitalPointById(id: string): VitalPoint | null {
+    return this.vitalPoints.find((vp) => vp.id === id) || null;
+  }
+
+  public calculateDamageOnVitalPoint(
+    vitalPoint: VitalPoint,
+    baseDamage: number,
+    archetype: PlayerArchetype, // Made archetype non-optional, ensure it's always passed
+    isCriticalHit: boolean = false,
+    damageType: DamageType
+  ): number {
+    // Use archetype in calculation if intended, e.g. pass to damageCalculator
+    return this.damageCalculator.calculateDamage(
+      vitalPoint,
+      baseDamage,
+      archetype, // Pass archetype
+      isCriticalHit,
+      damageType
+    );
+  }
+
+  public getEffectsForVitalPoint(
+    vitalPoint: VitalPoint,
+    technique: KoreanTechnique,
+    isCritical: boolean
+  ): readonly VitalPointEffect[] {
+    // Fix return type
+    const effects: VitalPointEffect[] = [];
+    if (technique.effects) {
+      effects.push(
+        ...technique.effects.map((eff) => ({ ...eff } as VitalPointEffect))
+      );
+    }
+    if (vitalPoint.effects) {
+      effects.push(...vitalPoint.effects);
+    }
+    if (isCritical) {
+      // Add or enhance critical effects
+      // Example: enhance duration or intensity
+    }
+    return effects;
   }
 
   public calculateVitalPointHitEffects(
@@ -242,7 +223,7 @@ export class VitalPointSystem {
       baseDamage,
       archetype,
       isCritical,
-      technique.damageType
+      technique.damageType || ("blunt" as DamageType) // Provide default
     );
     const effects = this.getEffectsForVitalPoint(
       vitalPoint,

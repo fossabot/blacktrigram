@@ -13,14 +13,10 @@ export type { Position, CombatCondition } from "./common";
 export type { PlayerState, PlayerArchetypeData } from "./player";
 export type {
   VitalPoint,
-  VitalPointHitResult,
-  VitalPointCategory,
-  VitalPointSeverity,
-  AnatomicalLocation, // Added export
-  AnatomicalRegion, // Added export
-  BodyPart, // Added export
-  AnatomyModel, // Added export
-  VitalPointEffect, // Added export
+  VitalPointEffect,
+  VitalPointHitResult, // Add missing export
+  AnatomicalLocation,
+  RegionData,
 } from "./anatomy";
 export type { KoreanTechnique, CombatResult, AttackInput } from "./combat";
 export type { HitEffect, StatusEffect } from "./effects";
@@ -109,3 +105,4 @@ export {
 // Export utility functions
 export { createPlayerState } from "../utils/playerUtils";
 export type { DamageRange } from "./common";
+export type { BodyRegion } from "./enums"; // Add missing export

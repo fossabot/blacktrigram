@@ -291,3 +291,5 @@ export interface SystemConfig {
   readonly debugMode?: boolean;
   readonly performanceMonitoring?: boolean;
 }
+
+export type { RegionData } from "./anatomy";

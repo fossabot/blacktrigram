@@ -15,8 +15,8 @@ export class CombatSystem {
   /**
    * Execute a full attack sequence - main combat method
    */
-  static async executeAttack(input: AttackInput): Promise<CombatResult> {
-    const { attacker, defender, technique, targetPoint } = input;
+  public static async executeAttack(input: AttackInput): Promise<CombatResult> {
+    const { attacker, defender, technique, targetPoint } = input; // targetPoint now exists
 
     // Calculate hit chance based on stance effectiveness
     const stanceEffectiveness = this.calculateStanceEffectiveness(

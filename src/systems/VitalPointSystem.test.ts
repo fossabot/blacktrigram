@@ -149,8 +149,7 @@ describe("VitalPointSystem", () => {
         MOCK_TECHNIQUE_STRIKE,
         MOCK_VITAL_POINT_HEAD.id,
         accuracyRoll,
-        MOCK_DEFENDER_POSITION,
-        MOCK_DEFENDER_STANCE
+        MOCK_DEFENDER_POSITION
       );
 
       expect(result.hit).toBe(true);
@@ -167,8 +166,7 @@ describe("VitalPointSystem", () => {
         MOCK_TECHNIQUE_STRIKE,
         null,
         accuracyRoll,
-        MOCK_DEFENDER_POSITION,
-        MOCK_DEFENDER_STANCE
+        MOCK_DEFENDER_POSITION
       );
 
       expect(result.hit).toBe(true);
@@ -183,8 +181,7 @@ describe("VitalPointSystem", () => {
         MOCK_TECHNIQUE_STRIKE,
         null,
         accuracyRoll,
-        MOCK_DEFENDER_POSITION,
-        MOCK_DEFENDER_STANCE
+        MOCK_DEFENDER_POSITION
       );
       expect(result.hit).toBe(false);
       expect(result.damage).toBe(0);

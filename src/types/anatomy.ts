@@ -3,6 +3,7 @@
 import { Position } from "./common";
 import type { KoreanText } from "./korean-text";
 import type { BodyRegion, EffectIntensity, EffectType } from "./enums";
+import { StatusEffect } from "./effects";
 
 // Vital point effect for Korean martial arts realism - FIXED: Use proper types
 export interface VitalPointEffect {
@@ -67,17 +68,17 @@ export interface AnatomicalHit {
 // Vital point hit result
 export interface VitalPointHitResult {
   readonly hit: boolean;
-  readonly vitalPoint: VitalPoint | null;
   readonly damage: number;
-  readonly effects: readonly VitalPointEffect[]; // Changed from StatusEffect to VitalPointEffect for consistency
-  readonly criticalHit: boolean;
-  readonly location: { x: number; y: number }; // Precise hit location
+  readonly effects: readonly StatusEffect[];
+  readonly vitalPointsHit: readonly VitalPoint[];
+  readonly vitalPoint?: VitalPoint;
   readonly severity?: VitalPointSeverity;
-  readonly painLevel?: number;
-  readonly consciousnessImpact?: number;
-  readonly statusEffectsApplied?: readonly VitalPointEffect[]; // Or StatusEffect[] if different
-  readonly effectiveness?: number;
-  readonly vitalPointsHit: readonly VitalPoint[]; // Ensure this is VitalPoint array
+  readonly criticalHit: boolean;
+  readonly location: Position;
+  readonly effectiveness: number;
+  readonly statusEffectsApplied: readonly StatusEffect[];
+  readonly painLevel: number;
+  readonly consciousnessImpact: number;
 }
 
 // Korean anatomy system interface

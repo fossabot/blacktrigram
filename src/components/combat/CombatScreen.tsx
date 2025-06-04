@@ -76,7 +76,7 @@ export function CombatScreen({
           attacker,
           defender,
           technique,
-          targetPoint: targetVitalPoint,
+          targetPoint: targetVitalPoint?.id || null, // Use ID instead of object
         });
 
         // Apply Korean martial arts audio feedback

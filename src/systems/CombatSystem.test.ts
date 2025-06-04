@@ -157,7 +157,7 @@ describe("CombatSystem", () => {
         attacker,
         defender,
         technique: mockGeonTechnique,
-        targetVitalPoint: mockVitalPoint.id, // Use targetVitalPoint instead of targetPoint
+        targetPoint: mockVitalPoint.id, // Use targetPoint instead of targetVitalPoint
       };
       const result = await CombatSystem.executeAttack(attackInput);
 

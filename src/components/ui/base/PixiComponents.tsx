@@ -11,15 +11,15 @@ import type {
 import { KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../../types";
 
 // Add stance color mapping for trigram colors
-const STANCE_COLORS = {
-  geon: KOREAN_COLORS.GEON_GOLD, // Heaven - Gold
-  tae: KOREAN_COLORS.TAE_CYAN, // Lake - Cyan
-  li: KOREAN_COLORS.LI_ORANGE, // Fire - Orange (changed from TRADITIONAL_RED)
-  jin: KOREAN_COLORS.JIN_PURPLE, // Thunder - Purple (using existing NEON_PURPLE or add JIN_PURPLE)
-  son: KOREAN_COLORS.SON_GREEN, // Wind - Green
-  gam: KOREAN_COLORS.GAM_BLUE, // Water - Blue
-  gan: KOREAN_COLORS.GAN_BROWN, // Mountain - Brown (using WOOD_BROWN)
-  gon: KOREAN_COLORS.GON_YELLOW, // Earth - Yellow/Gold
+export const STANCE_COLORS = {
+  geon: KOREAN_COLORS.GEON, // Heaven - Gold
+  tae: KOREAN_COLORS.TAE, // Lake - Sky Blue
+  li: KOREAN_COLORS.LI, // Fire - Orange Red
+  jin: KOREAN_COLORS.JIN, // Thunder - Purple
+  son: KOREAN_COLORS.SON, // Wind - Pale Green
+  gam: KOREAN_COLORS.GAM, // Water - Royal Blue
+  gan: KOREAN_COLORS.GAN, // Mountain - Brown
+  gon: KOREAN_COLORS.GON, // Earth - Dark Brown
 } as const;
 
 // Base Props for Pixi Components
