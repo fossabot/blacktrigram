@@ -9,13 +9,8 @@ import type {
   DamageType,
   VitalPointEffect,
 } from "../types";
-import type { BodyRegion } from "../types/enums";
-import type { VitalPointSystemConfig, RegionData } from "../types/systems";
+import type { BodyRegion, VitalPointSeverity } from "../types/enums";
 
-import {
-  ANATOMICAL_REGIONS_DATA,
-  RegionData,
-} from "./vitalpoint/AnatomicalRegions";
 import { VITAL_POINTS_DATA } from "./vitalpoint/KoreanVitalPoints"; // Assuming this exports all vital points
 import { DamageCalculator } from "./vitalpoint/DamageCalculator";
 
@@ -35,7 +30,6 @@ export class VitalPointSystem {
   private config: VitalPointSystemConfig;
   private damageCalculator: DamageCalculator;
   private vitalPoints: readonly VitalPoint[];
-  private anatomicalRegions: Readonly<Record<BodyRegion, RegionData>>;
 
   constructor(config?: VitalPointSystemConfig) {
     this.config = config || {
@@ -60,15 +54,49 @@ export class VitalPointSystem {
     this.damageCalculator = new DamageCalculator(this.config);
     // Ensure VITAL_POINTS_DATA is an array of VitalPoint objects
     this.vitalPoints = VITAL_POINTS_DATA;
-    this.anatomicalRegions = ANATOMICAL_REGIONS_DATA;
   }
 
   public calculateHit(
     technique: KoreanTechnique,
-    targetVitalPointId: string | null,
+    targetVitalPoint: VitalPoint | null, // Change parameter type to VitalPoint
     accuracyRoll: number,
     attackerPosition: Position
   ): VitalPointHitResult {
+    if (!targetVitalPoint) {
+      return {
+        hit: false,
+        damage: 0,
+        effects: [],
+        vitalPointsHit: [],
+        vitalPoint: undefined, // Use undefined instead of null
+        severity: "moderate" as VitalPointSeverity, // Use valid severity
+        criticalHit: false,
+        location: attackerPosition,
+        effectiveness: 0,
+        statusEffectsApplied: [],
+        painLevel: 0,
+        consciousnessImpact: 0,
+      };
+    }
+
+    const vitalPoint = this.getVitalPointById(targetVitalPoint.id);
+    if (!vitalPoint) {
+      return {
+        hit: false,
+        damage: 0,
+        effects: [],
+        vitalPointsHit: [],
+        vitalPoint: undefined, // Use undefined instead of null
+        severity: "moderate" as VitalPointSeverity, // Use valid severity
+        criticalHit: false,
+        location: attackerPosition,
+        effectiveness: 0,
+        statusEffectsApplied: [],
+        painLevel: 0,
+        consciousnessImpact: 0,
+      };
+    }
+
     const baseAccuracy = technique.accuracy ?? 0.8;
     const hitSuccess = accuracyRoll <= baseAccuracy;
 
@@ -89,14 +117,15 @@ export class VitalPointSystem {
       : technique.damage || 10;
     let isCritical = Math.random() < (technique.critChance || 0.1);
     let hitVitalPoint: VitalPoint | null = null;
-    if (targetVitalPointId) {
-      const foundVp = this.getVitalPointById(targetVitalPointId);
+    if (targetVitalPoint) {
+      const foundVp = this.getVitalPointById(targetVitalPoint.id);
       hitVitalPoint = foundVp || null;
     }
 
     const isCriticalHit = Math.random() < (technique.critChance || 0);
 
-    const damageDealt = finalDamage;
+    // Fix: Use let instead of const for reassignable variable
+    let damageDealt = finalDamage;
     const effects: VitalPointEffect[] = []; // Fix type
 
     // Specific vital point targeted
@@ -121,33 +150,20 @@ export class VitalPointSystem {
         hit: true,
         damage: Math.round(damageDealt),
         effects: effects,
+        vitalPointsHit: [targetVitalPoint], // Use correct variable name
+        vitalPoint: undefined, // Use undefined instead of null
+        severity: targetVitalPoint.severity,
         criticalHit: isCritical,
-        location: hitVitalPoint.location, // Use vital point's defined location or hit processing location
-        vitalPoint: hitVitalPoint,
-        vitalPointsHit: [hitVitalPoint],
+        location: attackerPosition,
+        effectiveness: targetVitalPoint.damageMultiplier,
+        statusEffectsApplied: effects,
+        painLevel: finalDamage * 0.8,
+        consciousnessImpact: finalDamage * 0.6,
       };
     } else {
       // Standard body hit, no vital point involved
       damageDealt = this.damageCalculator.calculateDamage(
-        {
-          // Create a generic "body" vital point for calculation if needed
-          id: "body_hit",
-          name: { korean: "몸통", english: "Body" },
-          koreanName: "몸통",
-          englishName: "Body",
-          category: "general",
-          description: {
-            korean: "일반적인 신체 부위",
-            english: "General body area",
-          },
-          location: { x: 0, y: 0, region: "torso" },
-          effects: [],
-          baseDamage: 0,
-          damageMultiplier: 1,
-          techniques: [],
-          severity: "minor",
-          baseAccuracy: 0.7,
-        },
+        null,
         finalDamage,
         "musa", // Placeholder: Attacker's archetype should be passed in
         isCriticalHit,
@@ -230,5 +246,10 @@ export class VitalPointSystem {
       isCritical
     );
     return { damage, effects };
+  }
+
+  // Add missing method referenced in tests
+  public getVitalPointsInRegion(region: BodyRegion): readonly VitalPoint[] {
+    return this.vitalPoints.filter((vp) => vp.location.region === region);
   }
 }

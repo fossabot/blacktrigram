@@ -13,7 +13,8 @@ export type { Position, CombatCondition } from "./common";
 export type { PlayerState, PlayerArchetypeData } from "./player";
 export type {
   VitalPoint,
-  VitalPointEffect, // Add missing export
+  VitalPointEffect,
+  VitalPointHitResult, // Add missing export
   AnatomicalLocation,
   RegionData,
 } from "./anatomy";

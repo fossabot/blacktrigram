@@ -1,13 +1,11 @@
 // Trigram constants and data for Korean martial arts
 
 import type {
-  TrigramData as TrigramDataType,
+  KoreanTechnique,
   TrigramEffectivenessMatrix,
   TrigramStance,
-} from "../trigram";
-import type { KoreanText } from "../korean-text";
-import type { KoreanTechnique } from "../combat";
-import { KOREAN_COLORS } from "./colors";
+  KoreanText,
+} from "../index";
 
 // Create individual techniques to avoid array/single confusion
 const GEON_TECHNIQUE: KoreanTechnique = {
@@ -140,6 +138,7 @@ const GON_TECHNIQUE: KoreanTechnique = {
     english: "Palm technique with earth's stability",
   },
   stance: "gon",
+
   type: "strike",
   damage: 20,
   kiCost: 10,
@@ -147,7 +146,7 @@ const GON_TECHNIQUE: KoreanTechnique = {
 };
 
 // Trigram data with all required properties
-export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
+export const TRIGRAM_DATA: Record<string, TrigramData> = {
   geon: {
     id: "geon",
     name: { korean: "건", english: "Heaven" },
@@ -389,3 +388,5 @@ export interface TrigramData {
   readonly defensiveBonus?: number;
   readonly kiFlowModifier?: number;
 }
+
+export { TRIGRAM_DATA as default };

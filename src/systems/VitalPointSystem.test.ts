@@ -42,7 +42,6 @@ describe("VitalPointSystem", () => {
   let system: VitalPointSystem;
   const MOCK_PLAYER_ARCHETYPE: PlayerArchetype = "musa";
   const MOCK_DEFENDER_POSITION = { x: 50, y: 50 };
-  const MOCK_DEFENDER_STANCE = "tae";
 
   beforeEach(() => {
     const mockConfig: VitalPointSystemConfig = {
@@ -83,12 +82,8 @@ describe("VitalPointSystem", () => {
     it("should return vital points for a valid region", () => {
       const headPoints = system.getVitalPointsInRegion("head"); // Assuming 'head' is a valid BodyRegion key
       expect(headPoints.length).toBeGreaterThan(0);
-      headPoints.forEach((vp) => {
-        expect(
-          vp.location.region === "head" ||
-            AllVitalPoints.find((avp) => avp.id === vp.id)?.location.region ===
-              "head"
-        ).toBe(true);
+      headPoints.forEach((vp: VitalPoint) => {
+        expect(vp.location.region).toBe("head");
       });
     });
   });
@@ -147,7 +142,7 @@ describe("VitalPointSystem", () => {
 
       const result = system.calculateHit(
         MOCK_TECHNIQUE_STRIKE,
-        MOCK_VITAL_POINT_HEAD.id,
+        MOCK_VITAL_POINT_HEAD, // Pass the VitalPoint object, not the ID
         accuracyRoll,
         MOCK_DEFENDER_POSITION
       );

@@ -71,7 +71,6 @@ export interface TrigramData {
   readonly philosophy: KoreanText; // Added philosophy property
   readonly combatRole: KoreanText; // Added combat role property
   readonly technique: KoreanTechnique; // Associated signature technique
-  readonly color: number; // Add missing color property
   readonly strengths?: readonly string[]; // Added strengths property
   readonly weaknesses?: readonly string[]; // Add missing weaknesses property
   readonly offensiveBonus?: number;
