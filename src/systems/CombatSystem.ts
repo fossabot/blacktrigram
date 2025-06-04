@@ -29,7 +29,7 @@ export class CombatSystem {
    */
   public static async executeAttack(
     attacker: PlayerState,
-    defender: PlayerState, // Keep parameter and use it
+    defender: PlayerState,
     technique: KoreanTechnique,
     targetPoint?: string // Change to string ID instead of VitalPoint
   ): Promise<CombatResult> {
@@ -65,14 +65,32 @@ export class CombatSystem {
         damage: hitResult.damage,
         effects: hitResult.effects,
         vitalPointsHit: hitResult.vitalPointsHit,
-        // Remove hitResult property as it's not in CombatResult type
-        severity: hitResult.severity,
-        criticalHit: hitResult.criticalHit || false,
-        location: hitResult.location,
+        // Fix: Use 'critical' instead of 'criticalHit'
+        critical: hitResult.criticalHit || false,
+        hitPosition: hitResult.location, // <-- fix here
         effectiveness: hitResult.effectiveness * stanceEffectiveness,
         statusEffectsApplied: hitResult.statusEffectsApplied,
         painLevel: hitResult.painLevel,
         consciousnessImpact: hitResult.consciousnessImpact,
+        // ...fill all other required CombatResult fields with reasonable values or placeholders...
+        damageType: technique.damageType || "blunt",
+        isVitalPoint: hitResult.vitalPointsHit.length > 0,
+        newState: defender.combatState,
+        attacker: attacker.archetype,
+        defender: defender.archetype,
+        damagePrevented: 0,
+        staminaUsed: technique.staminaCost || 0,
+        kiUsed: technique.kiCost || 0,
+        defenderDamaged: hitResult.damage > 0,
+        attackerStance: attacker.stance,
+        defenderStance: defender.stance,
+        balanceEffect: 0,
+        bloodLoss: 0,
+        stunDuration: 0,
+        statusEffects: hitResult.effects,
+        hitType: hitResult.criticalHit ? "critical" : "normal",
+        techniqueUsed: technique,
+        vitalPoint: hitResult.vitalPoint,
       };
     }
 
@@ -87,14 +105,31 @@ export class CombatSystem {
       damage: modifiedDamage,
       effects: technique.effects || [],
       vitalPointsHit: [],
-      // Remove hitResult property
-      severity: "minor",
-      criticalHit: false,
-      location: { x: 50, y: 50 },
+      critical: false,
+      hitPosition: { x: 50, y: 50 }, // <-- fix here
       effectiveness: stanceEffectiveness,
       statusEffectsApplied: technique.effects || [],
       painLevel: modifiedDamage * 0.5,
       consciousnessImpact: modifiedDamage * 0.3,
+      // ...fill all other required CombatResult fields with reasonable values or placeholders...
+      damageType: technique.damageType || "blunt",
+      isVitalPoint: false,
+      newState: defender.combatState,
+      attacker: attacker.archetype,
+      defender: defender.archetype,
+      damagePrevented: 0,
+      staminaUsed: technique.staminaCost || 0,
+      kiUsed: technique.kiCost || 0,
+      defenderDamaged: modifiedDamage > 0,
+      attackerStance: attacker.stance,
+      defenderStance: defender.stance,
+      balanceEffect: 0,
+      bloodLoss: 0,
+      stunDuration: 0,
+      statusEffects: technique.effects || [],
+      hitType: "normal",
+      techniqueUsed: technique,
+      vitalPoint: undefined,
     };
   }
 

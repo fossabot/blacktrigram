@@ -7,13 +7,12 @@ import type {
   VitalPoint,
   VitalPointCategory,
   VitalPointSeverity,
-  BodyRegion,
   EffectType,
   EffectIntensity,
   PlayerArchetype,
   Position,
-  AttackInput,
   VitalPointEffect,
+  BodyRegion,
 } from "../types";
 import { TRIGRAM_DATA, STANCE_EFFECTIVENESS_MATRIX } from "../types/constants";
 

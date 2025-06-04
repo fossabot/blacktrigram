@@ -59,12 +59,40 @@ export class TrigramSystem {
       return null;
     }
 
-    // Fix: Use the method parameters correctly
-    const effectiveness = this.calculateStanceEffectiveness(
+    // Fix: Use correct method name and variable
+    const effectiveness = this.getStanceEffectiveness(fromStance, toStance);
+    const risk = this.calculateRisk(cost, playerState);
+
+    return {
+      path: [fromStance, toStance],
+      totalCost: cost,
+      overallEffectiveness: effectiveness,
+      cumulativeRisk: risk,
+      name: `${TRIGRAM_DATA[fromStance].name.english} → ${TRIGRAM_DATA[toStance].name.english}`,
+      description: {
+        korean: `${TRIGRAM_DATA[fromStance].name.korean}에서 ${TRIGRAM_DATA[toStance].name.korean}로 전환`,
+        english: `Transition from ${TRIGRAM_DATA[fromStance].name.english} to ${TRIGRAM_DATA[toStance].name.english}`,
+      },
+    };
+  }
+
+  public findOptimalPath(
+    fromStance: TrigramStance,
+    toStance: TrigramStance,
+    playerState: PlayerState
+  ): TransitionPath | null {
+    // Calculate the transition cost first
+    const directCost = this.calculateTransitionCost(
       fromStance,
-      toStance
+      toStance,
+      playerState
     );
-    const risk = this.calculateTransitionRisk(directCost, playerState);
+
+    // Fix: Use correct method name
+    const effectiveness = this.getStanceEffectiveness(fromStance, toStance);
+
+    // Calculate risk based on the cost and player state
+    const risk = this.calculateRisk(directCost, playerState);
 
     return {
       path: [fromStance, toStance],
@@ -72,58 +100,30 @@ export class TrigramSystem {
       overallEffectiveness: effectiveness,
       cumulativeRisk: risk,
       name: `${TRIGRAM_DATA[fromStance].name.english} → ${TRIGRAM_DATA[toStance].name.english}`,
+      // Add required description property
+      description: {
+        korean: `${TRIGRAM_DATA[fromStance].name.korean}에서 ${TRIGRAM_DATA[toStance].name.korean}로 전환`,
+        english: `Transition from ${TRIGRAM_DATA[fromStance].name.english} to ${TRIGRAM_DATA[toStance].name.english}`,
+      },
     };
   }
 
-  public findOptimalPathToStance(
-    currentStance: TrigramStance,
-    targetStance: TrigramStance,
+  // Add missing calculateRisk method
+  private calculateRisk(
+    cost: TrigramTransitionCost,
     playerState: PlayerState
-    // opponentStance?: TrigramStance // Remove unused parameter
-  ): TransitionPath | null {
-    if (currentStance === targetStance) {
-      return {
-        path: [currentStance],
-        totalCost: { ki: 0, stamina: 0, timeMilliseconds: 0 },
-        cumulativeRisk: 0,
-        name: TRIGRAM_DATA[currentStance]?.name?.korean || currentStance,
-        description: {
-          korean: "동일 자세로의 전환 불필요",
-          english: "No transition needed for the same stance",
-        },
-        overallEffectiveness: 1.0, // Added if part of TransitionPath
-      };
-    }
+  ): number {
+    let baseRisk = 0.1; // Base 10% risk
 
-    const cost = this.trigramCalculator.calculateTransitionCost(
-      currentStance,
-      targetStance,
-      playerState
-    );
-    if (playerState.ki >= cost.ki && playerState.stamina >= cost.stamina) {
-      const path: readonly TrigramStance[] = [currentStance, targetStance];
+    // Higher risk if low on resources
+    if (playerState.ki < playerState.maxKi * 0.3) baseRisk += 0.2;
+    if (playerState.stamina < playerState.maxStamina * 0.3) baseRisk += 0.2;
+    if (playerState.health < playerState.maxHealth * 0.5) baseRisk += 0.3;
 
-      return {
-        path,
-        totalCost: cost,
-        cumulativeRisk: this.calculateRiskForPath(path, cost),
-        name: `${
-          TRIGRAM_DATA[currentStance]?.name?.korean || currentStance
-        } → ${TRIGRAM_DATA[targetStance]?.name?.korean || targetStance}`,
-        description: {
-          korean: `${
-            TRIGRAM_DATA[currentStance]?.name?.korean || currentStance
-          } 에서 ${
-            TRIGRAM_DATA[targetStance]?.name?.korean || targetStance
-          } 로 직접 전환`,
-          english: `Direct transition from ${
-            TRIGRAM_DATA[currentStance]?.name?.english || currentStance
-          } to ${TRIGRAM_DATA[targetStance]?.name?.english || targetStance}`,
-        },
-        overallEffectiveness: this.getStanceEffectiveness(fromStance, toStance), // Use parameter names
-      };
-    }
-    return null; // Placeholder for more complex pathfinding
+    // Time-based risk
+    const timeRisk = (cost.timeMilliseconds / 1000) * 0.05; // 5% per second
+
+    return Math.min(1.0, baseRisk + timeRisk);
   }
 
   public findSafestPathToStance(
@@ -210,14 +210,6 @@ export class TrigramSystem {
     if (currentIndex === -1) return currentStance; // Should not happen
     const nextIndex = (currentIndex + 1) % cycle.length;
     return cycle[nextIndex];
-  }
-
-  private calculateRiskForPath(
-    path: readonly TrigramStance[],
-    cost: TrigramTransitionCost
-  ): number {
-    // Simplified risk calculation: higher cost -> higher risk
-    return (cost.timeMilliseconds / 1000) * 0.1 * path.length;
   }
 
   // Add missing method for test compatibility
