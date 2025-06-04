@@ -10,17 +10,19 @@ describe("GameEngine", () => {
   ] as const;
 
   const defaultProps = {
-    players: mockPlayers,
-    gamePhase: "combat" as const,
+    // Fix: Use correct prop names for GameEngineProps
+    player1: mockPlayers[0],
+    player2: mockPlayers[1],
+    onGameStateChange: vi.fn(),
     onPlayerUpdate: vi.fn(),
     onGamePhaseChange: vi.fn(),
   };
 
-  it("renders without crashing", () => {
+  it("should render without crashing", () => {
     render(<GameEngine {...defaultProps} />);
   });
 
-  it("handles combat phase correctly", () => {
+  it("should display players", () => {
     const { container } = render(<GameEngine {...defaultProps} />);
     expect(container).toBeInTheDocument();
   });

@@ -52,7 +52,13 @@ export function TrainingScreen({
   };
 
   return (
-    <div style={containerStyle}>
+    <div
+      style={{
+        padding: "20px",
+        backgroundColor: "#1a1a1a",
+        minHeight: "100vh",
+      }}
+    >
       <KoreanHeader
         title={{ korean: "훈련", english: "Training" }} // Fixed: Provide title prop
         subtitle="무술 기법 연습"
@@ -70,14 +76,78 @@ export function TrainingScreen({
         <div style={{ flex: "1" }}>
           <h3>자세 선택 (Stance Selection)</h3>
 
-          <TrigramWheel
-            currentStance={selectedStance || "geon"} // Fix: provide fallback
-            selectedStance={selectedStance}
-            onStanceChange={handleStanceChange}
-            interactive={true}
-            showLabels={true}
-            // Remove size prop as it's not in interface
-          />
+          {/* Trigram Wheel Section */}
+          <div style={{ marginBottom: "20px" }}>
+            <h3 style={{ color: "#ffffff", marginBottom: "10px" }}>
+              팔괘 자세 선택 (Trigram Stance Selection)
+            </h3>
+            <div style={{ display: "flex", justifyContent: "center" }}>
+              <TrigramWheel
+                currentStance={player?.stance || "geon"}
+                // Fix: Remove selectedStance prop that doesn't exist
+                onStanceChange={(newStance: TrigramStance) => {
+                  if (onPlayerStateChange) {
+                    onPlayerStateChange({ stance: newStance });
+                  }
+                  if (selectedStance !== newStance) {
+                    setSelectedStance(newStance);
+                  }
+                }}
+                interactive={true}
+                showLabels={true}
+              />
+            </div>
+
+            {/* Current Stance Info */}
+            {selectedStance && (
+              <div style={{ marginTop: "20px", textAlign: "center" }}>
+                <h4 style={{ color: "#ffffff" }}>
+                  현재 자세:{" "}
+                  {TRIGRAM_DATA[selectedStance]?.name.korean || "알 수 없음"}
+                </h4>
+                <p style={{ color: "#cccccc" }}>
+                  {TRIGRAM_DATA[selectedStance]?.name.english || "Unknown"}
+                </p>
+
+                {/* Available Techniques */}
+                <div style={{ marginTop: "15px" }}>
+                  <h5 style={{ color: "#ffffff" }}>사용 가능한 기법:</h5>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "10px",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {TRIGRAM_DATA[selectedStance]?.technique && (
+                      <div
+                        style={{
+                          padding: "8px 12px",
+                          backgroundColor: "#333",
+                          borderRadius: "6px",
+                          border: "1px solid #555",
+                        }}
+                      >
+                        <div
+                          style={{
+                            color: "#ffffff",
+                            fontSize: "14px",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          {TRIGRAM_DATA[selectedStance].technique.koreanName}
+                        </div>
+                        <div style={{ color: "#cccccc", fontSize: "12px" }}>
+                          {TRIGRAM_DATA[selectedStance].technique.englishName}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Stance Information */}
           <div style={{ marginTop: "2rem" }}>
@@ -126,6 +196,43 @@ export function TrainingScreen({
               );
             })()}
           </div>
+        </div>
+      </div>
+
+      {/* Training Exercises */}
+      <div>
+        <h3 style={{ color: "#ffffff", marginBottom: "15px" }}>
+          훈련 예제 (Training Exercises)
+        </h3>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "15px",
+          }}
+        >
+          {/* Fix: Add proper typing for technique parameter */}
+          {(TRIGRAM_DATA[selectedStance]?.technique
+            ? [TRIGRAM_DATA[selectedStance].technique]
+            : []
+          ).map((technique: any, index: number) => (
+            <div
+              key={index}
+              style={{
+                padding: "15px",
+                backgroundColor: "#222",
+                borderRadius: "8px",
+                border: "1px solid #444",
+              }}
+            >
+              <h4 style={{ color: "#ffffff", marginBottom: "10px" }}>
+                {technique.koreanName} ({technique.englishName})
+              </h4>
+              <p style={{ color: "#cccccc", fontSize: "14px" }}>
+                {technique.description?.korean || "훈련 설명"}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
 

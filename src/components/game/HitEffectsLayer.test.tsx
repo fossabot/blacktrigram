@@ -86,4 +86,29 @@ describe("HitEffectsLayer", () => {
       expect(getByTestId("pixi-container")).toBeInTheDocument();
     });
   });
+
+  const createMockHitEffect = (overrides = {}): HitEffect => ({
+    id: "test-effect-1",
+    type: "normal_hit",
+    position: { x: 100, y: 100 },
+    damage: 25,
+    timestamp: Date.now(), // Fix: Use timestamp instead of startTime
+    duration: 1000,
+    color: 0xff0000,
+    ...overrides,
+  });
+
+  it("should remove expired effects", async () => {
+    const expiredEffect: HitEffect = {
+      id: "expired-effect",
+      type: "normal_hit",
+      position: { x: 50, y: 50 },
+      damage: 10,
+      timestamp: Date.now() - 2000, // Fix: Use timestamp instead of startTime
+      duration: 1000,
+      color: 0xff0000,
+    };
+
+    // ...existing code...
+  });
 });

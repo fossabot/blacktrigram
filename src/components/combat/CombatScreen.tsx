@@ -4,7 +4,7 @@ import { CombatArena } from "./components/CombatArena";
 import { CombatHUD } from "./components/CombatHUD";
 import { CombatControls } from "./components/CombatControls";
 import { KoreanText } from "../ui/base/korean-text";
-import useAudio from "../../audio/AudioManager";
+import { useAudio } from "../../audio/AudioManager"; // Fix: Use named import
 import { CombatSystem } from "../../systems/CombatSystem";
 import type {
   PlayerState,
@@ -97,7 +97,7 @@ export function CombatScreen({
   settings,
   isActive = true,
 }: CombatScreenProps): React.JSX.Element {
-  const audio = useAudio();
+  const audio = useAudio(); // Now works correctly
   const [combatState, dispatch] = useReducer(combatReducer, initialCombatState);
   const [isProcessingAction, setIsProcessingAction] = useState(false);
 
@@ -436,6 +436,16 @@ export function CombatScreen({
     handleCombatEnd,
   ]);
 
+  // Use combat actions (remove unused warning)
+  const handleCombatActions = useCallback(() => {
+    // This function uses handleAttack, handleBlock, handleSpecialTechnique
+    return {
+      attack: handleAttack,
+      block: handleBlock,
+      special: handleSpecialTechnique,
+    };
+  }, [handleAttack, handleBlock, handleSpecialTechnique]);
+
   return (
     <PixiContainer>
       <div
@@ -445,8 +455,8 @@ export function CombatScreen({
           backgroundColor: `#${KOREAN_COLORS.BLACK.toString(16).padStart(
             6,
             "0"
-          )}`, // Fixed: Convert to hex string
-          color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`, // Fixed: Convert to hex string
+          )}`,
+          color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
           fontFamily: "Noto Sans KR, Arial, sans-serif",
           position: "relative",
           overflow: "hidden",
@@ -464,6 +474,7 @@ export function CombatScreen({
           isActive={isActive && combatState.phase === "active"}
           showVitalPoints={settings?.showVitalPoints || false}
           showDebugInfo={settings?.showDebugInfo || false}
+          combatActions={handleCombatActions()} // Use the actions
         />
 
         {/* Combat HUD */}

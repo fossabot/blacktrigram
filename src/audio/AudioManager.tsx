@@ -29,7 +29,7 @@ export function useAudio(): IAudioManager {
   return context;
 }
 
-// Also export as default for compatibility
-export default useAudio;
+// Fix: Export as default for compatibility
+export { useAudio as default };
 
 // This file is being removed - functionality moved to AudioProvider.tsx

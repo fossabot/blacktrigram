@@ -1,14 +1,15 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useMemo } from "react"; // Remove unused useCallback
 import type { PlayerState, TrigramStance } from "../../../types";
-import { KOREAN_COLORS, TRIGRAM_DATA } from "../../../types/constants";
-import useAudio from "../../../audio/AudioManager";
+import { KOREAN_COLORS, TRIGRAM_DATA } from "../../../types";
+import { useAudio } from "../../../audio/AudioManager"; // Fix: Use named import
 
 interface CombatControlsProps {
   readonly players: readonly [PlayerState, PlayerState];
-  readonly player?: PlayerState;
+  readonly player: PlayerState;
   readonly onStanceChange: (playerIndex: number, stance: TrigramStance) => void;
   readonly isExecutingTechnique: boolean;
   readonly isPaused: boolean;
+  readonly showVitalPoints?: boolean;
 }
 
 export function CombatControls({
@@ -18,10 +19,9 @@ export function CombatControls({
   isExecutingTechnique,
   isPaused,
 }: CombatControlsProps): React.JSX.Element {
-  const audio = useAudio();
-  const activePlayer = player || players[0];
+  const audio = useAudio(); // Now works correctly
   const [selectedStance, setSelectedStance] = useState<TrigramStance>(
-    activePlayer.stance
+    player.stance
   );
 
   // Fix: Use correct property names (lowercase)
@@ -37,7 +37,7 @@ export function CombatControls({
   };
 
   const currentTechnique = useMemo(() => {
-    const trigramData = TRIGRAM_DATA[activePlayer.stance];
+    const trigramData = TRIGRAM_DATA[player.stance];
     return (
       trigramData?.technique || {
         koreanName: "기본 기법",
@@ -45,7 +45,7 @@ export function CombatControls({
         damage: 10,
       }
     );
-  }, [activePlayer.stance]);
+  }, [player.stance]);
 
   const getStanceButtonStyle = (
     stance: TrigramStance,
@@ -71,6 +71,23 @@ export function CombatControls({
       : "0 2px 5px rgba(0, 0, 0, 0.3)",
   });
 
+  const handleStanceSelect = useMemo(() => {
+    return (stance: TrigramStance) => {
+      if (!isExecutingTechnique && !isPaused) {
+        setSelectedStance(stance);
+        onStanceChange(0, stance);
+        audio.playSFX("stance_change");
+      }
+    };
+  }, [isExecutingTechnique, isPaused, onStanceChange, audio]);
+
+  const handleExecuteTechnique = useMemo(() => {
+    return () => {
+      audio.playSFX("technique_execute");
+      // Technique execution logic here
+    };
+  }, [audio]);
+
   return (
     <div style={{ padding: "20px", backgroundColor: "#1a1a1a" }}>
       <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
@@ -90,13 +107,7 @@ export function CombatControls({
               <button
                 key={stance}
                 style={getStanceButtonStyle(stance, selectedStance === stance)}
-                onClick={() => {
-                  if (!isExecutingTechnique && !isPaused) {
-                    setSelectedStance(stance);
-                    onStanceChange(0, stance);
-                    audio.playSFX("stance_change");
-                  }
-                }}
+                onClick={() => handleStanceSelect(stance)}
                 disabled={isExecutingTechnique || isPaused}
               >
                 <div>{TRIGRAM_DATA[stance]?.symbol || "☰"}</div>
@@ -131,9 +142,7 @@ export function CombatControls({
 
         {/* Execute Button */}
         <button
-          onClick={() => {
-            audio.playSFX("technique_execute");
-          }}
+          onClick={handleExecuteTechnique}
           disabled={isExecutingTechnique || isPaused}
           style={{
             padding: "15px 30px",

@@ -1,19 +1,21 @@
-import React, { useState, useCallback, useEffect } from "react";
-import type { IntroScreenProps, PlayerState } from "../../types";
+import React, { useState, useEffect } from "react";
+import type { IntroScreenProps } from "../../types";
 import { KOREAN_COLORS } from "../../types";
 import { useAudio } from "../../audio/AudioManager";
 import { KoreanHeader } from "../ui/base/KoreanHeader";
 import { PhilosophySection } from "./components/PhilosophySection";
 import { KoreanText } from "../ui/base/korean-text";
+import { MenuSection } from "./components/MenuSection";
 
 export function IntroScreen({
+  onGamePhaseChange,
+  onSectionChange,
+  currentSection = "menu",
   onStartTraining,
   onStartCombat,
   player,
-  onPlayerChange,
-  sessionData,
-}: IntroScreenProps): React.ReactElement {
-  const [activeSection, setActiveSection] = useState("main");
+}: IntroScreenProps): React.JSX.Element {
+  const [activeSection, setActiveSection] = useState(currentSection);
   const audio = useAudio();
 
   // Play intro music when component mounts
@@ -26,9 +28,10 @@ export function IntroScreen({
     };
   }, [audio]);
 
-  const handleSectionChange = useCallback((section: string) => {
+  const handleSectionChange = (section: string) => {
     setActiveSection(section);
-  }, []);
+    onSectionChange?.(section);
+  };
 
   const containerStyle: React.CSSProperties = {
     minHeight: "100vh",
