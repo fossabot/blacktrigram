@@ -3,7 +3,7 @@
 import React, { useMemo, useCallback } from "react";
 import { Container } from "@pixi/react";
 import type { PlayerProps } from "../../types/components";
-import { useAudio } from "../../audio/AudioProvider"; // Fix: Use AudioProvider
+import { useAudio } from "../../audio/AudioProvider";
 import { KOREAN_COLORS, TRIGRAM_DATA } from "../../types/constants";
 import { KoreanTechnique } from "../../types";
 
@@ -54,7 +54,7 @@ export function Player({
   const handleStanceChange = useMemo(() => {
     return (newStance: any) => {
       onStateUpdate({ stance: newStance });
-      audio.playSFX("stance_change");
+      if (audio) audio.playSFX("stance_change");
     };
   }, [onStateUpdate, audio]);
 
@@ -77,7 +77,7 @@ export function Player({
 
       try {
         // Play technique sound using proper audio hook
-        audio.playSFX("technique_execute");
+        if (audio) audio.playSFX("technique_execute");
 
         // Update player state for technique execution
         onStateUpdate({
@@ -90,7 +90,7 @@ export function Player({
         });
 
         // Play attack sound based on damage
-        if (technique.damage) {
+        if (technique.damage && audio) {
           audio.playAttackSound(technique.damage);
         }
 
