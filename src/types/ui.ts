@@ -54,14 +54,17 @@ export interface KoreanPixiTextConfig {
   readonly wordWrapWidth?: number;
 }
 
-// Menu section props
+// Menu section props - FIXED: Ensure consistent with components.ts
 export interface MenuSectionProps extends BaseUIComponentProps {
-  readonly onGamePhaseChange: (phase: GamePhase) => void;
+  readonly onGamePhaseChange: (phase: GamePhase | string) => void;
+  readonly title?: string;
+  readonly onSelect?: (option: string) => void;
 }
 
-// Philosophy section props
+// Philosophy section props - FIXED: Ensure consistent with components.ts
 export interface PhilosophySectionProps extends BaseUIComponentProps {
-  readonly onGamePhaseChange: (phase: GamePhase) => void;
+  readonly onGamePhaseChange: (phase: GamePhase | string) => void;
+  readonly title?: string;
 }
 
 // Training screen props

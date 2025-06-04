@@ -1,139 +1,113 @@
 import React from "react";
-import { useAudio } from "../../audio/AudioProvider"; // Fix: Use AudioProvider
-import { KOREAN_COLORS } from "../../types";
 import { KoreanText } from "./base/korean-text";
+import type { EndScreenProps } from "../../types/components";
 
-interface EndScreenProps {
-  readonly winner: string;
-  readonly onReturnToMenu: () => void;
-  readonly onPlayAgain?: () => void;
-  readonly finalScore?: {
-    player1: number;
-    player2: number;
-  };
-}
-
+/**
+ * End Screen Component for victory/defeat display
+ */
 export function EndScreen({
   winner,
-  onReturnToMenu,
-  onPlayAgain,
-  finalScore,
+  onRestart,
+  onMenu,
 }: EndScreenProps): React.JSX.Element {
-  const audio = useAudio(); // Now properly typed
-
-  React.useEffect(() => {
-    // Play victory or defeat sound based on winner
-    if (winner) {
-      audio.playSFX("victory");
-    } else {
-      audio.playSFX("defeat");
-    }
-  }, [winner, audio]);
+  const isVictory = winner !== null;
 
   return (
     <div
+      className="end-screen"
       style={{
         minHeight: "100vh",
-        background: `linear-gradient(135deg, #${KOREAN_COLORS.BLACK.toString(
-          16
-        ).padStart(6, "0")} 0%, #${KOREAN_COLORS.DOJANG_BLUE.toString(
-          16
-        ).padStart(6, "0")} 100%)`,
-        color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
+        background: isVictory
+          ? "linear-gradient(135deg, #001100 0%, #003300 100%)"
+          : "linear-gradient(135deg, #110000 0%, #330000 100%)",
+        color: "#ffffff",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "center",
         alignItems: "center",
-        fontFamily: "Noto Sans KR, Arial, sans-serif",
+        justifyContent: "center",
+        padding: "2rem",
       }}
     >
-      <div
-        style={{
-          textAlign: "center",
-          padding: "3rem",
-          border: `2px solid #${KOREAN_COLORS.GOLD.toString(16).padStart(
-            6,
-            "0"
-          )}`,
-          borderRadius: "12px",
-          backgroundColor: "rgba(0, 0, 0, 0.8)",
-        }}
-      >
+      <div style={{ textAlign: "center", marginBottom: "3rem" }}>
         <KoreanText
-          korean="경기 종료"
-          english="Match Finished"
-          size="xlarge"
+          korean={isVictory ? "승리" : "패배"}
+          english={isVictory ? "Victory" : "Defeat"}
+          size="xxlarge"
           weight="bold"
-          color={`#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`}
+          color={isVictory ? "#00ff00" : "#ff0000"}
+          align="center"
         />
 
-        <div style={{ margin: "2rem 0" }}>
-          <KoreanText
-            korean={`승자: ${winner}`}
-            english={`Winner: ${winner}`}
-            size="large"
-            weight="semibold"
-            color={`#${KOREAN_COLORS.CYAN.toString(16).padStart(6, "0")}`}
-          />
-        </div>
-
-        {finalScore && (
-          <div style={{ margin: "1rem 0" }}>
-            <div>
-              Score: {finalScore.player1} - {finalScore.player2}
-            </div>
+        {winner && (
+          <div style={{ marginTop: "1rem" }}>
+            <KoreanText
+              korean={`우승자: ${winner}`}
+              english={`Winner: ${winner}`}
+              size="large"
+              align="center"
+            />
           </div>
         )}
+      </div>
 
-        <div style={{ display: "flex", gap: "1rem", marginTop: "2rem" }}>
-          <button
-            onClick={onReturnToMenu}
-            style={{
-              padding: "1rem 2rem",
-              backgroundColor: `#${KOREAN_COLORS.TRADITIONAL_RED.toString(
-                16
-              ).padStart(6, "0")}`,
-              color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
-              border: "none",
-              borderRadius: "8px",
-              fontSize: "1rem",
-              cursor: "pointer",
-              fontFamily: "Noto Sans KR, Arial, sans-serif",
-            }}
-            onMouseEnter={() => audio.playSFX("menu_hover")}
-            onClick={() => {
-              audio.playSFX("menu_select");
-              onReturnToMenu();
-            }}
-          >
-            메인 메뉴 (Main Menu)
-          </button>
+      <div
+        style={{
+          display: "flex",
+          gap: "2rem",
+          flexWrap: "wrap",
+          justifyContent: "center",
+        }}
+      >
+        <button
+          style={{
+            background: "rgba(0, 255, 255, 0.2)",
+            border: "2px solid #00ffff",
+            color: "#00ffff",
+            padding: "1rem 2rem",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1.1rem",
+            minWidth: "150px",
+          }}
+          onClick={onMenu}
+        >
+          <KoreanText
+            korean="메뉴로"
+            english="To Menu"
+            size="medium"
+            align="center"
+          />
+        </button>
 
-          {onPlayAgain && (
-            <button
-              onClick={onPlayAgain}
-              style={{
-                padding: "1rem 2rem",
-                backgroundColor: `#${KOREAN_COLORS.DOJANG_BLUE.toString(
-                  16
-                ).padStart(6, "0")}`,
-                color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
-                border: "none",
-                borderRadius: "8px",
-                fontSize: "1rem",
-                cursor: "pointer",
-                fontFamily: "Noto Sans KR, Arial, sans-serif",
-              }}
-              onMouseEnter={() => audio.playSFX("menu_hover")}
-              onClick={() => {
-                audio.playSFX("menu_select");
-                onPlayAgain();
-              }}
-            >
-              다시 플레이 (Play Again)
-            </button>
-          )}
-        </div>
+        <button
+          style={{
+            background: "rgba(255, 215, 0, 0.2)",
+            border: "2px solid #ffd700",
+            color: "#ffd700",
+            padding: "1rem 2rem",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontSize: "1.1rem",
+            minWidth: "150px",
+          }}
+          onClick={onRestart}
+        >
+          <KoreanText
+            korean="다시 시작"
+            english="Play Again"
+            size="medium"
+            align="center"
+          />
+        </button>
+      </div>
+
+      <div style={{ marginTop: "3rem", textAlign: "center", opacity: 0.7 }}>
+        <KoreanText
+          korean="무술의 정신은 끝없는 수련에 있다"
+          english="The spirit of martial arts lies in endless practice"
+          size="medium"
+          align="center"
+        />
       </div>
     </div>
   );

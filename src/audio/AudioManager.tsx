@@ -1,27 +1,17 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  type ReactNode,
-} from "react";
+import React, { createContext, useContext, ReactNode } from "react";
+import { AudioManager } from "./AudioManager";
 import type { IAudioManager } from "../types/audio";
 
+// Create audio context
 const AudioContext = createContext<IAudioManager | null>(null);
 
+// Audio provider component
 interface AudioProviderProps {
   children: ReactNode;
 }
 
-export function AudioProvider({
-  children,
-}: AudioProviderProps): React.JSX.Element {
-  const [audioManager] = useState(() => new AudioManager());
-
-  useEffect(() => {
-    // Initialize the audio manager
-    audioManager.initialize();
-  }, [audioManager]);
+export function AudioProvider({ children }: AudioProviderProps) {
+  const audioManager = new AudioManager();
 
   return (
     <AudioContext.Provider value={audioManager}>
@@ -30,7 +20,7 @@ export function AudioProvider({
   );
 }
 
-// Fix: Export the hook function properly
+// Hook to use audio manager
 export function useAudio(): IAudioManager {
   const context = useContext(AudioContext);
   if (!context) {
@@ -39,8 +29,5 @@ export function useAudio(): IAudioManager {
   return context;
 }
 
-// Export as default for import compatibility
-export default useAudio;
-
-// This file is deprecated - functionality moved to AudioProvider.tsx
-// Please use AudioProvider.tsx instead
+// Default export for compatibility
+export { useAudio as default };

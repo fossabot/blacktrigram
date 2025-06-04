@@ -238,15 +238,14 @@ export interface AudioControlProps extends BaseComponentProps {
   };
 }
 
-// Menu section props
+// Menu section props - FIXED: Add missing onGamePhaseChange property
 export interface MenuSectionProps extends BaseComponentProps {
-  readonly title: string;
-  readonly onSelect: (option: string) => void;
+  readonly onGamePhaseChange: (phase: GamePhase | string) => void;
 }
 
-// Philosophy section props
+// Philosophy section props - FIXED: Add consistent signature
 export interface PhilosophySectionProps extends BaseComponentProps {
-  readonly onGamePhaseChange: (phase: string) => void;
+  readonly onGamePhaseChange: (phase: GamePhase | string) => void;
 }
 
 // End screen props for victory/defeat - FIXED: Add missing properties

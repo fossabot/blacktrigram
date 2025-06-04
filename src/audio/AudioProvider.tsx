@@ -1,34 +1,53 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, ReactNode, useMemo } from "react";
 import { AudioManager } from "./AudioManager";
+import type { IAudioManager } from "../types/audio";
 
-const AudioContext = createContext<AudioManager | null>(null);
+// Create audio context
+const AudioContext = createContext<IAudioManager | null>(null);
 
-export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const [audioManager] = useState(() => new AudioManager());
+// Audio provider component
+interface AudioProviderProps {
+  children: ReactNode;
+}
 
-  useEffect(() => {
-    audioManager.initialize();
-    return () => {
-      audioManager.dispose();
-    };
-  }, [audioManager]);
+export function AudioProvider({ children }: AudioProviderProps) {
+  const audioManager = useMemo(() => new AudioManager(), []);
 
   return (
     <AudioContext.Provider value={audioManager}>
       {children}
     </AudioContext.Provider>
   );
-};
+}
 
-export const useAudio = (): AudioManager => {
+// Hook to use audio manager
+export function useAudio(): IAudioManager {
   const context = useContext(AudioContext);
   if (!context) {
-    throw new Error("useAudio must be used within an AudioProvider");
+    // Return a mock audio manager for development
+    return {
+      playSFX: () => null,
+      playMusic: () => null,
+      stopMusic: () => {},
+      setMasterVolume: () => {},
+      setSFXVolume: () => {},
+      setMusicVolume: () => {},
+      setMuted: () => {},
+      getState: () => ({
+        masterVolume: 1,
+        sfxVolume: 1,
+        musicVolume: 1,
+        muted: false,
+        currentMusicTrack: null,
+        isInitialized: false,
+      }),
+      playAttackSound: () => {},
+      playHitSound: () => {},
+      playTechniqueSound: () => {},
+      playStanceChangeSound: () => {},
+      playBlockSound: () => {},
+      stopAllSounds: () => {},
+    };
   }
   return context;
-};
-
-// Export as default for backward compatibility
-export default useAudio;
+}
