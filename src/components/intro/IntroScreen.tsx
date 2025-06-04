@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { PhilosophySection } from "./sections/PhilosophySection";
-import { KoreanHeader } from "../ui/KoreanHeader";
 import { KoreanText } from "../ui/base/korean-text";
 import type { IntroScreenProps } from "../../types/components";
 import type { PlayerArchetype, TrigramStance } from "../../types";
+import { KoreanHeader } from "../ui";
+import { PhilosophySection } from "./sections";
 
 /**
  * IntroScreen Component for Black Trigram (흑괘)
