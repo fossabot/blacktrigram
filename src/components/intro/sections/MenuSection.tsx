@@ -1,6 +1,6 @@
 import React from "react";
 import { KoreanText } from "../../ui/base/korean-text";
-import { useAudio } from "../../../audio/AudioProvider"; // Fixed: Import from AudioProvider
+import { useAudio } from "../../../audio"; // Fix: Import from audio barrel
 import type { MenuSectionProps } from "../../../types/components";
 import type { GamePhase } from "../../../types/enums";
 

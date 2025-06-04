@@ -8,15 +8,11 @@ import type { TrigramStance, KoreanTechnique } from "../../types";
 
 export function TrainingScreen({
   players,
-  onGamePhaseChange,
   onPlayerUpdate,
   onStanceChange,
-  selectedStance,
   gameTime,
-  currentRound,
   onReturnToMenu,
   onStartCombat,
-  ...props
 }: TrainingScreenProps): React.JSX.Element {
   const [currentTechnique, setCurrentTechnique] =
     useState<KoreanTechnique | null>(null);
@@ -25,7 +21,6 @@ export function TrainingScreen({
   >("basics");
 
   const player = players?.[0];
-  const trainingDummy = players?.[1];
 
   const handleStanceChange = useCallback(
     (stance: TrigramStance) => {
@@ -66,7 +61,7 @@ export function TrainingScreen({
     return (
       <div
         style={{
-          color: KOREAN_COLORS.WHITE,
+          color: "#" + KOREAN_COLORS.WHITE.toString(16),
           padding: "2rem",
           textAlign: "center",
         }}
@@ -84,8 +79,10 @@ export function TrainingScreen({
       data-testid="training-screen"
       style={{
         minHeight: "100vh",
-        background: `linear-gradient(135deg, ${KOREAN_COLORS.BLACK} 0%, #1a1a2e 50%, #16213e 100%)`,
-        color: KOREAN_COLORS.WHITE,
+        background: `linear-gradient(135deg, #${KOREAN_COLORS.BLACK.toString(
+          16
+        )} 0%, #1a1a2e 50%, #16213e 100%)`,
+        color: "#" + KOREAN_COLORS.WHITE.toString(16),
         padding: "2rem",
       }}
     >
@@ -104,13 +101,13 @@ export function TrainingScreen({
             english="Black Trigram Martial Training"
             size="xlarge"
             weight="bold"
-            color={KOREAN_COLORS.GOLD}
+            color={"#" + KOREAN_COLORS.GOLD.toString(16)}
           />
           <KoreanText
             korean={`수련자: ${player.name}`}
             english={`Practitioner: ${player.name}`}
             size="medium"
-            color={KOREAN_COLORS.CYAN}
+            color={"#" + KOREAN_COLORS.CYAN.toString(16)}
           />
         </div>
 
@@ -118,8 +115,8 @@ export function TrainingScreen({
           data-testid="exit-training"
           onClick={onReturnToMenu}
           style={{
-            backgroundColor: KOREAN_COLORS.RED,
-            color: KOREAN_COLORS.WHITE,
+            backgroundColor: "#" + KOREAN_COLORS.RED.toString(16),
+            color: "#" + KOREAN_COLORS.WHITE.toString(16),
             border: "none",
             padding: "0.75rem 1.5rem",
             borderRadius: "5px",
@@ -146,12 +143,14 @@ export function TrainingScreen({
             onClick={() => setTrainingMode(mode)}
             style={{
               backgroundColor:
-                trainingMode === mode ? KOREAN_COLORS.CYAN : "transparent",
+                trainingMode === mode
+                  ? "#" + KOREAN_COLORS.CYAN.toString(16)
+                  : "transparent",
               color:
                 trainingMode === mode
-                  ? KOREAN_COLORS.BLACK
-                  : KOREAN_COLORS.WHITE,
-              border: `2px solid ${KOREAN_COLORS.CYAN}`,
+                  ? "#" + KOREAN_COLORS.BLACK.toString(16)
+                  : "#" + KOREAN_COLORS.WHITE.toString(16),
+              border: `2px solid #${KOREAN_COLORS.CYAN.toString(16)}`,
               padding: "0.75rem 1.5rem",
               borderRadius: "5px",
               cursor: "pointer",
@@ -193,19 +192,39 @@ export function TrainingScreen({
             english="Practitioner Status"
             size="large"
             weight="bold"
-            color={KOREAN_COLORS.GOLD}
+            color={"#" + KOREAN_COLORS.GOLD.toString(16)}
           />
 
           <div style={{ marginTop: "1rem" }}>
+            {/* Health */}
             <ProgressTracker
-              health={player.health}
-              ki={player.ki}
-              stamina={player.stamina}
-              maxHealth={player.maxHealth}
-              maxKi={player.maxKi}
-              maxStamina={player.maxStamina}
-              showLabels={true}
-              spacing={15}
+              label="체력 (Health)"
+              value={player.health}
+              maxValue={player.maxHealth}
+              barColor={KOREAN_COLORS.RED}
+              backgroundColor={KOREAN_COLORS.BLACK}
+              borderColor={KOREAN_COLORS.WHITE}
+              showText={true}
+            />
+            {/* Ki */}
+            <ProgressTracker
+              label="기 (Ki)"
+              value={player.ki}
+              maxValue={player.maxKi}
+              barColor={KOREAN_COLORS.CYAN}
+              backgroundColor={KOREAN_COLORS.BLACK}
+              borderColor={KOREAN_COLORS.WHITE}
+              showText={true}
+            />
+            {/* Stamina */}
+            <ProgressTracker
+              label="스태미나 (Stamina)"
+              value={player.stamina}
+              maxValue={player.maxStamina}
+              barColor={KOREAN_COLORS.GREEN}
+              backgroundColor={KOREAN_COLORS.BLACK}
+              borderColor={KOREAN_COLORS.WHITE}
+              showText={true}
             />
           </div>
 
@@ -216,7 +235,7 @@ export function TrainingScreen({
               english="Current Stance"
               size="medium"
               weight="bold"
-              color={KOREAN_COLORS.CYAN}
+              color={"#" + KOREAN_COLORS.CYAN.toString(16)}
             />
             <div
               style={{
@@ -230,7 +249,12 @@ export function TrainingScreen({
                 korean={TRIGRAM_DATA[player.stance]?.name?.korean || ""}
                 english={TRIGRAM_DATA[player.stance]?.name?.english || ""}
                 size="large"
-                color={KOREAN_COLORS[player.stance] || KOREAN_COLORS.WHITE}
+                color={
+                  "#" +
+                  (KOREAN_COLORS[player.stance]
+                    ? KOREAN_COLORS[player.stance].toString(16)
+                    : KOREAN_COLORS.WHITE.toString(16))
+                }
               />
             </div>
           </div>
@@ -252,7 +276,7 @@ export function TrainingScreen({
                 english="Eight Trigram Stance Training"
                 size="large"
                 weight="bold"
-                color={KOREAN_COLORS.GOLD}
+                color={"#" + KOREAN_COLORS.GOLD.toString(16)}
               />
 
               <div
@@ -264,10 +288,9 @@ export function TrainingScreen({
               >
                 <TrigramWheel
                   currentStance={player.stance}
-                  onStanceChange={handleStanceChange}
+                  onStanceSelect={handleStanceChange}
                   size={300}
                   interactive={true}
-                  showLabels={true}
                 />
               </div>
             </>
@@ -280,7 +303,7 @@ export function TrainingScreen({
                 english="Technique Training"
                 size="large"
                 weight="bold"
-                color={KOREAN_COLORS.GOLD}
+                color={"#" + KOREAN_COLORS.GOLD.toString(16)}
               />
 
               <div
@@ -296,7 +319,12 @@ export function TrainingScreen({
                   english={currentTechnique.englishName}
                   size="xlarge"
                   weight="bold"
-                  color={KOREAN_COLORS[player.stance]}
+                  color={
+                    "#" +
+                    (KOREAN_COLORS[player.stance]
+                      ? KOREAN_COLORS[player.stance].toString(16)
+                      : KOREAN_COLORS.WHITE.toString(16))
+                  }
                 />
 
                 <div style={{ marginTop: "1rem" }}>
@@ -314,8 +342,8 @@ export function TrainingScreen({
                   }
                   style={{
                     marginTop: "1.5rem",
-                    backgroundColor: KOREAN_COLORS.CYAN,
-                    color: KOREAN_COLORS.BLACK,
+                    backgroundColor: "#" + KOREAN_COLORS.CYAN.toString(16),
+                    color: "#" + KOREAN_COLORS.BLACK.toString(16),
                     border: "none",
                     padding: "1rem 2rem",
                     borderRadius: "5px",
@@ -341,7 +369,7 @@ export function TrainingScreen({
                 english="Martial Arts Philosophy"
                 size="large"
                 weight="bold"
-                color={KOREAN_COLORS.GOLD}
+                color={"#" + KOREAN_COLORS.GOLD.toString(16)}
               />
 
               <div
@@ -378,7 +406,7 @@ export function TrainingScreen({
             english="Training Controls"
             size="large"
             weight="bold"
-            color={KOREAN_COLORS.GOLD}
+            color={"#" + KOREAN_COLORS.GOLD.toString(16)}
           />
 
           <div
@@ -392,8 +420,8 @@ export function TrainingScreen({
             <button
               onClick={() => onStartCombat?.()}
               style={{
-                backgroundColor: KOREAN_COLORS.RED,
-                color: KOREAN_COLORS.WHITE,
+                backgroundColor: "#" + KOREAN_COLORS.RED.toString(16),
+                color: "#" + KOREAN_COLORS.WHITE.toString(16),
                 border: "none",
                 padding: "1rem",
                 borderRadius: "5px",
@@ -415,8 +443,8 @@ export function TrainingScreen({
                 }
               }}
               style={{
-                backgroundColor: KOREAN_COLORS.GREEN,
-                color: KOREAN_COLORS.WHITE,
+                backgroundColor: "#" + KOREAN_COLORS.GREEN.toString(16),
+                color: "#" + KOREAN_COLORS.WHITE.toString(16),
                 border: "none",
                 padding: "1rem",
                 borderRadius: "5px",
