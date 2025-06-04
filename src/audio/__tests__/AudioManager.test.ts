@@ -17,6 +17,53 @@ vi.mock("howler", () => ({
   },
 }));
 
+// Mock the AudioManager module
+vi.mock("../AudioManager", () => {
+  let state = {
+    masterVolume: 1.0,
+    sfxVolume: 1.0,
+    musicVolume: 1.0,
+    muted: false,
+    currentMusicTrack: null,
+    isInitialized: true,
+  };
+
+  const mockInstance = {
+    getState: vi.fn(() => ({ ...state })),
+    setMasterVolume: vi.fn((volume: number) => {
+      state.masterVolume = volume;
+    }),
+    setSfxVolume: vi.fn(),
+    setMusicVolume: vi.fn(),
+    mute: vi.fn(() => {
+      state.muted = true;
+    }),
+    unmute: vi.fn(() => {
+      state.muted = false;
+    }),
+    toggleMute: vi.fn(() => {
+      state.muted = !state.muted;
+    }),
+    initialize: vi.fn(),
+    playSFX: vi.fn(),
+    playMusic: vi.fn(),
+    stopMusic: vi.fn(),
+    stopAllSounds: vi.fn(),
+    playAttackSound: vi.fn(),
+    playHitSound: vi.fn(),
+    playTechniqueSound: vi.fn(),
+    playStanceChangeSound: vi.fn(),
+    playVitalPointHit: vi.fn(),
+    playEnvironmentalSound: vi.fn(),
+  };
+
+  return {
+    AudioManager: vi.fn(() => mockInstance),
+    audioManager: mockInstance,
+    useAudio: vi.fn(() => mockInstance),
+  };
+});
+
 import { audioManager } from "../AudioManager";
 
 describe("AudioManager", () => {

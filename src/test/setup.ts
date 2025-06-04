@@ -50,6 +50,98 @@ vi.mock("react-error-boundary", () => ({
   }),
 }));
 
+// Mock AudioManager for Korean martial arts audio system
+vi.mock("../audio/AudioManager", () => {
+  const mockAudioManager = {
+    getState: vi.fn(() => ({
+      masterVolume: 1.0,
+      sfxVolume: 1.0,
+      musicVolume: 1.0,
+      muted: false,
+      currentMusicTrack: null,
+      isInitialized: true,
+    })),
+    setVolume: vi.fn(),
+    setMasterVolume: vi.fn().mockImplementation((volume) => {
+      mockAudioManager.getState = vi.fn(() => ({
+        masterVolume: volume,
+        sfxVolume: 1.0,
+        musicVolume: 1.0,
+        muted: false,
+        currentMusicTrack: null,
+        isInitialized: true,
+      }));
+    }),
+    setSfxVolume: vi.fn(),
+    setMusicVolume: vi.fn(),
+    mute: vi.fn(),
+    unmute: vi.fn(),
+    toggleMute: vi.fn().mockImplementation(() => {
+      const currentState = mockAudioManager.getState();
+      mockAudioManager.getState = vi.fn(() => ({
+        ...currentState,
+        muted: !currentState.muted,
+      }));
+    }),
+    initialize: vi.fn(),
+    playSFX: vi.fn(),
+    playMusic: vi.fn(),
+    stopMusic: vi.fn(),
+    stopAllSounds: vi.fn(),
+    playAttackSound: vi.fn(),
+    playHitSound: vi.fn(),
+    playTechniqueSound: vi.fn(),
+    playStanceChangeSound: vi.fn(),
+    playVitalPointHit: vi.fn(),
+    playEnvironmentalSound: vi.fn(),
+  };
+
+  return {
+    AudioManager: vi.fn(() => mockAudioManager),
+    audioManager: mockAudioManager,
+    useAudio: vi.fn(() => mockAudioManager),
+  };
+});
+
+// Mock AudioProvider
+vi.mock("../audio/AudioProvider", () => ({
+  AudioProvider: vi.fn(({ children }) => {
+    const React = require("react");
+    return React.createElement(
+      "div",
+      { "data-testid": "audio-provider" },
+      children
+    );
+  }),
+  useAudio: vi.fn(() => ({
+    getState: vi.fn(() => ({
+      masterVolume: 1.0,
+      sfxVolume: 1.0,
+      musicVolume: 1.0,
+      muted: false,
+      currentMusicTrack: null,
+      isInitialized: true,
+    })),
+    setVolume: vi.fn(),
+    setMasterVolume: vi.fn(),
+    setSfxVolume: vi.fn(),
+    setMusicVolume: vi.fn(),
+    mute: vi.fn(),
+    unmute: vi.fn(),
+    initialize: vi.fn(),
+    playSFX: vi.fn(),
+    playMusic: vi.fn(),
+    stopMusic: vi.fn(),
+    stopAllSounds: vi.fn(),
+    playAttackSound: vi.fn(),
+    playHitSound: vi.fn(),
+    playTechniqueSound: vi.fn(),
+    playStanceChangeSound: vi.fn(),
+    playVitalPointHit: vi.fn(),
+    playEnvironmentalSound: vi.fn(),
+  })),
+}));
+
 // Proper AudioContext mock for Korean martial arts audio
 class MockAudioContext {
   createOscillator() {
