@@ -1,43 +1,79 @@
 import React from "react";
-
-interface KoreanHeaderProps {
-  readonly korean: string;
-  readonly english?: string;
-  readonly level?: 1 | 2 | 3 | 4 | 5 | 6;
-}
+import type { KoreanHeaderProps } from "../../../types/components";
 
 export function KoreanHeader({
   korean,
   english,
+  subtitle,
   level = 2,
+  className = "",
+  style = {},
 }: KoreanHeaderProps): React.JSX.Element {
-  const Tag = `h${level}` as keyof JSX.IntrinsicElements;
-
-  // Use regular HTML styling instead of PIXI styles
+  // Create proper HTML style object - NOT PIXI TextStyle
   const headerStyle: React.CSSProperties = {
-    color: "#00FFC8",
-    margin: 0,
     fontFamily: "Noto Sans KR, Arial, sans-serif",
-    marginBottom: "16px",
+    fontSize: level === 1 ? "2rem" : level === 2 ? "1.5rem" : "1.25rem",
+    fontWeight: 700,
+    color: "#ffffff",
+    marginBottom: "0.5rem",
+    textAlign: "center",
+    ...style, // Merge with passed style
   };
 
+  // Use proper HTML heading elements based on level
   return (
-    <div>
-      <Tag style={headerStyle}>
-        {korean}
-        {english && (
-          <span
-            style={{
-              color: "#FFFFFF",
-              marginLeft: "8px",
-              fontWeight: "normal",
-            }}
-          >
-            ({english})
-          </span>
-        )}
-      </Tag>
-    </div>
+    <header className={`korean-header ${className}`}>
+      {level === 1 && (
+        <h1 style={headerStyle}>
+          <span className="korean-text">{korean}</span>
+          {english && (
+            <span
+              className="english-text"
+              style={{ display: "block", fontSize: "0.8em", opacity: 0.8 }}
+            >
+              {english}
+            </span>
+          )}
+        </h1>
+      )}
+      {level === 2 && (
+        <h2 style={headerStyle}>
+          <span className="korean-text">{korean}</span>
+          {english && (
+            <span
+              className="english-text"
+              style={{ display: "block", fontSize: "0.8em", opacity: 0.8 }}
+            >
+              {english}
+            </span>
+          )}
+        </h2>
+      )}
+      {level === 3 && (
+        <h3 style={headerStyle}>
+          <span className="korean-text">{korean}</span>
+          {english && (
+            <span
+              className="english-text"
+              style={{ display: "block", fontSize: "0.8em", opacity: 0.8 }}
+            >
+              {english}
+            </span>
+          )}
+        </h3>
+      )}
+      {subtitle && (
+        <p
+          style={{
+            fontSize: "0.9rem",
+            opacity: 0.7,
+            marginTop: "0.25rem",
+          }}
+        >
+          {typeof subtitle === "string" ? subtitle : subtitle.korean}
+        </p>
+      )}
+    </header>
   );
 }
 

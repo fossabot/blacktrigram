@@ -1,138 +1,93 @@
-import React, { useState, useCallback, useEffect } from "react";
-import { createPlayerState } from "./utils/playerUtils";
-import { GameEngine } from "./components/game/GameEngine";
+import React, { useState } from "react";
 import { IntroScreen } from "./components/intro/IntroScreen";
 import { TrainingScreen } from "./components/training/TrainingScreen";
-import type {
-  GameState,
-  GameScreen,
-  SessionData,
-  GameSettings,
-  PlayerState,
-} from "./types";
-import "./App.css";
+import { CombatScreen } from "./components/combat/CombatScreen";
+import { EndScreen } from "./components/ui/EndScreen";
+import { createPlayerState } from "./utils/playerUtils";
+import type { AppState, PlayerState } from "./types";
+import type { GamePhase } from "./types/game";
 
-// Define proper game state type
-interface AppGameState {
-  currentScreen: GameScreen;
-  player: PlayerState;
-  sessionData: SessionData;
-  settings: GameSettings;
-  isInitialized: boolean;
-}
-
+// Black Trigram (흑괘) - Korean Martial Arts Combat Simulator
 function App(): React.JSX.Element {
-  const [gameState, setGameState] = useState<AppGameState>({
-    currentScreen: "intro",
-    player: createPlayerState("Player1", "musa", "geon"),
-    sessionData: {
-      startTime: Date.now(),
-      trainingStats: {
-        sessionsCompleted: 0,
-        totalTrainingTime: 0,
-        stancesLearned: [],
-        techniquesLearned: [],
-      },
-      combatStats: {
-        wins: 0,
-        losses: 0,
-        totalCombats: 0,
-        averageDamageDealt: 0,
-        favoriteStance: "geon",
-      },
-      currentScore: 0,
-    },
-    settings: {
-      audioEnabled: true,
-      musicVolume: 0.7,
-      sfxVolume: 0.8,
-      language: "bilingual",
-      showVitalPoints: true,
-      showDebugInfo: false,
-      difficulty: "intermediate",
-    },
-    isInitialized: false,
-  });
+  const [appState, setAppState] = useState<AppState>(() => ({
+    gamePhase: "intro" as GamePhase,
+    players: [
+      createPlayerState("Player 1", "musa"),
+      createPlayerState("Player 2", "amsalja"),
+    ] as readonly [PlayerState, PlayerState],
+    gameTime: 0,
+    currentRound: 1,
+    timeRemaining: 180000,
+    combatLog: [],
+    isPaused: false,
+    winnerId: null,
+  }));
 
-  // Initialize game
-  useEffect(() => {
-    setGameState((prev) => ({
+  const handleGamePhaseChange = (newPhase: GamePhase | string) => {
+    setAppState((prev) => ({
       ...prev,
-      isInitialized: true,
+      gamePhase: newPhase as GamePhase,
     }));
-  }, []);
+  };
 
-  // Fix handleGamePhaseChange with proper typing
-  const handleGamePhaseChange = useCallback((phase: string) => {
-    setGameState((prev) => ({
+  const handlePlayerUpdate = (
+    playerIndex: number,
+    updates: Partial<PlayerState>
+  ) => {
+    setAppState((prev) => ({
       ...prev,
-      currentScreen: phase as GameScreen, // Proper type casting
+      players: prev.players.map((player, index) =>
+        index === playerIndex ? { ...player, ...updates } : player
+      ) as unknown as readonly [PlayerState, PlayerState],
     }));
-  }, []);
+  };
 
-  const handleGameStateChange = useCallback((updates: Partial<GameState>) => {
-    setGameState((prev) => ({ ...prev, ...updates }));
-  }, []);
+  const renderCurrentScreen = () => {
+    switch (appState.gamePhase) {
+      case "intro":
+        return <IntroScreen onGamePhaseChange={handleGamePhaseChange} />;
 
-  const handlePlayerUpdate = useCallback(
-    (playerIndex: number, updates: Partial<PlayerState>) => {
-      if (playerIndex === 0) {
-        setGameState((prev) => ({
-          ...prev,
-          player: { ...prev.player, ...updates },
-        }));
-      }
-    },
-    []
-  );
+      case "training":
+        return (
+          <TrainingScreen
+            players={appState.players}
+            onGamePhaseChange={handleGamePhaseChange}
+            onPlayerUpdate={handlePlayerUpdate}
+            gameTime={appState.gameTime}
+            currentRound={appState.currentRound}
+          />
+        );
 
-  // Fix: Create wrapper for single-parameter handlers
-  const handlePlayerChange = useCallback(
-    (updates: Partial<PlayerState>) => handlePlayerUpdate(0, updates),
-    [handlePlayerUpdate]
-  );
+      case "combat":
+        return (
+          <CombatScreen
+            players={appState.players}
+            onGamePhaseChange={handleGamePhaseChange}
+            onPlayerUpdate={handlePlayerUpdate}
+            gameTime={appState.gameTime}
+            currentRound={appState.currentRound}
+            timeRemaining={appState.timeRemaining}
+            isPaused={appState.isPaused}
+          />
+        );
 
-  switch (gameState.currentScreen) {
-    case "intro":
-      return (
-        <IntroScreen
-          onGamePhaseChange={handleGamePhaseChange}
-          onPlayerChange={handlePlayerChange}
-          player={gameState.player}
-          sessionData={gameState.sessionData}
-        />
-      );
+      case "victory":
+      case "defeat":
+        return (
+          <EndScreen
+            winnerId={appState.winnerId}
+            winner={appState.winnerId || "unknown"}
+            onReturnToMenu={() => handleGamePhaseChange("intro")}
+            onMenu={() => handleGamePhaseChange("intro")}
+          />
+        );
 
-    case "training":
-      return (
-        <TrainingScreen
-          player={gameState.player}
-          onGamePhaseChange={handleGamePhaseChange}
-          onPlayerStateChange={handlePlayerChange}
-        />
-      );
+      default:
+        return <div>Loading...</div>;
+    }
+  };
 
-    case "combat":
-      return (
-        <GameEngine
-          player1={gameState.player}
-          player2={createPlayerState("Player2", "amsalja", "tae")}
-          onGameStateChange={handleGameStateChange}
-          onPlayerUpdate={handlePlayerUpdate}
-          onGamePhaseChange={handleGamePhaseChange}
-        />
-      );
-
-    default:
-      return (
-        <IntroScreen
-          onGamePhaseChange={handleGamePhaseChange}
-          onPlayerChange={handlePlayerChange}
-          player={gameState.player}
-          sessionData={gameState.sessionData}
-        />
-      );
-  }
+  return <div className="app">{renderCurrentScreen()}</div>;
 }
 
 export default App;

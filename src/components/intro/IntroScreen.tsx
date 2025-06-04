@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import type { IntroScreenProps } from "../../types";
 import { KOREAN_COLORS } from "../../types";
-import useAudio from "../../audio/AudioManager"; // Fix: Use default import
-import { KoreanHeader } from "../ui/base/KoreanHeader";
+import useAudio from "../../audio/AudioManager";
+import { KoreanHeader } from "../ui/KoreanHeader";
 import { PhilosophySection } from "./components/PhilosophySection";
 import { KoreanText } from "../ui";
 
@@ -15,22 +15,25 @@ export function IntroScreen({
   player,
 }: IntroScreenProps): React.JSX.Element {
   const [activeSection, setActiveSection] = useState(currentSection);
-  const audio = useAudio(); // Now works correctly
+  const audio = useAudio(); // Now properly typed
 
   // Play intro music when component mounts
   useEffect(() => {
-    audio.playMusic("intro_theme", true);
+    audio.playMusic("intro_theme", { loop: true });
 
     // Cleanup music when component unmounts
     return () => {
-      audio.stopMusic(true);
+      audio.stopMusic();
     };
   }, [audio]);
 
-  const handleSectionChange = (section: string) => {
-    setActiveSection(section);
-    onSectionChange?.(section);
-  };
+  const handleSectionChange = useCallback(
+    (section: string) => {
+      setActiveSection(section);
+      onSectionChange?.(section);
+    },
+    [onSectionChange]
+  );
 
   const handleGamePhaseChange = (phase: string) => {
     onGamePhaseChange(phase); // Use the parameter

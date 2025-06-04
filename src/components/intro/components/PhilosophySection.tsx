@@ -6,7 +6,7 @@ import { KoreanText } from "../../ui/base/korean-text/KoreanText";
 
 export function PhilosophySection({
   onGamePhaseChange,
-}: PhilosophySectionProps): React.ReactElement {
+}: PhilosophySectionProps): React.JSX.Element {
   const philosophyContent = [
     {
       korean: "균형의 원리",
@@ -26,13 +26,11 @@ export function PhilosophySection({
   ];
 
   return (
-    <div style={{ maxWidth: "800px", margin: "0 auto", padding: "2rem" }}>
+    <section className="philosophy-section">
       <KoreanHeader
-        title={{
-          korean: "흑괘의 철학",
-          english: "Philosophy of Black Trigram",
-        }} // Fixed: Provide title prop
-        subtitle="무술의 정신적 기초"
+        korean="흑괘의 철학"
+        english="Philosophy of Black Trigram"
+        subtitle="한국 무술의 깊은 지혜"
         level={1}
       />
 
@@ -229,6 +227,6 @@ export function PhilosophySection({
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

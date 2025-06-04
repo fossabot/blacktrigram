@@ -8,7 +8,6 @@ export function CombatHUD({
   maxRounds = 3,
   gameTime = 0,
   isPlayerTurn = true,
-  phase = "active",
   isPaused = false,
 }: CombatHUDProps): React.JSX.Element {
   const [player1, player2] = players;

@@ -1,31 +1,34 @@
 // Complete Player component with Korean martial arts character rendering
 
-import React, { useMemo } from "react";
+import React, { useMemo, useCallback } from "react";
 import { Container } from "@pixi/react";
 import type { PlayerProps } from "../../types/components";
-import useAudio from "../../audio/AudioManager"; // Fix: Use default import
+import { useAudio } from "../../audio/AudioProvider"; // Fix: Use AudioProvider
 import { KOREAN_COLORS, TRIGRAM_DATA } from "../../types/constants";
+import { KoreanTechnique } from "../../types";
 
 export function Player({
   playerState,
   playerIndex,
   onStateUpdate,
-  archetype,
-  stance,
-  position,
-  facing,
-  isAttacking,
-  health,
-  maxHealth,
-  ki,
-  maxKi,
-  stamina,
-  maxStamina,
+  onAttack,
+  // Destructure props from playerState and component props
+  archetype = playerState.archetype,
+  stance = playerState.stance,
+  position = playerState.position,
+  facing = playerState.facing,
+  isAttacking = playerState.isAttacking,
+  health = playerState.health,
+  maxHealth = playerState.maxHealth,
+  ki = playerState.ki,
+  maxKi = playerState.maxKi,
+  stamina = playerState.stamina,
+  maxStamina = playerState.maxStamina,
   x = 0,
   y = 0,
   isActive = true,
 }: PlayerProps): React.JSX.Element {
-  const audio = useAudio();
+  const audio = useAudio(); // Now properly typed
 
   // Use playerMetrics in component logic
   const playerStatus = useMemo(() => {
@@ -40,7 +43,9 @@ export function Player({
     return {
       ...playerMetrics,
       statusColor:
-        playerMetrics.healthRatio < 0.3 ? 0xff6666 : KOREAN_COLORS[stance],
+        playerMetrics.healthRatio < 0.3
+          ? 0xff6666
+          : KOREAN_COLORS[stance] || KOREAN_COLORS.WHITE,
       canAct: playerMetrics.staminaRatio > 0.1,
     };
   }, [health, maxHealth, ki, maxKi, stamina, maxStamina, stance]);
@@ -65,6 +70,53 @@ export function Player({
   // Use playerIndex for player-specific logic
   const isPlayer1 = useMemo(() => playerIndex === 0, [playerIndex]);
 
+  // Combat actions with proper audio integration
+  const executeTechnique = useCallback(
+    async (technique: KoreanTechnique) => {
+      if (!technique || !playerState) return;
+
+      try {
+        // Play technique sound using proper audio hook
+        audio.playSFX("technique_execute");
+
+        // Update player state for technique execution
+        onStateUpdate({
+          stamina: Math.max(
+            0,
+            playerState.stamina - (technique.staminaCost || 10)
+          ),
+          ki: Math.max(0, playerState.ki - (technique.kiCost || 5)),
+          isAttacking: true,
+        });
+
+        // Play attack sound based on damage
+        if (technique.damage) {
+          audio.playAttackSound(technique.damage);
+        }
+
+        // Reset attacking state after technique
+        setTimeout(() => {
+          onStateUpdate({ isAttacking: false });
+        }, technique.executionTime || 500);
+      } catch (error) {
+        console.error("Technique execution failed:", error);
+      }
+    },
+    [playerState, onStateUpdate, audio]
+  );
+
+  // Use onAttack prop
+  const handleAttack = useCallback(() => {
+    if (onAttack) {
+      onAttack(position);
+    }
+    // Also use executeTechnique for specific techniques
+    const currentTechnique = TRIGRAM_DATA[stance]?.technique;
+    if (currentTechnique) {
+      executeTechnique(currentTechnique);
+    }
+  }, [onAttack, position, stance, executeTechnique]);
+
   return (
     <Container
       x={position.x + x}
@@ -74,6 +126,7 @@ export function Player({
       interactive={true}
       eventMode="static"
       alpha={playerStatus.staminaRatio * 0.3 + 0.7} // Use playerStatus
+      onClick={handleAttack} // Use handleAttack to utilize onAttack prop
     >
       {/* Player visual representation */}
       <Container

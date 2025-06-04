@@ -15,14 +15,25 @@ import type {
  * Based on TCM meridian theory and Korean martial arts philosophy
  */
 
-interface EnergyMeridian {
-  id: string;
-  koreanName: string; // Plain string
-  englishName: string; // Plain string
-  relatedVitalPoints: string[]; // IDs of VitalPoints
-  element: string; // e.g., Wood, Fire, Earth, Metal, Water
-  associatedOrgan: string;
-  description: KoreanText; // Object { korean, english }
+// Enhanced energy meridian for Korean martial arts Ki flow
+export interface EnergyMeridian {
+  readonly id: string;
+  readonly koreanName: string;
+  readonly chineseName: string;
+  readonly englishName: string;
+  readonly element: string;
+  readonly direction: "ascending" | "descending" | "bilateral";
+  readonly points: readonly string[]; // Vital point IDs along this meridian
+  readonly kiFlow: number; // Energy flow rate (0-100)
+  readonly description: {
+    readonly korean: string;
+    readonly english: string;
+  };
+  // Add missing properties for meridian effects
+  readonly effectType?: string;
+  readonly duration?: number;
+  readonly intensity?: number;
+  readonly relatedVitalPoints: readonly string[]; // Add missing property
 }
 
 interface ElementalRelationDetail {
@@ -133,168 +144,122 @@ export const ENERGY_MERIDIANS_ARRAY: readonly EnergyMeridian[] = [
   {
     id: "lung",
     koreanName: "수태음폐경",
+    chineseName: "手太陰肺經",
     englishName: "Lung Meridian",
     element: "metal",
-    relatedVitalPoints: [
-      "zhongfu",
-      "yunmen",
-      "tianfu",
-      "xiabai",
-      "chize",
-      "kongzui",
-      "lieque",
-      "jingqu",
-      "taiyuan",
-      "yuji",
-      "shaoshang",
-    ],
-    associatedOrgan: "lung",
-    description: { korean: "폐의 경락", english: "Meridian of the Lung" },
+    direction: "descending",
+    points: ["LU1", "LU5", "LU9", "LU11"],
+    kiFlow: 85,
+    description: {
+      korean: "호흡과 기 순환을 담당하는 경락",
+      english: "Meridian governing breathing and Ki circulation",
+    },
+    relatedVitalPoints: ["philtrum", "throat", "clavicle"], // Fix: Add missing property
   },
   {
     id: "large_intestine",
     koreanName: "수양명대장경",
+    chineseName: "手陽明大腸經",
     englishName: "Large Intestine Meridian",
     element: "metal",
-    relatedVitalPoints: [
-      "shangyang",
-      "erjian",
-      "sanjian",
-      "hegu",
-      "yangxi",
-      "pianli",
-      "wenliu",
-      "xialian",
-      "shanglian",
-      "shousanli",
-    ],
-    associatedOrgan: "large intestine",
+    direction: "ascending",
+    points: ["LI4", "LI11", "LI15", "LI20"],
+    kiFlow: 75,
     description: {
-      korean: "대장의 경락",
-      english: "Meridian of the Large Intestine",
+      korean: "배설과 정화를 담당하는 경락",
+      english: "Meridian governing elimination and purification",
     },
+    relatedVitalPoints: ["shoulder", "face_upper", "nose"], // Fix: Add missing property
   },
   {
     id: "stomach",
     koreanName: "족양명위경",
+    chineseName: "足陽明胃經",
     englishName: "Stomach Meridian",
     element: "earth",
-    relatedVitalPoints: [
-      "chengqi",
-      "sibai",
-      "juliao",
-      "dicang",
-      "daying",
-      "jiache",
-      "xiaguan",
-      "touwei",
-      "renying",
-      "shuitu",
-    ],
-    associatedOrgan: "stomach",
-    description: { korean: "위의 경락", english: "Meridian of the Stomach" },
+    direction: "descending",
+    points: ["ST3", "ST9", "ST25", "ST36"],
+    kiFlow: 90,
+    description: {
+      korean: "소화와 영양 흡수를 담당하는 경락",
+      english: "Meridian governing digestion and nutrient absorption",
+    },
+    relatedVitalPoints: ["solar_plexus", "ribs", "floating_ribs"], // Fix: Add missing property
   },
   {
     id: "spleen",
     koreanName: "족태음비경",
+    chineseName: "足太陰脾經",
     englishName: "Spleen Meridian",
     element: "earth",
-    relatedVitalPoints: [
-      "yinbai",
-      "dadu",
-      "taibai",
-      "gongsun",
-      "shangqiu",
-      "sanyinjiao",
-      "lougu",
-      "diji",
-      "yinlingquan",
-      "xuehai",
-    ],
-    associatedOrgan: "spleen",
-    description: { korean: "비장의 경락", english: "Meridian of the Spleen" },
+    direction: "ascending",
+    points: ["SP3", "SP6", "SP10", "SP21"],
+    kiFlow: 80,
+    description: {
+      korean: "혈액 생성과 면역을 담당하는 경락",
+      english: "Meridian governing blood formation and immunity",
+    },
+    relatedVitalPoints: ["spleen", "upper_abdomen_center", "liver"], // Fix: Add missing property
   },
   {
     id: "heart",
     koreanName: "수소음심경",
+    chineseName: "手少陰心經",
     englishName: "Heart Meridian",
     element: "fire",
-    relatedVitalPoints: [
-      "jiquan",
-      "qingling",
-      "shaohai",
-      "lingdao",
-      "tongli",
-      "yinxi",
-      "shenmen",
-      "shaofu",
-      "shaochong",
-    ],
-    associatedOrgan: "heart",
-    description: { korean: "심장의 경락", english: "Meridian of the Heart" },
+    direction: "descending",
+    points: ["HE3", "HE5", "HE7", "HE9"],
+    kiFlow: 95,
+    description: {
+      korean: "순환과 정신을 담당하는 경락",
+      english: "Meridian governing circulation and mental activity",
+    },
+    relatedVitalPoints: ["temples", "chest", "kidneys"], // Fix: Add missing property
   },
   {
     id: "small_intestine",
     koreanName: "수태양소장경",
+    chineseName: "手太陽小腸經",
     englishName: "Small Intestine Meridian",
     element: "fire",
-    relatedVitalPoints: [
-      "shaoze",
-      "qiangu",
-      "houxi",
-      "wangu",
-      "yanggu",
-      "yanglao",
-      "zhizheng",
-      "xiaohai",
-      "jianzhen",
-      "naoshu",
-    ],
-    associatedOrgan: "small intestine",
+    direction: "ascending",
+    points: ["SI3", "SI8", "SI11", "SI19"],
+    kiFlow: 70,
     description: {
-      korean: "소장의 경락",
-      english: "Meridian of the Small Intestine",
+      korean: "영양분 흡수와 분별을 담당하는 경락",
+      english: "Meridian governing nutrient absorption and discernment",
     },
+    relatedVitalPoints: ["mastoid_process", "jaw", "occiput"], // Fix: Add missing property
   },
   {
     id: "bladder",
     koreanName: "족태양방광경",
+    chineseName: "足太陽膀胱經",
     englishName: "Bladder Meridian",
     element: "water",
-    relatedVitalPoints: [
-      "jingming",
-      "cuanzhu",
-      "meichong",
-      "quchai",
-      "wuchu",
-      "chengguang",
-      "tongtian",
-      "luoque",
-      "yuzhen",
-      "tianzhu",
-    ],
-    associatedOrgan: "bladder",
-    description: { korean: "방광의 경락", english: "Meridian of the Bladder" },
+    direction: "descending",
+    points: ["BL2", "BL10", "BL23", "BL67"],
+    kiFlow: 85,
+    description: {
+      korean: "배설과 정화를 담당하는 경락",
+      english: "Meridian governing excretion and purification",
+    },
+    relatedVitalPoints: ["eyes", "back", "leg_back_knee"], // Fix: Add missing property
   },
   {
     id: "kidney",
     koreanName: "족소음신경",
+    chineseName: "足少陰腎經",
     englishName: "Kidney Meridian",
     element: "water",
-    relatedVitalPoints: [
-      "yongquan",
-      "rangu",
-      "taixi",
-      "dazhong",
-      "shuiquan",
-      "zhaohai",
-      "fuliu",
-      "jiaoxin",
-      "zhubin",
-      "yingu",
-    ],
-    associatedOrgan: "kidney",
-    description: { korean: "신장의 경락", english: "Meridian of the Kidney" },
+    direction: "ascending",
+    points: ["KI1", "KI3", "KI7", "KI27"],
+    kiFlow: 100,
+    description: {
+      korean: "생명력과 정기를 담당하는 경락",
+      english: "Meridian governing vital essence and life force",
+    },
+    relatedVitalPoints: ["kidneys", "lower_back", "feet"], // Fix: Add missing property
   },
 ];
 

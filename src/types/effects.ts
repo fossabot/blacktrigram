@@ -28,7 +28,7 @@ export interface VitalPointEffect extends StatusEffect {
   readonly bodyRegion?: string;
 }
 
-// Fix HitEffect type to match usage
+// Hit effect for visual combat feedback
 export interface HitEffect {
   readonly id: string;
   readonly type: "light" | "medium" | "heavy" | "critical";
@@ -37,5 +37,12 @@ export interface HitEffect {
   readonly timestamp: number;
   readonly duration: number;
   readonly color: number;
-  readonly playerId?: string;
+  readonly playerId: string;
+  // Remove korean property - use HitEffectText for bilingual text
+}
+
+// Separate interface for Korean text in hit effects
+export interface HitEffectText {
+  readonly korean: string;
+  readonly english: string;
 }

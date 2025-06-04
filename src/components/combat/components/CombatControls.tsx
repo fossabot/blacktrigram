@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import type { PlayerState, TrigramStance } from "../../../types";
 import { KOREAN_COLORS, TRIGRAM_DATA } from "../../../types";
-import useAudio from "../../../audio/AudioManager"; // Fix: Use default import
+import { useAudio } from "../../../audio/AudioProvider"; // Fix: Use AudioProvider
 
 interface CombatControlsProps {
   readonly players: readonly [PlayerState, PlayerState];
@@ -19,7 +19,7 @@ export function CombatControls({
   isExecutingTechnique,
   isPaused,
 }: CombatControlsProps): React.JSX.Element {
-  const audio = useAudio();
+  const audio = useAudio(); // Now properly typed
   const [selectedStance, setSelectedStance] = useState<TrigramStance>(
     player.stance
   );

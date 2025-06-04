@@ -44,14 +44,13 @@ describe("HitEffectsLayer", () => {
     const mockEffects: HitEffect[] = [
       {
         id: "effect1",
-        type: "critical",
+        type: "critical", // Use valid type
         position: { x: 100, y: 200 },
         damage: 25,
         color: 0xff0000,
-        startTime: Date.now(),
+        timestamp: Date.now(),
         duration: 1000,
-        korean: "치명타!", // Add missing korean property
-        createdAt: Date.now(), // Add missing createdAt property
+        playerId: "player1",
       },
     ];
 
@@ -75,10 +74,9 @@ describe("HitEffectsLayer", () => {
           position: { x: 50, y: 100 },
           damage: type === "critical" ? 40 : 15,
           color: 0x00ff00,
-          startTime: Date.now(),
+          timestamp: Date.now(),
           duration: 800,
-          korean: type === "critical" ? "치명타!" : "타격!", // Add missing korean property
-          createdAt: Date.now(), // Add missing createdAt property
+          playerId: "player1",
         },
       ];
 
@@ -95,6 +93,7 @@ describe("HitEffectsLayer", () => {
     timestamp: Date.now(), // Fix: Use timestamp instead of startTime
     duration: 1000,
     color: 0xff0000,
+    playerId: "player1", // Fix: Add missing playerId property
     ...overrides,
   });
 
@@ -114,16 +113,45 @@ describe("HitEffectsLayer", () => {
   it("should remove expired effects", async () => {
     const expiredEffect: HitEffect = {
       id: "expired-effect",
-      type: "light",
+      type: "light", // Use valid type
       position: { x: 50, y: 50 },
       damage: 10,
-      timestamp: Date.now() - 2000, // Fix: Use timestamp
+      timestamp: Date.now() - 2000,
       duration: 1000,
       color: 0xff0000,
+      playerId: "player1",
     };
 
     const { rerender } = render(<HitEffectsLayer effects={[expiredEffect]} />);
     rerender(<HitEffectsLayer effects={[]} />);
     expect(document.body).toBeInTheDocument();
+  });
+
+  it("should handle multiple simultaneous effects", () => {
+    const multipleEffects: HitEffect[] = [
+      {
+        id: "effect1",
+        type: "light",
+        position: { x: 100, y: 100 },
+        damage: 10,
+        timestamp: Date.now(),
+        duration: 500,
+        color: 0x00ff00,
+        playerId: "player1", // Fix: Add missing playerId property
+      },
+      {
+        id: "effect2",
+        type: "medium",
+        position: { x: 200, y: 150 },
+        damage: 20,
+        timestamp: Date.now() + 100,
+        duration: 750,
+        color: 0xffaa00,
+        playerId: "player2", // Fix: Add missing playerId property
+      },
+    ];
+
+    const { container } = render(<HitEffectsLayer effects={multipleEffects} />);
+    expect(container).toBeInTheDocument();
   });
 });

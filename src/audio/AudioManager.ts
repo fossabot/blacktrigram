@@ -57,14 +57,13 @@ export class AudioManager implements IAudioManager {
     this.setMuted(!this.isMuted);
   }
 
-  public async initialize(): Promise<void> {
-    if (this.isInitialized) return;
-
+  // Single initialize implementation
+  public initialize(): void {
     try {
-      await this.initializeAudioContext();
       this.isInitialized = true;
+      console.log("AudioManager initialized successfully");
     } catch (error) {
-      console.warn("Audio initialization failed:", error);
+      console.warn("AudioManager initialization failed:", error);
       this.isInitialized = false;
     }
   }
@@ -74,12 +73,6 @@ export class AudioManager implements IAudioManager {
     this.soundPool.clear();
     this.musicPool.clear();
     this.isInitialized = false;
-  }
-
-  private async initializeAudioContext(): Promise<void> {
-    if (typeof window !== "undefined" && "AudioContext" in window) {
-      // Initialize audio context if needed
-    }
   }
 
   public stopAllSounds(): void {
@@ -95,7 +88,7 @@ export class AudioManager implements IAudioManager {
     id: SoundEffectId,
     options?: AudioPlaybackOptions
   ): number | null {
-    if (this.isMuted) return null;
+    if (!this.isInitialized || this.isMuted) return null;
 
     // Implementation for playing sound effects
     console.log(`Playing SFX: ${id}`, options);
@@ -106,7 +99,7 @@ export class AudioManager implements IAudioManager {
     id: MusicTrackId,
     options?: AudioPlaybackOptions
   ): number | null {
-    if (this.isMuted) return null;
+    if (!this.isInitialized || this.isMuted) return null;
 
     this.currentMusic = id;
     console.log(`Playing Music: ${id}`, options);
@@ -155,8 +148,8 @@ export class AudioManager implements IAudioManager {
   }
 
   public playTechniqueSound(koreanName: string): void {
-    // Use the koreanName parameter for Korean martial arts audio context
-    console.log(`Playing technique: ${koreanName}`);
+    // Use the koreanName parameter to avoid unused variable warning
+    console.log(`Playing technique sound for: ${koreanName}`);
     this.playSFX("technique_execute");
   }
 
@@ -167,6 +160,8 @@ export class AudioManager implements IAudioManager {
   public playBlockSound(): void {
     this.playSFX("block_success");
   }
+
+  // Remove duplicate initialize method - only keep the one above
 }
 
 // Export both singleton instance and class

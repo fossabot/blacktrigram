@@ -4,7 +4,7 @@ import { CombatArena } from "./components/CombatArena";
 import { CombatHUD } from "./components/CombatHUD";
 import { CombatControls } from "./components/CombatControls";
 import { KoreanText } from "../ui/base/korean-text";
-import useAudio from "../../audio/AudioManager"; // Fix: Use default import
+import { useAudio } from "../../audio/AudioProvider"; // Fix: Use AudioProvider
 import { CombatSystem } from "../../systems/CombatSystem";
 import type {
   PlayerState,
@@ -96,7 +96,7 @@ export function CombatScreen({
   onReturnToMenu,
   isActive = true,
 }: CombatScreenProps): React.JSX.Element {
-  const audio = useAudio();
+  const audio = useAudio(); // Now properly typed
   const [combatState, dispatch] = useReducer(combatReducer, initialCombatState);
   const [isProcessingAction, setIsProcessingAction] = useState(false);
 

@@ -30,5 +30,5 @@ export const useAudio = (): AudioManager => {
   return context;
 };
 
-// Also export as default for backward compatibility
+// Export as default for backward compatibility
 export default useAudio;
