@@ -1,6 +1,6 @@
 import { useCallback } from "react";
+import { Graphics } from "@pixi/react";
 import type { Graphics as PixiGraphics } from "pixi.js";
-import { PixiGraphicsComponent } from "./PixiComponents";
 import { KOREAN_COLORS } from "../../../types";
 
 export interface BackgroundGridProps {
@@ -29,38 +29,26 @@ export function BackgroundGrid({
       const colorValue: number =
         typeof color === "number" ? color : KOREAN_COLORS.ACCENT_BLUE;
 
-      g.setStrokeStyle({
-        color: colorValue,
-        width: lineWidth,
-        alpha,
-      });
-
       // Draw vertical lines
+      g.lineStyle(lineWidth, colorValue, alpha);
       for (let x = 0; x <= width; x += gridSize) {
         g.moveTo(x, 0);
         g.lineTo(x, height);
-        g.stroke();
       }
 
       // Draw horizontal lines
       for (let y = 0; y <= height; y += gridSize) {
         g.moveTo(0, y);
         g.lineTo(width, y);
-        g.stroke();
       }
 
       // Add intersection points for cyberpunk feel
       if (animated) {
-        g.setStrokeStyle({
-          color: KOREAN_COLORS.CYAN,
-          width: 2,
-          alpha: alpha * 0.6,
-        });
+        g.lineStyle(2, KOREAN_COLORS.CYAN, alpha * 0.6);
 
         for (let x = 0; x <= width; x += gridSize) {
           for (let y = 0; y <= height; y += gridSize) {
-            g.circle(x, y, 2);
-            g.stroke();
+            g.drawCircle(x, y, 2);
           }
         }
       }
@@ -68,7 +56,7 @@ export function BackgroundGrid({
     [width, height, gridSize, lineWidth, color, alpha, animated]
   );
 
-  return <PixiGraphicsComponent draw={drawGrid} />;
+  return <Graphics draw={drawGrid} />;
 }
 
 export interface CyberpunkBackgroundProps {
@@ -85,48 +73,36 @@ export function CyberpunkBackground({
       g.clear();
 
       // Dark base background
-      g.setFillStyle({ color: KOREAN_COLORS.BLACK });
-      g.rect(0, 0, width, height);
-      g.fill();
+      g.beginFill(KOREAN_COLORS.BLACK);
+      g.drawRect(0, 0, width, height);
+      g.endFill();
 
       // Cyberpunk grid overlay
-      g.setStrokeStyle({
-        color: KOREAN_COLORS.ACCENT_BLUE,
-        width: 1,
-        alpha: 0.2,
-      });
+      g.lineStyle(1, KOREAN_COLORS.ACCENT_BLUE, 0.2);
 
       const gridSize = 40;
       for (let x = 0; x <= width; x += gridSize) {
         g.moveTo(x, 0);
         g.lineTo(x, height);
-        g.stroke();
       }
 
       for (let y = 0; y <= height; y += gridSize) {
         g.moveTo(0, y);
         g.lineTo(width, y);
-        g.stroke();
       }
 
       // Add some glowing accents
-      g.setStrokeStyle({
-        color: KOREAN_COLORS.CYAN,
-        width: 2,
-        alpha: 0.4,
-      });
+      g.lineStyle(2, KOREAN_COLORS.CYAN, 0.4);
 
       // Diagonal accent lines
       g.moveTo(0, 0);
       g.lineTo(width, height);
-      g.stroke();
 
       g.moveTo(width, 0);
       g.lineTo(0, height);
-      g.stroke();
     },
     [width, height]
   );
 
-  return <PixiGraphicsComponent draw={drawBackground} />;
+  return <Graphics draw={drawBackground} />;
 }

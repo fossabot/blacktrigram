@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from "react";
-import { Application } from "@pixi/react";
+import { Application, Container, Graphics, Text } from "@pixi/react";
 import { KOREAN_COLORS } from "../../types/constants";
 import type { Graphics as PixiGraphics } from "pixi.js";
 
@@ -36,19 +36,18 @@ export function ProgressTracker({
       g.clear();
 
       // Background
-      g.setFillStyle({ color: backgroundColor, alpha: 0.8 });
-      g.roundRect(0, 0, width, height, 4);
-      g.fill();
+      g.beginFill(backgroundColor, 0.8);
+      g.drawRoundedRect(0, 0, width, height, 4);
+      g.endFill();
 
       // Progress fill
-      g.setFillStyle({ color: barColor, alpha: 1.0 });
-      g.roundRect(0, 0, width * percentage, height, 4);
-      g.fill();
+      g.beginFill(barColor, 1.0);
+      g.drawRoundedRect(0, 0, width * percentage, height, 4);
+      g.endFill();
 
       // Border
-      g.setStrokeStyle({ color: borderColor, width: 1 });
-      g.roundRect(0, 0, width, height, 4);
-      g.stroke();
+      g.lineStyle(1, borderColor);
+      g.drawRoundedRect(0, 0, width, height, 4);
     },
     [width, height, percentage, barColor, backgroundColor, borderColor]
   );
@@ -60,9 +59,9 @@ export function ProgressTracker({
 
   return (
     <Application width={width} height={height + 30} backgroundColor={0x000000}>
-      <pixiContainer>
+      <Container>
         {/* Label */}
-        <pixiText
+        <Text
           text={label}
           x={0}
           y={0}
@@ -74,15 +73,15 @@ export function ProgressTracker({
         />
 
         {/* Progress Bar */}
-        <pixiGraphics draw={drawProgressBar} y={15} />
+        <Graphics draw={drawProgressBar} y={15} />
 
         {/* Value Text */}
         {showText && (
-          <pixiText
+          <Text
             text={displayText}
             x={width / 2}
             y={15 + height / 2}
-            anchor={{ x: 0.5, y: 0.5 }}
+            anchor={0.5}
             style={{
               fontFamily: "Noto Sans KR",
               fontSize: Math.min(12, height * 0.6),
@@ -91,7 +90,7 @@ export function ProgressTracker({
             }}
           />
         )}
-      </pixiContainer>
+      </Container>
     </Application>
   );
 }

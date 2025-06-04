@@ -1,7 +1,7 @@
 // Reusable PIXI.js components for Black Trigram Korean martial arts game
 
 import React, { useCallback, useMemo, useState } from "react";
-import { Graphics, Text } from "@pixi/react";
+import { Container, Graphics, Text } from "@pixi/react";
 import { TextStyle } from "pixi.js";
 import type {
   FederatedPointerEvent,
@@ -16,12 +16,9 @@ import {
   TRIGRAM_DATA,
 } from "../../../types/constants";
 
-// Use proper PIXI types from pixi.js package
-type PixiGraphicsType = GraphicsType;
-
 // Extended TextStyle interface for better type safety
 export interface ExtendedPixiTextStyle
-  extends Partial<Omit<TextStyle, "dropShadow" | "fontWeight">> {
+  extends Partial<Omit<TextStyle, "dropShadow" | "fontWeight" | "stroke">> {
   readonly fontFamily?: string;
   readonly fontSize?: number;
   readonly fill?: number | string;
@@ -29,7 +26,7 @@ export interface ExtendedPixiTextStyle
   readonly align?: "left" | "center" | "right";
   readonly dropShadow?: TextDropShadow;
   readonly stroke?: { color: number; width: number } | number | string;
-  readonly strokeThickness?: number; // Add strokeThickness to the interface
+  readonly strokeThickness?: number; // Explicitly include strokeThickness
 }
 
 // Base component interfaces
@@ -50,7 +47,7 @@ export interface PixiContainerComponentProps {
 
 export interface PixiGraphicsComponentProps
   extends PixiContainerComponentProps {
-  readonly draw: (graphics: PixiGraphicsType) => void;
+  readonly draw: (graphics: GraphicsType) => void;
 }
 
 export interface PixiTextComponentProps extends PixiContainerComponentProps {
@@ -65,7 +62,7 @@ export function PixiContainerComponent({
   children,
   ...props
 }: PixiContainerComponentProps): React.ReactElement {
-  return <div {...props}>{children}</div>; // Use div instead of pixiContainer
+  return <Container {...props}>{children}</Container>;
 }
 
 export function PixiGraphicsComponent({
@@ -73,8 +70,9 @@ export function PixiGraphicsComponent({
   ...props
 }: PixiGraphicsComponentProps): React.ReactElement {
   const drawCallback = useCallback(
-    (g: PixiGraphicsType) => {
+    (g: GraphicsType) => {
       if (draw && g) {
+        g.clear();
         draw(g);
       }
     },
@@ -143,10 +141,9 @@ export function PixiTextComponent({
     // Handle stroke
     if (style.stroke) {
       if (typeof style.stroke === "object" && "color" in style.stroke) {
-        pixiStyle.stroke = {
-          color: style.stroke.color,
-          width: style.stroke.width,
-        };
+        pixiStyle.stroke = style.stroke.color;
+        // Use type assertion to handle strokeThickness
+        (pixiStyle as any).strokeThickness = style.stroke.width;
       } else {
         pixiStyle.stroke = style.stroke;
       }
@@ -154,6 +151,7 @@ export function PixiTextComponent({
 
     // Handle strokeThickness
     if (style.strokeThickness !== undefined) {
+      // Use type assertion to handle strokeThickness
       (pixiStyle as any).strokeThickness = style.strokeThickness;
     }
 
@@ -216,6 +214,34 @@ export interface CyberpunkGlowProps {
   readonly color?: number;
 }
 
+// Add missing interface definitions - place these before their component implementations
+interface HealthBarProps {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+  readonly currentHealth: number;
+  readonly maxHealth: number;
+  readonly color?: number;
+}
+
+interface KiBarProps {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+  readonly currentKi: number;
+  readonly maxKi: number;
+}
+
+interface StanceIndicatorProps {
+  readonly x: number;
+  readonly y: number;
+  readonly radius: number;
+  readonly color: number;
+  readonly isActive?: boolean;
+}
+
 // Component implementations
 export const TrigramButton = React.memo(function TrigramButton({
   stance,
@@ -230,38 +256,37 @@ export const TrigramButton = React.memo(function TrigramButton({
   const stanceColor = STANCE_COLORS[stance];
 
   const drawButton = useCallback(
-    (g: PixiGraphicsType) => {
+    (g: GraphicsType) => {
       g.clear();
 
       // Button background
       const alpha = active ? 1.0 : isHovered ? 0.8 : 0.6;
-      g.setFillStyle({ color: stanceColor, alpha });
-      g.circle(0, 0, size / 2);
-      g.fill();
+      g.beginFill(stanceColor, alpha);
+      g.drawCircle(0, 0, size / 2);
+      g.endFill();
 
       // Button border
-      g.setStrokeStyle({
-        color: active ? KOREAN_COLORS.WHITE : KOREAN_COLORS.GRAY_LIGHT,
-        width: active ? 3 : 2,
-      });
-      g.circle(0, 0, size / 2);
-      g.stroke();
+      g.lineStyle(
+        active ? 3 : 2,
+        active ? KOREAN_COLORS.WHITE : KOREAN_COLORS.GRAY_LIGHT
+      );
+      g.drawCircle(0, 0, size / 2);
     },
     [size, stanceColor, active, isHovered]
   );
 
   return (
-    <PixiContainerComponent
+    <Container
       x={x}
       y={y}
       interactive={true}
-      cursor="pointer"
-      onpointertap={onClick}
-      onpointerover={() => setIsHovered(true)}
-      onpointerout={() => setIsHovered(false)}
+      eventMode="static"
+      pointertap={onClick}
+      pointerover={() => setIsHovered(true)}
+      pointerout={() => setIsHovered(false)}
     >
-      <PixiGraphicsComponent draw={drawButton} />
-      <PixiTextComponent
+      <Graphics draw={drawButton} />
+      <Text
         text={trigram.symbol}
         style={{
           fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
@@ -269,9 +294,9 @@ export const TrigramButton = React.memo(function TrigramButton({
           fill: KOREAN_COLORS.WHITE,
           align: "center",
         }}
-        anchor={{ x: 0.5, y: 0.5 }}
+        anchor={0.5}
       />
-    </PixiContainerComponent>
+    </Container>
   );
 });
 
@@ -289,34 +314,33 @@ export const StatusBar = React.memo(function StatusBar({
   const percentage = Math.max(0, Math.min(1, current / maximum));
 
   const drawBar = useCallback(
-    (g: PixiGraphicsType) => {
+    (g: GraphicsType) => {
       g.clear();
 
       // Background
-      g.setFillStyle({ color: backgroundColor, alpha: 0.8 });
-      g.roundRect(0, 0, width, height, 4);
-      g.fill();
+      g.beginFill(backgroundColor, 0.8);
+      g.drawRoundedRect(0, 0, width, height, 4);
+      g.endFill();
 
       // Fill bar
       if (percentage > 0) {
-        g.setFillStyle({ color: color, alpha: 1.0 });
-        g.roundRect(2, 2, (width - 4) * percentage, height - 4, 2);
-        g.fill();
+        g.beginFill(color, 1.0);
+        g.drawRoundedRect(2, 2, (width - 4) * percentage, height - 4, 2);
+        g.endFill();
       }
 
       // Border
-      g.setStrokeStyle({ color: KOREAN_COLORS.WHITE, width: 1 });
-      g.roundRect(0, 0, width, height, 4);
-      g.stroke();
+      g.lineStyle(1, KOREAN_COLORS.WHITE);
+      g.drawRoundedRect(0, 0, width, height, 4);
     },
     [width, height, percentage, color, backgroundColor]
   );
 
   return (
-    <PixiContainerComponent x={x} y={y}>
-      <PixiGraphicsComponent draw={drawBar} />
+    <Container x={x} y={y}>
+      <Graphics draw={drawBar} />
       {showText && (
-        <PixiTextComponent
+        <Text
           text={`${Math.round(current)} / ${maximum}`}
           style={{
             fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
@@ -324,12 +348,12 @@ export const StatusBar = React.memo(function StatusBar({
             fill: KOREAN_COLORS.WHITE,
             align: "center",
           }}
-          anchor={{ x: 0.5, y: 0.5 }}
+          anchor={0.5}
           x={width / 2}
           y={height / 2}
         />
       )}
-    </PixiContainerComponent>
+    </Container>
   );
 });
 
@@ -344,38 +368,37 @@ export const KoreanTextDisplay = React.memo(function KoreanTextDisplay({
   bilingual = true,
 }: KoreanTextDisplayProps): React.ReactElement {
   const drawBackground = useCallback(
-    (g: PixiGraphicsType) => {
+    (g: GraphicsType) => {
       if (!emphasis) return;
 
       g.clear();
-      g.setFillStyle({ color: KOREAN_COLORS.BLACK, alpha: 0.7 });
-      g.roundRect(-10, -5, 200, size + 10, 5);
-      g.fill();
+      g.beginFill(KOREAN_COLORS.BLACK, 0.7);
+      g.drawRoundedRect(-10, -5, 200, size + 10, 5);
+      g.endFill();
     },
     [emphasis, size]
   );
 
   const backgroundBar = useCallback(
-    (g: PixiGraphicsType) => {
+    (g: GraphicsType) => {
       if (!emphasis) return;
 
       g.clear();
-      g.setFillStyle({ color: KOREAN_COLORS.ACCENT_BLUE, alpha: 0.3 });
-      g.rect(-8, -3, 196, size + 6);
-      g.fill();
+      g.beginFill(KOREAN_COLORS.ACCENT_BLUE, 0.3);
+      g.drawRect(-8, -3, 196, size + 6);
+      g.endFill();
     },
     [emphasis, size]
   );
 
   const accentLine = useCallback(
-    (g: PixiGraphicsType) => {
+    (g: GraphicsType) => {
       if (!emphasis) return;
 
       g.clear();
-      g.setStrokeStyle({ color: KOREAN_COLORS.CYAN, width: 2 });
+      g.lineStyle(2, KOREAN_COLORS.CYAN);
       g.moveTo(-8, size + 3);
       g.lineTo(188, size + 3);
-      g.stroke();
     },
     [emphasis, size]
   );
@@ -383,11 +406,11 @@ export const KoreanTextDisplay = React.memo(function KoreanTextDisplay({
   const displayText = bilingual && english ? `${korean} (${english})` : korean;
 
   return (
-    <PixiContainerComponent x={x} y={y}>
-      <PixiGraphicsComponent draw={drawBackground} />
-      <PixiGraphicsComponent draw={backgroundBar} />
-      <PixiGraphicsComponent draw={accentLine} />
-      <PixiTextComponent
+    <Container x={x} y={y}>
+      <Graphics draw={drawBackground} />
+      <Graphics draw={backgroundBar} />
+      <Graphics draw={accentLine} />
+      <Text
         text={displayText}
         style={{
           fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
@@ -403,10 +426,10 @@ export const KoreanTextDisplay = React.memo(function KoreanTextDisplay({
                 angle: Math.PI / 4,
                 alpha: 0.5,
               }
-            : undefined, // Fix: Use undefined instead of false
+            : undefined,
         }}
       />
-    </PixiContainerComponent>
+    </Container>
   );
 });
 
@@ -418,36 +441,36 @@ export const CyberpunkGlow = React.memo(function CyberpunkGlow({
   color = KOREAN_COLORS.CYAN, // Use CYAN instead of NEON_CYAN
 }: CyberpunkGlowProps): React.ReactElement {
   const drawGlow = useCallback(
-    (g: PixiGraphicsType) => {
+    (g: GraphicsType) => {
       g.clear();
 
       // Outer glow
-      g.setFillStyle({ color: color, alpha: 0.1 * intensity });
-      g.circle(0, 0, radius * 1.5);
-      g.fill();
+      g.beginFill(color, 0.1 * intensity);
+      g.drawCircle(0, 0, radius * 1.5);
+      g.endFill();
 
       // Middle glow
-      g.setFillStyle({ color: color, alpha: 0.3 * intensity });
-      g.circle(0, 0, radius);
-      g.fill();
+      g.beginFill(color, 0.3 * intensity);
+      g.drawCircle(0, 0, radius);
+      g.endFill();
 
       // Inner glow
-      g.setFillStyle({ color: color, alpha: 0.6 * intensity });
-      g.circle(0, 0, radius * 0.5);
-      g.fill();
+      g.beginFill(color, 0.6 * intensity);
+      g.drawCircle(0, 0, radius * 0.5);
+      g.endFill();
 
       // Core
-      g.setFillStyle({ color: KOREAN_COLORS.WHITE, alpha: 0.8 * intensity });
-      g.circle(0, 0, radius * 0.2);
-      g.fill();
+      g.beginFill(KOREAN_COLORS.WHITE, 0.8 * intensity);
+      g.drawCircle(0, 0, radius * 0.2);
+      g.endFill();
     },
     [radius, intensity, color]
   );
 
   return (
-    <PixiContainerComponent x={x} y={y}>
-      <PixiGraphicsComponent draw={drawGlow} />
-    </PixiContainerComponent>
+    <Container x={x} y={y}>
+      <Graphics draw={drawGlow} />
+    </Container>
   );
 });
 
@@ -466,32 +489,26 @@ export const BackgroundGrid = React.memo(function BackgroundGrid({
   alpha?: number;
 }): React.ReactElement {
   const drawGrid = useCallback(
-    (g: PixiGraphicsType) => {
+    (g: GraphicsType) => {
       g.clear();
-      g.setStrokeStyle({
-        color: color,
-        width: 1,
-        alpha: alpha,
-      });
+      g.lineStyle(1, color, alpha);
 
       // Vertical lines
       for (let x = 0; x <= width; x += gridSize) {
         g.moveTo(x, 0);
         g.lineTo(x, height);
-        g.stroke();
       }
 
       // Horizontal lines
       for (let y = 0; y <= height; y += gridSize) {
         g.moveTo(0, y);
         g.lineTo(width, y);
-        g.stroke();
       }
     },
     [width, height, gridSize, color, alpha]
   );
 
-  return <PixiGraphicsComponent draw={drawGrid} />;
+  return <Graphics draw={drawGrid} />;
 });
 
 // Highlight text component with Korean and English support
@@ -562,10 +579,6 @@ export const createTextStyle = (
     fill: 0xffffff,
     ...baseStyle,
   });
-
-  // Remove unsupported properties
-  delete (style as any).strokeThickness;
-  delete (style as any).alpha;
 
   return style;
 };
@@ -640,7 +653,7 @@ export function CombatHUDBackground({
   alpha = 0.8,
 }: CombatHUDBackgroundProps): React.ReactElement {
   const draw = React.useCallback(
-    (g: PixiGraphicsType) => {
+    (g: GraphicsType) => {
       g.clear();
       g.beginFill(0x000000, alpha);
       g.lineStyle(2, 0x00ffff, 0.5);
@@ -651,17 +664,6 @@ export function CombatHUDBackground({
   );
 
   return <Graphics draw={draw} />;
-}
-
-// Health bar component
-interface HealthBarProps {
-  readonly x: number;
-  readonly y: number;
-  readonly width: number;
-  readonly height: number;
-  readonly currentHealth: number;
-  readonly maxHealth: number;
-  readonly color?: number;
 }
 
 export function HealthBar({
@@ -676,7 +678,7 @@ export function HealthBar({
   const healthPercentage = Math.max(0, Math.min(1, currentHealth / maxHealth));
 
   const draw = React.useCallback(
-    (g: PixiGraphicsType) => {
+    (g: GraphicsType) => {
       g.clear();
 
       // Background
@@ -699,16 +701,6 @@ export function HealthBar({
   return <Graphics draw={draw} />;
 }
 
-// Ki energy bar
-interface KiBarProps {
-  readonly x: number;
-  readonly y: number;
-  readonly width: number;
-  readonly height: number;
-  readonly currentKi: number;
-  readonly maxKi: number;
-}
-
 export function KiBar({
   x,
   y,
@@ -720,7 +712,7 @@ export function KiBar({
   const kiPercentage = Math.max(0, Math.min(1, currentKi / maxKi));
 
   const draw = React.useCallback(
-    (g: PixiGraphicsType) => {
+    (g: GraphicsType) => {
       g.clear();
 
       // Background
@@ -743,15 +735,6 @@ export function KiBar({
   return <Graphics draw={draw} />;
 }
 
-// Stance indicator circle
-interface StanceIndicatorProps {
-  readonly x: number;
-  readonly y: number;
-  readonly radius: number;
-  readonly color: number;
-  readonly isActive?: boolean;
-}
-
 export function StanceIndicator({
   x,
   y,
@@ -760,7 +743,7 @@ export function StanceIndicator({
   isActive = false,
 }: StanceIndicatorProps): React.ReactElement {
   const draw = React.useCallback(
-    (g: PixiGraphicsType) => {
+    (g: GraphicsType) => {
       g.clear();
 
       if (isActive) {
@@ -840,7 +823,7 @@ export function TrigramWheelBackground({
   radius,
 }: TrigramWheelBackgroundProps): React.ReactElement {
   const draw = React.useCallback(
-    (g: PixiGraphicsType) => {
+    (g: GraphicsType) => {
       g.clear();
 
       // Outer ring

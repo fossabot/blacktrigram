@@ -36,7 +36,7 @@ Black Trigram is a **realistic 2D precision combat simulator** deeply rooted in 
 - **Authentic Korean Techniques** with cultural accuracy
 - **Damage Calculation** based on technique precision and force
 
-## 🏗️ Current Architecture 
+## 🏗️ Current Architecture
 
 src/main.tsx
 src/components/IntroScreen.tsx
@@ -192,22 +192,21 @@ function processGameData(data: unknown): CombatResult {
 ### Component Reuse Strategy
 
 import type {
-  Container,
-  Graphics,
-  Text,
-  Sprite,
-  Texture,
-  DisplayObject,
-  FederatedPointerEvent,
-  TextStyle,
-  Application,
+Container,
+Graphics,
+Text,
+Sprite,
+Texture,
+DisplayObject,
+FederatedPointerEvent,
+TextStyle,
+Application,
 } from "pixi.js";
 
 // PIXI.js React integration type declarations
 declare module "@pixi/react" {
-  import { ComponentType, ReactNode, RefObject } from "react";
-  import * as PIXI from "pixi.js";
-
+import { ComponentType, ReactNode, RefObject } from "react";
+import \* as PIXI from "pixi.js";
 
 **ALWAYS check existing components before creating new ones:**
 
@@ -293,7 +292,6 @@ const effectiveness =
    - Integrate with audio feedback
 
 ## 🎨 PixiJS + React Integration
-
 
 ## 🧪 Testing Strategy
 
