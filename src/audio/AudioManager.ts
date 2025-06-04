@@ -164,6 +164,9 @@ export class AudioManager implements IAudioManager {
   // Remove duplicate initialize method - only keep the one above
 }
 
+// Add proper export for useAudio hook
+export { useAudio } from "./AudioProvider";
+
 // Export both singleton instance and class
 export const audioManager = AudioManager.getInstance();
 export default AudioManager;

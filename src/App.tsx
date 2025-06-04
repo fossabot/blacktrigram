@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, AudioProvider } from "react";
 import { IntroScreen } from "./components/intro/IntroScreen";
 import { TrainingScreen } from "./components/training/TrainingScreen";
 import { CombatScreen } from "./components/combat/CombatScreen";
@@ -99,7 +99,13 @@ function App(): React.JSX.Element {
     <AudioProvider>
       <div
         className="app"
-        style={{ minHeight: "100vh", background: "#000011" }}
+        style={{
+          minHeight: "100vh",
+          background: "#000011",
+          width: "100vw",
+          height: "100vh",
+          overflow: "hidden",
+        }}
       >
         {renderCurrentScreen()}
       </div>
