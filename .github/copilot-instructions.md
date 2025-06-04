@@ -36,100 +36,129 @@ Black Trigram is a **realistic 2D precision combat simulator** deeply rooted in 
 - **Authentic Korean Techniques** with cultural accuracy
 - **Damage Calculation** based on technique precision and force
 
-## 🏗️ Current Architecture Status
+## 🏗️ Current Architecture 
 
-### ✅ Implemented Systems
-
-#### Constant System (`src/types/constants` - 60 lines total)
-colors.ts
-combat.ts
-game.ts
-index.ts
-player.ts
-techniques.ts
-trigram.ts
-typography.ts
-vital-points.ts
-
-#### Type System (`src/types/` - 60 lines total)
-
-**Status**: ✅ **COMPLETE** - Comprehensive type definitions
-
-src/types/
-natomy.ts
-audio.ts
-combat.ts
-common.ts
-components.ts
-constants
-constants.ts
-effects.ts
-enums.ts
-game.ts
-index.ts
-korean-text.ts
-pixi-react.d.ts
-player.ts
-systems.ts
-trigram.ts
-ui.ts
-
-#### Audio System (`src/audio/` - 108 lines total)
-
-**Status**: ✅ **EXCELLENT** - Professional implementation
-
-- `src/audio/AudioManager.ts` (24) - Main audio management system
-- `src/audio/DefaultSoundGenerator.ts` (8) - Procedural sound generation
-- `src/audio/AudioUtils.ts` (8) - Audio utility functions
-- `src/audio/placeholder-sounds.ts` (4) - Temporary audio placeholders
-- `src/audio/AudioManager.tsx` (4) - React component wrapper
-- Comprehensive tests in `__tests__/` (56 lines)
-
-#### Core Systems (`src/systems/` - 248 lines total)
-
-**Status**: ✅ **GOOD FOUNDATION** - Core logic implemented
-
-- `src/systems/CombatSystem.ts` (8) - Main combat orchestration
-- `src/systems/VitalPointSystem.ts` (8) - Anatomical targeting
-- `src/systems/TrigramSystem.ts` (8) - Eight trigram logic
-- `src/systems/trigram/` (144) - Detailed trigram mechanics
-- `src/systems/vitalpoint/` (56) - Vital point calculations
-
-#### Training System (`src/components/training/` - 36 lines total)
-
-**Status**: ✅ **IMPLEMENTED** - Complete training interface
-
-- `src/components/training/TrainingScreen.tsx` (12) - Main training component
-- Comprehensive tests and mock system
-
-### ⚠️ Partially Implemented Systems
-
-#### Game Components (`src/components/game/` - 96 lines total)
-
-**Status**: ⚠️ **PARTIAL** - Structure exists, needs implementation
-
-- `src/components/game/GameEngine.tsx` (8) - Game loop (needs expansion)
-- `src/components/game/GameUI.tsx` (12) - UI overlay (basic implementation)
-- `src/components/game/Player.tsx` (4) - Player entity (skeleton)
-- `src/components/game/PlayerVisuals.tsx` (12) - Visual rendering
-- `src/components/game/HitEffectsLayer.tsx` (4) - Combat effects
-- `src/components/game/DojangBackground.tsx` (4) - Environment
-
-#### UI Components (`src/components/ui/` - 156 lines total)
-
-**Status**: ⚠️ **MIXED** - Korean text system complete, other components need work
-
-- `src/components/ui/base/korean-text/` (72) - ✅ **COMPLETE** Korean typography
-- `src/components/ui/TrigramWheel.tsx` (8) - Stance selection (needs implementation)
-- `src/components/ui/ProgressTracker.tsx` (4) - Health/Ki bars (skeleton)
-- `src/components/ui/KoreanHeader.tsx` (4) - Header component (skeleton)
-
-#### Introduction System (`src/components/intro/` - 40 lines total)
-
-**Status**: ⚠️ **MINIMAL** - Basic structure, needs content
-
-- `src/components/intro/IntroScreen.tsx` (4) - Main intro (skeleton)
-- Philosophy section has some content (12 lines)
+src/main.tsx
+src/components/IntroScreen.tsx
+src/components/intro/IntroScreen.tsx
+src/components/intro/components/MenuSection.tsx
+src/components/intro/components/ControlsSection.tsx
+src/components/intro/components/PhilosophySection.tsx
+src/components/intro/components
+src/components/intro/sections/MenuSection.tsx
+src/components/intro/sections/index.ts
+src/components/intro/sections/ControlsSection.tsx
+src/components/intro/sections/PhilosophySection.tsx
+src/components/intro/sections
+src/components/intro/IntroScreen.css
+src/components/intro/index.ts
+src/components/intro
+src/components/combat/components/CombatHUD.tsx
+src/components/combat/components/CombatControls.tsx
+src/components/combat/components/CombatArena.tsx
+src/components/combat/components/index.ts
+src/components/combat/components
+src/components/combat/CombatScreen.tsx
+src/components/combat/index.ts
+src/components/combat
+src/components/TrainingScreen.tsx
+src/components/game/GameUI.tsx
+src/components/game/PlayerVisuals.tsx
+src/components/game/GameEngine.tsx
+src/components/game/HitEffectsLayer.tsx
+src/components/game/DojangBackground.tsx
+src/components/game/Player.tsx
+src/components/game/index.ts
+src/components/game
+src/components/ui/KoreanHeader.tsx
+src/components/ui/EndScreen.tsx
+src/components/ui/TrigramWheel.tsx
+src/components/ui/ProgressTracker.tsx
+src/components/ui/base/KoreanHeader.tsx
+src/components/ui/base/BackgroundGrid.tsx
+src/components/ui/base/BaseButton.tsx
+src/components/ui/base/KoreanPixiComponents.tsx
+src/components/ui/base/korean-text/components/KoreanMartialText.tsx
+src/components/ui/base/korean-text/components/KoreanText.tsx
+src/components/ui/base/korean-text/components/KoreanStatusText.tsx
+src/components/ui/base/korean-text/components/KoreanTitle.tsx
+src/components/ui/base/korean-text/components/KoreanPixiTextUtils.ts
+src/components/ui/base/korean-text/components/KoreanTechniqueText.tsx
+src/components/ui/base/korean-text/components/index.ts
+src/components/ui/base/korean-text/components
+src/components/ui/base/korean-text/KoreanText.tsx
+src/components/ui/base/korean-text/constants.ts
+src/components/ui/base/korean-text/types.ts
+src/components/ui/base/korean-text/hooks/useKoreanTextStyle.ts
+src/components/ui/base/korean-text/hooks
+src/components/ui/base/korean-text/index.ts
+src/components/ui/base/korean-text/utils.ts
+src/components/ui/base/korean-text
+src/components/ui/base/PixiComponents.tsx
+src/components/ui/base/index.ts
+src/components/ui/base
+src/components/ui/index.ts
+src/components/ui
+src/components/training/TrainingScreen.tsx
+src/components/training/index.ts
+src/components/training
+src/components/index.ts
+src/components
+src/App.tsx
+src/utils/colorUtils.ts
+src/utils/playerUtils.ts
+src/audio/AudioManager.tsx
+src/audio/VariantSelector.ts
+src/audio/placeholder-sounds.ts
+src/audio/AudioManager.ts
+src/audio/DefaultSoundGenerator.ts
+src/audio/AudioUtils.ts
+src/audio/AudioAssetRegistry.ts
+src/audio/AudioProvider.tsx
+src/audio/index.ts
+src/vite-env.d.ts
+src/hooks/useTexture.ts
+src/types/combat.ts
+src/types/audio.ts
+src/types/enums.ts
+src/types/game.ts
+src/types/constants.ts
+src/types/systems.ts
+src/types/anatomy.ts
+src/types/trigram.ts
+src/types/common.ts
+src/types/korean-text.ts
+src/types/components.ts
+src/types/player.ts
+src/types/controls.ts
+src/types/ui.ts
+src/types/pixi-react.d.ts
+src/types/constants/combat.ts
+src/types/constants/game.ts
+src/types/constants/vital-points.ts
+src/types/constants/trigram.ts
+src/types/constants/typography.ts
+src/types/constants/player.ts
+src/types/constants/controls.ts
+src/types/constants/colors.ts
+src/types/constants/index.ts
+src/types/constants/techniques.ts
+src/types/constants
+src/types/index.ts
+src/types/effects.ts
+src/systems/CombatSystem.ts
+src/systems/VitalPointSystem.ts
+src/systems/TrigramSystem.ts
+src/systems/vitalpoint/KoreanAnatomy.ts
+src/systems/vitalpoint/AnatomicalRegions.ts
+src/systems/vitalpoint/KoreanVitalPoints.ts
+src/systems/vitalpoint/HitDetection.ts
+src/systems/vitalpoint/DamageCalculator.ts
+src/systems/trigram/StanceManager.ts
+src/systems/trigram/TrigramCalculator.ts
+src/systems/trigram/KoreanCulture.ts
+src/systems/trigram/TransitionCalculator.ts
+src/systems/trigram/KoreanTechniques.ts
 
 ## 🎯 Strict TypeScript Usage
 
@@ -161,6 +190,24 @@ function processGameData(data: unknown): CombatResult {
 ```
 
 ### Component Reuse Strategy
+
+import type {
+  Container,
+  Graphics,
+  Text,
+  Sprite,
+  Texture,
+  DisplayObject,
+  FederatedPointerEvent,
+  TextStyle,
+  Application,
+} from "pixi.js";
+
+// PIXI.js React integration type declarations
+declare module "@pixi/react" {
+  import { ComponentType, ReactNode, RefObject } from "react";
+  import * as PIXI from "pixi.js";
+
 
 **ALWAYS check existing components before creating new ones:**
 
