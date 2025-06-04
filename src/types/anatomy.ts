@@ -13,9 +13,9 @@ export interface VitalPointEffect {
   readonly duration: number; // Duration in milliseconds
   readonly description: KoreanText;
   readonly stackable: boolean;
+  readonly source?: string; // Optional: e.g., 'technique', 'vital_point'
   readonly chance?: number; // Optional: 0-1
   readonly modifiers?: ReadonlyArray<any>; // TODO: Define specific modifier types
-  readonly source?: string; // Optional: e.g., 'technique', 'vital_point'
 }
 
 // Vital point location for targeting in Korean martial arts

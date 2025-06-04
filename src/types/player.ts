@@ -6,7 +6,7 @@ import type {
   PlayerArchetype,
   TrigramStance,
 } from "./enums";
-import type { Position, CombatCondition } from "./common";
+import type { CombatCondition, Position } from "./common";
 import type { StatusEffect } from "./effects";
 import type { KoreanText } from "./korean-text";
 
@@ -27,15 +27,15 @@ export interface PlayerState {
   readonly id: string;
   readonly name: string;
   readonly archetype: PlayerArchetype;
-  readonly position: Position;
   readonly stance: TrigramStance;
-  readonly facing: "left" | "right";
   readonly health: number;
   readonly maxHealth: number;
   readonly ki: number;
   readonly maxKi: number;
   readonly stamina: number;
   readonly maxStamina: number;
+  readonly position: Position;
+  readonly facing: "left" | "right";
   readonly consciousness: number; // Typically 0-100
   readonly pain: number; // Typically 0-100, affects performance
   readonly balance: number; // Typically a scale, e.g., 0-100, or an enum for states
@@ -48,3 +48,11 @@ export interface PlayerState {
   readonly conditions: readonly CombatCondition[]; // Array of CombatCondition from common.ts
   // Add any other player-specific state needed, e.g., comboCounter, specialMeter
 }
+
+// Add missing archetype
+export type PlayerArchetype =
+  | "musa"
+  | "amsalja"
+  | "hacker"
+  | "jeongbo_yowon"
+  | "jojik_pokryeokbae";

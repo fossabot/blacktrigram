@@ -58,23 +58,11 @@ export class TrigramSystem {
     to: TrigramStance,
     playerState: PlayerState
   ): TrigramTransitionCost {
-    if (from === to) return { ki: 0, stamina: 0, timeMilliseconds: 0 };
-
-    // Delegate to TrigramCalculator or implement logic here
-    const baseKiCost = 10;
-    const baseStaminaCost = 8;
-    const baseTimeMs = 500;
-
-    let costMultiplier = 1.0;
-    if (playerState.health < 50) costMultiplier *= 1.5;
-    if (playerState.stamina < playerState.maxStamina * 0.3)
-      costMultiplier *= 1.2;
-
-    return {
-      ki: Math.round(baseKiCost * costMultiplier),
-      stamina: Math.round(baseStaminaCost * costMultiplier),
-      timeMilliseconds: Math.round(baseTimeMs * costMultiplier),
-    };
+    return this.transitionCalculator.calculateTransitionCost(
+      from,
+      to,
+      playerState
+    );
   }
 
   public canTransition(
@@ -89,60 +77,80 @@ export class TrigramSystem {
     return playerState.ki >= cost.ki && playerState.stamina >= cost.stamina;
   }
 
-  public transitionStance(
+  public canTransitionToStance(
     playerState: PlayerState,
-    toStance: TrigramStance
-  ): PlayerState | null {
-    if (!this.canTransition(playerState, toStance)) {
-      return null;
+    targetStance: TrigramStance
+  ): boolean {
+    if (playerState.stance === targetStance) return true;
+
+    const cost = this.calculateTransitionCost(playerState, targetStance);
+    return playerState.ki >= cost.ki && playerState.stamina >= cost.stamina;
+  }
+
+  public getOptimalStanceAgainst(
+    playerState: PlayerState,
+    opponentStance: TrigramStance
+  ): TrigramStance {
+    const stances: TrigramStance[] = [
+      "geon",
+      "tae",
+      "li",
+      "jin",
+      "son",
+      "gam",
+      "gan",
+      "gon",
+    ];
+
+    let bestStance = playerState.stance;
+    let bestEffectiveness = 0;
+
+    for (const stance of stances) {
+      if (this.canTransitionToStance(playerState, stance)) {
+        const effectiveness = this.calculateStanceEffectiveness(
+          stance,
+          opponentStance
+        );
+        if (effectiveness > bestEffectiveness) {
+          bestEffectiveness = effectiveness;
+          bestStance = stance;
+        }
+      }
     }
-    const cost = this.calculateTransitionCost(
-      playerState.stance,
-      toStance,
-      playerState
-    );
-    return {
-      ...playerState,
-      stance: toStance,
-      ki: playerState.ki - cost.ki,
-      stamina: playerState.stamina - cost.stamina,
-      lastStanceChangeTime: Date.now(),
-    };
+
+    return bestStance;
   }
 
   public calculateOptimalPath(
+    from: TrigramStance,
+    to: TrigramStance,
     playerState: PlayerState,
-    fromStance: TrigramStance,
-    toStance: TrigramStance,
     opponentStance?: TrigramStance
-  ): TransitionPathWithDescription | null {
-    if (fromStance === toStance) {
-      return {
-        path: [fromStance],
-        totalCost: { ki: 0, stamina: 0, timeMilliseconds: 0 },
-        cumulativeRisk: 0,
-        name: `${TRIGRAM_DATA[fromStance]?.name?.korean || fromStance}`,
-        description: {
-          korean: "현재 자세 유지",
-          english: "Maintain current stance",
-        },
-        overallEffectiveness: 1, // Added if part of TransitionPath
-      };
-    }
-
-    // Use TransitionCalculator for pathfinding
-    const path = this.transitionCalculator.findOptimalPath(
-      fromStance,
-      toStance,
-      playerState,
-      opponentStance // Pass opponentStance if findOptimalPath accepts it
-      // maxDepth // Pass maxDepth if findOptimalPath accepts it
+  ): TransitionPath | null {
+    // Fix parameter order and names
+    const cost = this.transitionCalculator.calculateTransitionCost(
+      from,
+      to,
+      playerState
     );
 
-    if (!path) return null;
+    if (playerState.ki < cost.ki || playerState.stamina < cost.stamina) {
+      return null;
+    }
 
-    // If path is found, it should already conform to TransitionPath including overallEffectiveness
-    return path as TransitionPathWithDescription;
+    const effectiveness = this.getStanceEffectiveness(from, to); // Use correct method name
+
+    return {
+      path: [from, to],
+      totalCost: cost,
+      overallEffectiveness: effectiveness,
+      cumulativeRisk: (cost.timeMilliseconds / 1000) * 0.1,
+      name: `${from} → ${to}`,
+      description: {
+        korean: `${from}에서 ${to}로 전환`,
+        english: `Transition from ${from} to ${to}`,
+      },
+    };
   }
 
   public findOptimalPathToStance(
@@ -190,10 +198,7 @@ export class TrigramSystem {
             TRIGRAM_DATA[currentStance]?.name?.english || currentStance
           } to ${TRIGRAM_DATA[targetStance]?.name?.english || targetStance}`,
         },
-        overallEffectiveness: this.getStanceEffectiveness(
-          targetStance,
-          currentStance
-        ), // Added if part of TransitionPath
+        overallEffectiveness: this.getStanceEffectiveness(from, to), // Fix method name
       };
     }
     return null; // Placeholder for more complex pathfinding
@@ -260,7 +265,11 @@ export class TrigramSystem {
     attackerStance: TrigramStance,
     defenderStance: TrigramStance
   ): number {
-    return STANCE_EFFECTIVENESS_MATRIX[attackerStance]?.[defenderStance] || 1.0;
+    // Use trigramCalculator instead of non-existent stanceCalculator
+    return this.transitionCalculator.getStanceEffectiveness(
+      attackerStance,
+      defenderStance
+    );
   }
 
   public getStanceCycle(clockwise: boolean = true): readonly TrigramStance[] {

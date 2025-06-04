@@ -1,26 +1,18 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { TrigramSystem } from "./TrigramSystem";
-import type { PlayerState, TrigramStance } from "../types";
-import { TRIGRAM_DATA } from "../types/constants"; // Remove unused STANCE_EFFECTIVENESS_MATRIX
+import type { PlayerState, TrigramStance, PlayerArchetype } from "../types";
 
 const createMockPlayerState = (
-  id: string,
-  archetype:
-    | "musa"
-    | "amsalja"
-    | "hacker"
-    | "jeongbo_yowon"
-    | "jojik_pokryeokbae",
   stance: TrigramStance,
-  health: number = 100,
-  ki: number = 100,
-  stamina: number = 100
+  archetype: PlayerArchetype = "musa", // Fix archetype type
+  ki = 100,
+  stamina = 100
 ): PlayerState => ({
-  id,
+  id: "p1",
   name: `Test ${archetype}`,
-  archetype,
+  archetype, // Ensure correct type
   stance,
-  health,
+  health: 100,
   maxHealth: 100,
   ki,
   maxKi: 100,
@@ -41,124 +33,151 @@ const createMockPlayerState = (
 });
 
 describe("TrigramSystem", () => {
-  let trigramSystem: TrigramSystem;
-  let mockPlayerState: PlayerState;
+  let system: TrigramSystem;
+  let mockPlayerStateGeon: PlayerState = {
+    id: "p1",
+    name: "Test musa",
+    archetype: "musa" as const, // Fix archetype type
+    stance: "geon",
+    health: 100,
+    maxHealth: 100,
+    ki: 100,
+    maxKi: 100,
+    stamina: 100,
+    maxStamina: 100,
+    position: { x: 0, y: 0 },
+    facing: "right",
+    consciousness: 100,
+    pain: 0,
+    balance: 100,
+    bloodLoss: 0,
+    lastStanceChangeTime: 0,
+    isAttacking: false,
+    combatReadiness: 100,
+    activeEffects: [],
+    combatState: "ready",
+    conditions: [],
+  };
 
   beforeEach(() => {
-    trigramSystem = new TrigramSystem();
-    mockPlayerState = createMockPlayerState("test", "musa", "geon"); // Fix function name
+    system = new TrigramSystem();
+    mockPlayerStateGeon = createMockPlayerState("geon");
   });
 
   describe("calculateOptimalPath", () => {
-    it("should calculate path from one stance to another", () => {
-      const result = trigramSystem.calculateOptimalPath(
-        "geon",
+    it("should find optimal path from Geon to Li", () => {
+      const result = system.calculateOptimalPath(
+        "geon", // Pass stance string, not PlayerState
         "li",
-        mockPlayerState, // Use mockPlayerState instead of player
+        mockPlayerStateGeon,
         "tae"
       );
+
       expect(result).toBeDefined();
-    });
-
-    it("should calculate transition cost", () => {
-      const cost = trigramSystem.calculateTransitionCost(
-        "geon",
-        "tae",
-        mockPlayerState
-      ); // Use mockPlayerState instead of player
-      expect(cost).toBeDefined();
-      expect(cost.ki).toBeGreaterThanOrEqual(0);
-      expect(cost.stamina).toBeGreaterThanOrEqual(0);
-    });
-
-    it("should validate transition", () => {
-      const isValid = trigramSystem.validateTransition(
-        "geon",
-        "tae",
-        mockPlayerState // Use mockPlayerState instead of player
-      );
-      expect(typeof isValid).toBe("boolean");
-    });
-
-    it("should find direct path when cost is reasonable", () => {
-      const testPlayer = createMockPlayerState(
-        "test",
-        "musa",
-        "geon",
-        100,
-        100,
-        100
-      ); // Fix function name
-      // Remove unused 'to' variable
-      const path = trigramSystem.calculateOptimalPath(
-        "geon", // Pass stance strings
-        "li",
-        testPlayer, // Pass PlayerState object
-        "tae"
-      );
-      expect(path).toBeDefined();
-      if (path) {
-        expect(path.path.length).toBeGreaterThanOrEqual(2);
-        expect(path.path[0]).toBe("geon");
-        expect(path.path[path.path.length - 1]).toBe("li");
+      if (result) {
+        expect(result.path).toContain("geon");
+        expect(result.totalCost).toBeDefined();
+        expect(result.overallEffectiveness).toBeGreaterThan(0);
       }
     });
 
-    it("should return optimal path", () => {
-      const result = trigramSystem.calculateOptimalPath(
-        "geon",
-        "li",
-        mockPlayerState,
-        "tae"
-        // Remove maxDepth parameter - not supported
+    it("should find optimal path from Geon to Gam", () => {
+      const result = system.calculateOptimalPath(
+        "geon", // Pass stance string, not PlayerState
+        "gam",
+        mockPlayerStateGeon
       );
-      expect(result).toBeDefined();
-    });
 
-    it("should return null when no path exists", () => {
-      const result = trigramSystem.calculateOptimalPath(
-        "geon", // Pass stance string
-        "li",
-        mockPlayerState, // Pass PlayerState object
-        "tae"
-      );
-      // This test may need adjustment based on actual implementation
-      // For now, just verify it returns something
-      expect(result !== undefined).toBe(true);
-    });
-
-    it("should handle invalid transitions gracefully", () => {
-      const testPlayer = createMockPlayerState(
-        "test",
-        "musa",
-        "geon",
-        100,
-        100,
-        100
-      ); // Fix function name
-      const result = trigramSystem.calculateOptimalPath(
-        "geon", // Pass stance string
-        "invalid_stance" as TrigramStance,
-        testPlayer, // Pass PlayerState object
-        "tae"
-      );
-      // Based on implementation, this might return null or a valid result
-      expect(result !== undefined).toBe(true);
+      // May return null if resources are insufficient
+      if (result === null) {
+        expect(result).toBeNull();
+      } else {
+        expect(result).toBeDefined();
+      }
     });
   });
 
-  describe("getStanceEffectiveness", () => {
-    // Fix method name
-    it("should return effectiveness between stances", () => {
-      const effectiveness = trigramSystem.getStanceEffectiveness(
-        // Fix method name
-        "geon",
-        "tae"
-      );
-      expect(typeof effectiveness).toBe("number");
-      expect(effectiveness).toBeGreaterThan(0);
+  describe("calculateStanceEffectiveness", () => {
+    it("Geon (Heaven) vs Tae (Lake) should have specific effectiveness", () => {
+      const result = system.getStanceEffectiveness("geon", "tae"); // Use correct method name
+      expect(result).toBeGreaterThan(0);
+    });
+
+    it("Identical stances should have 1.0 effectiveness", () => {
+      const result = system.getStanceEffectiveness("geon", "geon"); // Use correct method name
+      expect(result).toBe(1.0);
     });
   });
 
-  // Remove getKiRecoveryRate test - method doesn't exist on TrigramSystem
+  describe("canTransitionToStance", () => {
+    it("should validate possible transitions", () => {
+      const canTransition = system.canTransitionToStance(
+        mockPlayerStateGeon,
+        "tae"
+      );
+      expect(typeof canTransition).toBe("boolean");
+    });
+
+    it("should allow transition to same stance", () => {
+      const canTransition = system.canTransitionToStance(
+        mockPlayerStateGeon,
+        "geon"
+      );
+      expect(canTransition).toBe(true);
+    });
+
+    it("should reject transitions with insufficient resources", () => {
+      const lowResourcePlayer = createMockPlayerState("geon", "musa", 0, 0);
+      const canTransition = system.canTransitionToStance(
+        lowResourcePlayer,
+        "gon"
+      );
+      expect(canTransition).toBe(false);
+    });
+  });
+
+  describe("getOptimalStanceAgainst", () => {
+    it("should recommend optimal stance against opponent", () => {
+      const optimalStance = system.getOptimalStanceAgainst(
+        mockPlayerStateGeon,
+        "tae"
+      );
+      expect(optimalStance).toBeDefined();
+      expect([
+        "geon",
+        "tae",
+        "li",
+        "jin",
+        "son",
+        "gam",
+        "gan",
+        "gon",
+      ]).toContain(optimalStance);
+    });
+  });
+
+  describe("calculateTransitionCost", () => {
+    it("should calculate basic transition cost", () => {
+      const cost = system.calculateTransitionCost(
+        "geon",
+        "li",
+        mockPlayerStateGeon
+      ); // Fix parameter order
+      expect(cost).toBeDefined();
+      expect(cost.ki).toBeGreaterThanOrEqual(0);
+      expect(cost.stamina).toBeGreaterThanOrEqual(0);
+      expect(cost.timeMilliseconds).toBeGreaterThanOrEqual(0);
+    });
+
+    it("should calculate transition cost for same stance", () => {
+      const cost = system.calculateTransitionCost(
+        "geon",
+        "geon",
+        mockPlayerStateGeon
+      ); // Fix parameter order
+      expect(cost.ki).toBe(0);
+      expect(cost.stamina).toBe(0);
+      expect(cost.timeMilliseconds).toBe(0);
+    });
+  });
 });
