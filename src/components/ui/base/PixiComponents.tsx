@@ -16,6 +16,7 @@ import {
   KOREAN_FONT_FAMILY_PRIMARY,
   TRIGRAM_DATA,
 } from "../../../types/constants";
+import { KoreanHighlightTextProps } from "./KoreanPixiComponents";
 
 // Extended TextStyle interface for better type safety
 export interface ExtendedPixiTextStyle
@@ -387,13 +388,15 @@ export const KoreanTextDisplay = React.memo(function KoreanTextDisplay({
           fill: color,
           fontWeight: emphasis ? "bold" : "normal",
           align: "left",
-          dropShadow: emphasis && {
-            color: KOREAN_COLORS.BLACK,
-            distance: 1,
-            blur: 2,
-            angle: Math.PI / 4,
-            alpha: 0.5,
-          },
+          dropShadow: emphasis
+            ? {
+                color: KOREAN_COLORS.BLACK,
+                distance: 1,
+                blur: 2,
+                angle: Math.PI / 4,
+                alpha: 0.5,
+              }
+            : undefined, // Fix: Use undefined instead of false
         }}
       />
     </PixiContainerComponent>
@@ -483,3 +486,52 @@ export const BackgroundGrid = React.memo(function BackgroundGrid({
 
   return <PixiGraphicsComponent draw={drawGrid} />;
 });
+
+// Highlight text component with Korean and English support
+export function KoreanHighlightText({
+  text,
+  type = "info",
+  style,
+  ...textProps
+}: KoreanHighlightTextProps): React.ReactElement {
+  const colors = useMemo(
+    () => ({
+      info: KOREAN_COLORS.CYAN,
+      warning: KOREAN_COLORS.TRADITIONAL_RED, // Fix: Use TRADITIONAL_RED instead of ORANGE
+      success: KOREAN_COLORS.GREEN,
+    }),
+    []
+  );
+
+  const highlightStyle = useCallback((): ExtendedPixiTextStyle => {
+    const base: ExtendedPixiTextStyle = {
+      fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
+      fontSize: 16,
+      fill: colors[type],
+      fontWeight: "bold",
+    };
+
+    // Fix: Create dropShadow object without duplicates
+    const dropShadowConfig = style?.dropShadow
+      ? {
+          ...style.dropShadow, // Spread existing dropShadow properties first
+        }
+      : {
+          color: KOREAN_COLORS.BLACK,
+          distance: 1,
+          blur: 2,
+          angle: Math.PI / 4,
+          alpha: 0.5,
+        };
+
+    return {
+      ...base,
+      ...style,
+      dropShadow: dropShadowConfig,
+    };
+  }, [type, style, colors]);
+
+  return (
+    <PixiTextComponent {...textProps} text={text} style={highlightStyle()} />
+  );
+}
