@@ -234,11 +234,19 @@ export const ARCHETYPE_COMBAT_THRESHOLDS: Record<
   },
 } as const;
 
-// Archetype names for display
+// Archetype export and naming
+export const PLAYER_ARCHETYPES = [
+  "musa",
+  "amsalja",
+  "hacker",
+  "jeongbo_yowon",
+  "jojik_pokryeokbae",
+] as const;
+
 export const ARCHETYPE_NAMES = {
-  musa: "무사",
-  amsalja: "암살자",
-  hacker: "해커",
-  jeongbo_yowon: "정보요원", // Fixed: was "jeongbo"
-  jojik_pokryeokbae: "조직폭력배", // Fixed: was "jojik"
+  musa: { korean: "무사", english: "Traditional Warrior" },
+  amsalja: { korean: "암살자", english: "Shadow Assassin" },
+  hacker: { korean: "해커", english: "Cyber Warrior" },
+  jeongbo_yowon: { korean: "정보요원", english: "Intelligence Operative" },
+  jojik_pokryeokbae: { korean: "조직폭력배", english: "Organized Crime" },
 } as const;

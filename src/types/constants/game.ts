@@ -7,59 +7,26 @@ export const DEFAULT_GAME_SPEED = 1.0;
 
 // Main game configuration
 export const GAME_CONFIG = {
-  // Display and rendering
-  CANVAS_WIDTH: 1920,
-  CANVAS_HEIGHT: 1080,
+  // Canvas and rendering
+  CANVAS_WIDTH: 800,
+  CANVAS_HEIGHT: 600,
   TARGET_FPS: 60,
   PIXEL_RATIO: window.devicePixelRatio || 1,
 
-  // Game timing and flow
-  MATCH_DURATION: 180000, // 3 minutes in milliseconds
-  ROUND_COUNT: 3, // Best of 3 rounds
-  COUNTDOWN_DURATION: 3000, // 3 seconds countdown
-  ROUND_BREAK_DURATION: 15000, // 15 seconds between rounds
-
   // Combat mechanics
-  MAX_COMBO_COUNT: 8, // Maximum combo chain
-  COMBO_RESET_TIME: 2000, // Time before combo resets
-  BLOCK_WINDOW: 300, // Block timing window in ms
-  PERFECT_BLOCK_WINDOW: 100, // Perfect block timing in ms
-  COUNTER_WINDOW: 500, // Counter-attack window in ms
+  DEFAULT_HEALTH: 100,
+  DEFAULT_KI: 100,
+  DEFAULT_STAMINA: 100,
 
-  // Korean martial arts specific
-  KI_REGENERATION_RATE: 1.5, // Ki points per second
-  STAMINA_REGENERATION_RATE: 2.0, // Stamina points per second
-  STANCE_CHANGE_COOLDOWN: 500, // Minimum time between stance changes
-  VITAL_POINT_BONUS_MULTIPLIER: 2.5, // Damage multiplier for vital points
+  // Korean martial arts transition costs
+  MAX_TRANSITION_COST_KI: 50,
+  MAX_TRANSITION_COST_STAMINA: 40,
+  MAX_TRANSITION_TIME_MILLISECONDS: 2000,
 
-  // Player physics
-  GRAVITY: 980, // Pixels per second squared
-  FRICTION: 0.8, // Ground friction coefficient
-  AIR_RESISTANCE: 0.98, // Air resistance coefficient
-  BOUNCE_DAMPENING: 0.6, // Bounce reduction factor
-
-  // Audio configuration
-  MASTER_VOLUME: 0.8,
-  SFX_VOLUME: 0.7,
-  MUSIC_VOLUME: 0.5,
-  FADE_DURATION: 1000,
-
-  // Performance optimization
-  MAX_PARTICLES: 50, // Maximum visual effect particles
-  MAX_SOUND_INSTANCES: 8, // Maximum concurrent sounds
-  GARBAGE_COLLECTION_INTERVAL: 30000, // 30 seconds
-
-  // UI and accessibility
-  UI_SCALE: 1.0, // UI scaling factor
-  TEXT_FADE_DURATION: 2000, // Text effect fade time
-  NOTIFICATION_DURATION: 3000, // Notification display time
-  TOOLTIP_DELAY: 500, // Tooltip appearance delay
-
-  // Development and debugging
-  DEBUG_MODE: false, // Enable debug features
-  SHOW_HITBOXES: false, // Show collision boxes
-  SHOW_PERFORMANCE: false, // Show FPS and memory
-  LOG_COMBAT_EVENTS: false, // Log combat to console
+  // Audio settings
+  DEFAULT_VOLUME: 0.7,
+  SFX_VOLUME: 0.8,
+  MUSIC_VOLUME: 0.6,
 } as const;
 
 // Korean martial arts philosophy integration
@@ -207,10 +174,6 @@ export const ACHIEVEMENT_CONFIG = {
 
 // Game constants for Black Trigram
 
-export const MAX_TRANSITION_COST_KI = 50;
-export const MAX_TRANSITION_COST_STAMINA = 40;
-export const MAX_TRANSITION_TIME_MILLISECONDS = 2000;
-
 export const DEFAULT_STANCE_COOLDOWN_MS = 500;
 
 export const GAME_CONSTANTS = {
@@ -269,3 +232,10 @@ export const PERFORMANCE_THRESHOLDS = {
   MAX_DRAW_CALLS: 100, // Maximum draw calls per frame
   TEXTURE_CACHE_LIMIT: 50, // Maximum cached textures
 } as const;
+
+// Export individual constants (no duplicates)
+export const {
+  MAX_TRANSITION_COST_KI,
+  MAX_TRANSITION_COST_STAMINA,
+  MAX_TRANSITION_TIME_MILLISECONDS,
+} = GAME_CONFIG;

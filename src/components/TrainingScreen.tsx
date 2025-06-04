@@ -1,18 +1,28 @@
 import React from "react";
+import type { TrainingScreenProps } from "../types/game";
 
-export interface TrainingScreenProps {
-  readonly onBack: () => void;
-}
-
-export function TrainingScreen({
+const TrainingScreen: React.FC<TrainingScreenProps> = ({
+  archetype,
+  stance,
   onBack,
-}: TrainingScreenProps): React.JSX.Element {
+  onStartCombat,
+}) => {
   return (
-    <div style={{ padding: "2rem" }}>
+    <div className="training-screen" style={{ padding: "2rem" }}>
       <h1>훈련 모드 (Training Mode)</h1>
-      <p>무술 기법을 연습하세요 (Practice martial techniques)</p>
+      <p>아키타입 (Archetype): {archetype}</p>
+      <p>자세 (Stance): {stance}</p>
 
-      <button onClick={onBack}>돌아가기 (Back)</button>
+      <div className="training-content">
+        {/* Training exercises and practice area */}
+      </div>
+
+      <div className="action-buttons">
+        <button onClick={onBack}>메뉴로 돌아가기 (Back to Menu)</button>
+        <button onClick={onStartCombat}>전투 시작 (Enter Combat)</button>
+      </div>
     </div>
   );
-}
+};
+
+export default TrainingScreen;

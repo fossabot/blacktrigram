@@ -1,90 +1,58 @@
 import React, { useState, useCallback } from "react";
-import { AudioProvider } from "./audio/AudioManager"; // Fix import path
-import { IntroScreen } from "./components/intro/IntroScreen";
-import { TrainingScreen } from "./components/training/TrainingScreen";
+import { useAudio } from "./audio/AudioManager";
+import IntroScreen from "./components/IntroScreen";
+import TrainingScreen from "./components/TrainingScreen";
 import CombatScreen from "./components/combat/CombatScreen";
-import type { PlayerArchetype, PlayerState, TrigramStance } from "./types";
-import { createPlayerState } from "./utils/playerUtils";
+import type { PlayerArchetype, TrigramStance, GameState } from "./types";
 import "./App.css";
 
-type AppState = "intro" | "training" | "combat" | "menu" | "gameOver";
-
-interface GameState {
-  currentScreen: AppState;
-  selectedArchetype: PlayerArchetype;
-  selectedStance: TrigramStance;
-  player: PlayerState | null;
-  winner: PlayerState | null;
-}
-
-function App(): React.ReactElement {
+function App(): React.JSX.Element {
+  const audio = useAudio();
   const [gameState, setGameState] = useState<GameState>({
     currentScreen: "intro",
+    players: [],
+    isGameActive: false,
+    gameTime: 0,
+    currentRound: 1,
+    maxRounds: 3,
+    winner: null,
     selectedArchetype: "musa",
     selectedStance: "geon",
-    player: null,
-    winner: null,
   });
 
-  // Handle navigation between screens
-  const navigateToScreen = useCallback((screen: AppState) => {
-    setGameState((prev) => ({ ...prev, currentScreen: screen }));
-  }, []);
+  // Korean martial arts archetype selection
+  const handleArchetypeSelect = useCallback(
+    (archetype: PlayerArchetype) => {
+      setGameState((prev) => ({ ...prev, selectedArchetype: archetype }));
+      audio.playSFX("menu_select");
+    },
+    [audio]
+  );
 
-  // Handle archetype selection
-  const handleArchetypeSelect = useCallback((archetype: PlayerArchetype) => {
-    setGameState((prev) => ({ ...prev, selectedArchetype: archetype }));
-  }, []);
+  // Eight trigram stance selection
+  const handleStanceSelect = useCallback(
+    (stance: TrigramStance) => {
+      setGameState((prev) => ({ ...prev, selectedStance: stance }));
+      audio.playSFX("stance_select");
+    },
+    [audio]
+  );
 
-  // Handle stance selection
-  const handleStanceSelect = useCallback((stance: TrigramStance) => {
-    setGameState((prev) => ({ ...prev, selectedStance: stance }));
-  }, []);
+  const handleStartTraining = useCallback(() => {
+    setGameState((prev) => ({ ...prev, currentScreen: "training" }));
+    audio.playSFX("menu_select");
+  }, [audio]);
 
-  // Start combat
   const handleStartCombat = useCallback(() => {
-    const player = createPlayerState(
-      "player1",
-      gameState.selectedArchetype,
-      gameState.selectedStance,
-      {
-        name: "플레이어",
-        position: { x: 200, y: 400 },
-        facing: "right",
-      }
-    );
+    setGameState((prev) => ({ ...prev, currentScreen: "combat" }));
+    audio.playMusic("combat_theme");
+  }, [audio]);
 
-    setGameState((prev) => ({
-      ...prev,
-      player,
-      currentScreen: "combat",
-    }));
-  }, [gameState.selectedArchetype, gameState.selectedStance]);
+  const handleBackToMenu = useCallback(() => {
+    setGameState((prev) => ({ ...prev, currentScreen: "intro" }));
+    audio.stopMusic();
+  }, [audio]);
 
-  // Handle game over
-  const handleGameOver = useCallback((winner: PlayerState) => {
-    setGameState((prev) => ({
-      ...prev,
-      winner,
-      currentScreen: "gameOver",
-    }));
-  }, []);
-
-  // Return to main menu
-  const handleReturnToMenu = useCallback(() => {
-    setGameState({
-      currentScreen: "intro",
-      selectedArchetype: "musa",
-      selectedStance: "geon",
-      player: null,
-      winner: null,
-    });
-  }, []);
-
-  // Fixed position interface
-  const defaultPosition = { x: 200, y: 300 };
-
-  // Render current screen
   const renderCurrentScreen = () => {
     switch (gameState.currentScreen) {
       case "intro":
@@ -92,71 +60,45 @@ function App(): React.ReactElement {
           <IntroScreen
             onArchetypeSelect={handleArchetypeSelect}
             onStanceSelect={handleStanceSelect}
-            onStartTraining={() => navigateToScreen("training")}
+            onStartTraining={handleStartTraining}
             onStartCombat={handleStartCombat}
-            selectedArchetype={gameState.selectedArchetype}
-            selectedStance={gameState.selectedStance}
+            selectedArchetype={gameState.selectedArchetype!}
+            selectedStance={gameState.selectedStance!}
           />
         );
 
       case "training":
         return (
           <TrainingScreen
-            archetype={gameState.selectedArchetype}
-            stance={gameState.selectedStance}
-            onBack={() => navigateToScreen("intro")}
+            archetype={gameState.selectedArchetype!}
+            stance={gameState.selectedStance!}
+            onBack={handleBackToMenu}
             onStartCombat={handleStartCombat}
           />
         );
 
       case "combat":
-        return gameState.player ? (
-          <CombatScreen
-            player={gameState.player}
-            archetype={gameState.selectedArchetype}
-            onGameOver={handleGameOver}
-            onReturnToMenu={handleReturnToMenu}
-          />
-        ) : (
-          <div>Error: No player data</div>
-        );
-
-      case "gameOver":
         return (
-          <div className="game-over-screen">
-            <h1>게임 종료 (Game Over)</h1>
-            <h2>
-              승자: {gameState.winner?.name} ({gameState.winner?.archetype})
-            </h2>
-            <button onClick={handleReturnToMenu}>
-              메인 메뉴로 돌아가기 (Return to Main Menu)
-            </button>
-          </div>
+          <CombatScreen
+            archetype={gameState.selectedArchetype!}
+            stance={gameState.selectedStance!}
+            onBack={handleBackToMenu}
+          />
         );
 
       default:
-        return <div>Unknown screen</div>;
+        return (
+          <div className="loading-screen">
+            <h1>흑괘 로딩중... (Black Trigram Loading...)</h1>
+          </div>
+        );
     }
   };
 
   return (
-    <AudioProvider>
-      <div className="App">
-        <header className="App-header">
-          <h1>흑괘 (Black Trigram)</h1>
-          <p>Korean Martial Arts Combat Simulator</p>
-        </header>
-
-        <main className="App-main">{renderCurrentScreen()}</main>
-
-        <footer className="App-footer">
-          <p>
-            Current: {gameState.currentScreen} | Archetype:{" "}
-            {gameState.selectedArchetype} | Stance: {gameState.selectedStance}
-          </p>
-        </footer>
-      </div>
-    </AudioProvider>
+    <div className="app">
+      <div className="app-container">{renderCurrentScreen()}</div>
+    </div>
   );
 }
 

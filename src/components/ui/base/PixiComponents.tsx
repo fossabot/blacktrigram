@@ -564,3 +564,31 @@ export const KoreanText: React.FC<{
 
   return <ReactText text={text} style={textStyle} x={x} y={y} />;
 };
+
+// Mock PIXI components for when @pixi/react is not available
+export const Stage: React.FC<any> = ({ children, ...props }) => (
+  <div data-testid="pixi-stage" {...props}>
+    {children}
+  </div>
+);
+
+export const Container: React.FC<any> = ({ children, ...props }) => (
+  <div data-testid="pixi-container" {...props}>
+    {children}
+  </div>
+);
+
+export const Graphics: React.FC<any> = ({ children, ...props }) => (
+  <div data-testid="pixi-graphics" {...props}>
+    {children}
+  </div>
+);
+
+export const Text: React.FC<any> = ({ children, text, ...props }) => (
+  <div data-testid="pixi-text" {...props}>
+    {text || children}
+  </div>
+);
+
+// Additional text type for compatibility
+export type ReactText = string | number;

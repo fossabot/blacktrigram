@@ -51,43 +51,48 @@ export const GON_COLOR = TRIGRAM_STANCE_COLORS.gon;
 
 // Comprehensive Korean Colors System - Single declaration
 export const KOREAN_COLORS = {
-  // Traditional Korean base colors
-  WHITE: TRADITIONAL_KOREAN_COLORS.BAEK,
-  BLACK: TRADITIONAL_KOREAN_COLORS.HEUK,
-  RED: TRADITIONAL_KOREAN_COLORS.JEOK,
-  BLUE: TRADITIONAL_KOREAN_COLORS.CHEONG,
-  GOLD: TRADITIONAL_KOREAN_COLORS.HWANG,
+  // Existing trigram colors
+  geon: 0xffd700,
+  tae: 0x87ceeb,
+  li: 0xff4500,
+  jin: 0x9370db,
+  son: 0x98fb98,
+  gam: 0x4169e1,
+  gan: 0x8b4513,
+  gon: 0x654321,
 
-  // Additional traditional colors
-  TRADITIONAL_RED: 0xdc143c,
-  TRADITIONAL_BLUE: 0x0066cc,
-  TRADITIONAL_WHITE: 0xffffff,
-  TRADITIONAL_BLACK: 0x000000,
-  TRADITIONAL_YELLOW: 0xffd700,
-
-  // Cyberpunk integration
-  CYAN: CYBERPUNK_KOREAN_COLORS.NEON_CYAN,
-  ELECTRIC_BLUE: CYBERPUNK_KOREAN_COLORS.ELECTRIC_BLUE,
-  NEON_RED: CYBERPUNK_KOREAN_COLORS.DIGITAL_RED,
-  TECH_GOLD: CYBERPUNK_KOREAN_COLORS.TECH_GOLD,
-  SHADOW_BLACK: CYBERPUNK_KOREAN_COLORS.SHADOW_BLACK,
-  MATRIX_GREEN: CYBERPUNK_KOREAN_COLORS.MATRIX_GREEN,
-
-  // UI and Combat colors
-  GRAY_DARK: 0x2a2a2a,
-  GRAY_MEDIUM: 0x666666,
-  GRAY_LIGHT: 0xcccccc,
+  // Core colors
+  BLACK: 0x000000,
+  WHITE: 0xffffff,
+  GOLD: 0xffd700,
   SILVER: 0xc0c0c0,
-  ACCENT_BLUE: 0x4a90e2,
-  DOJANG_BLUE: 0x1e3a8a,
-  YELLOW: 0xffff00,
+  CYAN: 0x00ffff,
+  RED: 0xff0000,
   GREEN: 0x00ff00,
+  BLUE: 0x0000ff,
+  YELLOW: 0xffff00,
+  PURPLE: 0x800080,
+  ORANGE: 0xffa500,
 
-  // Trigram stance colors (included in main system)
-  ...TRIGRAM_STANCE_COLORS,
+  // Korean martial arts specific colors
+  CRITICAL_HIT: 0xff0040,
+  TRADITIONAL_RED: 0xdc143c,
+  DOJANG_BLUE: 0x1e3a8a,
 
-  // Critical hit color
-  CRITICAL_HIT: 0xff0040, // Neon red for critical hits
+  // Health and status colors (mapped from existing)
+  HEALTH_RED: 0xff0000,
+  STAMINA_GREEN: 0x00ff00,
+  HANBOK_WHITE: 0xffffff,
+  HEAVEN_GOLD: 0xffd700,
+  FIRE_RED: 0xff4500,
+  WIND_GREEN: 0x98fb98,
+  WATER_BLUE: 0x4169e1,
+  MOUNTAIN_BROWN: 0x8b4513,
+  EARTH_ORANGE: 0xffa500,
+  WOOD_BROWN: 0x8b4513,
+  DOJANG_WALL: 0x2d2d2d,
+  VITAL_POINT: 0xff0040,
+  CRITICAL_RED: 0xff0040,
 } as const;
 
 // Combat-specific color themes
@@ -99,7 +104,7 @@ export const COMBAT_COLORS = {
   STAMINA_LOW: KOREAN_COLORS.GOLD,
   DAMAGE_INDICATOR: KOREAN_COLORS.RED,
   CRITICAL_HIT: KOREAN_COLORS.GOLD,
-  VITAL_POINT: KOREAN_COLORS.NEON_RED,
+  VITAL_POINT: KOREAN_COLORS.VITAL_POINT,
 } as const;
 
 // Dojang environment colors

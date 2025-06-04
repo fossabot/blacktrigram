@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Stage, Container } from "@pixi/react";
 import { Application } from "pixi.js";
 
@@ -314,49 +314,109 @@ const CombatScreen: React.FC<CombatScreenProps> = ({
   };
 
   return (
-    <div style={{ width: ARENA_WIDTH, height: ARENA_HEIGHT, margin: "0 auto" }}>
-      <Stage
-        app={app}
-        width={ARENA_WIDTH}
-        height={ARENA_HEIGHT}
-        options={{
-          backgroundColor: 0x000000,
-          antialias: true,
-        }}
-      >
-        <Container>
-          {/* Combat Arena with Players */}
-          <CombatArena
-            players={players}
-            onPlayerUpdate={handlePlayerUpdate}
-            onTechniqueExecute={handleTechniqueExecute}
-            combatEffects={combatEffects}
-            isExecutingTechnique={isExecutingTechnique}
-            width={ARENA_WIDTH}
-            height={ARENA_HEIGHT}
-          />
+    <div
+      className="combat-screen"
+      style={{
+        backgroundColor: "#0a0a0a",
+        minHeight: "100vh",
+        fontFamily: '"Noto Sans KR", Arial, sans-serif',
+      }}
+    >
+      <div className="combat-ui">
+        <div
+          className="player-stats"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            padding: "1rem",
+            color: "#ffffff",
+          }}
+        >
+          <div className="player1-stats">
+            <h3>
+              {player1.name} ({player1.archetype})
+            </h3>
+            <div>
+              체력 (Health): {player1.health}/{player1.maxHealth}
+            </div>
+            <div>
+              기 (Ki): {player1.ki}/{player1.maxKi}
+            </div>
+            <div>자세 (Stance): {player1.stance}</div>
+          </div>
 
-          {/* Combat HUD */}
-          <CombatHUD
-            players={players}
-            timeRemaining={timeRemaining}
-            currentRound={currentRound}
-            isPaused={isPaused}
-            width={ARENA_WIDTH}
-            height={ARENA_HEIGHT}
-          />
+          <div
+            className="combat-controls"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.5rem",
+            }}
+          >
+            <button onClick={handleAttack} style={{ padding: "0.5rem 1rem" }}>
+              공격 (Attack)
+            </button>
+            <button
+              onClick={() => handleStanceChange("geon")}
+              style={{ padding: "0.5rem 1rem" }}
+            >
+              건 (Heaven)
+            </button>
+            <button
+              onClick={() => handleStanceChange("tae")}
+              style={{ padding: "0.5rem 1rem" }}
+            >
+              태 (Lake)
+            </button>
+            <button
+              onClick={() => handleStanceChange("li")}
+              style={{ padding: "0.5rem 1rem" }}
+            >
+              리 (Fire)
+            </button>
+            <button onClick={onBack} style={{ padding: "0.5rem 1rem" }}>
+              돌아가기 (Back)
+            </button>
+          </div>
 
-          {/* Combat Controls */}
-          <CombatControls
-            players={players}
-            onStanceChange={handleStanceChange}
-            isExecutingTechnique={isExecutingTechnique}
-            isPaused={isPaused}
-            width={ARENA_WIDTH}
-            height={ARENA_HEIGHT}
-          />
+          <div className="player2-stats">
+            <h3>
+              {player2.name} ({player2.archetype})
+            </h3>
+            <div>
+              체력 (Health): {player2.health}/{player2.maxHealth}
+            </div>
+            <div>
+              기 (Ki): {player2.ki}/{player2.maxKi}
+            </div>
+            <div>자세 (Stance): {player2.stance}</div>
+          </div>
+        </div>
+
+        <Container
+          style={{
+            width: ARENA_WIDTH,
+            height: ARENA_HEIGHT,
+            backgroundColor: "#1a1a2e",
+          }}
+        >
+          {/* Korean martial arts arena will be rendered here */}
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              color: "#ffffff",
+              textAlign: "center",
+            }}
+          >
+            <h2>흑괘 무술 경기장</h2>
+            <p>Black Trigram Combat Arena</p>
+            <p>Round {currentRound}</p>
+          </div>
         </Container>
-      </Stage>
+      </div>
     </div>
   );
 };

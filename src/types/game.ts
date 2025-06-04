@@ -18,20 +18,39 @@ export interface AppState {
 export type GamePhase = "intro" | "training" | "combat" | "victory" | "defeat";
 
 export interface GameState {
-  readonly phase: GamePhase;
-  readonly players: readonly PlayerState[];
-  readonly currentRound: number;
-  readonly maxRounds: number;
-  readonly gameTime: number;
-  readonly isPaused: boolean;
-  readonly winner?: string;
-  readonly selectedArchetype?: PlayerArchetype;
-  readonly selectedStance?: TrigramStance;
+  currentScreen: "intro" | "training" | "combat" | "victory" | "defeat";
+  players: PlayerState[];
+  isGameActive: boolean;
+  gameTime: number;
+  currentRound: number;
+  maxRounds: number;
+  winner: string | null;
+  selectedArchetype?: PlayerArchetype;
+  selectedStance?: TrigramStance;
 }
 
-export interface GameConfig {
-  readonly maxPlayers: number;
-  readonly roundDuration: number;
-  readonly maxRounds: number;
-  readonly enableDebug: boolean;
+export interface GameSettings {
+  difficulty: "easy" | "medium" | "hard";
+  roundDuration: number; // milliseconds
+  enableAudio: boolean;
+  debugMode: boolean;
 }
+
+export interface IntroScreenProps {
+  onArchetypeSelect: (archetype: PlayerArchetype) => void;
+  onStanceSelect: (stance: TrigramStance) => void;
+  onStartTraining: () => void;
+  onStartCombat: () => void;
+  selectedArchetype: PlayerArchetype;
+  selectedStance: TrigramStance;
+}
+
+export interface TrainingScreenProps {
+  archetype: PlayerArchetype;
+  stance: TrigramStance;
+  onBack: () => void;
+  onStartCombat: () => void;
+}
+
+// Re-export from player types for convenience
+export type { PlayerArchetype } from "./player";
