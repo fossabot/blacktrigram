@@ -12,16 +12,20 @@ export interface StatusEffect {
   readonly description: KoreanText;
   readonly stackable: boolean;
   readonly source?: string; // Optional source identifier
+  readonly chance?: number;
+  readonly modifiers?: readonly EffectModifier[];
 }
 
-export interface VitalPointEffect {
-  readonly id: string;
-  readonly type: EffectType;
-  readonly intensity: EffectIntensity;
-  readonly duration: number; // in milliseconds
-  readonly description: KoreanText;
-  readonly stackable: boolean;
-  readonly source?: string; // Optional source identifier
+export interface EffectModifier {
+  readonly attribute: string;
+  readonly value: number;
+  readonly type: "flat" | "percentage";
+}
+
+export interface VitalPointEffect extends StatusEffect {
+  // VitalPointEffect is essentially a StatusEffect with potential additional properties
+  readonly vitalPointId?: string;
+  readonly bodyRegion?: string;
 }
 
 export interface HitEffect {

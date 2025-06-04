@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import type { ColorValue, Position } from "./common";
 import type { TrigramStance, GamePhase } from "./enums";
 import type { PlayerState } from "./player";
+import type { KoreanText } from "./korean-text";
+import type { PlayerArchetype } from "./player";
 
 // Base component props
 export interface BaseComponentProps {
@@ -121,4 +123,57 @@ export interface UITheme {
 export interface ColorScheme {
   readonly name: string;
   readonly colors: Record<string, string>;
+}
+
+export interface KoreanUIElement {
+  readonly text: KoreanText;
+  readonly style: UIElementStyle;
+  readonly interactive?: boolean;
+  readonly trigram?: TrigramStance;
+}
+
+export interface UIElementStyle {
+  readonly fontFamily: string;
+  readonly fontSize: number;
+  readonly fontWeight: number;
+  readonly color: number;
+  readonly backgroundColor?: number;
+  readonly border?: BorderStyle;
+  readonly cyberpunkGlow?: boolean;
+}
+
+export interface BorderStyle {
+  readonly width: number;
+  readonly color: number;
+  readonly style: "solid" | "dashed" | "neon";
+}
+
+export interface TrigramWheelData {
+  readonly stance: TrigramStance;
+  readonly symbol: string;
+  readonly name: KoreanText;
+  readonly color: number;
+  readonly available: boolean;
+  readonly cost: {
+    readonly ki: number;
+    readonly stamina: number;
+  };
+}
+
+export interface ArchetypeDisplayData {
+  readonly archetype: PlayerArchetype;
+  readonly name: KoreanText;
+  readonly specialization: KoreanText;
+  readonly preferredTrigrams: readonly TrigramStance[];
+  readonly philosophy: KoreanText;
+}
+
+export interface CombatUIState {
+  readonly playerHealth: number;
+  readonly playerKi: number;
+  readonly playerStamina: number;
+  readonly currentStance: TrigramStance;
+  readonly availableStances: readonly TrigramStance[];
+  readonly combatLog: readonly KoreanText[];
+  readonly vitalPointsVisible: boolean;
 }

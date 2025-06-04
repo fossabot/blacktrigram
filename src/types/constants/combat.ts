@@ -138,6 +138,14 @@ export const COMBAT_CONSTANTS = {
   MAX_TRANSITION_COST_KI,
   MAX_TRANSITION_COST_STAMINA,
   MAX_TRANSITION_TIME_MILLISECONDS,
+  BASE_ACCURACY: 0.8,
+  CRITICAL_HIT_CHANCE: 0.05,
+  CRITICAL_HIT_MULTIPLIER: 1.5,
+  MAX_DAMAGE_PER_HIT: 100,
+  MIN_DAMAGE_PER_HIT: 1,
+  STANCE_CHANGE_COOLDOWN_MS: 500,
+  DEFAULT_ATTACK_RANGE: 1.0,
+  VITAL_POINT_ACCURACY_BONUS: 0.15,
 } as const;
 
 // Status effect durations
@@ -165,4 +173,25 @@ export const COMBAT_DISTANCES = {
   medium: 3.0,
   long: 4.5,
   maximum: 6.0,
+} as const;
+
+// Korean technique types
+export const KOREAN_TECHNIQUE_TYPES = {
+  strike: { korean: "타격", english: "Strike" },
+  thrust: { korean: "찌르기", english: "Thrust" },
+  block: { korean: "막기", english: "Block" },
+  counter_attack: { korean: "반격", english: "Counter Attack" },
+  throw: { korean: "던지기", english: "Throw" },
+  grapple: { korean: "잡기", english: "Grapple" },
+  pressure_point: { korean: "혈자리", english: "Pressure Point" },
+  nerve_strike: { korean: "신경타격", english: "Nerve Strike" },
+} as const;
+
+// Damage categories
+export const DAMAGE_CATEGORIES = {
+  LIGHT: { min: 1, max: 15, korean: "가벼운", english: "Light" },
+  MODERATE: { min: 16, max: 30, korean: "보통", english: "Moderate" },
+  HEAVY: { min: 31, max: 50, korean: "심한", english: "Heavy" },
+  SEVERE: { min: 51, max: 75, korean: "심각한", english: "Severe" },
+  CRITICAL: { min: 76, max: 100, korean: "치명적", english: "Critical" },
 } as const;

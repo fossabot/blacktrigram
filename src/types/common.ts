@@ -13,29 +13,59 @@ export interface Position {
   readonly y: number;
 }
 
+export interface Dimensions {
+  readonly width: number;
+  readonly height: number;
+}
+
+export interface BoundingBox {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+}
+
+export interface Vector2D {
+  readonly x: number;
+  readonly y: number;
+}
+
+export interface Range {
+  readonly min: number;
+  readonly max: number;
+}
+
+export interface TimeRange {
+  readonly start: number;
+  readonly end: number;
+  readonly duration: number;
+}
+
+export interface KoreanMartialArtsMetadata {
+  readonly culturalAccuracy: number; // 0-1 scale
+  readonly traditionalBasis: string;
+  readonly modernAdaptation: string;
+  readonly philosophicalDepth: number; // 1-5 scale
+}
+
+export type Direction = "left" | "right" | "up" | "down";
+export type Facing = "left" | "right";
+
+// Fix: Remove duplicate Timestamp declarations - keep only one
 export type Timestamp = number;
+
+// Add missing exports for systems.ts
+export interface Velocity {
+  readonly x: number;
+  readonly y: number;
+}
+
 export type EntityId = string;
 
-export interface CombatStats {
-  readonly damage: number;
-  readonly accuracy: number;
-  readonly speed: number;
-}
-
-// Game state types
-export interface GameState {
-  readonly phase: string;
-  readonly timeRemaining: number;
-  readonly currentRound: number;
-  readonly isPaused: boolean;
-}
-
-// Define MatchState if not defined elsewhere
-export interface MatchState {
-  currentRound: number;
-  scores: Record<PlayerId, number>;
-  roundWinner?: PlayerId | null;
-  matchWinner?: PlayerId | null;
+export interface BilingualIdentifier {
+  readonly korean: string;
+  readonly english: string;
+  readonly romanized?: string;
 }
 
 // Damage range specification (Canonical definition)
@@ -54,24 +84,6 @@ export interface CombatCondition {
   readonly duration: number; // Duration in game ticks or seconds
   readonly source?: string; // E.g., technique ID, environmental effect
   readonly description?: KoreanText;
-}
-
-// Basic position and vector types for Korean martial arts combat
-export interface Vector2D {
-  readonly x: number;
-  readonly y: number;
-}
-
-export interface Dimensions {
-  readonly width: number;
-  readonly height: number;
-}
-
-export interface Bounds {
-  readonly x: number;
-  readonly y: number;
-  readonly width: number;
-  readonly height: number;
 }
 
 // Color types for Korean martial arts styling
@@ -99,17 +111,6 @@ export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 export type DeepReadonly<T> = {
   readonly [P in keyof T]: T[P] extends object ? DeepReadonly<T[P]> : T[P];
 };
-
-// Korean martial arts specific ranges
-export interface Range {
-  readonly min: number;
-  readonly max: number;
-}
-
-export interface Velocity {
-  readonly vx: number;
-  readonly vy: number;
-}
 
 // Remove createPlayerState - it should be in utils/playerUtils.ts
 // Keep only common shared types here

@@ -360,3 +360,71 @@ export function isArchetypePreferredStance(
   const archetypeData = PLAYER_ARCHETYPE_DATA[archetype];
   return archetypeData?.preferredTrigrams.includes(stance) ?? false;
 }
+
+export function getArchetypeVitalPointBonus(
+  archetype: PlayerArchetype,
+  vitalPointCategory: string
+): number {
+  // Korean martial arts archetype specializations
+  const categoryBonuses: Record<PlayerArchetype, Record<string, number>> = {
+    musa: { head: 1.2, joints: 1.5, torso: 1.1 },
+    amsalja: { nerve: 1.8, pressure_point: 2.0, vascular: 1.6 },
+    hacker: { nerve: 1.6, head: 1.4, organs: 1.3 },
+    jeongbo_yowon: { pressure_point: 1.7, nerve: 1.5, psychological: 1.4 },
+    jojik_pokryeokbae: { joints: 1.6, organs: 1.4, general: 1.5 },
+  };
+
+  return categoryBonuses[archetype]?.[vitalPointCategory] ?? 1.0;
+}
+
+// Korean martial arts utility functions
+export function getKoreanArchetypeName(archetype: PlayerArchetype): {
+  korean: string;
+  english: string;
+  romanized: string;
+} {
+  const names: Record<
+    PlayerArchetype,
+    { korean: string; english: string; romanized: string }
+  > = {
+    musa: {
+      korean: "무사",
+      english: "Traditional Warrior",
+      romanized: "Musa",
+    },
+    amsalja: {
+      korean: "암살자",
+      english: "Shadow Assassin",
+      romanized: "Amsalja",
+    },
+    hacker: {
+      korean: "해커",
+      english: "Cyber Warrior",
+      romanized: "Hacker",
+    },
+    jeongbo_yowon: {
+      korean: "정보요원",
+      english: "Intelligence Operative",
+      romanized: "Jeongbo Yowon",
+    },
+    jojik_pokryeokbae: {
+      korean: "조직폭력배",
+      english: "Organized Crime",
+      romanized: "Jojik Pokryeokbae",
+    },
+  };
+
+  return names[archetype];
+}
+
+export function validatePlayerArchetype(
+  archetype: string
+): archetype is PlayerArchetype {
+  return [
+    "musa",
+    "amsalja",
+    "hacker",
+    "jeongbo_yowon",
+    "jojik_pokryeokbae",
+  ].includes(archetype);
+}

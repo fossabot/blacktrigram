@@ -3,7 +3,6 @@
 import type { CombatReadiness, CombatState, TrigramStance } from "./enums";
 import type { CombatCondition, Position } from "./common";
 import type { StatusEffect } from "./effects";
-import type { PlayerArchetype } from "./enums"; // Import from enums instead of local declaration
 
 // Player Archetype Data (for constants)
 // Player archetype data with Korean martial arts specializations
@@ -48,3 +47,83 @@ export interface PlayerState {
   readonly conditions: readonly CombatCondition[]; // Array of CombatCondition from common.ts
   // Add any other player-specific state needed, e.g., comboCounter, specialMeter
 }
+
+// Fix: Remove conflicting import of PlayerArchetype
+// import type { PlayerArchetype } from "./enums"; // REMOVED - causes conflict
+
+// Keep the local PlayerArchetype type definition
+export type PlayerArchetype =
+  | "musa"
+  | "amsalja"
+  | "hacker"
+  | "jeongbo_yowon"
+  | "jojik_pokryeokbae";
+
+// Fix: Add missing PLAYER_ARCHETYPE_DATA that playerUtils.ts expects
+export const PLAYER_ARCHETYPE_DATA: Record<
+  PlayerArchetype,
+  {
+    bonuses: {
+      damageBonus: number;
+      accuracyBonus: number;
+      speedBonus: number;
+      defenseBonus: number;
+      precisionBonus?: number;
+    };
+    preferredTrigrams: readonly string[];
+    specialization: string;
+  }
+> = {
+  musa: {
+    bonuses: {
+      damageBonus: 1.2,
+      accuracyBonus: 1.1,
+      speedBonus: 1.0,
+      defenseBonus: 1.3,
+    },
+    preferredTrigrams: ["geon", "jin"],
+    specialization: "Traditional warrior combat",
+  },
+  amsalja: {
+    bonuses: {
+      damageBonus: 1.5,
+      accuracyBonus: 1.8,
+      speedBonus: 1.4,
+      defenseBonus: 0.9,
+      precisionBonus: 2.0,
+    },
+    preferredTrigrams: ["son", "gam"],
+    specialization: "Silent elimination techniques",
+  },
+  hacker: {
+    bonuses: {
+      damageBonus: 1.1,
+      accuracyBonus: 1.6,
+      speedBonus: 1.2,
+      defenseBonus: 1.0,
+      precisionBonus: 1.4,
+    },
+    preferredTrigrams: ["li", "tae"],
+    specialization: "Tech-enhanced combat analysis",
+  },
+  jeongbo_yowon: {
+    bonuses: {
+      damageBonus: 1.3,
+      accuracyBonus: 1.5,
+      speedBonus: 1.1,
+      defenseBonus: 1.2,
+    },
+    preferredTrigrams: ["gan", "gon"],
+    specialization: "Intelligence-based tactical combat",
+  },
+  jojik_pokryeokbae: {
+    bonuses: {
+      damageBonus: 1.8,
+      accuracyBonus: 1.0,
+      speedBonus: 1.3,
+      defenseBonus: 1.1,
+    },
+    preferredTrigrams: ["jin", "gam"],
+    specialization: "Street fighting and survival",
+  },
+};

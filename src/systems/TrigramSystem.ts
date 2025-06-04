@@ -62,7 +62,7 @@ export class TrigramSystem {
     return {
       path: [fromStance, toStance],
       totalCost: cost,
-      overallEffectiveness: this.getStanceEffectiveness(fromStance, toStance),
+      overallEffectiveness: this.getStanceEffectiveness(fromStance, toStance), // Fix: Use correct parameter names
       cumulativeRisk: (cost.timeMilliseconds / 1000) * 0.1,
       name: `${fromStance} → ${toStance}`,
       description: {

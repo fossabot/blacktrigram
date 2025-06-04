@@ -100,3 +100,46 @@ export const KOREAN_LETTER_SPACING = {
 
 // Export main font family for backward compatibility
 export const KOREAN_FONT_FAMILY = KOREAN_FONT_FAMILY_COMBINED;
+
+// Additional Korean typography constants
+export const KOREAN_FONTS = {
+  PRIMARY: "Noto Sans KR",
+  FALLBACK: "Arial, sans-serif",
+  TRADITIONAL: "Nanum Myeongjo",
+  MODERN: "Noto Sans KR",
+} as const;
+
+export const FONT_WEIGHTS = {
+  LIGHT: 300,
+  REGULAR: 400,
+  MEDIUM: 500,
+  BOLD: 700,
+  HEAVY: 900,
+} as const;
+
+export const FONT_SIZES = {
+  SMALL: 12,
+  MEDIUM: 16,
+  LARGE: 24,
+  XLARGE: 32,
+  TITLE: 48,
+  MASSIVE: 64,
+} as const;
+
+export const TEXT_STYLES = {
+  TECHNIQUE_NAME: {
+    fontFamily: KOREAN_FONTS.PRIMARY,
+    fontSize: FONT_SIZES.LARGE,
+    fontWeight: FONT_WEIGHTS.BOLD,
+  },
+  STANCE_DISPLAY: {
+    fontFamily: KOREAN_FONTS.TRADITIONAL,
+    fontSize: FONT_SIZES.TITLE,
+    fontWeight: FONT_WEIGHTS.HEAVY,
+  },
+  UI_ELEMENT: {
+    fontFamily: KOREAN_FONTS.PRIMARY,
+    fontSize: FONT_SIZES.MEDIUM,
+    fontWeight: FONT_WEIGHTS.REGULAR,
+  },
+} as const;

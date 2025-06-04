@@ -85,4 +85,67 @@ export class VitalPointSystem {
       (vp: VitalPoint) => vp.category === category
     );
   }
+
+  public getVitalPointsByRegion(region: string): VitalPoint[] {
+    // Fix: Convert Map values to array first, then filter with proper typing
+    return Array.from(this.vitalPoints.values()).filter(
+      (vp: VitalPoint) => vp.location.region === region
+    );
+  }
+
+  // Fix: Add missing getVitalPointById method that CombatSystem expects
+  public getVitalPointById(id: string): VitalPoint | null {
+    return this.vitalPoints.get(id) || null;
+  }
+
+  // Fix: Add missing calculateHit method that CombatSystem expects
+  public calculateHit(
+    technique: KoreanTechnique,
+    vitalPoint: VitalPoint,
+    accuracyBonus: number,
+    attackerPosition: Position
+  ): VitalPointHitResult {
+    const baseAccuracy = vitalPoint.baseAccuracy * accuracyBonus;
+    const hit = Math.random() < baseAccuracy;
+
+    if (!hit) {
+      return {
+        hit: false,
+        damage: 0,
+        effects: [],
+        vitalPointsHit: [],
+        vitalPoint,
+        severity: vitalPoint.severity,
+        criticalHit: false,
+        location: attackerPosition,
+        effectiveness: 0,
+        statusEffectsApplied: [],
+        painLevel: 0,
+        consciousnessImpact: 0,
+      };
+    }
+
+    const damage = this.damageCalculator.calculateDamage(
+      vitalPoint,
+      technique.damageRange?.min || 10,
+      "musa", // Default archetype for now
+      false,
+      technique.damageType
+    );
+
+    return {
+      hit: true,
+      damage,
+      effects: vitalPoint.effects,
+      vitalPointsHit: [vitalPoint],
+      vitalPoint,
+      severity: vitalPoint.severity,
+      criticalHit: damage > (technique.damageRange?.max || 20),
+      location: attackerPosition,
+      effectiveness: vitalPoint.damageMultiplier,
+      statusEffectsApplied: vitalPoint.effects,
+      painLevel: damage * 0.8,
+      consciousnessImpact: damage * 0.6,
+    };
+  }
 }
