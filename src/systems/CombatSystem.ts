@@ -1,16 +1,17 @@
 import type {
   PlayerState,
-  CombatResult,
-  VitalPoint,
-  TrigramStance,
-  PlayerArchetype,
-  AttackInput,
   KoreanTechnique,
+  CombatResult,
+  PlayerArchetype,
+  VitalPoint,
+  AttackInput,
+  TrigramStance,
 } from "../types";
 import { VitalPointSystem } from "./VitalPointSystem";
+import { VITAL_POINTS_DATA } from "./vitalpoint/KoreanVitalPoints";
 
 export class CombatSystem {
-  private static vitalPointSystem = new VitalPointSystem();
+  private static vitalPointSystem = new VitalPointSystem(VITAL_POINTS_DATA);
 
   /**
    * Execute a full attack sequence - main combat method
@@ -262,12 +263,11 @@ export class CombatSystem {
     archetype: PlayerArchetype // Added archetype
   ): CombatResult {
     // Use VitalPointSystem to calculate refined damage and effects
-    const vitalHitDetails = this.vitalPointSystem.calculateVitalPointHitEffects(
-      vitalPoint,
-      baseResult.damage, // Base damage from technique
-      archetype,
+    const vitalHitDetails = this.vitalPointSystem.calculateHit(
       technique,
-      baseResult.critical // Pass critical status
+      vitalPointObject!,
+      accuracyBonus,
+      attacker.position
     );
 
     const combinedEffects = [

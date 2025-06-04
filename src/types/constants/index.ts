@@ -45,3 +45,8 @@ export {
 
 // Clean single export for main font family (avoid duplicates)
 export const KOREAN_FONT_FAMILY = "Noto Sans KR, Arial, sans-serif";
+
+// Transition system constants
+export const MAX_TRANSITION_COST_KI = 50;
+export const MAX_TRANSITION_COST_STAMINA = 40;
+export const MAX_TRANSITION_TIME_MILLISECONDS = 2000;

@@ -156,11 +156,10 @@ export class TransitionCalculator {
   }
 
   public findOptimalPath(
-    // Renamed from findShortestPath to match TrigramCalculator if that's the intent
     fromStance: TrigramStance,
     toStance: TrigramStance,
     playerState: PlayerState,
-    opponentStance?: TrigramStance // Made opponentStance optional and used
+    opponentStance?: TrigramStance
   ): TransitionPath | null {
     const cost = this.calculateTransitionCost(
       fromStance,
@@ -176,7 +175,7 @@ export class TransitionCalculator {
       fromStance,
       toStance,
       playerState,
-      opponentStance // Pass opponentStance
+      opponentStance
     );
 
     const path = [fromStance, toStance];

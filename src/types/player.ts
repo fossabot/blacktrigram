@@ -1,11 +1,6 @@
 // Types related to player state and actions
 
-import type {
-  CombatReadiness,
-  CombatState,
-  PlayerArchetype,
-  TrigramStance,
-} from "./enums";
+import type { CombatReadiness, CombatState, TrigramStance } from "./enums";
 import type { CombatCondition, Position } from "./common";
 import type { StatusEffect } from "./effects";
 import type { KoreanText } from "./korean-text";
@@ -49,7 +44,7 @@ export interface PlayerState {
   // Add any other player-specific state needed, e.g., comboCounter, specialMeter
 }
 
-// Add missing archetype
+// Define PlayerArchetype here instead of importing and redeclaring
 export type PlayerArchetype =
   | "musa"
   | "amsalja"
