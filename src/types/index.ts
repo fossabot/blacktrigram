@@ -14,7 +14,7 @@ export type { PlayerState, PlayerArchetypeData } from "./player";
 export type {
   VitalPoint,
   VitalPointEffect,
-  VitalPointHitResult, // Add missing export
+  VitalPointHitResult,
   AnatomicalLocation,
   RegionData,
 } from "./anatomy";
@@ -49,10 +49,13 @@ export type {
   TransitionMetrics,
   TransitionPath,
   TrigramTransitionRule,
-  StanceTransition, // Fixed: Add StanceTransition export
+  StanceTransition,
 } from "./trigram";
 
-// Export game types - FIXED: Add missing exports
+// Export control types
+export type { CombatControlsConfig, StanceControlDetail } from "./controls";
+
+// Export game types
 export type {
   AppState,
   GameState,
@@ -63,7 +66,7 @@ export type {
   CombatStats,
 } from "./game";
 
-// Export component types - Include CombatControlsProps
+// Export component types
 export type {
   GameUIProps,
   GameEngineProps,
@@ -72,7 +75,7 @@ export type {
   CombatScreenProps,
   CombatHUDProps,
   CombatArenaProps,
-  CombatControlsProps, // Now properly exported
+  CombatControlsProps,
   ProgressTrackerProps,
   TrigramWheelProps,
   BaseComponentProps,
@@ -110,9 +113,10 @@ export {
   KOREAN_FONT_FAMILY_SECONDARY,
   KOREAN_FONT_FAMILY,
   GAME_CONFIG,
+  COMBAT_CONTROLS, // Ensure COMBAT_CONTROLS is exported here
 } from "./constants";
 
 // Export utility functions
 export { createPlayerState } from "../utils/playerUtils";
 export type { DamageRange } from "./common";
-export type { BodyRegion } from "./enums"; // Add missing export
+export type { BodyRegion } from "./enums";
