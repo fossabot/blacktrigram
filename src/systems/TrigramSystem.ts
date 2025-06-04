@@ -6,15 +6,9 @@ import {
   STANCE_EFFECTIVENESS_MATRIX,
   TRIGRAM_DATA,
   TRIGRAM_STANCES_ORDER,
+  KoreanTechnique,
 } from "../types";
 import { TrigramCalculator } from "./trigram/TrigramCalculator";
-
-// Add missing TransitionResult interface
-interface TransitionResult {
-  canTransition: boolean;
-  cost: TrigramTransitionCost;
-  reason?: string;
-}
 
 export class TrigramSystem {
   private trigramCalculator: TrigramCalculator; // Add missing property
@@ -23,39 +17,46 @@ export class TrigramSystem {
     this.trigramCalculator = new TrigramCalculator();
   }
 
-  // Fix duplicate function implementations and parameter issues
-
-  // Remove duplicate canTransition method - keep only one
+  // Alternative: Return object with transition details
   public canTransitionTo(
     from: TrigramStance,
     to: TrigramStance,
-    playerState: PlayerState
-  ): { canTransition: boolean; reason?: string; cost?: TrigramTransitionCost } {
-    if (from === to) {
-      return {
-        canTransition: true,
-        cost: { ki: 0, stamina: 0, timeMilliseconds: 0 },
-      };
+    playerState?: PlayerState
+  ): { canTransition: boolean; reason?: string } {
+    if (from === to) return { canTransition: true };
+
+    if (!playerState) {
+      return { canTransition: true };
     }
 
-    const cost = this.calculateTransitionCost(from, to, playerState);
+    // Fix: Add null checks for playerState
+    const healthRatio = playerState?.health / playerState?.maxHealth || 0;
+    const kiRatio = playerState?.ki / playerState?.maxKi || 0;
+    const staminaRatio = playerState?.stamina / playerState?.maxStamina || 0;
 
-    if (playerState.ki < cost.ki) {
-      return { canTransition: false, reason: "insufficient_ki", cost };
+    // Check ki requirement
+    if (kiRatio <= 0.2) {
+      return { canTransition: false, reason: "insufficient_ki" };
     }
 
-    if (playerState.stamina < cost.stamina) {
-      return { canTransition: false, reason: "insufficient_stamina", cost };
+    // Check stamina requirement
+    if (staminaRatio <= 0.2) {
+      return { canTransition: false, reason: "insufficient_stamina" };
     }
 
-    return { canTransition: true, cost };
+    // Check health requirement
+    if (healthRatio <= 0.1) {
+      return { canTransition: false, reason: "insufficient_health" };
+    }
+
+    return { canTransition: true };
   }
 
-  // Fix calculateTransitionCost to include timeMilliseconds
+  // Keep only one calculateTransitionCost implementation
   public calculateTransitionCost(
     from: TrigramStance,
     to: TrigramStance,
-    playerState: PlayerState
+    playerState?: PlayerState
   ): TrigramTransitionCost {
     if (from === to) {
       return { ki: 0, stamina: 0, timeMilliseconds: 0 };
@@ -65,8 +66,10 @@ export class TrigramSystem {
     const baseStaminaCost = 8;
     const baseTimeMs = 500;
 
-    // Apply player state modifiers
-    const healthRatio = playerState.health / playerState.maxHealth;
+    // Fix: Add safety check for playerState
+    const healthRatio = playerState
+      ? playerState.health / playerState.maxHealth
+      : 1.0;
     const modifier = healthRatio < 0.5 ? 1.5 : 1.0;
 
     return {
@@ -246,19 +249,6 @@ export class TrigramSystem {
   }
 
   // Add missing method for test compatibility
-  public calculateTransitionCost(
-    fromStance: TrigramStance,
-    toStance: TrigramStance,
-    playerState: PlayerState
-  ): TrigramTransitionCost {
-    return this.trigramCalculator.calculateTransitionCost(
-      fromStance,
-      toStance,
-      playerState
-    );
-  }
-
-  // Add missing method for test compatibility
   public getOptimalStanceAgainst(
     opponentStance: TrigramStance,
     playerState: PlayerState
@@ -334,5 +324,19 @@ export class TrigramSystem {
       cost: transitionCost,
       newState,
     };
+  }
+
+  // Add missing methods that GameEngine expects
+  public getTechniqueForStance(
+    stance: TrigramStance
+  ): KoreanTechnique | undefined {
+    const stanceData = TRIGRAM_DATA[stance];
+    return stanceData?.technique;
+  }
+
+  public getKiRecoveryRate(player: PlayerState): number {
+    const baseRate = 1.0;
+    const stanceModifier = TRIGRAM_DATA[player.stance]?.kiFlowModifier || 1.0;
+    return baseRate * stanceModifier;
   }
 }

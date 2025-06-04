@@ -1,13 +1,13 @@
+import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 import path from "path";
-import { defineConfig } from "vite";
 
 export default defineConfig({
   plugins: [react()],
   test: {
     globals: true,
     environment: "jsdom",
-    setupFiles: ["./src/test/setup.ts"],
+    setupFiles: ["./src/test/test-setup.ts"],
     css: true,
     // Korean martial arts specific test configuration
     testTimeout: 10000, // Allow longer tests for complex combat calculations

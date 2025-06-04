@@ -93,6 +93,15 @@ export const KOREAN_COLORS = {
   DOJANG_WALL: 0x2d2d2d,
   VITAL_POINT: 0xff0040,
   CRITICAL_RED: 0xff0040,
+
+  // Add missing colors
+  GRAY: 0x808080,
+  GRAY_LIGHT: 0xcccccc,
+  GRAY_MEDIUM: 0x999999,
+  GRAY_DARK: 0x404040,
+  TRADITIONAL_BLUE: 0x1e3a8a,
+  ACCENT_BLUE: 0x3b82f6,
+  TRADITIONAL_GREEN: 0x16a34a,
 } as const;
 
 // Combat-specific color themes

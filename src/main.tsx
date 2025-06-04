@@ -2,7 +2,7 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { ErrorBoundary } from "react-error-boundary";
 import App from "./App";
-import { AudioProvider } from "./audio/AudioManager";
+import { AudioProvider } from "./audio/AudioProvider";
 import "./index.css";
 
 interface ErrorFallbackProps {

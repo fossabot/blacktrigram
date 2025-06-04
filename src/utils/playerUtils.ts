@@ -21,14 +21,14 @@ import { PLAYER_ARCHETYPE_DATA } from "../types/constants/player";
 export function createPlayerState(
   name: string,
   archetype: PlayerArchetype,
-  stance: TrigramStance,
-  position?: Position
+  stance: TrigramStance = "geon",
+  position: Position = { x: 0, y: 0 }
 ): PlayerState {
   return {
     id: `player_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     name,
     archetype,
-    position: position || { x: 0, y: 0 },
+    position,
     facing: "right",
     stance,
     health: 100,

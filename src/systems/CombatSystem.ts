@@ -22,7 +22,7 @@ const ARCHETYPE_TECHNIQUE_BONUSES: Record<
 };
 
 export class CombatSystem {
-  private static vitalPointSystem: VitalPointSystem = new VitalPointSystem(); // Remove parameter
+  private static vitalPointSystem: VitalPointSystem = new VitalPointSystem();
 
   /**
    * Execute a full attack sequence - main combat method
@@ -31,7 +31,7 @@ export class CombatSystem {
     attacker: PlayerState,
     defender: PlayerState,
     technique: KoreanTechnique,
-    targetPoint?: string // Change to string ID instead of VitalPoint
+    targetPoint?: string
   ): Promise<CombatResult> {
     const archetypeData = ARCHETYPE_TECHNIQUE_BONUSES[attacker.archetype];
 
@@ -65,14 +65,11 @@ export class CombatSystem {
         damage: hitResult.damage,
         effects: hitResult.effects,
         vitalPointsHit: hitResult.vitalPointsHit,
-        // Fix: Use 'critical' instead of 'criticalHit'
         critical: hitResult.criticalHit || false,
         hitPosition: hitResult.location,
         effectiveness: hitResult.effectiveness * stanceEffectiveness,
-        // Remove statusEffectsApplied
         painLevel: hitResult.painLevel,
         consciousnessImpact: hitResult.consciousnessImpact,
-        // ...fill all other required CombatResult fields with reasonable values or placeholders...
         damageType: technique.damageType || "blunt",
         isVitalPoint: hitResult.vitalPointsHit.length > 0,
         newState: defender.combatState,
@@ -108,10 +105,8 @@ export class CombatSystem {
       critical: false,
       hitPosition: { x: 50, y: 50 },
       effectiveness: stanceEffectiveness,
-      // Remove statusEffectsApplied
       painLevel: modifiedDamage * 0.5,
       consciousnessImpact: modifiedDamage * 0.3,
-      // ...fill all other required CombatResult fields with reasonable values or placeholders...
       damageType: technique.damageType || "blunt",
       isVitalPoint: false,
       newState: defender.combatState,
@@ -271,8 +266,8 @@ export class CombatSystem {
 
   public static executeTechnique(
     technique: KoreanTechnique,
-    attacker: string,
-    defender?: string
+    attackerArchetype: PlayerArchetype,
+    defenderArchetype?: PlayerArchetype
   ): CombatResult {
     // Check if technique has accuracy property
     const accuracy = technique.accuracy ?? 0.8; // Default accuracy if undefined
@@ -287,53 +282,33 @@ export class CombatSystem {
     const hit = Math.random() < accuracy;
 
     return {
-      attacker,
-      defender: defender || "unknown",
+      attacker: attackerArchetype,
+      defender: defenderArchetype || "musa",
       damage: hit ? damage : 0,
       hit,
-      blocked: false,
       critical: Math.random() < (technique.critChance || 0.1),
       techniqueUsed: technique,
       effects: technique.effects || [],
       vitalPointsHit: [],
       defenderDamaged: hit && damage > 0,
       // Add missing properties for CombatResult
-      consciousnessLoss: hit ? damage * 0.1 : 0,
-      painInflicted: hit ? damage * 0.5 : 0,
-    };
-  }
-
-  // Fix archetype effectiveness lookup
-  private static getArchetypeEffectiveness(): Record<
-    PlayerArchetype,
-    Record<string, number>
-  > {
-    return {
-      musa: {
-        geon: 1.2,
-        jin: 1.1,
-        default: 1.0,
-      },
-      amsalja: {
-        son: 1.2,
-        gam: 1.1,
-        default: 1.0,
-      },
-      hacker: {
-        li: 1.2,
-        default: 1.0,
-      },
-      // Remove 'jeongbo' - use correct archetype name
-      jeongbo_yowon: {
-        gam: 1.2,
-        gan: 1.1,
-        default: 1.0,
-      },
-      jojik_pokryeokbae: {
-        jin: 1.2,
-        geon: 1.1,
-        default: 1.0,
-      },
+      damageType: technique.damageType || "blunt",
+      isVitalPoint: false,
+      newState: "ready",
+      damagePrevented: 0,
+      staminaUsed: technique.staminaCost || 0,
+      kiUsed: technique.kiCost || 0,
+      attackerStance: technique.stance || "geon",
+      defenderStance: "geon",
+      painLevel: hit ? damage * 0.5 : 0,
+      consciousnessImpact: hit ? damage * 0.1 : 0,
+      balanceEffect: 0,
+      bloodLoss: 0,
+      stunDuration: 0,
+      statusEffects: technique.effects || [],
+      hitType: "normal",
+      effectiveness: 1.0,
+      hitPosition: { x: 0, y: 0 },
     };
   }
 }

@@ -1,9 +1,9 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { KoreanText } from "../../ui/base/korean-text";
 import type { PlayerState, TrigramStance, CombatState } from "../../../types";
-import { KOREAN_COLORS, TRIGRAM_DATA } from "../../../types/constants";
-import { useAudio } from "../../../audio/AudioManager";
-import { convertKoreanColorForCSS } from "../../../utils/colorUtils";
+import { KOREAN_COLORS, TRIGRAM_DATA } from "../../../types";
+import useAudio from "../../../audio/AudioManager"; // Fix: Use default import
+import { convertKoreanColorForCSS } from "@/utils/colorUtils";
 
 interface CombatControlsProps {
   readonly player: PlayerState;
@@ -156,6 +156,17 @@ export function CombatControls({
     }
   }, [disabled, isExecuting, actionCooldown, player.ki, onSpecialTechnique]);
 
+  const stanceColors = {
+    geon: KOREAN_COLORS.geon, // Fix: Use lowercase property names
+    tae: KOREAN_COLORS.tae,
+    li: KOREAN_COLORS.li,
+    jin: KOREAN_COLORS.jin,
+    son: KOREAN_COLORS.son,
+    gam: KOREAN_COLORS.gam,
+    gan: KOREAN_COLORS.gan,
+    gon: KOREAN_COLORS.gon,
+  };
+
   const getStanceButtonStyle = (
     stance: TrigramStance,
     isSelected: boolean
@@ -166,9 +177,7 @@ export function CombatControls({
     border: `3px solid ${
       isSelected ? KOREAN_COLORS.GOLD : KOREAN_COLORS.WHITE
     }`,
-    backgroundColor: isSelected
-      ? KOREAN_COLORS[stance]
-      : `${KOREAN_COLORS[stance]}66`,
+    backgroundColor: `#${stanceColors[stance].toString(16).padStart(6, "0")}`, // Fix: convert to hex string
     color: KOREAN_COLORS.WHITE,
     fontSize: "24px",
     fontWeight: "bold",
@@ -183,30 +192,53 @@ export function CombatControls({
     boxShadow: isSelected ? `0 0 20px ${KOREAN_COLORS.GOLD}66` : "none",
   });
 
-  const getActionButtonStyle = (canUse: boolean, isSpecial = false) => ({
+  const getActionButtonStyle = (isDisabled: boolean) => ({
     padding: "12px 24px",
     borderRadius: "8px",
     border: `2px solid ${
-      canUse
-        ? isSpecial
-          ? KOREAN_COLORS.TRADITIONAL_RED
-          : KOREAN_COLORS.CYAN
-        : KOREAN_COLORS.WHITE
+      isDisabled ? KOREAN_COLORS.WHITE : KOREAN_COLORS.CYAN
     }`,
-    backgroundColor: canUse
-      ? isSpecial
-        ? KOREAN_COLORS.TRADITIONAL_RED
-        : KOREAN_COLORS.CYAN
-      : "rgba(255, 255, 255, 0.1)",
-    color: canUse ? KOREAN_COLORS.BLACK : KOREAN_COLORS.WHITE,
+    backgroundColor: isDisabled
+      ? "#" + KOREAN_COLORS.GRAY.toString(16).padStart(6, "0") // Fix: convert to hex string
+      : "#" + KOREAN_COLORS.CYAN.toString(16).padStart(6, "0"), // Fix: convert to hex string
+    color: isDisabled ? "#000000" : "#FFFFFF", // Fix: use CSS color strings
     fontSize: "16px",
     fontWeight: "bold",
-    cursor: canUse ? "pointer" : "not-allowed",
-    opacity: canUse ? 1 : 0.5,
+    cursor: isDisabled ? "not-allowed" : "pointer",
+    opacity: isDisabled ? 0.5 : 1,
     transition: "all 0.3s ease",
     fontFamily: "Noto Sans KR, Arial, sans-serif",
     minWidth: "120px",
   });
+
+  // Fix technique display - add currentTechnique logic
+  const currentTechnique = useMemo(() => {
+    const trigramData = TRIGRAM_DATA[player.stance]; // Fix: Use TRIGRAM_DATA
+    return (
+      trigramData?.technique || {
+        korean: "기본 기법",
+        english: "Basic Technique",
+        damage: 10,
+      }
+    );
+  }, [player.stance]); // Fix: Use correct dependency
+
+  const handleStanceSelect = useCallback(
+    (stance: TrigramStance) => {
+      if (!isExecuting && !disabled) {
+        setSelectedStance(stance);
+        onStanceChange(stance);
+        audio.playSFX("stance_change");
+      }
+    },
+    [isExecuting, disabled, onStanceChange, audio]
+  );
+
+  const handleExecuteTechnique = useCallback(() => {
+    // Fix: Remove second parameter
+    audio.playSFX("technique_execute");
+    // Technique execution logic here
+  }, [audio]);
 
   return (
     <div
@@ -550,8 +582,8 @@ export function CombatControls({
 
         <div style={{ marginTop: "8px" }}>
           <KoreanText
-            korean={currentTechnique.koreanName}
-            english={currentTechnique.englishName}
+            korean={currentTechnique.korean}
+            english={currentTechnique.english}
             size="medium"
             weight="bold"
             color={convertKoreanColorForCSS(KOREAN_COLORS.WHITE)}

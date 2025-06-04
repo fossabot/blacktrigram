@@ -1,60 +1,67 @@
-import { useState, useCallback, useEffect } from "react";
-import type { Container, Graphics, Text } from "pixi.js";
-import {
-  Container as PixiContainer,
-  Graphics as PixiGraphics,
-  Text as PixiText,
-} from "@pixi/react";
-import { AudioManagerProvider } from "./audio/AudioManager";
-import { IntroScreen } from "./components/intro/IntroScreen";
-import { TrainingScreen } from "./components/training/TrainingScreen";
-import { CombatScreen } from "./components/combat/CombatScreen";
+import React, { useState, useCallback, useEffect } from "react";
+import { Application } from "@pixi/react";
+import "./App.css";
+
+// Fix imports - separate type imports from value imports
+import type { PlayerState, TrigramStance } from "./types";
 import type {
-  PlayerState,
   GameState,
   GameScreen,
-  CombatResult,
   SessionData,
   GameSettings,
-} from "./types";
-import { KOREAN_COLORS, TRIGRAM_DATA } from "./types/constants";
-import { createDefaultPlayer } from "./utils/playerUtils";
-import { convertKoreanColorForCSS } from "./utils/colorUtils";
+} from "./types/constants";
 
-const createDefaultSessionData = (): SessionData => ({
-  startTime: Date.now(),
-  trainingStats: {
-    sessionsCompleted: 0,
-    totalTrainingTime: 0,
-    stancesLearned: ["geon"],
-    techniquesLearned: [],
-  },
-  combatStats: {
-    wins: 0,
-    losses: 0,
-    totalCombats: 0,
-    averageDamageDealt: 0,
-    favoriteStance: "geon",
-  },
-  currentScore: 0,
-});
+// Import as value
+import { TRIGRAM_DATA } from "./types/constants";
 
-const createDefaultSettings = (): GameSettings => ({
-  audioEnabled: true,
-  musicVolume: 0.7,
-  sfxVolume: 0.8,
-  language: "bilingual",
-  showVitalPoints: true,
-  showDebugInfo: false,
-  difficulty: "intermediate",
-});
+import { IntroScreen } from "./components/intro/IntroScreen";
+import { TrainingScreen } from "./components/training/TrainingScreen";
+import { GameEngine } from "./components/game/GameEngine";
+import { createPlayerState } from "./utils/playerUtils"; // Single import
 
-function App(): JSX.Element {
-  const [gameState, setGameState] = useState<GameState>({
+// Define proper game state type
+type GameScreen = "intro" | "training" | "combat";
+
+interface AppGameState {
+  currentScreen: GameScreen;
+  player: PlayerState;
+  sessionData: SessionData;
+  settings: GameSettings;
+  isInitialized: boolean;
+}
+
+function App(): React.JSX.Element {
+  // Fix createPlayerState call with proper parameters
+  const [gameState, setGameState] = useState<AppGameState>({
     currentScreen: "intro",
-    player: createDefaultPlayer("musa", "geon"),
-    sessionData: createDefaultSessionData(),
-    settings: createDefaultSettings(),
+    // Fix: createPlayerState takes (name, archetype, stance) in that order
+    player: createPlayerState("Player1", "musa", "geon"),
+    sessionData: {
+      startTime: Date.now(),
+      trainingStats: {
+        sessionsCompleted: 0,
+        totalTrainingTime: 0,
+        stancesLearned: [],
+        techniquesLearned: [],
+      },
+      combatStats: {
+        wins: 0,
+        losses: 0,
+        totalCombats: 0,
+        averageDamageDealt: 0,
+        favoriteStance: "geon",
+      },
+      currentScore: 0,
+    },
+    settings: {
+      audioEnabled: true,
+      musicVolume: 0.7,
+      sfxVolume: 0.8,
+      language: "bilingual",
+      showVitalPoints: true,
+      showDebugInfo: false,
+      difficulty: "intermediate",
+    },
     isInitialized: false,
   });
 
@@ -66,182 +73,83 @@ function App(): JSX.Element {
     }));
   }, []);
 
-  const handlePlayerStateChange = useCallback(
-    (updates: Partial<PlayerState>) => {
-      setGameState((prev) => ({
-        ...prev,
-        player: { ...prev.player, ...updates },
-      }));
+  // Fix handleGamePhaseChange with proper typing
+  const handleGamePhaseChange = useCallback((phase: string) => {
+    setGameState((prev) => ({
+      ...prev,
+      currentScreen: phase as GameScreen, // Proper type casting
+    }));
+  }, []);
+
+  const handleGameStateChange = useCallback((updates: Partial<GameState>) => {
+    setGameState((prev) => ({ ...prev, ...updates }));
+  }, []);
+
+  const handlePlayerUpdate = useCallback(
+    (playerIndex: number, updates: Partial<PlayerState>) => {
+      if (playerIndex === 0) {
+        setGameState((prev) => ({
+          ...prev,
+          player: { ...prev.player, ...updates },
+        }));
+      }
     },
     []
   );
 
-  const handleScreenChange = useCallback((screen: GameScreen) => {
-    setGameState((prev) => ({
-      ...prev,
-      currentScreen: screen,
-    }));
-  }, []);
-
-  const handleCombatResult = useCallback(
-    (result: CombatResult) => {
-      const isWin = result.winner === gameState.player.id;
-
-      setGameState((prev) => ({
-        ...prev,
-        sessionData: {
-          ...prev.sessionData,
-          combatStats: {
-            ...prev.sessionData.combatStats,
-            wins: prev.sessionData.combatStats.wins + (isWin ? 1 : 0),
-            losses: prev.sessionData.combatStats.losses + (isWin ? 0 : 1),
-            totalCombats: prev.sessionData.combatStats.totalCombats + 1,
-            averageDamageDealt:
-              (prev.sessionData.combatStats.averageDamageDealt +
-                result.damage) /
-              2,
-          },
-        },
-      }));
-    },
-    [gameState.player.id]
-  );
-
-  if (!gameState.isInitialized) {
-    return (
-      <PixiContainer>
-        <div
-          style={{
-            width: "100vw",
-            height: "100vh",
-            backgroundColor: convertKoreanColorForCSS(KOREAN_COLORS.BLACK),
-            color: convertKoreanColorForCSS(KOREAN_COLORS.WHITE),
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            fontFamily: "Noto Sans KR, Arial, sans-serif",
-          }}
-        >
-          <PixiText
-            text="흑괘 로딩 중... (Loading Black Trigram...)"
-            style={{
-              fontSize: 24,
-              fill: convertKoreanColorForCSS(KOREAN_COLORS.GOLD),
-              fontFamily: "Noto Sans KR, Arial, sans-serif",
-            }}
-          />
-        </div>
-      </PixiContainer>
-    );
-  }
-
-  const renderCurrentScreen = () => {
-    switch (gameState.currentScreen) {
-      case "intro":
-        return (
+  return (
+    <div className="App">
+      <Application width={1200} height={800} backgroundColor={0x0a0a0a}>
+        {gameState.currentScreen === "intro" && (
           <IntroScreen
-            onStartTraining={() => handleScreenChange("training")}
-            onStartCombat={() => handleScreenChange("combat")}
+            onGamePhaseChange={handleGamePhaseChange}
+            onStartTraining={() => handleGamePhaseChange("training")}
+            onStartCombat={() => handleGamePhaseChange("combat")}
             player={gameState.player}
-            onPlayerChange={handlePlayerStateChange}
+            onPlayerChange={(updates) => handlePlayerUpdate(updates)}
             sessionData={gameState.sessionData}
           />
-        );
-
-      case "training":
-        return (
-          <TrainingScreen
-            player={gameState.player}
-            onPlayerStateChange={handlePlayerStateChange}
-            onReturnToMenu={() => handleScreenChange("intro")}
-            onStartCombat={() => handleScreenChange("combat")}
-            showVitalPoints={gameState.settings.showVitalPoints}
-            difficulty={gameState.settings.difficulty}
-          />
-        );
-
-      case "combat":
-        return (
-          <CombatScreen
-            player={gameState.player}
-            onPlayerStateChange={handlePlayerStateChange}
-            onCombatResult={handleCombatResult}
-            onReturnToMenu={() => handleScreenChange("intro")}
-            settings={gameState.settings}
-            isActive={true}
-          />
-        );
-
-      default:
-        return (
-          <div
-            style={{
-              width: "100vw",
-              height: "100vh",
-              backgroundColor: convertKoreanColorForCSS(KOREAN_COLORS.BLACK),
-              color: convertKoreanColorForCSS(KOREAN_COLORS.WHITE),
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            Error: Unknown screen
-          </div>
-        );
-    }
-  };
-
-  return (
-    <AudioManagerProvider>
-      <PixiContainer>
-        {renderCurrentScreen()}
-
-        {/* Debug overlay */}
-        {gameState.settings.showDebugInfo && (
-          <div
-            style={{
-              position: "fixed",
-              top: "10px",
-              left: "10px",
-              backgroundColor: "rgba(0, 0, 0, 0.8)",
-              color: convertKoreanColorForCSS(KOREAN_COLORS.CYAN),
-              padding: "8px",
-              borderRadius: "4px",
-              fontSize: "12px",
-              fontFamily: "monospace",
-              zIndex: 9999,
-            }}
-          >
-            <div>Screen: {gameState.currentScreen}</div>
-            <div>
-              Stance: {TRIGRAM_DATA[gameState.player.stance].symbol}{" "}
-              {TRIGRAM_DATA[gameState.player.stance].name.korean}
-            </div>
-            <div>
-              Health: {gameState.player.health}/{gameState.player.maxHealth}
-            </div>
-            <div>
-              Ki: {gameState.player.ki}/{gameState.player.maxKi}
-            </div>
-          </div>
         )}
 
-        {/* Korean aesthetic footer */}
-        <div
-          style={{
-            position: "fixed",
-            bottom: "8px",
-            right: "8px",
-            fontSize: "10px",
-            color: convertKoreanColorForCSS(KOREAN_COLORS.CYAN),
-            opacity: 0.6,
-            fontFamily: "Noto Sans KR, Arial, sans-serif",
-          }}
-        >
-          흑괘의 길 (Path of Black Trigram)
+        {gameState.currentScreen === "training" && (
+          <TrainingScreen
+            player={gameState.player}
+            onPlayerStateChange={(updates) => handlePlayerUpdate(updates)}
+            onReturnToMenu={() => handleGamePhaseChange("intro")}
+            onStartCombat={() => handleGamePhaseChange("combat")}
+          />
+        )}
+
+        {gameState.currentScreen === "combat" && (
+          <GameEngine
+            // Fix: Use proper prop names for GameEngineProps
+            player1={gameState.player}
+            player2={createPlayerState("Player2", "amsalja", "tae")}
+            onGameStateChange={handleGameStateChange}
+            onPlayerUpdate={handlePlayerUpdate}
+            onGamePhaseChange={handleGamePhaseChange}
+          />
+        )}
+      </Application>
+
+      {/* Fix debug info - use proper TRIGRAM_DATA access */}
+      <div
+        style={{
+          position: "absolute",
+          top: 10,
+          left: 10,
+          color: "white",
+          fontSize: "12px",
+        }}
+      >
+        <div>Screen: {gameState.currentScreen}</div>
+        <div>
+          Player: {gameState.player.archetype} | Stance:{" "}
+          {TRIGRAM_DATA[gameState.player.stance].symbol}{" "}
+          {TRIGRAM_DATA[gameState.player.stance].name.korean}
         </div>
-      </PixiContainer>
-    </AudioManagerProvider>
+      </div>
+    </div>
   );
 }
 

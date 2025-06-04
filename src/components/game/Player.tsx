@@ -14,6 +14,7 @@ import {
   ARCHETYPE_NAMES,
 } from "../../types/constants";
 import { useAudio } from "../../audio/AudioManager";
+import type { Graphics as PixiGraphics } from "pixi.js";
 
 export interface PlayerProps {
   readonly playerState: PlayerState;
@@ -47,7 +48,7 @@ export function Player({
   const HealthBar = useCallback(
     () => (
       <Graphics
-        draw={(g) => {
+        draw={(g: PixiGraphics) => {
           g.clear();
 
           // Background
@@ -77,7 +78,7 @@ export function Player({
   const KiBar = useCallback(
     () => (
       <Graphics
-        draw={(g) => {
+        draw={(g: PixiGraphics) => {
           g.clear();
 
           // Background
@@ -100,30 +101,103 @@ export function Player({
   const PlayerBody = useCallback(
     () => (
       <Graphics
-        draw={(g) => {
+        draw={(g: PixiGraphics) => {
           g.clear();
-
-          // Body circle
           g.beginFill(stanceColor);
           g.drawCircle(0, 0, 20);
           g.endFill();
-
-          // Stance indicator
-          g.lineStyle(2, KOREAN_COLORS.WHITE);
-          g.beginFill(stanceColor, 0.8);
-          g.drawCircle(0, 0, 25);
-          g.endFill();
-
-          // Direction indicator
-          const facingMultiplier = playerState.facing === "right" ? 1 : -1;
-          g.lineStyle(3, KOREAN_COLORS.WHITE);
-          g.moveTo(0, 0);
-          g.lineTo(15 * facingMultiplier, 0);
         }}
+        x={playerState.position.x}
+        y={playerState.position.y}
       />
     ),
-    [playerState.facing, playerState.stance, stanceColor]
+    [playerState.position, stanceColor]
   );
+
+  // Stance indicator visualization
+  const StanceIndicator = useCallback(
+    () => (
+      <Graphics
+        draw={(g: PixiGraphics) => {
+          g.clear();
+          g.lineStyle(2, stanceColor);
+          g.drawCircle(0, 0, 25);
+        }}
+        x={playerState.position.x}
+        y={playerState.position.y}
+      />
+    ),
+    [playerState.position, stanceColor]
+  );
+
+  // Health bar visualization
+  const HealthBarVisual = useCallback(
+    () => (
+      <Graphics
+        draw={(g: PixiGraphics) => {
+          g.clear();
+          g.beginFill(0x330000);
+          g.drawRect(-20, -35, 60, 8);
+          g.endFill();
+
+          const healthPercent = playerState.health / playerState.maxHealth;
+          const healthColor =
+            healthPercent > 0.6
+              ? 0x00ff00
+              : healthPercent > 0.3
+              ? 0xffff00
+              : 0xff0000;
+
+          g.beginFill(healthColor);
+          g.drawRect(-18, -33, 56 * healthPercent, 4);
+          g.endFill();
+        }}
+        x={playerState.position.x}
+        y={playerState.position.y}
+      />
+    ),
+    [playerState.health, playerState.maxHealth]
+  );
+
+  // Ki bar visualization
+  const KiBarVisual = useCallback(
+    () => (
+      <Graphics
+        draw={(g: PixiGraphics) => {
+          g.clear();
+          g.beginFill(0x000033);
+          g.drawRect(-20, -25, 60, 6);
+          g.endFill();
+
+          const kiPercent = playerState.ki / playerState.maxKi;
+          g.beginFill(0x00aaff);
+          g.drawRect(-19, -24, 58 * kiPercent, 4);
+          g.endFill();
+        }}
+        x={playerState.position.x}
+        y={playerState.position.y}
+      />
+    ),
+    [playerState.ki, playerState.maxKi]
+  );
+
+  // Main attack animation
+  const AttackAnimation = useCallback(() => {
+    if (!playerState.isAttacking) return null;
+
+    return (
+      <Graphics
+        draw={(g: PixiGraphics) => {
+          g.clear();
+          g.beginFill(KOREAN_COLORS.CRITICAL_HIT, 0.6);
+          g.drawCircle(0, 0, 35);
+          g.endFill();
+        }}
+        x={playerState.position.x}
+        y={playerState.position.y}
+      />
+    );
+  }, [playerState.isAttacking, playerState.position]);
 
   // Stance change effect
   useEffect(() => {
@@ -223,16 +297,7 @@ export function Player({
       )}
 
       {/* Critical hit effect */}
-      {playerState.isAttacking && (
-        <Graphics
-          draw={(g) => {
-            g.clear();
-            g.beginFill(KOREAN_COLORS.CRITICAL_HIT, 0.6);
-            g.drawCircle(0, 0, 35);
-            g.endFill();
-          }}
-        />
-      )}
+      <AttackAnimation />
     </Container>
   );
 }

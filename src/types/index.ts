@@ -51,7 +51,7 @@ export type {
   TrigramTransitionRule,
   StanceTransition, // Fixed: Add StanceTransition export
 } from "./trigram";
-export type { AppState } from "./game";
+export type { AppState, GameState, GameSettings } from "./game"; // Fix: add GameState and GameSettings exports
 
 // Export component types - FIXED: Include PlayerProps
 export type {

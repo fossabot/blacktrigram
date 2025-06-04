@@ -3,17 +3,28 @@ import {
   KOREAN_TEXT_SIZES,
   KOREAN_FONT_FAMILY,
   type KoreanTextProps,
+  KoreanFontWeight,
 } from "../../../../../types/korean-text";
 import { KOREAN_COLORS } from "../../../../../types";
 
-// Helper function to map font weights to PIXI-compatible values
-function mapFontWeightToPixi(weight?: number): PIXI.TextStyleFontWeight {
-  if (!weight) return "normal";
-  if (weight <= 300) return "100";
-  if (weight <= 400) return "normal";
-  if (weight <= 500) return "500";
-  if (weight <= 700) return "bold";
-  return "900";
+// Fix font weight mapping to handle string values
+export function mapFontWeightToPixi(
+  weight?: KoreanFontWeight
+): number | undefined {
+  if (!weight) return undefined;
+
+  if (typeof weight === "number") {
+    return weight;
+  }
+
+  // Map string weights to numbers
+  const weightMap: Record<string, number> = {
+    regular: 400,
+    semibold: 600,
+    bold: 700,
+  };
+
+  return weightMap[weight] || 400;
 }
 
 // Create PIXI TextStyle for Korean text (PIXI v8 compatible)
@@ -31,7 +42,7 @@ export const getPixiTextStyle = (
     fontFamily: KOREAN_FONT_FAMILY,
     fontSize,
     fill: baseColor,
-    fontWeight: mapFontWeightToPixi(props.weight),
+    fontWeight: mapFontWeightToPixi(props.weight) as any, // Fix: cast to any for PIXI compatibility
     align: props.align || "left",
     wordWrap: true,
     wordWrapWidth: 600,

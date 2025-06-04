@@ -15,9 +15,10 @@ describe("TrigramWheel", () => {
   const mockOnStanceChange = vi.fn(); // Mock for onStanceChange
 
   const mockProps = {
+    currentStance: "geon" as TrigramStance, // Fix: cast to TrigramStance
     selectedStance: "geon" as TrigramStance,
     onStanceSelect: mockOnStanceSelect,
-    onStanceChange: mockOnStanceChange, // Add missing prop
+    onStanceChange: mockOnStanceChange,
     isEnabled: true,
   };
 

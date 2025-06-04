@@ -80,13 +80,16 @@ export type SoundEffectId =
   | "technique_execute";
 
 // Music track IDs for Korean martial arts themes
-export type MusicId =
+export type MusicTrackId =
   | "combat_theme"
   | "menu_theme"
   | "training_theme"
   | "intro_theme"
   | "victory_theme"
   | "ambient_dojang";
+
+// Add MusicId as alias for backward compatibility
+export type MusicId = MusicTrackId;
 
 // Audio asset configuration
 export interface AudioAsset {
@@ -109,7 +112,7 @@ export interface AudioAsset {
 // Audio asset registry structure
 export interface AudioAssetRegistry {
   readonly sfx: Record<SoundEffectId, AudioAsset>;
-  readonly music: Record<MusicId, AudioAsset>;
+  readonly music: Record<MusicTrackId, AudioAsset>; // Fixed: Use MusicTrackId
 }
 
 // Audio playback options
@@ -129,7 +132,7 @@ export interface AudioState {
   readonly sfxVolume: number;
   readonly musicVolume: number;
   readonly muted: boolean;
-  readonly currentMusicTrack?: MusicId | null;
+  readonly currentMusicTrack?: MusicTrackId | null; // Fixed: Use MusicTrackId
   readonly isInitialized: boolean;
   readonly fallbackMode?: boolean;
 }
@@ -137,13 +140,13 @@ export interface AudioState {
 // Audio manager interface
 export interface IAudioManager {
   playSFX(id: SoundEffectId, options?: AudioPlaybackOptions): number | null;
-  playMusic(id: MusicId, options?: AudioPlaybackOptions): number | null;
+  playMusic(id: MusicTrackId, options?: AudioPlaybackOptions): number | null; // Fixed: Use MusicTrackId
   stopMusic(): void;
   setMasterVolume(volume: number): void;
   setSFXVolume(volume: number): void;
   setMusicVolume(volume: number): void;
-  setMuted(muted: boolean): void; // Add missing method
-  getState(): AudioState;
+  setMuted(muted: boolean): void;
+  getState(): AudioState; // Add missing method
 
   // Korean martial arts specific methods
   playAttackSound(damage: number): void;
@@ -233,7 +236,7 @@ export type SoundLibrary = {
 export interface MusicPlaylist {
   readonly id: string;
   readonly name: string;
-  readonly tracks: readonly MusicId[];
+  readonly tracks: readonly MusicTrackId[]; // Fixed: Use MusicTrackId
   readonly shuffle: boolean;
   readonly repeat: "none" | "track" | "playlist";
 }

@@ -28,7 +28,16 @@ export const KOREAN_TEXT_SIZES: Record<KoreanTextSize, number> = {
 };
 
 // Korean font weight type
-export type KoreanFontWeight = 300 | 400 | 500 | 700 | 900;
+export type KoreanFontWeight =
+  | 300
+  | 400
+  | 500
+  | 600
+  | 700
+  | 900
+  | "regular"
+  | "semibold"
+  | "bold";
 
 // Korean text variant
 export type KoreanTextVariant =

@@ -230,4 +230,31 @@ export class VitalPointSystem {
 
     return bonuses[archetype]?.[category] || 1.0;
   }
+
+  // Add missing instance methods
+  public getVitalPointsInRegion(region: any): VitalPoint[] {
+    return this.vitalPoints.filter((vp) => vp.location.region === region);
+  }
+
+  public getAllVitalPoints(): VitalPoint[] {
+    return [...this.vitalPoints];
+  }
+
+  // Fix static method implementations
+  public static getVitalPointsInRegion(region: any): VitalPoint[] {
+    return new VitalPointSystem().getVitalPointsInRegion(region);
+  }
+
+  public static getAllVitalPoints(): VitalPoint[] {
+    return new VitalPointSystem().getAllVitalPoints();
+  }
+}
+
+// Fix wrapper functions to use static methods correctly
+export function getVitalPointsInRegion(region: string): readonly VitalPoint[] {
+  return VitalPointSystem.getVitalPointsInRegion(region);
+}
+
+export function getAllVitalPoints(): readonly VitalPoint[] {
+  return VitalPointSystem.getAllVitalPoints();
 }

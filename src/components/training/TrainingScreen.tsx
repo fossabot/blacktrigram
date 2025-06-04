@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import type { TrainingScreenProps } from "../../types";
+import type { TrainingScreenProps, TrigramStance } from "../../types";
 import { KOREAN_COLORS, TRIGRAM_DATA } from "../../types/constants"; // Updated import path
 import { KoreanHeader } from "../ui/base/KoreanHeader";
 import { KoreanText } from "../ui/base/korean-text/KoreanText";
@@ -21,14 +21,16 @@ export function TrainingScreen({
     useState<string>("stance_practice");
 
   const handleStanceChange = useCallback(
-    (stance: any) => {
+    (newStance: TrigramStance) => {
+      if (!player || !onPlayerStateChange) return; // Fix: add null checks
+
       onPlayerStateChange({
-        stance,
+        stance: newStance,
         ki: Math.max(0, player.ki - 5),
         stamina: Math.max(0, player.stamina - 3),
       });
     },
-    [player.ki, player.stamina, onPlayerStateChange]
+    [player?.ki, player?.stamina, onPlayerStateChange] // Fix: use optional chaining
   );
 
   const containerStyle: React.CSSProperties = {
@@ -69,12 +71,12 @@ export function TrainingScreen({
           <h3>자세 선택 (Stance Selection)</h3>
 
           <TrigramWheel
-            size={200}
-            position={{ x: 250, y: 200 }}
+            currentStance={selectedStance || "geon"} // Fix: provide fallback
             selectedStance={selectedStance}
             onStanceChange={handleStanceChange}
             interactive={true}
             showLabels={true}
+            // Remove size prop as it's not in interface
           />
 
           {/* Stance Information */}

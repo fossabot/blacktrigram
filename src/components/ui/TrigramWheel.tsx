@@ -7,7 +7,7 @@ import {
   TRIGRAM_DATA,
   KOREAN_FONT_FAMILY_PRIMARY,
 } from "../../types/constants";
-import { useAudio } from "../../audio/AudioManager";
+import { useAudio } from "../../audio/AudioProvider"; // Fix: Import from AudioProvider
 
 export interface TrigramWheelProps {
   readonly currentStance: TrigramStance;

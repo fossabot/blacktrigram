@@ -1,185 +1,125 @@
-import React, { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
+import type { ProgressTrackerProps } from "../../types";
 import type { Graphics as PixiGraphics } from "pixi.js";
-import {
-  KOREAN_COLORS,
-  KOREAN_FONT_FAMILY_PRIMARY,
-} from "../../types/constants";
 
-export interface ProgressBarProps {
+// Simple progress bar component for individual bars
+interface ProgressBarProps {
   readonly current: number;
   readonly maximum: number;
+  readonly width: number;
+  readonly height?: number;
+  readonly barColor?: number;
+  readonly backgroundColor?: number;
+  readonly label?: string;
   readonly x?: number;
   readonly y?: number;
-  readonly width?: number;
-  readonly height?: number;
-  readonly color?: number;
-  readonly backgroundColor?: number;
-  readonly borderColor?: number;
-  readonly showText?: boolean;
-  readonly label?: string;
-  readonly showPercentage?: boolean;
 }
 
-export function ProgressBar({
+function ProgressBar({
   current,
   maximum,
+  width,
+  height = 20,
+  barColor = 0x00ff00,
+  backgroundColor = 0x333333,
+  label,
   x = 0,
   y = 0,
-  width = 200,
-  height = 20,
-  color = KOREAN_COLORS.GREEN,
-  backgroundColor = KOREAN_COLORS.GRAY_DARK,
-  borderColor = KOREAN_COLORS.WHITE,
-  showText = true,
-  label,
-  showPercentage = false,
-}: ProgressBarProps): React.ReactElement {
-  const percentage = useMemo(() => {
-    return Math.max(0, Math.min(1, current / maximum));
-  }, [current, maximum]);
+}: ProgressBarProps) {
+  const percentage = Math.max(0, Math.min(100, (current / maximum) * 100));
 
-  const barColor = useMemo(() => {
-    // Dynamic color based on percentage
-    if (percentage > 0.6) return color;
-    if (percentage > 0.3) return KOREAN_COLORS.YELLOW;
-    return KOREAN_COLORS.RED;
-  }, [percentage, color]);
-
-  const drawProgressBar = useCallback(
+  const drawBackground = useCallback(
     (g: PixiGraphics) => {
       g.clear();
-
-      // Background
-      g.setFillStyle({ color: backgroundColor, alpha: 0.8 });
-      g.roundRect(0, 0, width, height, 4);
-      g.fill();
-
-      // Progress fill
-      if (percentage > 0) {
-        g.setFillStyle({ color: barColor });
-        g.roundRect(0, 0, width * percentage, height, 4);
-        g.fill();
-      }
-
-      // Border
-      g.setStrokeStyle({ color: borderColor, width: 1 });
-      g.roundRect(0, 0, width, height, 4);
-      g.stroke();
-
-      // Critical warning effect
-      if (percentage < 0.25) {
-        g.setStrokeStyle({ color: KOREAN_COLORS.RED, width: 2, alpha: 0.6 });
-        g.roundRect(-2, -2, width + 4, height + 4, 6);
-        g.stroke();
-      }
+      g.beginFill(backgroundColor);
+      g.drawRect(0, 0, width, height);
+      g.endFill();
     },
-    [width, height, percentage, barColor, backgroundColor, borderColor]
+    [backgroundColor, width, height]
   );
 
-  const displayText = useMemo(() => {
-    if (showPercentage) {
-      return `${Math.round(percentage * 100)}%`;
-    }
-    return `${Math.round(current)}/${maximum}`;
-  }, [current, maximum, percentage, showPercentage]);
+  const drawProgress = useCallback(
+    (g: PixiGraphics) => {
+      g.clear();
+      g.beginFill(barColor);
+      g.drawRect(0, 0, (width * percentage) / 100, height);
+      g.endFill();
+    },
+    [barColor, width, height, percentage]
+  );
 
   return (
     <Container x={x} y={y}>
-      {/* Label */}
+      {/* Background bar */}
+      <Graphics draw={drawBackground} />
+
+      {/* Progress fill */}
+      <Graphics draw={drawProgress} />
+
+      {/* Label if provided */}
       {label && (
         <Text
-          text={label}
-          anchor={{ x: 0, y: 1 }}
-          y={-5}
+          text={`${label}: ${Math.round(current)}/${maximum}`}
           style={{
-            fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
+            fontFamily: "Arial",
             fontSize: 12,
-            fill: KOREAN_COLORS.WHITE,
-            fontWeight: "bold",
+            fill: 0xffffff,
           }}
-        />
-      )}
-
-      {/* Progress bar */}
-      <Graphics draw={drawProgressBar} />
-
-      {/* Value text */}
-      {showText && (
-        <Text
-          text={displayText}
-          anchor={0.5}
-          x={width / 2}
-          y={height / 2}
-          style={{
-            fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
-            fontSize: Math.min(height * 0.6, 14),
-            fill: KOREAN_COLORS.WHITE,
-            stroke: KOREAN_COLORS.BLACK,
-            strokeThickness: 1,
-            fontWeight: "bold",
-          }}
+          x={width + 10}
+          y={height / 2 - 6}
         />
       )}
     </Container>
   );
-}
-
-export interface ProgressTrackerProps {
-  readonly health: { current: number; maximum: number };
-  readonly ki: { current: number; maximum: number };
-  readonly stamina: { current: number; maximum: number };
-  readonly x?: number;
-  readonly y?: number;
-  readonly width?: number;
-  readonly spacing?: number;
-  readonly showLabels?: boolean;
 }
 
 export function ProgressTracker({
   health,
   ki,
   stamina,
+  maxHealth = 100,
+  maxKi = 100,
+  maxStamina = 100,
   x = 0,
   y = 0,
   width = 200,
-  spacing = 25,
   showLabels = true,
-}: ProgressTrackerProps): React.ReactElement {
+  spacing = 25,
+}: ProgressTrackerProps): React.JSX.Element {
   return (
     <Container x={x} y={y}>
-      {/* Health Bar */}
+      {/* Health bar */}
       <ProgressBar
-        current={health.current}
-        maximum={health.maximum}
+        current={health}
+        maximum={maxHealth}
         width={width}
-        height={18}
-        color={KOREAN_COLORS.HEALTH_RED}
+        barColor={0xff0000}
         label={showLabels ? "체력 (Health)" : undefined}
         y={0}
       />
 
-      {/* Ki Bar */}
+      {/* Ki bar */}
       <ProgressBar
-        current={ki.current}
-        maximum={ki.maximum}
+        current={ki}
+        maximum={maxKi}
         width={width}
-        height={15}
-        color={KOREAN_COLORS.CYAN}
+        barColor={0x0080ff}
         label={showLabels ? "기 (Ki)" : undefined}
         y={spacing}
       />
 
-      {/* Stamina Bar */}
+      {/* Stamina bar */}
       <ProgressBar
-        current={stamina.current}
-        maximum={stamina.maximum}
+        current={stamina}
+        maximum={maxStamina}
         width={width}
-        height={12}
-        color={KOREAN_COLORS.STAMINA_GREEN}
+        barColor={0x00ff80}
         label={showLabels ? "체력 (Stamina)" : undefined}
         y={spacing * 2}
       />
     </Container>
   );
 }
+
+export default ProgressTracker;
