@@ -18,6 +18,13 @@ import {
 import { TrigramCalculator } from "./trigram/TrigramCalculator";
 import { TransitionCalculator } from "./trigram/TransitionCalculator";
 
+export interface TransitionPathWithDescription extends TransitionPath {
+  description: {
+    korean: string;
+    english: string;
+  };
+}
+
 export class TrigramSystem {
   private trigramCalculator: TrigramCalculator;
   private transitionCalculator: TransitionCalculator;
@@ -48,7 +55,7 @@ export class TrigramSystem {
     // Assuming techniques are part of TrigramData or a separate mapping
     // For this example, let's assume TrigramData holds its primary technique
     const data = this.getTrigramData(stance);
-    return data.technique ? [data.technique] : []; // Simplified
+    return data?.technique ? [data.technique] : []; // Simplified
   }
 
   public calculateTransitionCost(
@@ -114,7 +121,7 @@ export class TrigramSystem {
     toStance: TrigramStance,
     maxDepth: number = 3, // maxDepth is used by TransitionCalculator's findOptimalPath
     opponentStance?: TrigramStance
-  ): TransitionPath | null {
+  ): TransitionPathWithDescription | null {
     if (fromStance === toStance) {
       return {
         path: [fromStance],
@@ -141,16 +148,15 @@ export class TrigramSystem {
     if (!path) return null;
 
     // If path is found, it should already conform to TransitionPath including overallEffectiveness
-    return path;
+    return path as TransitionPathWithDescription;
   }
 
   public findOptimalPathToStance(
     currentStance: TrigramStance,
     targetStance: TrigramStance,
     playerState: PlayerState,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _opponentStance?: TrigramStance // Marked as unused
-  ): TransitionPath | null {
+    opponentStance?: TrigramStance
+  ): TransitionPathWithDescription | null {
     if (currentStance === targetStance) {
       return {
         path: [currentStance],
@@ -165,7 +171,7 @@ export class TrigramSystem {
       };
     }
 
-    const cost = this.trigramCalculator.calculateTransitionCost(
+    const cost = this.calculateTransitionCost(
       currentStance,
       targetStance,
       playerState
@@ -190,7 +196,7 @@ export class TrigramSystem {
             TRIGRAM_DATA[currentStance]?.name?.english || currentStance
           } to ${TRIGRAM_DATA[targetStance]?.name?.english || targetStance}`,
         },
-        overallEffectiveness: this.trigramCalculator.getStanceEffectiveness(
+        overallEffectiveness: this.getStanceEffectiveness(
           targetStance,
           opponentStance || currentStance
         ), // Added if part of TransitionPath
@@ -203,9 +209,8 @@ export class TrigramSystem {
     currentStance: TrigramStance,
     targetStance: TrigramStance,
     playerState: PlayerState,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _opponentStance?: TrigramStance // Marked as unused
-  ): TransitionPath | null {
+    opponentStance?: TrigramStance
+  ): TransitionPathWithDescription | null {
     // Simplified: direct path, consider "safest" as lowest cost or highest defensive gain
     const cost = this.calculateTransitionCost(
       currentStance,
@@ -232,9 +237,8 @@ export class TrigramSystem {
     currentStance: TrigramStance,
     targetStance: TrigramStance,
     playerState: PlayerState,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _opponentStance?: TrigramStance // Marked as unused
-  ): TransitionPath | null {
+    opponentStance?: TrigramStance
+  ): TransitionPathWithDescription | null {
     // Simplified: direct path, "quickest" means lowest timeMilliseconds
     const cost = this.calculateTransitionCost(
       currentStance,

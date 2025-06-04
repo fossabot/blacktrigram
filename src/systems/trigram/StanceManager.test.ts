@@ -7,7 +7,10 @@ import type {
   // TrigramTransitionCost, // Unused
   // KoreanText, // Unused
 } from "../../types";
-import { TRIGRAM_DATA, STANCE_EFFECTIVENESS_MATRIX } from "../../types";
+import {
+  TRIGRAM_DATA,
+  STANCE_EFFECTIVENESS_MATRIX,
+} from "../../types/constants";
 import { TrigramCalculator } from "./TrigramCalculator"; // Import actual TrigramCalculator
 
 // Mock PlayerState

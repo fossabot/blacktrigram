@@ -11,6 +11,13 @@ import {
 } from "../../types/constants";
 import type { EffectType } from "../../types"; // Import EffectType
 
+export interface TransitionPathWithDescription extends TransitionPath {
+  description: {
+    korean: string;
+    english: string;
+  };
+}
+
 export class TrigramCalculator {
   // private readonly trigramData: Record<TrigramStance, TrigramData>; // Unused if directly using imported TRIGRAM_DATA
   private readonly effectivenessMatrix: TrigramEffectivenessMatrix;
@@ -53,13 +60,11 @@ export class TrigramCalculator {
     from: TrigramStance,
     to: TrigramStance,
     playerState: PlayerState
-    // maxSteps: number // Unused, can be removed or used for more complex algorithm
-  ): TransitionPath | null {
+  ): TransitionPathWithDescription | null {
     if (from === to) {
       return {
         path: [from],
         totalCost: { ki: 0, stamina: 0, timeMilliseconds: 0 },
-        // overallEffectiveness: 1.0, // This was causing an error, ensure TransitionPath type matches
         cumulativeRisk: 0,
         name: `${from}`,
         description: {

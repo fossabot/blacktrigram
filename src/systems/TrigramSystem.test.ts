@@ -3,10 +3,11 @@ import { TrigramSystem } from "./TrigramSystem";
 import type { PlayerState, TrigramStance } from "../types";
 import { TRIGRAM_DATA, STANCE_EFFECTIVENESS_MATRIX } from "../types/constants";
 
-const createTestPlayerState = (
+const createMockPlayerState = (
   stance: TrigramStance,
   ki: number = 100,
-  stamina: number = 100
+  stamina: number = 100,
+  health: number = 100 // Corrected: Added health parameter
 ): PlayerState => ({
   id: "test-player",
   name: "Test Player",
@@ -14,7 +15,7 @@ const createTestPlayerState = (
   position: { x: 0, y: 0 },
   stance,
   facing: "right",
-  health: 100,
+  health,
   maxHealth: 100,
   ki,
   maxKi: 100,
@@ -38,7 +39,7 @@ describe("TrigramSystem", () => {
 
   beforeEach(() => {
     trigramSystem = new TrigramSystem();
-    player = createTestPlayerState("geon");
+    player = createMockPlayerState("geon");
   });
 
   describe("getTrigramData", () => {
@@ -78,7 +79,7 @@ describe("TrigramSystem", () => {
     });
 
     it("should increase cost if player health is low", () => {
-      const lowHealthPlayer = createTestPlayerState("geon", 100, 100, 30); // Low health
+      const lowHealthPlayer = createMockPlayerState("geon", 100, 100, 30); // Low health
       const costHighHealth = trigramSystem.calculateTransitionCost(
         "geon",
         "tae",
@@ -125,7 +126,7 @@ describe("TrigramSystem", () => {
     it("should return null if direct path is not affordable", () => {
       const from: TrigramStance = "geon";
       const to: TrigramStance = "li"; // Assume 'li' has a high cost from 'geon'
-      const testPlayer = createTestPlayerState(from, 1, 100); // Insufficient Ki
+      const testPlayer = createMockPlayerState(from, 1, 100); // Insufficient Ki
 
       // Mock calculateTransitionCost if it's part of TrigramCalculator used by TrigramSystem
       // For this test, we assume the MOCK_TRANSITION_RULES define a cost for geon->li that's > 1 ki.
@@ -138,7 +139,7 @@ describe("TrigramSystem", () => {
       // For now, let's assume a simple scenario or skip if too complex for "minimal changes"
       const from: TrigramStance = "geon";
       const to: TrigramStance = "gam"; // Target that might be 'far'
-      const testPlayer = createTestPlayerState(from, 100, 100);
+      const testPlayer = createMockPlayerState(from, 100, 100);
       // Need to ensure MOCK_TRANSITION_RULES and TrigramCalculator logic supports multi-step paths
       const path = trigramSystem.calculateOptimalPath(testPlayer, from, to, 3); // Allow up to 3 steps
       // Assertions depend heavily on the mocked data and pathfinding logic
@@ -149,7 +150,7 @@ describe("TrigramSystem", () => {
     it("should return null if no path is found within maxDepth", () => {
       const from: TrigramStance = "geon";
       const to: TrigramStance = "gon"; // A distant stance
-      const testPlayer = createTestPlayerState(from, 0, 0); // No resources
+      const testPlayer = createMockPlayerState(from, 0, 0); // No resources
 
       const path = trigramSystem.calculateOptimalPath(testPlayer, from, to, 1); // Max depth 1 (only direct)
       expect(path).toBeNull(); // Expect null due to no resources for direct path

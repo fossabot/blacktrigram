@@ -17,7 +17,6 @@ import type {
 
 import { ANATOMICAL_REGIONS_DATA } from "./vitalpoint/AnatomicalRegions";
 import { VITAL_POINTS_DATA } from "./vitalpoint/KoreanVitalPoints"; // Assuming this exports all vital points
-import { HitDetection } from "./vitalpoint/HitDetection";
 import { DamageCalculator } from "./vitalpoint/DamageCalculator";
 
 // Configuration for the VitalPointSystem
@@ -39,27 +38,26 @@ export class VitalPointSystem {
   private anatomicalRegions: Readonly<Record<BodyRegion, RegionData>>;
 
   constructor(config?: VitalPointSystemConfig) {
-    this.damageCalculator = new DamageCalculator(
-      config || {
-        baseDamageMultiplier: 1.0,
-        archetypeModifiers: {
-          // Ensure all archetypes are present
-          musa: {},
-          amsalja: {},
-          hacker: {},
-          jeongbo: {},
-          jojik: {},
-        },
-        vitalPointSeverityMultiplier: {
-          minor: 1.1,
-          moderate: 1.3,
-          severe: 1.6,
-          critical: 2.0,
-          lethal: 3.0,
-        },
-        criticalHitMultiplier: 1.5, // Default critical hit multiplier
-      }
-    );
+    this.config = config || {
+      baseDamageMultiplier: 1.0,
+      archetypeModifiers: {
+        // Ensure all archetypes are present
+        musa: {},
+        amsalja: {},
+        hacker: {},
+        jeongbo: {},
+        jojik: {},
+      },
+      vitalPointSeverityMultiplier: {
+        minor: 1.1,
+        moderate: 1.3,
+        severe: 1.6,
+        critical: 2.0,
+        lethal: 3.0,
+      },
+      criticalHitMultiplier: 1.5, // Default critical hit multiplier
+    };
+    this.damageCalculator = new DamageCalculator(this.config);
     // Ensure VITAL_POINTS_DATA is an array of VitalPoint objects
     this.vitalPoints = VITAL_POINTS_DATA;
     this.anatomicalRegions = ANATOMICAL_REGIONS_DATA;
@@ -132,7 +130,7 @@ export class VitalPointSystem {
     accuracyRoll: number, // A random number (0-1) representing the player's accuracy for this hit
     attackerPosition: Position, // Marked as unused, consider removing or using
     defenderPosition: Position,
-    defenderStance: TrigramStance // Marked as unused, consider removing or using
+    defenderStance: TrigramStance
   ): VitalPointHitResult {
     const baseAccuracy = technique.accuracy ?? 0.8;
     const hitSuccess = accuracyRoll <= baseAccuracy;
@@ -144,6 +142,7 @@ export class VitalPointSystem {
         effects: [],
         criticalHit: false,
         location: defenderPosition, // Or a "miss" location
+        vitalPoint: null,
         vitalPointsHit: [],
       };
     }
@@ -187,8 +186,9 @@ export class VitalPointSystem {
         effects: effects,
         criticalHit: isCritical,
         location: hitVitalPoint.location, // Use vital point's defined location or hit processing location
+        vitalPoint: hitVitalPoint,
         vitalPointsHit: [hitVitalPoint],
-      } as VitalPointHitResult;
+      };
     } else {
       // Standard body hit, no vital point involved
       damageDealt = this.damageCalculator.calculateDamage(
@@ -198,13 +198,11 @@ export class VitalPointSystem {
           name: { korean: "몸통", english: "Body" },
           koreanName: "몸통",
           englishName: "Body",
-          romanizedName: "Momtong",
+          category: "general",
           description: {
             korean: "일반적인 신체 부위",
             english: "General body area",
           },
-          category: "general",
-          severity: "minor",
           location: { x: 0, y: 0, region: "torso" }, // Placeholder
           effects: [],
           baseDamage: 0,
@@ -225,8 +223,9 @@ export class VitalPointSystem {
       effects: effects,
       criticalHit: isCritical,
       location: defenderPosition, // General hit location
+      vitalPoint: null,
       vitalPointsHit: [],
-    } as VitalPointHitResult;
+    };
   }
 
   public calculateVitalPointHitEffects(

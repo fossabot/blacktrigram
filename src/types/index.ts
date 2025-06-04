@@ -13,7 +13,6 @@ export type { Position, CombatCondition } from "./common";
 export type { PlayerState, PlayerArchetypeData } from "./player";
 export type {
   VitalPoint,
-  VitalPointEffect,
   VitalPointHitResult,
   VitalPointCategory,
   VitalPointSeverity,
@@ -23,7 +22,7 @@ export type {
   AnatomyModel, // Added export
 } from "./anatomy";
 export type { KoreanTechnique, CombatResult, AttackInput } from "./combat";
-export type { HitEffect, StatusEffect, VitalPointEffect } from "./effects";
+export type { HitEffect, StatusEffect } from "./effects";
 export type {
   KoreanText,
   KoreanTextProps,
