@@ -84,6 +84,10 @@ export interface CombatResult {
   readonly effectiveness: number;
   readonly hitPosition: Position;
   readonly vitalPoint?: AnatomyVitalPoint;
+
+  // Added missing winner and loser properties
+  readonly winner?: string;
+  readonly loser?: string;
 }
 
 // Type alias for HitResult as requested by error messages

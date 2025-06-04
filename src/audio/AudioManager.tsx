@@ -86,17 +86,36 @@ class AudioManagerImpl implements AudioManager {
 }
 
 // Korean martial arts audio provider
-export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({
+export const AudioManagerProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [audioManager] = useState(() => new AudioManagerImpl());
+  const [audioManager, setAudioManager] = useState<AudioManager | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    console.log("🎼 Korean martial arts audio system initialized");
+    const manager = new AudioManagerImpl();
+    setAudioManager(manager);
+    setIsInitialized(true);
   }, []);
 
+  const contextValue = {
+    audioManager,
+    isInitialized,
+    playSFX: (id: string) => audioManager?.playSFX?.(id as any),
+    playMusic: (id: string) => audioManager?.playMusic?.(id as any),
+    playTechniqueSound: (techniqueName: string) =>
+      audioManager?.playTechniqueSound?.(techniqueName),
+    playHitSound: (damage: number, isVitalPoint?: boolean) =>
+      audioManager?.playHitSound?.(damage, isVitalPoint),
+    playAttackSound: (damage: number) =>
+      audioManager?.playAttackSound?.(damage),
+    setVolume: (volume: number) => audioManager?.setVolume?.(volume),
+    mute: () => audioManager?.mute?.(),
+    unmute: () => audioManager?.unmute?.(),
+  };
+
   return (
-    <AudioContext.Provider value={audioManager}>
+    <AudioContext.Provider value={contextValue}>
       {children}
     </AudioContext.Provider>
   );

@@ -82,8 +82,8 @@ export const VITAL_POINT_MODIFIERS = {
 
 // Transition cost limits for stance changes
 export const MAX_TRANSITION_COST_KI = 50;
-export const MAX_TRANSITION_COST_STAMINA = 30;
-export const MAX_TRANSITION_TIME_MILLISECONDS = 1000;
+export const MAX_TRANSITION_COST_STAMINA = 40;
+export const MAX_TRANSITION_TIME_MILLISECONDS = 2000;
 
 // Combat timing constants
 export const COMBAT_TIMING = {
@@ -194,4 +194,12 @@ export const DAMAGE_CATEGORIES = {
   HEAVY: { min: 31, max: 50, korean: "심한", english: "Heavy" },
   SEVERE: { min: 51, max: 75, korean: "심각한", english: "Severe" },
   CRITICAL: { min: 76, max: 100, korean: "치명적", english: "Critical" },
+} as const;
+
+// Add missing SoundEffectId values
+export const COMBAT_SOUND_EFFECTS = {
+  combat_end: "combat_end",
+  miss: "miss",
+  guard: "guard",
+  technique: "technique",
 } as const;

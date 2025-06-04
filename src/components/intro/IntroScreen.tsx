@@ -1,16 +1,19 @@
 import React, { useState, useCallback, useEffect } from "react";
-import type { IntroScreenProps } from "../../types";
+import type { IntroScreenProps, PlayerState } from "../../types";
 import { KOREAN_COLORS } from "../../types";
 import { useAudio } from "../../audio/AudioManager";
 import { KoreanHeader } from "../ui/base/KoreanHeader";
 import { PhilosophySection } from "./components/PhilosophySection";
+import { KoreanText } from "../ui/base/korean-text";
 
 export function IntroScreen({
-  onGamePhaseChange,
-  onSectionChange,
-  currentSection = "main",
+  onStartTraining,
+  onStartCombat,
+  player,
+  onPlayerChange,
+  sessionData,
 }: IntroScreenProps): React.ReactElement {
-  const [activeSection, setActiveSection] = useState(currentSection);
+  const [activeSection, setActiveSection] = useState("main");
   const audio = useAudio();
 
   // Play intro music when component mounts
@@ -23,13 +26,9 @@ export function IntroScreen({
     };
   }, [audio]);
 
-  const handleSectionChange = useCallback(
-    (section: string) => {
-      setActiveSection(section);
-      onSectionChange?.(section);
-    },
-    [onSectionChange]
-  );
+  const handleSectionChange = useCallback((section: string) => {
+    setActiveSection(section);
+  }, []);
 
   const containerStyle: React.CSSProperties = {
     minHeight: "100vh",
@@ -47,7 +46,7 @@ export function IntroScreen({
   if (activeSection === "philosophy") {
     return (
       <div style={containerStyle}>
-        <PhilosophySection onGamePhaseChange={onGamePhaseChange} />
+        <PhilosophySection onGamePhaseChange={onStartTraining} />
       </div>
     );
   }
@@ -89,7 +88,7 @@ export function IntroScreen({
         </button>
 
         <button
-          onClick={() => onGamePhaseChange("training")}
+          onClick={onStartTraining}
           style={{
             padding: "1rem 2rem",
             backgroundColor: `#${KOREAN_COLORS.DOJANG_BLUE.toString(
@@ -105,7 +104,44 @@ export function IntroScreen({
         >
           훈련 시작 (Start Training)
         </button>
+
+        <button
+          onClick={onStartCombat}
+          style={{
+            padding: "1rem 2rem",
+            backgroundColor: `#${KOREAN_COLORS.RED.toString(16).padStart(
+              6,
+              "0"
+            )}`,
+            color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
+            border: "none",
+            borderRadius: "4px",
+            fontSize: "1.2rem",
+            cursor: "pointer",
+            margin: "0.5rem",
+          }}
+        >
+          실전 대련 (Start Combat)
+        </button>
+      </div>
+
+      <div
+        style={{
+          marginTop: "32px",
+          textAlign: "center",
+          opacity: 0.8,
+        }}
+      >
+        <KoreanText
+          korean={`플레이어: ${player.name}`}
+          english={`Player: ${player.name}`}
+          size="medium"
+          weight="regular"
+          color="#ffffff"
+        />
       </div>
     </div>
   );
 }
+
+export default IntroScreen;

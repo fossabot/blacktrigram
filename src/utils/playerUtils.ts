@@ -428,3 +428,70 @@ export function validatePlayerArchetype(
     "jojik_pokryeokbae",
   ].includes(archetype);
 }
+
+/**
+ * Creates a default player state
+ */
+export function createDefaultPlayer(
+  archetype: PlayerArchetype = "musa",
+  stance: TrigramStance = "geon"
+): PlayerState {
+  return {
+    id: `player_${Date.now()}`,
+    name: `${archetype}_player`,
+    archetype,
+    stance,
+    position: { x: 0, y: 0 },
+    facing: "right",
+    health: 100,
+    maxHealth: 100,
+    ki: 100,
+    maxKi: 100,
+    stamina: 100,
+    maxStamina: 100,
+    consciousness: 100,
+    pain: 0,
+    balance: 100,
+    bloodLoss: 0,
+    lastStanceChangeTime: 0,
+    isAttacking: false,
+    combatReadiness: 100,
+    activeEffects: [],
+    combatState: "ready",
+    conditions: [],
+  };
+}
+
+export function getArchetypeDisplayName(archetype: PlayerArchetype): {
+  korean: string;
+  english: string;
+} {
+  const archetypeNames = {
+    musa: { korean: "무사", english: "Traditional Warrior" },
+    amsalja: { korean: "암살자", english: "Shadow Assassin" },
+    hacker: { korean: "해커", english: "Cyber Warrior" },
+    jeongbo_yowon: { korean: "정보요원", english: "Intelligence Operative" },
+    jojik_pokryeokbae: { korean: "조직폭력배", english: "Organized Crime" },
+  };
+
+  return archetypeNames[archetype] || archetypeNames.musa;
+}
+
+export function calculatePlayerEffectiveness(player: PlayerState): number {
+  const healthRatio = player.health / player.maxHealth;
+  const kiRatio = player.ki / player.maxKi;
+  const staminaRatio = player.stamina / player.maxStamina;
+
+  // Korean martial arts emphasis on mental state (consciousness)
+  const consciousnessRatio = player.consciousness / 100;
+  const painPenalty = Math.max(0, 1 - player.pain / 100);
+
+  return Math.min(
+    1.0,
+    healthRatio * 0.3 +
+      kiRatio * 0.25 +
+      staminaRatio * 0.25 +
+      consciousnessRatio * 0.15 +
+      painPenalty * 0.05
+  );
+}

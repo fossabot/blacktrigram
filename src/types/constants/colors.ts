@@ -77,7 +77,7 @@ export const KOREAN_COLORS = {
   // Korean martial arts specific colors
   CRITICAL_HIT: 0xff0040,
   TRADITIONAL_RED: 0xdc143c,
-  DOJANG_BLUE: 0x1e3a8a,
+  DOJANG_BLUE: 0x4682b4, // Add missing DOJANG_BLUE
 
   // Health and status colors (mapped from existing)
   HEALTH_RED: 0xff0000,

@@ -15,21 +15,19 @@ import type {
 
 // PIXI.js React integration type declarations
 declare module "@pixi/react" {
-  import type {
-    ReactNode,
-    RefObject,
-    ComponentProps as ReactComponentProps,
-  } from "react";
-  import type * as PIXI from "pixi.js";
+  import { ComponentType, ReactNode, RefObject } from "react";
+  import * as PIXI from "pixi.js";
 
   // Application component props (this is the React component, not the PIXI.Application class)
-  interface ApplicationProps extends ReactComponentProps<"canvas"> {
+  export interface ApplicationProps {
     width?: number;
     height?: number;
-    options?: Partial<PIXI.ApplicationOptions>;
-    onMount?: (app: PIXI.Application) => void;
-    onUnmount?: (app: PIXI.Application) => void;
-    children?: React.ReactNode;
+    backgroundColor?: number;
+    antialias?: boolean;
+    resolution?: number;
+    style?: React.CSSProperties;
+    children?: ReactNode;
+    // Note: ref is handled by React.forwardRef, not as a direct prop
   }
 
   // Base PIXI component props
@@ -81,7 +79,7 @@ declare module "@pixi/react" {
 
   // Sprite component props
   interface SpriteProps extends PixiComponentProps {
-    texture: PIXI.Texture;
+    texture?: PIXI.Texture | string;
     anchor?: number | { x: number; y: number };
     tint?: number;
     width?: number;
@@ -127,11 +125,11 @@ declare module "@pixi/react" {
   }
 
   // Component exports - Application is the React component wrapper
-  export const Application: React.ComponentType<ApplicationProps>;
-  export const Container: React.ComponentType<ContainerProps>;
-  export const Graphics: React.ComponentType<GraphicsProps>;
-  export const Text: React.ComponentType<TextProps>;
-  export const Sprite: React.ComponentType<SpriteProps>;
+  export const Application: ComponentType<ApplicationProps>;
+  export const Container: ComponentType<ContainerProps>;
+  export const Graphics: ComponentType<GraphicsProps>;
+  export const Text: ComponentType<TextProps>;
+  export const Sprite: ComponentType<SpriteProps>;
   export const AnimatedSprite: React.ComponentType<AnimatedSpriteProps>;
   export const TilingSprite: React.ComponentType<TilingSpriteProps>;
   export const NineSliceSprite: React.ComponentType<NineSliceSpriteProps>;

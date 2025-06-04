@@ -1,236 +1,219 @@
 import React from "react";
-import type { PlayerState, TrigramStance } from "../../../types";
-import { KoreanText } from "../../ui/base/korean-text/KoreanText";
-import { KOREAN_COLORS, TRIGRAM_DATA } from "../../../types/constants";
+import type { Container, Graphics, Text } from "pixi.js";
+import {
+  Container as PixiContainer,
+  Graphics as PixiGraphics,
+  Text as PixiText,
+} from "@pixi/react";
+import type { PlayerState } from "../../../types";
+import { KOREAN_COLORS } from "../../../types/constants";
+import { KoreanText } from "../../ui/base/korean-text";
+import { convertKoreanColorForCSS } from "../../../utils/colorUtils";
 
 interface CombatHUDProps {
-  readonly player1: PlayerState;
-  readonly player2: PlayerState;
-  readonly currentRound: number;
-  readonly maxRounds: number;
-  readonly gameTime: number;
+  readonly player: PlayerState;
+  readonly opponent: PlayerState;
+  readonly currentRound: number; // Added missing prop
+  readonly maxRounds: number; // Added missing prop
+  readonly gameTime: number; // Added missing prop
+  readonly isPlayerTurn: boolean; // Added missing prop
+  readonly phase: "preparation" | "active" | "paused" | "finished"; // Added missing prop
 }
 
-export function CombatHUD({
-  player1,
-  player2,
+export const CombatHUD: React.FC<CombatHUDProps> = ({
+  player,
+  opponent,
   currentRound,
   maxRounds,
   gameTime,
-}: CombatHUDProps): React.JSX.Element {
-  const formatTime = (ms: number) => {
-    const seconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(seconds / 60);
-    return `${minutes}:${(seconds % 60).toString().padStart(2, "0")}`;
+  isPlayerTurn,
+  phase,
+}) => {
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const getHealthBarColor = (health: number, maxHealth: number) => {
-    const percentage = health / maxHealth;
-    if (percentage > 0.6) return KOREAN_COLORS.GREEN;
-    if (percentage > 0.3) return KOREAN_COLORS.YELLOW;
-    return KOREAN_COLORS.RED;
-  };
-
-  const PlayerStatsPanel = ({
-    player,
-    isLeft,
-  }: {
-    player: PlayerState;
-    isLeft: boolean;
-  }) => (
+  return (
     <div
       style={{
         position: "absolute",
-        [isLeft ? "left" : "right"]: "1rem",
-        top: "1rem",
-        width: "300px",
-        background: "rgba(0, 0, 0, 0.8)",
-        border: `2px solid #${KOREAN_COLORS.GOLD.toString(16)}`,
-        borderRadius: "8px",
-        padding: "1rem",
-        color: "#ffffff",
-        fontFamily: '"Noto Sans KR", Arial, sans-serif',
+        top: "60px",
+        left: 0,
+        right: 0,
+        height: "120px",
+        background: `linear-gradient(180deg, ${KOREAN_COLORS.BLACK}dd, transparent)`,
+        padding: "16px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        zIndex: 100,
       }}
     >
-      <KoreanText
-        korean={player.name}
-        english={`(${player.archetype})`}
-        size="medium"
-        weight={700}
-        style={{ marginBottom: "0.5rem" }}
-      />
-
-      {/* Health Bar */}
-      <div style={{ marginBottom: "0.5rem" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontSize: "0.8rem",
-          }}
-        >
-          <span>체력 (Health)</span>
-          <span>
-            {player.health}/{player.maxHealth}
-          </span>
-        </div>
-        <div
-          style={{
-            width: "100%",
-            height: "12px",
-            background: "rgba(255, 255, 255, 0.2)",
-            borderRadius: "6px",
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              width: `${(player.health / player.maxHealth) * 100}%`,
-              height: "100%",
-              background: `#${getHealthBarColor(
-                player.health,
-                player.maxHealth
-              ).toString(16)}`,
-              transition: "width 0.3s ease",
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Ki Bar */}
-      <div style={{ marginBottom: "0.5rem" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontSize: "0.8rem",
-          }}
-        >
-          <span>기 (Ki)</span>
-          <span>
-            {player.ki}/{player.maxKi}
-          </span>
-        </div>
-        <div
-          style={{
-            width: "100%",
-            height: "10px",
-            background: "rgba(255, 255, 255, 0.2)",
-            borderRadius: "5px",
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              width: `${(player.ki / player.maxKi) * 100}%`,
-              height: "100%",
-              background: `#${KOREAN_COLORS.CYAN.toString(16)}`,
-              transition: "width 0.3s ease",
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Stamina Bar */}
-      <div style={{ marginBottom: "0.5rem" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontSize: "0.8rem",
-          }}
-        >
-          <span>체력 (Stamina)</span>
-          <span>
-            {player.stamina}/{player.maxStamina}
-          </span>
-        </div>
-        <div
-          style={{
-            width: "100%",
-            height: "8px",
-            background: "rgba(255, 255, 255, 0.2)",
-            borderRadius: "4px",
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              width: `${(player.stamina / player.maxStamina) * 100}%`,
-              height: "100%",
-              background: `#${KOREAN_COLORS.GREEN.toString(16)}`,
-              transition: "width 0.3s ease",
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Current Stance */}
+      {/* Player Stats */}
       <div
         style={{
-          background: `#${
-            KOREAN_COLORS[
-              player.stance as keyof typeof KOREAN_COLORS
-            ]?.toString(16) || KOREAN_COLORS.WHITE.toString(16)
-          }20`,
-          padding: "0.5rem",
-          borderRadius: "4px",
-          marginTop: "0.5rem",
+          display: "flex",
+          flexDirection: "column",
+          gap: "8px",
+          minWidth: "300px",
         }}
       >
         <KoreanText
-          korean={`${TRIGRAM_DATA[player.stance].symbol} ${
-            TRIGRAM_DATA[player.stance].name.korean
-          }`}
-          english={TRIGRAM_DATA[player.stance].name.english}
-          size="small"
-          weight={600}
+          korean={`플레이어: ${player.name}`}
+          english={`Player: ${player.name}`}
+          size="medium"
+          weight="semibold"
+          color={convertKoreanColorForCSS(KOREAN_COLORS.CYAN)}
         />
+
+        <div style={{ display: "flex", gap: "16px" }}>
+          <div
+            style={{
+              background: `linear-gradient(90deg, ${KOREAN_COLORS.TRADITIONAL_RED}, transparent)`,
+              padding: "4px 8px",
+              borderRadius: "4px",
+              fontSize: "14px",
+            }}
+          >
+            체력: {player.health}/{player.maxHealth}
+          </div>
+
+          <div
+            style={{
+              background: `linear-gradient(90deg, ${KOREAN_COLORS.GOLD}, transparent)`,
+              padding: "4px 8px",
+              borderRadius: "4px",
+              fontSize: "14px",
+            }}
+          >
+            기: {player.ki}/{player.maxKi}
+          </div>
+
+          <div
+            style={{
+              background: `linear-gradient(90deg, ${KOREAN_COLORS.CYAN}, transparent)`,
+              padding: "4px 8px",
+              borderRadius: "4px",
+              fontSize: "14px",
+            }}
+          >
+            체력: {player.stamina}/{player.maxStamina}
+          </div>
+        </div>
+      </div>
+
+      {/* Center Game Info */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          gap: "8px",
+        }}
+      >
+        <KoreanText
+          korean={`${currentRound}라운드 / ${maxRounds}`}
+          english={`Round ${currentRound} / ${maxRounds}`}
+          size="large"
+          weight="bold"
+          color={convertKoreanColorForCSS(KOREAN_COLORS.GOLD)}
+        />
+
+        <div
+          style={{
+            fontSize: "18px",
+            color: convertKoreanColorForCSS(KOREAN_COLORS.WHITE),
+            fontFamily: "monospace",
+          }}
+        >
+          {formatTime(gameTime)}
+        </div>
+
+        <div
+          style={{
+            fontSize: "14px",
+            color: isPlayerTurn
+              ? convertKoreanColorForCSS(KOREAN_COLORS.CYAN)
+              : convertKoreanColorForCSS(KOREAN_COLORS.TRADITIONAL_RED),
+            fontWeight: "bold",
+          }}
+        >
+          {isPlayerTurn ? "플레이어 턴 (Your Turn)" : "상대 턴 (Opponent Turn)"}
+        </div>
+
+        <div
+          style={{
+            fontSize: "12px",
+            color: convertKoreanColorForCSS(KOREAN_COLORS.GOLD),
+            opacity: 0.8,
+          }}
+        >
+          상태:{" "}
+          {phase === "active"
+            ? "전투 중"
+            : phase === "preparation"
+            ? "준비 중"
+            : "일시정지"}
+        </div>
+      </div>
+
+      {/* Opponent Stats */}
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "8px",
+          minWidth: "300px",
+          alignItems: "flex-end",
+        }}
+      >
+        <KoreanText
+          korean={`상대: ${opponent.name}`}
+          english={`Opponent: ${opponent.name}`}
+          size="medium"
+          weight="semibold"
+          color={convertKoreanColorForCSS(KOREAN_COLORS.TRADITIONAL_RED)}
+        />
+
+        <div style={{ display: "flex", gap: "16px" }}>
+          <div
+            style={{
+              background: `linear-gradient(90deg, transparent, ${KOREAN_COLORS.TRADITIONAL_RED})`,
+              padding: "4px 8px",
+              borderRadius: "4px",
+              fontSize: "14px",
+            }}
+          >
+            {opponent.health}/{opponent.maxHealth} :체력
+          </div>
+
+          <div
+            style={{
+              background: `linear-gradient(90deg, transparent, ${KOREAN_COLORS.GOLD})`,
+              padding: "4px 8px",
+              borderRadius: "4px",
+              fontSize: "14px",
+            }}
+          >
+            {opponent.ki}/{opponent.maxKi} :기
+          </div>
+
+          <div
+            style={{
+              background: `linear-gradient(90deg, transparent, ${KOREAN_COLORS.CYAN})`,
+              padding: "4px 8px",
+              borderRadius: "4px",
+              fontSize: "14px",
+            }}
+          >
+            {opponent.stamina}/{opponent.maxStamina} :체력
+          </div>
+        </div>
       </div>
     </div>
   );
+};
 
-  return (
-    <>
-      <PlayerStatsPanel player={player1} isLeft={true} />
-      <PlayerStatsPanel player={player2} isLeft={false} />
-
-      {/* Center HUD */}
-      <div
-        style={{
-          position: "absolute",
-          top: "1rem",
-          left: "50%",
-          transform: "translateX(-50%)",
-          background: "rgba(0, 0, 0, 0.9)",
-          border: `2px solid #${KOREAN_COLORS.GOLD.toString(16)}`,
-          borderRadius: "8px",
-          padding: "1rem 2rem",
-          color: "#ffffff",
-          textAlign: "center",
-          fontFamily: '"Noto Sans KR", Arial, sans-serif',
-        }}
-      >
-        <KoreanText
-          korean="흑괘 무술 경기장"
-          english="Black Trigram Combat Arena"
-          size="large"
-          weight={700}
-          style={{ marginBottom: "0.5rem" }}
-        />
-        <div
-          style={{
-            display: "flex",
-            gap: "2rem",
-            alignItems: "center",
-          }}
-        >
-          <span>
-            라운드 {currentRound}/{maxRounds}
-          </span>
-          <span>시간: {formatTime(gameTime)}</span>
-        </div>
-      </div>
-    </>
-  );
-}
+export default CombatHUD;

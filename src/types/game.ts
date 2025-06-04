@@ -17,23 +17,52 @@ export interface AppState {
 
 export type GamePhase = "intro" | "training" | "combat" | "victory" | "defeat";
 
+export type GameScreen = "intro" | "training" | "combat" | "menu";
+
 export interface GameState {
-  currentScreen: "intro" | "training" | "combat" | "victory" | "defeat";
-  players: PlayerState[];
-  isGameActive: boolean;
-  gameTime: number;
-  currentRound: number;
-  maxRounds: number;
-  winner: string | null;
-  selectedArchetype?: PlayerArchetype;
-  selectedStance?: TrigramStance;
+  readonly currentScreen: GameScreen;
+  readonly player: PlayerState;
+  readonly sessionData: SessionData;
+  readonly settings: GameSettings;
+  readonly isInitialized: boolean;
+}
+
+export interface SessionData {
+  readonly startTime: number;
+  readonly trainingStats: TrainingStats;
+  readonly combatStats: CombatStats;
+  readonly currentScore: number;
+}
+
+export interface TrainingStats {
+  readonly sessionsCompleted: number;
+  readonly totalTrainingTime: number;
+  readonly stancesLearned: readonly TrigramStance[];
+  readonly techniquesLearned: readonly string[];
+}
+
+export interface CombatStats {
+  readonly wins: number;
+  readonly losses: number;
+  readonly totalCombats: number;
+  readonly averageDamageDealt: number;
+  readonly favoriteStance: TrigramStance;
 }
 
 export interface GameSettings {
-  difficulty: "easy" | "medium" | "hard";
-  roundDuration: number; // milliseconds
-  enableAudio: boolean;
-  debugMode: boolean;
+  readonly audioEnabled: boolean;
+  readonly musicVolume: number;
+  readonly sfxVolume: number;
+  readonly language: "korean" | "english" | "bilingual";
+  readonly showVitalPoints: boolean;
+  readonly showDebugInfo: boolean;
+  readonly difficulty: "beginner" | "intermediate" | "advanced" | "master";
+}
+
+export interface GameAction {
+  readonly type: string;
+  readonly timestamp: number;
+  readonly data?: unknown;
 }
 
 export interface IntroScreenProps {

@@ -1,27 +1,34 @@
 import React, { useState, useCallback } from "react";
 import type { TrainingScreenProps } from "../../types";
-import { KOREAN_COLORS, TRIGRAM_DATA } from "../../types"; // Removed unused TRIGRAM_STANCES_ORDER
+import { KOREAN_COLORS, TRIGRAM_DATA } from "../../types/constants"; // Updated import path
 import { KoreanHeader } from "../ui/base/KoreanHeader";
 import { KoreanText } from "../ui/base/korean-text/KoreanText";
 import { TrigramWheel } from "../ui/TrigramWheel";
 
 export function TrainingScreen({
-  players,
-  onGamePhaseChange,
-  onPlayerUpdate,
+  player, // Changed from players array
+  onPlayerStateChange, // Changed from onPlayerUpdate
+  onReturnToMenu, // Changed from onGamePhaseChange
+  onStartCombat, // Changed from onGamePhaseChange
   selectedStance,
-  onStanceChange,
+  showVitalPoints, // Renamed prop
+  difficulty, // Renamed prop
   gameTime, // Keep to avoid unused warning
   currentRound, // Keep to avoid unused warning
 }: TrainingScreenProps): React.JSX.Element {
   const [activePlayer, setActivePlayer] = useState(0);
+  const [currentExercise, setCurrentExercise] =
+    useState<string>("stance_practice");
 
   const handleStanceChange = useCallback(
     (stance: any) => {
-      onStanceChange(stance);
-      onPlayerUpdate(activePlayer, { stance });
+      onPlayerStateChange({
+        stance,
+        ki: Math.max(0, player.ki - 5),
+        stamina: Math.max(0, player.stamina - 3),
+      });
     },
-    [activePlayer, onStanceChange, onPlayerUpdate]
+    [player.ki, player.stamina, onPlayerStateChange]
   );
 
   const containerStyle: React.CSSProperties = {
@@ -54,35 +61,7 @@ export function TrainingScreen({
         {/* Player Selection */}
         <div style={{ flex: "0 0 300px" }}>
           <h3>플레이어 선택 (Player Selection)</h3>
-          {players.map((player, index) => (
-            <button
-              key={player.id}
-              onClick={() => setActivePlayer(index)}
-              style={{
-                display: "block",
-                width: "100%",
-                padding: "1rem",
-                margin: "0.5rem 0",
-                backgroundColor:
-                  activePlayer === index
-                    ? `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`
-                    : "rgba(255, 255, 255, 0.1)",
-                color:
-                  activePlayer === index
-                    ? `#${KOREAN_COLORS.BLACK.toString(16).padStart(6, "0")}`
-                    : `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
-            >
-              <KoreanText
-                korean={player.name}
-                english={player.archetype.toUpperCase()}
-                size="medium"
-              />
-            </button>
-          ))}
+          {/* Removed player selection buttons */}
         </div>
 
         {/* Stance Selection */}
@@ -151,7 +130,7 @@ export function TrainingScreen({
       {/* Navigation */}
       <div style={{ textAlign: "center", marginTop: "3rem" }}>
         <button
-          onClick={() => onGamePhaseChange("combat")}
+          onClick={onStartCombat} // Changed from onGamePhaseChange
           style={{
             padding: "1rem 2rem",
             backgroundColor: `#${KOREAN_COLORS.TRADITIONAL_RED.toString(
@@ -169,7 +148,7 @@ export function TrainingScreen({
         </button>
 
         <button
-          onClick={() => onGamePhaseChange("intro")}
+          onClick={onReturnToMenu} // Changed from onGamePhaseChange
           style={{
             padding: "1rem 2rem",
             backgroundColor: "transparent",
