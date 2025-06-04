@@ -1,123 +1,202 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
+import { render } from "@testing-library/react";
+import {
+  KoreanText,
+  KoreanTitle,
+  KoreanTechniqueText,
+  KoreanStatusText,
+  KoreanMartialText,
+} from "../base/korean-text";
+import { TrigramWheel } from "../TrigramWheel";
+import { ProgressTracker } from "../ProgressTracker";
+import { KOREAN_COLORS } from "../../../types";
 
-describe("UI Components Integration", () => {
-  describe("Component Exports", () => {
-    it("should export all UI components", async () => {
-      const trigramModule = await import("../TrigramWheel");
-      const headerModule = await import("../KoreanHeader");
-      const progressModule = await import("../ProgressTracker");
-
-      expect(trigramModule.TrigramWheel).toBeDefined();
-      expect(headerModule.KoreanHeader).toBeDefined();
-      expect(progressModule.ProgressTracker).toBeDefined();
-    });
-
-    it("should export TypeScript types", async () => {
-      const { TrigramWheel } = await import("../TrigramWheel");
-      expect(typeof TrigramWheel).toBe("function");
-    });
-  });
-
-  describe("Korean Martial Arts Theme Integration", () => {
-    it("all components should support Korean text", () => {
-      const koreanTextSamples = [
-        "흑괘 무술 도장",
-        "수련 진도",
-        "건",
-        "태",
-        "리",
-        "진",
-        "손",
-        "감",
-        "간",
-        "곤",
-      ];
-
-      koreanTextSamples.forEach((text) => {
-        expect(text).toMatch(/[\uAC00-\uD7AF]/); // Korean Unicode range
-      });
-    });
-
-    it("should maintain traditional color scheme across components", () => {
-      const traditionalColors = {
-        CYAN: 0x00ffd0,
-        DARK_BLUE: 0x000a12,
-        WHITE: 0xffffff,
-        VITAL_ORANGE: 0xff7700,
+// Mock PIXI React components
+vi.mock("@pixi/react", () => ({
+  Container: ({ children, ...props }: any) => (
+    <div data-testid="pixi-container" {...props}>
+      {children}
+    </div>
+  ),
+  Graphics: ({ draw, ...props }: any) => {
+    if (draw) {
+      const mockGraphics = {
+        clear: vi.fn(),
+        setFillStyle: vi.fn(),
+        setStrokeStyle: vi.fn(),
+        circle: vi.fn(),
+        rect: vi.fn(),
+        fill: vi.fn(),
+        stroke: vi.fn(),
       };
+      draw(mockGraphics);
+    }
+    return <div data-testid="pixi-graphics" {...props} />;
+  },
+  Text: ({ text, children, ...props }: any) => (
+    <div data-testid="pixi-text" {...props}>
+      {text || children}
+    </div>
+  ),
+}));
 
-      Object.values(traditionalColors).forEach((color) => {
-        expect(typeof color).toBe("number");
-        expect(color).toBeGreaterThanOrEqual(0);
-        expect(color).toBeLessThanOrEqual(0xffffff);
-      });
+// Mock PIXI
+vi.mock("pixi.js", () => ({
+  TextStyle: vi.fn().mockImplementation(() => ({})),
+}));
+
+describe("Korean Text Components", () => {
+  describe("KoreanTitle", () => {
+    it("renders with korean and english text", () => {
+      const { container } = render(
+        <KoreanTitle
+          korean="흑괘 무술"
+          english="Black Trigram"
+          subtitle="Traditional Korean Martial Arts"
+          level={1}
+        />
+      );
+      expect(container).toBeInTheDocument();
+    });
+
+    it("renders with different header levels", () => {
+      const { container } = render(<KoreanTitle korean="제목" level={2} />);
+      expect(container).toBeInTheDocument();
+    });
+
+    it("renders without english text", () => {
+      const { container } = render(<KoreanTitle korean="한국어만" />);
+      expect(container).toBeInTheDocument();
+    });
+
+    it("renders with subtitle", () => {
+      const { container } = render(
+        <KoreanTitle
+          korean="메인 제목"
+          english="Main Title"
+          subtitle="부제목"
+        />
+      );
+      expect(container).toBeInTheDocument();
+    });
+
+    it("renders with custom styling", () => {
+      const { container } = render(
+        <KoreanTitle korean="스타일 제목" style={{ fontSize: "2rem" }} />
+      );
+      expect(container).toBeInTheDocument();
+    });
+
+    it("renders with level 3", () => {
+      const { container } = render(<KoreanTitle korean="레벨 3" level={3} />);
+      expect(container).toBeInTheDocument();
+    });
+
+    it("renders with custom color", () => {
+      const { container } = render(
+        <KoreanTitle korean="색상 제목" color={KOREAN_COLORS.CYAN} />
+      );
+      expect(container).toBeInTheDocument();
+    });
+
+    it("renders complex title with all props", () => {
+      const { container } = render(
+        <KoreanTitle
+          korean="복잡한 제목"
+          english="Complex Title"
+          subtitle="모든 속성 포함"
+        />
+      );
+      expect(container).toBeInTheDocument();
     });
   });
 
-  describe("Component Performance Standards", () => {
-    it("should meet 60fps rendering requirements", () => {
-      const frameTime = 16.67; // 60fps target
-      const maxRenderTime = frameTime * 0.5; // Use only half frame time for component rendering
-
-      expect(maxRenderTime).toBeLessThan(frameTime);
-      expect(maxRenderTime).toBeGreaterThan(0);
-    });
-
-    it("should support realistic combat data structures", () => {
-      const trigramStances = [
-        "geon",
-        "tae",
-        "li",
-        "jin",
-        "son",
-        "gam",
-        "gan",
-        "gon",
-      ];
-
-      expect(trigramStances).toHaveLength(8);
-      trigramStances.forEach((stance) => {
-        expect(typeof stance).toBe("string");
-        expect(stance.length).toBeGreaterThan(0);
-      });
+  describe("KoreanText", () => {
+    it("renders basic korean text", () => {
+      const { container } = render(
+        <KoreanText korean="안녕하세요" english="Hello" />
+      );
+      expect(container).toBeInTheDocument();
     });
   });
 
-  describe("Test Coverage Validation", () => {
-    it("should have comprehensive test coverage", async () => {
-      // Verify test files exist for each component
-      const testModules = [
-        "../__tests__/TrigramWheel.test.tsx",
-        "../__tests__/KoreanHeader.test.tsx",
-        "../__tests__/ProgressTracker.test.tsx",
-      ];
-
-      for (const testPath of testModules) {
-        try {
-          await import(testPath);
-          // If import succeeds, test file exists
-          expect(true).toBe(true);
-        } catch (error) {
-          // Test file should exist
-          throw new Error(`Test file missing: ${testPath}`);
-        }
-      }
+  describe("ProgressTracker", () => {
+    it("renders progress bar", () => {
+      const { container } = render(
+        <ProgressTracker
+          label="Health"
+          value={80}
+          maxValue={100}
+          showText={true}
+        />
+      );
+      expect(container).toBeInTheDocument();
     });
 
-    it("should validate component accessibility", () => {
-      const requiredTestIds = [
-        "trigram-wheel",
-        "korean-header",
-        "progress-tracker",
-        "trigram-wheel-center",
-        "header-background",
-        "progress-background",
-      ];
+    it("renders with custom dimensions", () => {
+      const { container } = render(
+        <ProgressTracker
+          label="Ki Energy"
+          value={45}
+          maxValue={100}
+          width={150}
+          height={25}
+          showText={true}
+        />
+      );
+      expect(container).toBeInTheDocument();
+    });
+  });
 
-      requiredTestIds.forEach((testId) => {
-        expect(typeof testId).toBe("string");
-        expect(testId.length).toBeGreaterThan(0);
-      });
+  describe("TrigramWheel", () => {
+    it("renders trigram wheel", () => {
+      const { container } = render(
+        <TrigramWheel
+          currentStance="geon"
+          onStanceSelect={vi.fn()} // Fix: Use correct prop name
+        />
+      );
+      expect(container).toBeInTheDocument();
+    });
+  });
+
+  describe("KoreanTechniqueText", () => {
+    it("renders technique with Korean and English names", () => {
+      const { container } = render(
+        <KoreanTechniqueText
+          korean="천둥벽력"
+          english="Thunder Strike"
+          trigram="geon"
+        />
+      );
+      expect(container).toBeInTheDocument();
+    });
+  });
+
+  describe("KoreanStatusText", () => {
+    it("renders status text", () => {
+      const { container } = render(
+        <KoreanStatusText
+          korean="체력"
+          statusKey="health"
+          value={80}
+          maxValue={100}
+        />
+      );
+      expect(container).toBeInTheDocument();
+    });
+  });
+
+  describe("KoreanMartialText", () => {
+    it("renders martial arts text", () => {
+      const { container } = render(
+        <KoreanMartialText
+          korean="무사"
+          english="Warrior"
+          martialVariant="practitioner"
+        />
+      );
+      expect(container).toBeInTheDocument();
     });
   });
 });

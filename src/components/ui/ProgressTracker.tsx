@@ -1,151 +1,123 @@
-import type { JSX } from "react";
+import React, { useCallback, useMemo } from "react";
 import type { Graphics as PixiGraphics } from "pixi.js";
+import { KOREAN_COLORS } from "../../types/constants";
 
-export type TrigramStance =
-  | "geon"
-  | "tae"
-  | "li"
-  | "jin"
-  | "son"
-  | "gam"
-  | "gan"
-  | "gon";
-
-interface ProgressTrackerProps {
-  readonly practiceCount: Record<TrigramStance, number>;
-  readonly totalPractices: number;
-  readonly currentStance: TrigramStance;
+export interface ProgressTrackerProps {
+  // Support both naming conventions for backward compatibility
+  readonly progress?: number;
+  readonly total?: number;
+  readonly value?: number;
+  readonly maxValue?: number;
+  readonly width?: number;
+  readonly height?: number;
+  readonly showPercentage?: boolean;
+  readonly showText?: boolean; // Alias for showPercentage
+  readonly showLabel?: boolean;
+  readonly label?: string;
+  readonly color?: number;
+  readonly barColor?: number; // Alias for color
+  readonly backgroundColor?: number;
+  readonly borderColor?: number; // Added for compatibility
 }
 
-const COLORS = {
-  CYAN: 0x00ffd0,
-  WHITE: 0xffffff,
-  DARK_BLUE: 0x000a12,
-  VITAL_ORANGE: 0xff7700,
-  GRAY_MEDIUM: 0x666666,
-} as const;
-
 export function ProgressTracker({
-  practiceCount,
-  totalPractices,
-  currentStance,
-}: ProgressTrackerProps): JSX.Element {
-  const completedStances = Object.values(practiceCount).filter(
-    (count) => count >= 10
-  ).length;
-  const overallProgress = Math.round((completedStances / 8) * 100);
+  // Use progress/value and total/maxValue with appropriate fallbacks
+  progress,
+  total,
+  value,
+  maxValue,
+  width = 200,
+  height = 30,
+  showPercentage = true,
+  showText, // Alias for showPercentage
+  showLabel = false,
+  label = "Progress",
+  color,
+  barColor, // Alias for color
+  backgroundColor = KOREAN_COLORS.GRAY_DARK,
+  borderColor = KOREAN_COLORS.WHITE,
+}: ProgressTrackerProps): React.ReactElement {
+  // Use progress/value and total/maxValue with appropriate fallbacks
+  const actualProgress = progress !== undefined ? progress : value ?? 0;
+  const actualTotal = total !== undefined ? total : maxValue ?? 100;
+  const actualColor =
+    color !== undefined ? color : barColor ?? KOREAN_COLORS.CYAN;
+  const actualShowPercentage =
+    showPercentage !== undefined ? showPercentage : showText;
+
+  const percentage = useMemo(() => {
+    return Math.min(
+      100,
+      Math.round((actualProgress / Math.max(actualTotal, 1)) * 100)
+    );
+  }, [actualProgress, actualTotal]);
+
+  const drawProgressBar = useCallback(
+    (g: PixiGraphics) => {
+      g.clear();
+
+      // Draw background
+      g.setFillStyle({ color: backgroundColor, alpha: 0.6 });
+      g.roundRect(0, 0, width, height, 5);
+      g.fill();
+
+      // Draw progress fill
+      if (percentage > 0) {
+        const fillWidth = (width * percentage) / 100;
+        g.setFillStyle({ color: actualColor, alpha: 0.8 });
+        g.roundRect(0, 0, fillWidth, height, 5);
+        g.fill();
+      }
+
+      // Draw border
+      g.setStrokeStyle({ color: borderColor, width: 1, alpha: 0.8 });
+      g.roundRect(0, 0, width, height, 5);
+      g.stroke();
+    },
+    [width, height, percentage, actualColor, backgroundColor, borderColor]
+  );
 
   return (
-    <pixiContainer
-      x={window.innerWidth - 250}
-      y={200}
-      data-testid="progress-tracker"
-    >
-      {/* Background panel */}
+    <pixiContainer data-testid="progress-tracker-container pixi-container">
       <pixiGraphics
-        draw={(g: PixiGraphics) => {
-          g.clear();
-          g.setFillStyle({ color: COLORS.DARK_BLUE, alpha: 0.8 });
-          g.roundRect(-10, -10, 220, 150, 10);
-          g.fill();
-
-          g.setStrokeStyle({ color: COLORS.CYAN, width: 2, alpha: 0.6 });
-          g.roundRect(-10, -10, 220, 150, 10);
-          g.stroke();
-        }}
-        data-testid="progress-background"
+        draw={drawProgressBar}
+        data-testid="progress-tracker-bar pixi-graphics"
       />
 
-      {/* Title */}
-      <pixiText
-        text="수련 진행도"
-        anchor={{ x: 0.5, y: 0.5 }}
-        x={100}
-        y={10}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 16,
-          fill: COLORS.CYAN,
-          fontWeight: "bold",
-        }}
-        data-testid="progress-title"
-      />
+      {actualShowPercentage && (
+        <pixiText
+          text={`${percentage}%`}
+          x={width / 2}
+          y={height / 2}
+          anchor={{ x: 0.5, y: 0.5 }}
+          style={{
+            fontFamily: "Noto Sans KR",
+            fontSize: height * 0.5,
+            fill: KOREAN_COLORS.WHITE,
+            fontWeight: "bold",
+          }}
+          data-testid="progress-tracker-percentage-text pixi-text"
+          data-text={`${percentage}%`}
+        />
+      )}
 
-      {/* Current stance */}
-      <pixiText
-        text={`현재 자세: ${currentStance.toUpperCase()}`}
-        anchor={{ x: 0, y: 0.5 }}
-        x={10}
-        y={40}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 12,
-          fill: COLORS.WHITE,
-        }}
-        data-testid="current-stance"
-      />
-
-      {/* Total practices */}
-      <pixiText
-        text={`총 연습: ${totalPractices}회`}
-        anchor={{ x: 0, y: 0.5 }}
-        x={10}
-        y={60}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 12,
-          fill: COLORS.WHITE,
-        }}
-        data-testid="total-practices"
-      />
-
-      {/* Overall progress */}
-      <pixiText
-        text={`전체 진행도: ${overallProgress}%`}
-        anchor={{ x: 0, y: 0.5 }}
-        x={10}
-        y={80}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 12,
-          fill: COLORS.VITAL_ORANGE,
-          fontWeight: "bold",
-        }}
-        data-testid="progress-percentage"
-      />
-
-      {/* Mastery indicator */}
-      <pixiText
-        text={`숙련된 자세: ${completedStances}/8`}
-        anchor={{ x: 0, y: 0.5 }}
-        x={10}
-        y={100}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 12,
-          fill: COLORS.WHITE,
-        }}
-        data-testid="mastery-count"
-      />
-
-      {/* Progress bar */}
-      <pixiGraphics
-        draw={(g: PixiGraphics) => {
-          g.clear();
-
-          // Background bar
-          g.setFillStyle({ color: COLORS.GRAY_MEDIUM, alpha: 0.3 });
-          g.roundRect(10, 115, 180, 8, 4);
-          g.fill();
-
-          // Progress bar
-          const progressWidth = (overallProgress / 100) * 180;
-          g.setFillStyle({ color: COLORS.CYAN, alpha: 0.8 });
-          g.roundRect(10, 115, progressWidth, 8, 4);
-          g.fill();
-        }}
-        data-testid="progress-bar"
-      />
+      {showLabel && (
+        <pixiText
+          text={label}
+          x={width / 2}
+          y={-10}
+          anchor={{ x: 0.5, y: 1 }}
+          style={{
+            fontFamily: "Noto Sans KR",
+            fontSize: height * 0.4,
+            fill: KOREAN_COLORS.WHITE,
+          }}
+          data-testid="progress-tracker-label-text"
+          data-text={label}
+        />
+      )}
     </pixiContainer>
   );
 }
+
+export default ProgressTracker;

@@ -3,6 +3,8 @@
  * Provides cross-browser audio format detection and audio-related calculations
  */
 
+import type { AudioAsset } from "../types/audio";
+
 export class AudioUtils {
   /**
    * Detects the preferred audio format based on browser support
@@ -125,4 +127,41 @@ export class AudioUtils {
     const sanitizedTechnique = technique.replace(/[^a-zA-Z0-9가-힣]/g, "_");
     return `./assets/audio/sfx/${type}_${sanitizedTechnique}.${format}`;
   }
+}
+
+/**
+ * Completes the properties of an audio asset with default values
+ */
+export function completeAudioAsset(
+  partialAsset: Partial<AudioAsset> & { id: string; category: string }
+): AudioAsset {
+  return {
+    basePath: "/audio/default",
+    koreanContext: {
+      korean: partialAsset.id,
+      english: partialAsset.id.replace(/_/g, " "),
+      culturalNote: "Traditional Korean martial arts audio",
+    },
+    formats: ["webm", "mp3"],
+    volume: 0.5,
+    preload: false,
+    ...partialAsset,
+  } as AudioAsset;
+}
+
+// Apply default properties to incomplete assets
+export function ensureCompleteAsset(asset: any): AudioAsset {
+  if (!asset.basePath) {
+    asset.basePath = `/audio/${asset.category}`;
+  }
+
+  if (!asset.koreanContext) {
+    asset.koreanContext = {
+      korean: asset.id,
+      english: asset.id.replace(/_/g, " "),
+      culturalNote: "Korean martial arts audio element",
+    };
+  }
+
+  return asset as AudioAsset;
 }

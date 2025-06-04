@@ -1,466 +1,387 @@
-import { useState, useEffect, useCallback } from "react";
-import type { JSX } from "react";
-import { useAudio } from "../../audio/AudioManager";
-import { useTexture } from "../../hooks/useTexture";
-import { KoreanHeader } from "../ui/KoreanHeader";
-import { TrigramWheel } from "../ui/TrigramWheel";
-import type { Graphics as PixiGraphics } from "pixi.js";
+import React, { useState } from "react";
+import type { PlayerArchetype } from "../../types";
+import { KoreanText } from "../ui/base/korean-text/KoreanText";
+import "./IntroScreen.css";
 
-// Type definitions
-type SelectedOption = "sparring" | "training";
-
-export interface IntroScreenProps {
-  readonly onStartGame: () => void;
+interface IntroScreenProps {
   readonly onStartTraining: () => void;
+  readonly onStartCombat: () => void;
+  readonly onArchetypeSelect: (archetype: PlayerArchetype) => void;
+  readonly selectedArchetype: PlayerArchetype;
 }
 
-// Constants
-const COLORS = {
-  BLACK: 0x000000,
-  CYAN: 0x00ffd0,
-  WHITE: 0xffffff,
-  DARK_BLUE: 0x000a12,
-  ACCENT_BLUE: 0x004455,
-  GRID_DARK: 0x003333,
-  RED: 0x8b0000,
-  GRAY_MEDIUM: 0x666666,
-  GRAY_DARK: 0x444444,
-  GRAY_DARKER: 0x999999,
-  GRAY_LIGHT: 0xcccccc,
-  CYAN_LIGHT: 0x7accd4,
-  DARK_PANEL: 0x10171e,
-} as const;
-
-const BUTTON_ANIMATION_SPEED = 0.1;
+const PLAYER_ARCHETYPES: Array<{
+  id: PlayerArchetype;
+  korean: string;
+  english: string;
+  description: string;
+  philosophy: string;
+}> = [
+  {
+    id: "musa",
+    korean: "무사",
+    english: "Traditional Warrior",
+    description: "Honor through strength, disciplined combat",
+    philosophy: "존중과 규율의 길 - Path of respect and discipline",
+  },
+  {
+    id: "amsalja",
+    korean: "암살자",
+    english: "Shadow Assassin",
+    description: "Efficiency through invisibility, one perfect strike",
+    philosophy: "그림자의 길 - Path of shadows",
+  },
+  {
+    id: "hacker",
+    korean: "해커",
+    english: "Cyber Warrior",
+    description: "Information as power, technological advantage",
+    philosophy: "정보의 길 - Path of information",
+  },
+  {
+    id: "jeongbo_yowon",
+    korean: "정보요원",
+    english: "Intelligence Operative",
+    description: "Knowledge through observation, strategic thinking",
+    philosophy: "지혜의 길 - Path of wisdom",
+  },
+  {
+    id: "jojik_pokryeokbae",
+    korean: "조직폭력배",
+    english: "Organized Crime",
+    description: "Survival through ruthlessness, practical violence",
+    philosophy: "생존의 길 - Path of survival",
+  },
+];
 
 export function IntroScreen({
-  onStartGame,
   onStartTraining,
-}: IntroScreenProps): JSX.Element {
-  const [time, setTime] = useState<number>(0);
-  const [selectedOption, setSelectedOption] =
-    useState<SelectedOption>("sparring");
-  const [initialized, setInitialized] = useState<boolean>(false);
-  const audio = useAudio();
+  onStartCombat,
+  onArchetypeSelect,
+  selectedArchetype,
+}: IntroScreenProps): React.JSX.Element {
+  const [showArchetypes, setShowArchetypes] = useState(false);
 
-  const { texture: logoTexture } = useTexture("/black-trigram-256.png");
+  const selectedArchetypeData = PLAYER_ARCHETYPES.find(
+    (a) => a.id === selectedArchetype
+  );
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTime((prev) => prev + 0.016);
-    }, 16);
+  return (
+    <div className="intro-screen">
+      <div className="intro-background">
+        <div className="intro-content">
+          {/* Main Title */}
+          <div className="title-section">
+            <KoreanText
+              korean="흑괘 무술 도장"
+              english="Black Trigram Martial Arts"
+              className="main-title"
+            />
+            <KoreanText
+              korean="정밀 격투 시뮬레이터"
+              english="Precision Combat Simulator"
+              className="subtitle"
+            />
+          </div>
 
-    if (!initialized) {
-      setInitialized(true);
-    }
+          {/* Trigram Philosophy */}
+          <div className="philosophy-section">
+            <KoreanText
+              korean="팔괘의 길"
+              english="Path of Eight Trigrams"
+              className="philosophy-title"
+            />
+            <div className="trigram-symbols">☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷</div>
+          </div>
 
-    return () => clearInterval(interval);
-  }, [initialized]);
+          {/* Archetype Selection */}
+          <div className="archetype-section">
+            <button
+              className="archetype-toggle"
+              onClick={() => setShowArchetypes(!showArchetypes)}
+            >
+              <KoreanText
+                korean={selectedArchetypeData?.korean || "무사"}
+                english={
+                  selectedArchetypeData?.english || "Traditional Warrior"
+                }
+                className="selected-archetype"
+              />
+            </button>
 
-  useEffect(() => {
-    if (!initialized) return;
+            {showArchetypes && (
+              <div className="archetype-list">
+                {PLAYER_ARCHETYPES.map((archetype) => (
+                  <button
+                    key={archetype.id}
+                    className={`archetype-option ${
+                      selectedArchetype === archetype.id ? "selected" : ""
+                    }`}
+                    onClick={() => {
+                      onArchetypeSelect(archetype.id);
+                      setShowArchetypes(false);
+                    }}
+                  >
+                    <KoreanText
+                      korean={archetype.korean}
+                      english={archetype.english}
+                      className="archetype-name"
+                    />
+                    <p className="archetype-description">
+                      {archetype.description}
+                    </p>
+                    <p className="archetype-philosophy">
+                      {archetype.philosophy}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
-    const handleKeyDown = (event: KeyboardEvent): void => {
-      event.preventDefault();
+          {/* Action Buttons */}
+          <div className="action-buttons">
+            <button className="primary-button" onClick={onStartTraining}>
+              <KoreanText korean="수련 시작" english="Begin Training" />
+            </button>
+            <button className="secondary-button" onClick={onStartCombat}>
+              <KoreanText korean="실전 격투" english="Enter Combat" />
+            </button>
+          </div>
 
-      if (event.code === "ArrowLeft" || event.code === "KeyA") {
-        audio.playSFX("menu_hover");
-        setSelectedOption("sparring");
-      }
-      if (event.code === "ArrowRight" || event.code === "KeyD") {
-        audio.playSFX("menu_hover");
-        setSelectedOption("training");
-      }
+          {/* Korean Martial Arts Quote */}
+          <div className="quote-section">
+            <KoreanText
+              korean="흑괘의 길을 걸어라"
+              english="Walk the Path of the Black Trigram"
+              className="closing-quote"
+            />
+          </div>
+        </div>
+      </div>
 
-      if (event.code === "Space" || event.code === "Enter") {
-        audio.playSFX("menu_select");
-        if (selectedOption === "sparring") {
-          onStartGame();
-        } else {
-          onStartTraining();
+      <style>{`
+        .intro-screen {
+          min-height: 100vh;
+          background: linear-gradient(135deg, 
+            rgba(10, 10, 20, 0.95), 
+            rgba(26, 26, 46, 0.95)
+          );
+          color: #ffffff;
+          overflow-y: auto;
         }
-      }
 
-      if (event.code === "AltLeft" || event.code === "AltRight") {
-        audio.playSFX("menu_select");
-        onStartTraining();
-      }
+        .intro-content {
+          max-width: 1400px;
+          margin: 0 auto;
+          padding: 2rem;
+        }
 
-      if (event.code === "Digit1") {
-        audio.playSFX("menu_select");
-        onStartGame();
-      }
-      if (event.code === "Digit2") {
-        audio.playSFX("menu_select");
-        onStartTraining();
-      }
-    };
+        .title-section {
+          text-align: center;
+          margin: 3rem 0;
+        }
 
-    window.addEventListener("keydown", handleKeyDown);
-    window.focus();
-    document.body.click();
+        .main-title {
+          font-size: 2.5rem;
+          font-weight: bold;
+          margin-bottom: 1rem;
+          text-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
+        }
 
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [selectedOption, onStartGame, onStartTraining, audio, initialized]);
+        .subtitle {
+          font-size: 1.2rem;
+          opacity: 0.9;
+        }
 
-  return (
-    <pixiContainer data-testid="intro-screen">
-      <BackgroundGrid time={time} />
+        .philosophy-section {
+          text-align: center;
+          margin: 2rem 0;
+        }
 
-      <KoreanHeader
-        koreanTitle="🥋 흑괘 무술 도장 🥋"
-        englishTitle="BLACK TRIGRAM MARTIAL ARTS DOJANG"
-        x={window.innerWidth / 2}
-        y={window.innerHeight / 2 - 200}
-        width={600}
-        height={120}
-      />
+        .philosophy-title {
+          font-size: 2rem;
+          font-weight: bold;
+          margin-bottom: 1rem;
+          text-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
+        }
 
-      <CombatDisciplines />
+        .trigram-symbols {
+          font-size: 2rem;
+          letter-spacing: 0.5rem;
+          color: #ffd700;
+          text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
 
-      <TrigramWheel
-        selectedStance="geon"
-        onStanceSelect={() => {}}
-        time={time}
-        radius={140}
-      />
+        .archetype-section {
+          text-align: center;
+          margin: 3rem 0;
+        }
 
-      <PhilosophyText />
-      <ControlsText />
+        .archetype-toggle {
+          background: transparent;
+          border: none;
+          color: #00ffff;
+          font-size: 1.2rem;
+          cursor: pointer;
+          position: relative;
+          display: inline-block;
+          padding: 0.5rem 1rem;
+          border-radius: 8px;
+          transition: all 0.3s ease;
+        }
 
-      <MenuButtons
-        selectedOption={selectedOption}
-        time={time}
-        onOptionChange={setSelectedOption}
-        audio={audio}
-        onStartGame={onStartGame}
-        onStartTraining={onStartTraining}
-      />
+        .archetype-toggle:hover {
+          background: rgba(0, 255, 255, 0.1);
+          box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
 
-      {/* Black Trigram logo */}
-      {logoTexture && (
-        <pixiSprite
-          texture={logoTexture}
-          x={window.innerWidth / 2}
-          y={window.innerHeight / 2 - 150}
-          scale={{ x: 0.4, y: 0.4 }}
-          anchor={{ x: 0.5, y: 0.5 }}
-          alpha={0.8}
-          data-testid="main-logo"
-        />
-      )}
-    </pixiContainer>
-  );
-}
+        .selected-archetype {
+          font-weight: bold;
+          text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+        }
 
-function BackgroundGrid({ time }: { time: number }): JSX.Element {
-  const drawBackground = useCallback(
-    (graphics: PixiGraphics) => {
-      graphics.clear();
-      graphics.setFillStyle({ color: COLORS.BLACK });
-      graphics.rect(0, 0, window.innerWidth, window.innerHeight);
-      graphics.fill();
+        .archetype-list {
+          margin-top: 1rem;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 4px 20px rgba(0, 255, 255, 0.2);
+        }
 
-      // Animated grid with Korean aesthetics
-      graphics.setStrokeStyle({
-        color: COLORS.GRID_DARK,
-        width: 1,
-        alpha: 0.2 + Math.sin(time * 0.01) * 0.1,
-      });
-      const gridSize = 60;
+        .archetype-option {
+          background: transparent;
+          border: none;
+          color: #ffffff;
+          font-size: 1rem;
+          cursor: pointer;
+          padding: 1rem;
+          text-align: left;
+          width: 100%;
+          transition: all 0.3s ease;
+        }
 
-      for (let x = 0; x < window.innerWidth; x += gridSize) {
-        graphics.moveTo(x, 0);
-        graphics.lineTo(x, window.innerHeight);
-        graphics.stroke();
-      }
-      for (let y = 0; y < window.innerHeight; y += gridSize) {
-        graphics.moveTo(0, y);
-        graphics.lineTo(window.innerWidth, y);
-        graphics.stroke();
-      }
-    },
-    [time]
-  );
+        .archetype-option:hover {
+          background: rgba(0, 255, 255, 0.1);
+        }
 
-  return <pixiGraphics draw={drawBackground} data-testid="background-grid" />;
-}
+        .archetype-option.selected {
+          background: rgba(0, 255, 255, 0.2);
+          font-weight: bold;
+        }
 
-function CombatDisciplines(): JSX.Element {
-  return (
-    <>
-      <pixiText
-        text="🎯 정격자 · ⚔️ 비수 · 🥷 암살자 · 💀 급소격 · 🏯 무사"
-        x={window.innerWidth / 2}
-        y={window.innerHeight / 2 - 80}
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 18,
-          fill: COLORS.WHITE,
-          fontWeight: "400",
-        }}
-        data-testid="combat-disciplines-korean"
-      />
+        .archetype-name {
+          font-size: 1.1rem;
+          margin: 0;
+        }
 
-      <pixiText
-        text="🎯 Precision Striker · ⚔️ Lethal Technique · 🥷 Shadow Assassin · 💀 Vital Strike · 🏯 Warrior"
-        x={window.innerWidth / 2}
-        y={window.innerHeight / 2 - 55}
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          fontFamily: "Orbitron",
-          fontSize: 12,
-          fill: COLORS.GRAY_DARKER,
-          letterSpacing: 1,
-        }}
-        data-testid="combat-disciplines-english"
-      />
-    </>
-  );
-}
+        .archetype-description {
+          font-size: 0.9rem;
+          margin: 0.2rem 0;
+          opacity: 0.8;
+        }
 
-function PhilosophyText(): JSX.Element {
-  return (
-    <>
-      <pixiText
-        text="🧘 도장에서 무예는 몸과 마음, 그리고 영혼의 조화이다"
-        x={window.innerWidth / 2}
-        y={window.innerHeight - 120}
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 16,
-          fill: COLORS.GRAY_MEDIUM,
-          fontStyle: "italic",
-          fontWeight: "300",
-        }}
-      />
+        .archetype-philosophy {
+          font-size: 0.8rem;
+          margin: 0;
+          color: #ffd700;
+        }
 
-      <pixiText
-        text="🥋 In the dojang, martial arts are the harmony of body, mind, and spirit"
-        x={window.innerWidth / 2}
-        y={window.innerHeight - 95}
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          fontFamily: "serif",
-          fontSize: 12,
-          fill: COLORS.GRAY_DARK,
-          fontStyle: "italic",
-        }}
-      />
-    </>
-  );
-}
+        .action-buttons {
+          display: flex;
+          justify-content: center;
+          gap: 2rem;
+          margin: 4rem 0 2rem 0;
+        }
 
-function ControlsText(): JSX.Element {
-  return (
-    <>
-      <pixiText
-        text="🎮 ← → 또는 A/D 선택 | ⚡ 스페이스/엔터 확인 | 🎯 1-대련, 2-수련"
-        x={window.innerWidth / 2}
-        y={window.innerHeight - 60}
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 11,
-          fill: 0x555555,
-          letterSpacing: 1,
-        }}
-      />
+        .primary-button,
+        .secondary-button {
+          padding: 1rem 2rem;
+          border: 2px solid;
+          border-radius: 8px;
+          background: transparent;
+          color: white;
+          font-family: "Noto Sans KR", Arial, sans-serif;
+          font-size: 1.1rem;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          min-width: 180px;
+        }
 
-      <pixiText
-        text="🎮 Arrow Keys/A-D to Select | ⚡ Space/Enter to Confirm | 🏃 Alt for Training"
-        x={window.innerWidth / 2}
-        y={window.innerHeight - 40}
-        anchor={{ x: 0.5, y: 0.5 }}
-        style={{
-          fontFamily: "monospace",
-          fontSize: 9,
-          fill: COLORS.GRAY_DARK,
-          letterSpacing: 1,
-        }}
-      />
-    </>
-  );
-}
+        .primary-button {
+          border-color: #00ffff;
+          color: #00ffff;
+        }
 
-// Define the missing interface
-interface MenuButtonProps {
-  readonly isSelected: boolean;
-  readonly time: number;
-  readonly onSelect: () => void;
-  readonly title: string;
-  readonly subtitle: string;
-  readonly keyBinding: string;
-}
+        .primary-button:hover {
+          background: rgba(0, 255, 255, 0.1);
+          box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        }
 
-interface MenuButtonsProps {
-  selectedOption: SelectedOption;
-  time: number;
-  onOptionChange: (option: SelectedOption) => void;
-  audio: ReturnType<typeof useAudio>;
-  onStartGame: () => void; // Added for click handling
-  onStartTraining: () => void; // Added for click handling
-}
+        .secondary-button {
+          border-color: #ff0040;
+          color: #ff0040;
+        }
 
-interface ExtendedMenuButtonProps extends MenuButtonProps {
-  readonly onClickAction: () => void;
-}
+        .secondary-button:hover {
+          background: rgba(255, 0, 64, 0.1);
+          box-shadow: 0 0 20px rgba(255, 0, 64, 0.3);
+        }
 
-function MenuButtons({
-  selectedOption,
-  time,
-  onOptionChange,
-  audio,
-  onStartGame,
-  onStartTraining,
-}: MenuButtonsProps): JSX.Element {
-  return (
-    <>
-      <MenuButton
-        isSelected={selectedOption === "sparring"}
-        time={time}
-        onSelect={() => {
-          audio.playSFX("menu_hover");
-          onOptionChange("sparring");
-        }}
-        onClickAction={() => {
-          audio.playSFX("menu_select");
-          onStartGame();
-        }}
-        title="⚔️ 대련 (Sparring)"
-        subtitle="🎯 정밀 전투 (Precision Combat)"
-        keyBinding="[1]"
-      />
+        .quote-section {
+          text-align: center;
+          margin: 3rem 0;
+          font-size: 1.2rem;
+          font-style: italic;
+          color: #ffd700;
+          text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+        }
 
-      <MenuButton
-        isSelected={selectedOption === "training"}
-        time={time}
-        onSelect={() => {
-          audio.playSFX("menu_hover");
-          onOptionChange("training");
-        }}
-        onClickAction={() => {
-          audio.playSFX("menu_select");
-          onStartTraining();
-        }}
-        title="🏃 수련 (Training)"
-        subtitle="🧘 기술 연마 (Skill Development)"
-        keyBinding="[2] [Alt]"
-      />
-    </>
-  );
-}
-
-function MenuButton({
-  isSelected,
-  time,
-  onSelect,
-  title,
-  subtitle,
-  keyBinding,
-  onClickAction,
-}: ExtendedMenuButtonProps): JSX.Element {
-  const xPosition = title.includes("대련")
-    ? window.innerWidth / 2 - 150
-    : window.innerWidth / 2 + 150;
-
-  return (
-    <pixiContainer
-      x={xPosition}
-      y={window.innerHeight / 2 + 180}
-      interactive={true}
-      cursor="pointer"
-      onPointerDown={onClickAction} // Use onClickAction
-      onPointerEnter={onSelect} // Corrected prop name
-    >
-      <pixiGraphics
-        draw={(g: PixiGraphics) => {
-          g.clear();
-          const pulse = isSelected
-            ? Math.sin(time * BUTTON_ANIMATION_SPEED) * 0.2 + 0.8
-            : 1.0;
-
-          g.setFillStyle({ color: COLORS.DARK_BLUE, alpha: 0.9 });
-          g.roundRect(-100, -45, 200, 90, 18);
-          g.fill();
-
-          g.setFillStyle({ color: COLORS.DARK_PANEL, alpha: 0.7 });
-          g.roundRect(-100, -45, 200, 25, 18);
-          g.fill();
-
-          g.setStrokeStyle({
-            color: isSelected ? COLORS.CYAN : COLORS.ACCENT_BLUE,
-            width: isSelected ? 3 : 2,
-            alpha: pulse,
-          });
-          g.roundRect(-100, -45, 200, 90, 18);
-          g.stroke();
-
-          g.setStrokeStyle({
-            color: COLORS.CYAN,
-            width: 1,
-            alpha: isSelected ? 0.6 : 0.3,
-          });
-          g.moveTo(-100, -25);
-          g.lineTo(-70, -45);
-          g.moveTo(100, -25);
-          g.lineTo(70, -45);
-          g.stroke();
-
-          if (isSelected) {
-            g.setStrokeStyle({
-              color: COLORS.CYAN,
-              width: 2,
-              alpha: pulse * 0.5,
-            });
-            g.roundRect(-105, -50, 210, 100, 22);
-            g.stroke();
+        /* Responsive design */
+        @media (max-width: 1024px) {
+          .trigram-symbols {
+            font-size: 1.5rem;
           }
-        }}
-      />
-      <pixiText
-        text={title}
-        anchor={{ x: 0.5, y: 0.5 }}
-        y={-15}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 18,
-          fill: isSelected ? COLORS.CYAN : COLORS.CYAN_LIGHT,
-          fontWeight: "bold",
-          ...(isSelected && {
-            dropShadow: {
-              color: COLORS.CYAN,
-              blur: 6,
-              distance: 0,
-            },
-          }),
-        }}
-      />
-      <pixiText
-        text={subtitle}
-        anchor={{ x: 0.5, y: 0.5 }}
-        y={10}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 12,
-          fill: isSelected ? COLORS.WHITE : COLORS.GRAY_LIGHT,
-        }}
-      />
-      <pixiText
-        text={keyBinding}
-        anchor={{ x: 0.5, y: 0.5 }}
-        y={30}
-        style={{
-          fontFamily: "monospace",
-          fontSize: 10,
-          fill: COLORS.CYAN,
-        }}
-        alpha={0.7}
-      />
-    </pixiContainer>
+
+          .archetype-toggle {
+            font-size: 1rem;
+            padding: 0.5rem;
+          }
+
+          .primary-button,
+          .secondary-button {
+            font-size: 1rem;
+            padding: 0.8rem 1.5rem;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .intro-content {
+            padding: 1rem;
+          }
+
+          .archetype-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 10;
+          }
+
+          .archetype-option {
+            font-size: 0.9rem;
+            padding: 0.8rem;
+          }
+
+          .primary-button,
+          .secondary-button {
+            width: 100%;
+            max-width: 300px;
+          }
+        }
+      `}</style>
+    </div>
   );
 }
+
+export default IntroScreen;

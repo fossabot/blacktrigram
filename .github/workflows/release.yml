@@ -282,6 +282,7 @@ jobs:
       - name: Deploy new version
         run: |
           # Extract the built application to docs
+          rm docs/assets/*.css docs/assets/*.js || true
           unzip -o artifacts/build/game-${{ needs.prepare.outputs.version }}.zip -d docs/
           # Create version marker for traceability
           echo "Version ${{ needs.prepare.outputs.version }} deployed at $(date)" > docs/version.txt

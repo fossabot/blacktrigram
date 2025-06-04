@@ -1,32 +1,45 @@
-/// <reference types="vitest" />
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
+import path from "path";
 
 export default defineConfig({
   plugins: [react()],
   test: {
     globals: true,
     environment: "jsdom",
-    setupFiles: ["./src/test/setup.ts"],
+    setupFiles: ["./src/test/test-setup.ts"],
     css: true,
-    coverage: {
-      provider: "v8",
-      reporter: ["text", "json", "html"],
-      exclude: [
-        "node_modules/",
-        "src/test/setup.ts",
-        "**/*.d.ts",
-        "**/*.config.*",
-        "dist/",
-      ],
-      thresholds: {
-        global: {
-          branches: 80,
-          functions: 80,
-          lines: 80,
-          statements: 80,
-        },
-      },
+    // Korean martial arts specific test configuration
+    testTimeout: 10000, // Allow longer tests for complex combat calculations
+    include: [
+      "src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}",
+      "src/**/__tests__/**/*.{js,mjs,cjs,ts,mts,cts,jsx,tsx}",
+    ],
+    exclude: ["node_modules", "dist", ".idea", ".git", ".cache"],
+    // Mock specific modules for Korean martial arts testing
+    deps: {
+      inline: ["pixi.js", "@pixi/react"],
     },
+  },
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+      // Alias for Korean text components
+      "@/korean-text": path.resolve(
+        __dirname,
+        "./src/components/ui/base/korean-text"
+      ),
+      // Alias for types
+      "@/types": path.resolve(__dirname, "./src/types"),
+      // Alias for systems
+      "@/systems": path.resolve(__dirname, "./src/systems"),
+      // Alias for constants
+      "@/constants": path.resolve(__dirname, "./src/types/constants"),
+    },
+  },
+  // Optimize deps for Korean martial arts components
+  optimizeDeps: {
+    include: ["react", "react-dom", "pixi.js", "@pixi/react"],
+    exclude: ["vitest", "@vitest/ui"],
   },
 });

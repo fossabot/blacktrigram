@@ -26,7 +26,7 @@ A vulnerability is a weakness or flaw in the project that can be exploited to co
 
 Please follow these steps to privately report a security vulnerability:
 
-1. On GitHub.com, navigate to the main page of the [game repository](https://github.com/Hack23/game).
+1. On GitHub.com, navigate to the main page of the [Black Trigram repository](https://github.com/Hack23/blacktrigram).
 2. Under the repository name, click **Security**. If you cannot see the "Security" tab, select the dropdown menu, and then click **Security**.
 3. In the left sidebar, under "Reporting", click **Advisories**.
 4. Click **Report a vulnerability** to open the advisory form.

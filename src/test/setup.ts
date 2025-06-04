@@ -1,227 +1,186 @@
-import { beforeAll, afterEach, afterAll, vi } from "vitest";
-import { cleanup } from "@testing-library/react";
-import "@testing-library/jest-dom/vitest";
-import React, { type ReactElement } from "react";
+// Test setup for Black Trigram Korean martial arts game
 
-// Mock extend spy for tracking calls - single declaration
-export const extendSpy = vi.fn();
+import { beforeEach, vi } from "vitest";
 
-// Mock PixiJS components for testing
-vi.mock("@pixi/react", async () => {
+// Mock @pixi/react for Korean martial arts testing
+vi.mock("@pixi/react", () => ({
+  Stage: vi.fn(({ children, ...props }) => {
+    const React = require("react");
+    return React.createElement(
+      "div",
+      { "data-testid": "pixi-stage", ...props },
+      children
+    );
+  }),
+  Container: vi.fn(({ children, ...props }) => {
+    const React = require("react");
+    return React.createElement(
+      "div",
+      { "data-testid": "pixi-container", ...props },
+      children
+    );
+  }),
+  Graphics: vi.fn(({ children, ...props }) => {
+    const React = require("react");
+    return React.createElement(
+      "div",
+      { "data-testid": "pixi-graphics", ...props },
+      children
+    );
+  }),
+  Text: vi.fn(({ children, text, ...props }) => {
+    const React = require("react");
+    return React.createElement(
+      "div",
+      { "data-testid": "pixi-text", ...props },
+      text || children
+    );
+  }),
+}));
+
+// Mock react-error-boundary for Korean martial arts error handling
+vi.mock("react-error-boundary", () => ({
+  ErrorBoundary: vi.fn(({ children }) => {
+    const React = require("react");
+    return React.createElement(
+      "div",
+      { "data-testid": "error-boundary" },
+      children
+    );
+  }),
+}));
+
+// Mock AudioManager for Korean martial arts audio system
+vi.mock("../audio/AudioManager", () => {
+  const mockAudioManager = {
+    getState: vi.fn(() => ({
+      masterVolume: 1.0,
+      sfxVolume: 1.0,
+      musicVolume: 1.0,
+      muted: false,
+      currentMusicTrack: null,
+      isInitialized: true,
+    })),
+    setVolume: vi.fn(),
+    setMasterVolume: vi.fn().mockImplementation((volume) => {
+      mockAudioManager.getState = vi.fn(() => ({
+        masterVolume: volume,
+        sfxVolume: 1.0,
+        musicVolume: 1.0,
+        muted: false,
+        currentMusicTrack: null,
+        isInitialized: true,
+      }));
+    }),
+    setSfxVolume: vi.fn(),
+    setMusicVolume: vi.fn(),
+    mute: vi.fn(),
+    unmute: vi.fn(),
+    toggleMute: vi.fn().mockImplementation(() => {
+      const currentState = mockAudioManager.getState();
+      mockAudioManager.getState = vi.fn(() => ({
+        ...currentState,
+        muted: !currentState.muted,
+      }));
+    }),
+    initialize: vi.fn(),
+    playSFX: vi.fn(),
+    playMusic: vi.fn(),
+    stopMusic: vi.fn(),
+    stopAllSounds: vi.fn(),
+    playAttackSound: vi.fn(),
+    playHitSound: vi.fn(),
+    playTechniqueSound: vi.fn(),
+    playStanceChangeSound: vi.fn(),
+    playVitalPointHit: vi.fn(),
+    playEnvironmentalSound: vi.fn(),
+  };
+
   return {
-    extend: extendSpy,
-    Application: ({ children, ...props }: any): ReactElement => {
-      return React.createElement(
-        "div",
-        {
-          "data-testid": "pixi-application",
-          "data-width": props.width?.toString(),
-          "data-height": props.height?.toString(),
-          "data-background-color": props.backgroundColor?.toString(),
-          "data-antialias": props.antialias?.toString(),
-          ...props,
-        },
-        children
-      );
-    },
-    Container: ({ children, ...props }: any): ReactElement => {
-      return React.createElement(
-        "div",
-        {
-          "data-testid": "pixi-container",
-          ...props,
-        },
-        children
-      );
-    },
-    Graphics: ({ draw, ...props }: any): ReactElement => {
-      // Mock graphics drawing with comprehensive mock object
-      if (draw) {
-        const mockGraphics = {
-          clear: vi.fn(),
-          setFillStyle: vi.fn(),
-          setStrokeStyle: vi.fn(),
-          rect: vi.fn(),
-          circle: vi.fn(),
-          moveTo: vi.fn(),
-          lineTo: vi.fn(),
-          roundRect: vi.fn(),
-          fill: vi.fn(),
-          stroke: vi.fn(),
-          closePath: vi.fn(),
-        };
-        try {
-          draw(mockGraphics);
-        } catch (error) {
-          console.warn("Graphics draw function error:", error);
-        }
-      }
-
-      return React.createElement("div", {
-        "data-testid": "pixi-graphics",
-        ...props,
-      });
-    },
-    Text: ({ text, style, ...props }: any): ReactElement => {
-      return React.createElement("div", {
-        "data-testid": "pixi-text",
-        "data-text": text,
-        "data-font-family": style?.fontFamily,
-        "data-font-size": style?.fontSize?.toString(),
-        "data-fill": style?.fill?.toString(),
-        ...props,
-      });
-    },
-    useTick: vi.fn(),
+    AudioManager: vi.fn(() => mockAudioManager),
+    audioManager: mockAudioManager,
+    useAudio: vi.fn(() => mockAudioManager),
   };
 });
 
-// Create comprehensive Howler mock with all required methods
-const mockHowlInstance = {
-  play: vi.fn().mockReturnValue(1),
-  stop: vi.fn(),
-  volume: vi.fn(),
-  fade: vi.fn(),
-  playing: vi.fn().mockReturnValue(false),
-  unload: vi.fn(),
-  rate: vi.fn(),
-  seek: vi.fn(),
-  duration: vi.fn().mockReturnValue(100),
-  state: vi.fn().mockReturnValue("loaded"),
-};
-
-const mockHowlerGlobal = {
-  volume: vi.fn(),
-  mute: vi.fn(),
-  stop: vi.fn(),
-  codecs: vi.fn().mockReturnValue(true),
-  state: vi.fn().mockReturnValue("loaded"),
-  ctx: {
-    createGain: vi.fn().mockReturnValue({
-      connect: vi.fn(),
-      disconnect: vi.fn(),
-      gain: {
-        value: 1,
-        setValueAtTime: vi.fn(),
-      },
-    }),
-    createGainNode: vi.fn().mockReturnValue({
-      connect: vi.fn(),
-      disconnect: vi.fn(),
-      gain: {
-        value: 1,
-        setValueAtTime: vi.fn(),
-      },
-    }),
-    destination: {},
-    currentTime: 0,
-  },
-  masterGain: {
-    connect: vi.fn(),
-    gain: {
-      value: 1,
-      setValueAtTime: vi.fn(),
-    },
-  },
-  usingWebAudio: false, // Disable WebAudio to avoid complex mocking
-  _muted: false,
-  _volume: 1,
-};
-
-// Mock Howler before any imports
-vi.mock("howler", () => ({
-  Howl: vi.fn().mockImplementation(() => mockHowlInstance),
-  Howler: mockHowlerGlobal,
+// Mock AudioProvider
+vi.mock("../audio/AudioProvider", () => ({
+  AudioProvider: vi.fn(({ children }) => {
+    const React = require("react");
+    return React.createElement(
+      "div",
+      { "data-testid": "audio-provider" },
+      children
+    );
+  }),
+  useAudio: vi.fn(() => ({
+    getState: vi.fn(() => ({
+      masterVolume: 1.0,
+      sfxVolume: 1.0,
+      musicVolume: 1.0,
+      muted: false,
+      currentMusicTrack: null,
+      isInitialized: true,
+    })),
+    setVolume: vi.fn(),
+    setMasterVolume: vi.fn(),
+    setSfxVolume: vi.fn(),
+    setMusicVolume: vi.fn(),
+    mute: vi.fn(),
+    unmute: vi.fn(),
+    initialize: vi.fn(),
+    playSFX: vi.fn(),
+    playMusic: vi.fn(),
+    stopMusic: vi.fn(),
+    stopAllSounds: vi.fn(),
+    playAttackSound: vi.fn(),
+    playHitSound: vi.fn(),
+    playTechniqueSound: vi.fn(),
+    playStanceChangeSound: vi.fn(),
+    playVitalPointHit: vi.fn(),
+    playEnvironmentalSound: vi.fn(),
+  })),
 }));
 
-// Mock AudioContext more thoroughly
-const mockAudioContext = {
-  createGain: vi.fn().mockReturnValue({
-    connect: vi.fn(),
-    disconnect: vi.fn(),
-    gain: {
-      value: 1,
-      setValueAtTime: vi.fn(),
-    },
-  }),
-  createGainNode: vi.fn().mockReturnValue({
-    connect: vi.fn(),
-    disconnect: vi.fn(),
-    gain: {
-      value: 1,
-      setValueAtTime: vi.fn(),
-    },
-  }),
-  createOscillator: vi.fn().mockReturnValue({
-    connect: vi.fn(),
-    start: vi.fn(),
-    stop: vi.fn(),
-    frequency: { value: 440 },
-  }),
-  destination: {},
-  state: "running",
-  currentTime: 0,
-  resume: vi.fn().mockResolvedValue(undefined),
-  suspend: vi.fn().mockResolvedValue(undefined),
-  close: vi.fn().mockResolvedValue(undefined),
-};
+// Proper AudioContext mock for Korean martial arts audio
+class MockAudioContext {
+  createOscillator() {
+    return {
+      connect: vi.fn(),
+      start: vi.fn(),
+      stop: vi.fn(),
+      frequency: {
+        setValueAtTime: vi.fn(),
+        exponentialRampToValueAtTime: vi.fn(),
+      },
+    };
+  }
 
-// Override global constructors with proper typing
-(globalThis as any).AudioContext = vi
-  .fn()
-  .mockImplementation(() => mockAudioContext);
-Object.defineProperty(window, "webkitAudioContext", {
-  writable: true,
-  value: vi.fn().mockImplementation(() => mockAudioContext),
-});
+  createGain() {
+    return {
+      connect: vi.fn(),
+      gain: {
+        setValueAtTime: vi.fn(),
+        exponentialRampToValueAtTime: vi.fn(),
+        linearRampToValueAtTime: vi.fn(),
+      },
+    };
+  }
 
-// Enhanced global test setup
-beforeAll(() => {
-  // Mock window dimensions for consistent testing
-  Object.defineProperty(window, "innerWidth", {
-    writable: true,
-    configurable: true,
-    value: 1920,
-  });
-  Object.defineProperty(window, "innerHeight", {
-    writable: true,
-    configurable: true,
-    value: 1080,
-  });
-});
+  get destination() {
+    return {};
+  }
 
-afterEach(() => {
-  cleanup();
+  get currentTime() {
+    return 0;
+  }
+}
+
+// Set up global AudioContext mock for Korean martial arts
+global.AudioContext = vi.fn(() => new MockAudioContext()) as any;
+(global as any).webkitAudioContext = global.AudioContext;
+
+beforeEach(() => {
+  // Reset all mocks before each Korean martial arts test
   vi.clearAllMocks();
 });
-
-afterAll(() => {
-  // Global test cleanup
-});
-
-// Export commonly used test utilities
-export const mockWindowResize = (width: number, height: number): void => {
-  Object.defineProperty(window, "innerWidth", {
-    writable: true,
-    configurable: true,
-    value: width,
-  });
-  Object.defineProperty(window, "innerHeight", {
-    writable: true,
-    configurable: true,
-    value: height,
-  });
-  window.dispatchEvent(new Event("resize"));
-};
-
-export const mockKeyboardEvent = (
-  key: string,
-  type: "keydown" | "keyup" = "keydown"
-): void => {
-  const event = new KeyboardEvent(type, {
-    key,
-    code: `Key${key.toUpperCase()}`,
-    bubbles: true,
-  });
-  document.dispatchEvent(event);
-};

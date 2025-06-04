@@ -434,11 +434,249 @@ function calculateCombatDamage(
 
 ---
 
-_"어둠 속에서 완벽한 일격을 찾아라"_  
-_"In darkness, seek the perfect strike"_
+## 🌑 Dark Architecture
+
+### Shadow Combat System Architecture
+
+```mermaid
+graph TB
+    subgraph "Dark Korean Martial Core"
+        DKMA[Dark Korean Martial Engine] --> SPS[Shadow Philosophy System]
+        DKMA --> LVP[Lethal Vital Point System - 70 Targets]
+        DKMA --> UKT[Underground Korean Techniques]
+        DKMA --> BCP[Brutal Combat Physics]
+    end
+
+    subgraph "Underground Systems"
+        US[Underground System] --> SL[Shadow Learning]
+        US --> LA[Lethal Anatomy Teaching]
+        US --> DP[Dark Philosophy]
+        US --> UC[Underground Culture]
+    end
+
+    subgraph "Assassination Targeting"
+        AT[Assassination Targeting] --> LHD[Lethal Hit Detection]
+        AT --> DAC[Damage Amplification Calculator]
+        AT --> PDM[Precise Distance Measurement]
+        AT --> LVV[Lethal Vital Validator]
+    end
+
+    DKMA --> US
+    DKMA --> AT
+    style DKMA fill:#8b0000,stroke:#ff0000,color:#fff
+    style US fill:#2d1b69,stroke:#6a0dad,color:#fff
+    style AT fill:#000000,stroke:#ff6b6b,color:#fff
+```
+
+### Underground Dojang Environment Design
+
+#### **Shadow Dojang Setting**
+
+- **지하도장 (Underground Dojang)** - Hidden training facility beneath the city
+- **네온조명 (Neon Lighting)** - Red and cyan lighting creating dramatic shadows
+- **혈흔 (Blood Stains)** - Evidence of previous brutal training sessions
+- **전투장비 (Combat Equipment)** - Professional-grade training tools for lethal practice
+
+#### **Cyberpunk Korean Aesthetics**
+
+- **한글네온 (Hangul Neon)** - Korean characters in cyberpunk styling
+- **어둠속기호 (Symbols in Darkness)** - Traditional trigrams with modern dark interpretation
+- **지하분위기 (Underground Atmosphere)** - Gritty, realistic underground environment
+- **전투의식 (Combat Ritual)** - Dark ceremonial elements for serious training
+
+### Brutal Audio Design Integration
+
+#### **Underground Korean Music**
+
+- **어둠의가야금 (Dark Gayageum)** - Traditional Korean instruments with industrial elements
+- **지하전투음 (Underground Combat Sounds)** - Realistic bone-breaking and impact audio
+- **한국타악기 (Korean Percussion)** - War drums and traditional instruments for intensity
+- **침묵의순간 (Moments of Silence)** - Strategic audio pauses for psychological impact
 
 ---
 
-**Game Design Document Version**: 6.0 - **Combat Specialist Focus**  
-**Last Updated**: December 2024  
-**Document Status**: Authentic Korean Martial Arts Training
+## 🎭 Dark Training Modules Enhanced
+
+### 🌑 암흑수련 (Dark Training) - Shadow Path Mastery
+
+#### **그림자기법 (Shadow Techniques)**
+
+- **은밀살상 (Stealth Killing)** - Silent takedown techniques from Korean special forces
+- **신경파괴술 (Neural Destruction)** - Advanced nerve strike applications
+- **혈관차단법 (Vascular Occlusion)** - Blood flow restriction for incapacitation
+- **기도폐쇄술 (Airway Closure)** - Respiratory control techniques
+
+#### **지하무술 (Underground Martial Arts)**
+
+- **거리생존술 (Street Survival)** - Brutal Korean street fighting adaptations
+- **암살기법 (Assassination Techniques)** - Professional elimination methods
+- **고문술 (Interrogation Techniques)** - Pressure point applications for information extraction
+- **생존격투 (Survival Combat)** - Whatever-it-takes underground fighting
+
+#### **심리전술 (Psychological Warfare)**
+
+- **공포유발 (Fear Induction)** - Using technique demonstration for intimidation
+- **정신압박 (Mental Pressure)** - Psychological dominance through combat skill
+- **의지파괴 (Will Breaking)** - Breaking opponent's fighting spirit
+- **굴복유도 (Submission Induction)** - Forcing surrender through demonstrated capability
+
+### 🔴 실전혈투 (Real Blood Combat) - Underground Tournaments
+
+#### **지하토너먼트 (Underground Tournament)**
+
+- **무규칙격투 (No-Rules Fighting)** - Anything-goes underground combat
+- **생존경기 (Survival Matches)** - Last-fighter-standing competitions
+- **급소대전 (Vital Point Duels)** - Precision targeting competitions
+- **혈전스페셜 (Blood Match Special)** - Intense, realistic combat scenarios
+
+#### **계급승급 (Rank Advancement)**
+
+```
+암흑단계 (Dark Levels):
+🔴 입문자 (Initiate) - Basic shadow techniques
+⚫ 수련생 (Practitioner) - Intermediate lethal skills
+🩸 전문가 (Expert) - Advanced killing techniques
+💀 대가 (Master) - Perfect assassination capability
+👹 전설 (Legend) - Underground martial arts mythology
+```
+
+---
+
+## 🌟 Dark Success Metrics
+
+### **Underground Achievement System**
+
+#### **살상기술 (Lethal Skill) Mastery**
+
+- **완벽한정밀도 (Perfect Precision)** - 100% vital point accuracy
+- **일격제압 (One-Strike Takedown)** - Single-strike incapacitation capability
+- **침묵의대가 (Silent Master)** - Stealth takedown expertise
+- **혈투승리자 (Blood Combat Victor)** - Underground tournament champion
+
+#### **어둠의지식 (Dark Knowledge) Acquisition**
+
+- **해부학전문가 (Anatomy Expert)** - Complete understanding of all 70 vital points
+- **신경파괴술사 (Neural Destructor)** - Master of nerve targeting techniques
+- **혈관조작사 (Vascular Manipulator)** - Expert in blood flow control
+- **의식조작자 (Consciousness Controller)** - Master of awareness manipulation
+
+#### **지하명성 (Underground Reputation)**
+
+- **그림자전설 (Shadow Legend)** - Mythical status in underground circles
+- **공포의상징 (Symbol of Fear)** - Opponents fear to face you
+- **완벽한암살자 (Perfect Assassin)** - Undetectable takedown capability
+- **지하왕 (Underground King)** - Supreme ruler of shadow martial arts
+
+---
+
+## 🎓 Dark Educational Philosophy
+
+**Black Trigram** transcends traditional gaming by serving as a bridge between ancient Korean shadow wisdom and modern interactive lethal learning. Through respectful representation of underground martial arts philosophy, combat medical knowledge, and cultural traditions, players gain practical fighting skills while developing deep appreciation for Korean shadow heritage.
+
+The game emphasizes **respect, discipline, and lethal mastery** - core values of traditional Korean underground martial arts - while providing authentic knowledge that extends beyond the digital realm into real-world combat application within ethical boundaries.
+
+---
+
+_"어둠 속에서 완벽한 일격을 찾아라"_  
+_"In darkness, seek the perfect strike"_
+
+### 🌑 The Shadow Path Awaits
+
+**Black Trigram** offers a mature, respectful exploration of Korean martial arts' darker applications while maintaining cultural authenticity and educational value. Through careful balance of intensity and respect, players gain genuine understanding of combat techniques within a framework of Korean philosophical tradition.
+
+_Enter the shadow dojang. Master the dark arts. Walk the path of the perfect lethal strike._
+
+**흑괘의 길을 걸어라** - _Walk the Path of the Black Trigram_
+
+---
+
+# Black Trigram - Game Design Document
+
+## 1. Overview
+
+Black Trigram is a sophisticated 2D precision combat simulator deeply rooted in Korean martial arts and modern combat technology, set against a cyberpunk backdrop. It emphasizes anatomical realism, precise targeting, authentic martial techniques, and dark futuristic aesthetics.
+
+## 2. Core Gameplay
+
+### 2.1. Combat System
+
+- **Precision Targeting**: Players can target specific vital points (급소 - geupso) on the opponent's body.
+- **Trigram Stances (팔괘 - Palgwae)**: Eight unique stances, each with distinct techniques, strengths, and weaknesses.
+  - 건 (Geon - Heaven): Balanced, spiritual energy.
+  - 태 (Tae - Lake): Joyful, fluid movements.
+  - 리 (Li - Fire): Bright, aggressive attacks.
+  - 진 (Jin - Thunder): Explosive, powerful strikes.
+  - 손 (Son - Wind): Gentle, swift, penetrating.
+  - 감 (Gam - Water): Deep, adaptable, dangerous.
+  - 간 (Gan - Mountain): Stable, firm defense.
+  - 곤 (Gon - Earth): Receptive, grounded techniques.
+- **Ki Management**: Ki (기 - internal energy) is used for special techniques and can be regenerated.
+- **Stamina**: Governs movement and basic actions.
+
+### 2.2. Game Modes
+
+- **Combat Mode (대전 모드)**: Player vs. Player or Player vs. AI.
+- **Training Mode (수련 모드)**: Practice techniques, stances, and vital point targeting.
+- **Philosophy Study (철학 연구)**: Learn about the philosophy behind the Trigrams and Korean martial arts.
+
+## 3. Winning and Losing
+
+### 3.1. Victory Conditions
+
+A player wins a round under the following conditions:
+
+- **Knockout (KO)**: The opponent's health is depleted to 0.
+- **Time Out**: If the round timer expires, the player with more remaining health wins the round.
+  - **Draw (무승부 - Museungbu)**: If health is equal when the timer expires, the round is a draw. (Further tie-breaking rules like first significant hit or overall damage could be implemented for match resolution if draws are not desired for overall match outcome).
+
+### 3.2. Match Structure
+
+- A match typically consists of a set number of rounds (e.g., best of 3 or 5).
+- The first player to win the required number of rounds wins the match.
+
+## 4. Game Flow & UI
+
+### 4.1. Intro Screen
+
+- Displays game logo (`black-trigram-256.png`).
+- Navigation: Menu, Controls, Philosophy.
+
+### 4.2. Combat Screen
+
+- **Player Stats**: Health, Ki, Stamina bars for both players.
+- **Trigram Display**: Current stance for each player.
+- **Timer**: Round timer.
+- **Round Counter**: Current round number.
+- **Combat Log**: Display key actions and damage.
+
+### 4.3. Game Over / Victory Screen
+
+- Displayed at the end of a match.
+- **Message**: Clearly indicates the winner (e.g., "Player 1 Wins!", "플레이어 2 승리!") or a draw.
+- **Options**:
+  - "Play Again (다시하기)": Resets the match and starts a new combat session.
+  - "Return to Menu (메뉴로 돌아가기)": Takes the player back to the Intro Screen.
+
+## 5. Asset Integration
+
+- **Logo**: `black-trigram-256.png` used on the Intro Screen and potentially other branding locations.
+- **Informational Images**:
+  - `PlayerArchetypesExplained.png`: Displayed in the Philosophy section or a dedicated "Lore/Guide" section to explain character types or combat styles.
+  - `CyberpunkTeamDynamics.png`: Could be used in a similar context if team-based modes or lore are expanded.
+  - `PlayerArchetypesOverview.png`: Similar to `PlayerArchetypesExplained.png`.
+- **Backgrounds**: Cyberpunk-themed Dojang backgrounds.
+- **Character Sprites**: Silhouettes or detailed 2D sprites with traditional Korean martial arts attire mixed with tactical gear.
+- **VFX**: Effects for Ki energy, impacts, stance auras.
+
+## 6. Technical Details
+
+- **Platform**: Web-based (HTML5/WebGL via PixiJS with React).
+- **Physics**: Aim for authentic 60fps combat physics.
+- **Audio**: Dynamic sound effects based on impact, damage, and Korean martial arts themes.
+
+## 7. Future Considerations
+
+- AI opponents with varying difficulty.
+- Expanded move sets and combos.
+- Online multiplayer.
+- Deeper story mode.

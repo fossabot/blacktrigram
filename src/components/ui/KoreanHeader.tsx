@@ -1,142 +1,226 @@
-import type { JSX } from "react";
-import type { Graphics as PixiGraphics } from "pixi.js";
+import React from "react";
+import type { KoreanHeaderProps } from "../../types/components";
+import { KoreanText } from "./base/korean-text";
 
-interface KoreanHeaderProps {
-  readonly koreanTitle: string;
-  readonly englishTitle: string;
-  readonly subtitle?: string;
-  readonly x?: number;
-  readonly y?: number;
-  readonly width?: number;
-  readonly height?: number;
-}
-
-const COLORS = {
-  PRIMARY_CYAN: 0x00ffd0,
-  WHITE: 0xffffff,
-  DARK_BG: 0x0a0e12,
-  KOREAN_RED: 0x8b0000,
-  TRADITIONAL_GOLD: 0xffd700,
-  GRAY_MEDIUM: 0x666666,
-} as const;
-
+/**
+ * Korean Header Component for Black Trigram
+ * Displays bilingual Korean-English headers with proper styling
+ */
 export function KoreanHeader({
-  koreanTitle,
-  englishTitle,
+  korean,
+  english,
   subtitle,
-  x = window.innerWidth / 2,
-  y = 150,
-  width = 800,
-  height = 150,
-}: KoreanHeaderProps): JSX.Element {
+  level = 1,
+  showLogo = false,
+  style = {},
+  onBackButtonClick,
+  className = "",
+}: KoreanHeaderProps): React.JSX.Element {
+  const handleBackClick = () => {
+    if (onBackButtonClick) {
+      onBackButtonClick();
+    }
+  };
+
+  // Fix: Properly type the dynamic header element
+  const headerProps = {
+    className: "main-title",
+  };
+
   return (
-    <pixiContainer x={x} y={y} data-testid="korean-header">
-      {/* Background panel */}
-      <pixiGraphics
-        draw={(g: PixiGraphics) => {
-          g.clear();
-
-          // Main background with traditional Korean styling
-          g.setFillStyle({ color: COLORS.DARK_BG, alpha: 0.85 });
-          g.roundRect(-width / 2, -height / 2, width, height, 15);
-          g.fill();
-
-          // Traditional Korean border
-          g.setStrokeStyle({ color: COLORS.KOREAN_RED, width: 3, alpha: 0.8 });
-          g.roundRect(-width / 2, -height / 2, width, height, 15);
-          g.stroke();
-
-          // Inner accent border
-          g.setStrokeStyle({
-            color: COLORS.TRADITIONAL_GOLD,
-            width: 1,
-            alpha: 0.6,
-          });
-          g.roundRect(
-            -width / 2 + 5,
-            -height / 2 + 5,
-            width - 10,
-            height - 10,
-            10
-          );
-          g.stroke();
-
-          // Traditional corner decorations
-          const cornerSize = 20;
-          const corners = [
-            { x: -width / 2 + cornerSize, y: -height / 2 + cornerSize },
-            { x: width / 2 - cornerSize, y: -height / 2 + cornerSize },
-            { x: -width / 2 + cornerSize, y: height / 2 - cornerSize },
-            { x: width / 2 - cornerSize, y: height / 2 - cornerSize },
-          ];
-
-          corners.forEach((corner) => {
-            g.setStrokeStyle({
-              color: COLORS.PRIMARY_CYAN,
-              width: 2,
-              alpha: 0.7,
-            });
-            g.moveTo(corner.x - 10, corner.y);
-            g.lineTo(corner.x + 10, corner.y);
-            g.moveTo(corner.x, corner.y - 10);
-            g.lineTo(corner.x, corner.y + 10);
-            g.stroke();
-          });
-        }}
-        data-testid="header-background"
-      />
-
-      {/* Korean title */}
-      <pixiText
-        text={koreanTitle}
-        anchor={{ x: 0.5, y: 0.5 }}
-        y={-30}
-        style={{
-          fontFamily: "Noto Sans KR",
-          fontSize: 32,
-          fill: COLORS.KOREAN_RED,
-          fontWeight: "bold",
-          dropShadow: {
-            color: COLORS.TRADITIONAL_GOLD,
-            blur: 4,
-            distance: 2,
-          },
-        }}
-        data-testid="korean-title"
-      />
-
-      {/* English title */}
-      <pixiText
-        text={englishTitle}
-        anchor={{ x: 0.5, y: 0.5 }}
-        y={10}
-        style={{
-          fontFamily: "Orbitron",
-          fontSize: 16,
-          fill: COLORS.PRIMARY_CYAN,
-          fontWeight: "600",
-          letterSpacing: 2,
-        }}
-        alpha={0.9}
-        data-testid="english-title"
-      />
-
-      {/* Subtitle if provided */}
-      {subtitle && (
-        <pixiText
-          text={subtitle}
-          anchor={{ x: 0.5, y: 0.5 }}
-          y={45}
-          style={{
-            fontFamily: "Noto Sans KR",
-            fontSize: 14,
-            fill: COLORS.WHITE,
-            fontWeight: "400",
-          }}
-          alpha={0.8}
-          data-testid="subtitle"
-        />
+    <header className={`korean-header ${className}`} style={style}>
+      {/* Back Button (if callback provided) */}
+      {onBackButtonClick && (
+        <button onClick={handleBackClick} className="back-button">
+          ← 뒤로
+        </button>
       )}
-    </pixiContainer>
+
+      {/* Logo Section (if enabled) */}
+      {showLogo && (
+        <div className="logo-section">
+          <div className="trigram-symbol">☰☱☲☳☴☵☶☷</div>
+        </div>
+      )}
+
+      {/* Main Header - Fix: Use conditional rendering instead of dynamic tag */}
+      {level === 1 && (
+        <h1 {...headerProps}>
+          <KoreanText
+            korean={korean}
+            english={english}
+            size="xxlarge"
+            weight="bold"
+            className="header-text"
+          />
+        </h1>
+      )}
+      {level === 2 && (
+        <h2 {...headerProps}>
+          <KoreanText
+            korean={korean}
+            english={english}
+            size="xlarge"
+            weight="bold"
+            className="header-text"
+          />
+        </h2>
+      )}
+      {level === 3 && (
+        <h3 {...headerProps}>
+          <KoreanText
+            korean={korean}
+            english={english}
+            size="large"
+            weight="bold"
+            className="header-text"
+          />
+        </h3>
+      )}
+      {level > 3 && (
+        <h4 {...headerProps}>
+          <KoreanText
+            korean={korean}
+            english={english}
+            size="large"
+            weight="bold"
+            className="header-text"
+          />
+        </h4>
+      )}
+
+      {/* Subtitle */}
+      {subtitle && (
+        <div className="subtitle">
+          {typeof subtitle === "string" ? (
+            <span className="subtitle-text">{subtitle}</span>
+          ) : (
+            <KoreanText
+              korean={subtitle.korean}
+              english={subtitle.english}
+              size="medium"
+              weight="regular"
+              className="subtitle-korean"
+            />
+          )}
+        </div>
+      )}
+
+      <style>{`
+        .korean-header {
+          text-align: center;
+          padding: 2rem;
+          position: relative;
+          background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(26, 26, 46, 0.8));
+          border-bottom: 2px solid #00ffff;
+          margin-bottom: 2rem;
+        }
+
+        .back-button {
+          position: absolute;
+          top: 1rem;
+          left: 1rem;
+          padding: 0.5rem 1rem;
+          background: rgba(0, 255, 255, 0.1);
+          border: 1px solid #00ffff;
+          border-radius: 4px;
+          color: #00ffff;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          font-family: 'Noto Sans KR', Arial, sans-serif;
+        }
+
+        .back-button:hover {
+          background: rgba(0, 255, 255, 0.2);
+          transform: translateX(-2px);
+        }
+
+        .logo-section {
+          margin-bottom: 1rem;
+        }
+
+        .trigram-symbol {
+          font-size: 2rem;
+          color: #ffd700;
+          text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+          letter-spacing: 0.5rem;
+          margin-bottom: 1rem;
+        }
+
+        .main-title {
+          margin: 0;
+          text-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
+        }
+
+        .header-text {
+          background: linear-gradient(45deg, #00ffff, #ffffff, #ffd700);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          font-weight: 900;
+        }
+
+        .subtitle {
+          margin-top: 1rem;
+        }
+
+        .subtitle-text {
+          color: #c0c0c0;
+          font-size: 1.1rem;
+          font-style: italic;
+          font-family: 'Noto Sans KR', Arial, sans-serif;
+        }
+
+        .subtitle-korean {
+          color: #c0c0c0;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+          .korean-header {
+            padding: 1rem;
+          }
+
+          .trigram-symbol {
+            font-size: 1.5rem;
+            letter-spacing: 0.3rem;
+          }
+
+          .back-button {
+            padding: 0.3rem 0.8rem;
+            font-size: 0.9rem;
+          }
+        }
+
+        /* Cyberpunk glow effects */
+        .korean-header::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(45deg, transparent, rgba(0, 255, 255, 0.1), transparent);
+          pointer-events: none;
+          z-index: -1;
+        }
+
+        /* Animation for trigram symbols */
+        .trigram-symbol {
+          animation: trigramGlow 3s ease-in-out infinite;
+        }
+
+        @keyframes trigramGlow {
+          0%, 100% {
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+          }
+          50% {
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 30px rgba(255, 215, 0, 0.4);
+          }
+        }
+      `}</style>
+    </header>
   );
 }
+
+export default KoreanHeader;
