@@ -67,9 +67,9 @@ export class CombatSystem {
         vitalPointsHit: hitResult.vitalPointsHit,
         // Fix: Use 'critical' instead of 'criticalHit'
         critical: hitResult.criticalHit || false,
-        hitPosition: hitResult.location, // <-- fix here
+        hitPosition: hitResult.location,
         effectiveness: hitResult.effectiveness * stanceEffectiveness,
-        statusEffectsApplied: hitResult.statusEffectsApplied,
+        // Remove statusEffectsApplied
         painLevel: hitResult.painLevel,
         consciousnessImpact: hitResult.consciousnessImpact,
         // ...fill all other required CombatResult fields with reasonable values or placeholders...
@@ -106,9 +106,9 @@ export class CombatSystem {
       effects: technique.effects || [],
       vitalPointsHit: [],
       critical: false,
-      hitPosition: { x: 50, y: 50 }, // <-- fix here
+      hitPosition: { x: 50, y: 50 },
       effectiveness: stanceEffectiveness,
-      statusEffectsApplied: technique.effects || [],
+      // Remove statusEffectsApplied
       painLevel: modifiedDamage * 0.5,
       consciousnessImpact: modifiedDamage * 0.3,
       // ...fill all other required CombatResult fields with reasonable values or placeholders...
