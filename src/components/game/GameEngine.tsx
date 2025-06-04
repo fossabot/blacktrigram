@@ -1,8 +1,7 @@
 // Complete game engine for Black Trigram Korean martial arts
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { Application } from "@pixi/react";
-import type { Position, HitEffect } from "../../types"; // Remove unused TrigramStance import
+import type { Position, HitEffect } from "../../types";
 import { CombatSystem } from "../../systems/CombatSystem";
 import { TrigramSystem } from "../../systems/TrigramSystem";
 import { AudioManager } from "../../audio/AudioManager";
@@ -181,9 +180,18 @@ export function GameEngine({
   }, [systemConfig, gamePhase, handleStanceChange, handleAttack]); // Add handleAttack to dependencies
 
   return (
-    <Application width={800} height={600} backgroundColor={0x1a1a1a}>
+    <pixiContainer width={800} height={600}>
+      {/* Background */}
+      <pixiGraphics
+        draw={(g) => {
+          g.clear();
+          g.beginFill(0x1a1a1a);
+          g.drawRect(0, 0, 800, 600);
+          g.endFill();
+        }}
+      />
       {/* Game components will be rendered here */}
       {/* Combat effects can be rendered based on combatEffects state */}
-    </Application>
+    </pixiContainer>
   );
 }

@@ -1,9 +1,7 @@
 // Hit effects layer for combat feedback
 
 import React from "react";
-import { Container, Graphics } from "@pixi/react"; // Remove unused Text
 import type { HitEffect } from "../../types/effects";
-// Remove unused KOREAN_COLORS import
 
 interface HitEffectsLayerProps {
   readonly effects: readonly HitEffect[];
@@ -13,9 +11,9 @@ export function HitEffectsLayer({
   effects,
 }: HitEffectsLayerProps): React.JSX.Element {
   return (
-    <Container>
+    <pixiContainer>
       {effects.map((effect) => (
-        <Graphics
+        <pixiGraphics
           key={effect.id}
           x={effect.position.x}
           y={effect.position.y}
@@ -28,7 +26,7 @@ export function HitEffectsLayer({
           }}
         />
       ))}
-    </Container>
+    </pixiContainer>
   );
 }
 

@@ -1,7 +1,6 @@
 // Complete Player component with Korean martial arts character rendering
 
 import React, { useMemo, useCallback } from "react";
-import { Container } from "@pixi/react";
 import type { PlayerProps } from "../../types/components";
 import { useAudio } from "../../audio/AudioProvider";
 import { KOREAN_COLORS, TRIGRAM_DATA } from "../../types/constants";
@@ -118,7 +117,7 @@ export function Player({
   }, [onAttack, position, stance, executeTechnique]);
 
   return (
-    <Container
+    <pixiContainer
       x={position.x + x}
       y={position.y + y}
       scale={{ x: facing === "left" ? -1 : 1, y: 1 }}
@@ -129,7 +128,7 @@ export function Player({
       onClick={handleAttack} // Use handleAttack to utilize onAttack prop
     >
       {/* Player visual representation */}
-      <Container
+      <pixiContainer
         x={0}
         y={0}
         tint={playerStatus.statusColor}
@@ -140,23 +139,23 @@ export function Player({
         }}
       >
         {/* Player body representation */}
-        <Container x={0} y={0}>
+        <pixiContainer x={0} y={0}>
           {/* Show stance indicator using archetype */}
           {TRIGRAM_DATA[stance] && isPlayer1 && (
-            <Container x={0} y={-40}>
+            <pixiContainer x={0} y={-40}>
               {/* Trigram symbol representation */}
-            </Container>
+            </pixiContainer>
           )}
-        </Container>
-      </Container>
+        </pixiContainer>
+      </pixiContainer>
 
       {/* Combat effects */}
       {isAttacking && (
-        <Container x={facing === "left" ? -20 : 20} y={0}>
+        <pixiContainer x={facing === "left" ? -20 : 20} y={0}>
           {/* Attack effect visualization */}
-        </Container>
+        </pixiContainer>
       )}
-    </Container>
+    </pixiContainer>
   );
 }
 

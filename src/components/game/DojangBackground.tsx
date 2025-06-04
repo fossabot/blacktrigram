@@ -1,7 +1,6 @@
 // Underground dojang background for Korean martial arts
 
 import React, { useCallback } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
 import { KOREAN_COLORS, TRIGRAM_DATA } from "../../types/constants";
 
 export interface DojangBackgroundProps {
@@ -98,15 +97,15 @@ export function DojangBackground({
   );
 
   return (
-    <Container>
+    <pixiContainer>
       {/* Main dojang background */}
-      <Graphics draw={drawBackground} />
+      <pixiGraphics draw={drawBackground} />
 
       {/* Trigram symbols if enabled */}
-      {showTrigramSymbols && <Graphics draw={drawTrigramSymbols} />}
+      {showTrigramSymbols && <pixiGraphics draw={drawTrigramSymbols} />}
 
       {/* Dojang identification text */}
-      <Text
+      <pixiText
         text="흑괘 도장 (Black Trigram Dojang)"
         x={width * 0.5}
         y={height * 0.05}
@@ -127,7 +126,7 @@ export function DojangBackground({
       />
 
       {/* Traditional Korean martial arts atmosphere text */}
-      <Text
+      <pixiText
         text="정격자의 길 (Path of the Precision Striker)"
         x={width * 0.5}
         y={height * 0.95}
@@ -139,6 +138,6 @@ export function DojangBackground({
           fontStyle: "italic",
         }}
       />
-    </Container>
+    </pixiContainer>
   );
 }

@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
 import type { PlayerState, TrigramStance, StatusEffect } from "../../types";
 import { KOREAN_COLORS, TRIGRAM_DATA } from "../../types/constants";
 
@@ -273,25 +272,25 @@ export function PlayerVisuals({
   };
 
   return (
-    <Container>
+    <pixiContainer>
       {/* Use currentPlayer for rendering */}
-      <Container
+      <pixiContainer
         x={playerPosition.x}
         y={playerPosition.y}
         scale={{ x: player.facing === "left" ? -1 : 1, y: 1 }}
         alpha={isActive ? 1.0 : 0.6}
       >
         {/* Main Korean martial artist body */}
-        <Graphics draw={drawKoreanMartialArtist} />
+        <pixiGraphics draw={drawKoreanMartialArtist} />
 
         {/* Status effects overlay */}
-        <Graphics draw={drawStatusEffects} />
+        <pixiGraphics draw={drawStatusEffects} />
 
         {/* Health/Ki/Stamina bars */}
-        <Graphics draw={drawStatusBars} />
+        <pixiGraphics draw={drawStatusBars} />
 
         {/* Korean martial arts stance indicator */}
-        <Text
+        <pixiText
           text={getTrigramSymbol(player.stance)}
           x={0}
           y={-90 * scale}
@@ -312,7 +311,7 @@ export function PlayerVisuals({
         />
 
         {/* Player name with Korean styling */}
-        <Text
+        <pixiText
           text={player.name}
           x={0}
           y={40 * scale}
@@ -327,8 +326,8 @@ export function PlayerVisuals({
 
         {/* Debug information for Korean martial arts development */}
         {showDebugInfo && (
-          <Container>
-            <Text
+          <pixiContainer>
+            <pixiText
               text={`자세: ${stanceData.name.korean} (${player.stance})`}
               x={0}
               y={50 * scale}
@@ -339,7 +338,7 @@ export function PlayerVisuals({
                 fill: KOREAN_COLORS.CYAN,
               }}
             />
-            <Text
+            <pixiText
               text={`기: ${player.ki}/${player.maxKi} | 체: ${player.health}/${player.maxHealth}`}
               x={0}
               y={60 * scale}
@@ -350,10 +349,10 @@ export function PlayerVisuals({
                 fill: KOREAN_COLORS.CYAN,
               }}
             />
-          </Container>
+          </pixiContainer>
         )}
-      </Container>
-    </Container>
+      </pixiContainer>
+    </pixiContainer>
   );
 }
 
