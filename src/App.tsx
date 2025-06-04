@@ -1,10 +1,9 @@
 import React, { useState, useCallback, useEffect, useReducer } from "react";
 import { AudioProvider } from "./audio/AudioProvider";
-import { IntroScreen } from "./components/IntroScreen";
+import IntroScreen from "./components/IntroScreen";
 import { TrainingScreen } from "./components/training/TrainingScreen";
 import { CombatScreen } from "./components/combat/CombatScreen";
-import { GameEngine } from "./components/game/GameEngine";
-import { EndScreen } from "./components/EndScreen";
+import EndScreen from "./components/ui/EndScreen";
 import type {
   AppState,
   GamePhase,
@@ -13,7 +12,7 @@ import type {
   TrigramStance,
 } from "./types";
 import { createPlayerState } from "./utils/playerUtils";
-import { KOREAN_COLORS, GAME_CONFIG } from "./types/constants";
+import { KOREAN_COLORS } from "./types/constants";
 import "./App.css";
 
 // App state reducer for complex state management
@@ -65,7 +64,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
         gamePhase: "intro",
         gameTime: 0,
         currentRound: 1,
-        timeRemaining: GAME_CONFIG.DEFAULT_ROUND_TIME || 180000,
+        timeRemaining: 180000,
         combatLog: [],
         isPaused: false,
         winnerId: null,
@@ -225,7 +224,6 @@ export default function App(): React.JSX.Element {
             onRestart={() => dispatch({ type: "RESET_GAME" })}
             onMenu={() => handlePhaseChange("intro")}
             winner={appState.winnerId || ""}
-            loser={appState.players.find((p) => p.id !== appState.winnerId)}
           />
         );
 
@@ -233,8 +231,8 @@ export default function App(): React.JSX.Element {
         return (
           <div
             style={{
-              color: KOREAN_COLORS.WHITE,
-              backgroundColor: KOREAN_COLORS.BLACK,
+              color: `#${KOREAN_COLORS.WHITE.toString(16)}`,
+              backgroundColor: `#${KOREAN_COLORS.BLACK.toString(16)}`,
               minHeight: "100vh",
               display: "flex",
               alignItems: "center",
@@ -253,8 +251,10 @@ export default function App(): React.JSX.Element {
         className="app"
         style={{
           minHeight: "100vh",
-          background: `linear-gradient(135deg, ${KOREAN_COLORS.BLACK} 0%, #1a1a2e 50%, #16213e 100%)`,
-          color: KOREAN_COLORS.WHITE,
+          background: `linear-gradient(135deg, #${KOREAN_COLORS.BLACK.toString(
+            16
+          )} 0%, #1a1a2e 50%, #16213e 100%)`,
+          color: `#${KOREAN_COLORS.WHITE.toString(16)}`,
           fontFamily: '"Noto Sans KR", Arial, sans-serif',
         }}
       >
@@ -268,7 +268,7 @@ export default function App(): React.JSX.Element {
               top: 10,
               right: 10,
               backgroundColor: "rgba(0,0,0,0.7)",
-              color: KOREAN_COLORS.CYAN,
+              color: `#${KOREAN_COLORS.CYAN.toString(16)}`,
               padding: "10px",
               borderRadius: "5px",
               fontSize: "12px",
