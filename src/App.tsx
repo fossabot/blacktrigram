@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect, useReducer } from "react";
 import { AudioProvider } from "./audio/AudioProvider";
-import IntroScreen from "./components/IntroScreen";
+import { IntroScreen } from "./components/intro/IntroScreen";
 import { TrainingScreen } from "./components/training/TrainingScreen";
 import { CombatScreen } from "./components/combat/CombatScreen";
 import EndScreen from "./components/ui/EndScreen";
@@ -180,11 +180,9 @@ export default function App(): React.JSX.Element {
         return (
           <IntroScreen
             onArchetypeSelect={handleArchetypeSelect}
-            onStanceSelect={handleStanceSelect}
             onStartTraining={() => handlePhaseChange("training")}
             onStartCombat={() => handlePhaseChange("combat")}
             selectedArchetype={selectedArchetype}
-            selectedStance={selectedStance}
           />
         );
 

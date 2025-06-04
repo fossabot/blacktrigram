@@ -137,24 +137,27 @@ describe("CombatSystem", () => {
     it("should return a CombatResult indicating a miss", async () => {
       // Mock Math.random to force a miss by setting accuracy very low
       vi.spyOn(Math, "random").mockReturnValue(0.99); // High random value to force miss
-      
+
       // Create a technique with very low accuracy
       const lowAccuracyTechnique: KoreanTechnique = {
         ...mockGeonTechnique,
         accuracy: 0.1, // Very low accuracy
       };
-      
+
       const result = await CombatSystem.executeAttack(
         attacker,
         defender,
         lowAccuracyTechnique
       );
-      
+
       // Since executeAttack currently always returns hit: true, we'll test the executeTechnique method instead
-      const techniqueResult = CombatSystem.executeTechnique(lowAccuracyTechnique, "musa");
+      const techniqueResult = CombatSystem.executeTechnique(
+        lowAccuracyTechnique,
+        "musa"
+      );
       expect(techniqueResult.hit).toBe(false);
       expect(techniqueResult.damage).toBe(0);
-      
+
       vi.spyOn(Math, "random").mockRestore();
     });
 

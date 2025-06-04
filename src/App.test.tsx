@@ -26,10 +26,10 @@ vi.mock("./components/game/GameEngine", () => ({
   GameEngine: () => <div data-testid="game-engine">Game Engine</div>,
 }));
 
-vi.mock("./components/intro/IntroScreen", () => ({
-  IntroScreen: ({ onStartGame, onStartTraining }: any) => (
+vi.mock("./components/IntroScreen", () => ({
+  default: ({ onStartTraining, onStartCombat }: any) => (
     <div data-testid="intro-screen">
-      <button onClick={onStartGame} data-testid="start-game">
+      <button onClick={onStartCombat} data-testid="start-game">
         시작
       </button>
       <button onClick={onStartTraining} data-testid="start-training">
