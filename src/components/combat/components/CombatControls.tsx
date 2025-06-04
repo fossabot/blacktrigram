@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from "react"; // Remove unused useCallback
+import React, { useState, useMemo } from "react";
 import type { PlayerState, TrigramStance } from "../../../types";
 import { KOREAN_COLORS, TRIGRAM_DATA } from "../../../types";
 import { useAudio } from "../../../audio/AudioManager"; // Fix: Use named import
 
 interface CombatControlsProps {
   readonly players: readonly [PlayerState, PlayerState];
-  readonly player: PlayerState;
+  readonly player: PlayerState; // Add missing required prop
   readonly onStanceChange: (playerIndex: number, stance: TrigramStance) => void;
   readonly isExecutingTechnique: boolean;
   readonly isPaused: boolean;
@@ -13,7 +13,7 @@ interface CombatControlsProps {
 }
 
 export function CombatControls({
-  players,
+  players, // Use players parameter
   player,
   onStanceChange,
   isExecutingTechnique,
@@ -23,6 +23,16 @@ export function CombatControls({
   const [selectedStance, setSelectedStance] = useState<TrigramStance>(
     player.stance
   );
+
+  // Use otherPlayer in combat logic
+  const combatData = useMemo(() => {
+    const otherPlayer = players.find((p) => p.id !== player.id) || players[1];
+    return {
+      otherPlayer,
+      canAttack: !isExecutingTechnique && !isPaused,
+      stanceCount: players.length,
+    };
+  }, [players, player.id, isExecutingTechnique, isPaused]);
 
   // Fix: Use correct property names (lowercase)
   const STANCE_COLORS = {

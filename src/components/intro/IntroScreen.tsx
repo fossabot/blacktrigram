@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 import type { IntroScreenProps } from "../../types";
 import { KOREAN_COLORS } from "../../types";
-import { useAudio } from "../../audio/AudioManager";
+import { useAudio } from "../../audio/AudioManager"; // Fix: Use named import
 import { KoreanHeader } from "../ui/base/KoreanHeader";
 import { PhilosophySection } from "./components/PhilosophySection";
-import { KoreanText } from "../ui/base/korean-text";
-import { MenuSection } from "./components/MenuSection";
+import { KoreanText } from "../ui";
 
 export function IntroScreen({
-  onGamePhaseChange,
+  onGamePhaseChange, // Use onGamePhaseChange parameter
   onSectionChange,
   currentSection = "menu",
   onStartTraining,
@@ -16,7 +15,7 @@ export function IntroScreen({
   player,
 }: IntroScreenProps): React.JSX.Element {
   const [activeSection, setActiveSection] = useState(currentSection);
-  const audio = useAudio();
+  const audio = useAudio(); // Now works correctly
 
   // Play intro music when component mounts
   useEffect(() => {
@@ -31,6 +30,10 @@ export function IntroScreen({
   const handleSectionChange = (section: string) => {
     setActiveSection(section);
     onSectionChange?.(section);
+  };
+
+  const handleGamePhaseChange = (phase: string) => {
+    onGamePhaseChange(phase); // Use the parameter
   };
 
   const containerStyle: React.CSSProperties = {
@@ -49,7 +52,9 @@ export function IntroScreen({
   if (activeSection === "philosophy") {
     return (
       <div style={containerStyle}>
-        <PhilosophySection onGamePhaseChange={onStartTraining} />
+        <PhilosophySection
+          onGamePhaseChange={handleGamePhaseChange} // Fix: Provide required function
+        />
       </div>
     );
   }

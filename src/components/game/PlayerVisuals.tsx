@@ -27,7 +27,7 @@ interface VisualEffectState {
   opacity: number;
 }
 
-function PlayerVisuals({
+export function PlayerVisuals({
   player,
   isActive = true,
   showDebugInfo = false,
@@ -273,411 +273,86 @@ function PlayerVisuals({
   };
 
   return (
-    <Container
-      x={playerPosition.x}
-      y={playerPosition.y}
-      scale={scale}
-      alpha={isActive ? 1.0 : 0.6}
-    >
-      {/* Main Korean martial artist body */}
-      <Graphics draw={drawKoreanMartialArtist} />
+    <Container>
+      {/* Use currentPlayer for rendering */}
+      <Container
+        x={playerPosition.x}
+        y={playerPosition.y}
+        scale={scale}
+        alpha={isActive ? 1.0 : 0.6}
+      >
+        {/* Main Korean martial artist body */}
+        <Graphics draw={drawKoreanMartialArtist} />
 
-      {/* Status effects overlay */}
-      <Graphics draw={drawStatusEffects} />
+        {/* Status effects overlay */}
+        <Graphics draw={drawStatusEffects} />
 
-      {/* Health/Ki/Stamina bars */}
-      <Graphics draw={drawStatusBars} />
+        {/* Health/Ki/Stamina bars */}
+        <Graphics draw={drawStatusBars} />
 
-      {/* Korean martial arts stance indicator */}
-      <Text
-        text={getTrigramSymbol(player.stance)}
-        x={0}
-        y={-90 * scale}
-        anchor={0.5}
-        style={{
-          fontFamily: "Noto Sans KR, Arial",
-          fontSize: 16 * scale,
-          fill: stanceColor,
-          fontWeight: "bold",
-          dropShadow: {
-            color: KOREAN_COLORS.BLACK,
-            distance: 1,
-            alpha: 0.8,
-            angle: Math.PI / 4,
-            blur: 1,
-          },
-        }}
-      />
+        {/* Korean martial arts stance indicator */}
+        <Text
+          text={getTrigramSymbol(player.stance)}
+          x={0}
+          y={-90 * scale}
+          anchor={0.5}
+          style={{
+            fontFamily: "Noto Sans KR, Arial",
+            fontSize: 16 * scale,
+            fill: stanceColor,
+            fontWeight: "bold",
+            dropShadow: {
+              color: KOREAN_COLORS.BLACK,
+              distance: 1,
+              alpha: 0.8,
+              angle: Math.PI / 4,
+              blur: 1,
+            },
+          }}
+        />
 
-      {/* Player name with Korean styling */}
-      <Text
-        text={player.name}
-        x={0}
-        y={40 * scale}
-        anchor={0.5}
-        style={{
-          fontFamily: "Noto Sans KR, Arial",
-          fontSize: 10 * scale,
-          fill: KOREAN_COLORS.WHITE,
-          fontWeight: "normal",
-        }}
-      />
+        {/* Player name with Korean styling */}
+        <Text
+          text={player.name}
+          x={0}
+          y={40 * scale}
+          anchor={0.5}
+          style={{
+            fontFamily: "Noto Sans KR, Arial",
+            fontSize: 10 * scale,
+            fill: KOREAN_COLORS.WHITE,
+            fontWeight: "normal",
+          }}
+        />
 
-      {/* Debug information for Korean martial arts development */}
-      {showDebugInfo && (
-        <Container>
-          <Text
-            text={`자세: ${stanceData.name.korean} (${player.stance})`}
-            x={0}
-            y={50 * scale}
-            anchor={0.5}
-            style={{
-              fontFamily: "Noto Sans KR, Arial",
-              fontSize: 8 * scale,
-              fill: KOREAN_COLORS.CYAN,
-            }}
-          />
-          <Text
-            text={`기: ${player.ki}/${player.maxKi} | 체: ${player.health}/${player.maxHealth}`}
-            x={0}
-            y={60 * scale}
-            anchor={0.5}
-            style={{
-              fontFamily: "Noto Sans KR, Arial",
-              fontSize: 8 * scale,
-              fill: KOREAN_COLORS.CYAN,
-            }}
-          />
-        </Container>
-      )}
-    </Container>
-  );
-}
-
-// Fix: Export as default instead of named export
-export default function PlayerVisuals({
-  player,
-  isActive = true,
-  showDebugInfo = false,
-  scale = 1,
-}: PlayerVisualsProps): React.JSX.Element {
-  const [animationState, setAnimationState] = useState<StanceAnimationState>({
-    currentFrame: 0,
-    animationSpeed: 0.1,
-    isTransitioning: false,
-    transitionProgress: 0,
-  });
-  const [visualEffects, setVisualEffects] = useState<VisualEffectState[]>([]);
-
-  // Korean martial arts stance data
-  const stanceData = TRIGRAM_DATA[player.stance];
-  const stanceColor = KOREAN_COLORS[player.stance] || KOREAN_COLORS.WHITE;
-  const playerPosition = player.position;
-
-  // Update animation based on player state
-  useEffect(() => {
-    if (!isActive) return;
-
-    const interval = setInterval(() => {
-      setAnimationState((prev) => ({
-        ...prev,
-        currentFrame: (prev.currentFrame + prev.animationSpeed) % 1,
-        transitionProgress: prev.isTransitioning
-          ? Math.min(prev.transitionProgress + 0.05, 1.0)
-          : 0,
-      }));
-    }, 16); // 60fps
-
-    return () => clearInterval(interval);
-  }, [isActive, player.stance]);
-
-  // Update visual effects based on status effects
-  useEffect(() => {
-    const newEffects: VisualEffectState[] = player.activeEffects?.map(
-      (effect: StatusEffect) => ({
-        id: effect.id,
-        type: effect.type,
-        intensity: getEffectIntensityValue(effect.intensity),
-        timeRemaining: effect.duration || 0,
-        color: getEffectColor(effect.type),
-        opacity: getEffectOpacity(effect.intensity),
-      })
-    );
-
-    setVisualEffects(newEffects);
-  }, [player.activeEffects]);
-
-  // Korean martial artist body rendering
-  const drawKoreanMartialArtist = useCallback(
-    (g: any) => {
-      if (!g || !g.clear) return;
-
-      g.clear();
-
-      // Base body structure for Korean martial artist
-      const bodyHeight = 60 * scale;
-      const bodyWidth = 20 * scale;
-      const headRadius = 8 * scale;
-
-      // Health-based color intensity
-      const healthRatio = player.health / player.maxHealth;
-      const bodyAlpha = Math.max(0.3, healthRatio);
-
-      // Stance-based posture adjustments
-      const stancePosture = getStancePosture(
-        player.stance,
-        animationState.currentFrame
-      );
-
-      // Draw head (Korean martial artist)
-      g.beginFill(KOREAN_COLORS.HANBOK_WHITE, bodyAlpha);
-      g.drawCircle(0, -bodyHeight * 0.6, headRadius);
-      g.endFill();
-
-      // Draw body with stance-specific posture
-      g.beginFill(stanceColor, bodyAlpha * 0.8);
-      g.drawRoundedRect(
-        -bodyWidth * 0.5 + stancePosture.bodyLean,
-        -bodyHeight * 0.4,
-        bodyWidth,
-        bodyHeight * 0.6,
-        4 * scale
-      );
-      g.endFill();
-
-      // Draw arms in stance-specific positions
-      drawStanceArms(
-        g,
-        player.stance,
-        stancePosture,
-        scale,
-        stanceColor,
-        bodyAlpha
-      );
-
-      // Draw legs in stance-specific positions
-      drawStanceLegs(
-        g,
-        player.stance,
-        stancePosture,
-        scale,
-        stanceColor,
-        bodyAlpha
-      );
-
-      // Draw Ki energy aura
-      if (player.ki > 20) {
-        drawKiAura(g, player.ki / player.maxKi, stanceColor, scale);
-      }
-
-      // Draw stance transition effects
-      if (animationState.isTransitioning) {
-        drawTransitionEffects(
-          g,
-          animationState.transitionProgress,
-          stanceColor,
-          scale
-        );
-      }
-
-      // Draw combat readiness indicator
-      drawCombatReadinessIndicator(g, player.combatReadiness, scale);
-    },
-    [player, stanceColor, scale, animationState]
-  );
-
-  // Status effects visual overlay
-  const drawStatusEffects = useCallback(
-    (g: any) => {
-      if (!g || !g.clear) return;
-
-      g.clear();
-
-      visualEffects.forEach((effect, index) => {
-        const radius = (15 + index * 3) * scale;
-        const alpha = effect.opacity * 0.6;
-
-        // Pulsing effect based on intensity
-        const pulse =
-          Math.sin(Date.now() * 0.01 * effect.intensity) * 0.3 + 0.7;
-
-        g.lineStyle(2 * scale, effect.color, alpha * pulse);
-        g.drawCircle(0, 0, radius);
-      });
-    },
-    [visualEffects, scale]
-  );
-
-  // Health and Ki bars
-  const drawStatusBars = useCallback(
-    (g: any) => {
-      if (!g || !g.clear) return;
-
-      g.clear();
-
-      const barWidth = 40 * scale;
-      const barHeight = 4 * scale;
-      const barSpacing = 8 * scale;
-      const yOffset = -80 * scale;
-
-      // Health bar (Korean traditional red)
-      const healthRatio = player.health / player.maxHealth;
-      g.beginFill(KOREAN_COLORS.BLACK, 0.5);
-      g.drawRoundedRect(-barWidth * 0.5, yOffset, barWidth, barHeight, 2);
-      g.endFill();
-
-      g.beginFill(KOREAN_COLORS.TRADITIONAL_RED, 0.8);
-      g.drawRoundedRect(
-        -barWidth * 0.5,
-        yOffset,
-        barWidth * healthRatio,
-        barHeight,
-        2
-      );
-      g.endFill();
-
-      // Ki bar (Korean traditional gold)
-      const kiRatio = player.ki / player.maxKi;
-      g.beginFill(KOREAN_COLORS.BLACK, 0.5);
-      g.drawRoundedRect(
-        -barWidth * 0.5,
-        yOffset + barSpacing,
-        barWidth,
-        barHeight,
-        2
-      );
-      g.endFill();
-
-      g.beginFill(KOREAN_COLORS.HEAVEN_GOLD, 0.8);
-      g.drawRoundedRect(
-        -barWidth * 0.5,
-        yOffset + barSpacing,
-        barWidth * kiRatio,
-        barHeight,
-        2
-      );
-      g.endFill();
-
-      // Stamina bar (Korean wind green)
-      if (player.stamina !== undefined) {
-        const staminaRatio = player.stamina / (player.maxStamina || 100);
-        g.beginFill(KOREAN_COLORS.BLACK, 0.5);
-        g.drawRoundedRect(
-          -barWidth * 0.5,
-          yOffset + barSpacing * 2,
-          barWidth,
-          barHeight,
-          2
-        );
-        g.endFill();
-
-        g.beginFill(KOREAN_COLORS.WIND_GREEN, 0.8);
-        g.drawRoundedRect(
-          -barWidth * 0.5,
-          yOffset + barSpacing * 2,
-          barWidth * staminaRatio,
-          barHeight,
-          2
-        );
-        g.endFill();
-      }
-    },
-    [player, scale]
-  );
-
-  // Stance indicator with Korean trigram symbol
-  const getTrigramSymbol = (stance: TrigramStance): string => {
-    const symbols = {
-      geon: "☰",
-      tae: "☱",
-      li: "☲",
-      jin: "☳",
-      son: "☴",
-      gam: "☵",
-      gan: "☶",
-      gon: "☷",
-    };
-    return symbols[stance] || "☰";
-  };
-
-  return (
-    <Container
-      x={playerPosition.x}
-      y={playerPosition.y}
-      scale={scale}
-      alpha={isActive ? 1.0 : 0.6}
-    >
-      {/* Main Korean martial artist body */}
-      <Graphics draw={drawKoreanMartialArtist} />
-
-      {/* Status effects overlay */}
-      <Graphics draw={drawStatusEffects} />
-
-      {/* Health/Ki/Stamina bars */}
-      <Graphics draw={drawStatusBars} />
-
-      {/* Korean martial arts stance indicator */}
-      <Text
-        text={getTrigramSymbol(player.stance)}
-        x={0}
-        y={-90 * scale}
-        anchor={0.5}
-        style={{
-          fontFamily: "Noto Sans KR, Arial",
-          fontSize: 16 * scale,
-          fill: stanceColor,
-          fontWeight: "bold",
-          dropShadow: {
-            color: KOREAN_COLORS.BLACK,
-            distance: 1,
-            alpha: 0.8,
-            angle: Math.PI / 4,
-            blur: 1,
-          },
-        }}
-      />
-
-      {/* Player name with Korean styling */}
-      <Text
-        text={player.name}
-        x={0}
-        y={40 * scale}
-        anchor={0.5}
-        style={{
-          fontFamily: "Noto Sans KR, Arial",
-          fontSize: 10 * scale,
-          fill: KOREAN_COLORS.WHITE,
-          fontWeight: "normal",
-        }}
-      />
-
-      {/* Debug information for Korean martial arts development */}
-      {showDebugInfo && (
-        <Container>
-          <Text
-            text={`자세: ${stanceData.name.korean} (${player.stance})`}
-            x={0}
-            y={50 * scale}
-            anchor={0.5}
-            style={{
-              fontFamily: "Noto Sans KR, Arial",
-              fontSize: 8 * scale,
-              fill: KOREAN_COLORS.CYAN,
-            }}
-          />
-          <Text
-            text={`기: ${player.ki}/${player.maxKi} | 체: ${player.health}/${player.maxHealth}`}
-            x={0}
-            y={60 * scale}
-            anchor={0.5}
-            style={{
-              fontFamily: "Noto Sans KR, Arial",
-              fontSize: 8 * scale,
-              fill: KOREAN_COLORS.CYAN,
-            }}
-          />
-        </Container>
-      )}
+        {/* Debug information for Korean martial arts development */}
+        {showDebugInfo && (
+          <Container>
+            <Text
+              text={`자세: ${stanceData.name.korean} (${player.stance})`}
+              x={0}
+              y={50 * scale}
+              anchor={0.5}
+              style={{
+                fontFamily: "Noto Sans KR, Arial",
+                fontSize: 8 * scale,
+                fill: KOREAN_COLORS.CYAN,
+              }}
+            />
+            <Text
+              text={`기: ${player.ki}/${player.maxKi} | 체: ${player.health}/${player.maxHealth}`}
+              x={0}
+              y={60 * scale}
+              anchor={0.5}
+              style={{
+                fontFamily: "Noto Sans KR, Arial",
+                fontSize: 8 * scale,
+                fill: KOREAN_COLORS.CYAN,
+              }}
+            />
+          </Container>
+        )}
+      </Container>
     </Container>
   );
 }
@@ -993,4 +668,4 @@ function getEffectOpacity(intensity: string): number {
 
 // Keep named export for compatibility
 export { PlayerVisuals };
-export const PlayerVisualsDefault = PlayerVisuals;
+export default PlayerVisuals;

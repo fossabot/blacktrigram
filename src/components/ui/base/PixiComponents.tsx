@@ -3,7 +3,6 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import { TextStyle } from "@pixi/text"; // Import as value, not type
 import type {
   Graphics as PixiGraphicsType,
   FederatedPointerEvent,
@@ -20,7 +19,7 @@ import { KoreanHighlightTextProps } from "./KoreanPixiComponents";
 
 // Extended TextStyle interface for better type safety
 export interface ExtendedPixiTextStyle
-  extends Partial<Omit<TextStyle, "dropShadow" | "fontWeight">> {
+  extends Partial<Omit<PIXI.TextStyle, "dropShadow" | "fontWeight">> {
   readonly fontFamily?: string;
   readonly fontSize?: number;
   readonly fill?: number | string;
@@ -538,9 +537,9 @@ export function KoreanHighlightText({
 
 // Create proper text styles without unsupported properties
 export const createTextStyle = (
-  baseStyle: Partial<TextStyle> = {}
-): TextStyle => {
-  const style = new TextStyle({
+  baseStyle: Partial<PIXI.TextStyle> = {}
+): PIXI.TextStyle => {
+  const style = new PIXI.TextStyle({
     fontFamily: "Arial",
     fontSize: 16,
     fill: 0xffffff,

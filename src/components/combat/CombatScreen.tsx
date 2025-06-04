@@ -436,15 +436,15 @@ export function CombatScreen({
     handleCombatEnd,
   ]);
 
-  // Use combat actions (remove unused warning)
-  const handleCombatActions = useCallback(() => {
-    // This function uses handleAttack, handleBlock, handleSpecialTechnique
-    return {
+  // Remove unused handleCombatActions or use it
+  const combatActions = useCallback(
+    () => ({
       attack: handleAttack,
       block: handleBlock,
       special: handleSpecialTechnique,
-    };
-  }, [handleAttack, handleBlock, handleSpecialTechnique]);
+    }),
+    [handleAttack, handleBlock, handleSpecialTechnique]
+  );
 
   return (
     <PixiContainer>
@@ -462,7 +462,7 @@ export function CombatScreen({
           overflow: "hidden",
         }}
       >
-        {/* Combat Arena */}
+        {/* Combat Arena - use combatActions */}
         <CombatArena
           player={player}
           opponent={combatState.opponent}
@@ -474,7 +474,7 @@ export function CombatScreen({
           isActive={isActive && combatState.phase === "active"}
           showVitalPoints={settings?.showVitalPoints || false}
           showDebugInfo={settings?.showDebugInfo || false}
-          combatActions={handleCombatActions()} // Use the actions
+          combatActions={combatActions()}
         />
 
         {/* Combat HUD */}
@@ -491,7 +491,8 @@ export function CombatScreen({
         {/* Combat Controls */}
         <CombatControls
           players={[player, combatState.opponent]}
-          onStanceChange={handleStanceChange} // Fixed: Now matches expected signature
+          player={player} // Add missing required prop
+          onStanceChange={handleStanceChange}
           isExecutingTechnique={isProcessingAction}
           isPaused={combatState.phase !== "active"}
         />

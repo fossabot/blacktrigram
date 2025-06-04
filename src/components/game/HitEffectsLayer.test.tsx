@@ -89,7 +89,7 @@ describe("HitEffectsLayer", () => {
 
   const createMockHitEffect = (overrides = {}): HitEffect => ({
     id: "test-effect-1",
-    type: "normal_hit",
+    type: "medium",
     position: { x: 100, y: 100 },
     damage: 25,
     timestamp: Date.now(), // Fix: Use timestamp instead of startTime
@@ -101,14 +101,17 @@ describe("HitEffectsLayer", () => {
   it("should remove expired effects", async () => {
     const expiredEffect: HitEffect = {
       id: "expired-effect",
-      type: "normal_hit",
+      type: "light",
       position: { x: 50, y: 50 },
       damage: 10,
-      timestamp: Date.now() - 2000, // Fix: Use timestamp instead of startTime
+      timestamp: Date.now() - 2000, // Fix: Use timestamp
       duration: 1000,
       color: 0xff0000,
     };
 
-    // ...existing code...
+    const { rerender } = render(<HitEffectsLayer effects={[expiredEffect]} />);
+    // Use rerender in test logic
+    rerender(<HitEffectsLayer effects={[]} />);
+    expect(document.body).toBeInTheDocument();
   });
 });

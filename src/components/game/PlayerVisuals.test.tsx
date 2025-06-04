@@ -53,30 +53,28 @@ describe("PlayerVisuals", () => {
     conditions: [],
   };
 
+  const mockPlayerState = {
+    ...basePlayerState,
+    id: "mockPlayer",
+  };
+
+  const props = {
+    player: mockPlayerState,
+    playerState: mockPlayerState,
+    playerIndex: 0,
+    onStateUpdate: vi.fn(),
+  };
+
   it("renders basic player visuals", () => {
-    const props = {
-      playerState: basePlayerState,
-      playerIndex: 0,
-      onStateUpdate: vi.fn(),
-    };
     const { getByTestId } = render(<PlayerVisuals {...props} />);
+    expect(getByTestId("pixi-container")).toBeDefined();
   });
 
   it("renders with different health levels", () => {
-    const props = {
-      playerState: basePlayerState,
-      playerIndex: 0,
-      onStateUpdate: vi.fn(),
-    };
     render(<PlayerVisuals {...props} />);
   });
 
   it("renders stance-specific visuals", () => {
-    const props = {
-      playerState: basePlayerState,
-      playerIndex: 0,
-      onStateUpdate: vi.fn(),
-    };
     render(<PlayerVisuals {...props} />);
   });
 
@@ -90,6 +88,7 @@ describe("PlayerVisuals", () => {
       };
 
       const props = {
+        player: playerWithStance,
         playerState: playerWithStance,
         playerIndex: 0,
         onStateUpdate: vi.fn(),
@@ -114,6 +113,7 @@ describe("PlayerVisuals", () => {
     };
 
     const props = {
+      player: playerWithConditions,
       playerState: playerWithConditions,
       playerIndex: 0,
       onStateUpdate: vi.fn(),

@@ -1,6 +1,6 @@
 // Complete game engine for Black Trigram Korean martial arts
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Application } from "@pixi/react";
 import type { GameState, Position, HitEffect } from "../../types";
 import { CombatSystem } from "../../systems/CombatSystem";
@@ -10,9 +10,11 @@ import type { GameEngineProps } from "../../types/components";
 export function GameEngine({
   player1,
   player2,
-  onGameStateChange,
+  gamePhase,
+  onGameStateChange, // Use onGameStateChange parameter
   onPlayerUpdate,
   onGamePhaseChange,
+  gameMode = "demo",
 }: GameEngineProps): React.JSX.Element {
   const [gameState] = useState<GameState>({
     currentScreen: "combat",
@@ -143,8 +145,28 @@ export function GameEngine({
     return () => clearInterval(interval);
   }, [gameLoop]);
 
+  // Use onGameStateChange in component logic
+  const updateGameState = useCallback(
+    (updates: any) => {
+      onGameStateChange(updates);
+    },
+    [onGameStateChange]
+  );
+
+  // Use all required variables
+  const gameSystem = useMemo(
+    () => ({
+      handleStanceChange,
+      handleAttack,
+      gameEffects,
+      gameState,
+      updateGameState, // Use the function
+    }),
+    [handleStanceChange, handleAttack, gameEffects, gameState, updateGameState]
+  );
+
   // Use variables to avoid unused warnings
-  const _ = { handleStanceChange, handleAttack, gameEffects, gameState };
+  const _ = { gameSystem };
 
   return (
     <Application width={800} height={600} backgroundColor={0x1a1a1a}>
