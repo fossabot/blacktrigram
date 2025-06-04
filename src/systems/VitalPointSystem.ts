@@ -2,15 +2,15 @@
 
 import type {
   VitalPoint,
-  VitalPointHitResult,
-  VitalPointEffect,
   PlayerArchetype,
   KoreanTechnique,
-  VitalPointSystemConfig,
+  StatusEffect,
+  DamageType,
+  VitalPointHitResult,
   Position,
   TrigramStance,
   BodyRegion,
-  DamageType,
+  VitalPointEffect,
 } from "../types";
 
 import {
@@ -129,7 +129,6 @@ export class VitalPointSystem {
     technique: KoreanTechnique,
     targetVitalPointId: string | null,
     accuracyRoll: number,
-    attackerPosition: Position,
     defenderPosition: Position,
     defenderStance: TrigramStance
   ): VitalPointHitResult {
@@ -194,6 +193,7 @@ export class VitalPointSystem {
       // Standard body hit, no vital point involved
       damageDealt = this.damageCalculator.calculateDamage(
         {
+          // Create a generic "body" vital point for calculation if needed
           id: "body_hit",
           name: { korean: "몸통", english: "Body" },
           koreanName: "몸통",
@@ -212,9 +212,9 @@ export class VitalPointSystem {
           baseAccuracy: 0.7,
         },
         finalDamage,
-        "musa",
+        "musa", // Placeholder: Attacker's archetype should be passed in
         isCriticalHit,
-        technique.damageType || "blunt" // Provide default for undefined
+        technique.damageType || "blunt" // Provide default if undefined
       );
       // Add generic hit effects if any
     }

@@ -42,7 +42,7 @@ describe("VitalPointSystem", () => {
   let system: VitalPointSystem;
   const MOCK_PLAYER_ARCHETYPE: PlayerArchetype = "musa";
   const MOCK_DEFENDER_POSITION = { x: 50, y: 50 };
-  const MOCK_TARGET_DIMENSIONS = { width: 100, height: 100 };
+  const MOCK_DEFENDER_STANCE = "tae";
 
   beforeEach(() => {
     const mockConfig: VitalPointSystemConfig = {
@@ -142,16 +142,15 @@ describe("VitalPointSystem", () => {
 
   describe("calculateHit", () => {
     it("should return a hit result targeting a specific vital point", () => {
-      // Mock random to ensure hit
-      vi.spyOn(Math, "random").mockReturnValue(0.1); // For critical hit chance if applicable in calc
-      const accuracyRoll = 0.5; // Assume this roll is good enough based on technique accuracy
+      vi.spyOn(Math, "random").mockReturnValue(0.1);
+      const accuracyRoll = 0.5;
 
       const result = system.calculateHit(
         MOCK_TECHNIQUE_STRIKE,
         MOCK_VITAL_POINT_HEAD.id,
         accuracyRoll,
         MOCK_DEFENDER_POSITION,
-        "tae" // Use string literal instead of unused variable
+        MOCK_DEFENDER_STANCE
       );
 
       expect(result.hit).toBe(true);
@@ -161,15 +160,15 @@ describe("VitalPointSystem", () => {
     });
 
     it("should return a non-vital hit if no specific VP targeted and accuracy roll doesn't land on one by chance", () => {
-      vi.spyOn(Math, "random").mockReturnValue(0.1); // For critical hit chance
-      const accuracyRoll = 0.7; // Good accuracy roll
+      vi.spyOn(Math, "random").mockReturnValue(0.1);
+      const accuracyRoll = 0.7;
 
       const result = system.calculateHit(
         MOCK_TECHNIQUE_STRIKE,
-        null, // No specific VP target
+        null,
         accuracyRoll,
         MOCK_DEFENDER_POSITION,
-        "tae" // Use string literal instead of unused variable
+        MOCK_DEFENDER_STANCE
       );
 
       expect(result.hit).toBe(true);
@@ -179,13 +178,13 @@ describe("VitalPointSystem", () => {
     });
 
     it("should return a miss if accuracy roll is too low", () => {
-      const accuracyRoll = 0.95; // Bad roll if technique accuracy is 0.85
+      const accuracyRoll = 0.95;
       const result = system.calculateHit(
-        MOCK_TECHNIQUE_STRIKE, // Accuracy 0.85
+        MOCK_TECHNIQUE_STRIKE,
         null,
         accuracyRoll,
         MOCK_DEFENDER_POSITION,
-        "tae" // Use string literal instead of unused variable
+        MOCK_DEFENDER_STANCE
       );
       expect(result.hit).toBe(false);
       expect(result.damage).toBe(0);

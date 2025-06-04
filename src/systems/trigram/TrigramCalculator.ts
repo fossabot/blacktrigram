@@ -66,6 +66,7 @@ export class TrigramCalculator {
         path: [from],
         totalCost: { ki: 0, stamina: 0, timeMilliseconds: 0 },
         cumulativeRisk: 0,
+        overallEffectiveness: 1.0,
         name: `${from}`,
         description: {
           korean: "현재 자세 유지",
@@ -86,8 +87,6 @@ export class TrigramCalculator {
     return {
       path: [from, to],
       totalCost: cost,
-      // overallEffectiveness, // This was causing an error, ensure TransitionPath type matches
-      // If overallEffectiveness is part of TransitionPath, it should be assigned here:
       overallEffectiveness: overallEffectiveness,
       cumulativeRisk,
       name: `${from} → ${to}`,

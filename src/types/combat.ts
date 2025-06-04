@@ -118,5 +118,5 @@ export interface AttackInput {
   readonly attacker: PlayerState;
   readonly defender: PlayerState;
   readonly technique: KoreanTechnique;
-  readonly targetVitalPoint?: string;
+  readonly targetPoint?: string | null; // Add missing targetPoint property
 }

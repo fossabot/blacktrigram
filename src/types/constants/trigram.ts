@@ -400,7 +400,8 @@ export interface TrigramData {
   readonly philosophy: KoreanText;
   readonly combatRole: KoreanText;
   readonly technique: KoreanTechnique;
-  readonly strengths?: readonly string[]; // Add optional strengths property
+  readonly strengths?: readonly string[];
+  readonly weaknesses?: readonly string[];
   readonly offensiveBonus?: number;
   readonly defensiveBonus?: number;
   readonly kiFlowModifier?: number;
