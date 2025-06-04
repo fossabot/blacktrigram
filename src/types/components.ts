@@ -156,17 +156,18 @@ export interface DojangBackgroundProps extends GameComponentProps {
   readonly lighting?: "dim" | "bright" | "atmospheric";
 }
 
-// Trigram wheel props - FIXED: Complete interface
+// Trigram wheel props - FIXED: Match ui.ts interface
 export interface TrigramWheelProps extends BaseComponentProps {
   readonly currentStance: TrigramStance;
+  readonly onStanceSelect: (stance: TrigramStance) => void;
   readonly selectedStance?: TrigramStance;
-  readonly onStanceChange: (stance: TrigramStance) => void;
-  readonly onStanceSelect?: (stance: TrigramStance) => void;
+  readonly onStanceChange?: (stance: TrigramStance) => void;
   readonly isEnabled?: boolean;
   readonly interactive?: boolean;
   readonly showLabels?: boolean;
   readonly size?: number;
   readonly position?: Position;
+  readonly time?: number;
 }
 
 // Korean header props - FIXED: Remove title prop, use korean/english

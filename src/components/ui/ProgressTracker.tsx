@@ -78,8 +78,11 @@ export function ProgressTracker({
   );
 
   return (
-    <pixiContainer>
-      <pixiGraphics draw={drawProgressBar} />
+    <pixiContainer data-testid="progress-tracker-container pixi-container">
+      <pixiGraphics
+        draw={drawProgressBar}
+        data-testid="progress-tracker-bar pixi-graphics"
+      />
 
       {actualShowPercentage && (
         <pixiText
@@ -93,6 +96,7 @@ export function ProgressTracker({
             fill: KOREAN_COLORS.WHITE,
             fontWeight: "bold",
           }}
+          data-testid="progress-tracker-percentage-text pixi-text"
         />
       )}
 
@@ -107,6 +111,7 @@ export function ProgressTracker({
             fontSize: height * 0.4,
             fill: KOREAN_COLORS.WHITE,
           }}
+          data-testid="progress-tracker-label-text"
         />
       )}
     </pixiContainer>

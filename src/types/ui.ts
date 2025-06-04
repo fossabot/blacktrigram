@@ -35,13 +35,14 @@ export interface ProgressTrackerProps extends BaseUIComponentProps {
   readonly color?: string; // CSS color alternative
 }
 
-// Trigram wheel props
+// Trigram wheel props - FIXED: Match implementation signature
 export interface TrigramWheelProps extends BaseUIComponentProps {
+  readonly currentStance: TrigramStance;
+  readonly onStanceSelect: (stance: TrigramStance) => void;
   readonly size?: number;
   readonly position?: Position;
   readonly interactive?: boolean;
-  readonly selectedStance?: TrigramStance;
-  readonly onStanceChange?: (stance: TrigramStance) => void;
+  readonly time?: number;
 }
 
 // Korean text styling for PIXI

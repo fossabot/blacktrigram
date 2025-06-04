@@ -13,7 +13,7 @@ vi.mock("@pixi/react", () => ({
   useApplication: vi.fn(() => ({ app: {} })),
 }));
 
-// Mock PIXI elements as globals
+// Mock PIXI elements as globals with proper text rendering and test IDs
 (global as any).pixiContainer = ({ children, ...props }: any) => (
   <div data-testid="pixi-container" {...props}>
     {children}
@@ -25,6 +25,7 @@ vi.mock("@pixi/react", () => ({
       clear: vi.fn(),
       setFillStyle: vi.fn(),
       setStrokeStyle: vi.fn(),
+      roundRect: vi.fn(),
       circle: vi.fn(),
       rect: vi.fn(),
       fill: vi.fn(),
@@ -67,7 +68,8 @@ describe("ProgressTracker", () => {
       <ProgressTracker label="체력" value={80} maxValue={100} showText={true} />
     );
 
-    expect(screen.getByTestId("pixi-text")).toBeInTheDocument();
+    // Check for percentage text using legacy data-testid
+    expect(screen.getByTestId("pixi-text")).toHaveTextContent("80%");
   });
 
   it("calculates percentage correctly", () => {
@@ -80,7 +82,8 @@ describe("ProgressTracker", () => {
       />
     );
 
-    expect(screen.getByTestId("pixi-text")).toBeInTheDocument();
+    // Check for calculated percentage (25/50 = 50%)
+    expect(screen.getByTestId("pixi-text")).toHaveTextContent("50%");
   });
 
   it("handles zero max value safely", () => {
@@ -88,11 +91,12 @@ describe("ProgressTracker", () => {
       <ProgressTracker label="테스트" value={10} maxValue={0} showText={true} />
     );
 
-    expect(screen.getByTestId("pixi-text")).toBeInTheDocument();
+    // Should show 100% when maxValue is 0 (safety fallback)
+    expect(screen.getByTestId("pixi-text")).toHaveTextContent("100%");
   });
 
   it("renders with custom text display", () => {
-    const { getByTestId } = render(
+    render(
       <ProgressTracker
         label="Ki Energy"
         value={60}
@@ -101,7 +105,7 @@ describe("ProgressTracker", () => {
       />
     );
 
-    expect(getByTestId("pixi-text")).toBeInTheDocument();
+    expect(screen.getByTestId("pixi-text")).toHaveTextContent("60%");
   });
 
   it("supports custom width and height", () => {
@@ -117,10 +121,11 @@ describe("ProgressTracker", () => {
     );
 
     expect(container).toBeInTheDocument();
+    expect(screen.getByTestId("pixi-text")).toHaveTextContent("60%");
   });
 
   it("handles maximum value properly", () => {
-    const { container } = render(
+    render(
       <ProgressTracker
         label="Full Health"
         value={100}
@@ -129,6 +134,20 @@ describe("ProgressTracker", () => {
       />
     );
 
-    expect(container).toBeInTheDocument();
+    expect(screen.getByTestId("pixi-text")).toHaveTextContent("100%");
+  });
+
+  it("renders PIXI components correctly", () => {
+    render(<ProgressTracker {...defaultProps} showText={true} />);
+
+    expect(screen.getByTestId("pixi-container")).toBeInTheDocument();
+    expect(screen.getByTestId("pixi-graphics")).toBeInTheDocument();
+    expect(screen.getByTestId("pixi-text")).toBeInTheDocument();
+  });
+
+  it("supports showPercentage prop", () => {
+    render(<ProgressTracker value={75} maxValue={100} showPercentage={true} />);
+
+    expect(screen.getByTestId("pixi-text")).toHaveTextContent("75%");
   });
 });
