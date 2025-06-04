@@ -1,6 +1,6 @@
 // Korean martial arts techniques for Black Trigram
 
-import type { KoreanTechnique } from "../combat";
+import type { KoreanTechnique, DamageType } from "../combat";
 import type { TrigramStance } from "../enums";
 
 // Korean martial arts technique categories
@@ -22,28 +22,151 @@ export const TECHNIQUE_TIMING = {
 
 // Korean martial arts technique properties
 export const TECHNIQUE_PROPERTIES = {
-  // Combat properties
-  UNBLOCKABLE: "unblockable", // 막을 수 없는
-  ARMOR_PIERCING: "armor_piercing", // 갑옷 관통
-  COUNTER_ATTACK: "counter_attack", // 반격
-  AREA_EFFECT: "area_effect", // 범위 공격
+  // Basic attack types
+  strike: {
+    baseDamage: 20,
+    range: 1.0,
+    accuracy: 0.85,
+    kiCost: 15,
+    staminaCost: 10,
+  },
+  thrust: {
+    baseDamage: 25,
+    range: 1.5,
+    accuracy: 0.9,
+    kiCost: 18,
+    staminaCost: 12,
+  },
+  block: {
+    baseDamage: 5,
+    range: 0.5,
+    accuracy: 0.95,
+    kiCost: 8,
+    staminaCost: 15,
+  },
+  counter_attack: {
+    baseDamage: 22,
+    range: 1.0,
+    accuracy: 0.88,
+    kiCost: 20,
+    staminaCost: 15,
+  },
+  throw: {
+    baseDamage: 30,
+    range: 0.8,
+    accuracy: 0.75,
+    kiCost: 25,
+    staminaCost: 20,
+  },
+  grapple: {
+    baseDamage: 15,
+    range: 0.6,
+    accuracy: 0.8,
+    kiCost: 20,
+    staminaCost: 25,
+  },
+  pressure_point: {
+    baseDamage: 12,
+    range: 0.8,
+    accuracy: 0.95,
+    kiCost: 25,
+    staminaCost: 8,
+  },
+  nerve_strike: {
+    baseDamage: 18,
+    range: 1.0,
+    accuracy: 0.9,
+    kiCost: 22,
+    staminaCost: 12,
+  },
+} as const;
 
-  // Korean martial arts specific
-  PRESSURE_POINT: "pressure_point", // 혈자리 공격
-  NERVE_STRIKE: "nerve_strike", // 신경 타격
-  JOINT_LOCK: "joint_lock", // 관절기
-  BONE_BREAKING: "bone_breaking", // 골절기
-  BREATH_CONTROL: "breath_control", // 호흡 조절
-
-  // Ki and energy
-  KI_ENHANCED: "ki_enhanced", // 기력 강화
-  ENERGY_DRAIN: "energy_drain", // 기력 흡수
-  CHAKRA_DISRUPTION: "chakra_disruption", // 차크라 교란
-
-  // Traditional elements
-  TRADITIONAL: "traditional", // 전통 기법
-  MODERN_ADAPTATION: "modern_adaptation", // 현대 적용
-  CYBERPUNK_FUSION: "cyberpunk_fusion", // 사이버펑크 융합
+// Complete damage type effectiveness matrix
+export const DAMAGE_TYPE_EFFECTIVENESS: Record<
+  DamageType,
+  Record<string, number>
+> = {
+  blunt: {
+    bone: 1.3,
+    muscle: 1.1,
+    organ: 0.9,
+  },
+  piercing: {
+    organ: 1.4,
+    nerve: 1.2,
+    bone: 0.8,
+  },
+  slashing: {
+    muscle: 1.2,
+    vessel: 1.3,
+    bone: 0.7,
+  },
+  pressure: {
+    nerve: 1.4,
+    vessel: 1.3,
+    organ: 1.1,
+  },
+  joint: {
+    joints: 1.5,
+    bone: 1.1,
+    muscle: 0.9,
+  },
+  nerve: {
+    nerve: 1.5,
+    consciousness: 1.3,
+    muscle: 0.8,
+  },
+  internal: {
+    organ: 1.4,
+    energy: 1.2,
+    vessel: 1.1,
+  },
+  impact: {
+    bone: 1.2,
+    organ: 1.1,
+    consciousness: 1.0,
+  },
+  // Add missing damage types
+  poison: {
+    organ: 1.3,
+    blood: 1.4,
+    muscle: 0.9,
+  },
+  crushing: {
+    bone: 1.5,
+    joint: 1.4,
+    muscle: 1.1,
+  },
+  sharp: {
+    vessel: 1.4,
+    nerve: 1.2,
+    bone: 0.8,
+  },
+  electric: {
+    nerve: 1.5,
+    muscle: 1.3,
+    consciousness: 1.2,
+  },
+  fire: {
+    muscle: 1.3,
+    nerve: 1.2,
+    consciousness: 1.1,
+  },
+  ice: {
+    muscle: 1.1,
+    circulation: 1.4,
+    movement: 1.2,
+  },
+  psychic: {
+    consciousness: 1.5,
+    willpower: 1.3,
+    fear: 1.4,
+  },
+  blood: {
+    circulation: 1.5,
+    vitality: 1.3,
+    endurance: 1.2,
+  },
 } as const;
 
 // Archetype-specific technique modifiers
@@ -186,6 +309,56 @@ export const TECHNIQUE_DIFFICULTY = {
   PRACTITIONER: 3, // 수련자 - Practitioner level
   EXPERT: 4, // 전문가 - Expert level
   MASTER: 5, // 대가 - Master level
+} as const;
+
+// Korean martial arts techniques constants
+
+export const TECHNIQUE_TYPES = {
+  STRIKE: "strike",
+  KICK: "kick",
+  THROW: "throw",
+  JOINT_LOCK: "joint_lock",
+  PRESSURE_POINT: "pressure_point",
+  COUNTER_ATTACK: "counter_attack",
+  BLOCK: "block",
+  GRAPPLE: "grapple",
+} as const;
+
+export const DAMAGE_TYPES = {
+  BLUNT: "blunt",
+  PIERCING: "piercing",
+  SLASHING: "slashing",
+  PRESSURE: "pressure",
+  NERVE: "nerve",
+  JOINT: "joint",
+  INTERNAL: "internal",
+  IMPACT: "impact",
+} as const;
+
+export const TECHNIQUE_PROPERTIES = {
+  FAST: "fast",
+  POWERFUL: "powerful",
+  PRECISE: "precise",
+  DEFENSIVE: "defensive",
+  COMBO_STARTER: "combo_starter",
+  ARMOR_PIERCING: "armor_piercing",
+  STUNNING: "stunning",
+  BLEEDING: "bleeding",
+} as const;
+
+export const BASE_TECHNIQUE_COSTS = {
+  KI: {
+    LOW: 10,
+    MEDIUM: 20,
+    HIGH: 30,
+    EXTREME: 50,
+  },
+  STAMINA: {
+    LOW: 5,
+    MEDIUM: 15,
+    HIGH: 25,
+    EXTREME: 40,
+  },
 } as const;
 
 // Geon (Heaven) techniques

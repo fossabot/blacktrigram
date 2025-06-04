@@ -16,6 +16,17 @@ import type { VitalPoint as AnatomyVitalPoint } from "./anatomy";
 // Use the enum type directly
 export type CombatAttackType = EnumCombatAttackType;
 
+// Add missing TechniqueType export
+export type TechniqueType =
+  | "strike"
+  | "thrust"
+  | "block"
+  | "counter_attack"
+  | "throw"
+  | "grapple"
+  | "pressure_point"
+  | "nerve_strike";
+
 // Combat technique definition
 export interface KoreanTechnique {
   readonly id: string;

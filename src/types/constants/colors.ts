@@ -1,81 +1,96 @@
 // Korean Traditional Colors (한국 전통 색상)
 export const KOREAN_COLORS = {
   // Traditional Korean colors
-  TRADITIONAL_RED: 0xcd2e3a as const, // 전통적인 빨강
-  TRADITIONAL_BLUE: 0x003478 as const, // 전통적인 파랑
-  HANBOK_WHITE: 0xf5f5dc as const, // 한복 흰색
-  DANCHEONG_GREEN: 0xa6ce39 as const, // 단청 녹색
-  DANCHEONG_GOLD: 0xffd700 as const, // 단청 금색
-  DANCHEONG_PURPLE: 0x936eab as const, // 단청 보라색
-
-  // Cyberpunk neon variations
-  NEON_RED: 0xff0040 as const, // 네온 분홍
-  ELECTRIC_BLUE: 0x00ffff as const, // 네온 청록
-  CYBER_GREEN: 0x00ff41 as const, // 네온 초록
-  DIGITAL_GOLD: 0xffed4e as const, // 디지털 금색
-  NEON_CYAN: 0x00ffff as const, // 네온 시안 추가
+  TRADITIONAL_RED: 0xcd5c5c,
+  TRADITIONAL_BLUE: 0x003478,
+  HANBOK_WHITE: 0xf5f5dc,
+  DANCHEONG_GREEN: 0xa68b5b,
+  DANCHEONG_GOLD: 0xffd700,
+  DANCHEONG_PURPLE: 0x9370db,
+  ROYAL_BLUE: 0x1e3a8a,
+  TEMPLE_ORANGE: 0xff8c00,
+  JADE_GREEN: 0x00ff7f,
+  GINSENG_BROWN: 0x8b4513,
 
   // Basic colors
-  BLACK: 0x000000 as const, // 검정
-  WHITE: 0xffffff as const, // 흰색
-  GRAY: 0x808080 as const, // 회색
-  DARK_GRAY: 0x404040 as const, // 진한 회색
-  GOLD: 0xffd700 as const, // 금색 추가
-  DOJANG_BLUE: 0x1e3a8a as const, // 도장 파랑 추가
+  BLACK: 0x000000,
+  WHITE: 0xffffff,
+  RED: 0xff0000,
+  GREEN: 0x00ff00,
+  BLUE: 0x0000ff,
+  YELLOW: 0xffff00,
+  PURPLE: 0x800080,
+  ORANGE: 0xffa500,
+  PINK: 0xffc0cb,
+  GRAY: 0x808080,
+  BROWN: 0xa52a2a,
+  CYAN: 0x00ffff,
+  MAGENTA: 0xff00ff,
+  LIME: 0x00ff00,
+  NAVY: 0x000080,
+  TEAL: 0x008080,
+  SILVER: 0xc0c0c0,
+  MAROON: 0x800000,
+  OLIVE: 0x808000,
+  AQUA: 0x00ffff,
+  FUCHSIA: 0xff00ff,
+
+  // Add missing properties for PixiComponents
+  DOJANG_BLUE: 0x1e3a8a,
+  NEON_CYAN: 0x00ffff,
+  GOLD: 0xffd700,
+
+  // Add missing NEON colors referenced in constants
+  NEON_PINK: 0xff1493,
+  NEON_GREEN: 0x39ff14,
+  NEON_BLUE: 0x4dffff,
 
   // Trigram stance colors
-  GEON: 0xffd700 as const, // Gold for Heaven - 건괘
-  TAE: 0x87ceeb as const, // Sky Blue for Lake - 태괘
-  LI: 0xff4500 as const, // Orange Red for Fire - 리괘
-  JIN: 0x9370db as const, // Medium Purple for Thunder - 진괘
-  SON: 0x98fb98 as const, // Pale Green for Wind - 손괘
-  GAM: 0x4169e1 as const, // Royal Blue for Water - 감괘
-  GAN: 0x8b4513 as const, // Saddle Brown for Mountain - 간괘
-  GON: 0x654321 as const, // Dark Brown for Earth - 곤괘
+  GEON_GOLD: 0xffd700,
+  TAE_LAKE: 0x87ceeb,
+  LI_FIRE: 0xff4500,
+  JIN_THUNDER: 0x9370db,
+  SON_WIND: 0x98fb98,
+  GAM_WATER: 0x4169e1,
+  GAN_MOUNTAIN: 0x8b4513,
+  GON_EARTH: 0x654321,
 
-  // Element colors
-  HEAVEN_GOLD: 0xffd700 as const, // 건괘 - 하늘의 금색
-  LAKE_SILVER: 0xc0c0c0 as const, // 태괘 - 호수의 은색
-  FIRE_RED: 0xff4500 as const, // 리괘 - 불의 빨강
-  THUNDER_YELLOW: 0xffd700 as const, // 진괘 - 천둥의 노랑
-  WIND_GREEN: 0x98fb98 as const, // 손괘 - 바람의 초록
-  WATER_BLUE: 0x4169e1 as const, // 감괘 - 물의 파랑
-  MOUNTAIN_BROWN: 0x8b4513 as const, // 간괘 - 산의 갈색
-  EARTH_ORANGE: 0xcd853f as const, // 곤괘 - 땅의 주황
+  // Combat feedback colors
+  DAMAGE_LIGHT: 0xffff99,
+  DAMAGE_MEDIUM: 0xff9933,
+  DAMAGE_HEAVY: 0xff3333,
+  DAMAGE_CRITICAL: 0x8b0000,
 
-  // Additional colors referenced in components
-  CYAN: 0x00ffff as const,
-  SILVER: 0xc0c0c0 as const,
-  RED: 0xff0000 as const,
-  GREEN: 0x00ff00 as const,
-  BLUE: 0x0000ff as const,
-  YELLOW: 0xffff00 as const,
-  ORANGE: 0xffa500 as const,
-  PURPLE: 0x800080 as const,
-  NEON_PINK: 0xff1493 as const,
-  NEON_GREEN: 0x00ff41 as const,
-  NEON_BLUE: 0x0080ff as const,
-  ACCENT_BLUE: 0x4169e1 as const,
-  GRAY_DARK: 0x404040 as const,
-  GRAY_LIGHT: 0xd3d3d3 as const,
-  CRITICAL_HIT: 0xff0040 as const,
-  CRITICAL_RED: 0xff0000 as const,
-  HEALTH_RED: 0xdc143c as const,
-  STAMINA_GREEN: 0x32cd32 as const,
-  VITAL_POINT: 0xff69b4 as const,
-  GON_DARK_BROWN: 0x654321 as const,
-  DOJANG_WALL: 0x8b4513 as const,
-  WOOD_BROWN: 0xa0522d as const,
+  // Status effect colors
+  HEAL: 0x90ee90,
+  POISON: 0x9932cc,
+  FIRE: 0xff4500,
+  ICE: 0x87ceeb,
+  LIGHTNING: 0xffff00,
+  EARTH: 0x8b4513,
+  WIND: 0x98fb98,
+  WATER: 0x4169e1,
+
+  // Element associations
+  METAL_SILVER: 0xc0c0c0,
+  WOOD_GREEN: 0x228b22,
+  FIRE_RED: 0xff0000,
+  EARTH_BROWN: 0x8b4513,
+  WATER_BLUE: 0x0000ff,
+  EARTH_ORANGE: 0xcd853f,
 } as const;
 
 // Cyberpunk Palette (사이버펑크 팔레트)
 export const CYBERPUNK_PALETTE = {
-  PRIMARY_CYAN: KOREAN_COLORS.CYAN,
+  PRIMARY_CYAN: KOREAN_COLORS.NEON_CYAN,
   NEON_RED: KOREAN_COLORS.TRADITIONAL_RED,
-  ELECTRIC_BLUE: KOREAN_COLORS.TRADITIONAL_BLUE,
+  ELECTRIC_BLUE: KOREAN_COLORS.DOJANG_BLUE,
   DIGITAL_GOLD: KOREAN_COLORS.GOLD,
   SHADOW_BLACK: KOREAN_COLORS.BLACK,
   TECH_WHITE: KOREAN_COLORS.WHITE,
+  NEON_PINK: KOREAN_COLORS.NEON_PINK,
+  NEON_GREEN: KOREAN_COLORS.NEON_GREEN,
+  NEON_BLUE: KOREAN_COLORS.NEON_BLUE,
 } as const;
 
 // Export stance colors for easy access

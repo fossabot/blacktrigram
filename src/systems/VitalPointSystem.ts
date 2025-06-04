@@ -7,13 +7,14 @@ import type {
   Position,
   VitalPointEffect,
 } from "../types";
-import type { BodyRegion } from "../types/enums";
+import type { BodyRegion, VitalPointCategory } from "../types/enums";
 
 export class VitalPointSystem {
-  private vitalPoints: readonly VitalPoint[];
+  private readonly vitalPoints: Map<string, VitalPoint>;
 
   constructor(vitalPoints: readonly VitalPoint[]) {
-    this.vitalPoints = vitalPoints;
+    this.vitalPoints = new Map();
+    vitalPoints.forEach((vp) => this.vitalPoints.set(vp.id, vp));
   }
 
   public calculateHit(
@@ -47,8 +48,8 @@ export class VitalPointSystem {
     };
   }
 
-  public getVitalPointById(id: string): VitalPoint | null {
-    return this.vitalPoints.find((vp) => vp.id === id) || null;
+  public getVitalPointById(id: string): VitalPoint | undefined {
+    return this.vitalPoints.get(id);
   }
 
   public getEffectsForVitalPoint(
@@ -76,5 +77,12 @@ export class VitalPointSystem {
   // Add missing method referenced in tests
   public getVitalPointsInRegion(region: BodyRegion): readonly VitalPoint[] {
     return this.vitalPoints.filter((vp) => vp.location.region === region);
+  }
+
+  public getVitalPointsByCategory(category: VitalPointCategory): VitalPoint[] {
+    // Fix: Convert Map values to array first, then filter with proper typing
+    return Array.from(this.vitalPoints.values()).filter(
+      (vp: VitalPoint) => vp.category === category
+    );
   }
 }

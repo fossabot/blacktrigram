@@ -3,7 +3,6 @@
 import type { CombatReadiness, CombatState, TrigramStance } from "./enums";
 import type { CombatCondition, Position } from "./common";
 import type { StatusEffect } from "./effects";
-import type { KoreanText } from "./korean-text";
 import type { PlayerArchetype } from "./enums"; // Import from enums instead of local declaration
 
 // Player Archetype Data (for constants)

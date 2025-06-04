@@ -5,29 +5,34 @@ import type {
   PlayerArchetype,
   VitalPoint,
   VitalPointHitResult,
-  AttackInput, // Add missing import
   TrigramStance, // Add missing import
+  AttackInput,
 } from "../types";
 import { VitalPointSystem } from "./VitalPointSystem";
-import { TrigramSystem } from "./TrigramSystem";
-import { STANCE_EFFECTIVENESS_MATRIX } from "../types/constants";
+// Remove unused TrigramSystem import
+import { VITAL_POINTS_DATA } from "./vitalpoint/KoreanVitalPoints";
+import { STANCE_EFFECTIVENESS_MATRIX } from "../types/constants"; // Add missing import
 
 export class CombatSystem {
   private static vitalPointSystem: VitalPointSystem | null = null;
-  private static trigramSystem: TrigramSystem | null = null;
+
+  public static initialize(): void {
+    // Fix constructor call by providing required parameter
+    this.vitalPointSystem = new VitalPointSystem(VITAL_POINTS_DATA);
+  }
 
   /**
    * Execute a full attack sequence - main combat method
    */
   public static async executeAttack(
-    attackInput: AttackInput // Now properly imported
+    attackInput: AttackInput
   ): Promise<CombatResult> {
     const { attacker, defender, technique, targetPoint } = attackInput;
 
     let baseResult = this.calculateTechnique(technique, attacker.archetype);
     let hitResult: VitalPointHitResult | null = null;
 
-    // Convert string targetPoint to VitalPoint object if provided
+    // Fix: Convert string targetPoint to VitalPoint object properly
     if (targetPoint && this.vitalPointSystem) {
       const vitalPointObject =
         this.vitalPointSystem.getVitalPointById(targetPoint);
@@ -35,17 +40,20 @@ export class CombatSystem {
         const accuracyBonus = Math.random();
         hitResult = this.vitalPointSystem.calculateHit(
           technique,
-          vitalPointObject,
+          vitalPointObject, // Now passing VitalPoint object, not string
           accuracyBonus,
           attacker.position
         );
-
-        // Use hitResult to modify damage or effects
-        if (hitResult.hit) {
-          baseResult.damage += hitResult.damage;
-          baseResult.effects.push(...hitResult.effects);
-        }
       }
+    }
+
+    // Create new result object with modified damage instead of mutating readonly property
+    if (hitResult && hitResult.hit) {
+      baseResult = {
+        ...baseResult,
+        damage: baseResult.damage + hitResult.damage,
+        effects: [...baseResult.effects, ...hitResult.effects], // Create new array instead of push
+      };
     }
 
     // Calculate hit chance based on stance effectiveness
@@ -125,14 +133,14 @@ export class CombatSystem {
    * Calculate stance effectiveness matrix
    */
   public static calculateStanceEffectiveness(
-    attackerStance: TrigramStance, // Now properly imported
-    defenderStance: TrigramStance // Now properly imported
+    attackerStance: TrigramStance,
+    defenderStance: TrigramStance
   ): number {
     const matrix = STANCE_EFFECTIVENESS_MATRIX as Record<
-      TrigramStance, // Now properly imported
-      Record<TrigramStance, number> // Now properly imported
+      TrigramStance,
+      Record<TrigramStance, number>
     >;
-    return matrix[attackerStance]?.[defenderStance] || 1.0;
+    return matrix[attackerStance]?.[defenderStance] ?? 1.0;
   }
 
   /**
@@ -209,7 +217,7 @@ export class CombatSystem {
     // Use VitalPointSystem to calculate refined damage and effects
     const vitalHitDetails = this.vitalPointSystem.calculateHit(
       technique,
-      vitalPointObject!,
+      vitalPoint, // Use the vitalPoint parameter directly
       accuracyBonus,
       attacker.position
     );

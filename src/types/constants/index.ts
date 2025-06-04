@@ -1,52 +1,28 @@
 // Central export hub for all Black Trigram game constants
 
-// Export all color constants
+// Export all constants from their respective files
 export * from "./colors";
-
-// Export combat system constants
 export * from "./combat";
-
-// Export game configuration constants
-export * from "./game";
-
-// Export player archetype constants
 export * from "./player";
-
-// Export Korean martial arts technique constants
 export * from "./techniques";
-
-// Export trigram system constants
+export * from "./typography";
+export * from "./vital-points";
 export * from "./trigram";
 
-// Export typography constants
-export * from "./typography";
-
-// Export vital points constants
-export * from "./vital-points";
-
-// Re-export specific constants for backwards compatibility
-export { KOREAN_COLORS } from "./colors";
+// Export game constants
 export {
-  TRIGRAM_DATA,
-  STANCE_EFFECTIVENESS_MATRIX,
-  TRIGRAM_STANCES_ORDER,
-} from "./trigram";
-export { VITAL_POINTS_DATA } from "./vital-points";
-export { GAME_CONFIG } from "./game";
+  MAX_TRANSITION_COST_KI,
+  MAX_TRANSITION_COST_STAMINA,
+  MAX_TRANSITION_TIME_MILLISECONDS,
+  GAME_CONSTANTS,
+} from "./game";
 
-// Export typography constants without duplicates
-export {
-  KOREAN_FONT_FAMILY_PRIMARY,
-  KOREAN_FONT_FAMILY_SECONDARY,
-  KOREAN_TEXT_SIZES,
-  KOREAN_FONT_WEIGHTS,
-  KOREAN_TEXT_STYLES,
-} from "./typography";
-
-// Clean single export for main font family (avoid duplicates)
-export const KOREAN_FONT_FAMILY = "Noto Sans KR, Arial, sans-serif";
-
-// Transition system constants
-export const MAX_TRANSITION_COST_KI = 50;
-export const MAX_TRANSITION_COST_STAMINA = 40;
-export const MAX_TRANSITION_TIME_MILLISECONDS = 2000;
+// Add GAME_CONFIG export that was missing
+export const GAME_CONFIG = {
+  MAX_TRANSITION_COST_KI: 50,
+  MAX_TRANSITION_COST_STAMINA: 40,
+  MAX_TRANSITION_TIME_MILLISECONDS: 2000,
+  DEFAULT_STANCE_COOLDOWN_MS: 500,
+  BASE_CRITICAL_HIT_CHANCE: 0.05,
+  BASE_CRITICAL_HIT_MULTIPLIER: 1.5,
+} as const;

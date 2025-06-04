@@ -9,12 +9,11 @@ import type {
   EffectType,
   CombatCondition,
   StatusEffect,
-  PlayerArchetypeData,
 } from "../types";
 // Import CombatReadiness as a value, not a type since we need to use it as values
 import { CombatReadiness } from "../types/enums";
 import type { Position } from "../types/common";
-import { PLAYER_ARCHETYPE_DATA } from "../types/constants"; // Fixed: changed from PLAYER_ARCHETYPES
+import { PLAYER_ARCHETYPE_DATA } from "../types/constants/player";
 
 /**
  * Creates a new player state with Korean martial arts defaults
@@ -307,9 +306,11 @@ export function isPlayerDefeated(player: PlayerState): boolean {
   );
 }
 
-// New function to get archetype specializations
+/**
+ * Gets the archetype's specializations and bonuses
+ */
 export function getArchetypeSpecializations(player: PlayerState): {
-  bonuses: PlayerArchetypeData["bonuses"];
+  bonuses: any; // Use proper type from PlayerArchetypeData
   preferredTrigrams: readonly string[];
   specialization: string;
 } {
@@ -330,7 +331,32 @@ export function getArchetypeSpecializations(player: PlayerState): {
 
   return {
     bonuses: archetypeData.bonuses,
-    preferredTrigrams: archetypeData.preferredTrigrams || ["geon"], // Handle undefined case
-    specialization: archetypeData.specialization, // Now exists on interface
+    preferredTrigrams: archetypeData.preferredTrigrams,
+    specialization: archetypeData.specialization,
   };
+}
+
+export function calculateArchetypeDamageModifier(
+  archetype: PlayerArchetype,
+  baseDamage: number
+): number {
+  const archetypeData = PLAYER_ARCHETYPE_DATA[archetype];
+  if (!archetypeData) return baseDamage;
+
+  return baseDamage * archetypeData.bonuses.damageBonus;
+}
+
+export function getArchetypeAccuracyModifier(
+  archetype: PlayerArchetype
+): number {
+  const archetypeData = PLAYER_ARCHETYPE_DATA[archetype];
+  return archetypeData?.bonuses.accuracyBonus ?? 1.0;
+}
+
+export function isArchetypePreferredStance(
+  archetype: PlayerArchetype,
+  stance: string
+): boolean {
+  const archetypeData = PLAYER_ARCHETYPE_DATA[archetype];
+  return archetypeData?.preferredTrigrams.includes(stance) ?? false;
 }
