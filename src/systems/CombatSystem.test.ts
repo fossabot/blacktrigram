@@ -144,12 +144,6 @@ describe("CombatSystem", () => {
         accuracy: 0.1, // Very low accuracy
       };
 
-      const result = await CombatSystem.executeAttack(
-        attacker,
-        defender,
-        lowAccuracyTechnique
-      );
-
       // Since executeAttack currently always returns hit: true, we'll test the executeTechnique method instead
       const techniqueResult = CombatSystem.executeTechnique(
         lowAccuracyTechnique,
