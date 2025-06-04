@@ -1,80 +1,136 @@
-import React from "react";
-import type { CombatControlsProps } from "../../../types";
-import { KOREAN_COLORS } from "../../../types";
-import { KoreanText } from "../../ui/base/korean-text/KoreanText";
+import React, { useCallback } from "react";
+import { Container, Text } from "@pixi/react";
+import { TrigramWheel } from "../../ui/TrigramWheel";
+import { KoreanButton } from "../../ui/base/KoreanPixiComponents";
+import type { PlayerState, TrigramStance } from "../../../types";
+import {
+  KOREAN_COLORS,
+  KOREAN_FONT_FAMILY_PRIMARY,
+} from "../../../types/constants";
+import { useAudio } from "../../../audio/AudioManager";
+
+export interface CombatControlsProps {
+  readonly players: readonly [PlayerState, PlayerState];
+  readonly onStanceChange: (playerIndex: number, stance: TrigramStance) => void;
+  readonly isExecutingTechnique: boolean;
+  readonly isPaused: boolean;
+  readonly width?: number;
+  readonly height?: number;
+}
 
 export function CombatControls({
   players,
   onStanceChange,
   isExecutingTechnique,
   isPaused,
+  width = 800,
+  height = 600,
 }: CombatControlsProps): React.ReactElement {
-  const renderStanceSelector = (playerIndex: number) => (
-    <div
-      style={{
-        backgroundColor: "rgba(0, 0, 0, 0.8)",
-        border: `2px solid #${KOREAN_COLORS.CYAN.toString(16).padStart(
-          6,
-          "0"
-        )}`,
-        borderRadius: "8px",
-        padding: "16px",
-        margin: "8px",
-      }}
-    >
-      <KoreanText
-        korean={`플레이어 ${playerIndex + 1} 자세`}
-        english={`Player ${playerIndex + 1} Stance`}
-        style={{ marginBottom: "12px", fontWeight: "bold" }}
-      />
+  const audio = useAudio();
+  const [player1, player2] = players;
 
-      {/* Stance buttons */}
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-        {["geon", "tae", "li", "jin", "son", "gam", "gan", "gon"].map(
-          (stance) => (
-            <button
-              key={stance}
-              onClick={() => onStanceChange(playerIndex, stance as any)}
-              disabled={isExecutingTechnique || isPaused}
-              style={{
-                padding: "8px 12px",
-                backgroundColor:
-                  players[playerIndex]?.stance === stance
-                    ? `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`
-                    : "transparent",
-                border: `1px solid #${KOREAN_COLORS.GOLD.toString(16).padStart(
-                  6,
-                  "0"
-                )}`,
-                borderRadius: "4px",
-                color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
-                cursor:
-                  isExecutingTechnique || isPaused ? "not-allowed" : "pointer",
-                opacity: isExecutingTechnique || isPaused ? 0.5 : 1,
-              }}
-            >
-              {stance.toUpperCase()}
-            </button>
-          )
-        )}
-      </div>
-    </div>
+  const handleStanceChange = useCallback(
+    (playerIndex: number, stance: TrigramStance) => {
+      if (!isPaused && !isExecutingTechnique) {
+        audio.playSFX("stance_select");
+        onStanceChange(playerIndex, stance);
+      }
+    },
+    [isPaused, isExecutingTechnique, onStanceChange, audio]
   );
 
+  const handleTechniqueButton = useCallback(() => {
+    if (!isPaused && !isExecutingTechnique) {
+      audio.playSFX("technique_execute");
+      // Technique execution logic would go here
+    }
+  }, [isPaused, isExecutingTechnique, audio]);
+
   return (
-    <div
-      style={{
-        position: "absolute",
-        bottom: "20px",
-        left: "50%",
-        transform: "translateX(-50%)",
-        display: "flex",
-        gap: "20px",
-        pointerEvents: "auto",
-      }}
-    >
-      {renderStanceSelector(0)}
-      {renderStanceSelector(1)}
-    </div>
+    <Container>
+      {/* Player 1 Controls - Bottom Left */}
+      <Container x={100} y={height - 150}>
+        <Text
+          text="플레이어 1 - 자세 선택"
+          anchor={0.5}
+          y={-30}
+          style={{
+            fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
+            fontSize: 14,
+            fill: KOREAN_COLORS.CYAN,
+            fontWeight: "bold",
+          }}
+        />
+
+        <TrigramWheel
+          currentStance={player1.stance}
+          onStanceSelect={(stance) => handleStanceChange(0, stance)}
+          radius={60}
+          disabled={isPaused || isExecutingTechnique}
+          showLabels={true}
+        />
+
+        {/* Technique button */}
+        <KoreanButton
+          koreanText="기술 실행"
+          variant="primary"
+          x={-50}
+          y={100}
+          width={100}
+          height={30}
+          onClick={handleTechniqueButton}
+          disabled={isPaused || isExecutingTechnique || player1.ki < 20}
+        />
+      </Container>
+
+      {/* Player 2 Controls - Bottom Right */}
+      <Container x={width - 100} y={height - 150}>
+        <Text
+          text="플레이어 2 - 자세 선택"
+          anchor={0.5}
+          y={-30}
+          style={{
+            fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
+            fontSize: 14,
+            fill: KOREAN_COLORS.TRADITIONAL_RED,
+            fontWeight: "bold",
+          }}
+        />
+
+        <TrigramWheel
+          currentStance={player2.stance}
+          onStanceSelect={(stance) => handleStanceChange(1, stance)}
+          radius={60}
+          disabled={isPaused || isExecutingTechnique}
+          showLabels={true}
+        />
+
+        {/* Technique button */}
+        <KoreanButton
+          koreanText="기술 실행"
+          variant="secondary"
+          x={-50}
+          y={100}
+          width={100}
+          height={30}
+          onClick={handleTechniqueButton}
+          disabled={isPaused || isExecutingTechnique || player2.ki < 20}
+        />
+      </Container>
+
+      {/* Control Instructions */}
+      <Container x={width / 2} y={height - 100}>
+        <Text
+          text="1-8: 자세 변경 | SPACE: 기술 실행 | ESC: 일시정지"
+          anchor={0.5}
+          style={{
+            fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
+            fontSize: 12,
+            fill: KOREAN_COLORS.GRAY_LIGHT,
+            alpha: 0.8,
+          }}
+        />
+      </Container>
+    </Container>
   );
 }

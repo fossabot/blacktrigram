@@ -9,8 +9,8 @@ import type { KoreanText } from "./korean-text"; // For KoreanText in CombatCond
 
 // Basic shared types
 export interface Position {
-  readonly x: number;
-  readonly y: number;
+  x: number;
+  y: number;
 }
 
 export interface Dimensions {

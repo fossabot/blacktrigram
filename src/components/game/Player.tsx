@@ -1,81 +1,46 @@
-// Complete player component for Korean martial arts fighter
+// Complete Player component with Korean martial arts character rendering
 
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
-import type { PlayerProps } from "../../types";
-import {
-  KOREAN_COLORS,
-  TRIGRAM_DATA,
-  TRIGRAM_STANCES_ORDER,
-} from "../../types";
-import { useAudio } from "../../audio/AudioManager";
 import type { Graphics as PixiGraphics } from "pixi.js";
+import type { 
+  PlayerState, 
+  TrigramStance, 
+  PlayerArchetype,
+  Position 
+} from "../../types";
+import { PlayerVisuals } from "./PlayerVisuals";
+import { KoreanTrigramDisplay } from "../ui/base/KoreanPixiComponents";
+import { ProgressTracker } from "../ui/ProgressTracker";
+import { KOREAN_COLORS, KOREAN_FONT_FAMILY_PRIMARY } from "../../types/constants";
+import { useAudio } from "../../audio/AudioManager";
+import { g } from "vitest/dist/chunks/suite.d.FvehnV49.js";
 
-// Trigram symbols for authentic Korean martial arts display
-const TRIGRAM_SYMBOLS = {
-  geon: "☰", // 건 - Heaven
-  tae: "☱", // 태 - Lake
-  li: "☲", // 리 - Fire
-  jin: "☳", // 진 - Thunder
-  son: "☴", // 손 - Wind
-  gam: "☵", // 감 - Water
-  gan: "☶", // 간 - Mountain
-  gon: "☷", // 곤 - Earth
-} as const;
-
-// Korean martial arts player visual configuration
-const PLAYER_CONFIG = {
-  WIDTH: 60,
-  HEIGHT: 80,
-  HEALTH_BAR_WIDTH: 80,
-  HEALTH_BAR_HEIGHT: 8,
-  KI_BAR_WIDTH: 60,
-  KI_BAR_HEIGHT: 6,
-  STAMINA_BAR_WIDTH: 70,
-  STAMINA_BAR_HEIGHT: 4,
-  STANCE_INDICATOR_SIZE: 32,
-  NAME_OFFSET_Y: -25,
-  TRIGRAM_OFFSET_Y: -45,
-  HEALTH_OFFSET_Y: -15,
-  KI_OFFSET_Y: -8,
-  STAMINA_OFFSET_Y: -2,
-} as const;
-
-// Archetype visual themes for Korean martial arts
-const ARCHETYPE_THEMES = {
-  musa: {
-    primary: KOREAN_COLORS.TRADITIONAL_BLUE,
-    secondary: KOREAN_COLORS.GOLD,
-    accent: KOREAN_COLORS.WHITE,
-  },
-  amsalja: {
-    primary: KOREAN_COLORS.BLACK,
-    secondary: KOREAN_COLORS.NEON_PINK,
-    accent: KOREAN_COLORS.SILVER,
-  },
-  hacker: {
-    primary: KOREAN_COLORS.NEON_CYAN,
-    secondary: KOREAN_COLORS.NEON_GREEN,
-    accent: KOREAN_COLORS.WHITE,
-  },
-  jeongbo: {
-    primary: KOREAN_COLORS.GRAY_DARK,
-    secondary: KOREAN_COLORS.NEON_BLUE,
-    accent: KOREAN_COLORS.GRAY_LIGHT,
-  },
-  jojik: {
-    primary: KOREAN_COLORS.TRADITIONAL_RED,
-    secondary: KOREAN_COLORS.BLACK,
-    accent: KOREAN_COLORS.GOLD,
-  },
-} as const;
+export interface PlayerProps {
+  readonly playerState: PlayerState;
+  readonly playerIndex: number;
+  readonly onStateUpdate: (updates: Partial<PlayerState>) => void;
+  readonly onAttack: () => void;
+  readonly isPlayer1: boolean;
+  readonly archetype: PlayerArchetype;
+  readonly stance: TrigramStance;
+  readonly position: Position;
+  readonly facing: "left" | "right";
+  readonly isAttacking?: boolean;
+  readonly health: number;
+  readonly maxHealth: number;
+  readonly ki: number;
+  readonly maxKi: number;
+  readonly stamina: number;
+  readonly maxStamina: number;
+}
 
 export function Player({
   playerState,
   playerIndex,
   onStateUpdate,
   onAttack,
-  isPlayer1 = playerIndex === 0,
+  isPlayer1,
   archetype,
   stance,
   position,
@@ -87,127 +52,163 @@ export function Player({
   maxKi,
   stamina,
   maxStamina,
-  ...baseProps
 }: PlayerProps): React.ReactElement {
   const audio = useAudio();
 
-  // Get current trigram data for authentic Korean martial arts display
-  const currentTrigramData = useMemo(() => TRIGRAM_DATA[stance], [stance]);
+  // Draw player silhouette based on archetype
+  const drawPlayerBody = useCallback((g: PixiGraphics) => {
+    g.clear();
 
-  // Get archetype theme colors
-  const theme = useMemo(() => ARCHETYPE_THEMES[archetype], [archetype]);
+    const bodyColor = isPlayer1 ? KOREAN_COLORS.CYAN : KOREAN_COLORS.TRADITIONAL_RED;
+    const alpha = health / maxHealth;
 
-  // Get stance color from Korean color system
-  const stanceColor = useMemo(() => {
-    const stanceColorMap = {
-      geon: KOREAN_COLORS.HEAVEN_GOLD,
-      tae: KOREAN_COLORS.LAKE_SILVER,
-      li: KOREAN_COLORS.FIRE_RED,
-      jin: KOREAN_COLORS.THUNDER_YELLOW,
-      son: KOREAN_COLORS.WIND_GREEN,
-      gam: KOREAN_COLORS.WATER_BLUE,
-      gan: KOREAN_COLORS.MOUNTAIN_BROWN,
-      gon: KOREAN_COLORS.EARTH_ORANGE,
-    };
-    return stanceColorMap[stance];
-  }, [stance]);
+    // Main body (simplified humanoid)
+    g.setFillStyle({ color: bodyColor, alpha });
+    
+    // Head
+    g.circle(0, -40, 12);
+    g.fill();
 
-  // Calculate combat readiness visual indicators
-  const combatReadiness = useMemo(() => {
-    const healthRatio = health / maxHealth;
+    // Torso
+    g.roundRect(-8, -25, 16, 30, 4);
+    g.fill();
+
+    // Arms
+    const armX = facing === "right" ? 1 : -1;
+    g.roundRect(-12 * armX, -20, 8, 25, 3);
+    g.fill();
+    g.roundRect(4 * armX, -20, 8, 25, 3);
+    g.fill();
+
+    // Legs
+    g.roundRect(-6, 5, 5, 20, 2);
+    g.fill();
+    g.roundRect(1, 5, 5, 20, 2);
+    g.fill();
+
+    // Stance-specific visual effects
+    drawStanceAura(g, stance, alpha);
+
+    // Combat state indicators
+    if (isAttacking) {
+      g.setStrokeStyle({ color: KOREAN_COLORS.CRITICAL_HIT, width: 2, alpha: 0.8 });
+      g.circle(0, -10, 25);
+      g.stroke();
+    }
+
+    // Health indicator glow
+    if (health < maxHealth * 0.3) {
+      g.setStrokeStyle({ color: KOREAN_COLORS.RED, width: 1, alpha: 0.5 });
+      g.circle(0, -10, 20);
+      g.stroke();
+    }
+  }, [health, maxHealth, isPlayer1, facing, isAttacking, stance]);
+
+  // Draw stance-specific aura
+  const drawStanceAura = useCallback((g: PixiGraphics, currentStance: TrigramStance, alpha: number) => {
+    const stanceColor = KOREAN_COLORS[currentStance] || KOREAN_COLORS.WHITE;
+    
+    g.setStrokeStyle({ color: stanceColor, width: 1, alpha: alpha * 0.6 });
+    g.circle(0, -10, 30);
+    g.stroke();
+
+    // Pulse effect based on Ki level
     const kiRatio = ki / maxKi;
-    const staminaRatio = stamina / maxStamina;
+    if (kiRatio > 0.7) {
+      g.setStrokeStyle({ color: stanceColor, width: 1, alpha: alpha * 0.3 });
+      g.circle(0, -10, 35);
+      g.stroke();
+    }
+  }, [ki, maxKi]);
 
-    return {
-      overall: (healthRatio + kiRatio + staminaRatio) / 3,
-      healthCritical: healthRatio < 0.25,
-      kiDepleted: kiRatio < 0.15,
-      staminaLow: staminaRatio < 0.2,
+  // Handle player interaction
+  const handlePlayerClick = useCallback(() => {
+    if (!isAttacking && stamina > 20) {
+      audio.playSFX("technique_execute");
+      onAttack();
+    } else {
+      audio.playSFX("action_blocked");
+    }
+  }, [isAttacking, stamina, audio, onAttack]);
+
+  // Get archetype display name
+  const getArchetypeKorean = (type: PlayerArchetype): string => {
+    const korean = {
+      musa: "무사",
+      amsalja: "암살자",
+      hacker: "해커",
+      jeongbo: "정보요원",
+      jojik: "조직폭력배",
     };
-  }, [health, maxHealth, ki, maxKi, stamina, maxStamina]);
+    return korean[type] || type;
+  };
 
-  // Draw player body with Korean martial arts styling
-  const drawPlayerBody = useCallback(
-    (g: PixiGraphics) => {
-      g.clear();
+  return (
+    <Container x={position.x} y={position.y}>
+      {/* Player Body */}
+      <Graphics 
+        draw={drawPlayerBody}
+        interactive={true}
+        cursor="pointer"
+        onpointerdown={handlePlayerClick}
+      />
 
-      // Main body - Korean martial artist silhouette
-      g.setFillStyle({ color: theme.primary, alpha: 0.8 });
-      g.setStrokeStyle({ color: stanceColor, width: 2 });
+      {/* Player Visuals System */}
+      <PlayerVisuals
+        archetype={archetype}
+        stance={stance}
+        facing={facing}
+        isAttacking={isAttacking}
+        health={health}
+        maxHealth={maxHealth}
+      />
 
-      // Body (torso)
-      g.roundRect(
-        -PLAYER_CONFIG.WIDTH / 2,
-        -PLAYER_CONFIG.HEIGHT / 2,
-        PLAYER_CONFIG.WIDTH,
-        PLAYER_CONFIG.HEIGHT * 0.6,
-        8
-      );
-      g.fill();
-      g.stroke();
+      {/* Player Name and Archetype */}
+      <Text
+        text={`${playerState.name} (${getArchetypeKorean(archetype)})`}
+        anchor={0.5}
+        x={0}
+        y={-60}
+        style={{
+          fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
+          fontSize: 12,
+          fill: isPlayer1 ? KOREAN_COLORS.CYAN : KOREAN_COLORS.TRADITIONAL_RED,
+          fontWeight: "bold",
+          stroke: KOREAN_COLORS.BLACK,
+          strokeThickness: 1,
+        }}
+      />
 
-      // Head
-      g.setFillStyle({ color: theme.secondary, alpha: 0.9 });
-      g.circle(0, -PLAYER_CONFIG.HEIGHT * 0.4, 15);
-      g.fill();
-      g.stroke();
+      {/* Current Stance Display */}
+      <KoreanTrigramDisplay
+        stance={stance}
+        x={facing === "right" ? 40 : -40}
+        y={-30}
+        size={20}
+        showKorean={true}
+      />
 
-      // Arms in combat position based on trigram stance
-      const armPosition = getArmPositionForStance(stance);
-      drawArms(g, armPosition, theme.primary, stanceColor);
+      {/* Health/Ki/Stamina Bars */}
+      <ProgressTracker
+        health={{ current: health, maximum: maxHealth }}
+        ki={{ current: ki, maximum: maxKi }}
+        stamina={{ current: stamina, maximum: maxStamina }}
+        x={-50}
+        y={40}
+        width={100}
+        spacing={15}
+        showLabels={false}
+      />
 
-      // Legs in proper Korean martial arts stance
-      const legPosition = getLegPositionForStance(stance);
-      drawLegs(g, legPosition, theme.primary, stanceColor);
-
-      // Combat readiness glow effect
-      if (isAttacking) {
-        g.setFillStyle({ color: KOREAN_COLORS.CRITICAL_HIT, alpha: 0.3 });
-        g.circle(0, 0, PLAYER_CONFIG.WIDTH);
-        g.fill();
-      }
-
-      // Stance energy aura
-      if (ki > maxKi * 0.75) {
-        g.setStrokeStyle({ color: stanceColor, width: 1, alpha: 0.5 });
-        g.circle(0, 0, PLAYER_CONFIG.WIDTH + 10);
-        g.stroke();
-      }
-    },
-    [theme, stanceColor, stance, isAttacking, ki, maxKi]
-  );
-
-  // Draw health bar with Korean styling
-  const drawHealthBar = useCallback(
-    (g: PixiGraphics) => {
-      g.clear();
-
-      const healthRatio = health / maxHealth;
-      const barColor = combatReadiness.healthCritical
-        ? KOREAN_COLORS.CRITICAL_RED
-        : KOREAN_COLORS.HEALTH_RED;
-
-      // Background
-      g.setFillStyle({ color: KOREAN_COLORS.BLACK, alpha: 0.7 });
-      g.roundRect(
-        -PLAYER_CONFIG.HEALTH_BAR_WIDTH / 2,
-        0,
-        PLAYER_CONFIG.HEALTH_BAR_WIDTH,
-        PLAYER_CONFIG.HEALTH_BAR_HEIGHT,
-        2
-      );
-      g.fill();
-
-      // Health fill
-      g.setFillStyle({ color: barColor });
-      g.roundRect(
-        -PLAYER_CONFIG.HEALTH_BAR_WIDTH / 2,
-        0,
-        PLAYER_CONFIG.HEALTH_BAR_WIDTH * healthRatio,
-        PLAYER_CONFIG.HEALTH_BAR_HEIGHT,
-        2
-      );
-      g.fill();
+      {/* Combat Status Indicators */}
+      {playerState.activeEffects && playerState.activeEffects.length > 0 && (
+        <Container x={0} y={60}>
+          {playerState.activeEffects.slice(0, 3).map((effect, index) => (
+            <Text
+              key={effect.id}
+              text={effect.description.korean || effect.type}
+              anchor={0.5}
+              x={0}
 
       // Border
       g.setStrokeStyle({ color: KOREAN_COLORS.WHITE, width: 1 });

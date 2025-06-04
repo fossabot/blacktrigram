@@ -5,49 +5,36 @@ declare global {
   }
 }
 
-import { Howl, Howler } from "howler";
 import type {
-  AudioState,
-  IAudioManager,
   SoundEffectId,
-  MusicTrackId,
-  AudioPlaybackOptions,
-  AudioConfig,
+  MusicId,
   AudioAsset,
-  AudioCategory,
+  AudioPlaybackOptions,
 } from "../types/audio";
-import { AUDIO_ASSET_REGISTRY, AudioAssetUtils } from "./AudioAssetRegistry";
-import { SmartVariantSelector } from "./VariantSelector";
+import {
+  AUDIO_ASSET_REGISTRY,
+  getSoundAsset,
+  getMusicAsset,
+} from "./AudioAssetRegistry";
+import { DefaultSoundGenerator } from "./DefaultSoundGenerator";
 
-// Configuration moved to types
-const AUDIO_CONFIG: AudioConfig = {
-  MASTER_VOLUME: 0.8,
-  SFX_VOLUME: 0.7,
-  AMBIENT_VOLUME: 0.4,
-  MUSIC_VOLUME: 0.6,
-  FADE_DURATION: 1000,
-  MAX_CONCURRENT_SOUNDS: 8,
-} as const;
-
-class AudioManager implements IAudioManager {
-  private static instance: AudioManager;
-  private sounds: Map<string, Howl> = new Map();
-  private music: Map<MusicTrackId, Howl> = new Map();
-  private currentMusic: Howl | null = null;
-  private variantSelector = new SmartVariantSelector("adaptive");
-  private useFallbackSounds: boolean = false;
-
-  private state: AudioState = {
-    masterVolume: AUDIO_CONFIG.MASTER_VOLUME,
-    sfxVolume: AUDIO_CONFIG.SFX_VOLUME,
-    musicVolume: AUDIO_CONFIG.MUSIC_VOLUME,
-    muted: false,
-    currentMusicTrack: null,
-    isInitialized: false,
-  };
+/**
+ * Korean Martial Arts Audio Manager for Black Trigram (흑괘)
+ * Singleton pattern for centralized audio management
+ */
+export class AudioManager {
+  private static instance: AudioManager | null = null;
+  private audioContext: AudioContext | null = null;
+  private masterVolume: number = 0.7;
+  private sfxVolume: number = 1.0;
+  private musicVolume: number = 1.0;
+  private isMuted: boolean = false;
+  private loadedAssets: Map<string, HTMLAudioElement> = new Map();
+  private currentMusic: HTMLAudioElement | null = null;
+  private isInitialized: boolean = false;
 
   private constructor() {
-    this.initializeAudioSystem();
+    this.initializeAudioContext();
   }
 
   public static getInstance(): AudioManager {
@@ -57,468 +44,394 @@ class AudioManager implements IAudioManager {
     return AudioManager.instance;
   }
 
-  private async initializeAudioSystem(): Promise<void> {
+  private async initializeAudioContext(): Promise<void> {
     try {
-      Howler.autoUnlock = true;
-      Howler.html5PoolSize = AUDIO_CONFIG.MAX_CONCURRENT_SOUNDS;
-      Howler.volume(this.state.masterVolume);
+      this.audioContext = new (window.AudioContext ||
+        (window as any).webkitAudioContext)();
 
-      await this.preloadAssets();
-      this.state = { ...this.state, isInitialized: true };
-      console.log("🎵 AudioManager initialized successfully");
+      if (this.audioContext.state === "suspended") {
+        await this.audioContext.resume();
+      }
+      this.isInitialized = true;
     } catch (error) {
-      console.error("❌ Failed to initialize AudioManager:", error);
-      this.useFallbackSounds = true;
-      this.state = { ...this.state, isInitialized: true, fallbackMode: true };
+      console.warn("AudioContext initialization failed:", error);
+      this.isInitialized = false;
     }
   }
 
-  // Enhanced playSFX with variant support
-  public playSFX(
-    id: SoundEffectId,
+  // Public getters to match interface expectations
+  public getMasterVolume(): number {
+    return this.masterVolume;
+  }
+
+  public getSFXVolume(): number {
+    return this.sfxVolume;
+  }
+
+  public getMusicVolume(): number {
+    return this.musicVolume;
+  }
+
+  public getIsMuted(): boolean {
+    return this.isMuted;
+  }
+
+  public getIsInitialized(): boolean {
+    return this.isInitialized;
+  }
+
+  public getLoadedAssetCount(): number {
+    return this.loadedAssets.size;
+  }
+
+  public async playSFX(
+    soundId: SoundEffectId,
     options: AudioPlaybackOptions = {}
-  ): number | null {
-    if (this.state.muted || !this.state.isInitialized) return null;
+  ): Promise<void> {
+    if (this.isMuted) return;
 
-    if (this.useFallbackSounds) {
-      this.playFallbackSound(id);
-      return null;
-    }
-
-    // Check if we should play a specific variant
-    const soundKey = this.resolveSoundKey(id, options.variant);
-    const sound = this.sounds.get(soundKey);
-
-    if (!sound) {
-      console.warn(`🔇 Sound effect not found: ${soundKey}, using fallback`);
-      this.playFallbackSound(id);
-      return null;
+    const asset = getSoundAsset(soundId);
+    if (!asset) {
+      console.warn(`Sound asset not found: ${soundId}`);
+      await this.playFallbackSound(soundId);
+      return;
     }
 
     try {
-      const soundId = sound.play();
+      const audio = await this.loadAudioAsset(asset);
+      const volume =
+        (options.volume ?? asset.volume ?? 1.0) *
+        this.sfxVolume *
+        this.masterVolume;
 
-      if (options.volume !== undefined) {
-        sound.volume(options.volume * this.state.sfxVolume, soundId);
-      }
-
-      if (options.rate !== undefined) {
-        sound.rate(options.rate, soundId);
-      }
-
-      if (options.fadeIn) {
-        sound.volume(0, soundId);
-        sound.fade(
-          0,
-          options.volume || sound.volume(),
-          options.fadeIn,
-          soundId
-        );
-      }
-
-      return soundId;
+      audio.volume = Math.max(0, Math.min(1, volume));
+      audio.currentTime = 0;
+      await audio.play();
     } catch (error) {
-      console.error(`❌ Failed to play sound ${soundKey}:`, error);
-      this.playFallbackSound(id);
-      return null;
+      console.warn(`Failed to play SFX ${soundId}:`, error);
+      await this.playFallbackSound(soundId);
     }
   }
 
-  private resolveSoundKey(
-    id: SoundEffectId,
-    requestedVariant?: string
-  ): string {
-    const asset = AUDIO_ASSET_REGISTRY.sfx[id];
-    if (!asset) return id;
-
-    // If specific variant requested and exists, use it
-    if (requestedVariant && asset.variants?.includes(requestedVariant)) {
-      return `${id}_${requestedVariant}`;
-    }
-
-    // If asset has variants, select one using strategy
-    if (asset.variants && asset.variants.length > 0) {
-      const selectedVariant = this.variantSelector.selectVariant(
-        id,
-        asset.variants
-      );
-      return selectedVariant ? `${id}_${selectedVariant}` : id;
-    }
-
-    // Use base sound
-    return id;
-  }
-
-  async preloadAssets(category?: AudioCategory): Promise<void> {
-    const assetsToLoad = category
-      ? AudioAssetUtils.getAssetsByCategory(category)
-      : [
-          ...Object.values(AUDIO_ASSET_REGISTRY.sfx),
-          ...Object.values(AUDIO_ASSET_REGISTRY.music),
-        ];
-
-    const loadPromises = assetsToLoad.map((asset: AudioAsset) =>
-      this.loadAsset(asset)
-    );
-    await Promise.allSettled(loadPromises);
-  }
-
-  private async loadAsset(asset: AudioAsset): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const paths = AudioAssetUtils.getAssetPaths(asset);
-
-      const sound = new Howl({
-        src: paths,
-        volume:
-          asset.volume *
-          (asset.category === "music"
-            ? this.state.musicVolume
-            : this.state.sfxVolume),
-        loop: asset.loop || false,
-        preload: asset.preload || false,
-        onload: () => {
-          console.log(`🎵 Loaded: ${asset.id} - ${asset.description}`);
-          resolve();
-        },
-        onloaderror: (_id, error) => {
-          console.warn(`⚠️ Failed to load ${asset.id}:`, error);
-          this.useFallbackSounds = true;
-          reject(error);
-        },
-      });
-
-      // Store base sound and variants
-      if (asset.category === "music") {
-        this.music.set(asset.id as MusicTrackId, sound);
-      } else {
-        this.sounds.set(asset.id, sound);
-
-        // Load variants as separate sounds for individual control
-        if (asset.variants) {
-          const variantsArray = [...asset.variants]; // Convert readonly to mutable
-          variantsArray.forEach((variant) => {
-            const variantPaths = asset.formats.map((format) =>
-              AudioAssetUtils.getVariantPath(asset, variant, format)
-            );
-
-            const variantSound = new Howl({
-              src: variantPaths,
-              volume: asset.volume * this.state.sfxVolume,
-              loop: asset.loop || false,
-              preload: asset.preload || false,
-            });
-
-            this.sounds.set(`${asset.id}_${variant}`, variantSound);
-          });
-        }
-      }
-    });
-  }
-
-  // Specialized sound methods for game events
-  public playAttackSound(damage: number): void {
-    if (this.useFallbackSounds) {
-      // Dynamic import for fallback
-      import("./DefaultSoundGenerator")
-        .then(({ defaultSoundGenerator }) => {
-          defaultSoundGenerator.playAttackSound(damage);
-        })
-        .catch((error) => {
-          console.warn("Failed to load fallback sound generator:", error);
-        });
-      return;
-    }
-
-    if (damage >= 35) {
-      this.playSFX("attack_critical");
-    } else if (damage >= 25) {
-      this.playSFX("attack_heavy");
-    } else if (damage >= 15) {
-      this.playSFX("attack_medium");
-    } else {
-      this.playSFX("attack_light");
-    }
-  }
-
-  public playHitSound(damage: number, isVitalPoint: boolean = false): void {
-    if (this.useFallbackSounds) {
-      // Dynamic import for fallback
-      import("./DefaultSoundGenerator")
-        .then(({ defaultSoundGenerator }) => {
-          defaultSoundGenerator.playHitSound(damage, isVitalPoint);
-        })
-        .catch((error) => {
-          console.warn("Failed to load fallback sound generator:", error);
-        });
-      return;
-    }
-
-    if (isVitalPoint) {
-      this.playSFX("hit_critical");
-      this.playSFX("perfect_strike", { delay: 100 });
-    } else if (damage >= 30) {
-      this.playSFX("hit_heavy");
-    } else if (damage >= 20) {
-      this.playSFX("hit_medium");
-    } else {
-      this.playSFX("hit_light");
-    }
-  }
-
-  public playStanceChangeSound(): void {
-    if (this.useFallbackSounds) {
-      // Dynamic import for fallback
-      import("./DefaultSoundGenerator")
-        .then(({ defaultSoundGenerator }) => {
-          defaultSoundGenerator.playStanceChangeSound();
-        })
-        .catch((error) => {
-          console.warn("Failed to load fallback sound generator:", error);
-        });
-      return;
-    }
-
-    this.playSFX("stance_change");
-    // Add slight delay for energy pulse based on trigram
-    setTimeout(() => {
-      this.playSFX("energy_pulse", { volume: 0.3 });
-    }, 150);
-  }
-
-  public playComboSound(comboCount: number): void {
-    if (this.useFallbackSounds) {
-      // Dynamic import for fallback
-      import("./DefaultSoundGenerator")
-        .then(({ defaultSoundGenerator }) => {
-          defaultSoundGenerator.playComboSound(comboCount);
-        })
-        .catch((error) => {
-          console.warn("Failed to load fallback sound generator:", error);
-        });
-      return;
-    }
-
-    if (comboCount >= 5) {
-      this.playSFX("combo_finish");
-    } else if (comboCount >= 2) {
-      this.playSFX("combo_buildup", { rate: 1 + comboCount * 0.1 });
-    }
-  }
-
-  // Music management
-  public playMusic(id: MusicTrackId, fadeIn: boolean = true): void {
-    if (this.state.muted) return;
-
-    // Stop current music if playing
-    if (this.currentMusic) {
-      this.stopMusic(fadeIn);
-    }
-
-    const music = this.music.get(id);
-    if (!music) {
-      console.warn(`🔇 Music track not found: ${id}`);
+  public async playMusic(
+    musicId: MusicId,
+    options: AudioPlaybackOptions = {}
+  ): Promise<void> {
+    const asset = getMusicAsset(musicId);
+    if (!asset) {
+      console.warn(`Music asset not found: ${musicId}`);
       return;
     }
 
     try {
-      if (fadeIn) {
-        music.volume(0);
-        const musicId = music.play();
-        music.fade(
-          0,
-          this.state.musicVolume,
-          AUDIO_CONFIG.FADE_DURATION,
-          musicId
-        );
-      } else {
-        music.volume(this.state.musicVolume);
-        music.play();
-      }
-
-      this.currentMusic = music;
-      this.state = { ...this.state, currentMusicTrack: id };
-    } catch (error) {
-      console.error(`❌ Failed to play music ${id}:`, error);
-    }
-  }
-
-  public stopMusic(fadeOut: boolean = true): void {
-    if (!this.currentMusic) return;
-
-    try {
-      if (fadeOut) {
-        this.currentMusic.fade(
-          this.state.musicVolume,
-          0,
-          AUDIO_CONFIG.FADE_DURATION
-        );
-        setTimeout(() => {
-          this.currentMusic?.stop();
-          this.currentMusic = null;
-          this.state = { ...this.state, currentMusicTrack: null };
-        }, AUDIO_CONFIG.FADE_DURATION);
-      } else {
-        this.currentMusic.stop();
+      // Stop current music
+      if (this.currentMusic) {
+        this.currentMusic.pause();
         this.currentMusic = null;
-        this.state = { ...this.state, currentMusicTrack: null };
       }
+
+      if (this.isMuted) return;
+
+      const audio = await this.loadAudioAsset(asset);
+      const volume =
+        (options.volume ?? asset.volume ?? 1.0) *
+        this.musicVolume *
+        this.masterVolume;
+
+      audio.volume = Math.max(0, Math.min(1, volume));
+      audio.loop = asset.loop ?? false;
+      audio.currentTime = 0;
+
+      this.currentMusic = audio;
+      await audio.play();
     } catch (error) {
-      console.error("❌ Failed to stop music:", error);
+      console.warn(`Failed to play music ${musicId}:`, error);
     }
   }
 
-  // Volume and state management
+  public stopMusic(): void {
+    if (this.currentMusic) {
+      this.currentMusic.pause();
+      this.currentMusic = null;
+    }
+  }
+
   public setMasterVolume(volume: number): void {
-    const clampedVolume = Math.max(0, Math.min(1, volume));
-    this.state = { ...this.state, masterVolume: clampedVolume };
-    Howler.volume(clampedVolume);
+    this.masterVolume = Math.max(0, Math.min(1, volume));
+    this.updateAllVolumes();
   }
 
   public setSFXVolume(volume: number): void {
-    const clampedVolume = Math.max(0, Math.min(1, volume));
-    this.state = { ...this.state, sfxVolume: clampedVolume };
-
-    // Update all loaded sound effects
-    this.sounds.forEach((sound) => {
-      sound.volume(clampedVolume);
-    });
+    this.sfxVolume = Math.max(0, Math.min(1, volume));
   }
 
   public setMusicVolume(volume: number): void {
-    const clampedVolume = Math.max(0, Math.min(1, volume));
-    this.state = { ...this.state, musicVolume: clampedVolume };
-
-    // Update current music if playing
+    this.musicVolume = Math.max(0, Math.min(1, volume));
     if (this.currentMusic) {
-      this.currentMusic.volume(clampedVolume);
+      this.currentMusic.volume = this.musicVolume * this.masterVolume;
     }
   }
 
-  public toggleMute(): void {
-    this.state = { ...this.state, muted: !this.state.muted };
-    Howler.mute(this.state.muted);
-  }
-
-  public getState(): AudioState {
-    return { ...this.state };
-  }
-
-  async unloadAssets(category?: AudioCategory): Promise<void> {
-    if (category) {
-      // Unload specific category
-      const assetsToUnload = AudioAssetUtils.getAssetsByCategory(category);
-
-      assetsToUnload.forEach((asset) => {
-        if (asset.category === "music") {
-          const music = this.music.get(asset.id as MusicTrackId);
-          if (music) {
-            music.unload();
-            this.music.delete(asset.id as MusicTrackId);
-          }
-        } else {
-          const sound = this.sounds.get(asset.id);
-          if (sound) {
-            sound.unload();
-            this.sounds.delete(asset.id);
-          }
-
-          // Also unload variants
-          if (asset.variants) {
-            const variantsArray = [...asset.variants]; // Convert readonly to mutable
-            variantsArray.forEach((variant) => {
-              const variantKey = `${asset.id}_${variant}`;
-              const variantSound = this.sounds.get(variantKey);
-              if (variantSound) {
-                variantSound.unload();
-                this.sounds.delete(variantKey);
-              }
-            });
-          }
-        }
-      });
-    } else {
-      // Unload all assets
-      this.cleanup();
+  public setMuted(muted: boolean): void {
+    this.isMuted = muted;
+    if (muted) {
+      this.stopMusic();
     }
   }
 
-  private async playFallbackSound(id: SoundEffectId): Promise<void> {
-    if (this.state.muted) return;
-
+  private async playFallbackSound(soundId: SoundEffectId): Promise<void> {
     try {
-      // Dynamic import to avoid unused import error
-      const { defaultSoundGenerator } = await import("./DefaultSoundGenerator");
-
-      switch (id) {
-        case "menu_hover":
-        case "menu_select":
-        case "menu_back":
-          await defaultSoundGenerator.playMenuSound();
-          break;
-        case "match_start":
-          await defaultSoundGenerator.playMatchStartSound();
-          break;
-        case "victory":
-          await defaultSoundGenerator.playVictorySound();
-          break;
-        case "stance_change":
-          await defaultSoundGenerator.playStanceChangeSound();
-          break;
+      // Map specific sound IDs to DefaultSoundGenerator methods
+      switch (soundId) {
         case "attack_light":
         case "attack_medium":
         case "attack_heavy":
         case "attack_critical":
           const damage =
-            id === "attack_critical"
+            soundId === "attack_critical"
               ? 40
-              : id === "attack_heavy"
+              : soundId === "attack_heavy"
               ? 30
-              : id === "attack_medium"
+              : soundId === "attack_medium"
               ? 20
               : 10;
-          await defaultSoundGenerator.playAttackSound(damage);
+          await DefaultSoundGenerator.playAttackSound(damage);
           break;
+
         case "hit_light":
         case "hit_medium":
         case "hit_heavy":
         case "hit_critical":
           const hitDamage =
-            id === "hit_critical"
+            soundId === "hit_critical"
               ? 40
-              : id === "hit_heavy"
+              : soundId === "hit_heavy"
               ? 30
-              : id === "hit_medium"
+              : soundId === "hit_medium"
               ? 20
               : 10;
-          const isVital = id === "hit_critical";
-          await defaultSoundGenerator.playHitSound(hitDamage, isVital);
+          await DefaultSoundGenerator.playHitSound(hitDamage);
           break;
-        case "combo_buildup":
-        case "combo_finish":
-          const comboLevel = id === "combo_finish" ? 5 : 3;
-          await defaultSoundGenerator.playComboSound(comboLevel);
+
+        case "perfect_strike":
+          await DefaultSoundGenerator.playHitSound(35, true);
           break;
+
+        case "stance_change":
+          await DefaultSoundGenerator.playStanceChangeSound();
+          break;
+
+        case "match_start":
+          await DefaultSoundGenerator.playMatchStartSound();
+          break;
+
+        case "victory":
+          await DefaultSoundGenerator.playVictorySound();
+          break;
+
+        case "menu_hover":
+        case "menu_select":
+          await DefaultSoundGenerator.playMenuSound();
+          break;
+
         default:
-          // Generic fallback
-          await defaultSoundGenerator.playMenuSound();
+          // Generic fallback using Web Audio API
+          await this.generateGenericSound(soundId);
       }
     } catch (error) {
-      console.warn(`Failed to play fallback sound for ${id}:`, error);
+      console.warn("Failed to generate fallback sound:", error);
     }
   }
 
-  // Cleanup
-  public cleanup(): void {
-    this.stopMusic(false);
-    this.sounds.forEach((sound) => sound.unload());
-    this.music.forEach((music) => music.unload());
-    this.sounds.clear();
-    this.music.clear();
+  private async generateGenericSound(soundId: SoundEffectId): Promise<void> {
+    if (!this.audioContext) return;
+
+    try {
+      const oscillator = this.audioContext.createOscillator();
+      const gainNode = this.audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
+
+      // Different frequencies for different sound types
+      const soundFrequencies: Record<string, number> = {
+        combo_buildup: 350,
+        combo_finish: 500,
+        block_success: 300,
+        technique_execute: 400,
+        ki_charge: 250,
+        defeat: 150,
+      };
+
+      oscillator.frequency.setValueAtTime(
+        soundFrequencies[soundId] || 400,
+        this.audioContext.currentTime
+      );
+      oscillator.type = "square";
+
+      gainNode.gain.setValueAtTime(
+        0.1 * this.sfxVolume * this.masterVolume,
+        this.audioContext.currentTime
+      );
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.01,
+        this.audioContext.currentTime + 0.1
+      );
+
+      oscillator.start(this.audioContext.currentTime);
+      oscillator.stop(this.audioContext.currentTime + 0.1);
+    } catch (error) {
+      console.warn("Failed to generate generic sound:", error);
+    }
+  }
+
+  private async loadAudioAsset(asset: AudioAsset): Promise<HTMLAudioElement> {
+    const cacheKey = asset.id;
+
+    if (this.loadedAssets.has(cacheKey)) {
+      return this.loadedAssets.get(cacheKey)!.cloneNode() as HTMLAudioElement;
+    }
+
+    const audio = new Audio();
+    const assetPath = this.getAssetPath(asset);
+
+    audio.src = assetPath;
+    audio.preload = asset.preload ? "auto" : "metadata";
+
+    return new Promise((resolve, reject) => {
+      audio.oncanplaythrough = () => {
+        this.loadedAssets.set(cacheKey, audio);
+        resolve(audio.cloneNode() as HTMLAudioElement);
+      };
+
+      audio.onerror = () => {
+        reject(new Error(`Failed to load audio: ${assetPath}`));
+      };
+
+      audio.load();
+    });
+  }
+
+  private getAssetPath(asset: AudioAsset): string {
+    const preferredFormat = this.getPreferredFormat(asset.formats);
+    return `${asset.basePath}/${asset.id}.${preferredFormat}`;
+  }
+
+  private getPreferredFormat(formats: readonly string[]): string {
+    // Prefer webm for modern browsers, fallback to mp3
+    if (formats.includes("webm")) return "webm";
+    if (formats.includes("mp3")) return "mp3";
+    return formats[0] || "mp3";
+  }
+
+  private updateAllVolumes(): void {
+    if (this.currentMusic) {
+      this.currentMusic.volume = this.musicVolume * this.masterVolume;
+    }
+  }
+
+  public async preloadAssets(assetIds: string[]): Promise<void> {
+    const preloadPromises = assetIds.map(async (id) => {
+      const asset = AUDIO_ASSET_REGISTRY[id];
+      if (asset && asset.preload) {
+        try {
+          await this.loadAudioAsset(asset);
+        } catch (error) {
+          console.warn(`Failed to preload asset ${id}:`, error);
+        }
+      }
+    });
+
+    await Promise.allSettled(preloadPromises);
+  }
+
+  // Combat-specific audio methods following project guidelines
+  public async playAttackSound(damage: number): Promise<void> {
+    if (damage < 10) {
+      await this.playSFX("attack_light");
+    } else if (damage < 25) {
+      await this.playSFX("attack_medium");
+    } else if (damage < 40) {
+      await this.playSFX("attack_heavy");
+    } else {
+      await this.playSFX("attack_critical");
+    }
+  }
+
+  public async playHitSound(
+    damage: number,
+    isVitalPoint: boolean = false
+  ): Promise<void> {
+    if (isVitalPoint) {
+      await this.playSFX("perfect_strike");
+      return;
+    }
+
+    if (damage < 10) {
+      await this.playSFX("hit_light");
+    } else if (damage < 25) {
+      await this.playSFX("hit_medium");
+    } else if (damage < 40) {
+      await this.playSFX("hit_heavy");
+    } else {
+      await this.playSFX("hit_critical");
+    }
+  }
+
+  public async playTechniqueSound(techniqueName: string): Promise<void> {
+    // Map Korean technique names to sound effects
+    const techniqueMap: Record<string, SoundEffectId> = {
+      천둥벽력: "attack_critical",
+      유수연타: "combo_buildup",
+      화염지창: "perfect_strike",
+      벽력일섬: "attack_heavy",
+      선풍연격: "combo_finish",
+      수류반격: "block_success",
+      반석방어: "block_success",
+      대지포옹: "attack_heavy",
+    };
+
+    const soundId = techniqueMap[techniqueName] || "technique_execute";
+    await this.playSFX(soundId);
+  }
+
+  public async playStanceChangeSound(): Promise<void> {
+    await this.playSFX("stance_change");
+  }
+
+  public async playKiChargeSound(): Promise<void> {
+    await this.playSFX("ki_charge");
+  }
+
+  public async playMatchStartSound(): Promise<void> {
+    await this.playSFX("match_start");
+  }
+
+  public async playVictorySound(): Promise<void> {
+    await this.playSFX("victory");
+  }
+
+  public async playDefeatSound(): Promise<void> {
+    await this.playSFX("defeat");
+  }
+
+  public async playMenuSound(): Promise<void> {
+    await this.playSFX("menu_select");
+  }
+
+  public destroy(): void {
+    this.stopMusic();
+    this.loadedAssets.clear();
+
+    if (this.audioContext) {
+      this.audioContext.close();
+      this.audioContext = null;
+    }
+
+    this.isInitialized = false;
+    AudioManager.instance = null;
   }
 }
 
-// Export singleton instance and hook
-export const audioManager = AudioManager.getInstance();
-export function useAudio(): AudioManager {
-  return audioManager;
-}
+// Export singleton instance getter
+export const useAudio = (): AudioManager => AudioManager.getInstance();

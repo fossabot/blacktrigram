@@ -1,175 +1,313 @@
-/**
- * DefaultSoundGenerator - Fallback sound generation for Korean martial arts game
- * Creates procedural audio when real sound assets are unavailable
- */
+import type { SoundEffectId } from "../types/audio";
 
+/**
+ * Korean Martial Arts Default Sound Generator for Black Trigram (흑괘)
+ * Procedural sound generation for fallback audio when assets are missing
+ */
 export class DefaultSoundGenerator {
   private static audioContext: AudioContext | null = null;
 
-  private static getAudioContext(): AudioContext {
-    if (!this.audioContext) {
+  private static getAudioContext(): AudioContext | null {
+    if (!DefaultSoundGenerator.audioContext) {
       try {
-        this.audioContext = new (window.AudioContext ||
+        DefaultSoundGenerator.audioContext = new (window.AudioContext ||
           (window as any).webkitAudioContext)();
-
-        // Resume context if suspended (browser autoplay policy)
-        if (this.audioContext.state === "suspended") {
-          this.audioContext.resume().catch(console.warn);
-        }
       } catch (error) {
-        console.warn("Failed to create AudioContext:", error);
-        throw new Error("Web Audio API not supported");
+        console.warn(
+          "Failed to create AudioContext for DefaultSoundGenerator:",
+          error
+        );
+        return null;
       }
     }
-    return this.audioContext;
+    return DefaultSoundGenerator.audioContext;
   }
 
-  private static async generateTone(
-    frequency: number,
-    duration: number,
-    type: OscillatorType = "sine",
-    volume: number = 0.3,
-    envelope?: {
-      attack: number;
-      decay: number;
-      sustain: number;
-      release: number;
-    }
-  ): Promise<void> {
+  /**
+   * Generate attack sound based on damage intensity
+   */
+  public static async playAttackSound(damage: number): Promise<void> {
+    const context = DefaultSoundGenerator.getAudioContext();
+    if (!context) return;
+
     try {
-      const ctx = this.getAudioContext();
-      const oscillator = ctx.createOscillator();
-      const gainNode = ctx.createGain();
+      const oscillator = context.createOscillator();
+      const gainNode = context.createGain();
 
       oscillator.connect(gainNode);
-      gainNode.connect(ctx.destination);
+      gainNode.connect(context.destination);
 
-      oscillator.frequency.setValueAtTime(frequency, ctx.currentTime);
-      oscillator.type = type;
+      // Frequency based on damage - higher damage = lower, more impactful sound
+      const frequency = Math.max(150, 400 - damage * 5);
+      oscillator.frequency.setValueAtTime(frequency, context.currentTime);
+      oscillator.type = "square";
 
-      // Apply ADSR envelope if provided
-      if (envelope) {
-        const { attack, decay, sustain, release } = envelope;
-        const sustainLevel = volume * sustain;
+      // Volume and duration based on damage intensity
+      const volume = Math.min(0.3, 0.1 + damage * 0.005);
+      const duration = Math.min(0.3, 0.1 + damage * 0.005);
 
-        gainNode.gain.setValueAtTime(0, ctx.currentTime);
-        gainNode.gain.linearRampToValueAtTime(volume, ctx.currentTime + attack);
-        gainNode.gain.linearRampToValueAtTime(
-          sustainLevel,
-          ctx.currentTime + attack + decay
-        );
-        gainNode.gain.linearRampToValueAtTime(
-          sustainLevel,
-          ctx.currentTime + duration - release
-        );
-        gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
-      } else {
-        // Simple envelope
-        gainNode.gain.setValueAtTime(0, ctx.currentTime);
-        gainNode.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.01);
-        gainNode.gain.exponentialRampToValueAtTime(
-          0.001,
-          ctx.currentTime + duration
-        );
-      }
+      gainNode.gain.setValueAtTime(volume, context.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.01,
+        context.currentTime + duration
+      );
 
-      oscillator.start(ctx.currentTime);
-      oscillator.stop(ctx.currentTime + duration);
-
-      return new Promise<void>((resolve) => {
-        oscillator.onended = () => resolve();
-      });
+      oscillator.start(context.currentTime);
+      oscillator.stop(context.currentTime + duration);
     } catch (error) {
-      console.warn("Failed to generate tone:", error);
+      console.warn("Failed to generate attack sound:", error);
     }
   }
 
-  public static async playMenuSound(): Promise<void> {
-    await this.generateTone(800, 0.1, "sine", 0.2);
-  }
-
-  public static async playMatchStartSound(): Promise<void> {
-    // Temple bell simulation - fundamental + harmonics
-    await Promise.all([
-      this.generateTone(200, 1.0, "sine", 0.4),
-      this.generateTone(400, 0.8, "sine", 0.2),
-      this.generateTone(800, 0.6, "sine", 0.1),
-    ]);
-  }
-
-  public static async playVictorySound(): Promise<void> {
-    // Ascending chord progression with proper type checking
-    const notes = [262, 330, 392, 523];
-
-    for (let i = 0; i < notes.length; i++) {
-      const note = notes[i];
-      if (note !== undefined) {
-        setTimeout(async () => {
-          await this.generateTone(note, 0.3, "triangle", 0.3);
-        }, i * 150);
-      }
-    }
-  }
-
-  public static async playStanceChangeSound(): Promise<void> {
-    // Zen-like sound transition
-    await this.generateTone(600, 0.2, "sine", 0.25, {
-      attack: 0.05,
-      decay: 0.1,
-      sustain: 0.7,
-      release: 0.05,
-    });
-
-    setTimeout(async () => {
-      await this.generateTone(400, 0.1, "triangle", 0.15);
-    }, 100);
-  }
-
-  public static async playAttackSound(damage: number): Promise<void> {
-    const baseFreq = 200 + damage * 8;
-    const duration = 0.08 + damage * 0.003;
-    const volume = Math.min(0.6, 0.2 + damage * 0.01);
-
-    await this.generateTone(baseFreq, duration, "sawtooth", volume, {
-      attack: 0.01,
-      decay: 0.02,
-      sustain: 0.8,
-      release: 0.05,
-    });
-  }
-
+  /**
+   * Generate hit sound with vital point consideration
+   */
   public static async playHitSound(
     damage: number,
     isVitalPoint: boolean = false
   ): Promise<void> {
-    const freq = isVitalPoint ? 300 + damage * 15 : 150 + damage * 5;
-    const duration = isVitalPoint ? 0.2 : 0.12;
-    const volume = Math.min(0.5, 0.2 + damage * 0.008);
+    const context = DefaultSoundGenerator.getAudioContext();
+    if (!context) return;
 
-    if (isVitalPoint) {
-      // Sharp, piercing sound for vital point hits
-      await this.generateTone(freq, duration, "square", volume, {
-        attack: 0.005,
-        decay: 0.05,
-        sustain: 0.6,
-        release: 0.135,
-      });
-    } else {
-      await this.generateTone(freq, duration, "sawtooth", volume);
+    try {
+      const oscillator = context.createOscillator();
+      const gainNode = context.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(context.destination);
+
+      if (isVitalPoint) {
+        // Sharp, piercing sound for vital point hits
+        oscillator.frequency.setValueAtTime(800, context.currentTime);
+        oscillator.frequency.exponentialRampToValueAtTime(
+          200,
+          context.currentTime + 0.1
+        );
+        oscillator.type = "sawtooth";
+      } else {
+        // Duller impact sound for regular hits
+        const frequency = Math.max(100, 300 - damage * 3);
+        oscillator.frequency.setValueAtTime(frequency, context.currentTime);
+        oscillator.type = "square";
+      }
+
+      const volume = isVitalPoint ? 0.2 : Math.min(0.2, 0.05 + damage * 0.003);
+      const duration = isVitalPoint
+        ? 0.2
+        : Math.min(0.2, 0.08 + damage * 0.003);
+
+      gainNode.gain.setValueAtTime(volume, context.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.01,
+        context.currentTime + duration
+      );
+
+      oscillator.start(context.currentTime);
+      oscillator.stop(context.currentTime + duration);
+    } catch (error) {
+      console.warn("Failed to generate hit sound:", error);
     }
   }
 
-  public static async playComboSound(comboCount: number): Promise<void> {
-    // Rising pitch sequence for combo hits
-    for (let i = 0; i < Math.min(comboCount, 5); i++) {
-      setTimeout(async () => {
-        const freq = 400 + i * 100;
-        const volume = Math.min(0.4, 0.1 + i * 0.05);
-        await this.generateTone(freq, 0.08, "triangle", volume);
-      }, i * 80);
+  /**
+   * Generate stance change sound
+   */
+  public static async playStanceChangeSound(): Promise<void> {
+    const context = DefaultSoundGenerator.getAudioContext();
+    if (!context) return;
+
+    try {
+      const oscillator = context.createOscillator();
+      const gainNode = context.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(context.destination);
+
+      // Rising tone for stance change
+      oscillator.frequency.setValueAtTime(300, context.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(
+        600,
+        context.currentTime + 0.15
+      );
+      oscillator.type = "sine";
+
+      gainNode.gain.setValueAtTime(0.1, context.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.01,
+        context.currentTime + 0.15
+      );
+
+      oscillator.start(context.currentTime);
+      oscillator.stop(context.currentTime + 0.15);
+    } catch (error) {
+      console.warn("Failed to generate stance change sound:", error);
+    }
+  }
+
+  /**
+   * Generate match start sound
+   */
+  public static async playMatchStartSound(): Promise<void> {
+    const context = DefaultSoundGenerator.getAudioContext();
+    if (!context) return;
+
+    try {
+      // Create a bell-like sound for match start
+      const oscillator = context.createOscillator();
+      const gainNode = context.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(context.destination);
+
+      oscillator.frequency.setValueAtTime(800, context.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(
+        400,
+        context.currentTime + 0.5
+      );
+      oscillator.type = "sine";
+
+      gainNode.gain.setValueAtTime(0.2, context.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.01,
+        context.currentTime + 0.5
+      );
+
+      oscillator.start(context.currentTime);
+      oscillator.stop(context.currentTime + 0.5);
+    } catch (error) {
+      console.warn("Failed to generate match start sound:", error);
+    }
+  }
+
+  /**
+   * Generate victory sound
+   */
+  public static async playVictorySound(): Promise<void> {
+    const context = DefaultSoundGenerator.getAudioContext();
+    if (!context) return;
+
+    try {
+      // Create an ascending chord for victory
+      const frequencies = [523, 659, 784]; // C-E-G chord
+
+      frequencies.forEach((freq, index) => {
+        const oscillator = context.createOscillator();
+        const gainNode = context.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(context.destination);
+
+        oscillator.frequency.setValueAtTime(
+          freq,
+          context.currentTime + index * 0.1
+        );
+        oscillator.type = "sine";
+
+        gainNode.gain.setValueAtTime(0.1, context.currentTime + index * 0.1);
+        gainNode.gain.exponentialRampToValueAtTime(
+          0.01,
+          context.currentTime + 0.8 + index * 0.1
+        );
+
+        oscillator.start(context.currentTime + index * 0.1);
+        oscillator.stop(context.currentTime + 0.8 + index * 0.1);
+      });
+    } catch (error) {
+      console.warn("Failed to generate victory sound:", error);
+    }
+  }
+
+  /**
+   * Generate menu interaction sound
+   */
+  public static async playMenuSound(): Promise<void> {
+    const context = DefaultSoundGenerator.getAudioContext();
+    if (!context) return;
+
+    try {
+      const oscillator = context.createOscillator();
+      const gainNode = context.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(context.destination);
+
+      oscillator.frequency.setValueAtTime(600, context.currentTime);
+      oscillator.type = "sine";
+
+      gainNode.gain.setValueAtTime(0.1, context.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.01,
+        context.currentTime + 0.1
+      );
+
+      oscillator.start(context.currentTime);
+      oscillator.stop(context.currentTime + 0.1);
+    } catch (error) {
+      console.warn("Failed to generate menu sound:", error);
+    }
+  }
+
+  /**
+   * Generate placeholder sound by ID
+   */
+  public static async generatePlaceholderSound(
+    soundId: SoundEffectId
+  ): Promise<void> {
+    switch (soundId) {
+      case "attack_light":
+      case "attack_medium":
+      case "attack_heavy":
+      case "attack_critical":
+        const damage =
+          soundId === "attack_critical"
+            ? 40
+            : soundId === "attack_heavy"
+            ? 30
+            : soundId === "attack_medium"
+            ? 20
+            : 10;
+        await DefaultSoundGenerator.playAttackSound(damage);
+        break;
+
+      case "hit_light":
+      case "hit_medium":
+      case "hit_heavy":
+      case "hit_critical":
+        const hitDamage =
+          soundId === "hit_critical"
+            ? 40
+            : soundId === "hit_heavy"
+            ? 30
+            : soundId === "hit_medium"
+            ? 20
+            : 10;
+        await DefaultSoundGenerator.playHitSound(hitDamage);
+        break;
+
+      case "perfect_strike":
+        await DefaultSoundGenerator.playHitSound(35, true);
+        break;
+
+      case "stance_change":
+        await DefaultSoundGenerator.playStanceChangeSound();
+        break;
+
+      case "match_start":
+        await DefaultSoundGenerator.playMatchStartSound();
+        break;
+
+      case "victory":
+        await DefaultSoundGenerator.playVictorySound();
+        break;
+
+      case "menu_hover":
+      case "menu_select":
+        await DefaultSoundGenerator.playMenuSound();
+        break;
+
+      default:
+        // Generic fallback
+        await DefaultSoundGenerator.playMenuSound();
     }
   }
 }
-
-// Export singleton instance
-export const defaultSoundGenerator = DefaultSoundGenerator;

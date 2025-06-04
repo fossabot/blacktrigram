@@ -268,4 +268,72 @@ export class CombatSystem {
     const winner = this.checkWinCondition(players);
     return winner;
   }
+
+  public static executeTechnique(
+    technique: KoreanTechnique,
+    attacker: string,
+    defender?: string
+  ): CombatResult {
+    // Check if technique has accuracy property
+    const accuracy = technique.accuracy ?? 0.8; // Default accuracy if undefined
+
+    const damage = technique.damageRange
+      ? Math.floor(
+          Math.random() *
+            (technique.damageRange.max - technique.damageRange.min + 1)
+        ) + technique.damageRange.min
+      : 10;
+
+    const hit = Math.random() < accuracy;
+
+    return {
+      attacker,
+      defender: defender || "unknown",
+      damage: hit ? damage : 0,
+      hit,
+      blocked: false,
+      critical: Math.random() < (technique.critChance || 0.1),
+      techniqueUsed: technique,
+      effects: technique.effects || [],
+      vitalPointsHit: [],
+      defenderDamaged: hit && damage > 0,
+      // Add missing properties for CombatResult
+      consciousnessLoss: hit ? damage * 0.1 : 0,
+      painInflicted: hit ? damage * 0.5 : 0,
+    };
+  }
+
+  // Fix archetype effectiveness lookup
+  private static getArchetypeEffectiveness(): Record<
+    PlayerArchetype,
+    Record<string, number>
+  > {
+    return {
+      musa: {
+        geon: 1.2,
+        jin: 1.1,
+        default: 1.0,
+      },
+      amsalja: {
+        son: 1.2,
+        gam: 1.1,
+        default: 1.0,
+      },
+      hacker: {
+        li: 1.2,
+        default: 1.0,
+      },
+      // Remove 'jeongbo' - use correct archetype name
+      jeongbo_yowon: {
+        gam: 1.2,
+        gan: 1.1,
+        default: 1.0,
+      },
+      jojik_pokryeokbae: {
+        jin: 1.2,
+        geon: 1.1,
+        default: 1.0,
+      },
+    };
+  }
 }

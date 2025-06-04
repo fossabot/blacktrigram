@@ -6,6 +6,10 @@ import type { TrigramStance } from "./enums";
 export interface KoreanText {
   readonly korean: string;
   readonly english: string;
+  readonly culturalNote?: string; // Add optional culturalNote property
+  readonly romanization?: string;
+  readonly pronunciation?: string;
+  readonly context?: string;
 }
 
 // Korean text size type

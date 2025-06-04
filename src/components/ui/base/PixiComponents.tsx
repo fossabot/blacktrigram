@@ -3,10 +3,10 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
+import { TextStyle } from "@pixi/text"; // Import as value, not type
 import type {
   Graphics as PixiGraphicsType,
   FederatedPointerEvent,
-  TextStyle,
   TextDropShadow,
   TextStyleFontWeight,
 } from "pixi.js";
@@ -535,3 +535,32 @@ export function KoreanHighlightText({
     <PixiTextComponent {...textProps} text={text} style={highlightStyle()} />
   );
 }
+
+// Create proper text styles without unsupported properties
+export const createTextStyle = (
+  baseStyle: Partial<TextStyle> = {}
+): TextStyle => {
+  const style = new TextStyle({
+    fontFamily: "Arial",
+    fontSize: 16,
+    fill: 0xffffff,
+    ...baseStyle,
+  });
+
+  // Remove unsupported properties
+  delete (style as any).strokeThickness;
+  delete (style as any).alpha;
+
+  return style;
+};
+
+export const KoreanText: React.FC<{
+  text: string;
+  style?: Partial<TextStyle>;
+  x?: number;
+  y?: number;
+}> = ({ text, style = {}, x = 0, y = 0 }) => {
+  const textStyle = createTextStyle(style);
+
+  return <ReactText text={text} style={textStyle} x={x} y={y} />;
+};

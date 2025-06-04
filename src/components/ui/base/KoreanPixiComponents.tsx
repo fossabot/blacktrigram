@@ -208,8 +208,8 @@ export function KoreanTitleText({
 
 export interface KoreanBodyTextProps
   extends Omit<PixiTextComponentProps, "text" | "style"> {
-  readonly text: string;
-  readonly secondary?: boolean;
+  readonly text: string; // Add missing text property
+  readonly secondary?: boolean; // Add missing secondary property
   readonly style?: ExtendedPixiTextStyle;
 }
 
@@ -346,59 +346,54 @@ export function KoreanTrigramDisplay({
   showEnglish = false,
 }: KoreanTrigramDisplayProps): React.ReactElement {
   const trigram = TRIGRAM_DATA[stance];
-  const trigramColor = trigram.color || KOREAN_COLORS.WHITE;
-
-  const drawTrigram = useCallback(
-    (g: PixiGraphics) => {
-      g.clear();
-      // Simple circle for now, can be replaced with actual trigram symbol drawing
-      g.setFillStyle({ color: trigramColor, alpha: 0.2 });
-      g.circle(0, 0, size / 2);
-      g.fill();
-      g.setStrokeStyle({ color: trigramColor, width: 2 });
-      g.circle(0, 0, size / 2);
-      g.stroke();
-    },
-    [trigramColor, size]
-  );
-
-  const textStyle: ExtendedPixiTextStyle = useMemo(
-    () => ({
-      // useMemo for textStyle
-      fontFamily: KOREAN_FONT_FAMILY_PRIMARY, // Use string constant
-      fontSize: size / (showKorean && showEnglish ? 4 : 3), // Adjust size if both shown
-      fill: trigramColor,
-      align: "center",
-    }),
-    [size, trigramColor, showKorean, showEnglish]
-  );
+  const stanceColor = KOREAN_COLORS[stance] || KOREAN_COLORS.WHITE;
 
   return (
     <PixiContainerComponent x={x} y={y}>
-      <PixiGraphicsComponent draw={drawTrigram} x={0} y={0} />
+      {/* Trigram Symbol */}
       <PixiTextComponent
         text={trigram.symbol}
-        style={{ ...textStyle, fontSize: size * 0.6 }}
+        style={{
+          fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
+          fontSize: size * 0.6,
+          fill: stanceColor,
+          align: "center",
+          fontWeight: "bold",
+        }}
         anchor={{ x: 0.5, y: 0.5 }}
         x={0}
-        y={showKorean || showEnglish ? -size * 0.15 : 0} // Adjust symbol position if text is shown
+        y={0}
       />
+
+      {/* Korean Name */}
       {showKorean && (
         <PixiTextComponent
           text={trigram.name.korean}
-          style={textStyle}
-          anchor={{ x: 0.5, y: 0.5 }}
+          style={{
+            fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
+            fontSize: size * 0.25,
+            fill: KOREAN_COLORS.WHITE,
+            align: "center",
+          }}
+          anchor={{ x: 0.5, y: 0 }}
           x={0}
-          y={size * 0.25}
+          y={size * 0.4}
         />
       )}
+
+      {/* English Name */}
       {showEnglish && (
         <PixiTextComponent
           text={trigram.name.english}
-          style={{ ...textStyle, fontSize: size / 4.5 }}
-          anchor={{ x: 0.5, y: 0.5 }}
+          style={{
+            fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
+            fontSize: size * 0.2,
+            fill: KOREAN_COLORS.GRAY_LIGHT,
+            align: "center",
+          }}
+          anchor={{ x: 0.5, y: 0 }}
           x={0}
-          y={size * (showKorean ? 0.45 : 0.25)} // Adjust based on Korean text presence
+          y={size * 0.6}
         />
       )}
     </PixiContainerComponent>

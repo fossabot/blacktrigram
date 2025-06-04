@@ -23,24 +23,57 @@ export class TrigramSystem {
     this.trigramCalculator = new TrigramCalculator();
   }
 
+  // Fix duplicate function implementations and parameter issues
+
+  // Remove duplicate canTransition method - keep only one
   public canTransitionTo(
-    playerState: PlayerState,
-    targetStance: TrigramStance
-  ): TransitionResult {
-    const cost = this.trigramCalculator.calculateTransitionCost(
-      playerState.stance,
-      targetStance,
-      playerState
-    );
+    from: TrigramStance,
+    to: TrigramStance,
+    playerState: PlayerState
+  ): { canTransition: boolean; reason?: string; cost?: TrigramTransitionCost } {
+    if (from === to) {
+      return {
+        canTransition: true,
+        cost: { ki: 0, stamina: 0, timeMilliseconds: 0 },
+      };
+    }
+
+    const cost = this.calculateTransitionCost(from, to, playerState);
 
     if (playerState.ki < cost.ki) {
-      return { canTransition: false, cost, reason: "insufficient_ki" };
+      return { canTransition: false, reason: "insufficient_ki", cost };
     }
+
     if (playerState.stamina < cost.stamina) {
-      return { canTransition: false, cost, reason: "insufficient_stamina" };
+      return { canTransition: false, reason: "insufficient_stamina", cost };
     }
 
     return { canTransition: true, cost };
+  }
+
+  // Fix calculateTransitionCost to include timeMilliseconds
+  public calculateTransitionCost(
+    from: TrigramStance,
+    to: TrigramStance,
+    playerState: PlayerState
+  ): TrigramTransitionCost {
+    if (from === to) {
+      return { ki: 0, stamina: 0, timeMilliseconds: 0 };
+    }
+
+    const baseKiCost = 10;
+    const baseStaminaCost = 8;
+    const baseTimeMs = 500;
+
+    // Apply player state modifiers
+    const healthRatio = playerState.health / playerState.maxHealth;
+    const modifier = healthRatio < 0.5 ? 1.5 : 1.0;
+
+    return {
+      ki: Math.floor(baseKiCost * modifier),
+      stamina: Math.floor(baseStaminaCost * modifier),
+      timeMilliseconds: Math.floor(baseTimeMs * modifier),
+    };
   }
 
   public calculateOptimalPath(

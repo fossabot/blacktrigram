@@ -1,268 +1,213 @@
 import React from "react";
-import type { CombatHUDProps } from "../../../types";
-import { KOREAN_COLORS } from "../../../types";
-import { KoreanText } from "../../ui/base/korean-text/KoreanText";
+import { Container, Text, Graphics } from "@pixi/react";
+import type { Graphics as PixiGraphics } from "pixi.js";
+import { ProgressTracker } from "../../ui/ProgressTracker";
+import { KoreanTrigramDisplay } from "../../ui/base/KoreanPixiComponents";
+import type { PlayerState } from "../../../types";
+import {
+  KOREAN_COLORS,
+  KOREAN_FONT_FAMILY_PRIMARY,
+} from "../../../types/constants";
+
+export interface CombatHUDProps {
+  readonly players: readonly [PlayerState, PlayerState];
+  readonly timeRemaining: number;
+  readonly currentRound: number;
+  readonly isPaused: boolean;
+  readonly width?: number;
+  readonly height?: number;
+}
 
 export function CombatHUD({
   players,
   timeRemaining,
   currentRound,
-  isPaused = false,
+  isPaused,
+  width = 800,
+  height = 600,
 }: CombatHUDProps): React.ReactElement {
+  const [player1, player2] = players;
+
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const getHealthColor = (ratio: number): string => {
-    if (ratio > 0.6)
-      return `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`;
-    if (ratio > 0.3)
-      return `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`;
-    return `#${KOREAN_COLORS.TRADITIONAL_RED.toString(16).padStart(6, "0")}`;
+  // Draw HUD background
+  const drawHUDBackground = (g: PixiGraphics) => {
+    g.clear();
+
+    // Top HUD bar
+    g.setFillStyle({ color: KOREAN_COLORS.BLACK, alpha: 0.8 });
+    g.roundRect(0, 0, width, 80, 8);
+    g.fill();
+
+    g.setStrokeStyle({ color: KOREAN_COLORS.GOLD, width: 2 });
+    g.roundRect(0, 0, width, 80, 8);
+    g.stroke();
   };
 
-  const renderPlayerHUD = (player: any, index: number, isLeft: boolean) => (
-    <div
-      style={{
-        position: "absolute",
-        top: "20px",
-        [isLeft ? "left" : "right"]: "20px",
-        width: "280px",
-        backgroundColor: "rgba(0, 0, 0, 0.8)",
-        border: `2px solid #${KOREAN_COLORS.CYAN.toString(16).padStart(
-          6,
-          "0"
-        )}`,
-        borderRadius: "8px",
-        padding: "16px",
-        fontFamily: "Noto Sans KR, Arial, sans-serif",
-        color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
-      }}
-    >
-      {/* Player name and archetype */}
-      <div style={{ marginBottom: "12px" }}>
-        <KoreanText
-          korean={player.name || `플레이어 ${index + 1}`}
-          english={player.archetype?.toUpperCase() || "WARRIOR"}
-          style={{ fontSize: "16px", fontWeight: "bold" }}
-        />
-      </div>
-
-      {/* Health bar */}
-      <div style={{ marginBottom: "8px" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontSize: "12px",
-          }}
-        >
-          <span>체력 (Health)</span>
-          <span>
-            {player.health}/{player.maxHealth}
-          </span>
-        </div>
-        <div
-          style={{
-            width: "100%",
-            height: "20px",
-            backgroundColor: "rgba(255, 255, 255, 0.2)",
-            borderRadius: "4px",
-            overflow: "hidden",
-            marginTop: "4px",
-          }}
-        >
-          <div
-            style={{
-              width: `${(player.health / player.maxHealth) * 100}%`,
-              height: "100%",
-              backgroundColor: getHealthColor(player.health / player.maxHealth),
-              transition: "width 0.3s ease",
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Ki bar */}
-      <div style={{ marginBottom: "8px" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontSize: "12px",
-          }}
-        >
-          <span>기력 (Ki)</span>
-          <span>
-            {player.ki}/{player.maxKi}
-          </span>
-        </div>
-        <div
-          style={{
-            width: "100%",
-            height: "15px",
-            backgroundColor: "rgba(255, 255, 255, 0.2)",
-            borderRadius: "4px",
-            overflow: "hidden",
-            marginTop: "4px",
-          }}
-        >
-          <div
-            style={{
-              width: `${(player.ki / player.maxKi) * 100}%`,
-              height: "100%",
-              backgroundColor: `#${KOREAN_COLORS.DOJANG_BLUE.toString(
-                16
-              ).padStart(6, "0")}`,
-              transition: "width 0.3s ease",
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Stamina bar */}
-      <div style={{ marginBottom: "8px" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontSize: "12px",
-          }}
-        >
-          <span>체력 (Stamina)</span>
-          <span>
-            {player.stamina}/{player.maxStamina}
-          </span>
-        </div>
-        <div
-          style={{
-            width: "100%",
-            height: "15px",
-            backgroundColor: "rgba(255, 255, 255, 0.2)",
-            borderRadius: "4px",
-            overflow: "hidden",
-            marginTop: "4px",
-          }}
-        >
-          <div
-            style={{
-              width: `${(player.stamina / player.maxStamina) * 100}%`,
-              height: "100%",
-              backgroundColor: `#${KOREAN_COLORS.GOLD.toString(16).padStart(
-                6,
-                "0"
-              )}`,
-              transition: "width 0.3s ease",
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Current stance */}
-      <div
-        style={{
-          fontSize: "14px",
-          textAlign: "center",
-          marginTop: "8px",
-        }}
-      >
-        <KoreanText
-          korean={`현재 자세: ${player.stance}`}
-          english={`Stance: ${player.stance.toUpperCase()}`}
-          style={{ fontSize: "12px" }}
-        />
-      </div>
-    </div>
-  );
-
   return (
-    <div
-      style={{
-        position: "relative",
-        width: "100%",
-        height: "100%",
-        pointerEvents: "none",
-      }}
-    >
-      {/* Player HUDs */}
-      {renderPlayerHUD(players[0], 0, true)}
-      {renderPlayerHUD(players[1], 1, false)}
+    <Container>
+      {/* Top HUD Background */}
+      <Graphics draw={drawHUDBackground} />
 
-      {/* Center timer */}
-      <div
-        style={{
-          position: "absolute",
-          top: "20px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          backgroundColor: "rgba(0, 0, 0, 0.9)",
-          border: `2px solid #${KOREAN_COLORS.GOLD.toString(16).padStart(
-            6,
-            "0"
-          )}`,
-          borderRadius: "8px",
-          padding: "12px 24px",
-          textAlign: "center",
-          fontFamily: "Noto Sans KR, Arial, sans-serif",
-        }}
-      >
-        <div
+      {/* Timer and Round Info */}
+      <Container x={width / 2} y={25}>
+        <Text
+          text={`라운드 ${currentRound}`}
+          anchor={0.5}
           style={{
-            fontSize: "24px",
+            fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
+            fontSize: 16,
+            fill: KOREAN_COLORS.GOLD,
             fontWeight: "bold",
-            color:
-              timeRemaining < 10
-                ? `#${KOREAN_COLORS.TRADITIONAL_RED.toString(16).padStart(
-                    6,
-                    "0"
-                  )}`
-                : `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
           }}
-        >
-          {formatTime(timeRemaining)}
-        </div>
-        <div
+        />
+        <Text
+          text={formatTime(timeRemaining)}
+          anchor={0.5}
+          y={20}
           style={{
-            fontSize: "12px",
-            color: `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
-            marginTop: "4px",
+            fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
+            fontSize: 24,
+            fill: timeRemaining < 30 ? KOREAN_COLORS.RED : KOREAN_COLORS.WHITE,
+            fontWeight: "bold",
+            stroke: KOREAN_COLORS.BLACK,
+            strokeThickness: 1,
           }}
-        >
-          라운드 {currentRound}
-        </div>
-      </div>
-
-      {/* Pause indicator */}
-      {isPaused && (
-        <div
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            backgroundColor: "rgba(0, 0, 0, 0.9)",
-            border: `3px solid #${KOREAN_COLORS.GOLD.toString(16).padStart(
-              6,
-              "0"
-            )}`,
-            borderRadius: "12px",
-            padding: "24px 48px",
-            textAlign: "center",
-          }}
-        >
-          <KoreanText
-            korean="일시정지"
-            english="PAUSED"
+        />
+        {isPaused && (
+          <Text
+            text="일시정지"
+            anchor={0.5}
+            y={45}
             style={{
-              fontSize: "36px",
+              fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
+              fontSize: 14,
+              fill: KOREAN_COLORS.YELLOW,
               fontWeight: "bold",
-              color: `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
             }}
           />
-        </div>
+        )}
+      </Container>
+
+      {/* Player 1 HUD - Left Side */}
+      <Container x={20} y={10}>
+        {/* Player name and archetype */}
+        <Text
+          text={`${player1.name} (${getArchetypeKorean(player1.archetype)})`}
+          style={{
+            fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
+            fontSize: 14,
+            fill: KOREAN_COLORS.CYAN,
+            fontWeight: "bold",
+          }}
+        />
+
+        {/* Progress bars */}
+        <ProgressTracker
+          health={{ current: player1.health, maximum: player1.maxHealth }}
+          ki={{ current: player1.ki, maximum: player1.maxKi }}
+          stamina={{ current: player1.stamina, maximum: player1.maxStamina }}
+          x={0}
+          y={20}
+          width={150}
+          showLabels={false}
+        />
+
+        {/* Current stance */}
+        <KoreanTrigramDisplay
+          stance={player1.stance}
+          x={170}
+          y={35}
+          size={30}
+          showKorean={true}
+        />
+      </Container>
+
+      {/* Player 2 HUD - Right Side */}
+      <Container x={width - 220} y={10}>
+        {/* Player name and archetype */}
+        <Text
+          text={`${player2.name} (${getArchetypeKorean(player2.archetype)})`}
+          anchor={{ x: 1, y: 0 }}
+          x={200}
+          style={{
+            fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
+            fontSize: 14,
+            fill: KOREAN_COLORS.TRADITIONAL_RED,
+            fontWeight: "bold",
+          }}
+        />
+
+        {/* Progress bars */}
+        <ProgressTracker
+          health={{ current: player2.health, maximum: player2.maxHealth }}
+          ki={{ current: player2.ki, maximum: player2.maxKi }}
+          stamina={{ current: player2.stamina, maximum: player2.maxStamina }}
+          x={50}
+          y={20}
+          width={150}
+          showLabels={false}
+        />
+
+        {/* Current stance */}
+        <KoreanTrigramDisplay
+          stance={player2.stance}
+          x={30}
+          y={35}
+          size={30}
+          showKorean={true}
+        />
+      </Container>
+
+      {/* Combat State Indicators */}
+      {player1.isAttacking && (
+        <Text
+          text="공격!"
+          anchor={0.5}
+          x={width * 0.25}
+          y={height - 50}
+          style={{
+            fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
+            fontSize: 18,
+            fill: KOREAN_COLORS.CRITICAL_HIT,
+            fontWeight: "bold",
+            stroke: KOREAN_COLORS.BLACK,
+            strokeThickness: 2,
+          }}
+        />
       )}
-    </div>
+
+      {player2.isAttacking && (
+        <Text
+          text="공격!"
+          anchor={0.5}
+          x={width * 0.75}
+          y={height - 50}
+          style={{
+            fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
+            fontSize: 18,
+            fill: KOREAN_COLORS.CRITICAL_HIT,
+            fontWeight: "bold",
+            stroke: KOREAN_COLORS.BLACK,
+            strokeThickness: 2,
+          }}
+        />
+      )}
+    </Container>
   );
+}
+
+function getArchetypeKorean(archetype: string): string {
+  const korean = {
+    musa: "무사",
+    amsalja: "암살자",
+    hacker: "해커",
+    jeongbo: "정보요원",
+    jojik: "조직폭력배",
+  };
+  return korean[archetype as keyof typeof korean] || archetype;
 }

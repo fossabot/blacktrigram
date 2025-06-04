@@ -1,346 +1,249 @@
-import { useState, useCallback, useEffect, useRef } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
+import { Stage, Container } from "@pixi/react";
+import { Application } from "pixi.js";
+
+// Combat Systems
+import { CombatSystem } from "../../systems/CombatSystem";
+import { TrigramSystem } from "../../systems/TrigramSystem";
+
+// Audio System
+import { useAudio } from "../../audio/AudioManager";
+
+// Types
 import type {
   PlayerState,
   TrigramStance,
-  KoreanTechnique,
   CombatResult,
   PlayerArchetype,
-  VitalPoint,
+  HitEffect,
+  Position,
 } from "../../types";
-import { useAudio } from "../../audio/AudioManager";
-import { CombatSystem } from "../../systems/CombatSystem";
-import { VitalPointSystem } from "../../systems/VitalPointSystem";
-import { TrigramSystem } from "../../systems/TrigramSystem";
-import { TRIGRAM_DATA, KOREAN_COLORS } from "../../types/constants";
-import { KoreanText, KoreanTechniqueText } from "../ui/base/korean-text";
-import {
-  TECHNIQUES,
-  getTechniquesByStance,
-} from "../../systems/trigram/KoreanTechniques";
-import {
-  getPhilosophyForStance,
-  getStanceWisdom,
-} from "../../systems/trigram/KoreanCulture";
-import { TrigramWheel, ProgressBar } from "../ui/base/PixiComponents";
 
-interface CombatScreenProps {
-  readonly player1Archetype: PlayerArchetype;
-  readonly player2Archetype: PlayerArchetype;
-  readonly onCombatEnd: (winner: string, result: CombatResult) => void;
+// Combat Components
+import { CombatArena } from "./components/CombatArena";
+import { CombatHUD } from "./components/CombatHUD";
+import { CombatControls } from "./components/CombatControls";
+
+// Utilities
+import { createPlayerState } from "../../utils/playerUtils";
+
+export interface CombatScreenProps {
+  readonly player: PlayerState;
+  readonly archetype: PlayerArchetype;
+  readonly onGameOver: (winner: PlayerState) => void;
   readonly onReturnToMenu: () => void;
 }
 
-interface CombatState {
-  readonly player1: PlayerState;
-  readonly player2: PlayerState;
-  readonly currentTurn: "player1" | "player2";
-  readonly combatLog: readonly CombatResult[];
-  readonly gamePhase: "preparation" | "combat" | "finished";
-  readonly winner: string | null;
-  readonly selectedVitalPoint: VitalPoint | null;
-  readonly isTargetingMode: boolean;
-  readonly timeRemaining: number;
-}
+const ARENA_WIDTH = 800;
+const ARENA_HEIGHT = 600;
+const ROUND_TIME = 180; // 3 minutes
 
-const TURN_TIME_LIMIT = 30000; // 30 seconds per turn
-const COMBAT_ARENA_WIDTH = 800;
-const COMBAT_ARENA_HEIGHT = 600;
-
-export function CombatScreen({
-  player1Archetype,
-  player2Archetype,
-  onCombatEnd,
+const CombatScreen: React.FC<CombatScreenProps> = ({
+  player,
+  archetype,
+  onGameOver,
   onReturnToMenu,
-}: CombatScreenProps): React.ReactElement {
+}) => {
   const audio = useAudio();
-  const trigramSystem = useRef(new TrigramSystem());
 
-  // Initialize player states
-  const createInitialPlayerState = useCallback(
-    (id: string, archetype: PlayerArchetype): PlayerState => ({
-      id,
-      name: `${archetype}_fighter`,
-      archetype,
-      stance: "geon", // Start with Heaven stance
-      position: { x: id === "player1" ? 200 : 600, y: 300 },
-      facing: id === "player1" ? "right" : "left",
-      health: 100,
-      maxHealth: 100,
-      ki: 100,
-      maxKi: 100,
-      stamina: 100,
-      maxStamina: 100,
-      consciousness: 100,
-      pain: 0,
-      balance: 100,
-      bloodLoss: 0,
-      lastStanceChangeTime: 0,
-      isAttacking: false,
-      combatReadiness: 100,
-      activeEffects: [],
-      combatState: "ready",
-      conditions: [],
-    }),
+  // Create PIXI Application
+  const app = useMemo(() => {
+    return new Application({
+      width: ARENA_WIDTH,
+      height: ARENA_HEIGHT,
+      backgroundColor: 0x000000,
+      antialias: true,
+    });
+  }, []);
+
+  // Game State
+  const [gameTime, setGameTime] = useState(0);
+  const [timeRemaining, setTimeRemaining] = useState(ROUND_TIME);
+  const [currentRound, setCurrentRound] = useState(1);
+  const [isPaused, setIsPaused] = useState(false);
+  const [isExecutingTechnique, setIsExecutingTechnique] = useState(false);
+  const [combatEffects, setCombatEffects] = useState<readonly HitEffect[]>([]);
+
+  // Player States
+  const [playerState, setPlayerState] = useState<PlayerState>(player);
+  const [opponent, setOpponent] = useState<PlayerState>(() =>
+    createPlayerState("opponent", "amsalja", "tae", {
+      position: { x: ARENA_WIDTH * 0.75, y: ARENA_HEIGHT * 0.6 },
+      facing: "left",
+    })
+  );
+
+  const players = useMemo(
+    () => [playerState, opponent] as const,
+    [playerState, opponent]
+  );
+
+  // Combat Systems
+  const combatSystem = useMemo(() => new CombatSystem(), []);
+  const trigramSystem = useMemo(() => new TrigramSystem(), []);
+
+  // Handle stance changes
+  const handleStanceChange = useCallback(
+    (playerIndex: number, newStance: TrigramStance) => {
+      const currentPlayer = players[playerIndex];
+
+      // Check if stance change is valid
+      const canChange = trigramSystem.canTransitionToStance(
+        currentPlayer.stance,
+        newStance,
+        currentPlayer
+      );
+
+      if (canChange.allowed) {
+        const transitionCost = trigramSystem.calculateTransitionCost(
+          currentPlayer.stance,
+          newStance,
+          currentPlayer
+        );
+
+        const updates: Partial<PlayerState> = {
+          stance: newStance,
+          ki: currentPlayer.ki - transitionCost.ki,
+          stamina: currentPlayer.stamina - transitionCost.stamina,
+          lastStanceChangeTime: Date.now(),
+        };
+
+        if (playerIndex === 0) {
+          setPlayerState((prev) => ({ ...prev, ...updates }));
+        } else {
+          setOpponent((prev) => ({ ...prev, ...updates }));
+        }
+
+        audio.playSFX("stance_change");
+      } else {
+        audio.playSFX("action_blocked");
+      }
+    },
+    [players, trigramSystem, audio]
+  );
+
+  // Handle player updates
+  const handlePlayerUpdate = useCallback(
+    (playerIndex: number, updates: Partial<PlayerState>) => {
+      if (playerIndex === 0) {
+        setPlayerState((prev) => ({ ...prev, ...updates }));
+      } else {
+        setOpponent((prev) => ({ ...prev, ...updates }));
+      }
+    },
     []
   );
 
-  const [combatState, setCombatState] = useState<CombatState>(() => ({
-    player1: createInitialPlayerState("player1", player1Archetype),
-    player2: createInitialPlayerState("player2", player2Archetype),
-    currentTurn: "player1",
-    combatLog: [],
-    gamePhase: "preparation",
-    winner: null,
-    selectedVitalPoint: null,
-    isTargetingMode: false,
-    timeRemaining: TURN_TIME_LIMIT,
-  }));
-
-  // Timer for turn management
-  useEffect(() => {
-    if (combatState.gamePhase !== "combat") return;
-
-    const timer = setInterval(() => {
-      setCombatState((prev) => {
-        if (prev.timeRemaining <= 1000) {
-          // Time up, switch turns
-          return {
-            ...prev,
-            currentTurn: prev.currentTurn === "player1" ? "player2" : "player1",
-            timeRemaining: TURN_TIME_LIMIT,
-            isTargetingMode: false,
-            selectedVitalPoint: null,
-          };
-        }
-        return { ...prev, timeRemaining: prev.timeRemaining - 1000 };
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [combatState.gamePhase]);
-
-  // Combat execution
-  const executeAttack = useCallback(
-    async (
-      attacker: PlayerState,
-      defender: PlayerState,
-      technique: KoreanTechnique,
-      targetVitalPoint?: VitalPoint
-    ) => {
-      // Play technique audio
-      audio.playAttackSound(technique.damageRange?.min || 10);
-
-      // Execute combat through CombatSystem
-      const result = await CombatSystem.executeAttack(
-        attacker,
-        defender,
-        technique,
-        targetVitalPoint?.id
-      );
-
-      // Play hit/miss audio feedback
-      if (result.hit) {
-        audio.playHitSound(result.damage, result.isVitalPoint);
-        if (result.isVitalPoint && targetVitalPoint) {
-          // Try to play vital point sound, fall back to generic if not found
-          try {
-            audio.playSFX(`vital_${targetVitalPoint.category}` as any);
-          } catch {
-            audio.playSFX("hit_heavy" as any);
-          }
-        }
-      } else {
-        try {
-          audio.playSFX("miss" as any);
-        } catch {
-          // Fallback if miss sound not available
-        }
-      }
-
-      // Update defender state
-      const newDefenderState: PlayerState = {
-        ...defender,
-        health: Math.max(0, defender.health - result.damage),
-        consciousness: Math.max(
-          0,
-          defender.consciousness - (result.consciousnessImpact || 0)
-        ),
-        pain: Math.min(100, defender.pain + (result.painLevel || 0)),
-        balance: Math.max(0, defender.balance - (result.balanceEffect || 0)),
-        bloodLoss: defender.bloodLoss + (result.bloodLoss || 0),
-        combatState: result.newState || defender.combatState,
-        activeEffects: [
-          ...defender.activeEffects,
-          ...(result.statusEffects || []),
-        ],
-      };
-
-      // Update attacker stamina/ki
-      const newAttackerState: PlayerState = {
-        ...attacker,
-        stamina: Math.max(
-          0,
-          attacker.stamina - (result.staminaUsed || technique.staminaCost || 0)
-        ),
-        ki: Math.max(0, attacker.ki - (result.kiUsed || technique.kiCost || 0)),
-      };
-
-      return { result, newAttackerState, newDefenderState };
-    },
-    [audio]
-  );
-
-  // Handle stance change
-  const handleStanceChange = useCallback(
-    (newStance: TrigramStance) => {
-      setCombatState((prev) => {
-        const currentPlayer =
-          prev.currentTurn === "player1" ? prev.player1 : prev.player2;
-        const stanceResult = trigramSystem.current.executeStanceChange(
-          currentPlayer,
-          newStance
-        );
-
-        if (stanceResult.success) {
-          try {
-            audio.playSFX(`stance_${newStance}` as any);
-          } catch {
-            // Fallback if stance sound not available
-          }
-
-          const updatedPlayer = stanceResult.newState || {
-            ...currentPlayer,
-            stance: newStance,
-            ki: currentPlayer.ki - stanceResult.cost.ki,
-            stamina: currentPlayer.stamina - stanceResult.cost.stamina,
-            lastStanceChangeTime: Date.now(),
-          };
-
-          return {
-            ...prev,
-            [prev.currentTurn]: updatedPlayer,
-          };
-        }
-
-        return prev;
-      });
-    },
-    [audio]
-  );
-
   // Handle technique execution
-  const handleTechniqueExecution = useCallback(
-    async (techniqueId: string) => {
-      const technique = TECHNIQUES[techniqueId];
-      if (!technique) return;
+  const handleTechniqueExecute = useCallback(
+    async (playerIndex: number, technique: any) => {
+      setIsExecutingTechnique(true);
 
-      setCombatState((prev) => {
-        const attacker =
-          prev.currentTurn === "player1" ? prev.player1 : prev.player2;
-        const defender =
-          prev.currentTurn === "player1" ? prev.player2 : prev.player1;
+      try {
+        const attacker = players[playerIndex];
+        const defenderIndex = playerIndex === 0 ? 1 : 0;
+        const defender = players[defenderIndex];
 
-        // Check if attacker can afford the technique
-        const kiCost = technique.kiCost || 0;
-        const staminaCost = technique.staminaCost || 0;
-
-        if (attacker.ki < kiCost || attacker.stamina < staminaCost) {
-          try {
-            audio.playSFX("insufficient_resources" as any);
-          } catch {
-            // Fallback if sound not available
-          }
-          return prev;
-        }
-
-        // Execute attack
-        executeAttack(
+        // Execute combat calculation
+        const result: CombatResult = combatSystem.executeTechnique(
           attacker,
           defender,
-          technique,
-          prev.selectedVitalPoint || undefined
-        ).then(({ result, newAttackerState, newDefenderState }) => {
-          setCombatState((current) => {
-            const updatedState = {
-              ...current,
-              [current.currentTurn]: newAttackerState,
-              [current.currentTurn === "player1" ? "player2" : "player1"]:
-                newDefenderState,
-              combatLog: [...current.combatLog, result],
-              currentTurn:
-                current.currentTurn === "player1"
-                  ? "player2"
-                  : ("player1" as "player1" | "player2"),
-              timeRemaining: TURN_TIME_LIMIT,
-              isTargetingMode: false,
-              selectedVitalPoint: null,
-            };
+          technique
+        );
 
-            // Check win condition
-            const winner = CombatSystem.checkWinCondition([
-              newAttackerState,
-              newDefenderState,
-            ]);
-            if (winner) {
-              onCombatEnd(winner, result);
-              return {
-                ...updatedState,
-                gamePhase: "finished" as const,
-                winner,
-              };
-            }
+        // Apply damage and effects
+        const defenderUpdates: Partial<PlayerState> = {
+          health: Math.max(0, defender.health - result.damage),
+          consciousness: Math.max(
+            0,
+            defender.consciousness - result.consciousnessLoss
+          ),
+          pain: Math.min(100, defender.pain + result.painInflicted),
+        };
 
-            return updatedState;
-          });
-        });
+        handlePlayerUpdate(defenderIndex, defenderUpdates);
 
-        return prev;
-      });
+        // Create hit effect
+        const hitEffect: HitEffect = {
+          id: `hit_${Date.now()}`,
+          type:
+            result.damage > 30
+              ? "critical"
+              : result.damage > 15
+              ? "heavy"
+              : "medium",
+          position: defender.position,
+          damage: result.damage,
+          color: result.damage > 30 ? 0xff0000 : 0xffff00,
+          startTime: Date.now(),
+          duration: 1000,
+          korean: result.damage > 30 ? "치명타!" : "타격!",
+          createdAt: Date.now(),
+        };
+
+        setCombatEffects((prev) => [...prev, hitEffect]);
+
+        // Play audio feedback
+        if (result.damage > 30) {
+          audio.playSFX("critical_hit");
+        } else if (result.damage > 15) {
+          audio.playSFX("heavy_hit");
+        } else {
+          audio.playSFX("light_hit");
+        }
+
+        // Check for game over
+        if (defenderUpdates.health === 0) {
+          setTimeout(() => onGameOver(attacker), 1000);
+        }
+      } finally {
+        setTimeout(() => setIsExecutingTechnique(false), 500);
+      }
     },
-    [executeAttack, audio, onCombatEnd]
+    [players, combatSystem, handlePlayerUpdate, audio, onGameOver]
   );
 
-  // Toggle targeting mode
-  const toggleTargetingMode = useCallback(() => {
-    setCombatState((prev) => ({
-      ...prev,
-      isTargetingMode: !prev.isTargetingMode,
-      selectedVitalPoint: null,
-    }));
-    try {
-      audio.playSFX("targeting_mode" as any);
-    } catch {
-      // Fallback if sound not available
+  // Game loop for timer and effects cleanup
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (!isPaused) {
+      interval = setInterval(() => {
+        setGameTime((prev) => prev + 1000);
+        setTimeRemaining((prev) => {
+          const newTime = prev - 1;
+          if (newTime <= 0) {
+            // Time's up - determine winner by health
+            const winner =
+              playerState.health > opponent.health ? playerState : opponent;
+            onGameOver(winner);
+            return 0;
+          }
+          return newTime;
+        });
+
+        // Clean up old effects
+        setCombatEffects((prev) =>
+          prev.filter(
+            (effect) => Date.now() - effect.startTime < effect.duration
+          )
+        );
+      }, 1000);
     }
-  }, [audio]);
 
-  // Start combat
-  const startCombat = useCallback(() => {
-    setCombatState((prev) => ({ ...prev, gamePhase: "combat" }));
-    audio.playMusic("combat_theme");
-  }, [audio]);
-
-  // Get current player data
-  const currentPlayer =
-    combatState.currentTurn === "player1"
-      ? combatState.player1
-      : combatState.player2;
-  const opponent =
-    combatState.currentTurn === "player1"
-      ? combatState.player2
-      : combatState.player1;
-  const availableTechniques = getTechniquesByStance(currentPlayer.stance);
-  const stancePhilosophy = getPhilosophyForStance(currentPlayer.stance);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isPaused, playerState.health, opponent.health, onGameOver]);
 
   // Keyboard controls
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
-      if (combatState.gamePhase !== "combat") return;
+      if (isPaused) return;
 
       const key = event.key;
 
-      // Stance changes (1-8)
+      // Stance changes for player 1 (1-8 keys)
       if (key >= "1" && key <= "8") {
         const stanceIndex = parseInt(key) - 1;
         const stances: TrigramStance[] = [
@@ -353,20 +256,21 @@ export function CombatScreen({
           "gan",
           "gon",
         ];
-        handleStanceChange(stances[stanceIndex]);
+        handleStanceChange(0, stances[stanceIndex]);
       }
 
-      // Combat actions
+      // Other controls
       switch (key) {
-        case " ": // Space - Execute primary technique
-          if (availableTechniques.length > 0) {
-            handleTechniqueExecution(availableTechniques[0].id);
+        case " ": // Space - execute technique
+          event.preventDefault();
+          if (playerState.ki >= 20) {
+            handleTechniqueExecute(0, { stance: playerState.stance });
           }
           break;
-        case "Control":
-          toggleTargetingMode();
+        case "Escape": // Pause
+          setIsPaused((prev) => !prev);
           break;
-        case "Escape":
+        case "q": // Return to menu
           onReturnToMenu();
           break;
       }
@@ -375,335 +279,86 @@ export function CombatScreen({
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
   }, [
-    combatState.gamePhase,
-    availableTechniques,
+    isPaused,
+    playerState,
     handleStanceChange,
-    handleTechniqueExecution,
-    toggleTargetingMode,
+    handleTechniqueExecute,
     onReturnToMenu,
   ]);
 
-  return (
-    <Container>
-      {/* Dojang Background */}
-      <Graphics
-        draw={useCallback((g) => {
-          g.clear();
-          g.beginFill(KOREAN_COLORS.BLACK);
-          g.drawRect(0, 0, COMBAT_ARENA_WIDTH, COMBAT_ARENA_HEIGHT);
-          g.endFill();
+  // Fix Position type usage
+  const [playerPosition] = useState<Position>({ x: 100, y: 200 });
 
-          // Traditional Korean patterns
-          g.lineStyle(2, KOREAN_COLORS.GOLD, 0.3);
-          for (let i = 0; i < 8; i++) {
-            const angle = (i * Math.PI) / 4;
-            const x = COMBAT_ARENA_WIDTH / 2 + Math.cos(angle) * 200;
-            const y = COMBAT_ARENA_HEIGHT / 2 + Math.sin(angle) * 200;
-            g.drawCircle(x, y, 30);
-          }
-        }, [])}
-      />
-
-      {/* Player 1 Visual */}
-      <Container
-        x={combatState.player1.position.x}
-        y={combatState.player1.position.y}
-      >
-        <Graphics
-          draw={useCallback(
-            (g) => {
-              g.clear();
-              const stanceColor =
-                KOREAN_COLORS[combatState.player1.stance] ||
-                KOREAN_COLORS.WHITE;
-              g.beginFill(stanceColor);
-              g.drawCircle(0, 0, 30);
-              g.endFill();
-            },
-            [combatState.player1.stance]
-          )}
-        />
-        <Text
-          text={`P1: ${combatState.player1.archetype}`}
-          style={{ fontSize: 14, fill: KOREAN_COLORS.WHITE }}
-          anchor={0.5}
-          y={-50}
-        />
-      </Container>
-
-      {/* Player 2 Visual */}
-      <Container
-        x={combatState.player2.position.x}
-        y={combatState.player2.position.y}
-      >
-        <Graphics
-          draw={useCallback(
-            (g) => {
-              g.clear();
-              const stanceColor =
-                KOREAN_COLORS[combatState.player2.stance] ||
-                KOREAN_COLORS.WHITE;
-              g.beginFill(stanceColor);
-              g.drawCircle(0, 0, 30);
-              g.endFill();
-            },
-            [combatState.player2.stance]
-          )}
-        />
-        <Text
-          text={`P2: ${combatState.player2.archetype}`}
-          style={{ fontSize: 14, fill: KOREAN_COLORS.WHITE }}
-          anchor={0.5}
-          y={-50}
-        />
-      </Container>
-
-      {/* UI Overlay */}
-      <Container>
-        {/* Health/Ki Bars using ProgressBar component */}
-        <Container x={20} y={20}>
-          <Text
-            text="Player 1"
-            style={{ fontSize: 16, fill: KOREAN_COLORS.WHITE }}
-          />
-          <Container y={25}>
-            <ProgressBar
-              current={combatState.player1.health}
-              max={combatState.player1.maxHealth}
-              width={200}
-              height={20}
-              color={KOREAN_COLORS.RED}
-              label="Health"
-            />
-            <Container y={30}>
-              <ProgressBar
-                current={combatState.player1.ki}
-                max={combatState.player1.maxKi}
-                width={200}
-                height={15}
-                color={KOREAN_COLORS.BLUE}
-                label="Ki"
-              />
-            </Container>
-            <Container y={50}>
-              <ProgressBar
-                current={combatState.player1.stamina}
-                max={combatState.player1.maxStamina}
-                width={200}
-                height={15}
-                color={KOREAN_COLORS.GREEN}
-                label="Stamina"
-              />
-            </Container>
-          </Container>
-        </Container>
-
-        {/* Player 2 Stats */}
-        <Container x={COMBAT_ARENA_WIDTH - 220} y={20}>
-          <Text
-            text="Player 2"
-            style={{ fontSize: 16, fill: KOREAN_COLORS.WHITE }}
-          />
-          <Container y={25}>
-            <ProgressBar
-              current={combatState.player2.health}
-              max={combatState.player2.maxHealth}
-              width={200}
-              height={20}
-              color={KOREAN_COLORS.RED}
-              label="Health"
-            />
-            <Container y={30}>
-              <ProgressBar
-                current={combatState.player2.ki}
-                max={combatState.player2.maxKi}
-                width={200}
-                height={15}
-                color={KOREAN_COLORS.BLUE}
-                label="Ki"
-              />
-            </Container>
-            <Container y={50}>
-              <ProgressBar
-                current={combatState.player2.stamina}
-                max={combatState.player2.maxStamina}
-                width={200}
-                height={15}
-                color={KOREAN_COLORS.GREEN}
-                label="Stamina"
-              />
-            </Container>
-          </Container>
-        </Container>
-
-        {/* Current Turn Indicator */}
-        <Container x={COMBAT_ARENA_WIDTH / 2} y={20}>
-          <Text
-            text={`${
-              combatState.currentTurn === "player1" ? "Player 1" : "Player 2"
-            } Turn`}
-            style={{ fontSize: 18, fill: KOREAN_COLORS.GOLD }}
-            anchor={0.5}
-          />
-          <Text
-            text={`${Math.ceil(combatState.timeRemaining / 1000)}s`}
-            style={{ fontSize: 16, fill: KOREAN_COLORS.WHITE }}
-            anchor={0.5}
-            y={30}
-          />
-        </Container>
-
-        {/* Current Stance Display */}
-        <Container x={COMBAT_ARENA_WIDTH / 2} y={100}>
-          <Text
-            text={TRIGRAM_DATA[currentPlayer.stance].name.english}
-            style={{ fontSize: 24, fill: KOREAN_COLORS[currentPlayer.stance] }}
-            anchor={0.5}
-          />
-          <Text
-            text={TRIGRAM_DATA[currentPlayer.stance].symbol}
-            style={{ fontSize: 36, fill: KOREAN_COLORS[currentPlayer.stance] }}
-            anchor={0.5}
-            y={40}
-          />
-        </Container>
-
-        {/* Technique Panel */}
-        <Container x={20} y={COMBAT_ARENA_HEIGHT - 150}>
-          <Text
-            text="Available Techniques"
-            style={{ fontSize: 16, fill: KOREAN_COLORS.WHITE }}
-          />
-          {availableTechniques.slice(0, 3).map((technique, index) => (
-            <Container key={technique.id} y={25 + index * 30}>
-              <Graphics
-                draw={useCallback((g) => {
-                  g.clear();
-                  g.beginFill(KOREAN_COLORS.BLUE, 0.3);
-                  g.drawRect(0, 0, 300, 25);
-                  g.endFill();
-                  g.lineStyle(1, KOREAN_COLORS.WHITE);
-                  g.drawRect(0, 0, 300, 25);
-                }, [])}
-                eventMode="static"
-                onpointertap={() => handleTechniqueExecution(technique.id)}
-              />
-              <Text
-                text={`${technique.koreanName} - ${technique.englishName}`}
-                style={{ fontSize: 12, fill: KOREAN_COLORS.WHITE }}
-                x={10}
-                y={5}
-              />
-            </Container>
-          ))}
-        </Container>
-
-        {/* Stance Selection using TrigramWheel */}
-        <TrigramWheel
-          currentStance={currentPlayer.stance}
-          onStanceSelect={handleStanceChange}
-          size={120}
-          x={COMBAT_ARENA_WIDTH - 100}
-          y={COMBAT_ARENA_HEIGHT - 100}
-        />
-
-        {/* Philosophy Display */}
-        <Container x={20} y={COMBAT_ARENA_HEIGHT - 250}>
-          <Text
-            text={stancePhilosophy.description.english}
-            style={{ fontSize: 14, fill: KOREAN_COLORS.GOLD }}
-          />
-          <Text
-            text={stancePhilosophy.modernInterpretation}
-            style={{ fontSize: 12, fill: KOREAN_COLORS.WHITE }}
-            y={20}
-          />
-        </Container>
-
-        {/* Preparation Phase */}
-        {combatState.gamePhase === "preparation" && (
-          <Container x={COMBAT_ARENA_WIDTH / 2} y={COMBAT_ARENA_HEIGHT / 2}>
-            <Graphics
-              draw={useCallback((g) => {
-                g.clear();
-                g.beginFill(KOREAN_COLORS.BLACK, 0.8);
-                g.drawRect(-200, -100, 400, 200);
-                g.endFill();
-                g.lineStyle(2, KOREAN_COLORS.GOLD);
-                g.drawRect(-200, -100, 400, 200);
-              }, [])}
-            />
-            <Text
-              text="Black Trigram Combat"
-              style={{ fontSize: 24, fill: KOREAN_COLORS.GOLD }}
-              anchor={0.5}
-              y={-50}
-            />
-            <Graphics
-              y={20}
-              draw={useCallback((g) => {
-                g.clear();
-                g.beginFill(KOREAN_COLORS.BLUE);
-                g.drawRect(-100, 0, 200, 40);
-                g.endFill();
-              }, [])}
-              eventMode="static"
-              onpointertap={startCombat}
-            />
-            <Text
-              text="Start Combat"
-              style={{ fontSize: 16, fill: KOREAN_COLORS.WHITE }}
-              anchor={0.5}
-              y={40}
-            />
-          </Container>
-        )}
-
-        {/* Combat End */}
-        {combatState.gamePhase === "finished" && combatState.winner && (
-          <Container x={COMBAT_ARENA_WIDTH / 2} y={COMBAT_ARENA_HEIGHT / 2}>
-            <Graphics
-              draw={useCallback((g) => {
-                g.clear();
-                g.beginFill(KOREAN_COLORS.BLACK, 0.9);
-                g.drawRect(-250, -150, 500, 300);
-                g.endFill();
-                g.lineStyle(3, KOREAN_COLORS.GOLD);
-                g.drawRect(-250, -150, 500, 300);
-              }, [])}
-            />
-            <Text
-              text="Combat Decided!"
-              style={{ fontSize: 28, fill: KOREAN_COLORS.GOLD }}
-              anchor={0.5}
-              y={-100}
-            />
-            <Text
-              text={`Winner: ${combatState.winner}`}
-              style={{ fontSize: 20, fill: KOREAN_COLORS.WHITE }}
-              anchor={0.5}
-              y={-50}
-            />
-            <Graphics
-              y={50}
-              draw={useCallback((g) => {
-                g.clear();
-                g.beginFill(KOREAN_COLORS.BLUE);
-                g.drawRect(-80, 0, 160, 40);
-                g.endFill();
-              }, [])}
-              eventMode="static"
-              onpointertap={onReturnToMenu}
-            />
-            <Text
-              text="Return to Menu"
-              style={{ fontSize: 16, fill: KOREAN_COLORS.WHITE }}
-              anchor={0.5}
-              y={70}
-            />
-          </Container>
-        )}
-      </Container>
-    </Container>
+  // Fix method calls
+  const canChangeStance = trigramSystem.canTransitionTo(
+    playerState.stance,
+    targetStance,
+    playerState
   );
-}
+
+  // Fix CombatSystem method call
+  const handleExecuteTechnique = () => {
+    const result = CombatSystem.executeTechnique(
+      selectedTechnique,
+      "player1",
+      "opponent1"
+    );
+
+    // Handle result properties
+    if (result.consciousnessLoss) {
+      console.log(`Consciousness loss: ${result.consciousnessLoss}`);
+    }
+    if (result.painInflicted) {
+      console.log(`Pain inflicted: ${result.painInflicted}`);
+    }
+  };
+
+  return (
+    <div style={{ width: ARENA_WIDTH, height: ARENA_HEIGHT, margin: "0 auto" }}>
+      <Stage
+        app={app}
+        width={ARENA_WIDTH}
+        height={ARENA_HEIGHT}
+        options={{
+          backgroundColor: 0x000000,
+          antialias: true,
+        }}
+      >
+        <Container>
+          {/* Combat Arena with Players */}
+          <CombatArena
+            players={players}
+            onPlayerUpdate={handlePlayerUpdate}
+            onTechniqueExecute={handleTechniqueExecute}
+            combatEffects={combatEffects}
+            isExecutingTechnique={isExecutingTechnique}
+            width={ARENA_WIDTH}
+            height={ARENA_HEIGHT}
+          />
+
+          {/* Combat HUD */}
+          <CombatHUD
+            players={players}
+            timeRemaining={timeRemaining}
+            currentRound={currentRound}
+            isPaused={isPaused}
+            width={ARENA_WIDTH}
+            height={ARENA_HEIGHT}
+          />
+
+          {/* Combat Controls */}
+          <CombatControls
+            players={players}
+            onStanceChange={handleStanceChange}
+            isExecutingTechnique={isExecutingTechnique}
+            isPaused={isPaused}
+            width={ARENA_WIDTH}
+            height={ARENA_HEIGHT}
+          />
+        </Container>
+      </Stage>
+    </div>
+  );
+};
+
+export default CombatScreen;

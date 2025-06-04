@@ -1,27 +1,27 @@
 // Underground dojang background for Korean martial arts
 
-import React from "react";
-import { Container, Graphics } from "@pixi/react";
-import { KOREAN_COLORS } from "../../types";
-import type { DojangBackgroundProps } from "../../types/components";
+import React, { useCallback } from "react";
+import { Container, Graphics, Text } from "@pixi/react";
+import type { Graphics as PixiGraphics } from "pixi.js";
+import { KOREAN_COLORS, KOREAN_FONT_FAMILY_PRIMARY } from "../../types/constants";
+
+export interface DojangBackgroundProps {
+  readonly width: number;
+  readonly height: number;
+  readonly timeOfDay?: "dawn" | "day" | "dusk" | "night";
+  readonly weather?: "clear" | "rain" | "snow" | "storm";
+}
 
 export function DojangBackground({
+  width,
+  height,
   timeOfDay = "night",
   weather = "clear",
-  width = 800,
-  height = 600,
-}: DojangBackgroundProps): React.JSX.Element {
-  const floorColor = KOREAN_COLORS.GON_DARK_BROWN;
-
-  // Create background graphics
-  const drawBackground = React.useCallback(
-    (g: any) => {
+}: DojangBackgroundProps): React.ReactElement {
+  // Draw main background
+  const drawBackground = useCallback(
+    (g: PixiGraphics) => {
       g.clear();
-
-      // Main floor
-      g.beginFill(floorColor);
-      g.drawRect(0, height * 0.7, width, height * 0.3);
-      g.endFill();
 
       // Back wall
       g.beginFill(KOREAN_COLORS.DOJANG_WALL);

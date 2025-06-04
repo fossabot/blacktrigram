@@ -126,3 +126,15 @@ export const getKiColor = (percentage: number): number => {
   const intensity = Math.floor(percentage * 2.55);
   return (intensity << 16) | (0xff << 8) | 0xff; // Blue to cyan gradient
 };
+
+// Additional Colors
+export const COLORS = {
+  // Existing colors...
+
+  // Add missing colors
+  ORANGE: 0xffa500,
+  CRITICAL_RED: 0xff0000,
+  HEALTH_RED: 0xdc143c,
+  STAMINA_GREEN: 0x32cd32,
+  CRITICAL_HIT: 0xff6347,
+} as const;

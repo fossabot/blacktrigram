@@ -36,6 +36,12 @@ export {
   PixiContainerComponent,
   PixiGraphicsComponent,
   PixiTextComponent,
+  // Export all the existing PixiComponents that CombatScreen needs
+  StatusBar,
+  KoreanTextDisplay,
+  CyberpunkGlow,
+  BackgroundGrid,
+  TrigramButton,
 } from "./PixiComponents";
 
 export { BaseButton, type BaseButtonProps } from "./BaseButton";
