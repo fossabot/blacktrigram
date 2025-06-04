@@ -254,4 +254,52 @@ export class TrigramSystem {
 
     return bestStance;
   }
+
+  public executeStanceChange(
+    playerState: PlayerState,
+    newStance: TrigramStance
+  ): {
+    success: boolean;
+    cost: { ki: number; stamina: number; timeMilliseconds: number };
+    newState?: PlayerState;
+    reason?: string;
+  } {
+    // Check if player can afford the stance change
+    const transitionCost = this.trigramCalculator.calculateTransitionCost(
+      playerState.stance,
+      newStance,
+      playerState
+    );
+
+    if (playerState.ki < transitionCost.ki) {
+      return {
+        success: false,
+        cost: transitionCost,
+        reason: "insufficient_ki",
+      };
+    }
+
+    if (playerState.stamina < transitionCost.stamina) {
+      return {
+        success: false,
+        cost: transitionCost,
+        reason: "insufficient_stamina",
+      };
+    }
+
+    // Execute stance change
+    const newState: PlayerState = {
+      ...playerState,
+      stance: newStance,
+      ki: playerState.ki - transitionCost.ki,
+      stamina: playerState.stamina - transitionCost.stamina,
+      lastStanceChangeTime: Date.now(),
+    };
+
+    return {
+      success: true,
+      cost: transitionCost,
+      newState,
+    };
+  }
 }

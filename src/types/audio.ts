@@ -35,8 +35,10 @@ export type SoundEffectId =
   | "hit_medium"
   | "hit_heavy"
   | "hit_critical"
-  | "hit_flesh"
-  | "hit_block"
+  | "miss"
+  | "insufficient_resources"
+  | "target_selected"
+  | "targeting_mode"
 
   // Blocking and defensive sounds
   | "block_success"
@@ -82,7 +84,8 @@ export type MusicTrackId =
   | "combat_theme"
   | "victory_theme"
   | "training_theme"
-  | "meditation_theme";
+  | "meditation_theme"
+  | "dojang_ambience";
 
 // Audio asset configuration
 export interface AudioAsset {
