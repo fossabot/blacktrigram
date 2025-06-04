@@ -19,6 +19,12 @@ export function useAudioContext(): AudioContextType {
   return context;
 }
 
+// Add this hook for compatibility with rest of codebase
+export function useAudio() {
+  const { audioManager } = useAudioContext();
+  return audioManager;
+}
+
 interface AudioProviderProps {
   readonly children: React.ReactNode;
 }
