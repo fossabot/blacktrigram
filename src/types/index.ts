@@ -20,6 +20,7 @@ export type {
   AnatomicalRegion, // Added export
   BodyPart, // Added export
   AnatomyModel, // Added export
+  VitalPointEffect, // Added export
 } from "./anatomy";
 export type { KoreanTechnique, CombatResult, AttackInput } from "./combat";
 export type { HitEffect, StatusEffect } from "./effects";

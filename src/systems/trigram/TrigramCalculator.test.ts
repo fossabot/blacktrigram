@@ -2,9 +2,9 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { TrigramCalculator } from "./TrigramCalculator";
 import type { PlayerState, TrigramStance } from "../../types";
 import {
-  TRIGRAM_DATA as AllTrigramData,
+  // TRIGRAM_DATA as AllTrigramData, // Removed
   STANCE_EFFECTIVENESS_MATRIX as GlobalEffectivenessMatrix,
-} from "../../types";
+} from "../../types/constants";
 // import { MOCK_PLAYER_STATE_GEON } from '../../test/mocks/player'; // Correct or remove
 // import { MOCK_TRIGRAM_DATA, MOCK_EFFECTIVENESS_MATRIX } from '../../test/mocks/trigram'; // Correct or remove
 

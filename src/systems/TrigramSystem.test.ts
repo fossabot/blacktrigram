@@ -27,7 +27,7 @@ const createMockPlayerState = (
   bloodLoss: 0,
   lastStanceChangeTime: 0,
   isAttacking: false,
-  combatReadiness: 100, // Assuming CombatReadiness is a number here based on usage
+  combatReadiness: 100, // Assuming Combatreadiness is a number here based on usage
   activeEffects: [],
   combatState: "ready",
   conditions: [],
@@ -141,7 +141,13 @@ describe("TrigramSystem", () => {
       const to: TrigramStance = "gam"; // Target that might be 'far'
       const testPlayer = createMockPlayerState(from, 100, 100);
       // Need to ensure MOCK_TRANSITION_RULES and TrigramCalculator logic supports multi-step paths
-      const path = trigramSystem.calculateOptimalPath(testPlayer, from, to, 3); // Allow up to 3 steps
+      const path = trigramSystem.calculateOptimalPath(
+        testPlayer,
+        from,
+        to,
+        undefined, // opponentStance
+        3 // maxDepth
+      ); // Allow up to 3 steps
       // Assertions depend heavily on the mocked data and pathfinding logic
       // For now, just check if a path is returned or not based on simple direct cost
       expect(path).toBeNull();
@@ -152,7 +158,13 @@ describe("TrigramSystem", () => {
       const to: TrigramStance = "gon"; // A distant stance
       const testPlayer = createMockPlayerState(from, 0, 0); // No resources
 
-      const path = trigramSystem.calculateOptimalPath(testPlayer, from, to, 1); // Max depth 1 (only direct)
+      const path = trigramSystem.calculateOptimalPath(
+        testPlayer,
+        from,
+        to,
+        undefined, // opponentStance
+        1 // maxDepth
+      ); // Max depth 1 (only direct)
       expect(path).toBeNull(); // Expect null due to no resources for direct path
     });
   });

@@ -1,18 +1,18 @@
 import { describe, it, expect, vi } from "vitest";
 import { CombatSystem } from "./CombatSystem";
 import type {
-  PlayerArchetype,
   PlayerState,
   TrigramStance,
   KoreanTechnique,
   VitalPoint,
-  Position,
-  AttackInput,
   VitalPointCategory,
-  BodyRegion,
   VitalPointSeverity,
+  BodyRegion,
   EffectType,
   EffectIntensity,
+  PlayerArchetype,
+  Position,
+  AttackInput,
   VitalPointEffect,
 } from "../types";
 import { TRIGRAM_DATA, STANCE_EFFECTIVENESS_MATRIX } from "../types/constants";

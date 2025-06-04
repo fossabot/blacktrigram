@@ -27,9 +27,13 @@ export interface TransitionMetrics {
 export interface TransitionPath {
   readonly path: readonly TrigramStance[];
   readonly totalCost: TrigramTransitionCost;
-  readonly overallEffectiveness?: number; // Added optional for now, can be made mandatory
+  readonly overallEffectiveness: number;
   readonly cumulativeRisk: number;
-  readonly name: string; // Added name property
+  readonly name: string;
+  readonly description: {
+    readonly korean: string;
+    readonly english: string;
+  };
 }
 
 // Trigram transition rule - FIXED: Add missing properties
@@ -65,7 +69,9 @@ export interface TrigramData {
   readonly element: KoreanText; // Changed from string to KoreanText
   readonly direction: string;
   readonly philosophy: KoreanText; // Added philosophy property
+  readonly combatRole: KoreanText; // Added combat role property
   readonly technique: KoreanTechnique; // Associated signature technique
+  readonly strengths?: readonly string[]; // Added strengths property
   readonly color: string | number; // Hex color or PixiJS color
   readonly description: KoreanText;
   readonly kiFlowModifier?: number; // How this stance affects Ki recovery or usage

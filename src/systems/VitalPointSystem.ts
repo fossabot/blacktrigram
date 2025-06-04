@@ -3,19 +3,20 @@
 import type {
   VitalPoint,
   VitalPointHitResult,
-  RegionData,
   VitalPointEffect,
-} from "../types/anatomy";
-import type {
-  BodyRegion,
   PlayerArchetype,
   KoreanTechnique,
-  DamageType,
+  VitalPointSystemConfig,
   Position,
   TrigramStance,
+  BodyRegion,
+  DamageType,
 } from "../types";
 
-import { ANATOMICAL_REGIONS_DATA } from "./vitalpoint/AnatomicalRegions";
+import {
+  ANATOMICAL_REGIONS_DATA,
+  RegionData,
+} from "./vitalpoint/AnatomicalRegions";
 import { VITAL_POINTS_DATA } from "./vitalpoint/KoreanVitalPoints"; // Assuming this exports all vital points
 import { DamageCalculator } from "./vitalpoint/DamageCalculator";
 
@@ -127,8 +128,8 @@ export class VitalPointSystem {
   public calculateHit(
     technique: KoreanTechnique,
     targetVitalPointId: string | null,
-    accuracyRoll: number, // A random number (0-1) representing the player's accuracy for this hit
-    attackerPosition: Position, // Marked as unused, consider removing or using
+    accuracyRoll: number,
+    attackerPosition: Position,
     defenderPosition: Position,
     defenderStance: TrigramStance
   ): VitalPointHitResult {
@@ -167,9 +168,9 @@ export class VitalPointSystem {
       damageDealt = this.damageCalculator.calculateDamage(
         hitVitalPoint,
         finalDamage,
-        "musa", // Placeholder: Attacker's archetype should be passed in
+        "musa",
         isCriticalHit,
-        technique.damageType || "blunt" // Provide default if undefined
+        technique.damageType || "blunt" // Provide default for undefined
       );
       effects.push(
         ...this.damageCalculator.determineEffects(
@@ -193,7 +194,6 @@ export class VitalPointSystem {
       // Standard body hit, no vital point involved
       damageDealt = this.damageCalculator.calculateDamage(
         {
-          // Create a generic "body" vital point for calculation if needed
           id: "body_hit",
           name: { korean: "몸통", english: "Body" },
           koreanName: "몸통",
@@ -203,16 +203,18 @@ export class VitalPointSystem {
             korean: "일반적인 신체 부위",
             english: "General body area",
           },
-          location: { x: 0, y: 0, region: "torso" }, // Placeholder
+          location: { x: 0, y: 0, region: "torso" },
           effects: [],
           baseDamage: 0,
           damageMultiplier: 1,
           techniques: [],
+          severity: "minor",
+          baseAccuracy: 0.7,
         },
         finalDamage,
-        "musa", // Placeholder: Attacker's archetype should be passed in
+        "musa",
         isCriticalHit,
-        technique.damageType || "blunt" // Provide default if undefined
+        technique.damageType || "blunt" // Provide default for undefined
       );
       // Add generic hit effects if any
     }

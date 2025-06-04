@@ -6,7 +6,6 @@ import type {
   KoreanTechnique,
   VitalPointSystemConfig,
   DamageType,
-  StatusEffect,
   DamageRange,
 } from "../types";
 import { VITAL_POINTS_DATA as AllVitalPoints } from "./vitalpoint/KoreanVitalPoints"; // Assuming this is the source
@@ -152,7 +151,7 @@ describe("VitalPointSystem", () => {
         MOCK_VITAL_POINT_HEAD.id,
         accuracyRoll,
         MOCK_DEFENDER_POSITION,
-        MOCK_TARGET_DIMENSIONS
+        "tae" // Use string literal instead of unused variable
       );
 
       expect(result.hit).toBe(true);
@@ -165,25 +164,18 @@ describe("VitalPointSystem", () => {
       vi.spyOn(Math, "random").mockReturnValue(0.1); // For critical hit chance
       const accuracyRoll = 0.7; // Good accuracy roll
 
-      // Mock HitDetection.detectVitalPointHit to return null for this test case
-      const hitDetectorInstance = (system as any).hitDetector; // Access private member for test
-      vi.spyOn(hitDetectorInstance, "detectVitalPointHit").mockReturnValue(
-        null
-      );
-
       const result = system.calculateHit(
         MOCK_TECHNIQUE_STRIKE,
         null, // No specific VP target
         accuracyRoll,
         MOCK_DEFENDER_POSITION,
-        MOCK_TARGET_DIMENSIONS
+        "tae" // Use string literal instead of unused variable
       );
 
       expect(result.hit).toBe(true);
       expect(result.vitalPoint).toBeNull();
       expect(result.damage).toBeGreaterThan(0);
       vi.spyOn(Math, "random").mockRestore();
-      vi.restoreAllMocks(); // Restore spy on detectVitalPointHit
     });
 
     it("should return a miss if accuracy roll is too low", () => {
@@ -193,7 +185,7 @@ describe("VitalPointSystem", () => {
         null,
         accuracyRoll,
         MOCK_DEFENDER_POSITION,
-        MOCK_TARGET_DIMENSIONS
+        "tae" // Use string literal instead of unused variable
       );
       expect(result.hit).toBe(false);
       expect(result.damage).toBe(0);

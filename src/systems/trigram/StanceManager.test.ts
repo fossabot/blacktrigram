@@ -7,10 +7,7 @@ import type {
   // TrigramTransitionCost, // Unused
   // KoreanText, // Unused
 } from "../../types";
-import {
-  TRIGRAM_DATA,
-  STANCE_EFFECTIVENESS_MATRIX,
-} from "../../types/constants";
+import { STANCE_EFFECTIVENESS_MATRIX } from "../../types/constants";
 import { TrigramCalculator } from "./TrigramCalculator"; // Import actual TrigramCalculator
 
 // Mock PlayerState
@@ -165,10 +162,10 @@ describe("StanceManager", () => {
       const mockPathData: TransitionPath = {
         path: ["geon", "tae"],
         totalCost: { ki: 15, stamina: 10, timeMilliseconds: 500 },
-        // overallEffectiveness: 1.2, // This property was causing an error, ensure TransitionPath type matches
+        overallEffectiveness: 1.2,
         cumulativeRisk: 0.1,
         name: "Geon -> Tae",
-        description: { korean: "건에서 태로", english: "Geon to Tae" },
+        description: { korean: "건에서 태로", english: "Geon to Tae" }, // This is now valid
       };
       (mockTrigramCalculator.calculateOptimalPath as any).mockReturnValue(
         mockPathData
