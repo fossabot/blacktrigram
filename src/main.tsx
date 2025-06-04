@@ -93,12 +93,5 @@ root.render(
   </StrictMode>
 );
 
-// Add Korean font loading
-const koreanFontLink = document.createElement("link");
-koreanFontLink.href =
-  "https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap";
-koreanFontLink.rel = "stylesheet";
-document.head.appendChild(koreanFontLink);
-
 // Set document title with Korean martial arts theme
 document.title = "흑괘 무술 도장 - Black Trigram Martial Arts";
