@@ -31,6 +31,7 @@ export interface VitalPointSystemConfig {
   readonly vitalPointSeverityMultiplier?: Record<string, number>;
   readonly maxHitAngleDifference?: number;
   readonly baseVitalPointAccuracy?: number;
+  readonly criticalHitMultiplier?: number; // Added
 }
 
 // Result from VitalPointSystem's hit calculation
@@ -77,10 +78,21 @@ export interface CombatSystemInterface {
   getAvailableTechniques: (player: PlayerState) => readonly KoreanTechnique[];
 }
 
-// Vital point system interface
+// Vital point system interface - FIXED: Match implementation
 export interface VitalPointSystemInterface {
-  getVitalPointById: (id: string) => VitalPoint | undefined;
-  getVitalPointsForBodyPart: (bodyPartId: string) => readonly VitalPoint[];
+  getVitalPointsInRegion(region: string): readonly VitalPoint[];
+  getVitalPointById(id: string): VitalPoint | undefined; // Added missing method
+  getAllVitalPoints(): readonly VitalPoint[]; // Added missing method
+  calculateVitalPointAccuracy(
+    targetPosition: Position,
+    attackAccuracy: number,
+    vitalPoint: VitalPoint
+  ): number;
+  calculateVitalPointDamage( // Added missing method
+    vitalPoint: VitalPoint,
+    baseDamage: number,
+    archetype: string
+  ): number;
   calculateHit: (
     technique: KoreanTechnique,
     targetVitalPointId: string | null, // Explicitly allow null if no specific target

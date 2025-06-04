@@ -1,313 +1,374 @@
 // Anatomical regions mapping for Korean martial arts vital point system
-// Import the canonical RegionData type from the type system
 import type { BodyRegion } from "../../types";
+import type { RegionData, VitalPoint } from "../../types/anatomy"; // VitalPoint is used for casting
 
-// Use the canonical RegionData interface from anatomy.ts
-import type { RegionData } from "../../types/anatomy";
+// Import available VitalPoint objects
+import {
+  head_philtrum_injoong,
+  head_temple_kanjanori,
+  // vp_solar_plexus_myungchi, // This was unused according to error, re-add if needed by data
+  // vp_knee_hollow_seulgul, // Import if needed by data
+} from "./KoreanVitalPoints";
 
-// The data is already correctly structured with pressure_points,
-// but ensure all regions have this property defined
+// TODO: Define and import ALL vital point objects used in this data structure.
+// Casting to `any as VitalPoint` is a temporary workaround for missing definitions.
+
 export const ANATOMICAL_REGIONS_DATA: Readonly<Record<BodyRegion, RegionData>> =
   {
     head: {
       name: { korean: "머리", english: "Head" },
-      subRegions: ["face_upper", "temples", "occiput"] as const,
-      vitalPoints: ["head_temple", "philtrum", "mastoid_process"] as const,
+      subRegions: ["face_upper", "temples", "occiput"],
+      vitalPoints: [head_philtrum_injoong, head_temple_kanjanori],
       vulnerability: 1.5,
-      pressure_points: ["baihui", "yintang", "taiyang"] as const,
+      pressure_points: ["baihui", "yintang", "taiyang"],
     },
     face_upper: {
       name: { korean: "얼굴 상부", english: "Upper Face" },
-      subRegions: ["eyes", "nose"] as const,
-      vitalPoints: ["eye_socket", "bridge_of_nose"] as const,
+      subRegions: ["eyes", "nose"],
+      vitalPoints: [
+        "eye_socket" as any as VitalPoint,
+        "bridge_of_nose" as any as VitalPoint,
+      ], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.3,
-      pressure_points: ["eye_socket"] as const,
+      pressure_points: ["eye_socket"],
     },
     neck: {
       name: { korean: "목", english: "Neck" },
-      subRegions: [] as const,
-      vitalPoints: ["neck_carotid", "larynx"] as const,
+      // subRegions: [], // Property 'subRegions' is optional in RegionData or ensure it's always present
+      vitalPoints: [
+        "neck_carotid" as any as VitalPoint,
+        "larynx" as any as VitalPoint,
+      ], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.8,
-      pressure_points: ["neck_carotid"] as const,
+      pressure_points: ["neck_carotid"],
     },
     torso: {
       name: { korean: "몸통", english: "Torso" },
-      subRegions: ["chest", "abdomen", "back"] as const,
-      vitalPoints: ["solar_plexus", "ribs_floating", "kidney_area"] as const,
+      subRegions: ["chest", "abdomen", "back"],
+      vitalPoints: [
+        "solar_plexus" as any as VitalPoint,
+        "ribs_floating" as any as VitalPoint,
+        "kidney_area" as any as VitalPoint,
+      ], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.0,
-      pressure_points: ["solar_plexus", "zhongwan", "qihai"] as const,
+      pressure_points: ["solar_plexus", "zhongwan", "qihai"],
     },
     chest: {
       name: { korean: "가슴", english: "Chest" },
-      subRegions: [] as const,
-      vitalPoints: ["sternum_center", "clavicle_notch"] as const,
+      // subRegions: [],
+      vitalPoints: [
+        "sternum_center" as any as VitalPoint,
+        "clavicle_notch" as any as VitalPoint,
+      ], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.1,
-      pressure_points: ["sternum_center", "shanzhong", "qimen"] as const,
+      pressure_points: ["sternum_center", "shanzhong", "qimen"],
     },
     abdomen: {
       name: { korean: "복부", english: "Abdomen" },
-      subRegions: [] as const,
-      vitalPoints: ["solar_plexus", "liver_area", "spleen_area"] as const,
+      // subRegions: [],
+      vitalPoints: [
+        "solar_plexus" as any as VitalPoint,
+        "liver_area" as any as VitalPoint,
+        "spleen_area" as any as VitalPoint,
+      ], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.2,
-      pressure_points: ["solar_plexus"] as const,
+      pressure_points: ["solar_plexus"],
     },
     back: {
       name: { korean: "등", english: "Back" },
-      subRegions: ["upper_back", "lower_back"] as const,
-      vitalPoints: ["spine_cervical", "spine_thoracic", "kidney_area"] as const,
+      subRegions: ["upper_back", "lower_back"],
+      vitalPoints: [
+        "spine_cervical" as any as VitalPoint,
+        "spine_thoracic" as any as VitalPoint,
+        "kidney_area" as any as VitalPoint,
+      ], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 0.9,
-      pressure_points: ["kidney_area"] as const,
+      pressure_points: ["kidney_area"],
     },
     upper_back: {
       name: { korean: "등 상부", english: "Upper Back" },
-      subRegions: [] as const,
-      vitalPoints: ["spine_thoracic"] as const,
+      // subRegions: [],
+      vitalPoints: ["spine_thoracic" as any as VitalPoint], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 0.8,
-      pressure_points: [] as const,
+      pressure_points: [],
     },
     lower_back: {
       name: { korean: "등 하부", english: "Lower Back" },
-      subRegions: [] as const,
-      vitalPoints: ["spine_lumbar", "kidney_area"] as const,
+      // subRegions: [],
+      vitalPoints: [
+        "spine_lumbar" as any as VitalPoint,
+        "kidney_area" as any as VitalPoint,
+      ], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.0,
-      pressure_points: ["kidney_area"] as const,
+      pressure_points: ["kidney_area"],
     },
     limbs: {
       name: { korean: "팔다리", english: "Limbs" },
-      subRegions: ["arms", "legs"] as const,
-      vitalPoints: [] as const,
+      subRegions: ["arms", "legs"],
+      vitalPoints: [],
       vulnerability: 0.9,
-      pressure_points: [] as const,
+      pressure_points: [],
     },
     arms: {
       name: { korean: "팔", english: "Arms" },
-      subRegions: ["left_arm", "right_arm"] as const,
-      vitalPoints: ["bicep_radial_nerve", "elbow_joint_ulnar"] as const,
+      subRegions: ["left_arm", "right_arm"],
+      vitalPoints: [
+        "bicep_radial_nerve" as any as VitalPoint,
+        "elbow_joint_ulnar" as any as VitalPoint,
+      ], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.0,
-      pressure_points: ["elbow_joint_ulnar"] as const,
+      pressure_points: ["elbow_joint_ulnar"],
     },
     left_arm: {
       name: { korean: "왼팔", english: "Left Arm" },
-      subRegions: [] as const,
-      vitalPoints: ["wrist_radial_artery_left"] as const,
+      // subRegions: [],
+      vitalPoints: ["wrist_radial_artery_left" as any as VitalPoint], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.0,
-      pressure_points: ["wrist_radial_artery_left"] as const,
+      pressure_points: ["wrist_radial_artery_left"],
     },
     right_arm: {
       name: { korean: "오른팔", english: "Right Arm" },
-      subRegions: [] as const,
-      vitalPoints: ["wrist_radial_artery_right"] as const,
+      // subRegions: [],
+      vitalPoints: ["wrist_radial_artery_right" as any as VitalPoint], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.0,
-      pressure_points: ["wrist_radial_artery_right"] as const,
+      pressure_points: ["wrist_radial_artery_right"],
     },
     legs: {
       name: { korean: "다리", english: "Legs" },
-      subRegions: ["left_leg", "right_leg"] as const,
-      vitalPoints: ["femoral_artery_thigh", "knee_peroneal_nerve"] as const,
+      subRegions: ["left_leg", "right_leg"],
+      vitalPoints: [
+        "femoral_artery_thigh" as any as VitalPoint,
+        "knee_peroneal_nerve" as any as VitalPoint,
+      ], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.0,
-      pressure_points: ["femoral_artery_thigh"] as const,
+      pressure_points: ["femoral_artery_thigh"],
     },
     left_leg: {
       name: { korean: "왼다리", english: "Left Leg" },
-      subRegions: [] as const,
-      vitalPoints: ["ankle_achilles_left"] as const,
+      // subRegions: [],
+      vitalPoints: ["ankle_achilles_left" as any as VitalPoint], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.0,
-      pressure_points: ["ankle_achilles_left"] as const,
+      pressure_points: ["ankle_achilles_left"],
     },
     right_leg: {
       name: { korean: "오른다리", english: "Right Leg" },
-      subRegions: [] as const,
-      vitalPoints: ["ankle_achilles_right"] as const,
+      // subRegions: [],
+      vitalPoints: ["ankle_achilles_right" as any as VitalPoint], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.0,
-      pressure_points: ["ankle_achilles_right"] as const,
+      pressure_points: ["ankle_achilles_right"],
     },
     hands: {
       name: { korean: "손", english: "Hands" },
-      subRegions: [] as const,
-      vitalPoints: ["knuckles_base", "thumb_webbing"] as const,
+      // subRegions: [],
+      vitalPoints: [
+        "knuckles_base" as any as VitalPoint,
+        "thumb_webbing" as any as VitalPoint,
+      ], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.2,
-      pressure_points: ["thumb_webbing"] as const,
+      pressure_points: ["thumb_webbing"],
     },
     feet: {
       name: { korean: "발", english: "Feet" },
-      subRegions: [] as const,
-      vitalPoints: ["instep_top", "ball_of_foot"] as const,
+      // subRegions: [],
+      vitalPoints: [
+        "instep_top" as any as VitalPoint,
+        "ball_of_foot" as any as VitalPoint,
+      ], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.1,
-      pressure_points: ["instep_top"] as const,
+      pressure_points: ["instep_top"],
     },
     joints: {
       name: { korean: "관절", english: "Joints" },
-      subRegions: [] as const,
+      // subRegions: [],
       vitalPoints: [
-        "elbow_joint_ulnar",
-        "knee_joint_patella",
-        "shoulder_joint_capsule",
-      ] as const,
+        "elbow_joint_ulnar" as any as VitalPoint, // TODO: Import/Define actual VitalPoint objects
+        "knee_joint_patella" as any as VitalPoint, // TODO: Import/Define actual VitalPoint objects
+        "shoulder_joint_capsule" as any as VitalPoint, // TODO: Import/Define actual VitalPoint objects
+      ],
       vulnerability: 1.4,
-      pressure_points: ["elbow_joint_ulnar", "knee_joint_patella"] as const,
+      pressure_points: ["elbow_joint_ulnar", "knee_joint_patella"],
     },
     head_side: {
       name: { korean: "머리 측면", english: "Side of Head" },
-      subRegions: [] as const,
-      vitalPoints: ["head_temple"] as const,
+      // subRegions: [],
+      vitalPoints: [head_temple_kanjanori], // Assuming head_temple is head_temple_kanjanori
       vulnerability: 1.6,
-      pressure_points: ["head_temple"] as const,
+      pressure_points: ["head_temple"],
     },
     upper_abdomen_center: {
       name: { korean: "상복부 중앙", english: "Upper Abdomen Center" },
-      subRegions: [] as const,
-      vitalPoints: ["solar_plexus"] as const,
+      // subRegions: [],
+      vitalPoints: ["solar_plexus" as any as VitalPoint], // TODO: Import/Define actual VitalPoint object for solar_plexus
       vulnerability: 1.7,
-      pressure_points: ["solar_plexus"] as const,
+      pressure_points: ["solar_plexus"],
     },
     eyes: {
       name: { korean: "눈", english: "Eyes" },
-      subRegions: [] as const,
-      vitalPoints: ["eye_socket"] as const,
+      // subRegions: [],
+      vitalPoints: ["eye_socket" as any as VitalPoint], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 2.0,
-      pressure_points: ["eye_socket"] as const,
+      pressure_points: ["eye_socket"],
     },
     nose: {
       name: { korean: "코", english: "Nose" },
-      subRegions: [] as const,
-      vitalPoints: ["bridge_of_nose", "philtrum"] as const,
+      // subRegions: [],
+      vitalPoints: [
+        "bridge_of_nose" as any as VitalPoint,
+        head_philtrum_injoong,
+      ], // Used imported philtrum
       vulnerability: 1.5,
-      pressure_points: ["philtrum"] as const,
+      pressure_points: ["philtrum"],
     },
     jaw: {
       name: { korean: "턱", english: "Jaw" },
-      subRegions: [] as const,
-      vitalPoints: ["jaw_point_mandible", "chin_menton"] as const,
+      // subRegions: [],
+      vitalPoints: [
+        "jaw_point_mandible" as any as VitalPoint,
+        "chin_menton" as any as VitalPoint,
+      ], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.4,
-      pressure_points: ["jaw_point_mandible"] as const,
+      pressure_points: ["jaw_point_mandible"],
     },
     temples: {
       name: { korean: "관자놀이", english: "Temples" },
-      subRegions: [] as const,
-      vitalPoints: ["head_temple"] as const,
+      // subRegions: [],
+      vitalPoints: [head_temple_kanjanori], // Used imported temple
       vulnerability: 1.8,
-      pressure_points: ["head_temple"] as const,
+      pressure_points: ["head_temple"],
     },
     philtrum: {
+      // This region seems redundant if head_philtrum_injoong is used directly
       name: { korean: "인중", english: "Philtrum" },
-      subRegions: [] as const,
-      vitalPoints: ["philtrum"] as const,
+      // subRegions: [],
+      vitalPoints: [head_philtrum_injoong],
       vulnerability: 1.9,
-      pressure_points: ["philtrum"] as const,
+      pressure_points: ["philtrum"],
     },
     mastoid_process: {
       name: { korean: "유돌", english: "Mastoid Process" },
-      subRegions: [] as const,
-      vitalPoints: ["mastoid_process"] as const,
+      // subRegions: [],
+      vitalPoints: ["mastoid_process" as any as VitalPoint], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.6,
-      pressure_points: ["mastoid_process"] as const,
+      pressure_points: ["mastoid_process"],
     },
     occiput: {
       name: { korean: "후두골", english: "Occiput" },
-      subRegions: [] as const,
-      vitalPoints: ["occiput_base"] as const,
+      // subRegions: [],
+      vitalPoints: ["occiput_base" as any as VitalPoint], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.7,
-      pressure_points: ["occiput_base"] as const,
+      pressure_points: ["occiput_base"],
     },
     ribs: {
       name: { korean: "갈비뼈", english: "Ribs" },
-      subRegions: [] as const,
-      vitalPoints: ["ribs_floating", "rib_cartilage_junction"] as const,
+      // subRegions: [],
+      vitalPoints: [
+        "ribs_floating" as any as VitalPoint,
+        "rib_cartilage_junction" as any as VitalPoint,
+      ], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.2,
-      pressure_points: ["ribs_floating"] as const,
+      pressure_points: ["ribs_floating"],
     },
     clavicle: {
       name: { korean: "쇄골", english: "Clavicle" },
-      subRegions: [] as const,
-      vitalPoints: ["clavicle_notch", "clavicle_midpoint"] as const,
+      // subRegions: [],
+      vitalPoints: [
+        "clavicle_notch" as any as VitalPoint,
+        "clavicle_midpoint" as any as VitalPoint,
+      ], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.5,
-      pressure_points: ["clavicle_notch"] as const,
+      pressure_points: ["clavicle_notch"],
     },
     solar_plexus: {
+      // This region seems redundant if a vp_solar_plexus_myungchi is used directly
       name: { korean: "명치", english: "Solar Plexus" },
-      subRegions: [] as const,
-      vitalPoints: ["solar_plexus"] as const,
+      // subRegions: [],
+      vitalPoints: ["solar_plexus" as any as VitalPoint], // TODO: Import/Define actual VitalPoint object for solar_plexus
       vulnerability: 1.8,
-      pressure_points: ["solar_plexus"] as const,
+      pressure_points: ["solar_plexus"],
     },
     kidneys: {
       name: { korean: "신장", english: "Kidneys" },
-      subRegions: [] as const,
-      vitalPoints: ["kidney_area"] as const,
+      // subRegions: [],
+      vitalPoints: ["kidney_area" as any as VitalPoint], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.7,
-      pressure_points: ["kidney_area"] as const,
+      pressure_points: ["kidney_area"],
     },
     liver: {
       name: { korean: "간", english: "Liver" },
-      subRegions: [] as const,
-      vitalPoints: ["liver_area"] as const,
+      // subRegions: [],
+      vitalPoints: ["liver_area" as any as VitalPoint], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.6,
-      pressure_points: ["liver_area"] as const,
+      pressure_points: ["liver_area"],
     },
     spleen: {
       name: { korean: "비장", english: "Spleen" },
-      subRegions: [] as const,
-      vitalPoints: ["spleen_area"] as const,
+      // subRegions: [],
+      vitalPoints: ["spleen_area" as any as VitalPoint], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.6,
-      pressure_points: ["spleen_area"] as const,
+      pressure_points: ["spleen_area"],
     },
     floating_ribs: {
       name: { korean: "뜬갈비뼈", english: "Floating Ribs" },
-      subRegions: [] as const,
-      vitalPoints: ["ribs_floating"] as const,
+      // subRegions: [],
+      vitalPoints: ["ribs_floating" as any as VitalPoint], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.4,
-      pressure_points: ["ribs_floating"] as const,
+      pressure_points: ["ribs_floating"],
     },
     face: {
       name: { korean: "얼굴", english: "Face" },
-      subRegions: ["face_upper", "eyes", "nose", "jaw", "philtrum"] as const,
+      subRegions: ["face_upper", "eyes", "nose", "jaw", "philtrum"],
       vitalPoints: [
-        "eye_socket",
-        "bridge_of_nose",
-        "jaw_point_mandible",
-        "philtrum",
-      ] as const,
+        "eye_socket" as any as VitalPoint, // TODO: Import/Define
+        "bridge_of_nose" as any as VitalPoint, // TODO: Import/Define
+        "jaw_point_mandible" as any as VitalPoint, // TODO: Import/Define
+        head_philtrum_injoong,
+      ],
       vulnerability: 1.5,
-      pressure_points: ["philtrum", "eye_socket"] as const,
+      pressure_points: ["philtrum", "eye_socket"],
     },
     leg_back_knee: {
       name: { korean: "무릎 뒤", english: "Back of Knee" },
-      subRegions: [] as const,
-      vitalPoints: ["popliteal_fossa", "knee_back_nerve"] as const,
+      // subRegions: [],
+      vitalPoints: [
+        "popliteal_fossa" as any as VitalPoint,
+        "knee_back_nerve" as any as VitalPoint,
+      ], // TODO: Import/Define actual VitalPoint objects
       vulnerability: 1.6,
-      pressure_points: ["popliteal_fossa"] as const,
+      pressure_points: ["popliteal_fossa"],
     },
     throat: {
       name: { korean: "목구멍", english: "Throat" },
-      subRegions: [] as const,
-      vitalPoints: [] as const,
+      subRegions: [],
+      vitalPoints: [],
       vulnerability: 1.0,
-      pressure_points: [] as const,
+      pressure_points: [],
     },
     general: {
       name: { korean: "일반", english: "General" },
-      subRegions: [] as const,
-      vitalPoints: [] as const,
+      subRegions: [],
+      vitalPoints: [],
       vulnerability: 1.0,
-      pressure_points: [] as const,
+      pressure_points: [],
     },
     internal: {
       name: { korean: "내부", english: "Internal" },
-      subRegions: [] as const,
-      vitalPoints: [] as const,
+      subRegions: [],
+      vitalPoints: [],
       vulnerability: 1.0,
-      pressure_points: [] as const,
+      pressure_points: [],
     },
     pressure_points: {
+      // This seems like a category rather than a body region
       name: { korean: "혈자리", english: "Pressure Points" },
-      subRegions: [] as const,
+      subRegions: [],
       vitalPoints: [
-        "head_philtrum_injoong",
-        "vp_solar_plexus_myungchi",
-        "head_temple_kanjanori",
-      ] as const,
+        head_philtrum_injoong,
+        // vp_solar_plexus_myungchi, // Was commented out as unused, re-import if needed
+        "vp_solar_plexus_myungchi" as any as VitalPoint, // TODO: Import/Define
+        head_temple_kanjanori,
+      ],
       vulnerability: 1.3,
-      pressure_points: ["hegu", "taichong", "zusanli"] as const,
+      pressure_points: ["hegu", "taichong", "zusanli"],
     },
   } as const;
 

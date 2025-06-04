@@ -1,4 +1,5 @@
 import type { TrigramStance } from "../../types";
+import type { KoreanText } from "../../types/korean-text"; // Ensure KoreanText is imported
 
 /**
  * Korean Martial Arts Philosophy and Cultural Integration
@@ -13,10 +14,7 @@ export interface KoreanPhilosophy {
   readonly principle: string;
   readonly application: string;
   readonly stance: TrigramStance;
-  readonly description: {
-    readonly korean: string;
-    readonly english: string;
-  };
+  readonly description: KoreanText; // Use KoreanText type
   readonly modernInterpretation: string;
 }
 
@@ -166,6 +164,21 @@ const TRIGRAM_STANCES_ORDER: readonly TrigramStance[] = [
   "gon",
 ] as const;
 
+const DEFAULT_PHILOSOPHY: KoreanPhilosophy = {
+  id: "default",
+  korean: "기본 철학",
+  english: "Basic Philosophy",
+  concept: "Balance",
+  principle: "Harmony",
+  application: "Practical wisdom",
+  stance: "geon", // Default stance, can be overridden
+  description: {
+    korean: "기본적인 무술 철학",
+    english: "Basic martial philosophy",
+  },
+  modernInterpretation: "Fundamental principles",
+};
+
 /**
  * Get philosophy for specific trigram stance
  */
@@ -173,43 +186,26 @@ export function getPhilosophyForStance(
   stance: TrigramStance
 ): KoreanPhilosophy {
   const philosophy = KOREAN_PHILOSOPHIES.find((p) => p.stance === stance);
-  return (
-    philosophy ?? {
-      id: "default",
-      korean: "기본 철학",
-      english: "Basic Philosophy",
-      concept: "Balance",
-      principle: "Harmony",
-      application: "Practical wisdom",
-      stance: stance,
-      description: {
-        korean: "기본적인 무술 철학",
-        english: "Basic martial philosophy",
-      },
-      modernInterpretation: "Fundamental principles",
-    }
-  );
+  return philosophy ?? { ...DEFAULT_PHILOSOPHY, stance: stance }; // Return default if not found, with correct stance
 }
 
 /**
  * Get philosophy by elemental concept
  */
-export function getPhilosophyByElement(element: string): KoreanPhilosophy {
-  const philosophy = KOREAN_PHILOSOPHIES.find((p) => p.concept === element);
+export function getPhilosophyByElement(
+  elementConcept: string
+): KoreanPhilosophy {
+  // Renamed parameter for clarity
+  const philosophy = KOREAN_PHILOSOPHIES.find(
+    (p) => p.concept === elementConcept
+  );
+  // Find a stance that matches this concept or default
+  const foundStance = philosophy ? philosophy.stance : "geon";
   return (
     philosophy ?? {
-      id: "default",
-      korean: "기본 철학",
-      english: "Basic Philosophy",
-      concept: element,
-      principle: "Balance",
-      application: "Practical wisdom",
-      stance: "geon",
-      description: {
-        korean: "기본적인 무술 철학",
-        english: "Basic martial philosophy",
-      },
-      modernInterpretation: "Fundamental principles",
+      ...DEFAULT_PHILOSOPHY,
+      concept: elementConcept,
+      stance: foundStance,
     }
   );
 }
@@ -221,7 +217,11 @@ export function getStanceWisdom(
   playerStance: TrigramStance,
   opponentStance: TrigramStance
 ): StanceWisdom {
-  if (!playerStance || !opponentStance) {
+  // Ensure stances are valid before proceeding
+  if (
+    !TRIGRAM_STANCES_ORDER.includes(playerStance) ||
+    !TRIGRAM_STANCES_ORDER.includes(opponentStance)
+  ) {
     return {
       korean: "자세를 확인하세요",
       english: "Please check your stance",
@@ -230,25 +230,28 @@ export function getStanceWisdom(
     };
   }
 
-  const playerPhilosophy = getPhilosophyForStance(playerStance);
-  // Fix: Use getPhilosophyForStance instead of direct find to ensure non-undefined result
-  const opponentPhilosophy = getPhilosophyForStance(opponentStance);
+  const playerPhilosophy = getPhilosophyForStance(playerStance); // Ensured non-null
+  const opponentPhilosophy = getPhilosophyForStance(opponentStance); // Ensured non-null
 
-  // Generate contextual wisdom based on stance interactions
-  const wisdomMap: Record<string, StanceWisdom> = {
-    [`${playerStance}_${opponentStance}`]: {
-      korean: `${playerPhilosophy.korean}으로 ${opponentPhilosophy.korean}에 대응하라`,
-      english: `Use ${playerPhilosophy.english} principles against ${opponentPhilosophy.english}`,
-      advice: `Apply ${playerPhilosophy.application} to counter ${opponentPhilosophy.principle}`,
+  // More sophisticated wisdom generation could be added here
+  // For now, using a simple map or a default
+  const wisdomKey = `${playerStance}_vs_${opponentStance}`;
+  const specificWisdom: Record<string, StanceWisdom> = {
+    // Example specific advice
+    geon_vs_tae: {
+      korean: `${playerPhilosophy.korean}의 강함으로 ${opponentPhilosophy.korean}의 유연함을 압도하라.`,
+      english: `Overwhelm ${opponentPhilosophy.english}'s flexibility with ${playerPhilosophy.english}'s strength.`,
+      advice: `Apply ${playerPhilosophy.application} to disrupt ${opponentPhilosophy.principle}.`,
       category: "intermediate",
     },
   };
 
   return (
-    wisdomMap[`${playerStance}_${opponentStance}`] || {
-      korean: "균형을 유지하며 기회를 기다려라",
-      english: "Maintain balance and wait for opportunity",
-      advice: "Stay centered and observe your opponent",
+    specificWisdom[wisdomKey] || {
+      // Default wisdom if no specific entry
+      korean: `${playerPhilosophy.korean}(으)로 ${opponentPhilosophy.korean}에 대응하라`,
+      english: `Use ${playerPhilosophy.english} principles against ${opponentPhilosophy.english}`,
+      advice: `Consider ${playerPhilosophy.modernInterpretation} when facing ${opponentPhilosophy.modernInterpretation}.`,
       category: "basic",
     }
   );
@@ -263,39 +266,56 @@ export function generateRecommendedPhilosophies(currentStance: TrigramStance): {
   secondary: KoreanPhilosophy;
   application: KoreanPhilosophy;
 } {
-  const stanceIndex = TRIGRAM_STANCES_ORDER.indexOf(currentStance);
-
-  if (stanceIndex === -1 || KOREAN_PHILOSOPHIES.length === 0) {
-    const defaultPhilosophy: KoreanPhilosophy = {
-      id: "default",
-      korean: "기본 철학",
-      english: "Basic Philosophy",
-      concept: "Balance",
-      principle: "Harmony",
-      application: "Practical wisdom",
-      stance: currentStance,
-      description: {
-        korean: "기본적인 무술 철학",
-        english: "Basic martial philosophy",
-      },
-      modernInterpretation: "Fundamental principles",
-    };
-
+  if (KOREAN_PHILOSOPHIES.length === 0) {
     return {
-      primary: defaultPhilosophy,
-      secondary: defaultPhilosophy,
-      application: defaultPhilosophy,
+      primary: { ...DEFAULT_PHILOSOPHY, stance: currentStance },
+      secondary: { ...DEFAULT_PHILOSOPHY, stance: currentStance },
+      application: { ...DEFAULT_PHILOSOPHY, stance: currentStance },
     };
   }
 
-  const secondaryIndex = (stanceIndex + 2) % KOREAN_PHILOSOPHIES.length;
-  const applicationIndex = (stanceIndex + 4) % KOREAN_PHILOSOPHIES.length;
+  const stanceIndex = TRIGRAM_STANCES_ORDER.indexOf(currentStance);
 
-  // Fix: Use non-null assertion since we checked array length above
+  if (stanceIndex === -1) {
+    // Should not happen if currentStance is valid
+    const defaultWithStance = { ...DEFAULT_PHILOSOPHY, stance: currentStance };
+    return {
+      primary: defaultWithStance,
+      secondary: defaultWithStance,
+      application: defaultWithStance,
+    };
+  }
+
+  // Ensure indices wrap around correctly and handle small KOREAN_PHILOSOPHIES array
+  const numPhilosophies = KOREAN_PHILOSOPHIES.length;
+  const primaryPhilosophy = KOREAN_PHILOSOPHIES[
+    stanceIndex % numPhilosophies
+  ] || { ...DEFAULT_PHILOSOPHY, stance: currentStance };
+
+  // Find philosophies for different stances if possible, or fallback
+  let secondaryStance =
+    TRIGRAM_STANCES_ORDER[(stanceIndex + 2) % TRIGRAM_STANCES_ORDER.length];
+  let applicationStance =
+    TRIGRAM_STANCES_ORDER[(stanceIndex + 4) % TRIGRAM_STANCES_ORDER.length];
+
+  // Ensure we get philosophies for distinct stances if possible
+  if (secondaryStance === currentStance && numPhilosophies > 1) {
+    secondaryStance =
+      TRIGRAM_STANCES_ORDER[(stanceIndex + 1) % TRIGRAM_STANCES_ORDER.length];
+  }
+  if (applicationStance === currentStance && numPhilosophies > 2) {
+    applicationStance =
+      TRIGRAM_STANCES_ORDER[(stanceIndex + 3) % TRIGRAM_STANCES_ORDER.length];
+  }
+  if (applicationStance === secondaryStance && numPhilosophies > 2) {
+    applicationStance =
+      TRIGRAM_STANCES_ORDER[(stanceIndex + 5) % TRIGRAM_STANCES_ORDER.length];
+  }
+
   return {
-    primary: KOREAN_PHILOSOPHIES[stanceIndex]!,
-    secondary: KOREAN_PHILOSOPHIES[secondaryIndex]!,
-    application: KOREAN_PHILOSOPHIES[applicationIndex]!,
+    primary: primaryPhilosophy,
+    secondary: getPhilosophyForStance(secondaryStance),
+    application: getPhilosophyForStance(applicationStance),
   };
 }
 
@@ -304,24 +324,10 @@ export function generateRecommendedPhilosophies(currentStance: TrigramStance): {
  */
 export function generateRandomPhilosophy(): KoreanPhilosophy {
   if (KOREAN_PHILOSOPHIES.length === 0) {
-    return {
-      id: "default",
-      korean: "기본 철학",
-      english: "Basic Philosophy",
-      concept: "Balance",
-      principle: "Harmony",
-      application: "Practical wisdom",
-      stance: "geon",
-      description: {
-        korean: "기본적인 무술 철학",
-        english: "Basic martial philosophy",
-      },
-      modernInterpretation: "Fundamental principles",
-    };
+    return DEFAULT_PHILOSOPHY;
   }
-
   const randomIndex = Math.floor(Math.random() * KOREAN_PHILOSOPHIES.length);
-  return KOREAN_PHILOSOPHIES[randomIndex]!; // Use non-null assertion since we checked length
+  return KOREAN_PHILOSOPHIES[randomIndex]!; // Non-null assertion due to length check
 }
 
 /**

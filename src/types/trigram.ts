@@ -1,80 +1,116 @@
-// Trigram (팔괘) types for Korean martial arts game
+// Korean martial arts trigram system types
 
-import type { TrigramStance } from "./enums";
+import type { TrigramStance, PlayerArchetype, EffectType } from "./enums";
 import type { KoreanText } from "./korean-text";
-import type { KoreanTechnique } from "./combat";
+import type { KoreanTechnique } from "./index"; // Assuming StatusEffect is in index or effects
+
+// Export TrigramStance for external modules
+export type { TrigramStance } from "./enums";
+
+// Trigram transition cost - FIXED: Add missing timeMilliseconds
+export interface TrigramTransitionCost {
+  readonly ki: number;
+  readonly stamina: number;
+  readonly timeMilliseconds: number; // Added missing time component
+}
+
+// Enhanced transition metrics with all required properties
+export interface TransitionMetrics {
+  readonly cost: TrigramTransitionCost;
+  readonly effectiveness: number;
+  readonly risk: number;
+  readonly stamina: number; // Added missing property
+  readonly timeMilliseconds: number; // Added missing property
+}
+
+// Enhanced transition path interface
+export interface TransitionPath {
+  readonly path: readonly TrigramStance[];
+  readonly totalCost: TrigramTransitionCost;
+  readonly overallEffectiveness?: number; // Added optional for now, can be made mandatory
+  readonly cumulativeRisk: number;
+  readonly name: string; // Added name property
+}
+
+// Trigram transition rule - FIXED: Add missing properties
+export interface TrigramTransitionRule {
+  readonly from: TrigramStance;
+  readonly to: TrigramStance;
+  readonly cost: TrigramTransitionCost;
+  readonly effectiveness: number;
+  readonly conditions?: ReadonlyArray<{
+    type: "player_stat" | "archetype" | "active_effect";
+    stat?: "health" | "ki" | "stamina";
+    archetype?: PlayerArchetype;
+    effectType?: EffectType; // Use EffectType from enums
+    threshold?: number;
+    value?: boolean | string;
+  }>;
+  readonly description: KoreanText;
+}
+
+// Ki flow factors with all required properties
+export interface KiFlowFactors {
+  readonly playerLevelModifier: number;
+  readonly stanceAffinity: number;
+  readonly distance: number; // Added missing property
+  readonly elementalHarmony: number; // Added missing property
+}
 
 // Trigram data structure
 export interface TrigramData {
   readonly id: TrigramStance;
   readonly name: KoreanText;
-  readonly symbol: string; // Unicode trigram symbol
-  readonly element: string;
+  readonly symbol: string;
+  readonly element: KoreanText; // Changed from string to KoreanText
   readonly direction: string;
-  readonly philosophy: KoreanText;
-  readonly strengths: readonly string[];
-  readonly weaknesses: readonly string[];
-  readonly technique: KoreanTechnique | readonly KoreanTechnique[];
-  // Add missing properties
-  readonly color: number; // Color value for visual representation
-  readonly order: number; // Order in trigram sequence
-  readonly preferredTechniques?: readonly KoreanTechnique[];
+  readonly philosophy: KoreanText; // Added philosophy property
+  readonly technique: KoreanTechnique; // Associated signature technique
+  readonly color: string | number; // Hex color or PixiJS color
+  readonly description: KoreanText;
+  readonly kiFlowModifier?: number; // How this stance affects Ki recovery or usage
+  readonly staminaModifier?: number; // How this stance affects Stamina recovery or usage
+  readonly defensiveBonus?: number;
+  readonly offensiveBonus?: number;
+  readonly relatedPhilosophies?: string[]; // IDs to KoreanPhilosophy
 }
 
-// Trigram transition cost structure for Korean martial arts
-export interface TrigramTransitionCost {
-  readonly ki: number; // Added missing ki property
-  readonly stamina: number; // Stamina cost for transition
-  readonly timeMilliseconds: number; // Time required for transition
+// Effectiveness matrix for stance combinations
+export type TrigramEffectivenessMatrix = {
+  readonly [K in TrigramStance]: {
+    readonly [J in TrigramStance]: number;
+  };
+};
+
+// Stance system interface
+export interface TrigramSystemInterface {
+  getCurrentStance(): TrigramStance;
+  setStance(stance: TrigramStance): Promise<boolean>; // Returns true if successful
+  getAvailableTechniques(stance: TrigramStance): readonly KoreanTechnique[];
+  getTrigramData(stance: TrigramStance): TrigramData;
+  calculateTransition(
+    from: TrigramStance,
+    to: TrigramStance,
+    playerKi: number,
+    playerStamina: number
+  ): TrigramTransitionCost | null; // null if not possible
+  getEffectiveness(
+    attackerStance: TrigramStance,
+    defenderStance: TrigramStance
+  ): number;
 }
 
-// Transition metrics for analysis
-export interface TransitionMetrics {
-  readonly stamina: number; // Stamina cost
-  readonly timeMilliseconds: number; // Transition time
-  readonly effectiveness: number; // Overall effectiveness rating (0-1)
-  readonly risk: number; // Risk factor (0-1, higher is riskier)
-  readonly cost: TrigramTransitionCost; // Added missing cost property
+// Archetype stance affinity
+export interface ArchetypeStanceAffinity {
+  readonly archetype: PlayerArchetype;
+  readonly affinities: Record<TrigramStance, number>;
 }
 
-// Transition path between stances
-export interface TransitionPath {
-  readonly path: readonly TrigramStance[]; // Added missing path property
-  readonly totalCost: TrigramTransitionCost;
-  readonly overallEffectiveness: number; // Combined effectiveness rating
-  readonly cumulativeRisk: number; // Total risk for the transition path
-}
-
-// Ki flow factors affecting transitions
-export interface KiFlowFactors {
-  readonly distance: number; // Physical distance between stances
-  readonly elementalHarmony: number; // How well elements work together (오행)
-  readonly playerLevelModifier: number; // Added missing property
-  readonly stanceAffinity: number; // Added missing property
-}
-
-// Stance transition interface
+// Add missing StanceTransition interface
 export interface StanceTransition {
   readonly from: TrigramStance;
   readonly to: TrigramStance;
   readonly cost: TrigramTransitionCost;
-  readonly description: KoreanText;
-  readonly success: boolean;
-  readonly energyEfficiency: number;
-}
-
-// Trigram effectiveness matrix type
-export type TrigramEffectivenessMatrix = {
-  readonly [attacker in TrigramStance]: {
-    readonly [defender in TrigramStance]: number;
-  };
-};
-
-// Trigram transition rule
-export interface TrigramTransitionRule {
-  readonly from: TrigramStance;
-  readonly to: TrigramStance;
-  readonly cost: TrigramTransitionCost;
-  readonly conditions?: readonly string[];
-  readonly description: KoreanText;
+  readonly duration: number;
+  readonly difficulty: number;
 }

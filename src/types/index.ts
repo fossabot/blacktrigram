@@ -13,14 +13,14 @@ export type { Position, CombatCondition } from "./common";
 export type { PlayerState, PlayerArchetypeData } from "./player";
 export type {
   VitalPoint,
-  AnatomicalLocation,
+  VitalPointEffect,
   VitalPointHitResult,
-  RegionData,
-  AnatomicalRegion,
-  BodyPart,
-  AnatomyModel,
-  AnatomicalHit,
-  KoreanAnatomySystem,
+  VitalPointCategory,
+  VitalPointSeverity,
+  AnatomicalLocation, // Added export
+  AnatomicalRegion, // Added export
+  BodyPart, // Added export
+  AnatomyModel, // Added export
 } from "./anatomy";
 export type { KoreanTechnique, CombatResult, AttackInput } from "./combat";
 export type { HitEffect, StatusEffect, VitalPointEffect } from "./effects";
@@ -45,14 +45,15 @@ export type {
   KoreanPixiTextConfig,
 } from "./korean-text";
 export type {
+  TrigramStance,
   TrigramData,
+  TrigramEffectivenessMatrix,
+  TrigramSystemInterface,
   TrigramTransitionCost,
   TransitionMetrics,
   TransitionPath,
-  KiFlowFactors,
-  StanceTransition,
-  TrigramEffectivenessMatrix,
   TrigramTransitionRule,
+  StanceTransition, // Fixed: Add StanceTransition export
 } from "./trigram";
 export type { AppState } from "./game";
 

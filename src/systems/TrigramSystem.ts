@@ -1,269 +1,294 @@
 import type {
-  // PlayerState, // Unused
+  PlayerState,
   TrigramStance,
   TrigramData,
-  // TrigramTransitionCost, // Unused directly here, but TransitionMetrics uses it
+  TrigramTransitionCost,
   TransitionPath,
-  KoreanTechnique as CombatKoreanTechnique, // Use combat.ts definition
-  KiFlowFactors,
-  // StanceTransition, // Unused
-  KoreanText,
-  TransitionMetrics,
-  TrigramTransitionCost, // Import for TransitionMetrics and TransitionPath
+  KoreanTechnique,
+  TrigramEffectivenessMatrix,
+  TrigramTransitionRule,
+  // CombatResult, // If used
+  // VitalPoint, // If used
 } from "../types";
 import {
   TRIGRAM_DATA,
   STANCE_EFFECTIVENESS_MATRIX,
   TRIGRAM_STANCES_ORDER,
-} from "../types";
+} from "../types/constants";
+import { TrigramCalculator } from "./trigram/TrigramCalculator";
+import { TransitionCalculator } from "./trigram/TransitionCalculator";
 
 export class TrigramSystem {
-  private static BASE_KI_FLOW_RATES: Record<TrigramStance, number> = {
-    geon: 1.2, // Heaven - high spiritual energy
-    tae: 1.0, // Lake - balanced energy flow
-    li: 1.1, // Fire - intense but consuming
-    jin: 0.9, // Thunder - explosive but draining
-    son: 1.1, // Wind - gentle and sustained
-    gam: 1.3, // Water - deep and flowing
-    gan: 0.8, // Mountain - stable but slow
-    gon: 0.9, // Earth - grounded and steady
-  };
+  private trigramCalculator: TrigramCalculator;
+  private transitionCalculator: TransitionCalculator;
 
-  static calculateKiFlow(
-    fromStance: TrigramStance,
-    toStance: TrigramStance,
-    factors: KiFlowFactors
-  ): number {
-    const baseFlow = this.BASE_KI_FLOW_RATES[fromStance] || 1.0;
-    let flow = baseFlow;
-
-    // Same element bonus
-    const fromElement = TRIGRAM_DATA[fromStance].element;
-    const toElement = TRIGRAM_DATA[toStance].element;
-
-    if (fromElement === toElement && flow !== undefined) {
-      flow *= 1.2; // Bonus for same element transition
-    }
-
-    const playerLevelModifier = factors.playerLevelModifier || 1.0;
-    const stanceAffinity = factors.stanceAffinity || 1.0;
-
-    if (flow !== undefined) {
-      flow *= playerLevelModifier * stanceAffinity;
-    }
-
-    // kiRecovery and kiConsumption are not direct properties of KiFlowFactors.
-    // They might be derived from player stats or activeEffects.
-    // For now, assuming they are passed if needed or handled elsewhere.
-    // Example: if (factors.activeEffects) { flow += calculateKiRecoveryFromEffects(factors.activeEffects) }
-    // flow += (factors.kiRecoveryBase || 0) - (factors.kiConsumptionModifier || 0);
-
-    return flow || 0;
+  constructor(
+    trigramData?: Record<TrigramStance, TrigramData>,
+    effectivenessMatrix?: TrigramEffectivenessMatrix,
+    transitionRules?: readonly TrigramTransitionRule[]
+  ) {
+    this.trigramCalculator = new TrigramCalculator(
+      // trigramData, // Pass specific data if needed, otherwise TrigramCalculator uses defaults
+      effectivenessMatrix // Pass specific data if needed
+    );
+    this.transitionCalculator = new TransitionCalculator( // Initialize TransitionCalculator
+      trigramData,
+      effectivenessMatrix,
+      transitionRules
+    );
   }
 
-  static TRIGRAM_DATA = TRIGRAM_DATA;
-  static STANCE_EFFECTIVENESS_MATRIX = STANCE_EFFECTIVENESS_MATRIX;
-  static TRIGRAM_STANCES_ORDER = TRIGRAM_STANCES_ORDER;
-
-  static getTrigramData(stance: TrigramStance): TrigramData {
+  public getTrigramData(stance: TrigramStance): TrigramData | undefined {
     return TRIGRAM_DATA[stance];
   }
 
-  static getTechniqueForStance(
+  public getTechniquesForStance(
     stance: TrigramStance
-  ): CombatKoreanTechnique | null {
-    // Assuming TRIGRAM_DATA[stance].technique aligns with CombatKoreanTechnique
-    // This might require ensuring TrigramData's technique property is of type CombatKoreanTechnique
-    const technique = TRIGRAM_DATA[stance]?.technique as
-      | CombatKoreanTechnique
-      | undefined;
-    return technique || null;
+  ): readonly KoreanTechnique[] {
+    // Assuming techniques are part of TrigramData or a separate mapping
+    // For this example, let's assume TrigramData holds its primary technique
+    const data = this.getTrigramData(stance);
+    return data.technique ? [data.technique] : []; // Simplified
   }
 
-  static calculateStanceAdvantage(
-    attackerStance: TrigramStance,
-    defenderStance: TrigramStance
-  ): number {
-    return (
-      TrigramSystem.STANCE_EFFECTIVENESS_MATRIX[attackerStance]?.[
-        defenderStance
-      ] || 1.0
-    );
-  }
+  public calculateTransitionCost(
+    from: TrigramStance,
+    to: TrigramStance,
+    playerState: PlayerState
+  ): TrigramTransitionCost {
+    if (from === to) return { ki: 0, stamina: 0, timeMilliseconds: 0 };
 
-  static getKiRegenRate(stance: TrigramStance, baseRate: number = 0.5): number {
-    // Example: Geon has higher Ki regen
-    const stanceModifier = stance === "geon" ? 1.5 : 1.0;
-    return baseRate * stanceModifier;
-  }
+    // Delegate to TrigramCalculator or implement logic here
+    const baseKiCost = 10;
+    const baseStaminaCost = 8;
+    const baseTimeMs = 500;
 
-  static calculateTransitionCost(
-    fromStance: TrigramStance,
-    toStance: TrigramStance
-    // playerState: PlayerState // If needed for more complex cost calculation
-  ): TransitionMetrics {
-    if (fromStance === toStance) {
-      const zeroCost: TrigramTransitionCost = {
-        ki: 0,
-        stamina: 0,
-        timeMilliseconds: 0,
-      };
-      return {
-        cost: zeroCost,
-        effectiveness: 1,
-        risk: 0, // Added risk
-        // time: 0, // time is part of TrigramTransitionCost
-        // cooldown: 0, // cooldown might be separate
-      };
-    }
-
-    const fromData = TRIGRAM_DATA[fromStance];
-    const toData = TRIGRAM_DATA[toStance];
-    const orderDiff = Math.abs((fromData.order ?? 0) - (toData.order ?? 0));
-
-    const kiCost = Math.max(5, orderDiff * 3);
-    const staminaCost = Math.max(3, orderDiff * 2);
-    const timeMilliseconds = orderDiff * 100; // in ms
-    const effectiveness = Math.max(0.5, 1 - orderDiff * 0.1);
-
-    const transitionCostValue: TrigramTransitionCost = {
-      ki: kiCost,
-      stamina: staminaCost,
-      timeMilliseconds,
-    };
+    let costMultiplier = 1.0;
+    if (playerState.health < 50) costMultiplier *= 1.5;
+    if (playerState.stamina < playerState.maxStamina * 0.3)
+      costMultiplier *= 1.2;
 
     return {
-      cost: transitionCostValue,
-      effectiveness,
-      risk: (kiCost + staminaCost) / 20, // Example risk
-      // time: timeMilliseconds,
-      // cooldown: timeMilliseconds * 2,
+      ki: Math.round(baseKiCost * costMultiplier),
+      stamina: Math.round(baseStaminaCost * costMultiplier),
+      timeMilliseconds: Math.round(baseTimeMs * costMultiplier),
     };
   }
 
-  static findOptimalTransitionPath(
-    fromStance: TrigramStance,
+  public canTransition(
+    playerState: PlayerState,
     toStance: TrigramStance
-    // playerState: PlayerState // If needed for pathfinding logic
-  ): TransitionPath {
-    const directTransitionMetrics = this.calculateTransitionCost(
-      fromStance,
-      toStance
+  ): boolean {
+    const cost = this.calculateTransitionCost(
+      playerState.stance,
+      toStance,
+      playerState
     );
+    return playerState.ki >= cost.ki && playerState.stamina >= cost.stamina;
+  }
 
+  public transitionStance(
+    playerState: PlayerState,
+    toStance: TrigramStance
+  ): PlayerState | null {
+    if (!this.canTransition(playerState, toStance)) {
+      return null;
+    }
+    const cost = this.calculateTransitionCost(
+      playerState.stance,
+      toStance,
+      playerState
+    );
+    return {
+      ...playerState,
+      stance: toStance,
+      ki: playerState.ki - cost.ki,
+      stamina: playerState.stamina - cost.stamina,
+      lastStanceChangeTime: Date.now(),
+    };
+  }
+
+  public calculateOptimalPath(
+    playerState: PlayerState,
+    fromStance: TrigramStance,
+    toStance: TrigramStance,
+    maxDepth: number = 3, // maxDepth is used by TransitionCalculator's findOptimalPath
+    opponentStance?: TrigramStance
+  ): TransitionPath | null {
     if (fromStance === toStance) {
       return {
         path: [fromStance],
         totalCost: { ki: 0, stamina: 0, timeMilliseconds: 0 },
-        overallEffectiveness: 1.0,
         cumulativeRisk: 0,
-        name: "Current Stance",
+        name: `${TRIGRAM_DATA[fromStance]?.name?.korean || fromStance}`,
         description: {
-          korean: "전환 불필요",
-          english: "No transition needed",
-        } as KoreanText,
+          korean: "현재 자세 유지",
+          english: "Maintain current stance",
+        },
+        overallEffectiveness: 1, // Added if part of TransitionPath
       };
     }
 
-    // Simplified: return direct path for now
-    // More complex pathfinding (A*, Dijkstra) would go here if intermediate steps are allowed
-    const directPath: TransitionPath = {
-      path: [fromStance, toStance],
-      totalCost: directTransitionMetrics.cost,
-      overallEffectiveness: directTransitionMetrics.effectiveness,
-      cumulativeRisk: directTransitionMetrics.risk,
-      name: `Direct: ${TRIGRAM_DATA[fromStance].name.korean} -> ${TRIGRAM_DATA[toStance].name.korean}`,
-      description: {
-        korean: `${TRIGRAM_DATA[fromStance].name.korean} 에서 ${TRIGRAM_DATA[toStance].name.korean}(으)로 직접 전환`,
-        english: `Direct transition from ${TRIGRAM_DATA[fromStance].name.english} to ${TRIGRAM_DATA[toStance].name.english}`,
-      } as KoreanText,
-    };
+    // Use TransitionCalculator for pathfinding
+    const path = this.transitionCalculator.findOptimalPath(
+      fromStance,
+      toStance,
+      playerState,
+      opponentStance // Pass opponentStance if findOptimalPath accepts it
+      // maxDepth // Pass maxDepth if findOptimalPath accepts it
+    );
 
-    return directPath;
+    if (!path) return null;
+
+    // If path is found, it should already conform to TransitionPath including overallEffectiveness
+    return path;
   }
 
-  public static calculateTechniqueEffectiveness(
-    technique: CombatKoreanTechnique,
-    distance: number
-    // targetVitalPoint?: string // This parameter was unused
-  ): number {
-    let effectiveness = technique.accuracy || 0.7; // Base effectiveness from accuracy
-
-    // Range penalty/bonus
-    if (technique.range !== undefined) {
-      // Check if range is defined
-      const optimalRange = technique.range * 0.75;
-      if (distance < optimalRange * 0.5 || distance > technique.range * 1.5) {
-        effectiveness *= 0.6; // Significantly out of optimal range
-      } else if (distance > technique.range) {
-        // Gradual falloff beyond optimal range up to max range
-        effectiveness *= Math.max(
-          0.2,
-          1 - (distance - optimalRange) / (technique.range * 2)
-        );
-      } else if (distance < optimalRange) {
-        // Slight penalty if too close for some techniques
-        effectiveness *= 0.9;
-      }
-    } else {
-      // Default for techniques with no defined range (e.g. grappling, self-buffs)
-      // No range penalty, or a small penalty if distance is large.
-      if (distance > 2) effectiveness *= 0.8; // Arbitrary distance unit
+  public findOptimalPathToStance(
+    currentStance: TrigramStance,
+    targetStance: TrigramStance,
+    playerState: PlayerState,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _opponentStance?: TrigramStance // Marked as unused
+  ): TransitionPath | null {
+    if (currentStance === targetStance) {
+      return {
+        path: [currentStance],
+        totalCost: { ki: 0, stamina: 0, timeMilliseconds: 0 },
+        cumulativeRisk: 0,
+        name: TRIGRAM_DATA[currentStance]?.name?.korean || currentStance,
+        description: {
+          korean: "동일 자세로의 전환 불필요",
+          english: "No transition needed for the same stance",
+        },
+        overallEffectiveness: 1.0, // Added if part of TransitionPath
+      };
     }
 
-    // Vital point bonus
-    return effectiveness;
+    const cost = this.trigramCalculator.calculateTransitionCost(
+      currentStance,
+      targetStance,
+      playerState
+    );
+    if (playerState.ki >= cost.ki && playerState.stamina >= cost.stamina) {
+      const path: readonly TrigramStance[] = [currentStance, targetStance];
+
+      return {
+        path,
+        totalCost: cost,
+        cumulativeRisk: this.calculateRiskForPath(path, cost),
+        name: `${
+          TRIGRAM_DATA[currentStance]?.name?.korean || currentStance
+        } → ${TRIGRAM_DATA[targetStance]?.name?.korean || targetStance}`,
+        description: {
+          korean: `${
+            TRIGRAM_DATA[currentStance]?.name?.korean || currentStance
+          } 에서 ${
+            TRIGRAM_DATA[targetStance]?.name?.korean || targetStance
+          } 로 직접 전환`,
+          english: `Direct transition from ${
+            TRIGRAM_DATA[currentStance]?.name?.english || currentStance
+          } to ${TRIGRAM_DATA[targetStance]?.name?.english || targetStance}`,
+        },
+        overallEffectiveness: this.trigramCalculator.getStanceEffectiveness(
+          targetStance,
+          opponentStance || currentStance
+        ), // Added if part of TransitionPath
+      };
+    }
+    return null; // Placeholder for more complex pathfinding
   }
 
-  /**
-   * Get effectiveness multiplier between two trigram stances
-   * @param attackerStance The attacker's current stance
-   * @param defenderStance The defender's current stance
-   * @returns Effectiveness multiplier (1.0 = neutral, >1.0 = advantage, <1.0 = disadvantage)
-   */
-  getStanceEffectiveness(
+  public findSafestPathToStance(
+    currentStance: TrigramStance,
+    targetStance: TrigramStance,
+    playerState: PlayerState,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _opponentStance?: TrigramStance // Marked as unused
+  ): TransitionPath | null {
+    // Simplified: direct path, consider "safest" as lowest cost or highest defensive gain
+    const cost = this.calculateTransitionCost(
+      currentStance,
+      targetStance,
+      playerState
+    );
+    if (playerState.ki >= cost.ki && playerState.stamina >= cost.stamina) {
+      return {
+        path: [currentStance, targetStance], // Use path
+        totalCost: cost,
+        cumulativeRisk: (cost.timeMilliseconds / 1000) * 0.05, // Lower risk for "safe" path
+        name: `안전: ${currentStance} → ${targetStance}`,
+        description: {
+          korean: `안전하게 ${currentStance}에서 ${targetStance}로`,
+          english: `Safely from ${currentStance} to ${targetStance}`,
+        },
+        overallEffectiveness: TRIGRAM_DATA[targetStance]?.defensiveBonus || 1.0, // Example safety metric
+      };
+    }
+    return null;
+  }
+
+  public findQuickestPathToStance(
+    currentStance: TrigramStance,
+    targetStance: TrigramStance,
+    playerState: PlayerState,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    _opponentStance?: TrigramStance // Marked as unused
+  ): TransitionPath | null {
+    // Simplified: direct path, "quickest" means lowest timeMilliseconds
+    const cost = this.calculateTransitionCost(
+      currentStance,
+      targetStance,
+      playerState
+    );
+    if (playerState.ki >= cost.ki && playerState.stamina >= cost.stamina) {
+      return {
+        path: [currentStance, targetStance], // Use path
+        totalCost: cost,
+        cumulativeRisk: (cost.timeMilliseconds / 1000) * 0.15, // Higher risk for "quick" path if it's aggressive
+        name: `신속: ${currentStance} → ${targetStance}`,
+        description: {
+          korean: `신속하게 ${currentStance}에서 ${targetStance}로`,
+          english: `Quickly from ${currentStance} to ${targetStance}`,
+        },
+        overallEffectiveness:
+          STANCE_EFFECTIVENESS_MATRIX[currentStance]?.[targetStance] || 1.0,
+      };
+    }
+    return null;
+  }
+
+  public getStanceEffectiveness(
     attackerStance: TrigramStance,
     defenderStance: TrigramStance
   ): number {
-    // Use the stance effectiveness matrix from constants
-    // For now, implement a basic circular effectiveness system
-    const stanceOrder = [
-      "geon",
-      "tae",
-      "li",
-      "jin",
-      "son",
-      "gam",
-      "gan",
-      "gon",
-    ];
-    const attackerIndex = stanceOrder.indexOf(attackerStance);
-    const defenderIndex = stanceOrder.indexOf(defenderStance);
+    return STANCE_EFFECTIVENESS_MATRIX[attackerStance]?.[defenderStance] || 1.0;
+  }
 
-    if (attackerIndex === -1 || defenderIndex === -1) {
-      return 1.0; // Neutral if stance not found
+  public getStanceCycle(clockwise: boolean = true): readonly TrigramStance[] {
+    if (clockwise) {
+      return TRIGRAM_STANCES_ORDER;
+    } else {
+      return [...TRIGRAM_STANCES_ORDER].reverse();
     }
+  }
 
-    // Calculate relative position in the trigram cycle
-    const difference = (attackerIndex - defenderIndex + 8) % 8;
+  public getNextStanceInCycle(
+    currentStance: TrigramStance,
+    clockwise: boolean = true
+  ): TrigramStance {
+    const cycle = this.getStanceCycle(clockwise);
+    const currentIndex = cycle.indexOf(currentStance);
+    if (currentIndex === -1) return currentStance; // Should not happen
+    const nextIndex = (currentIndex + 1) % cycle.length;
+    return cycle[nextIndex];
+  }
 
-    // Determine effectiveness based on trigram relationships
-    switch (difference) {
-      case 0:
-        return 1.0; // Same stance - neutral
-      case 1:
-      case 7:
-        return 1.1; // Adjacent stances - slight advantage
-      case 2:
-      case 6:
-        return 1.2; // Strong advantage
-      case 3:
-      case 5:
-        return 0.9; // Slight disadvantage
-      case 4:
-        return 0.8; // Opposite stance - strong disadvantage
-      default:
-        return 1.0;
-    }
+  private calculateRiskForPath(
+    path: readonly TrigramStance[],
+    cost: TrigramTransitionCost
+  ): number {
+    // Simplified risk calculation: higher cost -> higher risk
+    return (cost.timeMilliseconds / 1000) * 0.1 * path.length;
   }
 }

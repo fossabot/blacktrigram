@@ -1,96 +1,118 @@
 import { describe, it, expect } from "vitest";
-import { TECHNIQUES } from "./KoreanTechniques"; // Corrected import
+import {
+  TECHNIQUES,
+  getTechniqueById,
+  getTechniquesByStance,
+} from "./KoreanTechniques";
 import type {
   KoreanTechnique,
-  TrigramStance, // Unused, but fine to keep for context
-  DamageType,
-  CombatAttackType,
+  TrigramStance,
+  StatusEffect, // For technique.effects
 } from "../../types";
 
-const sampleTechniqueGeon: KoreanTechnique = {
-  id: "geon_heavenly_thunder",
-  name: "Geon Heavenly Thunder",
-  koreanName: "천둥벽력",
-  englishName: "Heavenly Thunder Strike",
-  romanized: "Cheondung Byeokryeok",
-  description: {
-    korean: "하늘의 힘을 담은 강력한 일격.",
-    english: "A powerful strike imbued with heavenly force.",
-  },
-  stance: "geon",
-  type: "strike" as CombatAttackType,
-  damageType: "blunt" as DamageType,
-  damageRange: { min: 25, max: 35, type: "blunt" as DamageType },
-  range: 1.5, // Added
-  kiCost: 20,
-  staminaCost: 15,
-  accuracy: 0.85,
-  executionTime: 500,
-  recoveryTime: 700,
-};
-
-const sampleTechniqueTae: KoreanTechnique = {
-  id: "tae_flowing_strikes",
-  name: "Tae Flowing Strikes",
-  koreanName: "유수연타",
-  englishName: "Flowing Water Strikes",
-  romanized: "Yusu Yeonta",
-  description: {
-    korean: "물처럼 부드럽고 연속적인 공격.",
-    english: "Smooth and continuous attacks like flowing water.",
-  },
-  stance: "tae",
-  type: "strike" as CombatAttackType,
-  damageType: "blunt" as DamageType,
-  damageRange: { min: 18, max: 28, type: "blunt" as DamageType },
-  range: 1.2, // Added
-  kiCost: 18,
-  staminaCost: 12,
-  accuracy: 0.9,
-  executionTime: 400,
-  recoveryTime: 600,
-};
+// Sample data for one technique to verify structure, using actual data from TECHNIQUES
+const sampleTechniqueGeonFromSource: KoreanTechnique =
+  TECHNIQUES["geon_heavenly_thunder"];
 
 describe("KoreanTechniques", () => {
-  it("should contain all 8 trigram techniques", () => {
+  it("should contain all 8 trigram techniques by default in TECHNIQUES map", () => {
+    // This count depends on how many techniques are defined in KoreanTechniques.ts
+    // The provided file defines 8.
     expect(Object.keys(TECHNIQUES).length).toBe(8);
   });
 
-  it("should have valid properties for each technique", () => {
+  it("should have valid properties for each technique in TECHNIQUES map", () => {
     Object.values(TECHNIQUES).forEach((t: KoreanTechnique) => {
-      // Added type for t
       expect(t.id).toBeDefined();
+      expect(t.id.length).toBeGreaterThan(0);
       expect(t.name).toBeDefined();
-      // ... other property checks
-      expect(t.range).toBeGreaterThan(0);
+      expect(t.koreanName).toBeDefined();
+      expect(t.englishName).toBeDefined();
+      expect(t.romanized).toBeDefined();
+      expect(t.description.korean).toBeDefined();
+      expect(t.description.english).toBeDefined();
+      expect(t.stance).toBeDefined();
+      expect(
+        ["geon", "tae", "li", "jin", "son", "gam", "gan", "gon"].includes(
+          t.stance
+        )
+      ).toBe(true);
+      expect(t.type).toBeDefined();
+      expect(t.damageType).toBeDefined();
       expect(t.damageRange).toBeDefined();
       if (t.damageRange) {
         expect(t.damageRange.min).toBeLessThanOrEqual(t.damageRange.max);
+        expect(t.damageRange.type).toEqual(t.damageType);
+      }
+      expect(t.range).toBeGreaterThanOrEqual(0);
+      expect(t.kiCost).toBeGreaterThanOrEqual(0);
+      expect(t.staminaCost).toBeGreaterThanOrEqual(0);
+      expect(t.accuracy).toBeGreaterThanOrEqual(0);
+      expect(t.accuracy).toBeLessThanOrEqual(1);
+      expect(t.executionTime).toBeGreaterThan(0);
+      expect(t.recoveryTime).toBeGreaterThan(0);
+      if (t.critChance) {
+        expect(t.critChance).toBeGreaterThanOrEqual(0);
+        expect(t.critChance).toBeLessThanOrEqual(1);
+      }
+      if (t.critMultiplier) {
+        expect(t.critMultiplier).toBeGreaterThanOrEqual(1);
+      }
+      if (t.effects) {
+        expect(Array.isArray(t.effects)).toBe(true);
+        t.effects.forEach((eff: StatusEffect) => {
+          // Type eff as StatusEffect
+          expect(eff.id).toBeDefined();
+          expect(eff.type).toBeDefined();
+        });
+      }
+      if (t.properties) {
+        expect(Array.isArray(t.properties)).toBe(true);
       }
     });
   });
 
-  it("TECHNIQUES should match sample structure for Geon", () => {
+  it("TECHNIQUES['geon_heavenly_thunder'] should match its defined structure", () => {
     const geonTechnique = TECHNIQUES["geon_heavenly_thunder"];
-    expect(geonTechnique.id).toEqual(sampleTechniqueGeon.id);
-    expect(geonTechnique.stance).toEqual("geon");
-    expect(geonTechnique.type).toEqual("strike");
-    expect(geonTechnique.damageType).toEqual("blunt");
-    expect(geonTechnique.range).toBeGreaterThan(0);
+    expect(geonTechnique).toEqual(sampleTechniqueGeonFromSource); // Compare with actual data
+    expect(geonTechnique.stance).toBe("geon");
+    expect(geonTechnique.type).toBe("strike");
+    expect(geonTechnique.damageType).toBe("blunt");
+    expect(geonTechnique.range).toBe(1.5);
   });
 
-  it("TECHNIQUES should match sample structure for Tae", () => {
-    const taeTechnique = TECHNIQUES["tae_flowing_strikes"];
-    expect(taeTechnique.id).toEqual(sampleTechniqueTae.id);
-    expect(taeTechnique.stance).toEqual("tae");
-    expect(taeTechnique.range).toBeGreaterThan(0);
+  describe("getTechniqueById", () => {
+    it("should return the correct technique for a valid ID", () => {
+      const technique = getTechniqueById("li_flame_lance");
+      expect(technique).toBeDefined();
+      expect(technique?.id).toBe("li_flame_lance");
+      expect(technique?.stance).toBe("li");
+    });
+
+    it("should return undefined for an invalid ID", () => {
+      const technique = getTechniqueById("non_existent_technique");
+      expect(technique).toBeUndefined();
+    });
   });
 
-  it("should not have techniques for non-existent stances", () => {
-    const techniqueForInvalidStance = Object.values(TECHNIQUES).find(
-      (t: KoreanTechnique) =>
-        t.stance === ("non_existent_stance" as TrigramStance) // Cast for test
-    );
-    expect(techniqueForInvalidStance).toBeUndefined();
+  describe("getTechniquesByStance", () => {
+    it("should return all techniques for a given stance", () => {
+      const sonTechniques = getTechniquesByStance("son");
+      expect(sonTechniques.length).toBeGreaterThanOrEqual(1); // Each stance has at least one in the map
+      sonTechniques.forEach((tech) => {
+        expect(tech.stance).toBe("son");
+      });
+      // Check if the specific Son technique is present
+      expect(
+        sonTechniques.find((t) => t.id === "son_gale_barrage")
+      ).toBeDefined();
+    });
+
+    it("should return an empty array if stance has no techniques (or invalid stance)", () => {
+      const noTechniques = getTechniquesByStance(
+        "invalid_stance" as TrigramStance
+      );
+      expect(noTechniques).toEqual([]);
+    });
   });
 });

@@ -45,8 +45,8 @@ describe("TrigramCalculator", () => {
   beforeEach(() => {
     // Pass the actual constants if not using mocks
     calculator = new TrigramCalculator(
-      AllTrigramData, // Use the imported constant
-      GlobalEffectivenessMatrix // Use the imported constant
+      // AllTrigramData, // TrigramCalculator uses imported TRIGRAM_DATA by default
+      GlobalEffectivenessMatrix // Pass effectiveness matrix if it's not default or for specific test setup
       // undefined // for transitionRules, to use default
     );
   });
@@ -66,8 +66,8 @@ describe("TrigramCalculator", () => {
     const path = calculator.calculateOptimalPath(
       "geon",
       "gam",
-      mockPlayerStateGeon,
-      2
+      mockPlayerStateGeon
+      // 2 // maxSteps is not a parameter for this simplified version
     );
     if (path) {
       // Path can be null

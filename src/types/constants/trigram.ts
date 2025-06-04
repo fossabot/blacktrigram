@@ -148,7 +148,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     id: "geon",
     name: { korean: "건", english: "Heaven" },
     symbol: "☰",
-    element: "metal",
+    element: { korean: "금", english: "Metal" }, // Corrected
     direction: "northwest",
     philosophy: {
       korean: "창조와 리더십의 원리. 강함과 결단력을 상징한다.",
@@ -166,7 +166,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     id: "tae",
     name: { korean: "태", english: "Lake" },
     symbol: "☱",
-    element: "metal",
+    element: { korean: "금", english: "Metal" }, // Corrected
     direction: "west",
     philosophy: {
       korean: "기쁨과 소통의 원리. 유연함과 적응력을 나타낸다.",
@@ -184,7 +184,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     id: "li",
     name: { korean: "리", english: "Fire" },
     symbol: "☲",
-    element: "fire",
+    element: { korean: "화", english: "Fire" }, // Corrected
     direction: "south",
     philosophy: {
       korean: "명료함과 지혜의 원리. 열정과 통찰력을 의미한다.",
@@ -202,7 +202,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     id: "jin",
     name: { korean: "진", english: "Thunder" },
     symbol: "☳",
-    element: "wood",
+    element: { korean: "목", english: "Wood" }, // Corrected
     direction: "east",
     philosophy: {
       korean: "충격과 각성의 원리. 변화와 움직임을 촉진한다.",
@@ -220,7 +220,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     id: "son",
     name: { korean: "손", english: "Wind" },
     symbol: "☴",
-    element: "wood",
+    element: { korean: "목", english: "Wood" }, // Corrected
     direction: "southeast",
     philosophy: {
       korean: "침투와 영향의 원리. 점진적이고 지속적인 힘을 나타낸다.",
@@ -238,7 +238,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     id: "gam",
     name: { korean: "감", english: "Water" },
     symbol: "☵",
-    element: "water",
+    element: { korean: "수", english: "Water" }, // Corrected
     direction: "north",
     philosophy: {
       korean: "위험과 흐름의 원리. 적응과 극복의 지혜를 담는다.",
@@ -256,7 +256,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     id: "gan",
     name: { korean: "간", english: "Mountain" },
     symbol: "☶",
-    element: "earth",
+    element: { korean: "토", english: "Earth" }, // Corrected
     direction: "northeast",
     philosophy: {
       korean: "정지와 명상의 원리. 침착함과 인내를 상징한다.",
@@ -274,7 +274,7 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     id: "gon",
     name: { korean: "곤", english: "Earth" },
     symbol: "☷",
-    element: "earth",
+    element: { korean: "토", english: "Earth" }, // Corrected
     direction: "southwest",
     philosophy: {
       korean: "수용과 양육의 원리. 포용력과 지지를 나타낸다.",

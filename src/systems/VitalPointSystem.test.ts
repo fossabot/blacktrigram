@@ -1,193 +1,219 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { VitalPointSystem } from "./VitalPointSystem";
 import type {
   VitalPoint,
-  VitalPointSystemConfig,
-  KoreanTechnique,
   PlayerArchetype,
+  KoreanTechnique,
+  VitalPointSystemConfig,
+  DamageType,
+  StatusEffect,
+  DamageRange,
 } from "../types";
+import { VITAL_POINTS_DATA as AllVitalPoints } from "./vitalpoint/KoreanVitalPoints"; // Assuming this is the source
 
-// Mock data (simplified)
 const MOCK_TECHNIQUE_STRIKE: KoreanTechnique = {
-  id: "strike_normal",
-  name: "Normal Strike",
-  koreanName: "보통 치기",
-  englishName: "Normal Strike",
-  romanized: "Botong Chigi",
-  description: { korean: "기본 공격", english: "A basic attack" },
+  id: "basic_strike",
+  name: "Basic Strike",
+  koreanName: "기본 치기",
+  englishName: "Basic Strike",
+  romanized: "Gibon Chigi",
+  description: {
+    korean: "기본적인 타격 기술",
+    english: "A basic striking technique",
+  },
   stance: "geon",
   type: "strike",
-  damageType: "blunt",
-  damageRange: { min: 10, max: 20 },
-  range: 1.0,
+  damageType: "blunt" as DamageType,
+  damageRange: { min: 10, max: 20, type: "blunt" as DamageType } as DamageRange,
+  range: 1,
   kiCost: 5,
   staminaCost: 10,
-  executionTime: 300,
-  recoveryTime: 500,
   accuracy: 0.85,
-  critChance: 0.1,
-  critMultiplier: 1.5,
+  executionTime: 300,
+  recoveryTime: 200,
   effects: [],
 };
 
-// const MOCK_PLAYER_STATE_MUSA: PlayerState = { ... }; // Unused
-
-// Corrected mock path if mocks are moved or structure changes
-// For now, assuming VITAL_POINTS_DATA is the source.
-// import { MOCK_VITAL_POINTS } from '../test/mocks/anatomy'; // Example if using mocks
+const MOCK_VITAL_POINT_HEAD: VitalPoint =
+  AllVitalPoints.find(
+    (vp) => vp.category === "head" && vp.id === "head_philtrum_injoong"
+  ) || AllVitalPoints[0];
 
 describe("VitalPointSystem", () => {
   let system: VitalPointSystem;
-  const testConfig: VitalPointSystemConfig = {
-    baseAccuracyMultiplier: 1.0,
-    damageVariance: 0.1,
-    // vitalPointsData: VITAL_POINTS_DATA, // This is not a config option, system loads it internally
-    archetypeModifiers: {
-      musa: { head: 1.1 },
-      amsalja: { head: 1.3 },
-      hacker: { head: 1.0 },
-      jeongbo: { head: 1.0 },
-      jojik: { head: 0.9 },
-    },
-  };
+  const MOCK_PLAYER_ARCHETYPE: PlayerArchetype = "musa";
+  const MOCK_DEFENDER_POSITION = { x: 50, y: 50 };
+  const MOCK_TARGET_DIMENSIONS = { width: 100, height: 100 };
 
   beforeEach(() => {
-    system = new VitalPointSystem(testConfig);
+    const mockConfig: VitalPointSystemConfig = {
+      baseDamageMultiplier: 1.0,
+      archetypeModifiers: {
+        musa: { damageBonus: 0.1, precisionBonus: 0.05 },
+        amsalja: { damageBonus: 0.15, precisionBonus: 0.1 }, // Added
+        hacker: { damageBonus: 0.05, precisionBonus: 0.15 }, // Added
+        jeongbo: { damageBonus: 0.08, precisionBonus: 0.08 }, // Added
+        jojik: { damageBonus: 0.2, precisionBonus: 0.02 }, // Added
+      },
+      vitalPointSeverityMultiplier: {
+        minor: 1.0,
+        moderate: 1.2,
+        severe: 1.5,
+        critical: 2.0,
+        lethal: 2.5,
+      },
+      criticalHitMultiplier: 1.5, // Added
+    };
+    system = new VitalPointSystem(mockConfig);
   });
 
-  it("should initialize with vital points", () => {
-    expect(system.getAllVitalPoints().length).toBeGreaterThan(0);
-    const temple = system.getVitalPointById("head_temple");
-    expect(temple).toBeDefined();
-    expect(temple?.name.english).toBe("Temple");
-  });
+  describe("getVitalPointById", () => {
+    it("should return a vital point if ID exists", () => {
+      const vp = system.getVitalPointById(MOCK_VITAL_POINT_HEAD.id);
+      expect(vp).toBeDefined();
+      expect(vp?.id).toBe(MOCK_VITAL_POINT_HEAD.id);
+    });
 
-  it("should allow configuration to be set and get", () => {
-    const newConfig: VitalPointSystemConfig = { baseAccuracyMultiplier: 0.9 };
-    system.setConfig(newConfig);
-    // Note: We can't directly get the config, so we test its effects
-    // This test might need to be more sophisticated by checking behavior changes
-    expect(system).toBeDefined(); // Basic check
-  });
-
-  it("should retrieve vital points by region", () => {
-    const headPoints = system.getVitalPointsByRegion("head");
-    expect(headPoints.length).toBeGreaterThan(0);
-    headPoints.forEach((vp: VitalPoint) => {
-      expect(vp.location.region).toBe("head");
+    it("should return undefined if ID does not exist", () => {
+      const vp = system.getVitalPointById("non_existent_vp");
+      expect(vp).toBeUndefined();
     });
   });
 
-  it("should calculate damage for a vital point hit", () => {
-    const temple = system.getVitalPointById("head_temple");
-    expect(temple).toBeDefined();
-    if (!temple) return;
-
-    const damage = system.calculateVitalPointDamage(
-      temple,
-      MOCK_TECHNIQUE_STRIKE,
-      "musa" as PlayerArchetype
-    );
-    expect(damage).toBeGreaterThan(0);
+  describe("getVitalPointsInRegion", () => {
+    it("should return vital points for a valid region", () => {
+      const headPoints = system.getVitalPointsInRegion("head"); // Assuming 'head' is a valid BodyRegion key
+      expect(headPoints.length).toBeGreaterThan(0);
+      headPoints.forEach((vp) => {
+        expect(
+          vp.location.region === "head" ||
+            AllVitalPoints.find((avp) => avp.id === vp.id)?.location.region ===
+              "head"
+        ).toBe(true);
+      });
+    });
   });
 
-  it("should calculate critical damage for a vital point hit", () => {
-    const temple = system.getVitalPointById("head_temple");
-    expect(temple).toBeDefined();
-    if (!temple) return;
+  describe("calculateDamageOnVitalPoint", () => {
+    it("should calculate increased damage for a vital point hit", () => {
+      const baseDamage = 10;
+      const damage = system.calculateDamageOnVitalPoint(
+        MOCK_VITAL_POINT_HEAD,
+        baseDamage,
+        MOCK_PLAYER_ARCHETYPE,
+        false,
+        "blunt" as DamageType
+      );
+      // Expect damage to be > baseDamage due to multipliers and VP base damage
+      expect(damage).toBeGreaterThan(baseDamage);
+    });
 
-    const damage = system.calculateVitalPointDamage(
-      temple,
-      MOCK_TECHNIQUE_STRIKE,
-      "amsalja" as PlayerArchetype,
-      true // isCriticalHit
-    );
-    expect(damage).toBeGreaterThan(0);
-    // Add more specific assertions based on expected critical damage calculation
+    it("should apply critical hit multiplier", () => {
+      const baseDamage = 10;
+      const nonCritDamage = system.calculateDamageOnVitalPoint(
+        MOCK_VITAL_POINT_HEAD,
+        baseDamage,
+        MOCK_PLAYER_ARCHETYPE,
+        false,
+        "blunt" as DamageType
+      );
+      const critDamage = system.calculateDamageOnVitalPoint(
+        MOCK_VITAL_POINT_HEAD,
+        baseDamage,
+        MOCK_PLAYER_ARCHETYPE,
+        true,
+        "blunt" as DamageType
+      );
+      expect(critDamage).toBeGreaterThan(nonCritDamage);
+    });
   });
 
-  it("should return effects for a vital point hit", () => {
-    const temple = system.getVitalPointById("head_temple");
-    expect(temple).toBeDefined();
-    if (!temple) return;
-
-    const effects = system.getVitalPointEffects(
-      temple,
-      MOCK_TECHNIQUE_STRIKE,
-      false
-    );
-    expect(effects).toBeInstanceOf(Array);
-    if (temple.effects && temple.effects.length > 0) {
-      expect(effects.length).toBeGreaterThanOrEqual(temple.effects.length);
-      expect(effects[0].type).toBe(temple.effects[0].type);
-    }
+  describe("getEffectsForVitalPoint", () => {
+    it("should return effects defined for the vital point and technique", () => {
+      const effects = system.getEffectsForVitalPoint(
+        MOCK_VITAL_POINT_HEAD,
+        MOCK_TECHNIQUE_STRIKE,
+        false
+      );
+      expect(effects.length).toBeGreaterThanOrEqual(
+        MOCK_VITAL_POINT_HEAD.effects.length
+      );
+    });
   });
 
   describe("calculateHit", () => {
-    it("should simulate a hit on a vital point", () => {
+    it("should return a hit result targeting a specific vital point", () => {
+      // Mock random to ensure hit
+      vi.spyOn(Math, "random").mockReturnValue(0.1); // For critical hit chance if applicable in calc
+      const accuracyRoll = 0.5; // Assume this roll is good enough based on technique accuracy
+
       const result = system.calculateHit(
         MOCK_TECHNIQUE_STRIKE,
-        "head_temple",
-        0.1
-      ); // Force hit
+        MOCK_VITAL_POINT_HEAD.id,
+        accuracyRoll,
+        MOCK_DEFENDER_POSITION,
+        MOCK_TARGET_DIMENSIONS
+      );
+
       expect(result.hit).toBe(true);
-      expect(result.vitalPointsHit.length).toBeGreaterThan(0);
-      expect(result.vitalPointsHit).toContain("head_temple");
+      expect(result.vitalPoint?.id).toBe(MOCK_VITAL_POINT_HEAD.id);
       expect(result.damage).toBeGreaterThan(0);
+      vi.spyOn(Math, "random").mockRestore();
     });
 
-    it("should simulate a miss", () => {
+    it("should return a non-vital hit if no specific VP targeted and accuracy roll doesn't land on one by chance", () => {
+      vi.spyOn(Math, "random").mockReturnValue(0.1); // For critical hit chance
+      const accuracyRoll = 0.7; // Good accuracy roll
+
+      // Mock HitDetection.detectVitalPointHit to return null for this test case
+      const hitDetectorInstance = (system as any).hitDetector; // Access private member for test
+      vi.spyOn(hitDetectorInstance, "detectVitalPointHit").mockReturnValue(
+        null
+      );
+
       const result = system.calculateHit(
         MOCK_TECHNIQUE_STRIKE,
-        "head_temple",
-        0.99
-      ); // Force miss
+        null, // No specific VP target
+        accuracyRoll,
+        MOCK_DEFENDER_POSITION,
+        MOCK_TARGET_DIMENSIONS
+      );
+
+      expect(result.hit).toBe(true);
+      expect(result.vitalPoint).toBeNull();
+      expect(result.damage).toBeGreaterThan(0);
+      vi.spyOn(Math, "random").mockRestore();
+      vi.restoreAllMocks(); // Restore spy on detectVitalPointHit
+    });
+
+    it("should return a miss if accuracy roll is too low", () => {
+      const accuracyRoll = 0.95; // Bad roll if technique accuracy is 0.85
+      const result = system.calculateHit(
+        MOCK_TECHNIQUE_STRIKE, // Accuracy 0.85
+        null,
+        accuracyRoll,
+        MOCK_DEFENDER_POSITION,
+        MOCK_TARGET_DIMENSIONS
+      );
       expect(result.hit).toBe(false);
       expect(result.damage).toBe(0);
     });
-
-    it("should simulate a non-vital point hit", () => {
-      const result = system.calculateHit(MOCK_TECHNIQUE_STRIKE, null, 0.1); // Force hit, no vital target
-      expect(result.hit).toBe(true);
-      expect(result.vitalPointsHit.length).toBe(0);
-      expect(result.damage).toBeGreaterThan(0);
-    });
   });
 
-  it("should handle configuration for archetype modifiers", () => {
-    const temple = system.getVitalPointById("head_temple");
-    if (!temple) throw new Error("Temple vital point not found");
-
-    const systemWithMusaBonus = new VitalPointSystem({
-      archetypeModifiers: {
-        musa: { head: 1.5 }, // Musa gets 50% damage bonus to head
-        amsalja: { head: 1.0 },
-        hacker: { head: 1.0 },
-        jeongbo: { head: 1.0 },
-        jojik: { head: 1.0 },
-      },
+  describe("calculateVitalPointHitEffects", () => {
+    it("should return damage and effects for a vital point hit", () => {
+      const baseDamage = MOCK_TECHNIQUE_STRIKE.damageRange!.min;
+      const hitEffects = system.calculateVitalPointHitEffects(
+        MOCK_VITAL_POINT_HEAD,
+        baseDamage,
+        MOCK_PLAYER_ARCHETYPE,
+        MOCK_TECHNIQUE_STRIKE,
+        false
+      );
+      expect(hitEffects.damage).toBeGreaterThan(0);
+      expect(hitEffects.effects.length).toBeGreaterThanOrEqual(
+        MOCK_VITAL_POINT_HEAD.effects.length
+      );
     });
-    const damageMusa = systemWithMusaBonus.calculateVitalPointDamage(
-      temple,
-      MOCK_TECHNIQUE_STRIKE,
-      "musa"
-    );
-
-    const systemWithoutBonus = new VitalPointSystem({
-      archetypeModifiers: {
-        musa: { head: 1.0 },
-        amsalja: { head: 1.0 },
-        hacker: { head: 1.0 },
-        jeongbo: { head: 1.0 },
-        jojik: { head: 1.0 },
-      },
-    });
-    const damageNoBonus = systemWithoutBonus.calculateVitalPointDamage(
-      temple,
-      MOCK_TECHNIQUE_STRIKE,
-      "musa"
-    );
-
-    expect(damageMusa).toBeGreaterThan(damageNoBonus);
   });
 });

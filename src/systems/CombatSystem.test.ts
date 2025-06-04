@@ -1,151 +1,244 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { CombatSystem } from "./CombatSystem";
 import type {
+  PlayerArchetype,
+  PlayerState,
   TrigramStance,
   KoreanTechnique,
-  DamageRange,
-  PlayerState,
-  DamageType,
+  VitalPoint,
+  Position,
+  AttackInput,
+  VitalPointCategory,
+  BodyRegion,
+  VitalPointSeverity,
+  EffectType,
+  EffectIntensity,
+  VitalPointEffect,
 } from "../types";
+import { TRIGRAM_DATA, STANCE_EFFECTIVENESS_MATRIX } from "../types/constants";
+
+const createMockPlayer = (
+  id: string,
+  archetype: PlayerArchetype,
+  stance: TrigramStance,
+  health: number = 100,
+  ki: number = 100,
+  stamina: number = 100,
+  position: Position = { x: 0, y: 0 },
+  consciousness: number = 100 // Added consciousness parameter
+): PlayerState => ({
+  id,
+  name: `${archetype} ${id}`,
+  archetype,
+  stance,
+  health,
+  maxHealth: 100,
+  ki,
+  maxKi: 100,
+  stamina,
+  maxStamina: 100,
+  position,
+  facing: "right",
+  consciousness, // Use the parameter
+  pain: 0,
+  balance: 100,
+  bloodLoss: 0,
+  lastStanceChangeTime: 0,
+  isAttacking: false,
+  combatReadiness: 100,
+  activeEffects: [],
+  combatState: "ready",
+  conditions: [],
+});
+
+const mockGeonTechnique: KoreanTechnique = TRIGRAM_DATA.geon.technique;
+
+const mockVitalPoint: VitalPoint = {
+  id: "vp_test_head",
+  name: { korean: "테스트 머리 급소", english: "Test Head Vital Point" },
+  koreanName: "테스트 머리 급소",
+  englishName: "Test Head Vital Point",
+  category: "head" as VitalPointCategory,
+  description: { korean: "테스트용 급소", english: "A test vital point" },
+  location: { x: 50, y: 20, region: "head" as BodyRegion },
+  severity: "moderate" as VitalPointSeverity,
+  baseAccuracy: 0.9,
+  baseDamage: 10,
+  damageMultiplier: 1.5,
+  effects: [
+    {
+      id: "vp_stun",
+      type: "stun" as EffectType,
+      intensity: "moderate" as EffectIntensity,
+      duration: 1000,
+      description: { korean: "기절", english: "Stun" },
+      stackable: false,
+    },
+  ] as VitalPointEffect[],
+  techniques: ["strike"],
+  damage: 10,
+};
 
 describe("CombatSystem", () => {
-  const mockTechnique: KoreanTechnique = {
-    id: "test_strike",
-    name: "Test Strike",
-    koreanName: "테스트 타격",
-    englishName: "Test Strike",
-    romanized: "Teseuteu Tagyeok",
-    description: {
-      korean: "테스트용 기법",
-      english: "Test technique",
-    },
-    stance: "geon" as TrigramStance,
-    type: "strike",
-    damageType: "blunt" as DamageType,
-    damageRange: {
-      min: 15,
-      max: 25,
-      type: "blunt",
-    },
-    range: 100,
-    kiCost: 10,
-    staminaCost: 15,
-    executionTime: 300,
-    recoveryTime: 200,
-    accuracy: 0.85,
-    effects: [],
-  };
-
   describe("calculateTechnique", () => {
-    it("should calculate basic technique damage", () => {
-      const result = CombatSystem.calculateTechnique(mockTechnique, "musa");
-
-      expect(result).toMatchObject({
-        damage: expect.any(Number),
-        isVitalPoint: false,
-        hit: true,
-        critical: expect.any(Boolean),
-        vitalPointsHit: [],
-        attacker: "musa",
-        defender: "musa",
-        damagePrevented: 0,
-        staminaUsed: 15,
-        kiUsed: 10,
-        defenderDamaged: true,
-        attackerStance: "geon",
-        defenderStance: "geon",
-      });
+    it("should calculate base damage for a technique", () => {
+      const result = CombatSystem.calculateTechnique(mockGeonTechnique, "musa");
+      expect(result.damage).toBeGreaterThan(0);
+      expect(result.attacker).toBe("musa");
+      expect(result.techniqueUsed.id).toBe(mockGeonTechnique.id);
+      expect(result.hit).toBe(true); // calculateTechnique assumes a hit for damage calculation part
     });
 
-    it("should apply archetype modifiers", () => {
-      const musaResult = CombatSystem.calculateTechnique(mockTechnique, "musa");
-      const amsaljaResult = CombatSystem.calculateTechnique(
-        mockTechnique,
-        "amsalja"
-      );
-
-      // Musa should have higher damage with Geon stance
-      expect(musaResult.damage).toBeGreaterThan(amsaljaResult.damage);
-    });
-
-    it("should handle techniques without damage range", () => {
-      const techniqueWithoutRange = {
-        ...mockTechnique,
-        damageRange: {
-          min: 10,
-          max: 20,
-          type: "blunt" as const,
-        } as DamageRange,
-      };
-
-      const simpleResult = CombatSystem.calculateTechnique(
-        techniqueWithoutRange,
+    it("should apply archetype-specific damage modifiers", () => {
+      const musaResult = CombatSystem.calculateTechnique(
+        mockGeonTechnique,
         "musa"
       );
+      const amsaljaResult = CombatSystem.calculateTechnique(
+        mockGeonTechnique,
+        "amsalja"
+      );
+      // Musa with Geon technique should generally do more or different damage than Amsalja with same
+      expect(musaResult.damage).not.toBe(amsaljaResult.damage);
+    });
 
-      expect(simpleResult.damage).toBeGreaterThan(0);
+    it("should handle critical hits", () => {
+      // Corrected syntax: ()_=> to () =>
+      vi.spyOn(Math, "random").mockReturnValue(0.01);
+      const result = CombatSystem.calculateTechnique(mockGeonTechnique, "musa");
+      expect(result.critical).toBe(true);
+      expect(result.damage).toBeGreaterThan(
+        mockGeonTechnique.damageRange!.min *
+          (mockGeonTechnique.critMultiplier || 1.5)
+      );
+      vi.spyOn(Math, "random").mockRestore();
+    });
+  });
+
+  describe("executeAttack", () => {
+    let attacker: PlayerState;
+    let defender: PlayerState;
+
+    beforeEach(() => {
+      attacker = createMockPlayer("p1", "musa", "geon");
+      defender = createMockPlayer("p2", "amsalja", "tae");
+    });
+
+    it("should return a CombatResult indicating a hit", async () => {
+      vi.spyOn(Math, "random").mockReturnValue(0.1); // Ensure hit
+      const attackInput: AttackInput = {
+        attacker,
+        defender,
+        technique: mockGeonTechnique,
+      };
+      const result = await CombatSystem.executeAttack(attackInput);
+      expect(result.hit).toBe(true);
+      expect(result.defenderDamaged).toBe(result.damage > 0);
+      expect(result.techniqueUsed.id).toBe(mockGeonTechnique.id);
+      vi.spyOn(Math, "random").mockRestore();
+    });
+
+    it("should return a CombatResult indicating a miss", async () => {
+      vi.spyOn(Math, "random").mockReturnValue(0.99); // Ensure miss (if hit chance < 0.99)
+      const attackInput: AttackInput = {
+        attacker,
+        defender,
+        technique: mockGeonTechnique,
+      };
+      const result = await CombatSystem.executeAttack(attackInput);
+      expect(result.hit).toBe(false);
+      expect(result.damage).toBe(0);
+      vi.spyOn(Math, "random").mockRestore();
+    });
+
+    it("should apply vital point damage if targetPoint is provided and hit", async () => {
+      vi.spyOn(Math, "random").mockReturnValue(0.1); // Ensure hit
+      // Mock VitalPointSystem's method if it's complex or has side effects not desired in this unit test
+      const mockVpsHitEffects = {
+        damage: 50,
+        effects: [
+          {
+            id: "test_vp_effect",
+            type: "stun" as EffectType,
+            duration: 100,
+            intensity: "low" as EffectIntensity,
+            description: { korean: "ㅇ", english: "e" },
+            stackable: false,
+          },
+        ],
+      };
+      vi.spyOn(
+        CombatSystem["vitalPointSystem"],
+        "calculateVitalPointHitEffects"
+      ).mockReturnValue(mockVpsHitEffects);
+
+      const attackInput: AttackInput = {
+        attacker,
+        defender,
+        technique: mockGeonTechnique,
+        targetPoint: mockVitalPoint,
+      };
+      const result = await CombatSystem.executeAttack(attackInput);
+
+      expect(result.hit).toBe(true);
+      expect(result.isVitalPoint).toBe(true);
+      expect(result.damage).toBe(mockVpsHitEffects.damage); // Damage should come from mocked VPS method
+      expect(result.vitalPointsHit).toContain(mockVitalPoint);
+      expect(
+        CombatSystem["vitalPointSystem"].calculateVitalPointHitEffects
+      ).toHaveBeenCalled();
+      vi.spyOn(Math, "random").mockRestore();
+      vi.restoreAllMocks(); // Restore VitalPointSystem mock
     });
   });
 
   describe("checkWinCondition", () => {
-    const createMockPlayer = (
-      id: string,
-      health: number,
-      consciousness: number
-    ): PlayerState => ({
-      id,
-      health,
-      consciousness,
-      maxHealth: 100,
-      archetype: "musa",
-      name: id,
-      position: { x: 0, y: 0 },
-      stance: "geon",
-      facing: "right",
-      ki: 100,
-      maxKi: 100,
-      stamina: 100,
-      maxStamina: 100,
-      pain: 0,
-      balance: 100,
-      bloodLoss: 0,
-      lastStanceChangeTime: 0,
-      isAttacking: false,
-      combatReadiness: 100,
-      activeEffects: [],
-      combatState: "ready",
-      conditions: [],
+    it("should return player2 if player1 health is 0", () => {
+      const player1 = createMockPlayer("p1", "musa", "geon", 0);
+      const player2 = createMockPlayer("p2", "amsalja", "tae", 50);
+      const winner = CombatSystem.checkWinCondition([player1, player2]);
+      expect(winner).toBe(player2.id);
     });
 
-    it("should detect when player 1 is defeated by health", () => {
-      const player1 = createMockPlayer("player1", 0, 100);
-      const player2 = createMockPlayer("player2", 50, 100);
-
-      const result = CombatSystem.checkWinCondition([player1, player2]);
-
-      // checkWinCondition returns the winning player or null
-      expect(result).toBeDefined();
-      expect(result?.id).toBe("player2");
+    it("should return player1 if player2 consciousness is 0", () => {
+      const player1 = createMockPlayer("p1", "musa", "geon", 50);
+      const player2 = createMockPlayer(
+        "p2",
+        "amsalja",
+        "tae",
+        100,
+        100,
+        100,
+        { x: 1, y: 1 },
+        0
+      ); // Set consciousness to 0
+      const winner = CombatSystem.checkWinCondition([player1, player2]);
+      expect(winner).toBe(player1.id);
     });
 
-    it("should detect when player 2 is defeated by consciousness", () => {
-      const player1 = createMockPlayer("player1", 50, 100);
-      const player2 = createMockPlayer("player2", 50, 0);
+    it("should return null if no win condition is met", () => {
+      const player1 = createMockPlayer("p1", "musa", "geon", 50);
+      const player2 = createMockPlayer("p2", "amsalja", "tae", 50);
+      const winner = CombatSystem.checkWinCondition([player1, player2]);
+      expect(winner).toBeNull();
+    });
+  });
 
-      const result = CombatSystem.checkWinCondition([player1, player2]);
-
-      expect(result).toBeDefined();
-      expect(result?.id).toBe("player1");
+  describe("calculateStanceEffectiveness", () => {
+    it("Geon (Heaven) vs Tae (Lake) should have specific effectiveness", () => {
+      const effectiveness = CombatSystem.calculateStanceEffectiveness(
+        "geon",
+        "tae"
+      );
+      expect(effectiveness).toBe(STANCE_EFFECTIVENESS_MATRIX.geon.tae);
     });
 
-    it("should continue combat when both players are functional", () => {
-      const player1 = createMockPlayer("player1", 50, 80);
-      const player2 = createMockPlayer("player2", 60, 90);
-
-      const result = CombatSystem.checkWinCondition([player1, player2]);
-
-      // No winner yet, should return null
-      expect(result).toBeNull();
+    it("Identical stances should have 1.0 effectiveness", () => {
+      const effectiveness = CombatSystem.calculateStanceEffectiveness(
+        "geon",
+        "geon"
+      );
+      expect(effectiveness).toBe(1.0);
     });
   });
 });

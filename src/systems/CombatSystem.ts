@@ -1,11 +1,11 @@
 import type {
   PlayerState,
-  KoreanTechnique,
   CombatResult,
-  AttackInput,
-  PlayerArchetype,
-  TrigramStance,
   VitalPoint,
+  TrigramStance,
+  PlayerArchetype,
+  AttackInput,
+  KoreanTechnique,
 } from "../types";
 import { VitalPointSystem } from "./VitalPointSystem";
 
@@ -33,7 +33,7 @@ export class CombatSystem {
         damage: 0,
         damageType: technique.damageType || "blunt",
         isVitalPoint: false,
-        newState: "ready",
+        newState: "ready", // Or defender's current state
         effects: [],
         hit: false,
         critical: false,
@@ -41,8 +41,8 @@ export class CombatSystem {
         attacker: attacker.archetype,
         defender: defender.archetype,
         damagePrevented: 0,
-        staminaUsed: technique.staminaCost || 10,
-        kiUsed: technique.kiCost || 5,
+        staminaUsed: technique.staminaCost || 10, // Attacker's stamina cost for missed attack
+        kiUsed: technique.kiCost || 5, // Attacker's KI cost for missed attack
         defenderDamaged: false,
         attackerStance: attacker.stance,
         defenderStance: defender.stance,
@@ -55,47 +55,49 @@ export class CombatSystem {
         hitType: "miss",
         techniqueUsed: technique,
         effectiveness: stanceEffectiveness,
-        hitPosition: defender.position,
+        hitPosition: defender.position, // Or a "miss" position
       };
     }
 
     // Calculate base technique result
-    const baseResult = this.calculateTechnique(technique, attacker.archetype);
+    let baseResult = this.calculateTechnique(technique, attacker.archetype);
 
     // Apply vital point targeting if specified
-    const result = targetPoint
-      ? this.applyVitalPointDamage(baseResult, targetPoint)
+    const resultWithVitalPoint = targetPoint
+      ? this.applyVitalPointDamage(
+          baseResult,
+          targetPoint,
+          technique,
+          attacker.archetype
+        ) // Pass technique and archetype
       : baseResult;
 
     return {
-      ...result,
-      defender: defender.archetype,
+      ...resultWithVitalPoint, // Spread the potentially modified result
+      defender: defender.archetype, // Ensure these are correctly set after vital point application
       defenderStance: defender.stance,
       hit: true,
-      defenderDamaged: true,
-      painLevel: result.damage * 0.3,
-      consciousnessImpact: result.damage * 0.2,
-      balanceEffect: result.damage * 0.1,
-      bloodLoss: result.isVitalPoint
-        ? result.damage * 0.4
-        : result.damage * 0.1,
-      stunDuration: result.isVitalPoint ? 2000 : 500,
-      statusEffects: [],
-      hitType: result.isVitalPoint
-        ? "vital"
-        : result.critical
-        ? "critical"
-        : "normal",
+      defenderDamaged: resultWithVitalPoint.damage > 0,
+      // painLevel, consciousnessImpact etc. should be part of resultWithVitalPoint if modified by vital hit
+      // If applyVitalPointDamage doesn't update these, they might need to be recalculated here
+      // For now, assume resultWithVitalPoint contains all necessary updates from vital hit.
+      painLevel: resultWithVitalPoint.painLevel,
+      consciousnessImpact: resultWithVitalPoint.consciousnessImpact,
+      balanceEffect: resultWithVitalPoint.balanceEffect,
+      bloodLoss: resultWithVitalPoint.bloodLoss,
+      stunDuration: resultWithVitalPoint.stunDuration,
+      statusEffects: resultWithVitalPoint.statusEffects,
+      hitType: resultWithVitalPoint.hitType,
       techniqueUsed: technique,
       effectiveness: stanceEffectiveness,
-      hitPosition: defender.position,
+      hitPosition: defender.position, // Or more precise if available
     };
   }
 
   /**
    * Calculate stance effectiveness matrix
    */
-  private static calculateStanceEffectiveness(
+  public static calculateStanceEffectiveness(
     attackerStance: TrigramStance,
     defenderStance: TrigramStance
   ): number {
@@ -195,59 +197,58 @@ export class CombatSystem {
     technique: KoreanTechnique,
     archetype: PlayerArchetype
   ): CombatResult {
-    let baseDamage = technique.damage || 20;
-    const isCritical = Math.random() < 0.15; // 15% critical chance
+    let baseDamage = technique.damageRange
+      ? (technique.damageRange.min + technique.damageRange.max) / 2
+      : technique.damage || 20;
+    const isCritical = Math.random() < (technique.critChance || 0.15);
 
     // Apply archetype bonuses
     switch (archetype) {
       case "musa":
-        baseDamage *= 1.2; // Traditional warrior strength bonus
+        baseDamage *=
+          technique.stance === "geon" || technique.stance === "jin" ? 1.2 : 1.0; // Musa bonus for Geon/Jin
         break;
       case "amsalja":
-        baseDamage *= isCritical ? 2.0 : 1.0; // Assassin critical specialization
+        baseDamage *=
+          technique.stance === "son" || technique.stance === "gam" ? 1.15 : 1.0; // Amsalja bonus
+        if (isCritical) baseDamage *= 1.3; // Amsalja critical bonus
         break;
-      case "hacker":
-        baseDamage *= 1.1; // Tech-assisted precision
-        break;
-      case "jeongbo":
-        baseDamage *= 1.15; // Intelligence operative efficiency
-        break;
-      case "jojik":
-        baseDamage *= 1.3; // Brutal street fighting
-        break;
+      // Add other archetypes
     }
 
     if (isCritical) {
-      baseDamage *= 1.5;
+      baseDamage *= technique.critMultiplier || 1.5;
     }
 
+    const calculatedDamage = Math.round(baseDamage);
+
     return {
-      damage: Math.round(baseDamage),
+      damage: calculatedDamage,
       damageType: technique.damageType || "blunt",
       isVitalPoint: false,
-      newState: "ready",
+      newState: "ready", // This should reflect defender's state change, placeholder
       effects: technique.effects || [],
-      hit: true,
+      hit: true, // Assuming hit is determined before this function
       critical: isCritical,
       vitalPointsHit: [],
       attacker: archetype,
-      defender: archetype, // Will be overridden
+      defender: archetype, // Placeholder, should be actual defender archetype if known
       damagePrevented: 0,
       staminaUsed: technique.staminaCost || 10,
       kiUsed: technique.kiCost || 5,
-      defenderDamaged: true,
-      attackerStance: "geon", // Will be overridden
-      defenderStance: "geon", // Will be overridden
-      painLevel: baseDamage * 0.8,
-      consciousnessImpact: baseDamage * 0.5,
-      balanceEffect: baseDamage * 0.3,
-      bloodLoss: baseDamage * 0.1,
+      defenderDamaged: calculatedDamage > 0,
+      attackerStance: technique.stance || "geon", // Should be attacker's actual stance
+      defenderStance: "geon", // Placeholder, should be defender's actual stance
+      painLevel: calculatedDamage * 0.8,
+      consciousnessImpact: calculatedDamage * 0.5,
+      balanceEffect: calculatedDamage * 0.3,
+      bloodLoss: calculatedDamage * 0.1,
       stunDuration: isCritical ? 1000 : 500,
-      statusEffects: [],
+      statusEffects: technique.effects || [], // Or combine with other generated effects
       hitType: isCritical ? "critical" : "normal",
       techniqueUsed: technique,
-      effectiveness: 1.0,
-      hitPosition: { x: 0, y: 0 }, // Will be overridden
+      effectiveness: 1.0, // Placeholder, should be calculated based on stances
+      hitPosition: { x: 0, y: 0 }, // Placeholder
     };
   }
 
@@ -256,30 +257,44 @@ export class CombatSystem {
    */
   private static applyVitalPointDamage(
     baseResult: CombatResult,
-    vitalPoint: VitalPoint
+    vitalPoint: VitalPoint,
+    technique: KoreanTechnique, // Added technique
+    archetype: PlayerArchetype // Added archetype
   ): CombatResult {
-    const vitalPointMultiplier = vitalPoint.damageMultiplier || 1.5;
-    const enhancedDamage = Math.round(baseResult.damage * vitalPointMultiplier);
-
-    // Get vital point specific effects
-    const vitalPointEffects = this.vitalPointSystem.getVitalPointEffects(
+    // Use VitalPointSystem to calculate refined damage and effects
+    const vitalHitDetails = this.vitalPointSystem.calculateVitalPointHitEffects(
       vitalPoint,
-      baseResult.techniqueUsed,
-      baseResult.critical
+      baseResult.damage, // Base damage from technique
+      archetype,
+      technique,
+      baseResult.critical // Pass critical status
     );
+
+    const combinedEffects = [
+      ...(baseResult.effects || []),
+      ...vitalHitDetails.effects,
+    ];
+
+    let hitType: "normal" | "critical" | "vital" = "normal";
+
+    // If it's a vital hit, ensure hitType reflects that, possibly overriding critical
+    if (vitalHitDetails) {
+      hitType = "vital";
+    }
 
     return {
       ...baseResult,
-      damage: enhancedDamage,
+      damage: vitalHitDetails.damage,
       isVitalPoint: true,
       vitalPointsHit: [vitalPoint],
-      effects: [...baseResult.effects, ...vitalPointEffects],
-      statusEffects: [...baseResult.statusEffects, ...vitalPointEffects],
-      hitType: "vital",
-      consciousnessImpact: enhancedDamage * 2,
-      painLevel: enhancedDamage * 1.2,
-      bloodLoss: enhancedDamage * 0.4,
-      stunDuration: baseResult.stunDuration + 1000,
+      effects: combinedEffects,
+      statusEffects: combinedEffects, // Assuming statusEffects are the same as effects here
+      // Update other combat result fields based on vital hit
+      painLevel: vitalHitDetails.damage * 0.5, // Example, adjust based on vitalHitDetails
+      consciousnessImpact: vitalHitDetails.damage * 0.4, // Example
+      bloodLoss: baseResult.bloodLoss + vitalHitDetails.damage * 0.3, // Example
+      stunDuration: baseResult.stunDuration + (vitalPoint.baseStun || 1000), // Example
+      hitType: hitType, // Corrected assignment
     };
   }
 
@@ -288,23 +303,23 @@ export class CombatSystem {
    */
   static checkWinCondition(
     players: readonly [PlayerState, PlayerState]
-  ): PlayerState | null {
+  ): string | null {
     const [player1, player2] = players;
 
     // Check for incapacitation
     if (player1.health <= 0 || player1.consciousness <= 0) {
-      return player2;
+      return player2.id;
     }
     if (player2.health <= 0 || player2.consciousness <= 0) {
-      return player1;
+      return player1.id;
     }
 
     // Check for pain overload
     if (player1.pain >= 95) {
-      return player2;
+      return player2.id;
     }
     if (player2.pain >= 95) {
-      return player1;
+      return player1.id;
     }
 
     return null; // No winner yet
@@ -316,31 +331,7 @@ export class CombatSystem {
   static determineRoundWinner(
     players: readonly [PlayerState, PlayerState]
   ): string | null {
-    const [player1, player2] = players;
-
-    // Check for knockouts (health <= 0)
-    if (player1.health <= 0 && player2.health <= 0) {
-      return null; // Draw
-    }
-    if (player1.health <= 0) {
-      return player2.id;
-    }
-    if (player2.health <= 0) {
-      return player1.id;
-    }
-
-    // Check for incapacitation (consciousness <= 0)
-    if (player1.consciousness <= 0 && player2.consciousness <= 0) {
-      return null; // Draw
-    }
-    if (player1.consciousness <= 0) {
-      return player2.id;
-    }
-    if (player2.consciousness <= 0) {
-      return player1.id;
-    }
-
-    // No clear winner yet
-    return null;
+    const winner = this.checkWinCondition(players);
+    return winner;
   }
 }
