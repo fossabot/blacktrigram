@@ -120,51 +120,42 @@ describe("CombatSystem", () => {
     let defender: PlayerState;
 
     beforeEach(() => {
-      attacker = createMockPlayer("p1", "musa", "geon");
-      defender = createMockPlayer("p2", "amsalja", "tae");
+      attacker = createMockPlayer("attacker1", "musa", "geon");
+      defender = createMockPlayer("defender1", "amsalja", "tae");
     });
 
     it("should return a CombatResult indicating a hit", async () => {
-      vi.spyOn(Math, "random").mockReturnValue(0.1); // Ensure hit
-      const attackInput: AttackInput = {
+      const result = await CombatSystem.executeAttack(
         attacker,
-        defender,
-        technique: mockGeonTechnique,
-      };
-      const result = await CombatSystem.executeAttack(attackInput);
+        defender, // Add defender parameter
+        mockGeonTechnique
+      );
       expect(result.hit).toBe(true);
       expect(result.defenderDamaged).toBe(result.damage > 0);
       expect(result.techniqueUsed.id).toBe(mockGeonTechnique.id);
-      vi.spyOn(Math, "random").mockRestore();
     });
 
     it("should return a CombatResult indicating a miss", async () => {
-      vi.spyOn(Math, "random").mockReturnValue(0.99); // Ensure miss (if hit chance < 0.99)
-      const attackInput: AttackInput = {
+      const result = await CombatSystem.executeAttack(
         attacker,
-        defender,
-        technique: mockGeonTechnique,
-      };
-      const result = await CombatSystem.executeAttack(attackInput);
+        defender, // Add defender parameter
+        mockGeonTechnique
+      );
       expect(result.hit).toBe(false);
       expect(result.damage).toBe(0);
-      vi.spyOn(Math, "random").mockRestore();
     });
 
     it("should apply vital point damage if targetPoint is provided and hit", async () => {
-      vi.spyOn(Math, "random").mockReturnValue(0.1);
-      const attackInput: AttackInput = {
+      const result = await CombatSystem.executeAttack(
         attacker,
-        defender,
-        technique: mockGeonTechnique,
-        targetPoint: mockVitalPoint.id, // Use targetPoint instead of targetVitalPoint
-      };
-      const result = await CombatSystem.executeAttack(attackInput);
+        defender, // Add defender parameter
+        mockGeonTechnique,
+        mockVitalPoint.id // Pass ID instead of VitalPoint object
+      );
 
       expect(result.hit).toBe(true);
       expect(result.damage).toBeGreaterThan(mockGeonTechnique.damageRange!.min);
       expect(result.vitalPointsHit).toContain(mockVitalPoint);
-      vi.spyOn(Math, "random").mockRestore();
     });
   });
 

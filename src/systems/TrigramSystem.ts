@@ -59,16 +59,19 @@ export class TrigramSystem {
       return null;
     }
 
+    // Fix: Use the method parameters correctly
+    const effectiveness = this.calculateStanceEffectiveness(
+      fromStance,
+      toStance
+    );
+    const risk = this.calculateTransitionRisk(directCost, playerState);
+
     return {
       path: [fromStance, toStance],
-      totalCost: cost,
-      overallEffectiveness: this.getStanceEffectiveness(fromStance, toStance), // Fix: Use correct parameter names
-      cumulativeRisk: (cost.timeMilliseconds / 1000) * 0.1,
-      name: `${fromStance} → ${toStance}`,
-      description: {
-        korean: `${fromStance}에서 ${toStance}로 전환`,
-        english: `Transition from ${fromStance} to ${toStance}`,
-      },
+      totalCost: directCost,
+      overallEffectiveness: effectiveness,
+      cumulativeRisk: risk,
+      name: `${TRIGRAM_DATA[fromStance].name.english} → ${TRIGRAM_DATA[toStance].name.english}`,
     };
   }
 
