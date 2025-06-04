@@ -1,12 +1,12 @@
 // Hit effects layer for combat feedback
 
 import React from "react";
-import { Container, Graphics, Text } from "@pixi/react";
-import { KOREAN_COLORS } from "../../types/constants";
+import { Container, Graphics } from "@pixi/react"; // Remove unused Text
+import type { HitEffect } from "../../types/effects";
+// Remove unused KOREAN_COLORS import
 
-// Add missing interface
 interface HitEffectsLayerProps {
-  readonly effects: readonly any[];
+  readonly effects: readonly HitEffect[];
 }
 
 export function HitEffectsLayer({
@@ -19,7 +19,8 @@ export function HitEffectsLayer({
           key={effect.id}
           x={effect.position.x}
           y={effect.position.y}
-          draw={(g: PIXI.Graphics) => {
+          draw={(g: any) => {
+            // Fix: Use any type for graphics parameter
             g.clear();
             g.beginFill(effect.color);
             g.drawCircle(0, 0, 10);
@@ -30,3 +31,5 @@ export function HitEffectsLayer({
     </Container>
   );
 }
+
+export default HitEffectsLayer;

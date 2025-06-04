@@ -20,16 +20,16 @@ export function AudioProvider({
   );
 }
 
-// Fix: Export useAudio as both named and default export
-export function useAudio(): IAudioManager {
+// Export both named and default exports
+export const useAudio = (): IAudioManager => {
   const context = useContext(AudioContext);
   if (!context) {
     throw new Error("useAudio must be used within an AudioProvider");
   }
   return context;
-}
+};
 
-// Add default export for import compatibility
+// Default export
 export default useAudio;
 
 // This file is being removed - functionality moved to AudioProvider.tsx

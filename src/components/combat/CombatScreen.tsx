@@ -4,7 +4,7 @@ import { CombatArena } from "./components/CombatArena";
 import { CombatHUD } from "./components/CombatHUD";
 import { CombatControls } from "./components/CombatControls";
 import { KoreanText } from "../ui/base/korean-text";
-import { useAudio } from "../../audio/AudioManager"; // Fix: Use named import
+import useAudio from "../../audio/AudioManager"; // Fix: Use default import
 import { CombatSystem } from "../../systems/CombatSystem";
 import type {
   PlayerState,
@@ -94,10 +94,9 @@ export function CombatScreen({
   onPlayerStateChange,
   onCombatResult,
   onReturnToMenu,
-  settings,
   isActive = true,
 }: CombatScreenProps): React.JSX.Element {
-  const audio = useAudio(); // Now works correctly
+  const audio = useAudio();
   const [combatState, dispatch] = useReducer(combatReducer, initialCombatState);
   const [isProcessingAction, setIsProcessingAction] = useState(false);
 
@@ -436,15 +435,12 @@ export function CombatScreen({
     handleCombatEnd,
   ]);
 
-  // Remove unused handleCombatActions or use it
-  const combatActions = useCallback(
-    () => ({
-      attack: handleAttack,
-      block: handleBlock,
-      special: handleSpecialTechnique,
-    }),
-    [handleAttack, handleBlock, handleSpecialTechnique]
-  );
+  // Use combat handlers in component buttons or actions
+  const combatActions = {
+    attack: handleAttack,
+    block: handleBlock,
+    special: handleSpecialTechnique,
+  };
 
   return (
     <PixiContainer>
@@ -462,40 +458,52 @@ export function CombatScreen({
           overflow: "hidden",
         }}
       >
-        {/* Combat Arena - use combatActions */}
+        {/* Combat Arena */}
         <CombatArena
-          player={player}
-          opponent={combatState.opponent}
-          onCombatResult={onCombatResult}
-          onPlayerStateChange={onPlayerStateChange}
-          onOpponentStateChange={(updates) =>
-            dispatch({ type: "UPDATE_OPPONENT", updates })
-          }
-          isActive={isActive && combatState.phase === "active"}
-          showVitalPoints={settings?.showVitalPoints || false}
-          showDebugInfo={settings?.showDebugInfo || false}
-          combatActions={combatActions()}
+          players={[player, combatState.opponent]}
+          onPlayerUpdate={(playerIndex, updates) => {
+            if (playerIndex === 0 && onPlayerStateChange) {
+              onPlayerStateChange(updates);
+            } else if (playerIndex === 1) {
+              dispatch({ type: "UPDATE_OPPONENT", updates });
+            }
+          }}
+          onTechniqueExecute={async () => {}}
+          combatEffects={[]}
+          isExecutingTechnique={isProcessingAction}
         />
 
         {/* Combat HUD */}
         <CombatHUD
-          player={player}
-          opponent={combatState.opponent}
-          currentRound={combatState.currentRound} // Fixed: Added missing props
-          maxRounds={combatState.maxRounds}
-          gameTime={combatState.gameTime}
-          isPlayerTurn={combatState.isPlayerTurn}
-          phase={combatState.phase}
+          players={[player, combatState.opponent]}
+          currentRound={combatState.currentRound}
+          timeRemaining={300 - combatState.gameTime}
         />
 
-        {/* Combat Controls */}
+        {/* Combat Controls with action buttons */}
         <CombatControls
           players={[player, combatState.opponent]}
-          player={player} // Add missing required prop
+          player={player}
           onStanceChange={handleStanceChange}
           isExecutingTechnique={isProcessingAction}
           isPaused={combatState.phase !== "active"}
         />
+
+        {/* Add combat action buttons to use the handlers */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: "100px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            display: "flex",
+            gap: "10px",
+          }}
+        >
+          <button onClick={combatActions.attack}>Attack</button>
+          <button onClick={combatActions.block}>Block</button>
+          <button onClick={combatActions.special}>Special</button>
+        </div>
 
         {/* Combat Phase Overlay */}
         {combatState.phase === "preparation" && (

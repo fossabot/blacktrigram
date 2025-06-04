@@ -151,7 +151,10 @@ describe("Korean Text Components", () => {
   describe("TrigramWheel", () => {
     it("renders trigram wheel", () => {
       const { container } = render(
-        <TrigramWheel selectedStance="geon" onStanceChange={vi.fn()} />
+        <TrigramWheel
+          currentStance="geon"
+          onStanceSelect={vi.fn()} // Fix: Use correct prop name
+        />
       );
       expect(container).toBeInTheDocument();
     });

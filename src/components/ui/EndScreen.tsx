@@ -4,14 +4,16 @@ import { KOREAN_COLORS } from "../../types";
 import { KoreanText } from "./base/korean-text/KoreanText";
 
 export function EndScreen({
+  onGamePhaseChange,
+  onReturnToMenu,
+  winner,
+  gameStats,
+  // Use all required props to avoid warnings
   winnerId,
   onRestart,
   onMenu,
-  loser,
-  onGamePhaseChange,
-  matchStats,
-}: EndScreenProps): React.ReactElement {
-  const isVictory = winnerId !== null;
+}: EndScreenProps): React.JSX.Element {
+  const isVictory = winner !== null;
 
   const containerStyle: React.CSSProperties = {
     minHeight: "100vh",
@@ -28,6 +30,21 @@ export function EndScreen({
     justifyContent: "center",
     padding: "2rem",
     fontFamily: "Noto Sans KR, Arial, sans-serif",
+  };
+
+  const handleReturnToMenu = () => {
+    if (onGamePhaseChange) {
+      onGamePhaseChange("intro");
+    }
+    onReturnToMenu?.();
+  };
+
+  const handleRestart = () => {
+    onRestart();
+  };
+
+  const handleMenu = () => {
+    onMenu();
   };
 
   return (
@@ -50,25 +67,16 @@ export function EndScreen({
           }}
         />
 
-        {winnerId && (
+        {winner && (
           <KoreanText
-            korean={`승자: ${winnerId}`}
-            english={`Winner: ${winnerId.toUpperCase()}`}
+            korean={`승자: ${winner}`}
+            english={`Winner: ${winner.toUpperCase()}`}
             size="large"
             style={{ marginBottom: "1rem" }}
           />
         )}
 
-        {loser && (
-          <KoreanText
-            korean={`패자: ${loser.name}`}
-            english={`Defeated: ${loser.archetype.toUpperCase()}`}
-            size="medium"
-            style={{ marginBottom: "2rem", opacity: 0.7 }}
-          />
-        )}
-
-        {matchStats && (
+        {gameStats && (
           <div
             style={{
               backgroundColor: "rgba(0, 0, 0, 0.3)",
@@ -88,7 +96,7 @@ export function EndScreen({
 
         <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
           <button
-            onClick={onRestart}
+            onClick={handleReturnToMenu}
             style={{
               padding: "1rem 2rem",
               backgroundColor: `#${KOREAN_COLORS.GOLD.toString(16).padStart(
@@ -102,25 +110,41 @@ export function EndScreen({
               cursor: "pointer",
             }}
           >
-            다시 하기 (Restart)
+            메뉴로 돌아가기 (Return to Menu)
           </button>
-
           <button
-            onClick={onMenu}
+            onClick={handleRestart}
             style={{
               padding: "1rem 2rem",
-              backgroundColor: "transparent",
-              color: `#${KOREAN_COLORS.WHITE.toString(16).padStart(6, "0")}`,
-              border: `1px solid #${KOREAN_COLORS.WHITE.toString(16).padStart(
+              backgroundColor: `#${KOREAN_COLORS.GOLD.toString(16).padStart(
                 6,
                 "0"
               )}`,
+              color: `#${KOREAN_COLORS.BLACK.toString(16).padStart(6, "0")}`,
+              border: "none",
               borderRadius: "4px",
               fontSize: "1.2rem",
               cursor: "pointer",
             }}
           >
-            메뉴 (Menu)
+            재시작 (Restart)
+          </button>
+          <button
+            onClick={handleMenu}
+            style={{
+              padding: "1rem 2rem",
+              backgroundColor: `#${KOREAN_COLORS.GOLD.toString(16).padStart(
+                6,
+                "0"
+              )}`,
+              color: `#${KOREAN_COLORS.BLACK.toString(16).padStart(6, "0")}`,
+              border: "none",
+              borderRadius: "4px",
+              fontSize: "1.2rem",
+              cursor: "pointer",
+            }}
+          >
+            메인 메뉴 (Main Menu)
           </button>
         </div>
       </div>

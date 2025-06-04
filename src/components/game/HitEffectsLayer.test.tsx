@@ -98,6 +98,19 @@ describe("HitEffectsLayer", () => {
     ...overrides,
   });
 
+  it("should handle multiple effects", () => {
+    const effects = [
+      createMockHitEffect({ id: "effect1" }),
+      createMockHitEffect({
+        id: "effect2",
+        position: { x: 200, y: 200 },
+        timestamp: Date.now() - 500, // Fix: Use timestamp
+      }),
+    ];
+    const { container } = render(<HitEffectsLayer effects={effects} />);
+    expect(container).toBeInTheDocument();
+  });
+
   it("should remove expired effects", async () => {
     const expiredEffect: HitEffect = {
       id: "expired-effect",
@@ -110,7 +123,6 @@ describe("HitEffectsLayer", () => {
     };
 
     const { rerender } = render(<HitEffectsLayer effects={[expiredEffect]} />);
-    // Use rerender in test logic
     rerender(<HitEffectsLayer effects={[]} />);
     expect(document.body).toBeInTheDocument();
   });

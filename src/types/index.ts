@@ -63,7 +63,7 @@ export type {
   CombatStats,
 } from "./game";
 
-// Export component types - FIXED: Include PlayerProps
+// Export component types - Include CombatControlsProps
 export type {
   GameUIProps,
   GameEngineProps,
@@ -72,7 +72,7 @@ export type {
   CombatScreenProps,
   CombatHUDProps,
   CombatArenaProps,
-  CombatControlsProps,
+  CombatControlsProps, // Now properly exported
   ProgressTrackerProps,
   TrigramWheelProps,
   BaseComponentProps,
@@ -80,7 +80,7 @@ export type {
   PhilosophySectionProps,
   EndScreenProps,
   KoreanHeaderProps,
-  PlayerProps, // Added missing PlayerProps
+  PlayerProps,
 } from "./components";
 
 // Export UI types

@@ -169,17 +169,16 @@ export interface TrigramWheelProps extends BaseComponentProps {
   readonly position?: Position;
 }
 
-// Korean header component props - Fixed title prop
+// Korean header props - FIXED: Remove title prop, use korean/english
 export interface KoreanHeaderProps {
-  readonly title: KoreanText;
+  readonly korean: string;
+  readonly english?: string;
   readonly subtitle?: string | KoreanText;
   readonly level?: 1 | 2 | 3;
   readonly showLogo?: boolean;
   readonly style?: Record<string, any>;
   readonly onBackButtonClick?: () => void;
   readonly className?: string;
-  readonly korean?: string;
-  readonly english?: string;
 }
 
 // Hit effects layer props - add this missing interface
@@ -250,11 +249,14 @@ export interface PhilosophySectionProps extends BaseComponentProps {
   readonly onGamePhaseChange: (phase: string) => void;
 }
 
-// End screen props for victory/defeat
+// End screen props for victory/defeat - FIXED: Add missing properties
 export interface EndScreenProps extends BaseComponentProps {
   readonly winnerId: string | null;
   readonly onRestart: () => void;
   readonly onMenu: () => void;
+  readonly onReturnToMenu?: () => void; // Add missing prop
+  readonly winner?: string; // Add missing prop
+  readonly gameStats?: any; // Add missing prop
   readonly loser?: PlayerState;
   readonly onGamePhaseChange?: (phase: GamePhase | string) => void;
   readonly matchStats?: any;
@@ -335,33 +337,49 @@ export interface CombatScreenProps extends BaseComponentProps {
   };
 }
 
-// Combat HUD props
-export interface CombatHUDProps extends BaseComponentProps {
-  readonly players: readonly [PlayerState, PlayerState];
-  readonly timeRemaining: number;
-  readonly currentRound: number;
-  readonly isPaused?: boolean;
-}
-
-// Combat arena props
+// Combat arena props - FIXED: Add missing properties
 export interface CombatArenaProps extends BaseComponentProps {
   readonly players: readonly [PlayerState, PlayerState];
+  readonly player?: PlayerState; // Add player prop
+  readonly opponent?: PlayerState; // Add opponent prop
   readonly onPlayerUpdate: (
     playerIndex: number,
     updates: Partial<PlayerState>
   ) => void;
+  readonly onPlayerStateChange?: (updates: Partial<PlayerState>) => void; // Add missing prop
+  readonly onOpponentStateChange?: (updates: Partial<PlayerState>) => void; // Add missing prop
+  readonly onCombatResult?: (result: CombatResult) => void; // Add missing prop
   readonly onTechniqueExecute: (
     playerIndex: number,
     technique: any
   ) => Promise<void>;
   readonly combatEffects: readonly HitEffect[];
   readonly isExecutingTechnique: boolean;
+  readonly isActive?: boolean; // Add missing prop
+  readonly showVitalPoints?: boolean; // Add missing prop
+  readonly showDebugInfo?: boolean; // Add missing prop
 }
 
-// Combat controls props
+// Combat HUD props - FIXED: Add missing properties
+export interface CombatHUDProps extends BaseComponentProps {
+  readonly players: readonly [PlayerState, PlayerState];
+  readonly player?: PlayerState; // Add player prop
+  readonly opponent?: PlayerState; // Add opponent prop
+  readonly timeRemaining: number;
+  readonly currentRound: number;
+  readonly maxRounds?: number; // Add missing prop
+  readonly gameTime?: number; // Add missing prop
+  readonly isPlayerTurn?: boolean; // Add missing prop
+  readonly phase?: string; // Add missing prop
+  readonly isPaused?: boolean;
+}
+
+// Add missing CombatControlsProps interface
 export interface CombatControlsProps extends BaseComponentProps {
   readonly players: readonly [PlayerState, PlayerState];
+  readonly player: PlayerState; // Current active player
   readonly onStanceChange: (playerIndex: number, stance: TrigramStance) => void;
   readonly isExecutingTechnique: boolean;
   readonly isPaused: boolean;
+  readonly showVitalPoints?: boolean;
 }

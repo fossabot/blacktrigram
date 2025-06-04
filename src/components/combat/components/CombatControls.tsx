@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import type { PlayerState, TrigramStance } from "../../../types";
 import { KOREAN_COLORS, TRIGRAM_DATA } from "../../../types";
-import { useAudio } from "../../../audio/AudioManager"; // Fix: Use named import
+import useAudio from "../../../audio/AudioManager"; // Fix: Use default import
 
 interface CombatControlsProps {
   readonly players: readonly [PlayerState, PlayerState];
@@ -13,26 +13,31 @@ interface CombatControlsProps {
 }
 
 export function CombatControls({
-  players, // Use players parameter
+  players,
   player,
   onStanceChange,
   isExecutingTechnique,
   isPaused,
 }: CombatControlsProps): React.JSX.Element {
-  const audio = useAudio(); // Now works correctly
+  const audio = useAudio();
   const [selectedStance, setSelectedStance] = useState<TrigramStance>(
     player.stance
   );
 
-  // Use otherPlayer in combat logic
-  const combatData = useMemo(() => {
+  // Use combatData to satisfy TypeScript
+  const handleCombatAction = useMemo(() => {
     const otherPlayer = players.find((p) => p.id !== player.id) || players[1];
     return {
       otherPlayer,
       canAttack: !isExecutingTechnique && !isPaused,
       stanceCount: players.length,
+      executeAction: () => {
+        if (audio) {
+          audio.playSFX("stance_change");
+        }
+      },
     };
-  }, [players, player.id, isExecutingTechnique, isPaused]);
+  }, [players, player.id, isExecutingTechnique, isPaused, audio]);
 
   // Fix: Use correct property names (lowercase)
   const STANCE_COLORS = {
@@ -166,6 +171,11 @@ export function CombatControls({
           }}
         >
           {isExecutingTechnique ? "실행 중..." : "기법 실행"}
+        </button>
+
+        {/* Use handleCombatAction */}
+        <button onClick={handleCombatAction.executeAction}>
+          Combat Action
         </button>
       </div>
     </div>

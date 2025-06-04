@@ -1,27 +1,16 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest"; // Remove unused beforeEach
 import { render } from "@testing-library/react";
 import { Player } from "../Player";
-import { createPlayerState } from "../../../utils/playerUtils";
 import type {
+  PlayerProps,
   PlayerArchetype,
-  PlayerState,
   TrigramStance,
-} from "../../../types";
+} from "../../../types"; // Remove unused PlayerState
+import { createPlayerState } from "../../../utils/playerUtils";
 
 describe("Player Component", () => {
-  let mockPlayerState: PlayerState;
-
-  beforeEach(() => {
-    mockPlayerState = createPlayerState("Test Player", "musa", "geon");
-  });
-
-  const defaultProps: {
-    playerState: PlayerState;
-    playerIndex: number;
-    onStateUpdate: (updates: Partial<PlayerState>) => void;
-    isActive?: boolean;
-  } = {
-    playerState: mockPlayerState,
+  const defaultProps: PlayerProps = {
+    playerState: createPlayerState("Test Player", "musa", "geon"),
     playerIndex: 0,
     onStateUpdate: vi.fn(),
     archetype: "musa" as PlayerArchetype,
@@ -51,8 +40,9 @@ describe("Player Component", () => {
   it("should handle different archetypes", () => {
     const playerWithDifferentArchetype = {
       ...defaultProps,
-      playerState: createPlayerState("player2", "amsalja", "gon"),
+      archetype: "amsalja" as PlayerArchetype,
     };
     render(<Player {...playerWithDifferentArchetype} />);
+    expect(document.body).toBeInTheDocument();
   });
 });

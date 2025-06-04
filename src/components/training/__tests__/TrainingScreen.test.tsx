@@ -19,8 +19,8 @@ describe("TrainingScreen", () => {
 
   beforeEach(() => {
     mockPlayers = [
-      createPlayerState("Player1", { x: 100, y: 200 }, "geon"),
-      createPlayerState("Player2", { x: 300, y: 200 }, "tae"),
+      createPlayerState("Player1", "musa", "geon"), // Fix: Correct parameter order
+      createPlayerState("Player2", "amsalja", "tae"), // Fix: Correct parameter order
     ];
 
     mockProps = {

@@ -1,60 +1,43 @@
-import { Fragment } from "react";
-import type { KoreanHeaderProps } from "../../../types/components";
-import { KoreanText } from "./korean-text/KoreanText";
+import React from "react";
+
+interface KoreanHeaderProps {
+  readonly korean: string;
+  readonly english?: string;
+  readonly level?: 1 | 2 | 3 | 4 | 5 | 6;
+}
 
 export function KoreanHeader({
-  title,
-  subtitle,
-  level = 1,
-  showLogo = false,
-  style = {},
-  onBackButtonClick,
-  className = "",
-}: KoreanHeaderProps): JSX.Element {
+  korean,
+  english,
+  level = 2,
+}: KoreanHeaderProps): React.JSX.Element {
   const Tag = `h${level}` as keyof JSX.IntrinsicElements;
 
+  // Use regular HTML styling instead of PIXI styles
+  const headerStyle: React.CSSProperties = {
+    color: "#00FFC8",
+    margin: 0,
+    fontFamily: "Noto Sans KR, Arial, sans-serif",
+    marginBottom: "16px",
+  };
+
   return (
-    <header className={`korean-header ${className}`} style={style}>
-      {showLogo && (
-        <div className="korean-header__logo">
-          <span className="korean-header__trigram">☰☱☲☳☴☵☶☷</span>
-        </div>
-      )}
-
-      <Tag className="korean-header__title">
-        <KoreanText
-          korean={typeof title === "string" ? title : title.korean}
-          english={typeof title === "string" ? title : title.english}
-          variant="title"
-          size="xlarge"
-        />
+    <div>
+      <Tag style={headerStyle}>
+        {korean}
+        {english && (
+          <span
+            style={{
+              color: "#FFFFFF",
+              marginLeft: "8px",
+              fontWeight: "normal",
+            }}
+          >
+            ({english})
+          </span>
+        )}
       </Tag>
-
-      {subtitle && (
-        <div className="korean-header__subtitle">
-          {typeof subtitle === "string" ? (
-            <span>{subtitle}</span>
-          ) : (
-            <KoreanText
-              korean={subtitle.korean}
-              english={subtitle.english}
-              variant="body"
-              size="medium"
-            />
-          )}
-        </div>
-      )}
-
-      {onBackButtonClick && (
-        <button
-          className="korean-header__back"
-          onClick={onBackButtonClick}
-          aria-label="Go back"
-        >
-          ← 뒤로
-        </button>
-      )}
-    </header>
+    </div>
   );
 }
 

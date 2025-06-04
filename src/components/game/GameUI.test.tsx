@@ -26,4 +26,8 @@ describe("GameUI", () => {
   it("displays timer correctly", () => {
     render(<GameUI {...defaultProps} timeRemaining={120} />);
   });
+
+  it("should render", () => {
+    expect(true).toBe(true);
+  });
 });

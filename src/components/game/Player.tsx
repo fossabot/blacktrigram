@@ -3,14 +3,14 @@
 import React, { useMemo } from "react";
 import { Container } from "@pixi/react";
 import type { PlayerProps } from "../../types/components";
-import { useAudio } from "../../audio/AudioManager"; // Fix: Use named import
+import useAudio from "../../audio/AudioManager"; // Fix: Use default import
 import { KOREAN_COLORS, TRIGRAM_DATA } from "../../types/constants";
 
 export function Player({
-  playerState, // Use playerState parameter
-  playerIndex, // Use playerIndex parameter
-  onStateUpdate, // Use onStateUpdate parameter
-  archetype, // Use archetype parameter
+  playerState,
+  playerIndex,
+  onStateUpdate,
+  archetype,
   stance,
   position,
   facing,
@@ -19,39 +19,31 @@ export function Player({
   maxHealth,
   ki,
   maxKi,
-  stamina, // Use stamina parameter
-  maxStamina, // Use maxStamina parameter
+  stamina,
+  maxStamina,
   x = 0,
   y = 0,
   isActive = true,
 }: PlayerProps): React.JSX.Element {
-  const audio = useAudio(); // Use audio for sound effects
+  const audio = useAudio();
 
-  // Use stamina values in component logic
-  const playerMetrics = useMemo(
-    () => ({
+  // Use playerMetrics in component logic
+  const playerStatus = useMemo(() => {
+    const playerMetrics = {
       healthRatio: health / maxHealth,
       kiRatio: ki / maxKi,
-      staminaRatio: stamina / maxStamina, // Use stamina
-      isLowStamina: stamina < maxStamina * 0.3, // Use stamina
-      needsRest: stamina < 20, // Use stamina
-    }),
-    [health, maxHealth, ki, maxKi, stamina, maxStamina]
-  );
+      staminaRatio: stamina / maxStamina,
+      isLowStamina: stamina < maxStamina * 0.3,
+      needsRest: stamina < 20,
+    };
 
-  // Calculate visual states based on health and stance
-  const playerColor = useMemo(() => {
-    const stanceColor = KOREAN_COLORS[stance] || KOREAN_COLORS.WHITE;
-    const healthRatio = health / maxHealth;
-
-    // Adjust color based on health
-    if (healthRatio < 0.3) {
-      return 0xff6666; // Red tint for low health
-    } else if (healthRatio < 0.6) {
-      return 0xffaa66; // Orange tint for medium health
-    }
-    return stanceColor;
-  }, [stance, health, maxHealth]);
+    return {
+      ...playerMetrics,
+      statusColor:
+        playerMetrics.healthRatio < 0.3 ? 0xff6666 : KOREAN_COLORS[stance],
+      canAct: playerMetrics.staminaRatio > 0.1,
+    };
+  }, [health, maxHealth, ki, maxKi, stamina, maxStamina, stance]);
 
   // Handle stance changes using all required props
   const handleStanceChange = useMemo(() => {
@@ -81,13 +73,13 @@ export function Player({
       visible={isActive}
       interactive={true}
       eventMode="static"
-      alpha={(ki / maxKi) * 0.3 + 0.7} // Ki affects visibility
+      alpha={playerStatus.staminaRatio * 0.3 + 0.7} // Use playerStatus
     >
-      {/* Player visual representation using all props */}
+      {/* Player visual representation */}
       <Container
         x={0}
         y={0}
-        tint={playerColor}
+        tint={playerStatus.statusColor}
         onClick={() => {
           // Use functions that reference required props
           handleStanceChange(stance);

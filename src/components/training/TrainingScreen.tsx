@@ -31,7 +31,13 @@ export function TrainingScreen({
         <div style={{ display: "flex", justifyContent: "center" }}>
           <TrigramWheel
             currentStance={player?.stance || "geon"}
-            // Fix: Remove non-existent props
+            onStanceSelect={(stance) => {
+              // Add missing onStanceSelect handler
+              console.log("Selected stance:", stance);
+              if (onPlayerStateChange) {
+                onPlayerStateChange({ stance });
+              }
+            }}
             showLabels={true}
           />
         </div>

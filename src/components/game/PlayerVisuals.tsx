@@ -278,7 +278,7 @@ export function PlayerVisuals({
       <Container
         x={playerPosition.x}
         y={playerPosition.y}
-        scale={scale}
+        scale={{ x: player.facing === "left" ? -1 : 1, y: 1 }}
         alpha={isActive ? 1.0 : 0.6}
       >
         {/* Main Korean martial artist body */}
@@ -666,6 +666,5 @@ function getEffectOpacity(intensity: string): number {
   }
 }
 
-// Keep named export for compatibility
-export { PlayerVisuals };
+// Keep only the default export
 export default PlayerVisuals;

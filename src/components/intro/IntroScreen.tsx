@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import type { IntroScreenProps } from "../../types";
 import { KOREAN_COLORS } from "../../types";
-import { useAudio } from "../../audio/AudioManager"; // Fix: Use named import
+import useAudio from "../../audio/AudioManager"; // Fix: Use default import
 import { KoreanHeader } from "../ui/base/KoreanHeader";
 import { PhilosophySection } from "./components/PhilosophySection";
 import { KoreanText } from "../ui";
@@ -70,10 +70,23 @@ export function IntroScreen({
       }}
     >
       <KoreanHeader
-        title={{ korean: "흑괘", english: "Black Trigram" }}
-        subtitle="Korean Martial Arts Combat Simulator"
+        korean="흑괘"
+        english="Black Trigram"
+        // Remove subtitle prop - not supported
         level={1}
       />
+
+      {/* Add subtitle as separate element */}
+      <div
+        style={{
+          textAlign: "center",
+          marginBottom: "20px",
+          color: "#888",
+          fontSize: "14px",
+        }}
+      >
+        Korean Martial Arts Combat Simulator
+      </div>
 
       <div style={{ textAlign: "center", marginTop: "4rem" }}>
         <button

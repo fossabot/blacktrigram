@@ -114,9 +114,72 @@ export function PhilosophySection({
       {/* Philosophy sections */}
       <div style={{ marginTop: "3rem" }}>
         <KoreanHeader
-          title={{ korean: "팔괘", english: "Eight Trigrams" }} // Fixed: Provide proper KoreanText object
-          level={2}
+          korean="무도 철학"
+          english="Martial Arts Philosophy"
+          level={1}
         />
+
+        {/* Add subtitle as separate element */}
+        <div style={{ marginBottom: "20px", color: "#888" }}>
+          Traditional Korean Martial Arts Wisdom
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+            gap: "1rem",
+            marginTop: "1rem",
+          }}
+        >
+          {[
+            { korean: "건", english: "Heaven", element: "Metal" },
+            { korean: "태", english: "Lake", element: "Metal" },
+            { korean: "리", english: "Fire", element: "Fire" },
+            { korean: "진", english: "Thunder", element: "Wood" },
+            { korean: "손", english: "Wind", element: "Wood" },
+            { korean: "감", english: "Water", element: "Water" },
+            { korean: "간", english: "Mountain", element: "Earth" },
+            { korean: "곤", english: "Earth", element: "Earth" },
+          ].map((trigram, index) => (
+            <div
+              key={index}
+              style={{
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+                padding: "1rem",
+                borderRadius: "4px",
+                textAlign: "center",
+              }}
+            >
+              <KoreanText
+                korean={trigram.korean}
+                english={trigram.english}
+                size="medium"
+                weight={700} // Changed from 600 to 700 (valid KoreanFontWeight)
+                color={KOREAN_COLORS.TRADITIONAL_BLUE}
+                className="philosophy-text"
+              />
+              <p
+                style={{
+                  margin: "0.5rem 0 0 0",
+                  fontSize: "0.9rem",
+                  color: `#${KOREAN_COLORS.GOLD.toString(16).padStart(6, "0")}`,
+                }}
+              >
+                {trigram.element}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ marginTop: "3rem" }}>
+        <KoreanHeader korean="팔괘" english="Eight Trigrams" level={2} />
+
+        {/* Add subtitle as separate element */}
+        <div style={{ marginBottom: "15px", color: "#888" }}>
+          Traditional Korean Martial Arts Wisdom
+        </div>
 
         <div
           style={{
