@@ -8,7 +8,6 @@ import type {
   EffectIntensity,
   EffectType,
   CombatCondition,
-  StatusEffect,
 } from "../types";
 // Import CombatReadiness as a value, not a type since we need to use it as values
 import { CombatReadiness } from "../types/enums";
@@ -17,6 +16,7 @@ import { PLAYER_ARCHETYPE_DATA } from "../types/constants/player";
 
 /**
  * Creates a new player state with Korean martial arts defaults
+ * Uses archetype data to apply proper bonuses and specializations
  */
 export function createPlayerState(
   name: string,
@@ -24,26 +24,39 @@ export function createPlayerState(
   stance: TrigramStance = "geon",
   position: Position = { x: 0, y: 0 }
 ): PlayerState {
+  const archetypeData = PLAYER_ARCHETYPE_DATA[archetype];
+
+  // Base stats modified by archetype specialization
+  const baseHealth = Math.floor(
+    100 * (archetypeData.bonuses.defenseBonus || 1.0)
+  );
+  const baseKi = Math.floor(
+    100 * (archetypeData.bonuses.precisionBonus || 1.0)
+  );
+  const baseStamina = Math.floor(
+    100 * (archetypeData.bonuses.speedBonus || 1.0)
+  );
+
   return {
     id: `player_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     name,
     archetype,
+    stance,
+    health: baseHealth,
+    maxHealth: baseHealth,
+    ki: baseKi,
+    maxKi: baseKi,
+    stamina: baseStamina,
+    maxStamina: baseStamina,
     position,
     facing: "right",
-    stance,
-    health: 100,
-    maxHealth: 100,
-    ki: 100,
-    maxKi: 100,
-    stamina: 100,
-    maxStamina: 100,
     consciousness: 100,
     pain: 0,
     balance: 100,
     bloodLoss: 0,
     lastStanceChangeTime: Date.now(),
     isAttacking: false,
-    combatReadiness: 100,
+    combatReadiness: CombatReadiness.READY,
     activeEffects: [],
     combatState: "ready",
     conditions: [],
@@ -51,39 +64,51 @@ export function createPlayerState(
 }
 
 /**
- * Initialize both players for combat
+ * Initialize both players for combat with proper Korean martial arts positioning
  */
 export function initializePlayers(): readonly [PlayerState, PlayerState] {
+  const player1 = createPlayerState("무사", "musa", "geon", { x: -100, y: 0 });
+  const player2 = createPlayerState("암살자", "amsalja", "tae", {
+    x: 100,
+    y: 0,
+  });
+
   return [
-    createPlayerState("player1", "musa", "geon"),
-    createPlayerState("player2", "amsalja", "tae"),
+    { ...player1, facing: "right" },
+    { ...player2, facing: "left" },
   ] as const;
 }
 
 /**
- * Updates two player states for the game.
- */
-export function updatePlayerStates(
-  player1: PlayerState,
-  player2: PlayerState
-): [PlayerState, PlayerState] {
-  // Implementation for updating player states
-  return [player1, player2];
-}
-
-/**
- * Updates player combat state based on damage taken
+ * Updates player combat state based on damage taken with Korean martial arts realism
  */
 export function updatePlayerCombatState(
   player: PlayerState,
   damage: number,
   vitalPointHit: boolean = false
 ): PlayerState {
-  const newHealth = Math.max(0, player.health - damage);
-  const newPain = Math.min(100, player.pain + damage * 0.8);
-  const newConsciousness = vitalPointHit
-    ? Math.max(0, player.consciousness - damage * 2)
-    : Math.max(0, player.consciousness - damage * 0.5);
+  const archetypeData = PLAYER_ARCHETYPE_DATA[player.archetype];
+  const damageResistance = archetypeData.bonuses.defenseBonus || 1.0;
+
+  // Apply archetype-specific damage resistance
+  const effectiveDamage = damage / damageResistance;
+
+  const newHealth = Math.max(0, player.health - effectiveDamage);
+  const newPain = Math.min(100, player.pain + effectiveDamage * 0.8);
+
+  // Vital point hits cause severe consciousness loss
+  const consciousnessLoss = vitalPointHit
+    ? effectiveDamage * 2.5
+    : effectiveDamage * 0.5;
+  const newConsciousness = Math.max(
+    0,
+    player.consciousness - consciousnessLoss
+  );
+
+  // Blood loss calculation for realism
+  const bloodLossIncrease = vitalPointHit
+    ? effectiveDamage * 0.4
+    : effectiveDamage * 0.1;
 
   return {
     ...player,
@@ -91,7 +116,7 @@ export function updatePlayerCombatState(
     pain: newPain,
     consciousness: newConsciousness,
     isAttacking: false,
-    bloodLoss: player.bloodLoss + (vitalPointHit ? damage * 0.3 : damage * 0.1),
+    bloodLoss: player.bloodLoss + bloodLossIncrease,
     combatReadiness: calculateCombatReadiness(newHealth),
   };
 }
@@ -107,34 +132,49 @@ function calculateCombatReadiness(health: number): CombatReadiness {
 }
 
 /**
- * Updates player health and adjusts combat state accordingly
- * Includes Korean martial arts realism with consciousness and pain effects
+ * Updates player health with Korean martial arts archetype considerations
  */
 export function updatePlayerHealth(
   player: PlayerState,
   damage: number,
-  _damageType: DamageType = "blunt"
+  damageType: DamageType = "blunt"
 ): PlayerState {
-  // Calculate effective damage based on archetype resistance
-  const archetypeData = PLAYER_ARCHETYPE_DATA[player.archetype]; // Fixed: use correct constant name
-  const resistance = archetypeData?.bonuses?.damageResistance || 1.0;
-  const effectiveDamage = Math.max(0, damage / resistance);
+  const archetypeData = PLAYER_ARCHETYPE_DATA[player.archetype];
 
-  // Apply damage with minimum health of 0
+  // Apply archetype-specific damage resistance
+  let resistance = archetypeData.bonuses.defenseBonus || 1.0;
+
+  // Archetype-specific damage type resistances
+  switch (player.archetype) {
+    case "musa":
+      if (damageType === "blunt" || damageType === "crushing")
+        resistance *= 1.2;
+      break;
+    case "amsalja":
+      if (damageType === "nerve" || damageType === "pressure")
+        resistance *= 0.8; // More vulnerable
+      break;
+    case "hacker":
+      if (damageType === "electric") resistance *= 1.5;
+      break;
+  }
+
+  const effectiveDamage = Math.max(0, damage / resistance);
   const newHealth = Math.max(0, player.health - effectiveDamage);
 
-  // Calculate new pain level (increases with damage taken)
-  const painIncrease = effectiveDamage * 0.5;
+  // Pain system based on Korean martial arts philosophy
+  const painIncrease = effectiveDamage * 0.6;
   const newPain = Math.min(100, player.pain + painIncrease);
 
-  // Calculate consciousness impact
-  const consciousnessLoss = effectiveDamage * 0.3;
+  // Consciousness impact varies by archetype training
+  const consciousnessResistance = archetypeData.bonuses.accuracyBonus || 1.0;
+  const consciousnessLoss = (effectiveDamage * 0.3) / consciousnessResistance;
   const newConsciousness = Math.max(
     0,
     player.consciousness - consciousnessLoss
   );
 
-  // Calculate blood loss for severe damage
+  // Blood loss for severe damage
   const bloodLossIncrease = effectiveDamage > 25 ? effectiveDamage * 0.2 : 0;
   const newBloodLoss = Math.min(100, player.bloodLoss + bloodLossIncrease);
 
@@ -174,19 +214,32 @@ export function addCombatCondition(
 }
 
 /**
- * Calculates movement speed based on player state
+ * Calculates movement speed with Korean martial arts considerations
  */
 export function calculateMovementSpeed(player: PlayerState): number {
-  let baseSpeed = 100;
+  const archetypeData = PLAYER_ARCHETYPE_DATA[player.archetype];
+  let baseSpeed = 100 * (archetypeData.bonuses.speedBonus || 1.0);
 
-  // Reduce speed based on health
+  // Health factor affects movement
   const healthFactor = player.health / player.maxHealth;
   baseSpeed *= 0.5 + healthFactor * 0.5;
 
-  // Reduce speed if attacking
-  if (player.isAttacking) {
-    baseSpeed *= 0.3;
-  }
+  // Stance affects movement - some stances are more mobile
+  const stanceModifiers: Record<TrigramStance, number> = {
+    geon: 1.0, // Heaven - balanced
+    tae: 1.2, // Lake - fluid, fast
+    li: 1.1, // Fire - quick
+    jin: 0.9, // Thunder - powerful but slower
+    son: 1.3, // Wind - fastest
+    gam: 1.0, // Water - balanced
+    gan: 0.8, // Mountain - defensive, slower
+    gon: 0.7, // Earth - stable but slow
+  };
+
+  baseSpeed *= stanceModifiers[player.stance] || 1.0;
+
+  // Combat state modifiers
+  if (player.isAttacking) baseSpeed *= 0.3;
 
   // Apply status effect modifiers
   player.conditions.forEach((condition: CombatCondition) => {
@@ -200,6 +253,9 @@ export function calculateMovementSpeed(player: PlayerState): number {
       case "exhausted":
         baseSpeed *= 0.6;
         break;
+      case "pain":
+        baseSpeed *= Math.max(0.3, 1 - player.pain / 200);
+        break;
     }
   });
 
@@ -207,114 +263,229 @@ export function calculateMovementSpeed(player: PlayerState): number {
 }
 
 /**
- * Checks if player can perform an action
+ * Checks if player can perform an action based on Korean martial arts principles
  */
 export function canPerformAction(
   player: PlayerState,
   actionType: string
 ): boolean {
-  // Check basic incapacitation
-  if (player.health <= 0 || player.consciousness <= 0) {
-    return false;
-  }
+  // Basic incapacitation check
+  if (player.health <= 0 || player.consciousness <= 0) return false;
 
-  // Check specific action requirements
+  const archetypeData = PLAYER_ARCHETYPE_DATA[player.archetype];
+
   switch (actionType) {
     case "attack":
-      return player.stamina >= 10 && player.combatState !== "incapacitated";
+      const attackStamina = 10 / (archetypeData.bonuses.speedBonus || 1.0);
+      return (
+        player.stamina >= attackStamina &&
+        player.combatState !== "incapacitated"
+      );
+
     case "stance_change":
-      return player.ki >= 5 && player.combatState !== "stunned";
+      const stanceKi = 5 / (archetypeData.bonuses.precisionBonus || 1.0);
+      return player.ki >= stanceKi && player.combatState !== "stunned";
+
     case "block":
-      return player.stamina >= 5;
+      const blockStamina = 5 / (archetypeData.bonuses.defenseBonus || 1.0);
+      return player.stamina >= blockStamina;
+
+    case "vital_point_attack":
+      // Requires high precision and ki
+      return player.ki >= 15 && player.consciousness >= 80;
+
     default:
       return true;
   }
 }
 
 /**
- * Gets the player's current status as a string
+ * Gets Korean martial arts status with cultural accuracy
  */
-export function getPlayerStatus(player: PlayerState): string {
-  if (player.health <= 0) return "기절 (Unconscious)";
-  if (player.health <= 20) return "위험 (Critical)";
-  if (player.health <= 50) return "부상 (Injured)";
-  if (player.health <= 80) return "경상 (Light Damage)";
-  return "정상 (Normal)";
+export function getPlayerStatus(player: PlayerState): {
+  korean: string;
+  english: string;
+  level: "critical" | "danger" | "warning" | "normal";
+} {
+  if (player.health <= 0) {
+    return { korean: "기절", english: "Unconscious", level: "critical" };
+  }
+  if (player.health <= 20) {
+    return { korean: "위험", english: "Critical Condition", level: "critical" };
+  }
+  if (player.health <= 50) {
+    return { korean: "부상", english: "Injured", level: "danger" };
+  }
+  if (player.health <= 80) {
+    return { korean: "경상", english: "Light Damage", level: "warning" };
+  }
+  return { korean: "정상", english: "Normal", level: "normal" };
 }
 
 /**
- * Checks if the player can change stance
+ * Checks stance change availability with Korean martial arts flow principles
  */
 export function canChangeStance(
   player: PlayerState,
+  targetStance: TrigramStance,
   cooldownMs: number = 500
-): boolean {
-  return Date.now() - player.lastStanceChangeTime >= cooldownMs;
-}
+): {
+  canChange: boolean;
+  reason?: string;
+  cost: { ki: number; stamina: number };
+} {
+  const timeSinceLastChange = Date.now() - player.lastStanceChangeTime;
 
-/**
- * Applies a status effect to the player
- */
-export function applyStatusEffect(
-  player: PlayerState,
-  effect: StatusEffect
-): PlayerState {
-  return {
-    ...player,
-    activeEffects: [...player.activeEffects, effect],
+  if (timeSinceLastChange < cooldownMs) {
+    return {
+      canChange: false,
+      reason: "Stance change on cooldown",
+      cost: { ki: 0, stamina: 0 },
+    };
+  }
+
+  // Calculate transition cost based on trigram philosophy
+  const stanceTransitionCosts: Record<
+    TrigramStance,
+    Record<TrigramStance, { ki: number; stamina: number }>
+  > = {
+    geon: {
+      tae: { ki: 5, stamina: 3 },
+      li: { ki: 8, stamina: 5 },
+      jin: { ki: 3, stamina: 2 },
+      son: { ki: 10, stamina: 8 },
+      gam: { ki: 12, stamina: 10 },
+      gan: { ki: 7, stamina: 6 },
+      gon: { ki: 15, stamina: 12 },
+      geon: { ki: 0, stamina: 0 },
+    },
+    // ... other stances would have similar mappings
+    tae: {
+      geon: { ki: 5, stamina: 3 },
+      li: { ki: 6, stamina: 4 },
+      jin: { ki: 8, stamina: 6 },
+      son: { ki: 4, stamina: 2 },
+      gam: { ki: 3, stamina: 2 },
+      gan: { ki: 10, stamina: 8 },
+      gon: { ki: 12, stamina: 10 },
+      tae: { ki: 0, stamina: 0 },
+    },
+    li: {
+      geon: { ki: 8, stamina: 5 },
+      tae: { ki: 6, stamina: 4 },
+      jin: { ki: 4, stamina: 3 },
+      son: { ki: 7, stamina: 5 },
+      gam: { ki: 15, stamina: 12 },
+      gan: { ki: 5, stamina: 4 },
+      gon: { ki: 10, stamina: 8 },
+      li: { ki: 0, stamina: 0 },
+    },
+    jin: {
+      geon: { ki: 3, stamina: 2 },
+      tae: { ki: 8, stamina: 6 },
+      li: { ki: 4, stamina: 3 },
+      son: { ki: 6, stamina: 4 },
+      gam: { ki: 7, stamina: 5 },
+      gan: { ki: 12, stamina: 10 },
+      gon: { ki: 9, stamina: 7 },
+      jin: { ki: 0, stamina: 0 },
+    },
+    son: {
+      geon: { ki: 10, stamina: 8 },
+      tae: { ki: 4, stamina: 2 },
+      li: { ki: 7, stamina: 5 },
+      jin: { ki: 6, stamina: 4 },
+      gam: { ki: 5, stamina: 3 },
+      gan: { ki: 8, stamina: 6 },
+      gon: { ki: 3, stamina: 2 },
+      son: { ki: 0, stamina: 0 },
+    },
+    gam: {
+      geon: { ki: 12, stamina: 10 },
+      tae: { ki: 3, stamina: 2 },
+      li: { ki: 15, stamina: 12 },
+      jin: { ki: 7, stamina: 5 },
+      son: { ki: 5, stamina: 3 },
+      gan: { ki: 4, stamina: 3 },
+      gon: { ki: 6, stamina: 4 },
+      gam: { ki: 0, stamina: 0 },
+    },
+    gan: {
+      geon: { ki: 7, stamina: 6 },
+      tae: { ki: 10, stamina: 8 },
+      li: { ki: 5, stamina: 4 },
+      jin: { ki: 12, stamina: 10 },
+      son: { ki: 8, stamina: 6 },
+      gam: { ki: 4, stamina: 3 },
+      gon: { ki: 3, stamina: 2 },
+      gan: { ki: 0, stamina: 0 },
+    },
+    gon: {
+      geon: { ki: 15, stamina: 12 },
+      tae: { ki: 12, stamina: 10 },
+      li: { ki: 10, stamina: 8 },
+      jin: { ki: 9, stamina: 7 },
+      son: { ki: 3, stamina: 2 },
+      gam: { ki: 6, stamina: 4 },
+      gan: { ki: 3, stamina: 2 },
+      gon: { ki: 0, stamina: 0 },
+    },
   };
-}
 
-/**
- * Updates the status effects on the player
- */
-export function updateStatusEffects(
-  player: PlayerState,
-  deltaTime: number
-): PlayerState {
-  const updatedEffects = player.activeEffects
-    .map((effect: StatusEffect) => ({
-      ...effect,
-      duration: effect.duration - deltaTime,
-    }))
-    .filter((effect: StatusEffect) => effect.duration > 0);
-
-  return {
-    ...player,
-    activeEffects: updatedEffects,
+  const cost = stanceTransitionCosts[player.stance]?.[targetStance] || {
+    ki: 10,
+    stamina: 5,
   };
+
+  if (player.ki < cost.ki) {
+    return {
+      canChange: false,
+      reason: "Insufficient Ki energy",
+      cost,
+    };
+  }
+
+  if (player.stamina < cost.stamina) {
+    return {
+      canChange: false,
+      reason: "Insufficient Stamina",
+      cost,
+    };
+  }
+
+  return { canChange: true, cost };
 }
 
 /**
- * Checks if the player is incapacitated
- */
-export function isPlayerIncapacitated(player: PlayerState): boolean {
-  return (
-    player.health <= 0 ||
-    player.consciousness <= 0 ||
-    player.combatReadiness === CombatReadiness.INCAPACITATED
-  );
-}
-
-/**
- * Checks if the player is defeated
- */
-export function isPlayerDefeated(player: PlayerState): boolean {
-  return (
-    player.health <= 0 ||
-    player.combatReadiness === CombatReadiness.INCAPACITATED
-  );
-}
-
-/**
- * Gets the archetype's specializations and bonuses
+ * Gets archetype specializations with Korean cultural context
  */
 export function getArchetypeSpecializations(player: PlayerState): {
-  bonuses: any; // Use proper type from PlayerArchetypeData
+  bonuses: any;
   preferredTrigrams: readonly string[];
   specialization: string;
+  philosophy: { korean: string; english: string };
 } {
   const archetypeData = PLAYER_ARCHETYPE_DATA[player.archetype];
+
+  const philosophies: Record<
+    PlayerArchetype,
+    { korean: string; english: string }
+  > = {
+    musa: { korean: "힘을 통한 명예", english: "Honor through strength" },
+    amsalja: {
+      korean: "은밀함을 통한 효율",
+      english: "Efficiency through stealth",
+    },
+    hacker: { korean: "정보는 힘", english: "Information as power" },
+    jeongbo_yowon: {
+      korean: "관찰을 통한 지식",
+      english: "Knowledge through observation",
+    },
+    jojik_pokryeokbae: {
+      korean: "무자비함을 통한 생존",
+      english: "Survival through ruthlessness",
+    },
+  };
 
   if (!archetypeData) {
     return {
@@ -326,6 +497,7 @@ export function getArchetypeSpecializations(player: PlayerState): {
       },
       preferredTrigrams: ["geon"],
       specialization: "General combat",
+      philosophy: { korean: "일반 무술", english: "General martial arts" },
     };
   }
 
@@ -333,165 +505,72 @@ export function getArchetypeSpecializations(player: PlayerState): {
     bonuses: archetypeData.bonuses,
     preferredTrigrams: archetypeData.preferredTrigrams,
     specialization: archetypeData.specialization,
+    philosophy: philosophies[player.archetype],
   };
-}
-
-export function calculateArchetypeDamageModifier(
-  archetype: PlayerArchetype,
-  baseDamage: number
-): number {
-  const archetypeData = PLAYER_ARCHETYPE_DATA[archetype];
-  if (!archetypeData) return baseDamage;
-
-  return baseDamage * archetypeData.bonuses.damageBonus;
-}
-
-export function getArchetypeAccuracyModifier(
-  archetype: PlayerArchetype
-): number {
-  const archetypeData = PLAYER_ARCHETYPE_DATA[archetype];
-  return archetypeData?.bonuses.accuracyBonus ?? 1.0;
-}
-
-export function isArchetypePreferredStance(
-  archetype: PlayerArchetype,
-  stance: string
-): boolean {
-  const archetypeData = PLAYER_ARCHETYPE_DATA[archetype];
-  return archetypeData?.preferredTrigrams.includes(stance) ?? false;
-}
-
-export function getArchetypeVitalPointBonus(
-  archetype: PlayerArchetype,
-  vitalPointCategory: string
-): number {
-  // Korean martial arts archetype specializations
-  const categoryBonuses: Record<PlayerArchetype, Record<string, number>> = {
-    musa: { head: 1.2, joints: 1.5, torso: 1.1 },
-    amsalja: { nerve: 1.8, pressure_point: 2.0, vascular: 1.6 },
-    hacker: { nerve: 1.6, head: 1.4, organs: 1.3 },
-    jeongbo_yowon: { pressure_point: 1.7, nerve: 1.5, psychological: 1.4 },
-    jojik_pokryeokbae: { joints: 1.6, organs: 1.4, general: 1.5 },
-  };
-
-  return categoryBonuses[archetype]?.[vitalPointCategory] ?? 1.0;
-}
-
-// Korean martial arts utility functions
-export function getKoreanArchetypeName(archetype: PlayerArchetype): {
-  korean: string;
-  english: string;
-  romanized: string;
-} {
-  const names: Record<
-    PlayerArchetype,
-    { korean: string; english: string; romanized: string }
-  > = {
-    musa: {
-      korean: "무사",
-      english: "Traditional Warrior",
-      romanized: "Musa",
-    },
-    amsalja: {
-      korean: "암살자",
-      english: "Shadow Assassin",
-      romanized: "Amsalja",
-    },
-    hacker: {
-      korean: "해커",
-      english: "Cyber Warrior",
-      romanized: "Hacker",
-    },
-    jeongbo_yowon: {
-      korean: "정보요원",
-      english: "Intelligence Operative",
-      romanized: "Jeongbo Yowon",
-    },
-    jojik_pokryeokbae: {
-      korean: "조직폭력배",
-      english: "Organized Crime",
-      romanized: "Jojik Pokryeokbae",
-    },
-  };
-
-  return names[archetype];
-}
-
-export function validatePlayerArchetype(
-  archetype: string
-): archetype is PlayerArchetype {
-  return [
-    "musa",
-    "amsalja",
-    "hacker",
-    "jeongbo_yowon",
-    "jojik_pokryeokbae",
-  ].includes(archetype);
 }
 
 /**
- * Creates a default player state
+ * Calculates player effectiveness with Korean martial arts principles
  */
-export function createDefaultPlayer(
-  archetype: PlayerArchetype = "musa",
-  stance: TrigramStance = "geon"
-): PlayerState {
-  return {
-    id: `player_${Date.now()}`,
-    name: `${archetype}_player`,
-    archetype,
-    stance,
-    position: { x: 0, y: 0 },
-    facing: "right",
-    health: 100,
-    maxHealth: 100,
-    ki: 100,
-    maxKi: 100,
-    stamina: 100,
-    maxStamina: 100,
-    consciousness: 100,
-    pain: 0,
-    balance: 100,
-    bloodLoss: 0,
-    lastStanceChangeTime: 0,
-    isAttacking: false,
-    combatReadiness: 100,
-    activeEffects: [],
-    combatState: "ready",
-    conditions: [],
+export function calculatePlayerEffectiveness(player: PlayerState): {
+  overall: number;
+  factors: {
+    physical: number;
+    mental: number;
+    spiritual: number;
+    archetype: number;
   };
-}
-
-export function getArchetypeDisplayName(archetype: PlayerArchetype): {
-  korean: string;
-  english: string;
 } {
-  const archetypeNames = {
-    musa: { korean: "무사", english: "Traditional Warrior" },
-    amsalja: { korean: "암살자", english: "Shadow Assassin" },
-    hacker: { korean: "해커", english: "Cyber Warrior" },
-    jeongbo_yowon: { korean: "정보요원", english: "Intelligence Operative" },
-    jojik_pokryeokbae: { korean: "조직폭력배", english: "Organized Crime" },
-  };
-
-  return archetypeNames[archetype] || archetypeNames.musa;
-}
-
-export function calculatePlayerEffectiveness(player: PlayerState): number {
   const healthRatio = player.health / player.maxHealth;
   const kiRatio = player.ki / player.maxKi;
   const staminaRatio = player.stamina / player.maxStamina;
-
-  // Korean martial arts emphasis on mental state (consciousness)
   const consciousnessRatio = player.consciousness / 100;
   const painPenalty = Math.max(0, 1 - player.pain / 100);
 
-  return Math.min(
+  const archetypeData = PLAYER_ARCHETYPE_DATA[player.archetype];
+  const archetypeBonus =
+    (archetypeData.bonuses.damageBonus +
+      archetypeData.bonuses.accuracyBonus +
+      archetypeData.bonuses.speedBonus +
+      archetypeData.bonuses.defenseBonus) /
+    4;
+
+  const factors = {
+    physical: (healthRatio + staminaRatio) / 2,
+    mental: consciousnessRatio,
+    spiritual: kiRatio,
+    archetype: archetypeBonus,
+  };
+
+  const overall = Math.min(
     1.0,
-    healthRatio * 0.3 +
-      kiRatio * 0.25 +
-      staminaRatio * 0.25 +
-      consciousnessRatio * 0.15 +
-      painPenalty * 0.05
+    factors.physical * 0.35 +
+      factors.mental * 0.25 +
+      factors.spiritual * 0.25 +
+      (factors.archetype - 1.0) * 0.15 +
+      painPenalty * 0.1
   );
+
+  return { overall, factors };
+}
+
+/**
+ * Updates player state with partial data
+ */
+export function updatePlayerState(
+  currentState: PlayerState,
+  updates: Partial<PlayerState>
+): PlayerState {
+  return {
+    ...currentState,
+    ...updates,
+  };
+}
+
+export function getPlayerArchetypeBonus(
+  archetype: PlayerArchetype,
+  bonusType: keyof (typeof PLAYER_ARCHETYPE_DATA)[PlayerArchetype]["bonuses"]
+): number {
+  const archetypeData = PLAYER_ARCHETYPE_DATA[archetype];
+  return archetypeData.bonuses[bonusType] || 1.0;
 }
