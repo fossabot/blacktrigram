@@ -1,7 +1,22 @@
 // Player archetype data for Korean martial arts
 
-import type { PlayerArchetypeData } from "../player";
 import type { PlayerArchetype } from "../enums";
+
+// Remove conflicting import and define interface locally
+export interface PlayerArchetypeData {
+  readonly name: { korean: string; english: string };
+  readonly description: { korean: string; english: string };
+  readonly preferredTrigrams: readonly string[];
+  readonly specialization: string; // Add missing property
+  readonly bonuses: {
+    readonly damageBonus: number;
+    readonly accuracyBonus: number;
+    readonly speedBonus: number;
+    readonly defenseBonus: number;
+    readonly damageResistance?: number;
+    readonly precisionBonus?: number;
+  };
+}
 
 // Player archetype data with Korean martial arts specializations
 export const PLAYER_ARCHETYPE_DATA: Record<
@@ -14,25 +29,18 @@ export const PLAYER_ARCHETYPE_DATA: Record<
       english: "Traditional Warrior",
     },
     description: {
-      korean: "전통적인 한국 무술의 정수를 체현하는 명예로운 전사",
-      english:
-        "Honorable warrior embodying the essence of traditional Korean martial arts",
-    },
-    bonuses: {
-      damageResistance: 1.2,
-      jointTechniques: 1.5,
-      militaryDiscipline: 1.3,
-      traditionalWeapons: 1.4,
-      honorCode: 1.2,
+      korean: "전통적인 무술가로 명예와 힘을 추구한다",
+      english: "Traditional martial artist pursuing honor and strength",
     },
     preferredTrigrams: ["geon", "jin"],
-    specialTechniques: [
-      "천둥벽력", // Heavenly Thunder Strike
-      "관절제압", // Joint Control
-      "명예의검", // Blade of Honor
-    ],
-    philosophy: "Honor through strength, disciplined combat",
-    combatStyle: "Direct confrontation, overwhelming force",
+    specialization: "Direct combat and overwhelming force",
+    bonuses: {
+      damageBonus: 1.2,
+      accuracyBonus: 1.0,
+      speedBonus: 0.9,
+      defenseBonus: 1.3,
+      damageResistance: 1.2,
+    },
   },
 
   amsalja: {
@@ -41,26 +49,18 @@ export const PLAYER_ARCHETYPE_DATA: Record<
       english: "Shadow Assassin",
     },
     description: {
-      korean:
-        "그림자처럼 움직이며 한 번의 완벽한 타격으로 적을 제압하는 은밀한 전사",
-      english:
-        "Stealthy warrior moving like shadows, subduing enemies with one perfect strike",
-    },
-    bonuses: {
-      stealthMultiplier: 1.8,
-      oneStrikeKill: 2.0,
-      silentMovement: 1.5,
-      vitalPointAccuracy: 1.7,
-      shadowTechniques: 1.6,
+      korean: "은밀한 암살을 통해 효율성을 추구한다",
+      english: "Pursues efficiency through stealth assassination",
     },
     preferredTrigrams: ["son", "gam"],
-    specialTechniques: [
-      "무성제압", // Silent Takedown
-      "신경파괴", // Neural Disruption
-      "그림자보법", // Shadow Step
-    ],
-    philosophy: "Efficiency through invisibility, one perfect strike",
-    combatStyle: "Stealth approaches, instant takedowns",
+    specialization: "Stealth approaches and instant takedowns",
+    bonuses: {
+      damageBonus: 1.8,
+      accuracyBonus: 1.4,
+      speedBonus: 1.5,
+      defenseBonus: 0.8,
+      precisionBonus: 1.1,
+    },
   },
 
   hacker: {
@@ -69,78 +69,55 @@ export const PLAYER_ARCHETYPE_DATA: Record<
       english: "Cyber Warrior",
     },
     description: {
-      korean: "정보를 무기로 삼아 기술과 무술을 융합한 미래형 전사",
-      english:
-        "Futuristic warrior using information as a weapon, fusing technology with martial arts",
-    },
-    bonuses: {
-      precisionAnalysis: 1.6,
-      environmentalControl: 1.4,
-      dataOptimization: 1.3,
-      techEnhancement: 1.5,
-      systemHacking: 1.7,
+      korean: "정보기술을 활용한 전투 전문가",
+      english: "Combat specialist utilizing information technology",
     },
     preferredTrigrams: ["li", "tae"],
-    specialTechniques: [
-      "해부학적분석", // Anatomical Analysis
-      "생체역학파괴", // Biomechanical Disruption
-      "데이터스트라이크", // Data Strike
-    ],
-    philosophy: "Information as power, technological advantage",
-    combatStyle: "Environmental manipulation, tech-assisted strikes",
+    specialization: "Tech-assisted strikes and environmental control",
+    bonuses: {
+      damageBonus: 1.1,
+      accuracyBonus: 1.6,
+      speedBonus: 1.2,
+      defenseBonus: 1.0,
+    },
   },
 
-  jeongbo: {
+  jeongbo_yowon: {
     name: {
       korean: "정보요원",
       english: "Intelligence Operative",
     },
     description: {
-      korean: "관찰과 분석을 통해 적의 약점을 간파하는 전략적 전문가",
-      english:
-        "Strategic expert who discerns enemy weaknesses through observation and analysis",
-    },
-    bonuses: {
-      psychologicalWarfare: 1.5,
-      strategicAnalysis: 1.4,
-      painCompliance: 1.7,
-      interrogationSkills: 1.6,
-      mentalDomination: 1.3,
+      korean: "관찰과 분석을 통해 지식을 얻는 요원",
+      english: "Agent gaining knowledge through observation and analysis",
     },
     preferredTrigrams: ["gan", "gon"],
-    specialTechniques: [
-      "고통순응", // Pain Compliance
-      "심리적압박", // Psychological Pressure
-      "정보추출", // Information Extraction
-    ],
-    philosophy: "Knowledge through observation, strategic thinking",
-    combatStyle: "Psychological manipulation, precise timing",
+    specialization: "Psychological manipulation and strategic thinking",
+    bonuses: {
+      damageBonus: 1.0,
+      accuracyBonus: 1.3,
+      speedBonus: 1.1,
+      defenseBonus: 1.4,
+    },
   },
 
-  jojik: {
+  jojik_pokryeokbae: {
     name: {
       korean: "조직폭력배",
       english: "Organized Crime",
     },
     description: {
-      korean: "생존을 위해 무자비함을 택한 거리의 실전 격투가",
-      english: "Street fighter who chose ruthlessness for survival",
-    },
-    bonuses: {
-      dirtyFighting: 1.8,
-      survivalInstinct: 1.6,
-      streetSmart: 1.5,
-      environmentalWeapons: 1.7,
-      painTolerance: 1.4,
+      korean: "생존을 위한 냉혹한 범죄 조직원",
+      english: "Ruthless criminal organization member focused on survival",
     },
     preferredTrigrams: ["jin", "gam"],
-    specialTechniques: [
-      "환경활용", // Environmental Usage
-      "더러운기법", // Dirty Techniques
-      "생존격투", // Survival Combat
-    ],
-    philosophy: "Survival through ruthlessness, practical violence",
-    combatStyle: "Dirty fighting, improvised weapons",
+    specialization: "Dirty fighting and improvised weapons",
+    bonuses: {
+      damageBonus: 1.6,
+      accuracyBonus: 0.9,
+      speedBonus: 1.3,
+      defenseBonus: 1.1,
+    },
   },
 } as const;
 
@@ -190,14 +167,14 @@ export const ARCHETYPE_STAT_MODIFIERS: Record<
     painResistance: 0.8, // Lower pain resistance
     balanceBonus: 1.0, // Standard balance
   },
-  jeongbo: {
+  jeongbo_yowon: {
     healthMultiplier: 1.0, // Standard health
     kiMultiplier: 1.2, // Good ki for mental techniques
     staminaMultiplier: 1.1, // Good stamina for endurance
     painResistance: 1.4, // Very high pain resistance (trained)
     balanceBonus: 1.2, // Good balance for control
   },
-  jojik: {
+  jojik_pokryeokbae: {
     healthMultiplier: 1.1, // Good health from street fighting
     kiMultiplier: 0.9, // Lower ki (less spiritual)
     staminaMultiplier: 1.3, // Highest stamina for survival
@@ -243,13 +220,13 @@ export const ARCHETYPE_COMBAT_THRESHOLDS: Record<
     kiDepletion: 0.25, // Heavily reliant on ki
     painThreshold: 40, // Low pain tolerance
   },
-  jeongbo: {
+  jeongbo_yowon: {
     criticalHealth: 0.35, // Balanced health management
     lowStamina: 0.3, // Good stamina management
     kiDepletion: 0.2, // Moderate ki reliance
     painThreshold: 80, // Very high pain tolerance
   },
-  jojik: {
+  jojik_pokryeokbae: {
     criticalHealth: 0.25, // Fights even when badly hurt
     lowStamina: 0.35, // High stamina usage
     kiDepletion: 0.1, // Low ki reliance

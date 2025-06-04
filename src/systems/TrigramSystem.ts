@@ -44,12 +44,11 @@ export class TrigramSystem {
   }
 
   public calculateOptimalPath(
-    fromStance: TrigramStance, // Fix parameter name
-    toStance: TrigramStance, // Fix parameter name
+    fromStance: TrigramStance,
+    toStance: TrigramStance,
     playerState: PlayerState,
     _opponentStance?: TrigramStance
   ): TransitionPath | null {
-    // Fix parameter order and names
     const cost = this.trigramCalculator.calculateTransitionCost(
       fromStance,
       toStance,
@@ -60,16 +59,10 @@ export class TrigramSystem {
       return null;
     }
 
-    const effectiveness = this.getStanceEffectiveness(
-      // Fix method name
-      fromStance,
-      toStance
-    ); // Use correct method name
-
     return {
       path: [fromStance, toStance],
       totalCost: cost,
-      overallEffectiveness: effectiveness,
+      overallEffectiveness: this.getStanceEffectiveness(fromStance, toStance), // Use correct parameter names
       cumulativeRisk: (cost.timeMilliseconds / 1000) * 0.1,
       name: `${fromStance} → ${toStance}`,
       description: {
@@ -124,7 +117,7 @@ export class TrigramSystem {
             TRIGRAM_DATA[currentStance]?.name?.english || currentStance
           } to ${TRIGRAM_DATA[targetStance]?.name?.english || targetStance}`,
         },
-        overallEffectiveness: this.getStanceEffectiveness(fromStance, toStance), // Use correct parameter names
+        overallEffectiveness: this.getStanceEffectiveness(fromStance, toStance), // Use parameter names
       };
     }
     return null; // Placeholder for more complex pathfinding

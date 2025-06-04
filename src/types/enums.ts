@@ -304,12 +304,16 @@ export const PlayerArchetype = {
   MUSA: "musa", // 무사 - Traditional Warrior
   AMSALJA: "amsalja", // 암살자 - Shadow Assassin
   HACKER: "hacker", // 해커 - Cyber Warrior
-  JEONGBO: "jeongbo", // 정보요원 - Intelligence Operative
-  JOJIK: "jojik", // 조직폭력배 - Organized Crime
+  JEONGBO: "jeongbo_yowon", // 정보요원 - Intelligence Operative
+  JOJIK: "jojik_pokryeokbae", // 조직폭력배 - Organized Crime
 } as const;
 
 export type PlayerArchetype =
-  (typeof PlayerArchetype)[keyof typeof PlayerArchetype];
+  | "musa" // 무사 (Traditional Warrior)
+  | "amsalja" // 암살자 (Shadow Assassin)
+  | "hacker" // 해커 (Cyber Warrior)
+  | "jeongbo_yowon" // 정보요원 (Intelligence Operative)
+  | "jojik_pokryeokbae"; // 조직폭력배 (Organized Crime)
 
 // Eight Trigram stances (팔괘)
 export const TrigramStance = {

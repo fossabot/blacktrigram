@@ -39,8 +39,8 @@ export const head_philtrum_injoong: VitalPoint = {
       stackable: false,
     },
   ] as VitalPointEffect[],
-  techniques: ["nerve_strike", "pressure_point"], // Add required techniques
-  damage: 25, // Add required damage property
+  techniques: ["nerve_strike", "pressure_point"], // Add missing techniques property
+  damage: 25, // Add missing damage property
 };
 
 export const head_temple_kanjanori: VitalPoint = {
@@ -76,8 +76,8 @@ export const head_temple_kanjanori: VitalPoint = {
       stackable: false,
     },
   ] as VitalPointEffect[],
-  techniques: ["bone_strike", "nerve_strike"], // Add required techniques
-  damage: 35, // Add required damage property
+  techniques: ["bone_strike", "nerve_strike"], // Add missing techniques property
+  damage: 35, // Add missing damage property
 };
 
 // Continue with other vital points, adding all required properties...

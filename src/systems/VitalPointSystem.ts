@@ -2,11 +2,9 @@
 
 import type {
   VitalPoint,
-  PlayerArchetype,
-  KoreanTechnique,
   VitalPointHitResult,
+  KoreanTechnique,
   Position,
-  DamageType,
   VitalPointEffect,
 } from "../types";
 import type { BodyRegion } from "../types/enums";

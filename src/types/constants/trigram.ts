@@ -146,7 +146,7 @@ const GON_TECHNIQUE: KoreanTechnique = {
 };
 
 // Trigram data with all required properties
-export const TRIGRAM_DATA: Record<string, TrigramData> = {
+export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
   geon: {
     id: "geon",
     name: { korean: "건", english: "Heaven" },
@@ -161,6 +161,10 @@ export const TRIGRAM_DATA: Record<string, TrigramData> = {
     technique: GEON_TECHNIQUE,
     strengths: ["high_damage", "breaking_power", "leadership"],
     weaknesses: ["energy_drain", "predictable"],
+    color: 0xffd700, // Add missing color property
+    kiFlowModifier: 1.2,
+    offensiveBonus: 1.3,
+    defensiveBonus: 1.0,
   },
   tae: {
     id: "tae",
@@ -177,6 +181,10 @@ export const TRIGRAM_DATA: Record<string, TrigramData> = {
     technique: TAE_TECHNIQUE,
     strengths: ["flexibility", "counter_attacks", "flow"],
     weaknesses: ["lower_damage", "requires_timing"],
+    color: 0x87ceeb,
+    kiFlowModifier: 1.1,
+    offensiveBonus: 1.0,
+    defensiveBonus: 1.2,
   },
   li: {
     id: "li",
@@ -193,6 +201,10 @@ export const TRIGRAM_DATA: Record<string, TrigramData> = {
     technique: LI_TECHNIQUE,
     strengths: ["speed", "critical_hits", "insight"],
     weaknesses: ["stamina_drain", "vulnerable_defense"],
+    color: 0xff4500,
+    kiFlowModifier: 1.0,
+    offensiveBonus: 1.4,
+    defensiveBonus: 0.9,
   },
   jin: {
     id: "jin",
@@ -209,6 +221,10 @@ export const TRIGRAM_DATA: Record<string, TrigramData> = {
     technique: JIN_TECHNIQUE,
     strengths: ["surprise_attacks", "mobility", "awakening"],
     weaknesses: ["lacks_defense", "unpredictable"],
+    color: 0x9370db,
+    kiFlowModifier: 1.3,
+    offensiveBonus: 1.5,
+    defensiveBonus: 0.8,
   },
   son: {
     id: "son",
@@ -225,6 +241,10 @@ export const TRIGRAM_DATA: Record<string, TrigramData> = {
     technique: SON_TECHNIQUE,
     strengths: ["penetration", "persistent_damage", "influence"],
     weaknesses: ["gradual_effect", "requires_patience"],
+    color: 0x98fb98,
+    kiFlowModifier: 1.1,
+    offensiveBonus: 1.1,
+    defensiveBonus: 1.1,
   },
   gam: {
     id: "gam",
@@ -241,6 +261,10 @@ export const TRIGRAM_DATA: Record<string, TrigramData> = {
     technique: GAM_TECHNIQUE,
     strengths: ["adaptability", "flow_control", "wisdom"],
     weaknesses: ["complex_execution", "vulnerable_to_force"],
+    color: 0x4169e1,
+    kiFlowModifier: 1.2,
+    offensiveBonus: 1.0,
+    defensiveBonus: 1.3,
   },
   gan: {
     id: "gan",
@@ -257,6 +281,10 @@ export const TRIGRAM_DATA: Record<string, TrigramData> = {
     technique: GAN_TECHNIQUE,
     strengths: ["defense", "endurance", "meditation"],
     weaknesses: ["slow_attacks", "lacks_mobility"],
+    color: 0x8b4513,
+    kiFlowModifier: 0.9,
+    offensiveBonus: 0.8,
+    defensiveBonus: 1.5,
   },
   gon: {
     id: "gon",
@@ -273,6 +301,10 @@ export const TRIGRAM_DATA: Record<string, TrigramData> = {
     technique: GON_TECHNIQUE,
     strengths: ["support", "healing", "receptivity"],
     weaknesses: ["passive_nature", "low_offense"],
+    color: 0x654321,
+    kiFlowModifier: 1.0,
+    offensiveBonus: 0.9,
+    defensiveBonus: 1.4,
   },
 } as const;
 
@@ -386,6 +418,7 @@ export interface TrigramData {
   readonly weaknesses?: readonly string[];
   readonly offensiveBonus?: number;
   readonly defensiveBonus?: number;
+  readonly color: number; // Add missing color property
   readonly kiFlowModifier?: number;
 }
 

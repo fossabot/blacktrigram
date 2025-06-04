@@ -21,7 +21,7 @@ export const KOREAN_COLORS = {
   GRAY: 0x808080 as const, // 회색
   DARK_GRAY: 0x404040 as const, // 진한 회색
   GOLD: 0xffd700 as const, // 금색 추가
-  DOJANG_BLUE: 0x003478 as const, // 도장 파랑 추가
+  DOJANG_BLUE: 0x1e3a8a as const, // 도장 파랑 추가
 
   // Trigram stance colors
   GEON: 0xffd700 as const, // Gold for Heaven - 건괘

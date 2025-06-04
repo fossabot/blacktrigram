@@ -205,6 +205,37 @@ export const ACHIEVEMENT_CONFIG = {
   COMEBACK_VICTORIES: 5, // Wins from critical health
 } as const;
 
+// Game constants for Black Trigram
+
+export const MAX_TRANSITION_COST_KI = 50;
+export const MAX_TRANSITION_COST_STAMINA = 40;
+export const MAX_TRANSITION_TIME_MILLISECONDS = 2000;
+
+export const DEFAULT_STANCE_COOLDOWN_MS = 500;
+
+export const GAME_CONSTANTS = {
+  MAX_HEALTH: 100,
+  MAX_KI: 100,
+  MAX_STAMINA: 100,
+  MAX_CONSCIOUSNESS: 100,
+  MAX_PAIN: 100,
+  MAX_BALANCE: 100,
+  MAX_BLOOD_LOSS: 100,
+
+  CRITICAL_HEALTH_THRESHOLD: 20,
+  LOW_HEALTH_THRESHOLD: 50,
+
+  BASE_DAMAGE_MULTIPLIER: 1.0,
+  CRITICAL_HIT_MULTIPLIER: 1.5,
+
+  DEFAULT_ACCURACY: 0.8,
+  DEFAULT_TECHNIQUE_RANGE: 1.0,
+
+  KI_REGEN_RATE: 1.5,
+  STAMINA_REGEN_RATE: 2.0,
+  HEALTH_REGEN_RATE: 0.1,
+} as const;
+
 // Game state persistence
 export const SAVE_CONFIG = {
   AUTOSAVE_INTERVAL: 60000, // Autosave every minute

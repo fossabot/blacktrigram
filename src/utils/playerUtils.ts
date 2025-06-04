@@ -9,6 +9,7 @@ import type {
   EffectType,
   CombatCondition,
   StatusEffect,
+  PlayerArchetypeData,
 } from "../types";
 // Import CombatReadiness as a value, not a type since we need to use it as values
 import { CombatReadiness } from "../types/enums";
@@ -304,4 +305,32 @@ export function isPlayerDefeated(player: PlayerState): boolean {
     player.health <= 0 ||
     player.combatReadiness === CombatReadiness.INCAPACITATED
   );
+}
+
+// New function to get archetype specializations
+export function getArchetypeSpecializations(player: PlayerState): {
+  bonuses: PlayerArchetypeData["bonuses"];
+  preferredTrigrams: readonly string[];
+  specialization: string;
+} {
+  const archetypeData = PLAYER_ARCHETYPE_DATA[player.archetype];
+
+  if (!archetypeData) {
+    return {
+      bonuses: {
+        damageBonus: 1.0,
+        accuracyBonus: 1.0,
+        speedBonus: 1.0,
+        defenseBonus: 1.0,
+      },
+      preferredTrigrams: ["geon"],
+      specialization: "General combat",
+    };
+  }
+
+  return {
+    bonuses: archetypeData.bonuses,
+    preferredTrigrams: archetypeData.preferredTrigrams || ["geon"], // Handle undefined case
+    specialization: archetypeData.specialization, // Now exists on interface
+  };
 }

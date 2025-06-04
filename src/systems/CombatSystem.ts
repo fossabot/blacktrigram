@@ -4,20 +4,49 @@ import type {
   CombatResult,
   PlayerArchetype,
   VitalPoint,
-  AttackInput,
-  TrigramStance,
+  VitalPointHitResult,
+  AttackInput, // Add missing import
+  TrigramStance, // Add missing import
 } from "../types";
 import { VitalPointSystem } from "./VitalPointSystem";
-import { VITAL_POINTS_DATA } from "./vitalpoint/KoreanVitalPoints";
+import { TrigramSystem } from "./TrigramSystem";
+import { STANCE_EFFECTIVENESS_MATRIX } from "../types/constants";
 
 export class CombatSystem {
-  private static vitalPointSystem = new VitalPointSystem(VITAL_POINTS_DATA);
+  private static vitalPointSystem: VitalPointSystem | null = null;
+  private static trigramSystem: TrigramSystem | null = null;
 
   /**
    * Execute a full attack sequence - main combat method
    */
-  public static async executeAttack(input: AttackInput): Promise<CombatResult> {
-    const { attacker, defender, technique, targetPoint } = input; // targetPoint now exists
+  public static async executeAttack(
+    attackInput: AttackInput // Now properly imported
+  ): Promise<CombatResult> {
+    const { attacker, defender, technique, targetPoint } = attackInput;
+
+    let baseResult = this.calculateTechnique(technique, attacker.archetype);
+    let hitResult: VitalPointHitResult | null = null;
+
+    // Convert string targetPoint to VitalPoint object if provided
+    if (targetPoint && this.vitalPointSystem) {
+      const vitalPointObject =
+        this.vitalPointSystem.getVitalPointById(targetPoint);
+      if (vitalPointObject) {
+        const accuracyBonus = Math.random();
+        hitResult = this.vitalPointSystem.calculateHit(
+          technique,
+          vitalPointObject,
+          accuracyBonus,
+          attacker.position
+        );
+
+        // Use hitResult to modify damage or effects
+        if (hitResult.hit) {
+          baseResult.damage += hitResult.damage;
+          baseResult.effects.push(...hitResult.effects);
+        }
+      }
+    }
 
     // Calculate hit chance based on stance effectiveness
     const stanceEffectiveness = this.calculateStanceEffectiveness(
@@ -60,9 +89,6 @@ export class CombatSystem {
       };
     }
 
-    // Calculate base technique result
-    let baseResult = this.calculateTechnique(technique, attacker.archetype);
-
     // Apply vital point targeting if specified
     const resultWithVitalPoint = targetPoint
       ? this.applyVitalPointDamage(
@@ -99,96 +125,14 @@ export class CombatSystem {
    * Calculate stance effectiveness matrix
    */
   public static calculateStanceEffectiveness(
-    attackerStance: TrigramStance,
-    defenderStance: TrigramStance
+    attackerStance: TrigramStance, // Now properly imported
+    defenderStance: TrigramStance // Now properly imported
   ): number {
-    const effectiveness: Record<
-      TrigramStance,
-      Record<TrigramStance, number>
-    > = {
-      geon: {
-        geon: 1.0,
-        tae: 1.2,
-        li: 0.8,
-        jin: 1.1,
-        son: 0.9,
-        gam: 1.0,
-        gan: 0.7,
-        gon: 1.3,
-      },
-      tae: {
-        geon: 0.8,
-        tae: 1.0,
-        li: 1.2,
-        jin: 0.9,
-        son: 1.1,
-        gam: 1.3,
-        gan: 1.0,
-        gon: 0.7,
-      },
-      li: {
-        geon: 1.2,
-        tae: 0.8,
-        li: 1.0,
-        jin: 1.3,
-        son: 0.7,
-        gam: 0.9,
-        gan: 1.1,
-        gon: 1.0,
-      },
-      jin: {
-        geon: 0.9,
-        tae: 1.1,
-        li: 0.7,
-        jin: 1.0,
-        son: 1.2,
-        gam: 1.0,
-        gan: 1.3,
-        gon: 0.8,
-      },
-      son: {
-        geon: 1.1,
-        tae: 0.9,
-        li: 1.3,
-        jin: 0.8,
-        son: 1.0,
-        gam: 1.2,
-        gan: 0.7,
-        gon: 1.0,
-      },
-      gam: {
-        geon: 1.0,
-        tae: 0.7,
-        li: 1.1,
-        jin: 1.0,
-        son: 0.8,
-        gam: 1.0,
-        gan: 1.2,
-        gon: 1.3,
-      },
-      gan: {
-        geon: 1.3,
-        tae: 1.0,
-        li: 0.9,
-        jin: 0.7,
-        son: 1.3,
-        gam: 0.8,
-        gan: 1.0,
-        gon: 1.1,
-      },
-      gon: {
-        geon: 0.7,
-        tae: 1.3,
-        li: 1.0,
-        jin: 1.2,
-        son: 1.0,
-        gam: 0.7,
-        gan: 0.9,
-        gon: 1.0,
-      },
-    };
-
-    return effectiveness[attackerStance]?.[defenderStance] ?? 1.0;
+    const matrix = STANCE_EFFECTIVENESS_MATRIX as Record<
+      TrigramStance, // Now properly imported
+      Record<TrigramStance, number> // Now properly imported
+    >;
+    return matrix[attackerStance]?.[defenderStance] || 1.0;
   }
 
   /**

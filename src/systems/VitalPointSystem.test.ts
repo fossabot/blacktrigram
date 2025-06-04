@@ -1,11 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { VitalPointSystem } from "./VitalPointSystem";
 import { VITAL_POINTS_DATA } from "./vitalpoint/KoreanVitalPoints";
-import type {
-  VitalPoint,
-  KoreanTechnique,
-  VitalPointHitResult,
-} from "../types";
+import type { VitalPoint, KoreanTechnique } from "../types";
 
 const MOCK_TECHNIQUE_STRIKE: KoreanTechnique = {
   id: "basic_strike",

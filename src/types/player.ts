@@ -4,24 +4,30 @@ import type { CombatReadiness, CombatState, TrigramStance } from "./enums";
 import type { CombatCondition, Position } from "./common";
 import type { StatusEffect } from "./effects";
 import type { KoreanText } from "./korean-text";
+import type { PlayerArchetype } from "./enums"; // Import from enums instead of local declaration
 
 // Player Archetype Data (for constants)
 // Player archetype data with Korean martial arts specializations
 export interface PlayerArchetypeData {
-  readonly name: KoreanText;
-  readonly description: KoreanText;
-  readonly bonuses: Record<string, number>;
-  readonly preferredTrigrams?: readonly TrigramStance[];
-  readonly specialTechniques?: readonly string[];
-  readonly philosophy?: string;
-  readonly combatStyle?: string;
+  readonly name: { korean: string; english: string };
+  readonly description: { korean: string; english: string };
+  readonly preferredTrigrams: readonly string[];
+  readonly specialization: string; // Add missing property
+  readonly bonuses: {
+    readonly damageBonus: number;
+    readonly accuracyBonus: number;
+    readonly speedBonus: number;
+    readonly defenseBonus: number;
+    readonly damageResistance?: number;
+    readonly precisionBonus?: number;
+  };
 }
 
 // Player state interface
 export interface PlayerState {
   readonly id: string;
   readonly name: string;
-  readonly archetype: PlayerArchetype;
+  readonly archetype: PlayerArchetype; // Now uses the unified type
   readonly stance: TrigramStance;
   readonly health: number;
   readonly maxHealth: number;
@@ -43,11 +49,3 @@ export interface PlayerState {
   readonly conditions: readonly CombatCondition[]; // Array of CombatCondition from common.ts
   // Add any other player-specific state needed, e.g., comboCounter, specialMeter
 }
-
-// Define PlayerArchetype here instead of importing and redeclaring
-export type PlayerArchetype =
-  | "musa"
-  | "amsalja"
-  | "hacker"
-  | "jeongbo_yowon"
-  | "jojik_pokryeokbae";
