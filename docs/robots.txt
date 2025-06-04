@@ -1,0 +1,7 @@
+Sitemap: https://blacktrigram.com/sitemap.xml
+User-agent: *
+Allow: /
+
+# Note: The following directives are technically redundant since "Allow: /" 
+# already permits everything, but are kept for documentation purposes
+Allow: /assets/
