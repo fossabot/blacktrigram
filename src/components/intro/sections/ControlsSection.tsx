@@ -42,17 +42,17 @@ export const ControlsSection: React.FC<ControlsSectionProps> = () => {
       }
 
       return (
-        <KoreanText
-          key={key}
-          korean={controlTextKorean}
-          english={controlTextEnglish}
-          size="medium"
-          // WORKAROUND: Cast to 'any' because KOREAN_COLORS.CYAN (number)
-          // is not assignable to the current 'Fill' type.
-          // The 'Fill' type in korean-text.ts should ideally support numeric hex.
-          style={{ fill: KOREAN_COLORS.CYAN as any }}
-          y={textY}
-        />
+        <Container key={key} y={textY}>
+          <KoreanText
+            korean={controlTextKorean}
+            english={controlTextEnglish}
+            size="medium"
+            // WORKAROUND: Cast to 'any' because KOREAN_COLORS.CYAN (number)
+            // is not assignable to the current 'Fill' type.
+            // The 'Fill' type in korean-text.ts should ideally support numeric hex.
+            style={{ fill: KOREAN_COLORS.CYAN as any }}
+          />
+        </Container>
       );
     });
 
@@ -60,14 +60,15 @@ export const ControlsSection: React.FC<ControlsSectionProps> = () => {
 
     return (
       <Container y={categoryContainerY}>
-        <KoreanTitle
-          korean={titleKorean}
-          english={titleEnglish}
-          size="large"
-          // WORKAROUND: Cast to 'any' for KOREAN_COLORS.WHITE
-          style={{ fill: KOREAN_COLORS.WHITE as any }}
-          y={0}
-        />
+        <Container y={0}>
+          <KoreanTitle
+            korean={titleKorean}
+            english={titleEnglish}
+            size="large"
+            // WORKAROUND: Cast to 'any' for KOREAN_COLORS.WHITE
+            style={{ fill: KOREAN_COLORS.WHITE as any }}
+          />
+        </Container>
         {controlItems}
       </Container>
     );
@@ -107,14 +108,15 @@ export const ControlsSection: React.FC<ControlsSectionProps> = () => {
 
   return (
     <Container>
-      <KoreanTitle
-        korean="조작법 안내"
-        english="Controls Guide"
-        size="xlarge"
-        // WORKAROUND: Cast to 'any' for KOREAN_COLORS.GOLD
-        style={{ fill: KOREAN_COLORS.GOLD as any }}
-        y={20}
-      />
+      <Container y={20}>
+        <KoreanTitle
+          korean="조작법 안내"
+          english="Controls Guide"
+          size="xlarge"
+          // WORKAROUND: Cast to 'any' for KOREAN_COLORS.GOLD
+          style={{ fill: KOREAN_COLORS.GOLD as any }}
+        />
+      </Container>
       {sections.map((section) =>
         renderControlCategory(
           section.titleKorean,
