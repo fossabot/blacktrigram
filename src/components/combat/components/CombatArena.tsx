@@ -1,115 +1,139 @@
-import React, { useCallback } from "react";
-import { Container } from "@pixi/react";
+import React, { useCallback, useEffect, useRef } from "react";
+import { Stage, Container } from "@pixi/react";
+import type { PlayerState, Position } from "../../../types";
+import { KOREAN_COLORS } from "../../../types/constants";
 import { GameEngine } from "../../game/GameEngine";
+import { PlayerVisuals } from "../../game/PlayerVisuals";
 import { DojangBackground } from "../../game/DojangBackground";
-import { Player } from "../../game/Player";
 import { HitEffectsLayer } from "../../game/HitEffectsLayer";
-import type { PlayerState, HitEffect, CombatArenaProps } from "../../../types";
+
+interface CombatArenaProps {
+  readonly width: number;
+  readonly height: number;
+  readonly player1: PlayerState;
+  readonly player2: PlayerState;
+  readonly hitEffects: readonly any[];
+  readonly onPlayerClick?: (playerId: string, position: Position) => void;
+}
 
 export function CombatArena({
-  players,
-  onPlayerUpdate,
-  onTechniqueExecute,
-  combatEffects,
-  isExecutingTechnique,
-  width = 800,
-  height = 600,
-}: CombatArenaProps): React.ReactElement {
-  const [player1, player2] = players;
+  width,
+  height,
+  player1,
+  player2,
+  hitEffects,
+  onPlayerClick,
+}: CombatArenaProps): React.JSX.Element {
+  const stageRef = useRef<any>(null);
+
+  useEffect(() => {
+    // Setup arena physics and animations
+    console.log("🥋 Korean martial arts arena initialized");
+  }, []);
+
+  const handleStageClick = (event: any) => {
+    if (onPlayerClick) {
+      const bounds = event.currentTarget.getBoundingClientRect();
+      const x = event.clientX - bounds.left;
+      const y = event.clientY - bounds.top;
+
+      // Determine which player was clicked based on position
+      const clickPosition = { x, y };
+      if (x < width / 2) {
+        onPlayerClick(player1.id, clickPosition);
+      } else {
+        onPlayerClick(player2.id, clickPosition);
+      }
+    }
+  };
 
   const handlePlayerAttack = useCallback(
     (playerIndex: number) => {
-      if (!isExecutingTechnique) {
-        // Simple attack - in full game this would be more complex
-        const currentPlayer = players[playerIndex];
-        const opponentIndex = playerIndex === 0 ? 1 : 0;
-        const opponent = players[opponentIndex];
+      // Simple attack - in full game this would be more complex
+      const currentPlayer = playerIndex === 0 ? player1 : player2;
+      const opponent = playerIndex === 0 ? player2 : player1;
 
-        // Basic damage calculation
-        const damage = Math.floor(Math.random() * 20) + 10;
-        const newHealth = Math.max(0, opponent.health - damage);
+      // Basic damage calculation
+      const damage = Math.floor(Math.random() * 20) + 10;
+      const newHealth = Math.max(0, opponent.health - damage);
 
-        onPlayerUpdate(opponentIndex, { health: newHealth });
-        onTechniqueExecute(playerIndex, { damage, target: opponentIndex });
+      // Update player states
+      if (playerIndex === 0) {
+        onPlayerClick(1, { health: newHealth });
+      } else {
+        onPlayerClick(0, { health: newHealth });
       }
     },
-    [players, isExecutingTechnique, onPlayerUpdate, onTechniqueExecute]
+    [player1, player2, onPlayerClick]
   );
 
-  // Pass combat-specific props to the existing GameEngine
-  // The GameEngine already handles DojangBackground, Player, and HitEffectsLayer
   return (
-    <Container>
-      <GameEngine
-        players={players}
-        gamePhase="combat"
-        onPlayerUpdate={onPlayerUpdate}
-        onGamePhaseChange={() => {}} // Not needed in arena context
-      />
-
-      {/* Dojang Background */}
-      <DojangBackground
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        position: "relative",
+        overflow: "hidden",
+        background: `linear-gradient(135deg, #${KOREAN_COLORS.BLACK.toString(
+          16
+        )} 0%, #${KOREAN_COLORS.TRADITIONAL_BLUE.toString(16)} 100%)`,
+      }}
+    >
+      <Stage
+        ref={stageRef}
         width={width}
         height={height}
-        timeOfDay="night"
-        weather="clear"
-      />
+        options={{
+          backgroundColor: KOREAN_COLORS.BLACK,
+          antialias: true,
+          resolution: window.devicePixelRatio || 1,
+        }}
+        onPointerDown={handleStageClick}
+      >
+        {/* Traditional Korean dojang background */}
+        <DojangBackground width={width} height={height} />
 
-      {/* Player 1 */}
-      <Player
-        playerState={player1}
-        playerIndex={0}
-        onStateUpdate={(updates) => onPlayerUpdate(0, updates)}
-        onAttack={() => handlePlayerAttack(0)}
-        isPlayer1={true}
-        archetype={player1.archetype}
-        stance={player1.stance}
-        position={{ x: width * 0.25, y: height * 0.6 }}
-        facing="right"
-        isAttacking={player1.isAttacking}
-        health={player1.health}
-        maxHealth={player1.maxHealth}
-        ki={player1.ki}
-        maxKi={player1.maxKi}
-        stamina={player1.stamina}
-        maxStamina={player1.maxStamina}
-      />
+        {/* Main combat container */}
+        <Container>
+          {/* Player visual representations */}
+          <PlayerVisuals
+            player={player1}
+            isActive={true}
+            showStance={true}
+            showEffects={true}
+          />
 
-      {/* Player 2 */}
-      <Player
-        playerState={player2}
-        playerIndex={1}
-        onStateUpdate={(updates) => onPlayerUpdate(1, updates)}
-        onAttack={() => handlePlayerAttack(1)}
-        isPlayer1={false}
-        archetype={player2.archetype}
-        stance={player2.stance}
-        position={{ x: width * 0.75, y: height * 0.6 }}
-        facing="left"
-        isAttacking={player2.isAttacking}
-        health={player2.health}
-        maxHealth={player2.maxHealth}
-        ki={player2.ki}
-        maxKi={player2.maxKi}
-        stamina={player2.stamina}
-        maxStamina={player2.maxStamina}
-      />
+          <PlayerVisuals
+            player={player2}
+            isActive={true}
+            showStance={true}
+            showEffects={true}
+          />
 
-      {/* Hit Effects */}
-      <HitEffectsLayer effects={combatEffects} />
-
-      {/* Arena boundaries */}
-      <Container>
-        {/* Left boundary marker */}
-        <Container x={50} y={height * 0.6}>
-          {/* Boundary visual could go here */}
+          {/* Combat hit effects */}
+          <HitEffectsLayer effects={hitEffects} />
         </Container>
 
-        {/* Right boundary marker */}
-        <Container x={width - 50} y={height * 0.6}>
-          {/* Boundary visual could go here */}
+        {/* Arena boundaries visualization */}
+        <Container>
+          {/* Traditional Korean martial arts mat boundaries */}
+          {/* Add visual elements for arena bounds */}
         </Container>
-      </Container>
-    </Container>
+      </Stage>
+
+      {/* Overlay for additional Korean aesthetic elements */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          pointerEvents: "none",
+          background:
+            "radial-gradient(circle at center, transparent 60%, rgba(0,0,0,0.3) 100%)",
+        }}
+      />
+    </div>
   );
 }

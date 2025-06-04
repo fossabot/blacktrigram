@@ -1,424 +1,475 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { Stage, Container } from "@pixi/react";
-import { Application } from "pixi.js";
-
-// Combat Systems
-import { CombatSystem } from "../../systems/CombatSystem";
-import { TrigramSystem } from "../../systems/TrigramSystem";
-
-// Audio System
-import { useAudio } from "../../audio/AudioManager";
-
-// Types
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import type {
   PlayerState,
   TrigramStance,
   CombatResult,
-  PlayerArchetype,
-  HitEffect,
+  GamePhase,
   Position,
 } from "../../types";
-
-// Combat Components
-import { CombatArena } from "./components/CombatArena";
 import { CombatHUD } from "./components/CombatHUD";
 import { CombatControls } from "./components/CombatControls";
+import { CombatArena } from "./components/CombatArena";
+import { useAudio } from "../../audio/AudioManager";
+import { CombatSystem } from "../../systems/CombatSystem";
+import { TrigramSystem } from "../../systems/TrigramSystem";
+import { KOREAN_COLORS, TRIGRAM_DATA } from "../../types/constants";
+import { KoreanText } from "../ui/base/korean-text/KoreanText";
 
-// Utilities
-import { createPlayerState } from "../../utils/playerUtils";
-
-export interface CombatScreenProps {
-  readonly player: PlayerState;
-  readonly archetype: PlayerArchetype;
-  readonly onGameOver: (winner: PlayerState) => void;
-  readonly onReturnToMenu: () => void;
+interface CombatScreenProps {
+  readonly players: readonly PlayerState[];
+  readonly onGamePhaseChange: (phase: GamePhase) => void;
+  readonly onPlayerUpdate: (
+    index: number,
+    updates: Partial<PlayerState>
+  ) => void;
+  readonly gameTime: number;
+  readonly currentRound: number;
+  readonly maxRounds: number;
 }
 
-const ARENA_WIDTH = 800;
-const ARENA_HEIGHT = 600;
-const ROUND_TIME = 180; // 3 minutes
+interface HitEffect {
+  readonly id: string;
+  readonly position: Position;
+  readonly damage: number;
+  readonly type: "normal" | "critical" | "vital";
+  readonly timestamp: number;
+}
 
-const CombatScreen: React.FC<CombatScreenProps> = ({
-  player,
-  archetype,
-  onGameOver,
-  onReturnToMenu,
-}) => {
+export function CombatScreen({
+  players,
+  onGamePhaseChange,
+  onPlayerUpdate,
+  gameTime,
+  currentRound,
+  maxRounds,
+}: CombatScreenProps): React.JSX.Element {
   const audio = useAudio();
+  const [player1] = useState(players[0]);
+  const [player2] = useState(players[1]);
+  const [hitEffects, setHitEffects] = useState<HitEffect[]>([]);
+  const [isProcessingAction, setIsProcessingAction] = useState(false);
+  const [combatLog, setCombatLog] = useState<string[]>([]);
+  const gameLoopRef = useRef<number>();
 
-  // Create PIXI Application
-  const app = useMemo(() => {
-    return new Application({
-      width: ARENA_WIDTH,
-      height: ARENA_HEIGHT,
-      backgroundColor: 0x000000,
-      antialias: true,
-    });
-  }, []);
+  const ARENA_WIDTH = 800;
+  const ARENA_HEIGHT = 600;
 
-  // Game State
-  const [gameTime, setGameTime] = useState(0);
-  const [timeRemaining, setTimeRemaining] = useState(ROUND_TIME);
-  const [currentRound, setCurrentRound] = useState(1);
-  const [isPaused, setIsPaused] = useState(false);
-  const [isExecutingTechnique, setIsExecutingTechnique] = useState(false);
-  const [combatEffects, setCombatEffects] = useState<readonly HitEffect[]>([]);
+  // Korean martial arts combat initialization
+  useEffect(() => {
+    audio.playMusic("combat_theme", { loop: true, volume: 0.6 });
 
-  // Player States
-  const [playerState, setPlayerState] = useState<PlayerState>(player);
-  const [opponent, setOpponent] = useState<PlayerState>(() =>
-    createPlayerState("opponent", "amsalja", "tae", {
-      position: { x: ARENA_WIDTH * 0.75, y: ARENA_HEIGHT * 0.6 },
-      facing: "left",
-    })
-  );
+    // Initialize combat positions if not set
+    if (player1.position.x === 0 && player1.position.y === 0) {
+      onPlayerUpdate(0, {
+        position: { x: ARENA_WIDTH * 0.25, y: ARENA_HEIGHT * 0.6 },
+      });
+    }
+    if (player2.position.x === 0 && player2.position.y === 0) {
+      onPlayerUpdate(1, {
+        position: { x: ARENA_WIDTH * 0.75, y: ARENA_HEIGHT * 0.6 },
+      });
+    }
 
-  const players = useMemo(
-    () => [playerState, opponent] as const,
-    [playerState, opponent]
-  );
+    // Start game loop for Korean martial arts physics
+    const gameLoop = () => {
+      // Update combat states, regeneration, effect timers
+      updateCombatStates();
+      gameLoopRef.current = requestAnimationFrame(gameLoop);
+    };
+    gameLoopRef.current = requestAnimationFrame(gameLoop);
 
-  // Combat Systems
-  const combatSystem = useMemo(() => new CombatSystem(), []);
-  const trigramSystem = useMemo(() => new TrigramSystem(), []);
+    return () => {
+      audio.stopMusic();
+      if (gameLoopRef.current) {
+        cancelAnimationFrame(gameLoopRef.current);
+      }
+    };
+  }, [audio, player1.position, player2.position, onPlayerUpdate]);
 
-  // Handle stance changes
-  const handleStanceChange = useCallback(
-    (playerIndex: number, newStance: TrigramStance) => {
-      const currentPlayer = players[playerIndex];
+  // Check win conditions
+  useEffect(() => {
+    const winner = CombatSystem.checkWinCondition([player1, player2]);
+    if (winner) {
+      setIsProcessingAction(true);
+      audio.playSFX("combat_end");
 
-      // Check if stance change is valid
-      const canChange = trigramSystem.canTransitionToStance(
-        currentPlayer.stance,
-        newStance,
-        currentPlayer
-      );
+      setTimeout(() => {
+        onGamePhaseChange("end");
+      }, 2000);
+    }
+  }, [
+    player1.health,
+    player1.consciousness,
+    player2.health,
+    player2.consciousness,
+    audio,
+    onGamePhaseChange,
+  ]);
 
-      if (canChange.allowed) {
-        const transitionCost = trigramSystem.calculateTransitionCost(
-          currentPlayer.stance,
-          newStance,
-          currentPlayer
+  const updateCombatStates = useCallback(() => {
+    // Regenerate Ki and stamina over time
+    const regenRate = 16; // 60fps
+    const kiRegen = 0.5 * (regenRate / 1000);
+    const staminaRegen = 1.0 * (regenRate / 1000);
+
+    [player1, player2].forEach((player, index) => {
+      const updates: Partial<PlayerState> = {};
+
+      if (player.ki < player.maxKi) {
+        updates.ki = Math.min(player.maxKi, player.ki + kiRegen);
+      }
+
+      if (player.stamina < player.maxStamina) {
+        updates.stamina = Math.min(
+          player.maxStamina,
+          player.stamina + staminaRegen
         );
+      }
 
-        const updates: Partial<PlayerState> = {
-          stance: newStance,
-          ki: currentPlayer.ki - transitionCost.ki,
-          stamina: currentPlayer.stamina - transitionCost.stamina,
-          lastStanceChangeTime: Date.now(),
-        };
+      // Process active effects
+      if (player.activeEffects?.length > 0) {
+        const updatedEffects = player.activeEffects.filter((effect) => {
+          return (effect.duration || 0) > gameTime;
+        });
 
-        if (playerIndex === 0) {
-          setPlayerState((prev) => ({ ...prev, ...updates }));
-        } else {
-          setOpponent((prev) => ({ ...prev, ...updates }));
+        if (updatedEffects.length !== player.activeEffects.length) {
+          updates.activeEffects = updatedEffects;
         }
-
-        audio.playSFX("stance_change");
-      } else {
-        audio.playSFX("action_blocked");
       }
-    },
-    [players, trigramSystem, audio]
-  );
 
-  // Handle player updates
-  const handlePlayerUpdate = useCallback(
-    (playerIndex: number, updates: Partial<PlayerState>) => {
-      if (playerIndex === 0) {
-        setPlayerState((prev) => ({ ...prev, ...updates }));
-      } else {
-        setOpponent((prev) => ({ ...prev, ...updates }));
+      if (Object.keys(updates).length > 0) {
+        onPlayerUpdate(index, updates);
       }
-    },
-    []
-  );
+    });
 
-  // Handle technique execution
-  const handleTechniqueExecute = useCallback(
-    async (playerIndex: number, technique: any) => {
-      setIsExecutingTechnique(true);
+    // Clean up old hit effects
+    setHitEffects((prev) =>
+      prev.filter((effect) => gameTime - effect.timestamp < 2000)
+    );
+  }, [player1, player2, gameTime, onPlayerUpdate]);
+
+  // Korean martial arts stance change handler
+  const handleStanceChange = useCallback(
+    async (playerId: string, newStance: TrigramStance) => {
+      if (isProcessingAction) return;
+
+      const playerIndex = players.findIndex((p) => p.id === playerId);
+      if (playerIndex === -1) return;
+
+      const player = players[playerIndex];
+      if (player.stance === newStance) return;
+
+      setIsProcessingAction(true);
 
       try {
-        const attacker = players[playerIndex];
-        const defenderIndex = playerIndex === 0 ? 1 : 0;
-        const defender = players[defenderIndex];
+        // Use TrigramSystem for authentic Korean martial arts transitions
+        const canTransition = TrigramSystem.canTransitionTo(
+          player.stance,
+          newStance,
+          player
+        );
 
-        // Execute combat calculation
-        const result: CombatResult = combatSystem.executeTechnique(
+        if (canTransition) {
+          const transitionResult = TrigramSystem.executeTransition(
+            player,
+            newStance
+          );
+
+          if (transitionResult.success) {
+            onPlayerUpdate(playerIndex, transitionResult.newState);
+            audio.playSFX("stance_change");
+
+            const logEntry = `${player.name}이(가) ${TRIGRAM_DATA[newStance].name.korean} 자세로 전환했습니다.`;
+            setCombatLog((prev) => [...prev.slice(-4), logEntry]);
+          }
+        }
+      } catch (error) {
+        console.error("Korean martial arts stance transition error:", error);
+      } finally {
+        setTimeout(() => setIsProcessingAction(false), 300);
+      }
+    },
+    [isProcessingAction, players, onPlayerUpdate, audio]
+  );
+
+  // Korean martial arts attack execution
+  const handleAttack = useCallback(
+    async (attackerId: string) => {
+      if (isProcessingAction) return;
+
+      const attackerIndex = players.findIndex((p) => p.id === attackerId);
+      const defenderIndex = attackerIndex === 0 ? 1 : 0;
+
+      if (attackerIndex === -1) return;
+
+      const attacker = players[attackerIndex];
+      const defender = players[defenderIndex];
+
+      setIsProcessingAction(true);
+
+      try {
+        // Execute Korean martial arts combat
+        const technique = TRIGRAM_DATA[attacker.stance].technique;
+        const combatResult: CombatResult = await CombatSystem.executeAttack(
           attacker,
           defender,
           technique
         );
 
-        // Apply damage and effects
-        const defenderUpdates: Partial<PlayerState> = {
-          health: Math.max(0, defender.health - result.damage),
-          consciousness: Math.max(
-            0,
-            defender.consciousness - result.consciousnessLoss
-          ),
-          pain: Math.min(100, defender.pain + result.painInflicted),
-        };
+        if (combatResult.hit) {
+          // Apply damage and effects
+          const defenderUpdates: Partial<PlayerState> = {
+            health: Math.max(0, defender.health - combatResult.damage),
+            consciousness: Math.max(
+              0,
+              defender.consciousness - (combatResult.consciousnessImpact || 0)
+            ),
+            pain: Math.min(100, defender.pain + (combatResult.painLevel || 0)),
+            activeEffects: [
+              ...(defender.activeEffects || []),
+              ...combatResult.effects,
+            ],
+          };
 
-        handlePlayerUpdate(defenderIndex, defenderUpdates);
+          const attackerUpdates: Partial<PlayerState> = {
+            stamina: Math.max(0, attacker.stamina - combatResult.staminaUsed),
+            ki: Math.max(0, attacker.ki - combatResult.kiUsed),
+          };
 
-        // Create hit effect
-        const hitEffect: HitEffect = {
-          id: `hit_${Date.now()}`,
-          type:
-            result.damage > 30
+          onPlayerUpdate(defenderIndex, defenderUpdates);
+          onPlayerUpdate(attackerIndex, attackerUpdates);
+
+          // Create hit effect
+          const hitEffect: HitEffect = {
+            id: `hit_${Date.now()}`,
+            position: defender.position,
+            damage: combatResult.damage,
+            type: combatResult.critical
               ? "critical"
-              : result.damage > 15
-              ? "heavy"
-              : "medium",
-          position: defender.position,
-          damage: result.damage,
-          color: result.damage > 30 ? 0xff0000 : 0xffff00,
-          startTime: Date.now(),
-          duration: 1000,
-          korean: result.damage > 30 ? "치명타!" : "타격!",
-          createdAt: Date.now(),
-        };
+              : combatResult.isVitalPoint
+              ? "vital"
+              : "normal",
+            timestamp: gameTime,
+          };
+          setHitEffects((prev) => [...prev, hitEffect]);
 
-        setCombatEffects((prev) => [...prev, hitEffect]);
+          // Audio feedback
+          await audio.playHitSound(
+            combatResult.damage,
+            combatResult.isVitalPoint
+          );
 
-        // Play audio feedback
-        if (result.damage > 30) {
-          audio.playSFX("critical_hit");
-        } else if (result.damage > 15) {
-          audio.playSFX("heavy_hit");
+          if (combatResult.critical) {
+            audio.playSFX("critical_hit");
+          }
+
+          // Combat log
+          const logEntry = combatResult.critical
+            ? `${attacker.name}의 치명적인 ${technique.koreanName}! (${combatResult.damage} 피해)`
+            : `${attacker.name}의 ${technique.koreanName} (${combatResult.damage} 피해)`;
+          setCombatLog((prev) => [...prev.slice(-4), logEntry]);
         } else {
-          audio.playSFX("light_hit");
-        }
+          audio.playSFX("attack_miss");
 
-        // Check for game over
-        if (defenderUpdates.health === 0) {
-          setTimeout(() => onGameOver(attacker), 1000);
+          const attackerUpdates: Partial<PlayerState> = {
+            stamina: Math.max(0, attacker.stamina - 5), // Miss penalty
+          };
+          onPlayerUpdate(attackerIndex, attackerUpdates);
+
+          setCombatLog((prev) => [
+            ...prev.slice(-4),
+            `${attacker.name}의 공격이 빗나갔습니다.`,
+          ]);
         }
+      } catch (error) {
+        console.error("Korean martial arts combat error:", error);
       } finally {
-        setTimeout(() => setIsExecutingTechnique(false), 500);
+        setTimeout(() => setIsProcessingAction(false), 600);
       }
     },
-    [players, combatSystem, handlePlayerUpdate, audio, onGameOver]
+    [isProcessingAction, players, onPlayerUpdate, audio, gameTime]
   );
 
-  // Game loop for timer and effects cleanup
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
+  const handleBlock = useCallback(
+    (playerId: string) => {
+      const playerIndex = players.findIndex((p) => p.id === playerId);
+      if (playerIndex === -1) return;
 
-    if (!isPaused) {
-      interval = setInterval(() => {
-        setGameTime((prev) => prev + 1000);
-        setTimeRemaining((prev) => {
-          const newTime = prev - 1;
-          if (newTime <= 0) {
-            // Time's up - determine winner by health
-            const winner =
-              playerState.health > opponent.health ? playerState : opponent;
-            onGameOver(winner);
-            return 0;
-          }
-          return newTime;
-        });
+      const player = players[playerIndex];
 
-        // Clean up old effects
-        setCombatEffects((prev) =>
-          prev.filter(
-            (effect) => Date.now() - effect.startTime < effect.duration
-          )
-        );
-      }, 1000);
-    }
+      onPlayerUpdate(playerIndex, {
+        stamina: Math.max(0, player.stamina - 10),
+        combatState: "defending",
+      });
 
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [isPaused, playerState.health, opponent.health, onGameOver]);
-
-  // Keyboard controls
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (isPaused) return;
-
-      const key = event.key;
-
-      // Stance changes for player 1 (1-8 keys)
-      if (key >= "1" && key <= "8") {
-        const stanceIndex = parseInt(key) - 1;
-        const stances: TrigramStance[] = [
-          "geon",
-          "tae",
-          "li",
-          "jin",
-          "son",
-          "gam",
-          "gan",
-          "gon",
-        ];
-        handleStanceChange(0, stances[stanceIndex]);
-      }
-
-      // Other controls
-      switch (key) {
-        case " ": // Space - execute technique
-          event.preventDefault();
-          if (playerState.ki >= 20) {
-            handleTechniqueExecute(0, { stance: playerState.stance });
-          }
-          break;
-        case "Escape": // Pause
-          setIsPaused((prev) => !prev);
-          break;
-        case "q": // Return to menu
-          onReturnToMenu();
-          break;
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [
-    isPaused,
-    playerState,
-    handleStanceChange,
-    handleTechniqueExecute,
-    onReturnToMenu,
-  ]);
-
-  // Fix Position type usage
-  const [playerPosition] = useState<Position>({ x: 100, y: 200 });
-
-  // Fix method calls
-  const canChangeStance = trigramSystem.canTransitionTo(
-    playerState.stance,
-    targetStance,
-    playerState
+      audio.playSFX("block");
+      setCombatLog((prev) => [
+        ...prev.slice(-4),
+        `${player.name}이(가) 방어 자세를 취했습니다.`,
+      ]);
+    },
+    [players, onPlayerUpdate, audio]
   );
 
-  // Fix CombatSystem method call
-  const handleExecuteTechnique = () => {
-    const result = CombatSystem.executeTechnique(
-      selectedTechnique,
-      "player1",
-      "opponent1"
-    );
+  const handleSpecialTechnique = useCallback(
+    async (playerId: string) => {
+      const playerIndex = players.findIndex((p) => p.id === playerId);
+      if (playerIndex === -1) return;
 
-    // Handle result properties
-    if (result.consciousnessLoss) {
-      console.log(`Consciousness loss: ${result.consciousnessLoss}`);
-    }
-    if (result.painInflicted) {
-      console.log(`Pain inflicted: ${result.painInflicted}`);
-    }
-  };
+      const player = players[playerIndex];
 
+      if (player.ki < 25) return;
+
+      const technique = TRIGRAM_DATA[player.stance].technique;
+
+      onPlayerUpdate(playerIndex, {
+        ki: Math.max(0, player.ki - 25),
+        stamina: Math.max(0, player.stamina - 15),
+      });
+
+      audio.playSFX("special_technique");
+      setCombatLog((prev) => [
+        ...prev.slice(-4),
+        `${player.name}이(가) ${technique.koreanName} 특수기를 사용했습니다!`,
+      ]);
+    },
+    [players, onPlayerUpdate, audio]
+  );
+
+  const handlePlayerClick = useCallback(
+    (playerId: string, position: Position) => {
+      // Handle targeting for precise Korean martial arts strikes
+      console.log(`Korean martial arts targeting: ${playerId} at`, position);
+    },
+    []
+  );
+
+  // Render Korean martial arts combat interface
   return (
     <div
-      className="combat-screen"
       style={{
-        backgroundColor: "#0a0a0a",
-        minHeight: "100vh",
+        width: "100vw",
+        height: "100vh",
+        background: `linear-gradient(135deg, #${KOREAN_COLORS.BLACK.toString(
+          16
+        )} 0%, #${KOREAN_COLORS.TRADITIONAL_BLUE.toString(16)} 100%)`,
+        position: "relative",
+        overflow: "hidden",
         fontFamily: '"Noto Sans KR", Arial, sans-serif',
       }}
     >
-      <div className="combat-ui">
+      {/* Combat Arena */}
+      <CombatArena
+        width={ARENA_WIDTH}
+        height={ARENA_HEIGHT}
+        player1={player1}
+        player2={player2}
+        hitEffects={hitEffects}
+        onPlayerClick={handlePlayerClick}
+      />
+
+      {/* HUD Overlay */}
+      <CombatHUD
+        player1={player1}
+        player2={player2}
+        currentRound={currentRound}
+        maxRounds={maxRounds}
+        gameTime={gameTime}
+      />
+
+      {/* Combat Controls for Player 1 */}
+      <CombatControls
+        player={player1}
+        onStanceChange={(stance) => handleStanceChange(player1.id, stance)}
+        onAttack={() => handleAttack(player1.id)}
+        onBlock={() => handleBlock(player1.id)}
+        onSpecialTechnique={() => handleSpecialTechnique(player1.id)}
+        disabled={isProcessingAction}
+      />
+
+      {/* Combat Log */}
+      <div
+        style={{
+          position: "absolute",
+          right: "1rem",
+          bottom: "1rem",
+          width: "300px",
+          maxHeight: "200px",
+          background: "rgba(0, 0, 0, 0.8)",
+          border: `1px solid #${KOREAN_COLORS.GOLD.toString(16)}`,
+          borderRadius: "8px",
+          padding: "1rem",
+          overflow: "auto",
+          fontSize: "0.8rem",
+          color: "#ffffff",
+        }}
+      >
+        <KoreanText
+          korean="전투 기록"
+          english="Combat Log"
+          size="small"
+          weight={600}
+          style={{ marginBottom: "0.5rem" }}
+        />
+        {combatLog.map((entry, index) => (
+          <div key={index} style={{ marginBottom: "0.3rem", opacity: 0.8 }}>
+            {entry}
+          </div>
+        ))}
+      </div>
+
+      {/* Exit Controls */}
+      <button
+        onClick={() => onGamePhaseChange("intro")}
+        style={{
+          position: "absolute",
+          top: "1rem",
+          right: "1rem",
+          padding: "0.5rem 1rem",
+          background: "rgba(0, 0, 0, 0.8)",
+          border: `1px solid #${KOREAN_COLORS.WHITE.toString(16)}`,
+          borderRadius: "4px",
+          color: "#ffffff",
+          cursor: "pointer",
+          fontFamily: '"Noto Sans KR", Arial, sans-serif',
+        }}
+      >
+        <KoreanText korean="나가기" english="Exit" size="small" />
+      </button>
+
+      {/* Combat Processing Overlay */}
+      {isProcessingAction && (
         <div
-          className="player-stats"
           style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            background: "rgba(0, 0, 0, 0.3)",
             display: "flex",
-            justifyContent: "space-between",
-            padding: "1rem",
-            color: "#ffffff",
+            alignItems: "center",
+            justifyContent: "center",
+            pointerEvents: "none",
           }}
         >
-          <div className="player1-stats">
-            <h3>
-              {player1.name} ({player1.archetype})
-            </h3>
-            <div>
-              체력 (Health): {player1.health}/{player1.maxHealth}
-            </div>
-            <div>
-              기 (Ki): {player1.ki}/{player1.maxKi}
-            </div>
-            <div>자세 (Stance): {player1.stance}</div>
-          </div>
-
           <div
-            className="combat-controls"
             style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "0.5rem",
+              background: "rgba(0, 0, 0, 0.8)",
+              padding: "1rem 2rem",
+              borderRadius: "8px",
+              border: `2px solid #${KOREAN_COLORS.GOLD.toString(16)}`,
             }}
           >
-            <button onClick={handleAttack} style={{ padding: "0.5rem 1rem" }}>
-              공격 (Attack)
-            </button>
-            <button
-              onClick={() => handleStanceChange("geon")}
-              style={{ padding: "0.5rem 1rem" }}
-            >
-              건 (Heaven)
-            </button>
-            <button
-              onClick={() => handleStanceChange("tae")}
-              style={{ padding: "0.5rem 1rem" }}
-            >
-              태 (Lake)
-            </button>
-            <button
-              onClick={() => handleStanceChange("li")}
-              style={{ padding: "0.5rem 1rem" }}
-            >
-              리 (Fire)
-            </button>
-            <button onClick={onBack} style={{ padding: "0.5rem 1rem" }}>
-              돌아가기 (Back)
-            </button>
-          </div>
-
-          <div className="player2-stats">
-            <h3>
-              {player2.name} ({player2.archetype})
-            </h3>
-            <div>
-              체력 (Health): {player2.health}/{player2.maxHealth}
-            </div>
-            <div>
-              기 (Ki): {player2.ki}/{player2.maxKi}
-            </div>
-            <div>자세 (Stance): {player2.stance}</div>
+            <KoreanText
+              korean="기법 실행 중..."
+              english="Executing Technique..."
+              size="medium"
+              weight={600}
+            />
           </div>
         </div>
-
-        <Container
-          style={{
-            width: ARENA_WIDTH,
-            height: ARENA_HEIGHT,
-            backgroundColor: "#1a1a2e",
-          }}
-        >
-          {/* Korean martial arts arena will be rendered here */}
-          <div
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              color: "#ffffff",
-              textAlign: "center",
-            }}
-          >
-            <h2>흑괘 무술 경기장</h2>
-            <p>Black Trigram Combat Arena</p>
-            <p>Round {currentRound}</p>
-          </div>
-        </Container>
-      </div>
+      )}
     </div>
   );
-};
-
-export default CombatScreen;
+}

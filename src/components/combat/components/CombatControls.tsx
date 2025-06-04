@@ -1,136 +1,210 @@
 import React, { useCallback } from "react";
-import { Container, Text } from "@pixi/react";
-import { TrigramWheel } from "../../ui/TrigramWheel";
-import { KoreanButton } from "../../ui/base/KoreanPixiComponents";
-import type { PlayerState, TrigramStance } from "../../../types";
-import {
-  KOREAN_COLORS,
-  KOREAN_FONT_FAMILY_PRIMARY,
-} from "../../../types/constants";
-import { useAudio } from "../../../audio/AudioManager";
+import type { TrigramStance, PlayerState } from "../../../types";
+import { KoreanText } from "../../ui/base/korean-text/KoreanText";
+import { KOREAN_COLORS, TRIGRAM_DATA } from "../../../types/constants";
 
-export interface CombatControlsProps {
-  readonly players: readonly [PlayerState, PlayerState];
-  readonly onStanceChange: (playerIndex: number, stance: TrigramStance) => void;
-  readonly isExecutingTechnique: boolean;
-  readonly isPaused: boolean;
-  readonly width?: number;
-  readonly height?: number;
+interface CombatControlsProps {
+  readonly player: PlayerState;
+  readonly onStanceChange: (stance: TrigramStance) => void;
+  readonly onAttack: () => void;
+  readonly onBlock: () => void;
+  readonly onSpecialTechnique: () => void;
+  readonly disabled?: boolean;
 }
 
 export function CombatControls({
-  players,
+  player,
   onStanceChange,
-  isExecutingTechnique,
-  isPaused,
-  width = 800,
-  height = 600,
-}: CombatControlsProps): React.ReactElement {
-  const audio = useAudio();
-  const [player1, player2] = players;
+  onAttack,
+  onBlock,
+  onSpecialTechnique,
+  disabled = false,
+}: CombatControlsProps): React.JSX.Element {
+  const stances: TrigramStance[] = [
+    "geon",
+    "tae",
+    "li",
+    "jin",
+    "son",
+    "gam",
+    "gan",
+    "gon",
+  ];
 
-  const handleStanceChange = useCallback(
-    (playerIndex: number, stance: TrigramStance) => {
-      if (!isPaused && !isExecutingTechnique) {
-        audio.playSFX("stance_select");
-        onStanceChange(playerIndex, stance);
+  const handleStanceClick = useCallback(
+    (stance: TrigramStance) => {
+      if (!disabled && stance !== player.stance) {
+        onStanceChange(stance);
       }
     },
-    [isPaused, isExecutingTechnique, onStanceChange, audio]
+    [disabled, player.stance, onStanceChange]
   );
 
-  const handleTechniqueButton = useCallback(() => {
-    if (!isPaused && !isExecutingTechnique) {
-      audio.playSFX("technique_execute");
-      // Technique execution logic would go here
-    }
-  }, [isPaused, isExecutingTechnique, audio]);
+  const buttonStyle = (isActive: boolean, color: number) => ({
+    padding: "0.5rem 1rem",
+    margin: "0.25rem",
+    background: isActive
+      ? `#${color.toString(16).padStart(6, "0")}`
+      : "rgba(255, 255, 255, 0.1)",
+    color: isActive ? "#000000" : "#ffffff",
+    border: `1px solid #${color.toString(16).padStart(6, "0")}`,
+    borderRadius: "4px",
+    cursor: disabled ? "not-allowed" : "pointer",
+    opacity: disabled ? 0.6 : 1,
+    transition: "all 0.2s ease",
+    fontFamily: '"Noto Sans KR", Arial, sans-serif',
+    fontSize: "0.8rem",
+    minWidth: "80px",
+  });
+
+  const actionButtonStyle = (color: number, canUse: boolean = true) => ({
+    padding: "1rem 2rem",
+    margin: "0.5rem",
+    background: canUse
+      ? `#${color.toString(16).padStart(6, "0")}`
+      : "rgba(128, 128, 128, 0.3)",
+    color: canUse ? "#000000" : "#666666",
+    border: `2px solid #${color.toString(16).padStart(6, "0")}`,
+    borderRadius: "8px",
+    cursor: disabled || !canUse ? "not-allowed" : "pointer",
+    opacity: disabled ? 0.6 : 1,
+    transition: "all 0.2s ease",
+    fontFamily: '"Noto Sans KR", Arial, sans-serif',
+    fontSize: "1rem",
+    fontWeight: "bold",
+    minWidth: "120px",
+  });
 
   return (
-    <Container>
-      {/* Player 1 Controls - Bottom Left */}
-      <Container x={100} y={height - 150}>
-        <Text
-          text="플레이어 1 - 자세 선택"
-          anchor={0.5}
-          y={-30}
+    <div
+      style={{
+        position: "absolute",
+        bottom: "1rem",
+        left: "50%",
+        transform: "translateX(-50%)",
+        background: "rgba(0, 0, 0, 0.9)",
+        border: `2px solid #${KOREAN_COLORS.GOLD.toString(16)}`,
+        borderRadius: "12px",
+        padding: "1.5rem",
+        color: "#ffffff",
+        fontFamily: '"Noto Sans KR", Arial, sans-serif',
+      }}
+    >
+      {/* Stance Selection */}
+      <div style={{ marginBottom: "1rem", textAlign: "center" }}>
+        <KoreanText
+          korean="팔괘 자세 선택"
+          english="Eight Trigram Stance Selection"
+          size="medium"
+          weight={600}
+          style={{ marginBottom: "0.5rem" }}
+        />
+        <div
           style={{
-            fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
-            fontSize: 14,
-            fill: KOREAN_COLORS.CYAN,
-            fontWeight: "bold",
+            display: "grid",
+            gridTemplateColumns: "repeat(4, 1fr)",
+            gap: "0.5rem",
+            maxWidth: "400px",
           }}
-        />
+        >
+          {stances.map((stance) => {
+            const trigramData = TRIGRAM_DATA[stance];
+            const stanceColor =
+              KOREAN_COLORS[stance as keyof typeof KOREAN_COLORS] ||
+              KOREAN_COLORS.WHITE;
+            const isActive = player.stance === stance;
 
-        <TrigramWheel
-          currentStance={player1.stance}
-          onStanceSelect={(stance) => handleStanceChange(0, stance)}
-          radius={60}
-          disabled={isPaused || isExecutingTechnique}
-          showLabels={true}
-        />
+            return (
+              <button
+                key={stance}
+                onClick={() => handleStanceClick(stance)}
+                style={buttonStyle(isActive, stanceColor)}
+                title={`${trigramData.name.korean} (${trigramData.name.english})`}
+              >
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: "1.2rem", marginBottom: "0.2rem" }}>
+                    {trigramData.symbol}
+                  </div>
+                  <div style={{ fontSize: "0.7rem" }}>
+                    {trigramData.name.korean}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-        {/* Technique button */}
-        <KoreanButton
-          koreanText="기술 실행"
-          variant="primary"
-          x={-50}
-          y={100}
-          width={100}
-          height={30}
-          onClick={handleTechniqueButton}
-          disabled={isPaused || isExecutingTechnique || player1.ki < 20}
-        />
-      </Container>
+      {/* Combat Actions */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          gap: "1rem",
+          flexWrap: "wrap",
+        }}
+      >
+        <button
+          onClick={onAttack}
+          disabled={disabled || player.stamina < 15}
+          style={actionButtonStyle(KOREAN_COLORS.RED, player.stamina >= 15)}
+        >
+          <KoreanText
+            korean="공격"
+            english="Attack"
+            size="medium"
+            weight={700}
+          />
+        </button>
 
-      {/* Player 2 Controls - Bottom Right */}
-      <Container x={width - 100} y={height - 150}>
-        <Text
-          text="플레이어 2 - 자세 선택"
-          anchor={0.5}
-          y={-30}
-          style={{
-            fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
-            fontSize: 14,
-            fill: KOREAN_COLORS.TRADITIONAL_RED,
-            fontWeight: "bold",
-          }}
-        />
+        <button
+          onClick={onBlock}
+          disabled={disabled || player.stamina < 10}
+          style={actionButtonStyle(KOREAN_COLORS.BLUE, player.stamina >= 10)}
+        >
+          <KoreanText
+            korean="방어"
+            english="Block"
+            size="medium"
+            weight={700}
+          />
+        </button>
 
-        <TrigramWheel
-          currentStance={player2.stance}
-          onStanceSelect={(stance) => handleStanceChange(1, stance)}
-          radius={60}
-          disabled={isPaused || isExecutingTechnique}
-          showLabels={true}
-        />
+        <button
+          onClick={onSpecialTechnique}
+          disabled={disabled || player.ki < 25}
+          style={actionButtonStyle(KOREAN_COLORS.PURPLE, player.ki >= 25)}
+        >
+          <KoreanText
+            korean="특수기"
+            english="Special"
+            size="medium"
+            weight={700}
+          />
+        </button>
+      </div>
 
-        {/* Technique button */}
-        <KoreanButton
-          koreanText="기술 실행"
-          variant="secondary"
-          x={-50}
-          y={100}
-          width={100}
-          height={30}
-          onClick={handleTechniqueButton}
-          disabled={isPaused || isExecutingTechnique || player2.ki < 20}
+      {/* Current Technique Info */}
+      <div
+        style={{
+          marginTop: "1rem",
+          padding: "0.5rem",
+          background: "rgba(255, 255, 255, 0.1)",
+          borderRadius: "4px",
+          textAlign: "center",
+        }}
+      >
+        <KoreanText
+          korean={`현재 기법: ${
+            TRIGRAM_DATA[player.stance].technique.koreanName
+          }`}
+          english={`Current Technique: ${
+            TRIGRAM_DATA[player.stance].technique.englishName
+          }`}
+          size="small"
+          weight={500}
         />
-      </Container>
-
-      {/* Control Instructions */}
-      <Container x={width / 2} y={height - 100}>
-        <Text
-          text="1-8: 자세 변경 | SPACE: 기술 실행 | ESC: 일시정지"
-          anchor={0.5}
-          style={{
-            fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
-            fontSize: 12,
-            fill: KOREAN_COLORS.GRAY_LIGHT,
-            alpha: 0.8,
-          }}
-        />
-      </Container>
-    </Container>
+      </div>
+    </div>
   );
 }

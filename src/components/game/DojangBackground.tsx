@@ -2,69 +2,143 @@
 
 import React, { useCallback } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
-import type { Graphics as PixiGraphics } from "pixi.js";
-import { KOREAN_COLORS, KOREAN_FONT_FAMILY_PRIMARY } from "../../types/constants";
+import { KOREAN_COLORS, TRIGRAM_DATA } from "../../types/constants";
 
 export interface DojangBackgroundProps {
   readonly width: number;
   readonly height: number;
-  readonly timeOfDay?: "dawn" | "day" | "dusk" | "night";
-  readonly weather?: "clear" | "rain" | "snow" | "storm";
+  readonly ambientLevel?: number;
+  readonly showTrigramSymbols?: boolean;
 }
 
 export function DojangBackground({
   width,
   height,
-  timeOfDay = "night",
-  weather = "clear",
+  ambientLevel = 0.3,
+  showTrigramSymbols = true,
 }: DojangBackgroundProps): React.ReactElement {
   // Draw main background
   const drawBackground = useCallback(
-    (g: PixiGraphics) => {
+    (g: any) => {
+      if (!g || !g.clear) return;
+
       g.clear();
 
-      // Back wall
-      g.beginFill(KOREAN_COLORS.DOJANG_WALL);
-      g.drawRect(0, 0, width, height * 0.7);
+      // Deep black base representing underground training hall
+      g.beginFill(KOREAN_COLORS.BLACK, 1.0);
+      g.drawRect(0, 0, width, height);
       g.endFill();
 
-      // Traditional Korean decorative elements
-      // Ceiling beams
-      g.beginFill(KOREAN_COLORS.WOOD_BROWN);
-      g.drawRect(0, height * 0.1, width, 20);
-      g.drawRect(0, height * 0.25, width, 15);
+      // Subtle gray concrete texture (using existing SILVER color)
+      g.beginFill(KOREAN_COLORS.SILVER, 0.1);
+      for (let i = 0; i < 5; i++) {
+        const x = (width / 5) * i;
+        g.drawRect(x, 0, width / 5, height);
+      }
       g.endFill();
 
-      // Lighting effects based on time of day
-      if (timeOfDay === "day") {
-        g.beginFill(KOREAN_COLORS.HANBOK_WHITE, 0.1);
-        g.drawRect(0, 0, width, height);
-        g.endFill();
-      }
+      // Neon accent lighting - cyberpunk Korean aesthetic
+      const neonIntensity = ambientLevel * 0.8;
 
-      // Weather effects
-      if (weather === "rain") {
-        // Add subtle rain effect overlay
-        for (let i = 0; i < 20; i++) {
-          g.lineStyle(1, KOREAN_COLORS.ELECTRIC_BLUE, 0.3);
-          g.moveTo(Math.random() * width, 0);
-          g.lineTo(Math.random() * width, height);
-        }
-      }
+      // Cool cyan neon strips
+      g.beginFill(KOREAN_COLORS.CYAN, neonIntensity);
+      g.drawRect(0, height * 0.1, width, 2);
+      g.drawRect(0, height * 0.9, width, 2);
+      g.endFill();
 
-      // Traditional Korean patterns (dancheong style)
-      g.lineStyle(2, KOREAN_COLORS.TRADITIONAL_RED, 0.6);
-      g.drawRect(width * 0.1, height * 0.15, width * 0.8, 5);
+      // Traditional Korean blue accent
+      g.beginFill(KOREAN_COLORS.DOJANG_BLUE, neonIntensity * 0.6);
+      g.drawRect(width * 0.05, 0, 2, height);
+      g.drawRect(width * 0.95, 0, 2, height);
+      g.endFill();
 
-      g.lineStyle(2, KOREAN_COLORS.TRADITIONAL_BLUE, 0.6);
-      g.drawRect(width * 0.1, height * 0.2, width * 0.8, 5);
+      // Center dojang area with subtle gold Korean traditional accent
+      g.lineStyle(1, KOREAN_COLORS.GOLD, neonIntensity);
+      g.drawRect(width * 0.2, height * 0.2, width * 0.6, height * 0.6);
+
+      // Combat training mat indication
+      g.beginFill(KOREAN_COLORS.HANBOK_WHITE, 0.05);
+      g.drawRect(width * 0.25, height * 0.25, width * 0.5, height * 0.5);
+      g.endFill();
     },
-    [width, height, timeOfDay, weather, floorColor]
+    [width, height, ambientLevel]
+  );
+
+  // Trigram symbols positioned around the dojang
+  const drawTrigramSymbols = useCallback(
+    (g: any) => {
+      if (!g || !g.clear) return;
+
+      g.clear();
+
+      // Draw the 8 trigram positions around the combat area
+      const centerX = width * 0.5;
+      const centerY = height * 0.5;
+      const radius = Math.min(width, height) * 0.4;
+
+      Object.entries(TRIGRAM_DATA).forEach(([stance], index) => {
+        const angle = (index / 8) * Math.PI * 2 - Math.PI / 2; // Start from top
+        const x = centerX + Math.cos(angle) * radius;
+        const y = centerY + Math.sin(angle) * radius;
+
+        // Traditional Korean blue glow around symbols
+        g.lineStyle(2, KOREAN_COLORS.WIND_GREEN, ambientLevel * 0.7);
+        g.drawCircle(x, y, 15);
+
+        // Stance-specific color accent
+        const stanceColor =
+          KOREAN_COLORS[stance as keyof typeof KOREAN_COLORS] ||
+          KOREAN_COLORS.WHITE;
+        g.beginFill(stanceColor, ambientLevel * 0.5);
+        g.drawCircle(x, y, 8);
+        g.endFill();
+      });
+    },
+    [width, height, ambientLevel]
   );
 
   return (
     <Container>
+      {/* Main dojang background */}
       <Graphics draw={drawBackground} />
+
+      {/* Trigram symbols if enabled */}
+      {showTrigramSymbols && <Graphics draw={drawTrigramSymbols} />}
+
+      {/* Dojang identification text */}
+      <Text
+        text="흑괘 도장 (Black Trigram Dojang)"
+        x={width * 0.5}
+        y={height * 0.05}
+        anchor={0.5}
+        style={{
+          fontFamily: "Noto Sans KR, Arial, sans-serif",
+          fontSize: 18,
+          fill: KOREAN_COLORS.GOLD,
+          fontWeight: "bold",
+          dropShadow: {
+            color: KOREAN_COLORS.BLACK,
+            distance: 2,
+            alpha: 0.8,
+            angle: Math.PI / 4,
+            blur: 1,
+          },
+        }}
+      />
+
+      {/* Traditional Korean martial arts atmosphere text */}
+      <Text
+        text="정격자의 길 (Path of the Precision Striker)"
+        x={width * 0.5}
+        y={height * 0.95}
+        anchor={0.5}
+        style={{
+          fontFamily: "Noto Sans KR, Arial, sans-serif",
+          fontSize: 12,
+          fill: KOREAN_COLORS.SILVER,
+          fontStyle: "italic",
+        }}
+      />
     </Container>
   );
 }
