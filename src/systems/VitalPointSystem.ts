@@ -4,14 +4,13 @@ import type {
   VitalPoint,
   PlayerArchetype,
   KoreanTechnique,
-  VitalPointHitResult, // Now exported
+  VitalPointHitResult,
   Position,
   DamageType,
   VitalPointEffect,
 } from "../types";
 import type { BodyRegion } from "../types/enums";
-import type { VitalPointSystemConfig } from "../types/systems";
-// Remove RegionData import conflict
+import type { VitalPointSystemConfig, RegionData } from "../types/systems";
 
 import {
   ANATOMICAL_REGIONS_DATA,
@@ -97,7 +96,7 @@ export class VitalPointSystem {
 
     const isCriticalHit = Math.random() < (technique.critChance || 0);
 
-    let damageDealt = finalDamage;
+    const damageDealt = finalDamage;
     const effects: VitalPointEffect[] = []; // Fix type
 
     // Specific vital point targeted
