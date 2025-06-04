@@ -5,48 +5,46 @@ import type { Graphics as PixiGraphics } from "pixi.js";
 
 // Simple progress bar component for individual bars
 interface ProgressBarProps {
+  readonly label: string;
   readonly current: number;
-  readonly maximum: number;
-  readonly width: number;
-  readonly height?: number;
-  readonly barColor?: number;
-  readonly backgroundColor?: number;
-  readonly label?: string;
+  readonly max: number; // Added missing property
+  readonly color: string;
   readonly x?: number;
   readonly y?: number;
+  readonly width?: number;
+  readonly height?: number;
 }
 
 function ProgressBar({
-  current,
-  maximum,
-  width,
-  height = 20,
-  barColor = 0x00ff00,
-  backgroundColor = 0x333333,
   label,
+  current,
+  max,
+  color,
   x = 0,
   y = 0,
+  width = 200,
+  height = 20,
 }: ProgressBarProps) {
-  const percentage = Math.max(0, Math.min(100, (current / maximum) * 100));
+  const percentage = Math.max(0, Math.min(100, (current / max) * 100));
 
   const drawBackground = useCallback(
     (g: PixiGraphics) => {
       g.clear();
-      g.beginFill(backgroundColor);
+      g.beginFill(0x333333);
       g.drawRect(0, 0, width, height);
       g.endFill();
     },
-    [backgroundColor, width, height]
+    [width, height]
   );
 
   const drawProgress = useCallback(
     (g: PixiGraphics) => {
       g.clear();
-      g.beginFill(barColor);
+      g.beginFill(color);
       g.drawRect(0, 0, (width * percentage) / 100, height);
       g.endFill();
     },
-    [barColor, width, height, percentage]
+    [color, width, height, percentage]
   );
 
   return (
@@ -60,7 +58,7 @@ function ProgressBar({
       {/* Label if provided */}
       {label && (
         <Text
-          text={`${label}: ${Math.round(current)}/${maximum}`}
+          text={`${label}: ${Math.round(current)}/${max}`}
           style={{
             fontFamily: "Arial",
             fontSize: 12,
@@ -75,50 +73,34 @@ function ProgressBar({
 }
 
 export function ProgressTracker({
-  health,
-  ki,
-  stamina,
+  health = 100,
+  ki = 100,
+  stamina = 100,
   maxHealth = 100,
   maxKi = 100,
   maxStamina = 100,
-  x = 0,
-  y = 0,
-  width = 200,
-  showLabels = true,
-  spacing = 25,
 }: ProgressTrackerProps): React.JSX.Element {
   return (
-    <Container x={x} y={y}>
-      {/* Health bar */}
+    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
       <ProgressBar
+        label="Health"
         current={health}
-        maximum={maxHealth}
-        width={width}
-        barColor={0xff0000}
-        label={showLabels ? "체력 (Health)" : undefined}
-        y={0}
+        max={maxHealth} // Now valid
+        color="#ff4444"
       />
-
-      {/* Ki bar */}
       <ProgressBar
+        label="Ki"
         current={ki}
-        maximum={maxKi}
-        width={width}
-        barColor={0x0080ff}
-        label={showLabels ? "기 (Ki)" : undefined}
-        y={spacing}
+        max={maxKi} // Now valid
+        color="#4444ff"
       />
-
-      {/* Stamina bar */}
       <ProgressBar
+        label="Stamina"
         current={stamina}
-        maximum={maxStamina}
-        width={width}
-        barColor={0x00ff80}
-        label={showLabels ? "체력 (Stamina)" : undefined}
-        y={spacing * 2}
+        max={maxStamina} // Now valid
+        color="#44ff44"
       />
-    </Container>
+    </div>
   );
 }
 

@@ -28,14 +28,14 @@ export interface VitalPointEffect extends StatusEffect {
   readonly bodyRegion?: string;
 }
 
+// Fix HitEffect type to match usage
 export interface HitEffect {
   readonly id: string;
-  readonly position: Position;
   readonly type: "light" | "medium" | "heavy" | "critical";
+  readonly position: Position;
   readonly damage: number;
-  readonly startTime: number;
+  readonly timestamp: number;
   readonly duration: number;
-  readonly korean: string; // Simple string for Korean text in effects
   readonly color: number;
-  readonly createdAt: number;
+  readonly playerId?: string;
 }

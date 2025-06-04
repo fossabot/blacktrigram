@@ -16,4 +16,4 @@ export { IntroScreen } from "./intro/IntroScreen";
 export { PhilosophySection } from "./intro/components/PhilosophySection";
 
 // Audio components
-export { useAudio } from "../audio/AudioManager";
+export { default as useAudio } from "../audio/AudioManager";

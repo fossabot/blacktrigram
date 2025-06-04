@@ -27,12 +27,12 @@ interface VisualEffectState {
   opacity: number;
 }
 
-const PlayerVisuals: React.FC<PlayerVisualsProps> = ({
+export default function PlayerVisuals({
   player,
   isActive = true,
   showDebugInfo = false,
-  scale = 1.0,
-}) => {
+  scale = 1,
+}: PlayerVisualsProps): React.JSX.Element {
   const [animationState, setAnimationState] = useState<StanceAnimationState>({
     currentFrame: 0,
     animationSpeed: 0.1,
@@ -352,7 +352,7 @@ const PlayerVisuals: React.FC<PlayerVisualsProps> = ({
       )}
     </Container>
   );
-};
+}
 
 // Helper functions for Korean martial arts stance visualization
 
@@ -662,5 +662,3 @@ function getEffectOpacity(intensity: string): number {
       return 0.3;
   }
 }
-
-export default PlayerVisuals;

@@ -1,21 +1,20 @@
 import React, { useState, useCallback, useReducer, useEffect } from "react";
-import type { Container, Graphics, Text } from "pixi.js";
 import { Container as PixiContainer } from "@pixi/react";
 import { CombatArena } from "./components/CombatArena";
 import { CombatHUD } from "./components/CombatHUD";
 import { CombatControls } from "./components/CombatControls";
 import { KoreanText } from "../ui/base/korean-text";
-import { useAudio } from "../../audio/AudioManager";
+import useAudio from "../../audio/AudioManager";
 import { CombatSystem } from "../../systems/CombatSystem";
 import type {
   PlayerState,
   TrigramStance,
   CombatResult,
-  GameSettings, // Fixed: Import from game types
+  GameSettings,
   Position,
 } from "../../types";
 import { KOREAN_COLORS, TRIGRAM_DATA } from "../../types/constants";
-import { createDefaultPlayer } from "../../utils/playerUtils";
+import { createPlayerState } from "../../utils/playerUtils";
 
 interface CombatScreenProps {
   readonly player: PlayerState;
@@ -54,13 +53,8 @@ type CombatAction =
   | { type: "TOGGLE_TURN" }
   | { type: "UPDATE_OPPONENT"; updates: Partial<PlayerState> };
 
-const createDefaultOpponent = (): PlayerState => ({
-  ...createDefaultPlayer("amsalja", "gam"),
-  id: "opponent_ai",
-  name: "인공지능 대련자",
-  position: { x: 800, y: 400 },
-  facing: "left",
-});
+const createDefaultOpponent = (): PlayerState =>
+  createPlayerState("AI Opponent", "amsalja", "gam"); // Fixed: Correct parameter order
 
 const initialCombatState: CombatState = {
   phase: "preparation",
@@ -73,68 +67,36 @@ const initialCombatState: CombatState = {
   lastActionTime: 0,
 };
 
-function combatReducer(state: CombatState, action: CombatAction): CombatState {
+const combatReducer = (
+  state: CombatState,
+  action: CombatAction
+): CombatState => {
   switch (action.type) {
     case "START_COMBAT":
-      return {
-        ...state,
-        phase: "active",
-        gameTime: 0,
-        isPlayerTurn: true,
-      };
-
+      return { ...state, phase: "active" };
     case "END_COMBAT":
-      return {
-        ...state,
-        phase: "finished",
-      };
-
-    case "NEXT_ROUND":
-      return {
-        ...state,
-        currentRound: state.currentRound + 1,
-        isPlayerTurn: true,
-        hitEffects: [],
-      };
-
+      return { ...state, phase: "finished" };
     case "ADD_HIT_EFFECT":
-      return {
-        ...state,
-        hitEffects: [...state.hitEffects, action.effect],
-      };
-
+      return { ...state, hitEffects: [...state.hitEffects, action.effect] };
     case "UPDATE_GAME_TIME":
-      return {
-        ...state,
-        gameTime: action.time,
-      };
-
+      return { ...state, gameTime: action.time };
     case "TOGGLE_TURN":
-      return {
-        ...state,
-        isPlayerTurn: !state.isPlayerTurn,
-        lastActionTime: Date.now(),
-      };
-
+      return { ...state, isPlayerTurn: !state.isPlayerTurn };
     case "UPDATE_OPPONENT":
-      return {
-        ...state,
-        opponent: { ...state.opponent, ...action.updates },
-      };
-
+      return { ...state, opponent: { ...state.opponent, ...action.updates } };
     default:
       return state;
   }
-}
+};
 
-export const CombatScreen: React.FC<CombatScreenProps> = ({
+export function CombatScreen({
   player,
   onPlayerStateChange,
   onCombatResult,
   onReturnToMenu,
   settings,
   isActive = true,
-}) => {
+}: CombatScreenProps): React.JSX.Element {
   const audio = useAudio();
   const [combatState, dispatch] = useReducer(combatReducer, initialCombatState);
   const [isProcessingAction, setIsProcessingAction] = useState(false);
@@ -143,24 +105,56 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
   const handleCombatEnd = useCallback(
     (winner: string) => {
       if (audio?.playSFX) {
-        audio.playSFX("combat_end" as any);
+        audio.playSFX("victory");
       }
 
       dispatch({ type: "END_COMBAT", winner });
 
       if (onCombatResult) {
+        // Fixed: Create complete CombatResult
         const result: CombatResult = {
           hit: true,
           damage: 0,
+          damageType: "blunt",
+          isVitalPoint: false,
+          newState: "ready",
           effects: [],
+          critical: false,
           vitalPointsHit: [],
-          winner, // Fixed: Added winner property to CombatResult interface
+          attacker: player.archetype,
+          defender: combatState.opponent.archetype,
+          damagePrevented: 0,
+          staminaUsed: 0,
+          kiUsed: 0,
+          defenderDamaged: false,
+          attackerStance: player.stance,
+          defenderStance: combatState.opponent.stance,
+          painLevel: 0,
+          consciousnessImpact: 0,
+          balanceEffect: 0,
+          bloodLoss: 0,
+          stunDuration: 0,
+          statusEffects: [],
+          hitType: "normal",
+          techniqueUsed: {
+            id: "victory",
+            name: "Victory",
+            koreanName: "승리",
+            englishName: "Victory",
+            romanized: "seungri",
+            description: { korean: "승리", english: "Victory" },
+            stance: player.stance,
+            type: "special_technique",
+          },
+          effectiveness: 1.0,
+          hitPosition: { x: 0, y: 0 },
+          winner,
           loser: winner === player.id ? combatState.opponent.id : player.id,
         };
         onCombatResult(result);
       }
     },
-    [audio, player.id, combatState.opponent.id, onCombatResult]
+    [audio, player, combatState.opponent, onCombatResult]
   );
 
   // Ki and stamina regeneration
@@ -235,7 +229,7 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
   }, [combatState.phase, combatState.gameTime]);
 
   // Handle stance change
-  const handleStanceChange = useCallback(
+  const handleStanceChangeInternal = useCallback(
     async (newStance: TrigramStance) => {
       if (isProcessingAction || !isActive || combatState.phase !== "active")
         return;
@@ -281,6 +275,16 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
       onPlayerStateChange,
       audio,
     ]
+  );
+
+  // Create wrapper to match CombatControls expected signature
+  const handleStanceChange = useCallback(
+    (playerIndex: number, stance: TrigramStance) => {
+      if (playerIndex === 0) {
+        handleStanceChangeInternal(stance);
+      }
+    },
+    [handleStanceChangeInternal]
   );
 
   // Handle attack action
@@ -432,23 +436,6 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
     handleCombatEnd,
   ]);
 
-  // Handle player click in arena
-  const handlePlayerClick = useCallback(
-    (playerId: string, position: Position) => {
-      if (playerId === combatState.opponent.id && combatState.isPlayerTurn) {
-        handleAttack();
-      }
-    },
-    [combatState.opponent.id, combatState.isPlayerTurn, handleAttack]
-  );
-
-  // Start combat
-  useEffect(() => {
-    if (isActive && combatState.phase === "preparation") {
-      dispatch({ type: "START_COMBAT" });
-    }
-  }, [isActive, combatState.phase]);
-
   return (
     <PixiContainer>
       <div
@@ -492,18 +479,10 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
 
         {/* Combat Controls */}
         <CombatControls
-          player={player}
-          onStanceChange={handleStanceChange}
-          onExecuteAttack={handleAttack}
-          onBlock={handleBlock}
-          onSpecialTechnique={handleSpecialTechnique}
-          disabled={
-            isProcessingAction ||
-            combatState.phase !== "active" ||
-            !combatState.isPlayerTurn
-          }
-          showVitalPoints={settings?.showVitalPoints || false}
-          currentOpponent={combatState.opponent}
+          players={[player, combatState.opponent]}
+          onStanceChange={handleStanceChange} // Fixed: Now matches expected signature
+          isExecutingTechnique={isProcessingAction}
+          isPaused={combatState.phase !== "active"}
         />
 
         {/* Combat Phase Overlay */}
@@ -626,6 +605,6 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
       </div>
     </PixiContainer>
   );
-};
+}
 
 export default CombatScreen;

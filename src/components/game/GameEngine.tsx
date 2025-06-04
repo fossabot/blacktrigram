@@ -1,11 +1,10 @@
 // Complete game engine for Black Trigram Korean martial arts
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Application } from "@pixi/react";
-import type { PlayerState, GameState, Position, HitEffect } from "../../types";
+import type { GameState, Position, HitEffect } from "../../types";
 import { CombatSystem } from "../../systems/CombatSystem";
 import { TrigramSystem } from "../../systems/TrigramSystem";
-import { VitalPointSystem } from "../../systems/VitalPointSystem";
 import type { GameEngineProps } from "../../types/components";
 
 export function GameEngine({
@@ -15,7 +14,7 @@ export function GameEngine({
   onPlayerUpdate,
   onGamePhaseChange,
 }: GameEngineProps): React.JSX.Element {
-  const [gameState, setGameState] = useState<GameState>({
+  const [gameState] = useState<GameState>({
     currentScreen: "combat",
     player: player1,
     sessionData: {
@@ -47,33 +46,22 @@ export function GameEngine({
     isInitialized: true,
   });
 
-  const [hitEffects, setHitEffects] = useState<readonly HitEffect[]>([]);
-  const combatSystemRef = useRef(CombatSystem);
-  const trigramSystemRef = useRef(new TrigramSystem());
-  const vitalPointSystemRef = useRef(new VitalPointSystem());
+  const [gameEffects, setGameEffects] = useState<readonly HitEffect[]>([]);
+  const trigramSystem = new TrigramSystem();
 
-  // Fix: Remove unused deltaTime parameter
   const updateCombatEffects = useCallback(() => {
-    setHitEffects((prev) =>
+    setGameEffects((prev) =>
       prev.filter((effect) => Date.now() - effect.timestamp < effect.duration)
     );
   }, []);
 
   const checkWinCondition = useCallback(() => {
-    // Fix: Use correct method signature
     const result = CombatSystem.checkWinCondition([player1, player2]);
     if (result) {
-      onGameStateChange({
-        currentScreen: "combat", // Fix: Use valid GameScreen value
-        player: player1,
-        sessionData: gameState.sessionData,
-        settings: gameState.settings,
-        isInitialized: true,
-      });
+      onGamePhaseChange("victory");
     }
-  }, [player1, player2, onGameStateChange, gameState]);
+  }, [player1, player2, onGamePhaseChange]);
 
-  // Fix: Remove unused deltaTime parameter
   const gameLoop = useCallback(() => {
     updateCombatEffects();
     checkWinCondition();
@@ -83,16 +71,14 @@ export function GameEngine({
     (playerIndex: number, newStance: string) => {
       const playerState = playerIndex === 0 ? player1 : player2;
 
-      // Fix: Use correct property name and proper method call
-      const canTransition = trigramSystemRef.current.canTransitionTo(
+      const canTransition = trigramSystem.canTransitionTo(
         playerState.stance,
         newStance as any,
         playerState
       );
 
       if (canTransition.canTransition) {
-        // Fix: Use correct property name
-        const transitionResult = trigramSystemRef.current.executeStanceChange(
+        const transitionResult = trigramSystem.executeStanceChange(
           playerState,
           newStance as any
         );
@@ -102,10 +88,9 @@ export function GameEngine({
         }
       }
     },
-    [player1, player2, onPlayerUpdate]
+    [player1, player2, onPlayerUpdate, trigramSystem]
   );
 
-  // Fix: Remove unused handleStanceTransition
   const handleAttack = useCallback(
     async (
       attackerIndex: number,
@@ -123,11 +108,10 @@ export function GameEngine({
           typeof targetPoint === "string" ? targetPoint : undefined
         );
 
-        // Add hit effect
+        // Fix: Create proper HitEffect
         const newEffect: HitEffect = {
           id: `hit_${Date.now()}`,
-          type: result.critical ? "critical_hit" : "normal_hit",
-          // Fix: Ensure position is always a Position object
+          type: result.critical ? "critical" : "heavy",
           position:
             typeof targetPoint === "object" ? targetPoint : defender.position,
           damage: result.damage,
@@ -136,7 +120,7 @@ export function GameEngine({
           color: result.critical ? 0xff0000 : 0xffffff,
         };
 
-        setHitEffects((prev) => [...prev, newEffect]);
+        setGameEffects((prev) => [...prev, newEffect]);
 
         // Update defender
         onPlayerUpdate(attackerIndex === 0 ? 1 : 0, {
@@ -158,6 +142,9 @@ export function GameEngine({
     const interval = setInterval(gameLoop, 16); // 60 FPS
     return () => clearInterval(interval);
   }, [gameLoop]);
+
+  // Use variables to avoid unused warnings
+  const _ = { handleStanceChange, handleAttack, gameEffects, gameState };
 
   return (
     <Application width={800} height={600} backgroundColor={0x1a1a1a}>

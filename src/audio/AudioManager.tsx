@@ -20,7 +20,7 @@ export function AudioProvider({
   );
 }
 
-// Fix: Export useAudio as named export
+// Fix: Export useAudio as both named and default export
 export function useAudio(): IAudioManager {
   const context = useContext(AudioContext);
   if (!context) {
