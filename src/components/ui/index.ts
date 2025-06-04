@@ -1,10 +1,11 @@
-// UI Components index
+// UI Component exports for Black Trigram
+
+export { KoreanHeader } from "./KoreanHeader";
 export { TrigramWheel } from "./TrigramWheel";
 export { ProgressTracker } from "./ProgressTracker";
-export { KoreanHeader } from "./base/KoreanHeader";
 export { EndScreen } from "./EndScreen";
 
-// Korean text system
+// Export base Korean text components
 export * from "./base/korean-text";
 
 // Base components

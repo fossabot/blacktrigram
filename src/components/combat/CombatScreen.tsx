@@ -15,15 +15,7 @@ import type {
 } from "../../types";
 import { KOREAN_COLORS, TRIGRAM_DATA } from "../../types/constants";
 import { createPlayerState } from "../../utils/playerUtils";
-
-interface CombatScreenProps {
-  readonly player: PlayerState;
-  readonly onPlayerStateChange?: (updates: Partial<PlayerState>) => void;
-  readonly onCombatResult?: (result: CombatResult) => void;
-  readonly onReturnToMenu?: () => void;
-  readonly settings?: GameSettings;
-  readonly isActive?: boolean;
-}
+import type { CombatScreenProps } from "../../types/components";
 
 interface CombatState {
   readonly phase: "preparation" | "active" | "paused" | "finished";
@@ -90,15 +82,27 @@ const combatReducer = (
 };
 
 export function CombatScreen({
-  player,
-  onPlayerStateChange,
-  onCombatResult,
-  onReturnToMenu,
-  isActive = true,
+  players,
+  onGamePhaseChange,
+  onPlayerUpdate,
+  gameTime,
+  currentRound,
+  timeRemaining,
+  isPaused,
+  className = "",
+  style = {},
 }: CombatScreenProps): React.JSX.Element {
+  const [player1, player2] = players;
   const audio = useAudio(); // Now properly typed
   const [combatState, dispatch] = useReducer(combatReducer, initialCombatState);
   const [isProcessingAction, setIsProcessingAction] = useState(false);
+
+  const formatTime = (milliseconds: number): string => {
+    const seconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+  };
 
   // Handle combat end
   const handleCombatEnd = useCallback(
@@ -109,7 +113,11 @@ export function CombatScreen({
 
       dispatch({ type: "END_COMBAT", winner });
 
-      if (onCombatResult) {
+      if (onGamePhaseChange) {
+        onGamePhaseChange("victory");
+      }
+
+      if (onPlayerUpdate) {
         // Fixed: Create complete CombatResult
         const result: CombatResult = {
           hit: true,
@@ -120,14 +128,14 @@ export function CombatScreen({
           effects: [],
           critical: false,
           vitalPointsHit: [],
-          attacker: player.archetype,
-          defender: combatState.opponent.archetype,
+          attacker: player1.archetype,
+          defender: player2.archetype,
           damagePrevented: 0,
           staminaUsed: 0,
           kiUsed: 0,
           defenderDamaged: false,
-          attackerStance: player.stance,
-          defenderStance: combatState.opponent.stance,
+          attackerStance: player1.stance,
+          defenderStance: player2.stance,
           painLevel: 0,
           consciousnessImpact: 0,
           balanceEffect: 0,
@@ -142,18 +150,18 @@ export function CombatScreen({
             englishName: "Victory",
             romanized: "seungri",
             description: { korean: "승리", english: "Victory" },
-            stance: player.stance,
+            stance: player1.stance,
             type: "special_technique",
           },
           effectiveness: 1.0,
           hitPosition: { x: 0, y: 0 },
           winner,
-          loser: winner === player.id ? combatState.opponent.id : player.id,
+          loser: winner === player1.id ? player2.id : player1.id,
         };
-        onCombatResult(result);
+        onPlayerUpdate(0, result);
       }
     },
-    [audio, player, combatState.opponent, onCombatResult]
+    [audio, player1, player2, onGamePhaseChange, onPlayerUpdate]
   );
 
   // Ki and stamina regeneration
@@ -161,17 +169,17 @@ export function CombatScreen({
     if (combatState.phase !== "active") return;
 
     const interval = setInterval(() => {
-      if (onPlayerStateChange) {
+      if (onPlayerUpdate) {
         const kiRegenRate = 2;
         const staminaRegenRate = 3;
 
-        const newKi = Math.min(player.maxKi, player.ki + kiRegenRate);
+        const newKi = Math.min(player1.maxKi, player1.ki + kiRegenRate);
         const newStamina = Math.min(
-          player.maxStamina,
-          player.stamina + staminaRegenRate
+          player1.maxStamina,
+          player1.stamina + staminaRegenRate
         );
 
-        onPlayerStateChange({
+        onPlayerUpdate(0, {
           ki: newKi,
           stamina: newStamina,
         });
@@ -195,9 +203,9 @@ export function CombatScreen({
       });
 
       // Fixed: Handle StatusEffect timestamp property correctly
-      if (player.activeEffects && player.activeEffects.length > 0) {
+      if (player1.activeEffects && player1.activeEffects.length > 0) {
         const now = Date.now();
-        const filteredEffects = player.activeEffects.filter((effect) => {
+        const filteredEffects = player1.activeEffects.filter((effect) => {
           // Use optional chaining since timestamp might not exist
           const effectTimestamp = (effect as any).timestamp || 0;
           const effectDuration = effect.duration || 0;
@@ -205,16 +213,16 @@ export function CombatScreen({
         });
 
         if (
-          filteredEffects.length !== player.activeEffects.length &&
-          onPlayerStateChange
+          filteredEffects.length !== player1.activeEffects.length &&
+          onPlayerUpdate
         ) {
-          onPlayerStateChange({ activeEffects: filteredEffects });
+          onPlayerUpdate(0, { activeEffects: filteredEffects });
         }
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [combatState.phase, player, onPlayerStateChange, combatState.opponent]);
+  }, [combatState.phase, player1, onPlayerUpdate, combatState.opponent]);
 
   // Game timer
   useEffect(() => {
@@ -244,10 +252,10 @@ export function CombatScreen({
           ).TrigramCalculator()
         );
 
-        const transitionResult = stanceManager.changeStance(player, newStance);
+        const transitionResult = stanceManager.changeStance(player1, newStance);
 
-        if (transitionResult.success && onPlayerStateChange) {
-          onPlayerStateChange({
+        if (transitionResult.success && onPlayerUpdate) {
+          onPlayerUpdate(0, {
             stance: newStance,
             ki: transitionResult.newState.ki,
             stamina: transitionResult.newState.stamina,
@@ -270,8 +278,8 @@ export function CombatScreen({
       isProcessingAction,
       isActive,
       combatState.phase,
-      player,
-      onPlayerStateChange,
+      player1,
+      onPlayerUpdate,
       audio,
     ]
   );
@@ -293,9 +301,9 @@ export function CombatScreen({
     setIsProcessingAction(true);
 
     try {
-      const technique = TRIGRAM_DATA[player.stance].technique;
+      const technique = TRIGRAM_DATA[player1.stance].technique;
       const result = await CombatSystem.executeAttack(
-        player,
+        player1,
         combatState.opponent,
         technique
       );
@@ -306,7 +314,7 @@ export function CombatScreen({
           position: combatState.opponent.position,
           damage: result.damage,
           timestamp: Date.now(),
-          playerId: player.id,
+          playerId: player1.id,
         };
 
         dispatch({ type: "ADD_HIT_EFFECT", effect: hitEffect });
@@ -331,7 +339,7 @@ export function CombatScreen({
         }
 
         if (combatState.opponent.health <= result.damage) {
-          handleCombatEnd(player.id);
+          handleCombatEnd(player1.id);
           return;
         }
       } else {
@@ -340,10 +348,10 @@ export function CombatScreen({
         }
       }
 
-      if (onPlayerStateChange) {
-        onPlayerStateChange({
-          ki: Math.max(0, player.ki - (technique.kiCost || 0)),
-          stamina: Math.max(0, player.stamina - (technique.staminaCost || 0)),
+      if (onPlayerUpdate) {
+        onPlayerUpdate(0, {
+          ki: Math.max(0, player1.ki - (technique.kiCost || 0)),
+          stamina: Math.max(0, player1.stamina - (technique.staminaCost || 0)),
         });
       }
 
@@ -357,9 +365,9 @@ export function CombatScreen({
     isProcessingAction,
     isActive,
     combatState.isPlayerTurn,
-    player,
+    player1,
     combatState.opponent,
-    onPlayerStateChange,
+    onPlayerUpdate,
     audio,
     handleCombatEnd,
   ]);
@@ -372,24 +380,18 @@ export function CombatScreen({
       audio.playSFX("guard" as any);
     }
 
-    if (onPlayerStateChange) {
-      onPlayerStateChange({
-        stamina: Math.max(0, player.stamina - 5),
+    if (onPlayerUpdate) {
+      onPlayerUpdate(0, {
+        stamina: Math.max(0, player1.stamina - 5),
       });
     }
 
     dispatch({ type: "TOGGLE_TURN" });
-  }, [
-    isProcessingAction,
-    isActive,
-    audio,
-    onPlayerStateChange,
-    player.stamina,
-  ]);
+  }, [isProcessingAction, isActive, audio, onPlayerUpdate, player1.stamina]);
 
   // Handle special technique
   const handleSpecialTechnique = useCallback(async () => {
-    if (isProcessingAction || !isActive || player.ki < 30) return;
+    if (isProcessingAction || !isActive || player1.ki < 30) return;
 
     setIsProcessingAction(true);
 
@@ -407,15 +409,15 @@ export function CombatScreen({
         },
       });
 
-      if (onPlayerStateChange) {
-        onPlayerStateChange({
-          ki: Math.max(0, player.ki - 30),
-          stamina: Math.max(0, player.stamina - 20),
+      if (onPlayerUpdate) {
+        onPlayerUpdate(0, {
+          ki: Math.max(0, player1.ki - 30),
+          stamina: Math.max(0, player1.stamina - 20),
         });
       }
 
       if (combatState.opponent.health <= specialDamage) {
-        handleCombatEnd(player.id);
+        handleCombatEnd(player1.id);
       } else {
         dispatch({ type: "TOGGLE_TURN" });
       }
@@ -427,11 +429,11 @@ export function CombatScreen({
   }, [
     isProcessingAction,
     isActive,
-    player.ki,
+    player1.ki,
     audio,
     combatState.opponent.health,
-    onPlayerStateChange,
-    player,
+    onPlayerUpdate,
+    player1,
     handleCombatEnd,
   ]);
 
@@ -460,10 +462,10 @@ export function CombatScreen({
       >
         {/* Combat Arena */}
         <CombatArena
-          players={[player, combatState.opponent]}
+          players={[player1, combatState.opponent]}
           onPlayerUpdate={(playerIndex, updates) => {
-            if (playerIndex === 0 && onPlayerStateChange) {
-              onPlayerStateChange(updates);
+            if (playerIndex === 0 && onPlayerUpdate) {
+              onPlayerUpdate(0, updates);
             } else if (playerIndex === 1) {
               dispatch({ type: "UPDATE_OPPONENT", updates });
             }
@@ -475,15 +477,15 @@ export function CombatScreen({
 
         {/* Combat HUD */}
         <CombatHUD
-          players={[player, combatState.opponent]}
+          players={[player1, combatState.opponent]}
           currentRound={combatState.currentRound}
           timeRemaining={300 - combatState.gameTime}
         />
 
         {/* Combat Controls with action buttons */}
         <CombatControls
-          players={[player, combatState.opponent]}
-          player={player}
+          players={[player1, combatState.opponent]}
+          player={player1}
           onStanceChange={handleStanceChange}
           isExecutingTechnique={isProcessingAction}
           isPaused={combatState.phase !== "active"}
@@ -619,8 +621,8 @@ export function CombatScreen({
           }}
         >
           흑괘 무술 시뮬레이터 (Black Trigram Martial Arts Simulator) |
-          {TRIGRAM_DATA[player.stance].symbol}{" "}
-          {TRIGRAM_DATA[player.stance].name.korean}
+          {TRIGRAM_DATA[player1.stance].symbol}{" "}
+          {TRIGRAM_DATA[player1.stance].name.korean}
         </div>
       </div>
     </PixiContainer>

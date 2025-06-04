@@ -1,2 +1,2 @@
 export { IntroScreen } from "./IntroScreen";
-export { PhilosophySection } from "./components/PhilosophySection";
+export { PhilosophySection } from "./sections/PhilosophySection";

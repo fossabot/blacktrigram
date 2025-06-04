@@ -2,249 +2,346 @@ import React from "react";
 import type { PhilosophySectionProps } from "../../../types/components";
 import { KoreanText } from "../../ui/base/korean-text";
 
+/**
+ * Philosophy Section for Black Trigram Introduction
+ * Presents authentic Korean martial arts philosophy with cyberpunk aesthetics
+ */
 export function PhilosophySection({
   onGamePhaseChange,
   className = "",
   style = {},
 }: PhilosophySectionProps): React.JSX.Element {
-  const handleStartTraining = () => {
+  const handleContinue = () => {
     onGamePhaseChange("training");
   };
 
-  const handleStartCombat = () => {
-    onGamePhaseChange("combat");
+  const handleReturnToMenu = () => {
+    onGamePhaseChange("intro");
   };
 
   return (
-    <div className={`philosophy-section ${className}`} style={style}>
+    <section className={`philosophy-section ${className}`} style={style}>
+      {/* Main Philosophy Content */}
       <div className="philosophy-content">
-        {/* Korean Martial Arts Philosophy Header */}
-        <div className="philosophy-header">
+        {/* Core Principles */}
+        <div className="principles-grid">
+          <div className="principle-card">
+            <div className="trigram-symbol">☰</div>
+            <KoreanText
+              korean="존중"
+              english="Respect"
+              size="large"
+              weight="bold"
+              className="principle-title"
+            />
+            <KoreanText
+              korean="무예와 상대방을 존중하라"
+              english="Honor the art and opponent"
+              size="medium"
+              className="principle-description"
+            />
+          </div>
+
+          <div className="principle-card">
+            <div className="trigram-symbol">☱</div>
+            <KoreanText
+              korean="수련"
+              english="Discipline"
+              size="large"
+              weight="bold"
+              className="principle-title"
+            />
+            <KoreanText
+              korean="끊임없는 연습과 학습"
+              english="Dedicated practice and learning"
+              size="medium"
+              className="principle-description"
+            />
+          </div>
+
+          <div className="principle-card">
+            <div className="trigram-symbol">☲</div>
+            <KoreanText
+              korean="정확"
+              english="Precision"
+              size="large"
+              weight="bold"
+              className="principle-title"
+            />
+            <KoreanText
+              korean="정확한 기법 실행"
+              english="Exact technique execution"
+              size="medium"
+              className="principle-description"
+            />
+          </div>
+
+          <div className="principle-card">
+            <div className="trigram-symbol">☳</div>
+            <KoreanText
+              korean="지혜"
+              english="Wisdom"
+              size="large"
+              weight="bold"
+              className="principle-title"
+            />
+            <KoreanText
+              korean="육체를 넘어선 이해"
+              english="Understanding beyond physical"
+              size="medium"
+              className="principle-description"
+            />
+          </div>
+
+          <div className="principle-card">
+            <div className="trigram-symbol">☴</div>
+            <KoreanText
+              korean="균형"
+              english="Balance"
+              size="large"
+              weight="bold"
+              className="principle-title"
+            />
+            <KoreanText
+              korean="정신, 육체, 영혼의 조화"
+              english="Harmony of mind, body, spirit"
+              size="medium"
+              className="principle-description"
+            />
+          </div>
+        </div>
+
+        {/* Ancient Wisdom Quote */}
+        <div className="wisdom-quote">
           <KoreanText
-            korean="흑괘 무도 철학"
-            english="Black Trigram Martial Philosophy"
+            korean="무예의 진정한 힘은 상대를 이기는 것이 아니라 자신을 극복하는 것이다"
+            english="The true power of martial arts is not in defeating others, but in overcoming oneself"
             size="xlarge"
             weight="bold"
-            className="philosophy-title"
+            className="quote-text"
           />
+          <p className="quote-attribution">— 전통 한국 무예 철학</p>
         </div>
 
-        {/* Core Principles */}
-        <div className="philosophy-principles">
-          <div className="principle-item">
-            <KoreanText
-              korean="존중 (Jonjung)"
-              english="Respect - Honor the art and opponent"
-              size="medium"
-              weight="semibold"
-              className="principle-title"
-            />
-            <p className="principle-description">
-              Respect for the martial arts tradition, your opponent, and
-              yourself forms the foundation of all combat.
-            </p>
-          </div>
-
-          <div className="principle-item">
-            <KoreanText
-              korean="수련 (Suryeon)"
-              english="Discipline - Dedicated practice and learning"
-              size="medium"
-              weight="semibold"
-              className="principle-title"
-            />
-            <p className="principle-description">
-              Through disciplined practice, the mind and body unite to achieve
-              perfect technique execution.
-            </p>
-          </div>
-
-          <div className="principle-item">
-            <KoreanText
-              korean="정확 (Jeonghwak)"
-              english="Precision - Exact technique execution"
-              size="medium"
-              weight="semibold"
-              className="principle-title"
-            />
-            <p className="principle-description">
-              Every strike must be placed with anatomical precision to achieve
-              maximum effectiveness.
-            </p>
-          </div>
-
-          <div className="principle-item">
-            <KoreanText
-              korean="지혜 (Jihye)"
-              english="Wisdom - Understanding beyond physical technique"
-              size="medium"
-              weight="semibold"
-              className="principle-title"
-            />
-            <p className="principle-description">
-              True mastery comes from understanding the deeper principles that
-              govern combat and life.
-            </p>
-          </div>
-
-          <div className="principle-item">
-            <KoreanText
-              korean="균형 (Gyunhyeong)"
-              english="Balance - Harmony of mind, body, spirit"
-              size="medium"
-              weight="semibold"
-              className="principle-title"
-            />
-            <p className="principle-description">
-              The eight trigrams teach us that balance in all things leads to
-              ultimate power.
-            </p>
-          </div>
-        </div>
-
-        {/* Eight Trigrams Introduction */}
-        <div className="trigram-philosophy">
+        {/* Eight Trigrams Philosophy */}
+        <div className="trigrams-philosophy">
           <KoreanText
-            korean="팔괘 무술"
-            english="Eight Trigram Martial Arts"
-            size="large"
+            korean="팔괘 (八卦) - 여덟 개의 길"
+            english="Eight Trigrams - Eight Paths"
+            size="xlarge"
             weight="bold"
-            className="trigram-title"
+            className="section-title"
           />
-          <p className="trigram-description">
-            The eight trigrams (팔괘) represent the fundamental forces of nature
-            and combat. Each stance embodies a different aspect of power,
-            strategy, and philosophical understanding.
-          </p>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="philosophy-actions">
-          <button
-            onClick={handleStartTraining}
-            className="philosophy-button training-button"
-          >
+          <div className="trigrams-explanation">
             <KoreanText
-              korean="수련 시작"
-              english="Begin Training"
+              korean="각각의 괘는 우주의 원리와 전투의 철학을 나타냅니다. 건(☰)의 강함, 태(☱)의 유연함, 리(☲)의 정확함, 진(☳)의 힘, 손(☴)의 지속성, 감(☵)의 흐름, 간(☶)의 방어, 곤(☷)의 안정성을 익히세요."
+              english="Each trigram represents cosmic principles and combat philosophy. Master the strength of Geon (☰), flexibility of Tae (☱), precision of Li (☲), power of Jin (☳), persistence of Son (☴), flow of Gam (☵), defense of Gan (☶), and stability of Gon (☷)."
               size="medium"
-              weight="semibold"
+              className="explanation-text"
             />
-          </button>
-
-          <button
-            onClick={handleStartCombat}
-            className="philosophy-button combat-button"
-          >
-            <KoreanText
-              korean="실전 시작"
-              english="Begin Combat"
-              size="medium"
-              weight="semibold"
-            />
-          </button>
+          </div>
         </div>
+      </div>
+
+      {/* Navigation Buttons */}
+      <div className="philosophy-navigation">
+        <button onClick={handleReturnToMenu} className="nav-button secondary">
+          <KoreanText korean="돌아가기" english="Return" size="medium" />
+        </button>
+        <button onClick={handleContinue} className="nav-button primary">
+          <KoreanText
+            korean="수련 시작"
+            english="Begin Training"
+            size="medium"
+          />
+        </button>
       </div>
 
       <style>{`
         .philosophy-section {
+          min-height: 100vh;
+          background: linear-gradient(135deg, 
+            rgba(10, 10, 20, 0.95), 
+            rgba(30, 30, 60, 0.95)
+          );
+          color: #ffffff;
           padding: 2rem;
-          max-width: 800px;
-          margin: 0 auto;
-          background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
-          border: 2px solid #00ffff;
-          border-radius: 12px;
-          box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+          overflow-y: auto;
         }
 
         .philosophy-content {
-          display: flex;
-          flex-direction: column;
+          max-width: 1200px;
+          margin: 0 auto;
+          padding: 2rem 0;
+        }
+
+        .principles-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
           gap: 2rem;
+          margin: 3rem 0;
         }
 
-        .philosophy-header {
+        .principle-card {
+          background: linear-gradient(135deg, 
+            rgba(0, 255, 255, 0.1), 
+            rgba(255, 215, 0, 0.1)
+          );
+          border: 2px solid rgba(0, 255, 255, 0.3);
+          border-radius: 12px;
+          padding: 2rem;
           text-align: center;
-          border-bottom: 1px solid #00ffff;
-          padding-bottom: 1rem;
+          transition: all 0.3s ease;
+          backdrop-filter: blur(10px);
         }
 
-        .philosophy-principles {
-          display: flex;
-          flex-direction: column;
-          gap: 1.5rem;
+        .principle-card:hover {
+          border-color: rgba(0, 255, 255, 0.6);
+          transform: translateY(-5px);
+          box-shadow: 0 10px 30px rgba(0, 255, 255, 0.2);
         }
 
-        .principle-item {
-          padding: 1rem;
-          background: rgba(0, 255, 255, 0.05);
-          border-left: 3px solid #00ffff;
-          border-radius: 6px;
+        .trigram-symbol {
+          font-size: 3rem;
+          color: #ffd700;
+          margin-bottom: 1rem;
+          text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
+
+        .principle-title {
+          margin: 1rem 0;
+          text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
         }
 
         .principle-description {
-          margin-top: 0.5rem;
-          color: #e0e0e0;
+          opacity: 0.9;
           line-height: 1.6;
-          font-size: 14px;
         }
 
-        .trigram-philosophy {
+        .wisdom-quote {
           text-align: center;
-          padding: 1.5rem;
-          background: rgba(255, 215, 0, 0.1);
-          border: 1px solid #ffd700;
-          border-radius: 8px;
+          margin: 4rem 0;
+          padding: 3rem;
+          background: linear-gradient(135deg, 
+            rgba(255, 215, 0, 0.1), 
+            rgba(255, 0, 64, 0.1)
+          );
+          border-radius: 16px;
+          border: 2px solid rgba(255, 215, 0, 0.3);
         }
 
-        .trigram-description {
-          margin-top: 1rem;
-          color: #e0e0e0;
-          line-height: 1.6;
+        .quote-text {
           font-style: italic;
+          margin-bottom: 1.5rem;
+          text-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
         }
 
-        .philosophy-actions {
+        .quote-attribution {
+          color: #c0c0c0;
+          font-size: 1rem;
+          margin: 1rem 0 0 0;
+        }
+
+        .trigrams-philosophy {
+          margin: 4rem 0;
+        }
+
+        .section-title {
+          text-align: center;
+          margin-bottom: 2rem;
+          text-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
+        }
+
+        .trigrams-explanation {
+          background: rgba(0, 0, 0, 0.3);
+          padding: 2rem;
+          border-radius: 12px;
+          border-left: 4px solid #00ffff;
+        }
+
+        .explanation-text {
+          line-height: 1.8;
+          opacity: 0.95;
+        }
+
+        .philosophy-navigation {
           display: flex;
           justify-content: center;
           gap: 2rem;
-          margin-top: 2rem;
+          margin-top: 4rem;
+          padding-top: 2rem;
+          border-top: 2px solid rgba(0, 255, 255, 0.2);
         }
 
-        .philosophy-button {
+        .nav-button {
           padding: 1rem 2rem;
-          background: linear-gradient(45deg, #1a1a2e, #16213e);
-          border: 2px solid #00ffff;
+          border: 2px solid;
           border-radius: 8px;
-          color: #ffffff;
+          background: transparent;
+          color: white;
+          font-family: 'Noto Sans KR', Arial, sans-serif;
+          font-size: 1.1rem;
           cursor: pointer;
           transition: all 0.3s ease;
-          min-width: 150px;
+          min-width: 160px;
         }
 
-        .philosophy-button:hover {
-          background: linear-gradient(45deg, #16213e, #0f3460);
-          box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
-          transform: translateY(-2px);
+        .nav-button.primary {
+          border-color: #00ffff;
+          color: #00ffff;
         }
 
-        .training-button {
-          border-color: #00ff88;
+        .nav-button.primary:hover {
+          background: rgba(0, 255, 255, 0.1);
+          box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
         }
 
-        .training-button:hover {
-          box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+        .nav-button.secondary {
+          border-color: #c0c0c0;
+          color: #c0c0c0;
         }
 
-        .combat-button {
-          border-color: #ff4444;
+        .nav-button.secondary:hover {
+          background: rgba(192, 192, 192, 0.1);
+          box-shadow: 0 0 20px rgba(192, 192, 192, 0.2);
         }
 
-        .combat-button:hover {
-          box-shadow: 0 0 15px rgba(255, 68, 68, 0.5);
+        @media (max-width: 768px) {
+          .philosophy-section {
+            padding: 1rem;
+          }
+
+          .principles-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+          }
+
+          .principle-card {
+            padding: 1.5rem;
+          }
+
+          .trigram-symbol {
+            font-size: 2.5rem;
+          }
+
+          .wisdom-quote {
+            padding: 2rem;
+            margin: 3rem 0;
+          }
+
+          .philosophy-navigation {
+            flex-direction: column;
+            align-items: center;
+          }
+
+          .nav-button {
+            width: 100%;
+            max-width: 300px;
+          }
         }
       `}</style>
-    </div>
+    </section>
   );
 }
 
