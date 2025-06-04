@@ -1,134 +1,111 @@
-import React, { useState, useEffect } from "react";
-import type { GamePhase } from "./types/game";
-import type { PlayerState } from "./types/player";
-import { createPlayerState } from "./utils/playerUtils";
+import React, { useState, useCallback, useEffect } from "react";
+import { Application } from "@pixi/react";
+import type { GameState, PlayerArchetype } from "./types";
 import { IntroScreen } from "./components/intro/IntroScreen";
-import { AudioProvider } from "./audio/AudioProvider";
 import { TrainingScreen } from "./components/training/TrainingScreen";
-import { CombatScreen } from "./components/combat/CombatScreen";
-import { EndScreen } from "./components/ui/EndScreen";
+import { GameEngine } from "./components/game/GameEngine";
+import { useAudioContext } from "./audio/AudioProvider";
+import "./App.css";
 
-// Black Trigram (흑괘) - Korean Martial Arts Combat Simulator
-function App(): React.JSX.Element {
-  const [gamePhase, setGamePhase] = useState<GamePhase>("intro");
-  const [players, setPlayers] = useState<readonly [PlayerState, PlayerState]>(
-    () => [
-      createPlayerState("Player 1", "musa", "geon"),
-      createPlayerState("Player 2", "amsalja", "tae"),
-    ]
+export default function App(): React.JSX.Element {
+  const { audioManager, isReady } = useAudioContext();
+  const [gameState, setGameState] = useState<GameState>("intro");
+  const [selectedArchetype, setSelectedArchetype] =
+    useState<PlayerArchetype>("musa");
+
+  const handleStateChange = useCallback(
+    (newState: GameState) => {
+      setGameState(newState);
+
+      // Play state transition sound if audio is available
+      if (audioManager) {
+        try {
+          audioManager.playSFX("ui_transition" as any);
+        } catch (error) {
+          console.warn("Failed to play transition sound:", error);
+        }
+      }
+    },
+    [audioManager]
   );
-  const [gameTime, setGameTime] = useState(0);
-  const [currentRound, setCurrentRound] = useState(1);
-  const [timeRemaining, setTimeRemaining] = useState(180000); // 3 minutes
-  const [winnerId, setWinnerId] = useState<string | null>(null);
 
-  // Game timer
-  useEffect(() => {
-    if (gamePhase === "combat" && timeRemaining > 0 && !winnerId) {
-      const timer = setInterval(() => {
-        setGameTime((prev) => prev + 100);
-        setTimeRemaining((prev) => Math.max(0, prev - 100));
-      }, 100);
-      return () => clearInterval(timer);
-    }
-  }, [gamePhase, timeRemaining, winnerId]);
+  const handleArchetypeSelect = useCallback(
+    (archetype: PlayerArchetype) => {
+      setSelectedArchetype(archetype);
 
-  const handlePlayerUpdate = (
-    playerIndex: number,
-    updates: Partial<PlayerState>
-  ) => {
-    setPlayers((prev) => {
-      // Fix: Use proper tuple creation with guaranteed 2 elements
-      const newPlayers: [PlayerState, PlayerState] = [
-        playerIndex === 0 ? { ...prev[0], ...updates } : prev[0],
-        playerIndex === 1 ? { ...prev[1], ...updates } : prev[1],
-      ];
-      return newPlayers;
-    });
-  };
+      // Play archetype selection sound if audio is available
+      if (audioManager) {
+        try {
+          audioManager.playSFX(`select_${archetype}` as any);
+        } catch (error) {
+          console.warn("Failed to play selection sound:", error);
+        }
+      }
+    },
+    [audioManager]
+  );
 
-  const handleGamePhaseChange = (newPhase: string) => {
-    setGamePhase(newPhase as GamePhase);
-  };
-
-  const renderCurrentScreen = () => {
-    switch (gamePhase) {
-      case "intro":
-        return <IntroScreen onGamePhaseChange={handleGamePhaseChange} />;
-
-      case "training":
-        return (
-          <TrainingScreen
-            players={players}
-            onGamePhaseChange={handleGamePhaseChange}
-            onPlayerUpdate={handlePlayerUpdate}
-            gameTime={gameTime}
-            currentRound={currentRound}
-          />
-        );
-
-      case "combat":
-        return (
-          <CombatScreen
-            players={players}
-            onGamePhaseChange={handleGamePhaseChange}
-            onPlayerUpdate={handlePlayerUpdate}
-            gameTime={gameTime}
-            currentRound={currentRound}
-            timeRemaining={timeRemaining}
-            isPaused={false}
-          />
-        );
-
-      case "victory":
-      case "defeat":
-        return (
-          <EndScreen
-            winnerId={winnerId}
-            winner={winnerId || undefined}
-            onRestart={() => {
-              setGamePhase("intro");
-              setWinnerId(null);
-              setGameTime(0);
-              setCurrentRound(1);
-              setTimeRemaining(180000);
-            }}
-            onMenu={() => setGamePhase("intro")}
-          />
-        );
-
-      default:
-        return <IntroScreen onGamePhaseChange={handleGamePhaseChange} />;
-    }
-  };
-
-  return (
-    <AudioProvider>
-      <div className="app">
-        {renderCurrentScreen()}
-        <style>{`
-          .app {
-            width: 100vw;
-            height: 100vh;
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
-            font-family: 'Noto Sans KR', Arial, sans-serif;
-            overflow: hidden;
-          }
-          
-          * {
-            box-sizing: border-box;
-          }
-          
-          body {
-            margin: 0;
-            padding: 0;
-          }
-        `}</style>
+  // Show loading screen while audio initializes
+  if (!isReady) {
+    return (
+      <div className="loading-screen">
+        <div className="loading-content">
+          <h1 className="korean-title">흑괘 로딩 중...</h1>
+          <p className="english-subtitle">Loading Black Trigram...</p>
+        </div>
       </div>
-    </AudioProvider>
-  );
-}
+    );
+  }
 
-export default App;
+  // Render appropriate screen based on game state
+  switch (gameState) {
+    case "intro":
+      return (
+        <IntroScreen
+          onStartTraining={() => handleStateChange("training")}
+          onStartCombat={() => handleStateChange("combat")}
+          onArchetypeSelect={handleArchetypeSelect}
+          selectedArchetype={selectedArchetype}
+        />
+      );
+
+    case "training":
+      return (
+        <TrainingScreen
+          archetype={selectedArchetype}
+          onReturnToIntro={() => handleStateChange("intro")}
+          onStartCombat={() => handleStateChange("combat")}
+        />
+      );
+
+    case "combat":
+      return (
+        <Stage
+          width={1920}
+          height={1080}
+          options={{
+            backgroundColor: 0x000000,
+            antialias: true,
+            resolution: window.devicePixelRatio || 1,
+            autoDensity: true,
+          }}
+        >
+          <GameEngine
+            archetype={selectedArchetype}
+            onReturnToIntro={() => handleStateChange("intro")}
+            onReturnToTraining={() => handleStateChange("training")}
+          />
+        </Stage>
+      );
+
+    default:
+      return (
+        <div className="error-state">
+          <h1>Unknown Game State: {gameState}</h1>
+          <button onClick={() => handleStateChange("intro")}>
+            Return to Intro
+          </button>
+        </div>
+      );
+  }
+}

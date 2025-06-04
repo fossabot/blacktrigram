@@ -26,14 +26,8 @@ export function BackgroundGrid({
     (g: PixiGraphics) => {
       g.clear();
 
-      // Set line style - handle both number and string colors
-      let colorValue: number;
-      if (typeof color === "number") {
-        colorValue = color;
-      } else {
-        // Remove the string handling since color is always number in our types
-        colorValue = KOREAN_COLORS.ACCENT_BLUE;
-      }
+      const colorValue: number =
+        typeof color === "number" ? color : KOREAN_COLORS.ACCENT_BLUE;
 
       g.setStrokeStyle({
         color: colorValue,

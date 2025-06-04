@@ -1,4 +1,9 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useState, useCallback, useMemo } from "react";
+import type {
+  FederatedPointerEvent,
+  Graphics as PixiGraphics,
+  TextDropShadow,
+} from "pixi.js";
 import {
   PixiContainerComponent,
   PixiGraphicsComponent,
@@ -7,17 +12,12 @@ import {
   type PixiTextComponentProps,
   type ExtendedPixiTextStyle,
 } from "./PixiComponents";
-import type {
-  Graphics as PixiGraphics,
-  FederatedPointerEvent,
-  TextDropShadow,
-} from "pixi.js";
-import { TrigramStance } from "../../../types";
 import {
   KOREAN_COLORS,
-  KOREAN_FONT_FAMILY_PRIMARY, // Use specific font constant
+  KOREAN_FONT_FAMILY_PRIMARY,
   TRIGRAM_DATA,
 } from "../../../types/constants";
+import type { TrigramStance } from "../../../types";
 
 // Fix prop interfaces to extend properly
 export interface KoreanButtonProps
@@ -57,7 +57,7 @@ export function KoreanButton({
       case "large":
         return {
           autoWidth: explicitWidth ?? 160,
-          autoHeight: explicitHeight ?? 40,
+          autoHeight: explicitHeight ?? 36,
         };
       case "medium":
       default:
@@ -78,15 +78,15 @@ export function KoreanButton({
       switch (variant) {
         case "secondary":
           bgColor = KOREAN_COLORS.GRAY_DARK;
-          borderColor = KOREAN_COLORS.CYAN;
+          borderColor = KOREAN_COLORS.SILVER;
           break;
         case "danger":
-          bgColor = KOREAN_COLORS.RED; // Ensure this is KOREAN_COLORS.RED
-          borderColor = KOREAN_COLORS.WHITE;
+          bgColor = KOREAN_COLORS.CRITICAL_RED;
+          borderColor = KOREAN_COLORS.RED;
           break;
         case "accent":
-          bgColor = KOREAN_COLORS.GOLD; // Ensure this is KOREAN_COLORS.GOLD
-          borderColor = KOREAN_COLORS.BLACK;
+          bgColor = KOREAN_COLORS.CYAN;
+          borderColor = KOREAN_COLORS.ACCENT_BLUE;
           break;
         case "primary":
         default:
@@ -113,18 +113,6 @@ export function KoreanButton({
     [variant, disabled, autoWidth, autoHeight, isHovered]
   );
 
-  const buttonTextStyle: ExtendedPixiTextStyle = useMemo(() => {
-    return {
-      fontFamily: KOREAN_FONT_FAMILY_PRIMARY, // Use string constant
-      fontSize: 16,
-      fill: KOREAN_COLORS.WHITE,
-      fontWeight: "bold",
-      align: "center",
-    };
-  }, []);
-
-  const actualText = koreanText || text || "Button";
-
   return (
     <PixiContainerComponent
       interactive={!disabled}
@@ -136,8 +124,14 @@ export function KoreanButton({
     >
       <PixiGraphicsComponent draw={drawButton} />
       <PixiTextComponent
-        text={actualText}
-        style={buttonTextStyle}
+        text={koreanText || text || "Button"}
+        style={{
+          fontFamily: KOREAN_FONT_FAMILY_PRIMARY,
+          fontSize: 16,
+          fill: KOREAN_COLORS.WHITE,
+          fontWeight: "bold",
+          align: "center",
+        }}
         x={autoWidth / 2}
         y={autoHeight / 2}
         anchor={{ x: 0.5, y: 0.5 }}

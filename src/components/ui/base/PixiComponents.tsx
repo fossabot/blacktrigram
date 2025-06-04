@@ -1,11 +1,11 @@
 // Reusable PIXI.js components for Black Trigram Korean martial arts game
 
 import React, { useCallback, useMemo, useState } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
-import * as PIXI from "pixi.js";
+import { Graphics, Text } from "@pixi/react";
+import { TextStyle } from "pixi.js";
 import type {
-  Graphics as PixiGraphicsType,
   FederatedPointerEvent,
+  Graphics as GraphicsType,
   TextDropShadow,
   TextStyleFontWeight,
 } from "pixi.js";
@@ -15,18 +15,21 @@ import {
   KOREAN_FONT_FAMILY_PRIMARY,
   TRIGRAM_DATA,
 } from "../../../types/constants";
-import { KoreanHighlightTextProps } from "./KoreanPixiComponents";
+
+// Use proper PIXI types from pixi.js package
+type PixiGraphicsType = GraphicsType;
 
 // Extended TextStyle interface for better type safety
 export interface ExtendedPixiTextStyle
-  extends Partial<Omit<PIXI.TextStyle, "dropShadow" | "fontWeight">> {
+  extends Partial<Omit<TextStyle, "dropShadow" | "fontWeight">> {
   readonly fontFamily?: string;
   readonly fontSize?: number;
   readonly fill?: number | string;
   readonly fontWeight?: TextStyleFontWeight;
   readonly align?: "left" | "center" | "right";
-  readonly dropShadow?: TextDropShadow; // Remove boolean option to match PIXI TextStyle
+  readonly dropShadow?: TextDropShadow;
   readonly stroke?: { color: number; width: number } | number | string;
+  readonly strokeThickness?: number; // Add strokeThickness to the interface
 }
 
 // Base component interfaces
@@ -62,7 +65,7 @@ export function PixiContainerComponent({
   children,
   ...props
 }: PixiContainerComponentProps): React.ReactElement {
-  return <Container {...props}>{children}</Container>;
+  return <div {...props}>{children}</div>; // Use div instead of pixiContainer
 }
 
 export function PixiGraphicsComponent({
@@ -87,7 +90,7 @@ export function PixiTextComponent({
   ...props
 }: PixiTextComponentProps): React.ReactElement {
   const textStyle = useMemo(() => {
-    if (!style) return new PIXI.TextStyle();
+    if (!style) return new TextStyle();
 
     // Helper function to convert weight to proper type
     const convertFontWeight = (
@@ -124,7 +127,7 @@ export function PixiTextComponent({
       return "normal";
     };
 
-    const pixiStyle = new PIXI.TextStyle({
+    const pixiStyle = new TextStyle({
       fontFamily: style.fontFamily || KOREAN_FONT_FAMILY_PRIMARY,
       fontSize: style.fontSize || 16,
       fill: style.fill || KOREAN_COLORS.WHITE,
@@ -147,6 +150,11 @@ export function PixiTextComponent({
       } else {
         pixiStyle.stroke = style.stroke;
       }
+    }
+
+    // Handle strokeThickness
+    if (style.strokeThickness !== undefined) {
+      (pixiStyle as any).strokeThickness = style.strokeThickness;
     }
 
     return pixiStyle;
@@ -487,6 +495,15 @@ export const BackgroundGrid = React.memo(function BackgroundGrid({
 });
 
 // Highlight text component with Korean and English support
+export interface KoreanHighlightTextProps {
+  readonly text: string;
+  readonly type?: "info" | "warning" | "success";
+  readonly style?: ExtendedPixiTextStyle;
+  readonly x?: number;
+  readonly y?: number;
+  readonly anchor?: number | { x: number; y: number };
+}
+
 export function KoreanHighlightText({
   text,
   type = "info",
@@ -496,7 +513,7 @@ export function KoreanHighlightText({
   const colors = useMemo(
     () => ({
       info: KOREAN_COLORS.CYAN,
-      warning: KOREAN_COLORS.TRADITIONAL_RED, // Fix: Use TRADITIONAL_RED instead of ORANGE
+      warning: KOREAN_COLORS.TRADITIONAL_RED,
       success: KOREAN_COLORS.GREEN,
     }),
     []
@@ -513,7 +530,7 @@ export function KoreanHighlightText({
     // Fix: Create dropShadow object without duplicates
     const dropShadowConfig = style?.dropShadow
       ? {
-          ...style.dropShadow, // Spread existing dropShadow properties first
+          ...style.dropShadow,
         }
       : {
           color: KOREAN_COLORS.BLACK,
@@ -537,9 +554,9 @@ export function KoreanHighlightText({
 
 // Create proper text styles without unsupported properties
 export const createTextStyle = (
-  baseStyle: Partial<PIXI.TextStyle> = {}
-): PIXI.TextStyle => {
-  const style = new PIXI.TextStyle({
+  baseStyle: Partial<TextStyle> = {}
+): TextStyle => {
+  const style = new TextStyle({
     fontFamily: "Arial",
     fontSize: 16,
     fill: 0xffffff,
@@ -551,4 +568,312 @@ export const createTextStyle = (
   delete (style as any).alpha;
 
   return style;
+};
+
+// Korean-styled text component for PIXI
+interface KoreanPixiTextProps {
+  readonly text: string;
+  readonly x?: number;
+  readonly y?: number;
+  readonly style?: Partial<ExtendedPixiTextStyle>;
+  readonly anchor?: number | { x: number; y: number };
+}
+
+export function KoreanPixiText({
+  text,
+  x = 0,
+  y = 0,
+  style = {},
+  anchor = 0.5,
+}: KoreanPixiTextProps): React.ReactElement {
+  const defaultStyle: Partial<TextStyle> = {
+    fontFamily: "Noto Sans KR, Arial, sans-serif",
+    fontSize: 16,
+    fill: 0xffffff,
+    align: "center",
+    ...style,
+  };
+
+  return <Text text={text} x={x} y={y} style={defaultStyle} anchor={anchor} />;
+}
+
+// Trigram symbol component
+interface TrigramSymbolProps {
+  readonly symbol: string;
+  readonly x: number;
+  readonly y: number;
+  readonly color?: number;
+  readonly size?: number;
+}
+
+export function TrigramSymbol({
+  symbol,
+  x,
+  y,
+  color = 0xffd700,
+  size = 32,
+}: TrigramSymbolProps): React.ReactElement {
+  return (
+    <KoreanPixiText
+      text={symbol}
+      x={x}
+      y={y}
+      style={{
+        fontSize: size,
+        fill: color,
+        fontWeight: "bold",
+      }}
+    />
+  );
+}
+
+// Combat HUD background
+interface CombatHUDBackgroundProps {
+  readonly width: number;
+  readonly height: number;
+  readonly alpha?: number;
+}
+
+export function CombatHUDBackground({
+  width,
+  height,
+  alpha = 0.8,
+}: CombatHUDBackgroundProps): React.ReactElement {
+  const draw = React.useCallback(
+    (g: PixiGraphicsType) => {
+      g.clear();
+      g.beginFill(0x000000, alpha);
+      g.lineStyle(2, 0x00ffff, 0.5);
+      g.drawRoundedRect(0, 0, width, height, 8);
+      g.endFill();
+    },
+    [width, height, alpha]
+  );
+
+  return <Graphics draw={draw} />;
+}
+
+// Health bar component
+interface HealthBarProps {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+  readonly currentHealth: number;
+  readonly maxHealth: number;
+  readonly color?: number;
+}
+
+export function HealthBar({
+  x,
+  y,
+  width,
+  height,
+  currentHealth,
+  maxHealth,
+  color = 0x00ff00,
+}: HealthBarProps): React.ReactElement {
+  const healthPercentage = Math.max(0, Math.min(1, currentHealth / maxHealth));
+
+  const draw = React.useCallback(
+    (g: PixiGraphicsType) => {
+      g.clear();
+
+      // Background
+      g.beginFill(0x333333);
+      g.drawRect(x, y, width, height);
+      g.endFill();
+
+      // Health fill
+      g.beginFill(color);
+      g.drawRect(x, y, width * healthPercentage, height);
+      g.endFill();
+
+      // Border
+      g.lineStyle(1, 0xffffff, 0.5);
+      g.drawRect(x, y, width, height);
+    },
+    [x, y, width, height, healthPercentage, color]
+  );
+
+  return <Graphics draw={draw} />;
+}
+
+// Ki energy bar
+interface KiBarProps {
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+  readonly currentKi: number;
+  readonly maxKi: number;
+}
+
+export function KiBar({
+  x,
+  y,
+  width,
+  height,
+  currentKi,
+  maxKi,
+}: KiBarProps): React.ReactElement {
+  const kiPercentage = Math.max(0, Math.min(1, currentKi / maxKi));
+
+  const draw = React.useCallback(
+    (g: PixiGraphicsType) => {
+      g.clear();
+
+      // Background
+      g.beginFill(0x1a1a2e);
+      g.drawRect(x, y, width, height);
+      g.endFill();
+
+      // Ki fill with gradient effect
+      g.beginFill(0x00ffff);
+      g.drawRect(x, y, width * kiPercentage, height);
+      g.endFill();
+
+      // Border
+      g.lineStyle(1, 0x00ffff, 0.8);
+      g.drawRect(x, y, width, height);
+    },
+    [x, y, width, height, kiPercentage]
+  );
+
+  return <Graphics draw={draw} />;
+}
+
+// Stance indicator circle
+interface StanceIndicatorProps {
+  readonly x: number;
+  readonly y: number;
+  readonly radius: number;
+  readonly color: number;
+  readonly isActive?: boolean;
+}
+
+export function StanceIndicator({
+  x,
+  y,
+  radius,
+  color,
+  isActive = false,
+}: StanceIndicatorProps): React.ReactElement {
+  const draw = React.useCallback(
+    (g: PixiGraphicsType) => {
+      g.clear();
+
+      if (isActive) {
+        // Glow effect for active stance
+        g.beginFill(color, 0.3);
+        g.drawCircle(x, y, radius + 8);
+        g.endFill();
+      }
+
+      // Main circle
+      g.beginFill(color, isActive ? 1.0 : 0.6);
+      g.lineStyle(2, 0xffffff, isActive ? 1.0 : 0.5);
+      g.drawCircle(x, y, radius);
+      g.endFill();
+    },
+    [x, y, radius, color, isActive]
+  );
+
+  return <Graphics draw={draw} />;
+}
+
+// Damage number display
+interface DamageNumberProps {
+  readonly damage: number;
+  readonly x: number;
+  readonly y: number;
+  readonly isCritical?: boolean;
+  readonly isVitalPoint?: boolean;
+}
+
+export function DamageNumber({
+  damage,
+  x,
+  y,
+  isCritical = false,
+  isVitalPoint = false,
+}: DamageNumberProps): React.ReactElement {
+  let color = 0xffffff;
+  let fontSize = 18;
+
+  if (isVitalPoint) {
+    color = 0xff0040;
+    fontSize = 24;
+  } else if (isCritical) {
+    color = 0xffd700;
+    fontSize = 22;
+  }
+
+  const displayText = isVitalPoint ? `급소! ${damage}` : damage.toString();
+
+  return (
+    <KoreanPixiText
+      text={displayText}
+      x={x}
+      y={y}
+      style={{
+        fontSize,
+        fill: color,
+        fontWeight: "bold",
+        stroke: 0x000000,
+        strokeThickness: 2,
+      }}
+    />
+  );
+}
+
+// Trigram wheel background
+interface TrigramWheelBackgroundProps {
+  readonly centerX: number;
+  readonly centerY: number;
+  readonly radius: number;
+}
+
+export function TrigramWheelBackground({
+  centerX,
+  centerY,
+  radius,
+}: TrigramWheelBackgroundProps): React.ReactElement {
+  const draw = React.useCallback(
+    (g: PixiGraphicsType) => {
+      g.clear();
+
+      // Outer ring
+      g.lineStyle(3, 0x00ffff, 0.8);
+      g.beginFill(0x000000, 0.7);
+      g.drawCircle(centerX, centerY, radius);
+      g.endFill();
+
+      // Inner decorative rings
+      g.lineStyle(1, 0xffd700, 0.5);
+      g.drawCircle(centerX, centerY, radius * 0.8);
+      g.drawCircle(centerX, centerY, radius * 0.6);
+
+      // Center point
+      g.beginFill(0xffd700);
+      g.drawCircle(centerX, centerY, 4);
+      g.endFill();
+    },
+    [centerX, centerY, radius]
+  );
+
+  return <Graphics draw={draw} />;
+}
+
+// Export all components
+export {
+  type ExtendedPixiTextStyle as PixiTextStyle,
+  type KoreanPixiTextProps,
+  type TrigramSymbolProps,
+  type CombatHUDBackgroundProps,
+  type HealthBarProps,
+  type KiBarProps,
+  type StanceIndicatorProps,
+  type DamageNumberProps,
+  type TrigramWheelBackgroundProps,
 };

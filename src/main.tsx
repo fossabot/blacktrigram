@@ -1,6 +1,8 @@
-import React from "react";
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { ErrorBoundary } from "react-error-boundary";
+import { extend } from "@pixi/react";
+import { Container, Graphics, Text, Sprite, AnimatedSprite } from "pixi.js";
 import App from "./App";
 import { AudioProvider } from "./audio/AudioProvider";
 import "./index.css";
@@ -65,6 +67,15 @@ function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps) {
   );
 }
 
+// Extend PIXI React with necessary components
+extend({
+  Container,
+  Graphics,
+  Text,
+  Sprite,
+  AnimatedSprite,
+});
+
 const container = document.getElementById("root");
 if (!container) {
   throw new Error("Root container not found");
@@ -73,13 +84,13 @@ if (!container) {
 const root = createRoot(container);
 
 root.render(
-  <React.StrictMode>
+  <StrictMode>
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <AudioProvider>
         <App />
       </AudioProvider>
     </ErrorBoundary>
-  </React.StrictMode>
+  </StrictMode>
 );
 
 // Add Korean font loading

@@ -4,17 +4,41 @@ import { ProgressTracker } from "../ProgressTracker";
 
 // Mock PIXI components
 vi.mock("@pixi/react", () => ({
-  Text: ({ text, children, ...props }: any) => (
-    <div data-testid="pixi-text" {...props}>
-      {text || children}
+  Application: ({ children, ...props }: any) => (
+    <div data-testid="pixi-application" {...props}>
+      {children}
     </div>
   ),
+  extend: vi.fn(),
+  useApplication: vi.fn(() => ({ app: {} })),
 }));
 
-// Mock PIXI
-vi.mock("pixi.js", () => ({
-  TextStyle: vi.fn().mockImplementation(() => ({})),
-}));
+// Mock PIXI elements as globals
+(global as any).pixiContainer = ({ children, ...props }: any) => (
+  <div data-testid="pixi-container" {...props}>
+    {children}
+  </div>
+);
+(global as any).pixiGraphics = ({ draw, ...props }: any) => {
+  if (draw) {
+    const mockGraphics = {
+      clear: vi.fn(),
+      setFillStyle: vi.fn(),
+      setStrokeStyle: vi.fn(),
+      circle: vi.fn(),
+      rect: vi.fn(),
+      fill: vi.fn(),
+      stroke: vi.fn(),
+    };
+    draw(mockGraphics);
+  }
+  return <div data-testid="pixi-graphics" {...props} />;
+};
+(global as any).pixiText = ({ text, children, ...props }: any) => (
+  <div data-testid="pixi-text" {...props}>
+    {text || children}
+  </div>
+);
 
 describe("ProgressTracker", () => {
   const defaultProps = {

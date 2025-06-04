@@ -1,370 +1,164 @@
 import React, { useState } from "react";
-import { KoreanText } from "../ui/base/korean-text";
-import type { IntroScreenProps } from "../../types/components";
-import type { PlayerArchetype, TrigramStance } from "../../types";
-import { KoreanHeader } from "../ui";
-import { PhilosophySection } from "./sections";
+import type { PlayerArchetype } from "../../types";
+import { KoreanText } from "../ui/base/korean-text/KoreanText";
+import "./IntroScreen.css";
 
-/**
- * IntroScreen Component for Black Trigram (흑괘)
- * Authentic Korean martial arts introduction with cyberpunk aesthetics
- */
+interface IntroScreenProps {
+  readonly onStartTraining: () => void;
+  readonly onStartCombat: () => void;
+  readonly onArchetypeSelect: (archetype: PlayerArchetype) => void;
+  readonly selectedArchetype: PlayerArchetype;
+}
+
+const PLAYER_ARCHETYPES: Array<{
+  id: PlayerArchetype;
+  korean: string;
+  english: string;
+  description: string;
+  philosophy: string;
+}> = [
+  {
+    id: "musa",
+    korean: "무사",
+    english: "Traditional Warrior",
+    description: "Honor through strength, disciplined combat",
+    philosophy: "존중과 규율의 길 - Path of respect and discipline",
+  },
+  {
+    id: "amsalja",
+    korean: "암살자",
+    english: "Shadow Assassin",
+    description: "Efficiency through invisibility, one perfect strike",
+    philosophy: "그림자의 길 - Path of shadows",
+  },
+  {
+    id: "hacker",
+    korean: "해커",
+    english: "Cyber Warrior",
+    description: "Information as power, technological advantage",
+    philosophy: "정보의 길 - Path of information",
+  },
+  {
+    id: "jeongbo_yowon",
+    korean: "정보요원",
+    english: "Intelligence Operative",
+    description: "Knowledge through observation, strategic thinking",
+    philosophy: "지혜의 길 - Path of wisdom",
+  },
+  {
+    id: "jojik_pokryeokbae",
+    korean: "조직폭력배",
+    english: "Organized Crime",
+    description: "Survival through ruthlessness, practical violence",
+    philosophy: "생존의 길 - Path of survival",
+  },
+];
+
 export function IntroScreen({
-  onGamePhaseChange,
-  currentSection = "main",
-  className = "",
-  style = {},
+  onStartTraining,
+  onStartCombat,
+  onArchetypeSelect,
+  selectedArchetype,
 }: IntroScreenProps): React.JSX.Element {
-  const [selectedArchetype, setSelectedArchetype] =
-    useState<PlayerArchetype>("musa");
-  const [selectedStance, setSelectedStance] = useState<TrigramStance>("geon");
-  const [activeSection, setActiveSection] = useState(currentSection);
+  const [showArchetypes, setShowArchetypes] = useState(false);
 
-  const handleSectionChange = (section: string) => {
-    setActiveSection(section);
-  };
-
-  const handleStartTraining = () => {
-    onGamePhaseChange("training");
-  };
-
-  const handleStartCombat = () => {
-    onGamePhaseChange("combat");
-  };
-
-  const handleArchetypeSelect = (archetype: PlayerArchetype) => {
-    setSelectedArchetype(archetype);
-  };
-
-  const handleStanceSelect = (stance: TrigramStance) => {
-    setSelectedStance(stance);
-  };
-
-  // Render different sections based on activeSection
-  if (activeSection === "philosophy") {
-    return (
-      <PhilosophySection
-        onGamePhaseChange={onGamePhaseChange}
-        className={className}
-        style={style}
-      />
-    );
-  }
+  const selectedArchetypeData = PLAYER_ARCHETYPES.find(
+    (a) => a.id === selectedArchetype
+  );
 
   return (
-    <div className={`intro-screen ${className}`} style={style}>
-      <KoreanHeader
-        korean="흑괘"
-        english="Black Trigram"
-        subtitle={{
-          korean: "한국 무술 정밀 전투 시뮬레이터",
-          english: "Korean Martial Arts Precision Combat Simulator",
-        }}
-        level={1}
-        showLogo={true}
-        className="intro-header"
-      />
-
-      <main className="intro-content">
-        {/* Welcome Section */}
-        <section className="welcome-section">
-          <div className="welcome-text">
+    <div className="intro-screen">
+      <div className="intro-background">
+        <div className="intro-content">
+          {/* Main Title */}
+          <div className="title-section">
             <KoreanText
-              korean="전통과 현대가 만나는 곳"
-              english="Where Tradition Meets Modernity"
-              size="xlarge"
-              weight="bold"
-              className="welcome-title"
+              korean="흑괘 무술 도장"
+              english="Black Trigram Martial Arts"
+              className="main-title"
             />
             <KoreanText
-              korean="사이버펑크 지하 도장에서 진정한 한국 무술의 정수를 경험하세요. 70개의 급소와 8개의 괘를 통해 정밀한 전투 기술을 익히고, 고대의 지혜를 현대적으로 재해석한 무예의 세계로 들어오세요."
-              english="Experience the essence of authentic Korean martial arts in a cyberpunk underground dojang. Master precise combat through 70 vital points and 8 trigrams, entering a world where ancient wisdom meets modern interpretation."
-              size="medium"
-              className="welcome-description"
+              korean="정밀 격투 시뮬레이터"
+              english="Precision Combat Simulator"
+              className="subtitle"
             />
           </div>
 
-          <div className="trigram-display">
-            <div className="trigram-circle">
-              <div className="trigram-symbols">☰☱☲☳☴☵☶☷</div>
-              <div className="center-symbol">흑괘</div>
-            </div>
-          </div>
-        </section>
-
-        {/* Archetype Selection */}
-        <section className="archetype-section">
-          <KoreanText
-            korean="무예가 선택"
-            english="Choose Your Martial Artist"
-            size="xlarge"
-            weight="bold"
-            className="section-title"
-          />
-
-          <div className="archetype-grid">
-            {/* 무사 (Musa) - Traditional Warrior */}
-            <div
-              className={`archetype-card ${
-                selectedArchetype === "musa" ? "selected" : ""
-              }`}
-              onClick={() => handleArchetypeSelect("musa")}
-            >
-              <div className="archetype-symbol">⚔️</div>
-              <KoreanText
-                korean="무사"
-                english="Musa"
-                size="large"
-                weight="bold"
-                className="archetype-name"
-              />
-              <KoreanText
-                korean="전통 무인 - 힘을 통한 명예"
-                english="Traditional Warrior - Honor through strength"
-                size="small"
-                className="archetype-description"
-              />
-              <div className="archetype-stats">
-                <span>공격력: ★★★★☆</span>
-                <span>정확도: ★★★☆☆</span>
-                <span>방어력: ★★★★★</span>
-              </div>
-            </div>
-
-            {/* 암살자 (Amsalja) - Shadow Assassin */}
-            <div
-              className={`archetype-card ${
-                selectedArchetype === "amsalja" ? "selected" : ""
-              }`}
-              onClick={() => handleArchetypeSelect("amsalja")}
-            >
-              <div className="archetype-symbol">🗡️</div>
-              <KoreanText
-                korean="암살자"
-                english="Amsalja"
-                size="large"
-                weight="bold"
-                className="archetype-name"
-              />
-              <KoreanText
-                korean="그림자 암살자 - 은밀함을 통한 효율"
-                english="Shadow Assassin - Efficiency through stealth"
-                size="small"
-                className="archetype-description"
-              />
-              <div className="archetype-stats">
-                <span>공격력: ★★★★★</span>
-                <span>정확도: ★★★★★</span>
-                <span>방어력: ★★☆☆☆</span>
-              </div>
-            </div>
-
-            {/* 해커 (Hacker) - Cyber Warrior */}
-            <div
-              className={`archetype-card ${
-                selectedArchetype === "hacker" ? "selected" : ""
-              }`}
-              onClick={() => handleArchetypeSelect("hacker")}
-            >
-              <div className="archetype-symbol">💻</div>
-              <KoreanText
-                korean="해커"
-                english="Hacker"
-                size="large"
-                weight="bold"
-                className="archetype-name"
-              />
-              <KoreanText
-                korean="사이버 전사 - 정보는 힘"
-                english="Cyber Warrior - Information as power"
-                size="small"
-                className="archetype-description"
-              />
-              <div className="archetype-stats">
-                <span>공격력: ★★★☆☆</span>
-                <span>정확도: ★★★★★</span>
-                <span>방어력: ★★★☆☆</span>
-              </div>
-            </div>
-
-            {/* 정보요원 (Jeongbo Yowon) - Intelligence Operative */}
-            <div
-              className={`archetype-card ${
-                selectedArchetype === "jeongbo_yowon" ? "selected" : ""
-              }`}
-              onClick={() => handleArchetypeSelect("jeongbo_yowon")}
-            >
-              <div className="archetype-symbol">🕵️</div>
-              <KoreanText
-                korean="정보요원"
-                english="Jeongbo Yowon"
-                size="large"
-                weight="bold"
-                className="archetype-name"
-              />
-              <KoreanText
-                korean="정보 요원 - 관찰을 통한 지식"
-                english="Intelligence Operative - Knowledge through observation"
-                size="small"
-                className="archetype-description"
-              />
-              <div className="archetype-stats">
-                <span>공격력: ★★★★☆</span>
-                <span>정확도: ★★★★☆</span>
-                <span>방어력: ★★★★☆</span>
-              </div>
-            </div>
-
-            {/* 조직폭력배 (Jojik Pokryeokbae) - Organized Crime */}
-            <div
-              className={`archetype-card ${
-                selectedArchetype === "jojik_pokryeokbae" ? "selected" : ""
-              }`}
-              onClick={() => handleArchetypeSelect("jojik_pokryeokbae")}
-            >
-              <div className="archetype-symbol">👊</div>
-              <KoreanText
-                korean="조직폭력배"
-                english="Jojik Pokryeokbae"
-                size="large"
-                weight="bold"
-                className="archetype-name"
-              />
-              <KoreanText
-                korean="조직 폭력배 - 무자비함을 통한 생존"
-                english="Organized Crime - Survival through ruthlessness"
-                size="small"
-                className="archetype-description"
-              />
-              <div className="archetype-stats">
-                <span>공격력: ★★★★★</span>
-                <span>정확도: ★★☆☆☆</span>
-                <span>방어력: ★★★☆☆</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Stance Preview */}
-        <section className="stance-section">
-          <KoreanText
-            korean="기본 자세 선택"
-            english="Choose Starting Stance"
-            size="xlarge"
-            weight="bold"
-            className="section-title"
-          />
-
-          <div className="stance-grid">
-            {[
-              {
-                stance: "geon" as TrigramStance,
-                symbol: "☰",
-                korean: "건",
-                english: "Geon",
-                element: "Heaven",
-              },
-              {
-                stance: "tae" as TrigramStance,
-                symbol: "☱",
-                korean: "태",
-                english: "Tae",
-                element: "Lake",
-              },
-              {
-                stance: "li" as TrigramStance,
-                symbol: "☲",
-                korean: "리",
-                english: "Li",
-                element: "Fire",
-              },
-              {
-                stance: "jin" as TrigramStance,
-                symbol: "☳",
-                korean: "진",
-                english: "Jin",
-                element: "Thunder",
-              },
-              {
-                stance: "son" as TrigramStance,
-                symbol: "☴",
-                korean: "손",
-                english: "Son",
-                element: "Wind",
-              },
-              {
-                stance: "gam" as TrigramStance,
-                symbol: "☵",
-                korean: "감",
-                english: "Gam",
-                element: "Water",
-              },
-              {
-                stance: "gan" as TrigramStance,
-                symbol: "☶",
-                korean: "간",
-                english: "Gan",
-                element: "Mountain",
-              },
-              {
-                stance: "gon" as TrigramStance,
-                symbol: "☷",
-                korean: "곤",
-                english: "Gon",
-                element: "Earth",
-              },
-            ].map((stanceData) => (
-              <div
-                key={stanceData.stance}
-                className={`stance-card ${
-                  selectedStance === stanceData.stance ? "selected" : ""
-                }`}
-                onClick={() => handleStanceSelect(stanceData.stance)}
-              >
-                <div className="stance-symbol">{stanceData.symbol}</div>
-                <KoreanText
-                  korean={stanceData.korean}
-                  english={stanceData.english}
-                  size="medium"
-                  weight="bold"
-                  className="stance-name"
-                />
-                <span className="stance-element">{stanceData.element}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Navigation Menu */}
-        <nav className="intro-navigation">
-          <button
-            onClick={() => handleSectionChange("philosophy")}
-            className="nav-button philosophy"
-          >
+          {/* Trigram Philosophy */}
+          <div className="philosophy-section">
             <KoreanText
-              korean="무예 철학"
-              english="Martial Philosophy"
-              size="medium"
+              korean="팔괘의 길"
+              english="Path of Eight Trigrams"
+              className="philosophy-title"
             />
-          </button>
+            <div className="trigram-symbols">☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷</div>
+          </div>
 
-          <button onClick={handleStartTraining} className="nav-button training">
-            <KoreanText
-              korean="수련 시작"
-              english="Begin Training"
-              size="medium"
-            />
-          </button>
+          {/* Archetype Selection */}
+          <div className="archetype-section">
+            <button
+              className="archetype-toggle"
+              onClick={() => setShowArchetypes(!showArchetypes)}
+            >
+              <KoreanText
+                korean={selectedArchetypeData?.korean || "무사"}
+                english={
+                  selectedArchetypeData?.english || "Traditional Warrior"
+                }
+                className="selected-archetype"
+              />
+            </button>
 
-          <button onClick={handleStartCombat} className="nav-button combat">
+            {showArchetypes && (
+              <div className="archetype-list">
+                {PLAYER_ARCHETYPES.map((archetype) => (
+                  <button
+                    key={archetype.id}
+                    className={`archetype-option ${
+                      selectedArchetype === archetype.id ? "selected" : ""
+                    }`}
+                    onClick={() => {
+                      onArchetypeSelect(archetype.id);
+                      setShowArchetypes(false);
+                    }}
+                  >
+                    <KoreanText
+                      korean={archetype.korean}
+                      english={archetype.english}
+                      className="archetype-name"
+                    />
+                    <p className="archetype-description">
+                      {archetype.description}
+                    </p>
+                    <p className="archetype-philosophy">
+                      {archetype.philosophy}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="action-buttons">
+            <button className="primary-button" onClick={onStartTraining}>
+              <KoreanText korean="수련 시작" english="Begin Training" />
+            </button>
+            <button className="secondary-button" onClick={onStartCombat}>
+              <KoreanText korean="실전 격투" english="Enter Combat" />
+            </button>
+          </div>
+
+          {/* Korean Martial Arts Quote */}
+          <div className="quote-section">
             <KoreanText
-              korean="대련 시작"
-              english="Begin Combat"
-              size="medium"
+              korean="흑괘의 길을 걸어라"
+              english="Walk the Path of the Black Trigram"
+              className="closing-quote"
             />
-          </button>
-        </nav>
-      </main>
+          </div>
+        </div>
+      </div>
 
       <style>{`
         .intro-screen {
@@ -383,44 +177,33 @@ export function IntroScreen({
           padding: 2rem;
         }
 
-        .welcome-section {
-          display: grid;
-          grid-template-columns: 1fr 300px;
-          gap: 3rem;
+        .title-section {
+          text-align: center;
           margin: 3rem 0;
-          align-items: center;
         }
 
-        .welcome-title {
-          margin-bottom: 1.5rem;
+        .main-title {
+          font-size: 2.5rem;
+          font-weight: bold;
+          margin-bottom: 1rem;
           text-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
         }
 
-        .welcome-description {
-          line-height: 1.8;
+        .subtitle {
+          font-size: 1.2rem;
           opacity: 0.9;
         }
 
-        .trigram-display {
-          display: flex;
-          justify-content: center;
-          align-items: center;
+        .philosophy-section {
+          text-align: center;
+          margin: 2rem 0;
         }
 
-        .trigram-circle {
-          width: 250px;
-          height: 250px;
-          border: 3px solid rgba(0, 255, 255, 0.6);
-          border-radius: 50%;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          background: linear-gradient(135deg, 
-            rgba(0, 255, 255, 0.1), 
-            rgba(255, 215, 0, 0.1)
-          );
-          animation: rotate 20s linear infinite;
+        .philosophy-title {
+          font-size: 2rem;
+          font-weight: bold;
+          margin-bottom: 1rem;
+          text-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
         }
 
         .trigram-symbols {
@@ -428,189 +211,147 @@ export function IntroScreen({
           letter-spacing: 0.5rem;
           color: #ffd700;
           text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
-          margin-bottom: 1rem;
         }
 
-        .center-symbol {
-          font-size: 1.5rem;
-          font-weight: bold;
+        .archetype-section {
+          text-align: center;
+          margin: 3rem 0;
+        }
+
+        .archetype-toggle {
+          background: transparent;
+          border: none;
           color: #00ffff;
-          text-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
-        }
-
-        @keyframes rotate {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-
-        .section-title {
-          text-align: center;
-          margin: 3rem 0 2rem 0;
-          text-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
-        }
-
-        .archetype-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-          gap: 1.5rem;
-          margin: 2rem 0;
-        }
-
-        .archetype-card {
-          background: linear-gradient(135deg, 
-            rgba(0, 255, 255, 0.1), 
-            rgba(255, 215, 0, 0.05)
-          );
-          border: 2px solid rgba(0, 255, 255, 0.3);
-          border-radius: 12px;
-          padding: 1.5rem;
-          text-align: center;
+          font-size: 1.2rem;
           cursor: pointer;
+          position: relative;
+          display: inline-block;
+          padding: 0.5rem 1rem;
+          border-radius: 8px;
           transition: all 0.3s ease;
-          backdrop-filter: blur(10px);
         }
 
-        .archetype-card:hover,
-        .archetype-card.selected {
-          border-color: rgba(0, 255, 255, 0.8);
-          background: linear-gradient(135deg, 
-            rgba(0, 255, 255, 0.2), 
-            rgba(255, 215, 0, 0.1)
-          );
-          transform: translateY(-5px);
-          box-shadow: 0 10px 30px rgba(0, 255, 255, 0.3);
+        .archetype-toggle:hover {
+          background: rgba(0, 255, 255, 0.1);
+          box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
         }
 
-        .archetype-symbol {
-          font-size: 3rem;
-          margin-bottom: 1rem;
+        .selected-archetype {
+          font-weight: bold;
+          text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+        }
+
+        .archetype-list {
+          margin-top: 1rem;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 4px 20px rgba(0, 255, 255, 0.2);
+        }
+
+        .archetype-option {
+          background: transparent;
+          border: none;
+          color: #ffffff;
+          font-size: 1rem;
+          cursor: pointer;
+          padding: 1rem;
+          text-align: left;
+          width: 100%;
+          transition: all 0.3s ease;
+        }
+
+        .archetype-option:hover {
+          background: rgba(0, 255, 255, 0.1);
+        }
+
+        .archetype-option.selected {
+          background: rgba(0, 255, 255, 0.2);
+          font-weight: bold;
         }
 
         .archetype-name {
-          margin: 1rem 0;
-          text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+          font-size: 1.1rem;
+          margin: 0;
         }
 
         .archetype-description {
-          opacity: 0.8;
-          margin-bottom: 1rem;
-        }
-
-        .archetype-stats {
-          display: flex;
-          flex-direction: column;
-          gap: 0.5rem;
           font-size: 0.9rem;
-          color: #ffd700;
+          margin: 0.2rem 0;
+          opacity: 0.8;
         }
 
-        .stance-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-          gap: 1rem;
-          margin: 2rem 0;
-        }
-
-        .stance-card {
-          background: rgba(0, 0, 0, 0.3);
-          border: 2px solid rgba(255, 215, 0, 0.3);
-          border-radius: 8px;
-          padding: 1rem;
-          text-align: center;
-          cursor: pointer;
-          transition: all 0.3s ease;
-        }
-
-        .stance-card:hover,
-        .stance-card.selected {
-          border-color: rgba(255, 215, 0, 0.8);
-          background: rgba(255, 215, 0, 0.1);
-          transform: translateY(-3px);
-          box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
-        }
-
-        .stance-symbol {
-          font-size: 2rem;
-          color: #ffd700;
-          margin-bottom: 0.5rem;
-          text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-        }
-
-        .stance-name {
-          margin: 0.5rem 0;
-        }
-
-        .stance-element {
+        .archetype-philosophy {
           font-size: 0.8rem;
-          color: #c0c0c0;
+          margin: 0;
+          color: #ffd700;
         }
 
-        .intro-navigation {
+        .action-buttons {
           display: flex;
           justify-content: center;
           gap: 2rem;
           margin: 4rem 0 2rem 0;
-          flex-wrap: wrap;
         }
 
-        .nav-button {
+        .primary-button,
+        .secondary-button {
           padding: 1rem 2rem;
           border: 2px solid;
           border-radius: 8px;
           background: transparent;
           color: white;
-          font-family: 'Noto Sans KR', Arial, sans-serif;
+          font-family: "Noto Sans KR", Arial, sans-serif;
           font-size: 1.1rem;
           cursor: pointer;
           transition: all 0.3s ease;
           min-width: 180px;
         }
 
-        .nav-button.philosophy {
-          border-color: #ffd700;
-          color: #ffd700;
-        }
-
-        .nav-button.philosophy:hover {
-          background: rgba(255, 215, 0, 0.1);
-          box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
-        }
-
-        .nav-button.training {
+        .primary-button {
           border-color: #00ffff;
           color: #00ffff;
         }
 
-        .nav-button.training:hover {
+        .primary-button:hover {
           background: rgba(0, 255, 255, 0.1);
           box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
         }
 
-        .nav-button.combat {
+        .secondary-button {
           border-color: #ff0040;
           color: #ff0040;
         }
 
-        .nav-button.combat:hover {
+        .secondary-button:hover {
           background: rgba(255, 0, 64, 0.1);
           box-shadow: 0 0 20px rgba(255, 0, 64, 0.3);
         }
 
+        .quote-section {
+          text-align: center;
+          margin: 3rem 0;
+          font-size: 1.2rem;
+          font-style: italic;
+          color: #ffd700;
+          text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+        }
+
         /* Responsive design */
         @media (max-width: 1024px) {
-          .welcome-section {
-            grid-template-columns: 1fr;
-            text-align: center;
-            gap: 2rem;
+          .trigram-symbols {
+            font-size: 1.5rem;
           }
 
-          .trigram-circle {
-            width: 200px;
-            height: 200px;
+          .archetype-toggle {
+            font-size: 1rem;
+            padding: 0.5rem;
           }
 
-          .archetype-grid {
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          .primary-button,
+          .secondary-button {
+            font-size: 1rem;
+            padding: 0.8rem 1.5rem;
           }
         }
 
@@ -619,20 +360,21 @@ export function IntroScreen({
             padding: 1rem;
           }
 
-          .archetype-grid {
-            grid-template-columns: 1fr;
+          .archetype-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 10;
           }
 
-          .stance-grid {
-            grid-template-columns: repeat(4, 1fr);
+          .archetype-option {
+            font-size: 0.9rem;
+            padding: 0.8rem;
           }
 
-          .intro-navigation {
-            flex-direction: column;
-            align-items: center;
-          }
-
-          .nav-button {
+          .primary-button,
+          .secondary-button {
             width: 100%;
             max-width: 300px;
           }
