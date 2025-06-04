@@ -65,6 +65,21 @@ vi.mock("@pixi/react", () => ({
   }),
 }));
 
-// Mock audio context
-(global as any).AudioContext = vi.fn();
-(global as any).webkitAudioContext = vi.fn();
+// Mock Audio Context for testing
+global.AudioContext = vi.fn(() => ({
+  createOscillator: vi.fn(() => ({
+    connect: vi.fn(),
+    start: vi.fn(),
+    stop: vi.fn(),
+    frequency: {
+      setValueAtTime: vi.fn(),
+      exponentialRampToValueAtTime: vi.fn(),
+    },
+  })),
+  createGain: vi.fn(() => ({
+    connect: vi.fn(),
+    gain: { setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() },
+  })),
+  destination: {},
+  currentTime: 0,
+}));

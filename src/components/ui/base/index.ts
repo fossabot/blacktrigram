@@ -1,50 +1,17 @@
 // Base UI component exports for Korean martial arts game
 
-// Export Korean text components (no duplicates)
-export {
-  KoreanText,
-  KoreanTitle,
-  KoreanTechniqueText,
-  KoreanStatusText,
-  KoreanMartialText,
-} from "./korean-text";
+// Export Korean text components
+export * from "./korean-text";
 
-// Export types from the main types system (avoid local re-exports)
-export type {
-  KoreanTextProps,
-  KoreanTitleProps,
-  KoreanTechniqueTextProps,
-  KoreanStatusTextProps,
-  KoreanMartialTextProps,
-  KoreanTextSize,
-  KoreanTextVariant,
-  KoreanTextEmphasis,
-  MartialVariant,
-  HonorLevel,
-  PixiTextStyleConfig,
-  KoreanPixiTextConfig,
-} from "../../../types/korean-text";
+// Export other base components
+export { BaseButton } from "./BaseButton";
+export { KoreanHeader } from "./KoreanHeader";
 
-export {
-  BackgroundGrid,
-  CyberpunkBackground,
-  type BackgroundGridProps,
-  type CyberpunkBackgroundProps,
-} from "./BackgroundGrid";
+// Export PixiJS components
+export * from "./KoreanPixiComponents";
 
-export {
-  PixiContainerComponent,
-  PixiGraphicsComponent,
-  PixiTextComponent,
-  // Export all the existing PixiComponents that CombatScreen needs
-  StatusBar,
-  KoreanTextDisplay,
-  CyberpunkGlow,
-  BackgroundGrid,
-  TrigramButton,
-} from "./PixiComponents";
-
-export { BaseButton, type BaseButtonProps } from "./BaseButton";
+// Export background grid (remove duplicate)
+export { BackgroundGrid } from "./BackgroundGrid";
 
 // Utility type for Korean UI theming
 export interface KoreanUITheme {

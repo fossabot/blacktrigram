@@ -85,6 +85,9 @@ export const KOREAN_COLORS = {
 
   // Trigram stance colors (included in main system)
   ...TRIGRAM_STANCE_COLORS,
+
+  // Critical hit color
+  CRITICAL_HIT: 0xff0040, // Neon red for critical hits
 } as const;
 
 // Combat-specific color themes

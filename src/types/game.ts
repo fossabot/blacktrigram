@@ -1,7 +1,8 @@
 // Types related to game flow, UI props for game screens, and training
 
-import type { GamePhase } from "./enums"; // Import from enums
+import { TrigramStance } from "./enums";
 import type { PlayerState } from "./player"; // Import from player
+import type { PlayerArchetype } from "./player";
 
 export interface AppState {
   readonly gamePhase: GamePhase;
@@ -14,5 +15,23 @@ export interface AppState {
   readonly winnerId: string | null;
 }
 
-// Export GamePhase
-export type { GamePhase } from "./enums";
+export type GamePhase = "intro" | "training" | "combat" | "victory" | "defeat";
+
+export interface GameState {
+  readonly phase: GamePhase;
+  readonly players: readonly PlayerState[];
+  readonly currentRound: number;
+  readonly maxRounds: number;
+  readonly gameTime: number;
+  readonly isPaused: boolean;
+  readonly winner?: string;
+  readonly selectedArchetype?: PlayerArchetype;
+  readonly selectedStance?: TrigramStance;
+}
+
+export interface GameConfig {
+  readonly maxPlayers: number;
+  readonly roundDuration: number;
+  readonly maxRounds: number;
+  readonly enableDebug: boolean;
+}

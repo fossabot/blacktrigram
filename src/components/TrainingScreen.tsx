@@ -1,10 +1,18 @@
 import React from "react";
-import type { PlayerArchetype, TrigramStance } from "../types";
 
 export interface TrainingScreenProps {
-  onBack: () => void;
+  readonly onBack: () => void;
 }
 
-export const TrainingScreen: React.FC<TrainingScreenProps> = ({ onBack }) => {
-  return <div className="training-screen">{/* Implementation */}</div>;
-};
+export function TrainingScreen({
+  onBack,
+}: TrainingScreenProps): React.JSX.Element {
+  return (
+    <div style={{ padding: "2rem" }}>
+      <h1>훈련 모드 (Training Mode)</h1>
+      <p>무술 기법을 연습하세요 (Practice martial techniques)</p>
+
+      <button onClick={onBack}>돌아가기 (Back)</button>
+    </div>
+  );
+}

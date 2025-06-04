@@ -81,6 +81,9 @@ function App(): React.ReactElement {
     });
   }, []);
 
+  // Fixed position interface
+  const defaultPosition = { x: 200, y: 300 };
+
   // Render current screen
   const renderCurrentScreen = () => {
     switch (gameState.currentScreen) {

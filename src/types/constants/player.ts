@@ -233,3 +233,12 @@ export const ARCHETYPE_COMBAT_THRESHOLDS: Record<
     painThreshold: 85, // Highest pain tolerance
   },
 } as const;
+
+// Archetype names for display
+export const ARCHETYPE_NAMES = {
+  musa: "무사",
+  amsalja: "암살자",
+  hacker: "해커",
+  jeongbo_yowon: "정보요원", // Fixed: was "jeongbo"
+  jojik_pokryeokbae: "조직폭력배", // Fixed: was "jojik"
+} as const;

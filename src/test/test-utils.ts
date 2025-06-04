@@ -1,34 +1,27 @@
+import { ReactElement } from "react";
+import { render, RenderOptions } from "@testing-library/react";
 import { vi } from "vitest";
-import { render, type RenderOptions } from "@testing-library/react";
-import { type ReactElement } from "react";
 
-// Mock graphics context for PixiJS testing
+// Mock graphics context for testing
 export const mockGraphicsContext = {
   clear: vi.fn(),
-  setFillStyle: vi.fn(),
-  setStrokeStyle: vi.fn(),
-  rect: vi.fn(),
-  circle: vi.fn(),
+  beginFill: vi.fn(),
+  endFill: vi.fn(),
+  drawRect: vi.fn(),
+  drawCircle: vi.fn(),
+  lineStyle: vi.fn(),
   moveTo: vi.fn(),
   lineTo: vi.fn(),
-  roundRect: vi.fn(),
-  fill: vi.fn(),
-  stroke: vi.fn(),
-  closePath: vi.fn(),
-  lineStyle: vi.fn(),
 };
 
-// Mock audio functions for testing
+// Mock audio context
 export const mockAudio = {
   playSFX: vi.fn(),
-  playMusic: vi.fn(),
-  setMasterVolume: vi.fn(),
-  getMasterVolume: vi.fn(() => 0.7),
-  isEnabled: vi.fn(() => true),
   playAttackSound: vi.fn(),
   playHitSound: vi.fn(),
-  playComboSound: vi.fn(),
-  playStanceChangeSound: vi.fn(),
+  playMenuSound: vi.fn(),
+  setVolume: vi.fn(),
+  getIsInitialized: vi.fn(() => true),
 };
 
 // Custom render function for testing Korean martial arts components
