@@ -33,8 +33,16 @@ Cypress.on("window:before:load", (win) => {
   };
 });
 
-// Don't automatically apply WebGL mocking in before each hook
-// This avoids double-mocking when using visitWithWebGLMock
-// beforeEach(() => {
-//   cy.mockWebGL();
-// });
+// Add WebGL mocking to all tests by default
+beforeEach(() => {
+  cy.mockWebGL();
+});
+
+// Improve visual test feedback
+Cypress.on("test:before:run", () => {
+  // Log to provide visual separation in test output
+  console.log("\n----- Starting Black Trigram Test -----\n");
+});
+
+// Note: Tasks are configured in cypress.config.ts, not here
+// The tasks "log" and "silenceWebGLWarning" should be defined there

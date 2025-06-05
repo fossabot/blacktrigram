@@ -115,6 +115,7 @@ export function CombatScreen({
         color: "#" + KOREAN_COLORS.WHITE.toString(16),
         position: "relative",
       }}
+      data-testid="combat-screen"
     >
       {/* Combat HUD */}
       <CombatHUD
@@ -122,6 +123,7 @@ export function CombatScreen({
         timeRemaining={timeRemaining}
         currentRound={currentRound}
         isPaused={isPaused}
+        data-testid="combat-hud"
       />
 
       {/* Main Combat Arena */}
@@ -130,6 +132,7 @@ export function CombatScreen({
           height: "calc(100vh - 120px)",
           position: "relative",
         }}
+        data-testid="combat-arena-container"
       >
         <CombatArena
           players={players}
@@ -140,6 +143,7 @@ export function CombatScreen({
           isExecutingTechnique={isExecutingTechnique}
           showVitalPoints={false}
           showDebugInfo={process.env.NODE_ENV === "development"}
+          data-testid="combat-arena"
         />
       </div>
 
@@ -153,6 +157,7 @@ export function CombatScreen({
         isExecutingTechnique={isExecutingTechnique}
         isPaused={isPaused}
         showVitalPoints={false}
+        data-testid="combat-controls"
       />
 
       {/* Pause Overlay */}
@@ -170,6 +175,7 @@ export function CombatScreen({
             justifyContent: "center",
             zIndex: 1000,
           }}
+          data-testid="pause-overlay"
         >
           <div
             style={{
@@ -178,6 +184,7 @@ export function CombatScreen({
               borderRadius: "10px",
               border: `2px solid ${KOREAN_COLORS.CYAN}`,
             }}
+            data-testid="pause-dialog"
           >
             <KoreanText
               korean="일시 정지"
@@ -185,6 +192,7 @@ export function CombatScreen({
               size="xlarge"
               weight="bold"
               color={"#" + KOREAN_COLORS.CYAN.toString(16)}
+              data-testid="pause-title"
             />
             <div style={{ marginTop: "1rem", textAlign: "center" }}>
               <button
@@ -198,6 +206,7 @@ export function CombatScreen({
                   cursor: "pointer",
                   fontFamily: '"Noto Sans KR", Arial, sans-serif',
                 }}
+                data-testid="return-to-menu-button"
               >
                 <KoreanText korean="메인 메뉴" english="Main Menu" />
               </button>
@@ -217,6 +226,7 @@ export function CombatScreen({
           borderRadius: "5px",
           maxWidth: "300px",
         }}
+        data-testid="combat-log"
       >
         <KoreanText
           korean="전투 기록"
@@ -224,9 +234,14 @@ export function CombatScreen({
           size="small"
           weight="bold"
           color={"#" + KOREAN_COLORS.CYAN.toString(16)}
+          data-testid="combat-log-title"
         />
         {combatLog.map((entry, index) => (
-          <div key={index} style={{ fontSize: "12px", marginTop: "0.25rem" }}>
+          <div
+            key={index}
+            style={{ fontSize: "12px", marginTop: "0.25rem" }}
+            data-testid={`combat-log-entry-${index}`}
+          >
             {entry}
           </div>
         ))}

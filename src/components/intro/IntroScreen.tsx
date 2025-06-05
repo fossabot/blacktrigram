@@ -134,6 +134,7 @@ export function IntroScreen({
                       korean={archetype.korean}
                       english={archetype.english}
                       className="archetype-name"
+                      data-testid={`archetype-name-${archetype.id}`}
                     />
                     <p className="archetype-description">
                       {archetype.description}

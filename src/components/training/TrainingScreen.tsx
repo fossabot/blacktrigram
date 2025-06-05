@@ -115,7 +115,7 @@ export function TrainingScreen({
         </div>
 
         <button
-          data-testid="exit-training-button"
+          data-testid="return-to-menu-button"
           onClick={onReturnToMenu}
           style={{
             backgroundColor: "#" + KOREAN_COLORS.RED.toString(16),
@@ -127,7 +127,7 @@ export function TrainingScreen({
             fontFamily: '"Noto Sans KR", Arial, sans-serif',
           }}
         >
-          <KoreanText korean="돌아가기" english="Return" />
+          <KoreanText korean="메뉴로 돌아가기" english="Return to Menu" />
         </button>
       </div>
 
@@ -440,6 +440,7 @@ export function TrainingScreen({
                         ? 0.5
                         : 1,
                   }}
+                  data-testid="execute-technique-button"
                 >
                   <KoreanText korean="기법 실행" english="Execute Technique" />
                 </button>
