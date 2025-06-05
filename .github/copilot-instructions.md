@@ -38,260 +38,150 @@ Black Trigram is a **realistic 2D precision combat simulator** deeply rooted in 
 
 ## 🏗️ Current Architecture
 
-src/main.tsx
-src/components/IntroScreen.tsx
-src/components/intro/IntroScreen.tsx
-src/components/intro/components/MenuSection.tsx
-src/components/intro/components/ControlsSection.tsx
-src/components/intro/components/PhilosophySection.tsx
-src/components/intro/components
-src/components/intro/sections/MenuSection.tsx
-src/components/intro/sections/index.ts
-src/components/intro/sections/ControlsSection.tsx
-src/components/intro/sections/PhilosophySection.tsx
-src/components/intro/sections
-src/components/intro/IntroScreen.css
-src/components/intro/index.ts
-src/components/intro
-src/components/combat/components/CombatHUD.tsx
-src/components/combat/components/CombatControls.tsx
-src/components/combat/components/CombatArena.tsx
-src/components/combat/components/index.ts
-src/components/combat/components
-src/components/combat/CombatScreen.tsx
-src/components/combat/index.ts
-src/components/combat
-src/components/TrainingScreen.tsx
-src/components/game/GameUI.tsx
-src/components/game/PlayerVisuals.tsx
-src/components/game/GameEngine.tsx
-src/components/game/HitEffectsLayer.tsx
-src/components/game/DojangBackground.tsx
-src/components/game/Player.tsx
-src/components/game/index.ts
-src/components/game
-src/components/ui/KoreanHeader.tsx
-src/components/ui/EndScreen.tsx
-src/components/ui/TrigramWheel.tsx
-src/components/ui/ProgressTracker.tsx
-src/components/ui/base/KoreanHeader.tsx
-src/components/ui/base/BackgroundGrid.tsx
-src/components/ui/base/BaseButton.tsx
-src/components/ui/base/KoreanPixiComponents.tsx
-src/components/ui/base/korean-text/components/KoreanMartialText.tsx
-src/components/ui/base/korean-text/components/KoreanText.tsx
-src/components/ui/base/korean-text/components/KoreanStatusText.tsx
-src/components/ui/base/korean-text/components/KoreanTitle.tsx
-src/components/ui/base/korean-text/components/KoreanPixiTextUtils.ts
-src/components/ui/base/korean-text/components/KoreanTechniqueText.tsx
-src/components/ui/base/korean-text/components/index.ts
-src/components/ui/base/korean-text/components
-src/components/ui/base/korean-text/KoreanText.tsx
-src/components/ui/base/korean-text/constants.ts
-src/components/ui/base/korean-text/types.ts
-src/components/ui/base/korean-text/hooks/useKoreanTextStyle.ts
-src/components/ui/base/korean-text/hooks
-src/components/ui/base/korean-text/index.ts
-src/components/ui/base/korean-text/utils.ts
-src/components/ui/base/korean-text
-src/components/ui/base/PixiComponents.tsx
-src/components/ui/base/index.ts
-src/components/ui/base
-src/components/ui/index.ts
-src/components/ui
-src/components/training/TrainingScreen.tsx
-src/components/training/index.ts
-src/components/training
-src/components/index.ts
-src/components
-src/App.tsx
-src/utils/colorUtils.ts
-src/utils/playerUtils.ts
-src/audio/AudioManager.tsx
-src/audio/VariantSelector.ts
-src/audio/placeholder-sounds.ts
-src/audio/AudioManager.ts
-src/audio/DefaultSoundGenerator.ts
-src/audio/AudioUtils.ts
+### System
+
 src/audio/AudioAssetRegistry.ts
-src/audio/AudioProvider.tsx
+src/audio/AudioManager.ts
+src/audio/AudioUtils.ts
+src/audio/DefaultSoundGenerator.ts
 src/audio/index.ts
-src/vite-env.d.ts
+src/audio/placeholder-sounds.ts
+src/audio/VariantSelector.ts
+src/components
+src/components/combat
+src/components/combat/components
+src/components/combat/components/index.ts
+src/components/combat/index.ts
+src/components/game
+src/components/game/index.ts
+src/components/index.ts
+src/components/intro
+src/components/intro/components
+src/components/intro/index.ts
+src/components/intro/IntroScreen.css
+src/components/intro/sections
+src/components/intro/sections/index.ts
+src/components/training
+src/components/training/index.ts
+src/components/ui
+src/components/ui/base
+src/components/ui/base/index.ts
+src/components/ui/base/korean-text
+src/components/ui/base/korean-text/components
+src/components/ui/base/korean-text/components/index.ts
+src/components/ui/base/korean-text/components/KoreanPixiTextUtils.ts
+src/components/ui/base/korean-text/constants.ts
+src/components/ui/base/korean-text/hooks
+src/components/ui/base/korean-text/hooks/useKoreanTextStyle.ts
+src/components/ui/base/korean-text/index.ts
+src/components/ui/base/korean-text/types.ts
+src/components/ui/base/korean-text/utils.ts
+src/components/ui/index.ts
 src/hooks/useTexture.ts
-src/types/combat.ts
+src/systems/CombatSystem.ts
+src/systems/trigram/KoreanCulture.ts
+src/systems/trigram/KoreanTechniques.ts
+src/systems/trigram/StanceManager.ts
+src/systems/TrigramSystem.ts
+src/systems/trigram/TransitionCalculator.ts
+src/systems/trigram/TrigramCalculator.ts
+src/systems/vitalpoint/AnatomicalRegions.ts
+src/systems/vitalpoint/DamageCalculator.ts
+src/systems/vitalpoint/HitDetection.ts
+src/systems/vitalpoint/KoreanAnatomy.ts
+src/systems/vitalpoint/KoreanVitalPoints.ts
+src/systems/VitalPointSystem.ts
+src/types/anatomy.ts
 src/types/audio.ts
+src/types/combat.ts
+src/types/common.ts
+src/types/components.ts
+src/types/constants
+src/types/constants/colors.ts
+src/types/constants/combat.ts
+src/types/constants/controls.ts
+src/types/constants/game.ts
+src/types/constants/index.ts
+src/types/constants/player.ts
+src/types/constants/techniques.ts
+src/types/constants/trigram.ts
+src/types/constants.ts
+src/types/constants/typography.ts
+src/types/constants/vital-points.ts
+src/types/controls.ts
+src/types/effects.ts
 src/types/enums.ts
 src/types/game.ts
-src/types/constants.ts
-src/types/systems.ts
-src/types/anatomy.ts
-src/types/trigram.ts
-src/types/common.ts
-src/types/korean-text.ts
-src/types/components.ts
-src/types/player.ts
-src/types/controls.ts
-src/types/ui.ts
-src/types/pixi-react.d.ts
-src/types/constants/combat.ts
-src/types/constants/game.ts
-src/types/constants/vital-points.ts
-src/types/constants/trigram.ts
-src/types/constants/typography.ts
-src/types/constants/player.ts
-src/types/constants/controls.ts
-src/types/constants/colors.ts
-src/types/constants/index.ts
-src/types/constants/techniques.ts
-src/types/constants
 src/types/index.ts
-src/types/effects.ts
-src/systems/CombatSystem.ts
-src/systems/VitalPointSystem.ts
-src/systems/TrigramSystem.ts
-src/systems/vitalpoint/KoreanAnatomy.ts
-src/systems/vitalpoint/AnatomicalRegions.ts
-src/systems/vitalpoint/KoreanVitalPoints.ts
-src/systems/vitalpoint/HitDetection.ts
-src/systems/vitalpoint/DamageCalculator.ts
-src/systems/trigram/StanceManager.ts
-src/systems/trigram/TrigramCalculator.ts
-src/systems/trigram/KoreanCulture.ts
-src/systems/trigram/TransitionCalculator.ts
-src/systems/trigram/KoreanTechniques.ts
+src/types/korean-text.ts
+src/types/pixi-react.d.ts
+src/types/player.ts
+src/types/systems.ts
+src/types/trigram.ts
+src/types/ui.ts
+src/utils/colorUtils.ts
+src/utils/playerUtils.ts
+src/vite-env.d.ts
+
+### UX
+
+src/App.tsx
+src/audio/AudioManager.tsx
+src/audio/AudioProvider.tsx
+src/components/combat/CombatScreen.tsx
+src/components/combat/components/CombatArena.tsx
+src/components/combat/components/CombatControls.tsx
+src/components/combat/components/CombatHUD.tsx
+src/components/game/DojangBackground.tsx
+src/components/game/GameEngine.tsx
+src/components/game/GameUI.tsx
+src/components/game/HitEffectsLayer.tsx
+src/components/game/Player.tsx
+src/components/game/PlayerVisuals.tsx
+src/components/intro/components/ControlsSection.tsx
+src/components/intro/components/MenuSection.tsx
+src/components/intro/components/PhilosophySection.tsx
+src/components/intro/IntroScreen.tsx
+src/components/intro/sections/ControlsSection.tsx
+src/components/intro/sections/MenuSection.tsx
+src/components/intro/sections/PhilosophySection.tsx
+src/components/training/TrainingScreen.tsx
+src/components/ui/base/BackgroundGrid.tsx
+src/components/ui/base/BaseButton.tsx
+src/components/ui/base/KoreanHeader.tsx
+src/components/ui/base/KoreanPixiComponents.tsx
+src/components/ui/base/korean-text/components/KoreanMartialText.tsx
+src/components/ui/base/korean-text/components/KoreanStatusText.tsx
+src/components/ui/base/korean-text/components/KoreanTechniqueText.tsx
+src/components/ui/base/korean-text/components/KoreanText.tsx
+src/components/ui/base/korean-text/components/KoreanTitle.tsx
+src/components/ui/base/korean-text/KoreanText.tsx
+src/components/ui/base/PixiComponents.tsx
+src/components/ui/EndScreen.tsx
+src/components/ui/KoreanHeader.tsx
+src/components/ui/ProgressTracker.tsx
+src/components/ui/TrigramWheel.tsx
+src/main.tsx
+
+### css
+
+src/Game.css
+src/App.css
+src/index.css
 
 ## 🎯 Strict TypeScript Usage
 
 **ALWAYS use explicit types from existing type system:**
 
-```typescript
-// Import from unified type system
-import type {
-  PlayerArchetype,
-  TrigramStance,
-  VitalPoint,
-  CombatState,
-  KoreanTechnique,
-  TRIGRAM_DATA,
-  KOREAN_COLORS,
-} from "../types";
 
-// Use existing trigram data
-const technique = TRIGRAM_DATA[stance].technique;
-const color = KOREAN_COLORS.geon; // For stance colors
+**Component Reuse Strategy**
 
-// Never use 'any' - use 'unknown' if absolutely necessary
-function processGameData(data: unknown): CombatResult {
-  if (isCombatData(data)) {
-    return calculateDamage(data);
-  }
-  throw new Error("Invalid game data");
-}
-```
-
-### Component Reuse Strategy
-
-import type {
-Container,
-Graphics,
-Text,
-Sprite,
-Texture,
-DisplayObject,
-FederatedPointerEvent,
-TextStyle,
-Application,
-} from "pixi.js";
-
-// PIXI.js React integration type declarations
-declare module "@pixi/react" {
-import { ComponentType, ReactNode, RefObject } from "react";
-import \* as PIXI from "pixi.js";
 
 **ALWAYS check existing components before creating new ones:**
 
-#### Korean Text System (✅ Complete - Reuse Extensively)
-
-```typescript
-// Use comprehensive Korean text components
-import {
-  KoreanText,
-  KoreanTitle,
-  KoreanTechniqueText,
-  KoreanMartialText,
-  KoreanStatusText,
-} from "../ui/base/korean-text";
-
-// Example usage with proper typing
-<KoreanTechniqueText
-  korean="천둥벽력"
-  english="Thunder Strike"
-  trigram="geon"
-/>;
-```
-
-#### Audio Integration (✅ Complete - Use Extensively)
-
-```typescript
-// Use existing audio manager
-import { useAudio } from "../audio/AudioManager";
-
-const audio = useAudio();
-audio.playAttackSound(damage);
-audio.playHitSound(damage, isVitalPoint);
-audio.playTechniqueSound(technique.korean);
-```
-
-#### Combat Systems (✅ Foundation - Build Upon)
-
-```typescript
-// Use existing combat systems
-import { CombatSystem } from "../systems/CombatSystem";
-import { VitalPointSystem } from "../systems/VitalPointSystem";
-import { TrigramSystem } from "../systems/TrigramSystem";
-
-// Use trigram data
-import { TRIGRAM_DATA, STANCE_EFFECTIVENESS_MATRIX } from "../types/trigram";
-
-const effectiveness =
-  STANCE_EFFECTIVENESS_MATRIX[attackerStance][defenderStance];
-```
-
-## ⚡ Priority Implementation Areas
-
-### 🚨 Critical Gaps (Implement First)
-
-1. **Game Engine Core** (`src/components/game/GameEngine.tsx`)
-
-   - Expand from 8 lines to full game loop
-   - Integrate existing CombatSystem and VitalPointSystem
-   - Use existing PlayerState types
-
-2. **Player Component** (`src/components/game/Player.tsx`)
-
-   - Build complete Korean martial artist
-   - Use existing TRIGRAM_DATA for techniques
-   - Integrate with existing audio system
-
-3. **TrigramWheel Implementation** (`src/components/ui/TrigramWheel.tsx`)
-   - Build interactive stance selection
-   - Use existing TRIGRAM_DATA and colors
-   - Integrate with Korean text system
-
-### 🔧 Enhancement Areas (Build Upon Existing)
-
-1. **GameUI Enhancement** (`src/components/game/GameUI.tsx`)
-
-   - Expand current 12-line implementation
-   - Use existing Korean text components
-   - Integrate with existing ProgressTracker interface
-
-2. **Hit Effects System** (`src/components/game/HitEffectsLayer.tsx`)
-   - Expand from skeleton to full effect system
-   - Use existing KOREAN_COLORS
-   - Integrate with audio feedback
 
 ## 🎨 PixiJS + React Integration
+
 
 ## 🧪 Testing Strategy
 
@@ -304,23 +194,8 @@ const effectiveness =
 
 ### Test Patterns to Follow
 
-```typescript
-// Use existing test utilities
-import { renderWithAudio, mockAudioContext } from "../test/test-utils";
+Testing best pracices, using test id in code, testable code and resilient test
 
-describe("CombatSystem Integration", () => {
-  it("should execute Korean technique with audio feedback", () => {
-    const mockAudio = mockAudioContext();
-
-    // Use existing TRIGRAM_DATA
-    const technique = TRIGRAM_DATA.geon.technique;
-
-    // Test with existing audio system
-    result.current.playAttackSound(technique.damage);
-    expect(mockAudio.playAttackSound).toHaveBeenCalledWith(28);
-  });
-});
-```
 
 ## 🎯 Core Game Design Philosophy
 
@@ -331,29 +206,7 @@ describe("CombatSystem Integration", () => {
 - **암살자 (Amsalja)** - Combat Specialist: Focus on immediate incapacitation
 - **급소격 (Geupsogyeok)** - Vital Point Strike: Authentic pressure point combat
 
-### Realistic Combat Mechanics (Implement in All Combat Code)
-
-```typescript
-// Authentic combat mechanics structure
-interface CombatMechanics {
-  health: number; // 0-100 overall condition
-  pain: number; // Current pain level affecting performance
-  balance: CombatState; // READY | SHAKEN | VULNERABLE | HELPLESS
-  consciousness: number; // 0-100 awareness level
-  bloodLoss: number; // Cumulative bleeding effects
-  stamina: number; // Energy and endurance status
-}
-
-// Combat readiness states
-enum CombatReadiness {
-  READY = 100, // Combat ready, full capability
-  LIGHT_DAMAGE = 80, // Light damage, reduced capability
-  MODERATE = 60, // Moderate damage, significant impairment
-  HEAVY = 40, // Heavy damage, severe limitation
-  CRITICAL = 20, // Critical damage, near incapacitation
-  INCAPACITATED = 0, // Incapacitated/Defeated
-}
-```
+### Realistic Combat Mechanics 
 
 ## 👤 Player Archetypes (Must Reference in All Combat Code)
 
@@ -759,58 +612,6 @@ const ACCESSIBILITY_FEATURES = {
 
 ### Component Structure (Follow These Patterns)
 
-#### Game Component Template
-
-```typescript
-// Template for all game components
-import { useState, useCallback, useEffect } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
-import type { PlayerState, TrigramStance, CombatResult } from "../types";
-import { useAudio } from "../audio/AudioManager";
-import { TRIGRAM_DATA, KOREAN_COLORS } from "../types";
-
-interface GameComponentProps {
-  readonly player: PlayerState;
-  readonly archetype: PlayerArchetype;
-  readonly onStateChange: (updates: Partial<PlayerState>) => void;
-  readonly isActive?: boolean;
-}
-
-export function GameComponent({
-  player,
-  archetype,
-  onStateChange,
-  isActive = true,
-}: GameComponentProps): JSX.Element {
-  const audio = useAudio();
-  const [localState, setLocalState] = useState<ComponentState>({});
-
-  // Use existing trigram data
-  const stanceData = TRIGRAM_DATA[player.stance];
-  const stanceColor = KOREAN_COLORS[player.stance];
-
-  // Combat logic using existing systems
-  const executeTechnique = useCallback(
-    (technique: KoreanTechnique) => {
-      // Integrate with existing combat systems
-      const result = CombatSystem.calculateTechnique(technique, archetype);
-
-      // Audio feedback using existing audio manager
-      audio.playAttackSound(result.damage);
-      audio.playSFX(`technique_${technique.stance}`);
-
-      // State update
-      onStateChange({
-        stamina: player.stamina - technique.staminaCost,
-        ki: player.ki - technique.kiCost,
-      });
-    },
-    [player, archetype, audio, onStateChange]
-  );
-
-  return <Container>{/* Implement component visuals */}</Container>;
-}
-```
 
 ### Testing Requirements (Follow Existing Patterns)
 
