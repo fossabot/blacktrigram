@@ -181,6 +181,7 @@ export default function App(): React.JSX.Element {
             onStartTraining={() => handlePhaseChange("training")}
             onStartCombat={() => handlePhaseChange("combat")}
             selectedArchetype={selectedArchetype}
+            data-testid="intro-screen"
           />
         );
 
@@ -193,6 +194,7 @@ export default function App(): React.JSX.Element {
             gameTime={appState.gameTime}
             onReturnToMenu={() => handlePhaseChange("intro")}
             onStartCombat={() => handlePhaseChange("combat")}
+            data-testid="training-screen"
           />
         );
 
@@ -206,6 +208,7 @@ export default function App(): React.JSX.Element {
             currentRound={appState.currentRound}
             timeRemaining={appState.timeRemaining}
             isPaused={appState.isPaused}
+            data-testid="combat-screen"
           />
         );
 
@@ -217,6 +220,7 @@ export default function App(): React.JSX.Element {
             onRestart={() => dispatch({ type: "RESET_GAME" })}
             onMenu={() => handlePhaseChange("intro")}
             winner={appState.winnerId || ""}
+            data-testid="end-screen"
           />
         );
 
@@ -231,6 +235,7 @@ export default function App(): React.JSX.Element {
               alignItems: "center",
               justifyContent: "center",
             }}
+            data-testid="loading-screen"
           >
             <h1>흑괘 (Black Trigram) - Loading...</h1>
           </div>
@@ -250,6 +255,7 @@ export default function App(): React.JSX.Element {
           color: `#${KOREAN_COLORS.WHITE.toString(16)}`,
           fontFamily: '"Noto Sans KR", Arial, sans-serif',
         }}
+        data-testid="app-container"
       >
         {renderCurrentPhase()}
 
@@ -266,13 +272,21 @@ export default function App(): React.JSX.Element {
               borderRadius: "5px",
               fontSize: "12px",
               fontFamily: "monospace",
+              zIndex: 1000,
             }}
+            data-testid="debug-panel"
           >
-            <div>Phase: {appState.gamePhase}</div>
-            <div>Time: {Math.floor(appState.gameTime / 1000)}s</div>
-            <div>Round: {appState.currentRound}</div>
-            <div>P1: {appState.players[0].health}HP</div>
-            <div>P2: {appState.players[1].health}HP</div>
+            <div data-testid="debug-phase">Phase: {appState.gamePhase}</div>
+            <div data-testid="debug-time">
+              Time: {Math.floor(appState.gameTime / 1000)}s
+            </div>
+            <div data-testid="debug-round">Round: {appState.currentRound}</div>
+            <div data-testid="debug-p1-health">
+              P1: {appState.players[0].health}HP
+            </div>
+            <div data-testid="debug-p2-health">
+              P2: {appState.players[1].health}HP
+            </div>
           </div>
         )}
       </div>

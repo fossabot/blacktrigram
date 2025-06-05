@@ -1,8 +1,7 @@
 describe("Black Trigram Core Features", () => {
   beforeEach(() => {
-    // Start fresh for each test with optimized loading
-    cy.visit("/", { timeout: 12000 });
-    cy.task("silenceWebGLWarning", null, { log: false });
+    // Use the new visitWithWebGLMock command
+    cy.visitWithWebGLMock("/", { timeout: 12000 });
     cy.waitForCanvasReady();
   });
 

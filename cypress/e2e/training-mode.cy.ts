@@ -1,105 +1,100 @@
 describe("Black Trigram Training Mode", () => {
   beforeEach(() => {
-    cy.visit("/", { timeout: 12000 });
-    cy.task("silenceWebGLWarning", null, { log: false });
-    cy.waitForCanvasReady();
+    // Use the new visitWithWebGLMock command
+    cy.visitWithWebGLMock("/", { timeout: 12000 });
 
-    // Enter training mode once before each test
-    cy.gameActions(["2"]);
-    cy.waitForCanvasReady();
+    // Wait for the intro screen to appear
+    cy.get(".intro-screen").should("be.visible");
+
+    // Enter training mode
+    cy.get('[data-testid="training-button"]').click();
+
+    // Wait for training screen
+    cy.get("[data-testid='training-screen']").should("be.visible");
   });
 
-  it("should support complete training workflow", () => {
-    // Test all 8 stances in sequence with practice
-    cy.annotate("Testing all 8 trigram stances");
+  it("should display training screen components", () => {
+    // Check basic components are present
+    cy.get("[data-testid='training-screen']").within(() => {
+      // Check for Korean text headers
+      cy.contains("흑괘").should("be.visible");
+      cy.contains("무술").should("be.visible");
 
-    // Loop through all 8 stances with optimized timing
-    for (let stance = 1; stance <= 8; stance++) {
-      // Select stance
-      cy.annotate(`Testing stance ${stance}`);
-      cy.gameActions([stance.toString()]);
-      cy.wait(200); // Reduced wait time
+      // Check for stance selection
+      cy.contains("팔괘").should("be.visible");
 
-      // Practice stance twice
-      cy.gameActions([" ", " "]);
-      cy.wait(200); // Reduced wait time
-    }
+      // Check for control buttons
+      cy.contains("돌아가기").should("be.visible");
+    });
+  });
 
-    // Test keyboard navigation
-    cy.annotate("Testing training mode keyboard navigation");
-    cy.gameActions(["{leftarrow}", "{rightarrow}"]);
-    cy.wait(200);
+  it("should support training mode workflow", () => {
+    cy.annotate("Testing training mode workflow");
+
+    // Check training mode sections
+    cy.contains("기초").should("be.visible").click();
+    cy.contains("기법").should("be.visible").click();
+    cy.contains("철학").should("be.visible").click();
+
+    // Return to basics
+    cy.contains("기초").click();
+
+    // Try a technique execution if available
+    cy.contains("기법").click();
+    cy.get("button").contains("기법 실행").should("be.visible");
 
     // Return to intro screen
-    cy.annotate("Returning to intro");
-    cy.gameActions(["{esc}"]);
-    cy.waitForCanvasReady();
+    cy.contains("메뉴로 돌아가기").click();
+    cy.get(".intro-screen").should("be.visible");
   });
 
-  it("should handle rapid stance transitions", () => {
-    // Test rapid input
-    cy.annotate("Testing rapid stance selection");
+  it("should allow trigram stance selection", () => {
+    // The TrigramWheel component might not be directly clickable in tests,
+    // but we can check it exists and then simulate stance changes via UI or keyboard
 
-    // Select stances rapidly
-    cy.gameActions(["12345678"]);
-    cy.waitForCanvasReady();
+    cy.contains("팔괘 자세 수련").should("be.visible");
 
-    // Practice current stance
-    cy.annotate("Practicing current stance");
-    cy.gameActions([" "]);
-    cy.waitForCanvasReady();
+    // Use keyboard for stance changes (1-8 keys correspond to trigram stances)
+    cy.get("body").type("1");
+    cy.wait(300);
+    cy.get("body").type("2");
+    cy.wait(300);
+    cy.get("body").type("3");
+    cy.wait(300);
 
-    // Return to intro
-    cy.annotate("Returning to intro");
-    cy.gameActions(["{esc}"]);
-    cy.waitForCanvasReady();
+    // Check the technique execution button in technique mode
+    cy.contains("기법").click();
+    cy.get("button").contains("기법 실행").should("exist");
+
+    // Return to basics
+    cy.contains("기초").click();
   });
 
-  it("should track stance practice progress", () => {
-    // Select first stance
-    cy.annotate("Testing stance practice counter");
-    cy.gameActions(["1"]);
-    cy.waitForCanvasReady();
+  it("should show stance information", () => {
+    // Verify the stance information section exists
+    cy.contains("현재 자세").should("be.visible");
 
-    // Practice multiple times to test counter
-    cy.annotate("Practicing stance 5 times");
+    // Change stance and verify info updates
+    cy.get("body").type("2"); // Select second stance
+    cy.wait(500);
 
-    // Practice 5 times
-    for (let i = 0; i < 5; i++) {
-      cy.gameActions([" "]);
-      cy.waitForCanvasReady();
-    }
-
-    // Return to intro
-    cy.annotate("Returning to intro");
-    cy.gameActions(["{esc}"]);
-    cy.waitForCanvasReady();
+    // Go to philosophy mode
+    cy.contains("철학").click();
+    cy.contains("무술 철학").should("be.visible");
   });
 
-  it("should support mobile touch interactions", () => {
-    // Test on mobile viewport
-    cy.annotate("Testing mobile interactions");
-    cy.viewport(375, 667);
-    cy.waitForCanvasReady();
+  it("should handle player status controls", () => {
+    // Check player status section
+    cy.contains("수련자 상태").should("be.visible");
 
-    // Click to interact with training mode
-    cy.annotate("Testing back button click");
-    cy.get("canvas").click(50, 50); // Click back button
-    cy.waitForCanvasReady();
+    // Try combat mode button
+    cy.contains("실전 모드").should("be.visible");
 
-    // Should be back at intro screen
-    cy.annotate("Re-entering training mode");
-    cy.gameActions(["2"]); // Re-enter training
-    cy.waitForCanvasReady();
-
-    // Practice via click
-    cy.annotate("Testing practice via click");
-    cy.get("canvas").click(187, 333); // Click to practice
-    cy.waitForCanvasReady();
+    // Try restore button
+    cy.contains("회복").click();
 
     // Return to intro
-    cy.annotate("Returning to intro");
-    cy.gameActions(["{esc}"]);
-    cy.waitForCanvasReady();
+    cy.contains("메뉴로 돌아가기").click();
+    cy.get(".intro-screen").should("be.visible");
   });
 });

@@ -67,38 +67,44 @@ export function IntroScreen({
   );
 
   return (
-    <div className="intro-screen">
+    <div className="intro-screen" data-testid="intro-screen">
       <div className="intro-background">
         <div className="intro-content">
           {/* Main Title */}
-          <div className="title-section">
+          <div className="title-section" data-testid="title-section">
             <KoreanText
               korean="흑괘 무술 도장"
               english="Black Trigram Martial Arts"
               className="main-title"
+              data-testid="main-title"
             />
             <KoreanText
               korean="정밀 격투 시뮬레이터"
               english="Precision Combat Simulator"
               className="subtitle"
+              data-testid="subtitle"
             />
           </div>
 
           {/* Trigram Philosophy */}
-          <div className="philosophy-section">
+          <div className="philosophy-section" data-testid="philosophy-section">
             <KoreanText
               korean="팔괘의 길"
               english="Path of Eight Trigrams"
               className="philosophy-title"
+              data-testid="philosophy-title"
             />
-            <div className="trigram-symbols">☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷</div>
+            <div className="trigram-symbols" data-testid="trigram-symbols">
+              ☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷
+            </div>
           </div>
 
           {/* Archetype Selection */}
-          <div className="archetype-section">
+          <div className="archetype-section" data-testid="archetype-section">
             <button
               className="archetype-toggle"
               onClick={() => setShowArchetypes(!showArchetypes)}
+              data-testid="archetype-toggle"
             >
               <KoreanText
                 korean={selectedArchetypeData?.korean || "무사"}
@@ -106,11 +112,12 @@ export function IntroScreen({
                   selectedArchetypeData?.english || "Traditional Warrior"
                 }
                 className="selected-archetype"
+                data-testid="selected-archetype"
               />
             </button>
 
             {showArchetypes && (
-              <div className="archetype-list">
+              <div className="archetype-list" data-testid="archetype-list">
                 {PLAYER_ARCHETYPES.map((archetype) => (
                   <button
                     key={archetype.id}
@@ -121,6 +128,7 @@ export function IntroScreen({
                       onArchetypeSelect(archetype.id);
                       setShowArchetypes(false);
                     }}
+                    data-testid={`archetype-option-${archetype.id}`}
                   >
                     <KoreanText
                       korean={archetype.korean}
@@ -140,21 +148,30 @@ export function IntroScreen({
           </div>
 
           {/* Action Buttons */}
-          <div className="action-buttons">
-            <button className="primary-button" onClick={onStartTraining}>
+          <div className="action-buttons" data-testid="action-buttons">
+            <button
+              className="primary-button"
+              onClick={onStartTraining}
+              data-testid="training-button"
+            >
               <KoreanText korean="수련 시작" english="Begin Training" />
             </button>
-            <button className="secondary-button" onClick={onStartCombat}>
+            <button
+              className="secondary-button"
+              onClick={onStartCombat}
+              data-testid="combat-button"
+            >
               <KoreanText korean="실전 격투" english="Enter Combat" />
             </button>
           </div>
 
           {/* Korean Martial Arts Quote */}
-          <div className="quote-section">
+          <div className="quote-section" data-testid="quote-section">
             <KoreanText
               korean="흑괘의 길을 걸어라"
               english="Walk the Path of the Black Trigram"
               className="closing-quote"
+              data-testid="closing-quote"
             />
           </div>
         </div>

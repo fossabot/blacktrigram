@@ -94,6 +94,7 @@ export function TrainingScreen({
           alignItems: "center",
           marginBottom: "2rem",
         }}
+        data-testid="training-header"
       >
         <div>
           <KoreanText
@@ -102,17 +103,19 @@ export function TrainingScreen({
             size="xlarge"
             weight="bold"
             color={"#" + KOREAN_COLORS.GOLD.toString(16)}
+            data-testid="training-title"
           />
           <KoreanText
             korean={`수련자: ${player.name}`}
             english={`Practitioner: ${player.name}`}
             size="medium"
             color={"#" + KOREAN_COLORS.CYAN.toString(16)}
+            data-testid="practitioner-name"
           />
         </div>
 
         <button
-          data-testid="exit-training"
+          data-testid="exit-training-button"
           onClick={onReturnToMenu}
           style={{
             backgroundColor: "#" + KOREAN_COLORS.RED.toString(16),
@@ -136,11 +139,13 @@ export function TrainingScreen({
           marginBottom: "2rem",
           justifyContent: "center",
         }}
+        data-testid="training-mode-selection"
       >
         {(["basics", "techniques", "philosophy"] as const).map((mode) => (
           <button
             key={mode}
             onClick={() => setTrainingMode(mode)}
+            data-testid={`mode-${mode}`}
             style={{
               backgroundColor:
                 trainingMode === mode
@@ -186,6 +191,7 @@ export function TrainingScreen({
             borderRadius: "10px",
             padding: "1.5rem",
           }}
+          data-testid="player-status-panel"
         >
           <KoreanText
             korean="수련자 상태"
@@ -268,6 +274,7 @@ export function TrainingScreen({
             borderRadius: "10px",
             padding: "1.5rem",
           }}
+          data-testid="training-content-panel"
         >
           {trainingMode === "basics" && (
             <>
@@ -478,6 +485,7 @@ export function TrainingScreen({
             borderRadius: "10px",
             padding: "1.5rem",
           }}
+          data-testid="controls-panel"
         >
           <KoreanText
             korean="수련 제어"
@@ -497,6 +505,7 @@ export function TrainingScreen({
           >
             <button
               onClick={() => onStartCombat?.()}
+              data-testid="enter-combat-button"
               style={{
                 backgroundColor: "#" + KOREAN_COLORS.RED.toString(16),
                 color: "#" + KOREAN_COLORS.WHITE.toString(16),
@@ -520,6 +529,7 @@ export function TrainingScreen({
                   });
                 }
               }}
+              data-testid="restore-button"
               style={{
                 backgroundColor: "#" + KOREAN_COLORS.GREEN.toString(16),
                 color: "#" + KOREAN_COLORS.WHITE.toString(16),
@@ -535,6 +545,7 @@ export function TrainingScreen({
 
             <button
               onClick={onReturnToMenu}
+              data-testid="return-to-menu-button"
               style={{
                 backgroundColor: "transparent",
                 color: "#" + KOREAN_COLORS.WHITE.toString(16),
