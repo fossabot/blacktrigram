@@ -122,44 +122,40 @@ sequenceDiagram
 
     Note over Player,VFX: 한글 패러다임 통합 (Korean Martial Arts Sequence)
 
-    Player->>InputHandler: Press Stance Key (1–8)
-    InputHandler->>CombatCtrl: requestChangeStance(playerId, newStance)
-    CombatCtrl->>TrigramSys: changeStance(playerState, newStance)
-    TrigramSys->>CombatCtrl: {success, updatedPlayerState}
+    Player->>InputHandler: Press Stance Key 1–8
+    InputHandler->>CombatCtrl: requestChangeStance playerId newStance
+    CombatCtrl->>TrigramSys: changeStance playerState newStance
+    TrigramSys->>CombatCtrl: return success updatedPlayerState
     alt success
-        CombatCtrl->>AudioEng: playStanceSFX(newStance)
-        CombatCtrl->>VFX: emitStanceAura(newStance)
+        CombatCtrl->>AudioEng: playStanceSFX newStance
+        CombatCtrl->>VFX: emitStanceAura newStance
     else failure
-        CombatCtrl->>AudioEng: playInvalidActionSFX()
+        CombatCtrl->>AudioEng: playInvalidActionSFX
     end
 
-    Player->>InputHandler: Execute Technique (Click/Touch + TechniqueHotkey)
-    InputHandler->>CombatCtrl: requestExecuteTechnique(playerId, techniqueName, targetCoords)
-    CombatCtrl->>TechniqueVal: canExecuteTechnique(playerState, techniqueName)
-    TechniqueVal-->>CombatCtrl: boolean ok
-    alt ok
-        CombatCtrl->>VitalSys: checkVitalPointHit(targetRegion, hitCoords, targetDimensions)
-        VitalSys-->>CombatCtrl: {hit: true/false, vitalPointData}
-        alt hit
-            CombatCtrl->>DamageCalc: calculateDamage(
-                baseDamage,
-                TrigramSys.getStanceInteractionModifiers(attackerStance, defenderStance).damageFactor,
-                vitalPointData.multiplier
-            )
-            DamageCalc-->>CombatCtrl: finalDamage
-            CombatCtrl->>AudioEng: playImpactSFX(vitalPointData.category)
-            CombatCtrl->>VFX: emitHitParticles(hitCoords, vitalPointData.category)
-            CombatCtrl->>CombatCtrl: applyDamageToTarget(defenderId, finalDamage, vitalPointData.effect)
-        else miss
-            CombatCtrl->>AudioEng: playMissSFX()
-            CombatCtrl->>VFX: emitMissIndicator(hitCoords)
+    Player->>InputHandler: Execute Technique (Click/Touch + Hotkey)
+    InputHandler->>CombatCtrl: requestExecuteTechnique playerId techniqueName targetCoords
+    CombatCtrl->>TechniqueVal: canExecuteTechnique playerState techniqueName
+    TechniqueVal-->>CombatCtrl: return booleanOK
+    alt booleanOK
+        CombatCtrl->>VitalSys: checkVitalPointHit targetRegion hitCoords targetDimensions
+        VitalSys-->>CombatCtrl: return hitResult vitalPointData
+        alt hitResult is true
+            CombatCtrl->>DamageCalc: calculateDamage baseDamage damageFactor vitalMultiplier
+            DamageCalc-->>CombatCtrl: return finalDamage
+            CombatCtrl->>AudioEng: playImpactSFX vitalPointData.category
+            CombatCtrl->>VFX: emitHitParticles hitCoords vitalPointData.category
+            CombatCtrl->>CombatCtrl: applyDamageToTarget defenderId finalDamage vitalPointData.effect
+        else hitResult is false
+            CombatCtrl->>AudioEng: playMissSFX
+            CombatCtrl->>VFX: emitMissIndicator hitCoords
         end
     else
-        CombatCtrl->>AudioEng: playInvalidActionSFX()
+        CombatCtrl->>AudioEng: playInvalidActionSFX
     end
 
-    Note over AudioEng: 국악기와 사이버펑크 융합 사운드  
-    Note over VFX: 에너지 입자, 팔괘 문양, 혈흔 스플래시  
+    Note over AudioEng: 국악기와 사이버펑크 융합 사운드
+    Note over VFX: 에너지 입자, 팔괘 문양, 혈흔 스플래시
 ```
 
 * **InputHandler** (`src/components/combat/CombatControls.tsx` + `useGameState`) captures keyboard, mouse, touch, and maps them to combat requests.
