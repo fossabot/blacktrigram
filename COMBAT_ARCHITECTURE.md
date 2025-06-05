@@ -617,31 +617,46 @@ interface PerformanceTargets {
 
 ```mermaid
 graph TB
-    subgraph "Asset & Object Pooling"
-        AP[AssetManager (src/utils/assetManager.ts)]:::pool
-        AP --> TP[Texture Pool (PixiJS Cache)]:::pool
-        AP --> SP[Sound Pool (Howler.js/Web Audio API)]:::pool
-        AP --> PP[Particle Pool (PixiJS ParticleContainer)]:::pool
-        AP --> ObjP[Object Pool (projectiles, hit markers)]:::pool
+    subgraph Asset_and_Object_Pooling
+        AP["📦 AssetManager - src/utils/assetManager.ts"]:::pool
+        TP["🖼️ Texture Pool - PixiJS Cache"]:::pool
+        SP["🔊 Sound Pool - Web Audio API"]:::pool
+        PP["✨ Particle Pool - PixiJS ParticleContainer"]:::pool
+        ObjP["🔄 Object Pool - Projectiles & Hit Markers"]:::pool
+
+        AP --> TP
+        AP --> SP
+        AP --> PP
+        AP --> ObjP
     end
 
-    subgraph "Combat Data Caching"
-        CC[CombatCache (in-memory)]:::cache
-        CC --> TechCache[Technique Data (JSON / TRIGRAM_DATA)]:::cache
-        CC --> StanceCache[Current Stance / Trigram Data]:::cache
-        CC --> VPCache[Vital Point Data (Coordinates, Multipliers)]:::cache
-        CC --> AudioMetaCache[Sound Meta (duration, volume)]:::cache
+    subgraph Combat_Data_Caching
+        CC["🗃️ CombatCache (in-memory)"]:::cache
+        TechCache["📜 Technique Data Cache - JSON / TRIGRAM_DATA"]:::cache
+        StanceCache["🛡️ Stance Data Cache - Current Stance & Trigram"]:::cache
+        VPCache["🎯 Vital Point Data Cache - Coordinates & Multipliers"]:::cache
+        AudioMetaCache["🎵 Audio Metadata Cache - Duration & Volume"]:::cache
+
+        CC --> TechCache
+        CC --> StanceCache
+        CC --> VPCache
+        CC --> AudioMetaCache
     end
 
-    subgraph "GC & Render Optimization"
-        GCO[GC Optimizations]:::gc
-        GCO --> OPool[Object Pooling (Minimize Allocations)]:::gc
-        GCO --> RS[Immutable Data Structures (Avoid Re-renders)]:::gc
-        GCO --> LC[Component Lifecycle (Proper PixiJS cleanup)]:::gc
-        GCO --> Debounce[Debounced State Updates (Zustand selectors)]:::gc
+    subgraph GC_and_Render_Optimization
+        GCO["🗑️ GC & Render Optimizations"]:::gc
+        OPool["🔧 Object Pooling - Minimize Allocations"]:::gc
+        RS["🛠️ Immutable Data Structures - Avoid Re-renders"]:::gc
+        LC["🧹 Component Lifecycle - Proper PixiJS Cleanup"]:::gc
+        Debounce["⏳ Debounced State Updates - Zustand Selectors"]:::gc
+
+        GCO --> OPool
+        GCO --> RS
+        GCO --> LC
+        GCO --> Debounce
     end
 
-    AP --> GamePerf[Overall Combat Performance]
+    AP --> GamePerf["⚡ Overall Combat Performance"]
     CC --> GamePerf
     GCO --> GamePerf
 
