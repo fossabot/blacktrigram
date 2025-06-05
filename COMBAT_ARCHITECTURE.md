@@ -108,54 +108,74 @@ graph TB
 
 ```mermaid
 sequenceDiagram
-    title Combat Calculation Pipeline – Korean Martial Arts Focus
+    title ⚔️ Combat Calculation Pipeline – Korean Martial Arts Focus 🥋
 
-    participant Player
-    participant InputHandler
-    participant CombatCtrl as CombatSystemController
-    participant TrigramSys as TrigramSystemFactory
-    participant TechniqueVal as KoreanTechniqueSystemFactory
-    participant VitalSys as VitalPointSystemFactory
-    participant DamageCalc as DamageCalculationEngine
-    participant AudioEng as AudioFeedbackSystem
-    participant VFX as VisualEffectsLayer
+    participant Player      as "🧑‍🤝‍🧑 Player"
+    participant InputHandler as "🎮 InputHandler"
+    participant CombatCtrl  as "🗡️ CombatSystemController"
+    participant TrigramSys   as "🔶 TrigramSystemFactory"
+    participant TechniqueVal as "💠 KoreanTechniqueSystemFactory"
+    participant VitalSys     as "🎯 VitalPointSystemFactory"
+    participant DamageCalc   as "🔥 DamageCalculationEngine"
+    participant AudioEng     as "🎵 AudioFeedbackSystem"
+    participant VFX          as "✨ VisualEffectsLayer"
+
+    classDef playerClass      fill:#A0D6B4,stroke:#333,color:#000
+    classDef inputClass       fill:#87CEFA,stroke:#333,color:#000
+    classDef combatClass      fill:#00FFD0,stroke:#333,color:#000
+    classDef trigramClass     fill:#FFD700,stroke:#333,color:#000
+    classDef techniqueClass   fill:#4CAF50,stroke:#333,color:#000
+    classDef vitalClass       fill:#FF6B6B,stroke:#333,color:#000
+    classDef damageClass      fill:#FF8C00,stroke:#333,color:#000
+    classDef audioClass       fill:#9C27B0,stroke:#333,color:#FFF
+    classDef vfxClass         fill:#FF9800,stroke:#333,color:#000
+
+    class Player      playerClass
+    class InputHandler inputClass
+    class CombatCtrl  combatClass
+    class TrigramSys   trigramClass
+    class TechniqueVal techniqueClass
+    class VitalSys     vitalClass
+    class DamageCalc   damageClass
+    class AudioEng     audioClass
+    class VFX          vfxClass
 
     Note over Player,VFX: 한글 패러다임 통합 (Korean Martial Arts Sequence)
 
-    Player->>InputHandler: Press Stance Key 1–8
-    InputHandler->>CombatCtrl: requestChangeStance playerId newStance
-    CombatCtrl->>TrigramSys: changeStance playerState newStance
-    TrigramSys->>CombatCtrl: return success updatedPlayerState
+    Player->>InputHandler: 🥋 Press Stance Key 1–8
+    InputHandler->>CombatCtrl: 🔃 requestChangeStance(playerId newStance)
+    CombatCtrl->>TrigramSys: 🔄 changeStance(playerState newStance)
+    TrigramSys-->>CombatCtrl: ✅ return success updatedPlayerState
     alt success
-        CombatCtrl->>AudioEng: playStanceSFX newStance
-        CombatCtrl->>VFX: emitStanceAura newStance
+        CombatCtrl->>AudioEng: 🔊 playStanceSFX(newStance)
+        CombatCtrl->>VFX: ✨ emitStanceAura(newStance)
     else failure
-        CombatCtrl->>AudioEng: playInvalidActionSFX
+        CombatCtrl->>AudioEng: ❌ playInvalidActionSFX
     end
 
-    Player->>InputHandler: Execute Technique (Click/Touch + Hotkey)
-    InputHandler->>CombatCtrl: requestExecuteTechnique playerId techniqueName targetCoords
-    CombatCtrl->>TechniqueVal: canExecuteTechnique playerState techniqueName
-    TechniqueVal-->>CombatCtrl: return booleanOK
+    Player->>InputHandler: ⚔️ Execute Technique (Click/Touch + Hotkey)
+    InputHandler->>CombatCtrl: 🎯 requestExecuteTechnique(playerId techniqueName targetCoords)
+    CombatCtrl->>TechniqueVal: 🔍 canExecuteTechnique(playerState techniqueName)
+    TechniqueVal-->>CombatCtrl: ✅ return booleanOK
     alt booleanOK
-        CombatCtrl->>VitalSys: checkVitalPointHit targetRegion hitCoords targetDimensions
-        VitalSys-->>CombatCtrl: return hitResult vitalPointData
+        CombatCtrl->>VitalSys: 🎯 checkVitalPointHit(targetRegion hitCoords targetDimensions)
+        VitalSys-->>CombatCtrl: ✅ return hitResult vitalPointData
         alt hitResult is true
-            CombatCtrl->>DamageCalc: calculateDamage baseDamage damageFactor vitalMultiplier
-            DamageCalc-->>CombatCtrl: return finalDamage
-            CombatCtrl->>AudioEng: playImpactSFX vitalPointData.category
-            CombatCtrl->>VFX: emitHitParticles hitCoords vitalPointData.category
-            CombatCtrl->>CombatCtrl: applyDamageToTarget defenderId finalDamage vitalPointData.effect
+            CombatCtrl->>DamageCalc: 💥 calculateDamage(baseDamage damageFactor vitalMultiplier)
+            DamageCalc-->>CombatCtrl: 🔥 return finalDamage
+            CombatCtrl->>AudioEng: 🎵 playImpactSFX(vitalPointData.category)
+            CombatCtrl->>VFX: ✨ emitHitParticles(hitCoords vitalPointData.category)
+            CombatCtrl->>CombatCtrl: 💪 applyDamageToTarget(defenderId finalDamage vitalPointData.effect)
         else hitResult is false
-            CombatCtrl->>AudioEng: playMissSFX
-            CombatCtrl->>VFX: emitMissIndicator hitCoords
+            CombatCtrl->>AudioEng: 💨 playMissSFX
+            CombatCtrl->>VFX: 🚫 emitMissIndicator(hitCoords)
         end
     else
-        CombatCtrl->>AudioEng: playInvalidActionSFX
+        CombatCtrl->>AudioEng: ❌ playInvalidActionSFX
     end
 
-    Note over AudioEng: 국악기와 사이버펑크 융합 사운드
-    Note over VFX: 에너지 입자, 팔괘 문양, 혈흔 스플래시
+    Note over AudioEng: 국악기와 사이버펑크 융합 사운드 🎶  
+    Note over VFX: 에너지 입자 🌌, 팔괘 문양 🔶, 혈흔 스플래시 🩸
 ```
 
 * **InputHandler** (`src/components/combat/CombatControls.tsx` + `useGameState`) captures keyboard, mouse, touch, and maps them to combat requests.
