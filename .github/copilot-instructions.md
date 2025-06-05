@@ -62,6 +62,8 @@ src/components/intro/IntroScreen.css
 src/components/intro/sections
 src/components/intro/sections/index.ts
 src/components/training
+src/components/training/components
+src/components/training/components/index.ts
 src/components/training/index.ts
 src/components/ui
 src/components/ui/base
@@ -104,6 +106,7 @@ src/types/constants/game.ts
 src/types/constants/index.ts
 src/types/constants/player.ts
 src/types/constants/techniques.ts
+src/types/constants/training.ts
 src/types/constants/trigram.ts
 src/types/constants.ts
 src/types/constants/typography.ts
@@ -122,7 +125,6 @@ src/types/ui.ts
 src/utils/colorUtils.ts
 src/utils/playerUtils.ts
 src/vite-env.d.ts
-
 ### UX
 
 src/App.tsx
@@ -145,6 +147,11 @@ src/components/intro/IntroScreen.tsx
 src/components/intro/sections/ControlsSection.tsx
 src/components/intro/sections/MenuSection.tsx
 src/components/intro/sections/PhilosophySection.tsx
+src/components/training/components/ArchetypeTrainingPanel.tsx
+src/components/training/components/TrainingControlsPanel.tsx
+src/components/training/components/TrainingModeSelector.tsx
+src/components/training/components/TrainingProgressPanel.tsx
+src/components/training/components/VitalPointTrainingPanel.tsx
 src/components/training/TrainingScreen.tsx
 src/components/ui/base/BackgroundGrid.tsx
 src/components/ui/base/BaseButton.tsx

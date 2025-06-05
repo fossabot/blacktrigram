@@ -24,7 +24,7 @@ _A realistic 2D precision combat game inspired by Korean martial arts philosophy
 
 ## ⚡ Combat Mastery
 
-**Black Trigram** is a **realistic combat simulator** that teaches authentic Korean martial arts through precise anatomical targeting. Master traditional vital point techniques through modern 2D combat mechanics across 5 distinct fighter archetypes.
+**Black Trigram** is a **realistic combat simulator** that teaches authentic Korean martial arts through precise anatomical targeting. Master traditional vital-point techniques via modern 2D combat mechanics across 5 distinct fighter archetypes.
 
 ### 🎯 Combat Disciplines
 
@@ -32,42 +32,38 @@ _A realistic 2D precision combat game inspired by Korean martial arts philosophy
 <tr>
 <td align="center" width="25%">
 
-**🎯 정격자**  
-_Jeonggyeokja_  
+**🎯 정격자**
+_Jeonggyeokja_
 **Precision Striker**
 
-_Every strike targets  
-anatomical weak points_
+_Every strike targets anatomical weak points_
 
 </td>
 <td align="center" width="25%">
 
-**⚔️ 비수**  
-_Bisu_  
+**⚔️ 비수**
+_Bisu_
 **Lethal Technique**
 
-_Decisive unarmed  
-combat methods_
+_Decisive unarmed combat methods_
 
 </td>
 <td align="center" width="25%">
 
-**🥷 암살자**  
-_Amsalja_  
+**🥷 암살자**
+_Amsalja_
 **Shadow Assassin**
 
-_Silent takedown  
-techniques_
+_Silent takedown techniques_
 
 </td>
 <td align="center" width="25%">
 
-**💀 급소격**  
-_Geupsogyeok_  
+**💀 급소격**
+_Geupsogyeok_
 **Vital Point Strike**
 
-_70 anatomical targets  
-for incapacitation_
+_70 anatomical targets for incapacitation_
 
 </td>
 </tr>
@@ -75,7 +71,7 @@ for incapacitation_
 
 ---
 
-## 📸 Concept 
+## 📸 Concept
 
 <div align="center">
 
@@ -86,6 +82,8 @@ for incapacitation_
 <img src="src/assets/PlayerArchetypesOverview.png" alt="Player Archetypes Overview Screenshot" width="600" />
 
 </div>
+
+---
 
 ## 🌟 Authentic Combat Features
 
@@ -113,32 +111,32 @@ Master **70 authentic vital points** for combat effectiveness:
 
 | Trigram |           Name            |      Combat Focus      |        Combat Effects         |
 | :-----: | :-----------------------: | :--------------------: | :---------------------------: |
-|    ☰    | **건 (Geon)** - _Heaven_  |  Bone-striking force   | Fractures, structural damage  |
-|    ☱    |   **태 (Tae)** - _Lake_   |   Joint manipulation   |  Dislocations, mobility loss  |
-|    ☲    |   **리 (Li)** - _Fire_    | Precise nerve strikes  | Temporary paralysis, numbness |
-|    ☳    | **진 (Jin)** - _Thunder_  |  Stunning techniques   |   Disorientation, knockouts   |
-|    ☴    |   **손 (Son)** - _Wind_   |  Continuous pressure   |    Gradual incapacitation     |
-|    ☵    |  **감 (Gam)** - _Water_   | Blood flow restriction |    Circulation disruption     |
-|    ☶    | **간 (Gan)** - _Mountain_ |   Defensive counters   |    Counter-attacks, blocks    |
-|    ☷    |  **곤 (Gon)** - _Earth_   |   Ground techniques    |       Throws, takedowns       |
+|    ☰    | **건 (Geon)** – _Heaven_  |  Bone-striking force   | Fractures, structural damage  |
+|    ☱    |   **태 (Tae)** – _Lake_   |   Joint manipulation   |  Dislocations, mobility loss  |
+|    ☲    |   **리 (Li)** – _Fire_    | Precise nerve strikes  | Temporary paralysis, numbness |
+|    ☳    | **진 (Jin)** – _Thunder_  |  Stunning techniques   |   Disorientation, knockouts   |
+|    ☴    |   **손 (Son)** – _Wind_   |  Continuous pressure   |    Gradual incapacitation     |
+|    ☵    |  **감 (Gam)** – _Water_   | Blood flow restriction |    Circulation disruption     |
+|    ☶    | **간 (Gan)** – _Mountain_ |   Defensive counters   |    Counter-attacks, blocks    |
+|    ☷    |  **곤 (Gon)** – _Earth_   |   Ground techniques    |       Throws, takedowns       |
 
 </div>
 
 ### 💪 Realistic Body Mechanics
 
-- **🩸 Authentic Trauma** - Realistic injury visualization and blood
-- **🦴 Bone Impact Audio** - Genuine bone contact and fracture sounds
-- **🫁 Breathing Disruption** - Respiratory system targeting
-- **⚖️ Balance System** - Realistic stance and momentum physics
-- **🧠 Consciousness States** - Progressive awareness impairment
-- **😵 Pain Response** - Physiological pain affecting performance
+- **🩸 Authentic Trauma** – Realistic injury visualization and blood
+- **🦴 Bone Impact Audio** – Genuine bone contact and fracture sounds
+- **🫁 Breathing Disruption** – Respiratory system targeting
+- **⚖️ Balance System** – Realistic stance and momentum physics
+- **🧠 Consciousness States** – Progressive awareness impairment
+- **😵 Pain Response** – Physiological pain affecting performance
 
 ### 🎯 Combat Specializations
 
-- **🎯 Anatomical Precision** - 70 target points for tactical advantage
-- **🇰🇷 Traditional Korean Arts** - Authentic techniques from 태권도, 합기도, 택견
-- **⚫ Advanced Techniques** - Professional combat methods from 5 distinct archetypes
-- **🥋 Combat Application** - Real martial arts effectiveness
+- **🎯 Anatomical Precision** – 70 target points for tactical advantage
+- **🇰🇷 Traditional Korean Arts** – Authentic techniques from 태권도, 합기도, 택견
+- **⚫ Advanced Techniques** – Professional combat methods from 5 distinct archetypes
+- **🥋 Combat Application** – Real martial arts effectiveness
 
 ---
 
@@ -170,10 +168,10 @@ Built for **combat realism** and **authentic simulation**:
 
 ### 🎯 Combat Components
 
-- **VitalPointTargeter** - Interactive anatomical targeting system
-- **CombatTracker** - Real-time damage and status monitoring
-- **TechniqueCalculator** - Precise combat effectiveness calculations
-- **CombatAnalyzer** - Post-match technique analysis
+- **VitalPointTargeter** – Interactive anatomical targeting system
+- **CombatTracker** – Real-time damage and status monitoring
+- **TechniqueCalculator** – Precise combat effectiveness calculations
+- **CombatAnalyzer** – Post-match technique analysis
 
 ---
 
@@ -181,11 +179,11 @@ Built for **combat realism** and **authentic simulation**:
 
 ### ⌨️ Combat Input System
 
-- **🏃 Movement**: `WASD` or `Arrow Keys` - Tactical positioning and footwork
-- **⚔️ Techniques**: `1-8` (Trigram-based combat techniques)
-- **🛡️ Guard**: `Spacebar` - Defensive positioning and blocks
-- **🎯 Vital Strike**: `Mouse` - Targeted vital point attacks
-- **🔄 Archetype Switch**: `Tab` - Change between 5 fighter types
+- **🏃 Movement**: `WASD` or `Arrow Keys` – Tactical positioning and footwork
+- **⚔️ Techniques**: `1–8` (Trigram-based combat techniques)
+- **🛡️ Guard**: `Spacebar` – Defensive positioning and blocks
+- **🎯 Vital Strike**: `Mouse` – Targeted vital-point attacks
+- **🔄 Archetype Switch**: `Tab` – Change between 5 fighter types
 
 ### 🩸 Combat Feedback
 
@@ -200,32 +198,32 @@ Built for **combat realism** and **authentic simulation**:
 
 ### 🎯 해부학 연구 (Anatomical Study)
 
-- **📚 급소학습 (Vital Point Study)** - 70 anatomical target points
-- **🎯 정밀타격 (Precision Striking)** - Accurate targeting techniques
-- **⚫ 고급기법 (Advanced Techniques)** - Professional combat methods
-- **🥋 실전응용 (Practical Application)** - Combat effectiveness training
+- **📚 급소학습 (Vital Point Study)** – 70 anatomical target points
+- **🎯 정밀타격 (Precision Striking)** – Accurate targeting techniques
+- **⚫ 고급기법 (Advanced Techniques)** – Professional combat methods
+- **🥋 실전응용 (Practical Application)** – Combat effectiveness training
 
 ### ⚔️ 무술 기법 (Martial Techniques)
 
-- **🥋 기본기 (Fundamentals)** - Basic striking and positioning
-- **🔢 팔괘술 (Eight Trigram Arts)** - Traditional Korean combat philosophy
-- **🔗 연계기법 (Combination Techniques)** - Flowing technique sequences
-- **🎯 정밀술 (Precision Arts)** - Exact targeting and timing
+- **🥋 기본기 (Fundamentals)** – Basic striking and positioning
+- **🔢 팔괘술 (Eight Trigram Arts)** – Traditional Korean combat philosophy
+- **🔗 연계기법 (Combination Techniques)** – Flowing technique sequences
+- **🎯 정밀술 (Precision Arts)** – Exact targeting and timing
 
 ### 🥊 실전 훈련 (Combat Training)
 
-- **👤 일대일 (One-on-One)** - Single opponent combat simulation
-- **🏢 환경전투 (Environmental Combat)** - Using surroundings tactically
-- **🧘 정신수양 (Mental Cultivation)** - Psychological combat preparation
-- **🏃 연속대전 (Continuous Combat)** - Multiple opponent scenarios
+- **👤 일대일 (One-on-One)** – Single opponent combat simulation
+- **🏢 환경전투 (Environmental Combat)** – Using surroundings tactically
+- **🧘 정신수양 (Mental Cultivation)** – Psychological combat preparation
+- **🏃 연속대전 (Continuous Combat)** – Multiple opponent scenarios
 
 ### 🎭 원형 특화 (Archetype Mastery)
 
-- **🏯 무사도 (Warrior's Way)** - Traditional warrior discipline training
-- **🥷 암영술 (Shadow Arts)** - Stealth and assassination techniques
-- **💻 사이버전 (Cyber Warfare)** - Tech-enhanced combat methods
-- **🕵️ 정보전 (Intelligence Warfare)** - Psychological and strategic combat
-- **⚡ 거리술 (Street Arts)** - Underground survival combat
+- **🏯 무사도 (Warrior's Way)** – Traditional warrior discipline training
+- **🥷 암영술 (Shadow Arts)** – Stealth and assassination techniques
+- **💻 사이버전 (Cyber Warfare)** – Tech-enhanced combat methods
+- **🕵️ 정보전 (Intelligence Warfare)** – Psychological and strategic combat
+- **⚡ 거리술 (Street Arts)** – Underground survival combat
 
 ---
 
@@ -294,28 +292,44 @@ npm run test:combat
 
 ---
 
+## 📚 Documentation & Further Reading
+
+🔗 **Architecture & Design**
+
+- [📐 ARCHITECTURE.md](https://github.com/Hack23/blacktrigram/blob/main/ARCHITECTURE.md)
+  _High-level C4 models, container/component views, and system context._
+- [📈 FUTURE_ARCHITECTURE.md](https://github.com/Hack23/blacktrigram/blob/main/FUTURE_ARCHITECTURE.md)
+  _Vision for upcoming architectural enhancements and PWA integration._
+
+🔗 **Combat & Mechanics**
+
+- [🥋 COMBAT_ARCHITECTURE.md](https://github.com/Hack23/blacktrigram/blob/main/COMBAT_ARCHITECTURE.md)
+  _In-depth battleflow, trigram integration, vital-point targeting, and damage pipeline._
+- [🗺️ game-design.md](https://github.com/Hack23/blacktrigram/blob/main/game-design.md)
+  _Overall game mechanics, archetype breakdowns, and design decisions._
+- [📊 game-status.md](https://github.com/Hack23/blacktrigram/blob/main/game-status.md)
+  _Current progress, feature roadmap, and milestone tracking._
+
+🔗 **Assets & Media**
+
+- [🖼️ ART_ASSETS.md](https://github.com/Hack23/blacktrigram/blob/main/ART_ASSETS.md)
+  _Guidelines for sprite sheets, particle textures, color palettes, and UI icons._
+- [🎵 AUDIO.ASSETS.md](https://github.com/Hack23/blacktrigram/blob/main/AUDIO.ASSETS.md)
+  _List of traditional Korean instrument loops, impact SFX, and mixing notes._
+
+---
+
 ## 🎯 Combat Philosophy
 
-> **"어둠 속에서 완벽한 일격을 찾아라"**
->
-> _"In darkness, seek the perfect strike"_
-
-### 🎯 Martial Arts Mastery
+> **"어둠 속에서 완벽한 일격을 찾아라"** > _"In darkness, seek the perfect strike"_
 
 Each technique focuses on:
 
-- **정확한 타격 (Precise Targeting)** - Exact anatomical vulnerable points
-- **최대 효과 (Maximum Effectiveness)** - One-strike incapacitation principles
-- **전투 심리 (Combat Psychology)** - Mental preparation for combat
-- **전통 지식 (Traditional Knowledge)** - Authentic Korean martial arts
-- **원형 특화 (Archetype Specialization)** - Unique approaches per fighter type
-
-### 🇰🇷 Korean Martial Heritage
-
-- **전통 무예 (Traditional Martial Arts)** - Authentic Korean fighting lineages
-- **고전 용어 (Classical Terminology)** - Traditional Korean combat language
-- **주역 철학 (I Ching Philosophy)** - Trigram principles in combat application
-- **무도 문화 (Martial Culture)** - Korean warrior traditions
+- **정확한 타격 (Precise Targeting)** – Exact anatomical vulnerable points
+- **최대 효과 (Maximum Effectiveness)** – One-strike incapacitation
+- **전투 심리 (Combat Psychology)** – Mental preparation for combat
+- **전통 지식 (Traditional Knowledge)** – Authentic Korean martial arts
+- **원형 특화 (Archetype Specialization)** – Unique approach per fighter type
 
 ---
 
@@ -323,25 +337,25 @@ Each technique focuses on:
 
 ### 🎯 Combat Mastery
 
-- **🎓 급소대가 (Vital Point Master)** - Master all 70 vital target points
-- **🩸 전투전문가 (Combat Expert)** - Understand optimal combat techniques
-- **⚫ 고수 (Advanced Practitioner)** - Complete advanced technique training
-- **🔪 완벽한 무사 (Perfect Warrior)** - Achieve flawless combat records
+- **🎓 급소대가 (Vital Point Master)** – Master all 70 vital-point targets
+- **🩸 전투전문가 (Combat Expert)** – Execute optimal combat techniques
+- **⚫ 고수 (Advanced Practitioner)** – Complete advanced technique training
+- **🔪 완벽한 무사 (Perfect Warrior)** – Achieve flawless combat records
 
 ### 🥋 Martial Proficiency
 
-- **🎯 정밀타격사 (Precision Striker)** - Perfect vital point targeting accuracy
-- **⚖️ 균형대사 (Balance Master)** - Master all stance and movement patterns
-- **🧘 정신수양사 (Mental Cultivator)** - Complete psychological combat training
-- **🇰🇷 무도학자 (Martial Scholar)** - Understand Korean martial arts philosophy
+- **🎯 정밀타격사 (Precision Striker)** – Perfect vital-point targeting accuracy
+- **⚖️ 균형대사 (Balance Master)** – Master all stance & footwork patterns
+- **🧘 정신수양사 (Mental Cultivator)** – Complete psychological combat training
+- **🇰🇷 무도학자 (Martial Scholar)** – Understand Korean martial arts philosophy
 
 ### 🎭 Archetype Mastery
 
-- **🏯 무사완성 (Warrior Perfection)** - Master traditional warrior discipline
-- **🥷 그림자대사 (Shadow Master)** - Perfect stealth and assassination arts
-- **💻 사이버무사 (Cyber Warrior)** - Tech-enhanced combat mastery
-- **🕵️ 정보대가 (Intelligence Master)** - Psychological warfare expertise
-- **⚡ 거리왕 (Street King)** - Underground combat supremacy
+- **🏯 무사완성 (Warrior Perfection)** – Master traditional warrior discipline
+- **🥷 그림자대사 (Shadow Master)** – Perfect stealth & assassination arts
+- **💻 사이버무사 (Cyber Warrior)** – Tech-enhanced combat mastery
+- **🕵️ 정보대가 (Intelligence Master)** – Psychological warfare expertise
+- **⚡ 거리왕 (Street King)** – Underground combat supremacy
 
 ---
 
