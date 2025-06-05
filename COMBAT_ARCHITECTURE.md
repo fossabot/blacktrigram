@@ -380,51 +380,91 @@ interface DamageCalculationEngine {
 ```mermaid
 graph LR
     subgraph "Korean Audio System (src/audio/*)"
-        AS[AudioSystem Root]:::audio
-        AS --> TM[Traditional Music Player]:::audio
-        AS --> KS[Korean SFX Engine]:::audio
-        AS --> AMB[Ambient & UI Sounds]:::audio
+        AS[AudioSystem Root]
+        TM[Traditional Music Player]
+        KS[Korean SFX Engine]
+        AMB[Ambient & UI Sounds]
+        
+        AS --> TM
+        AS --> KS
+        AS --> AMB
 
-        TM --> GT[Gayageum Tones]:::audio
-        TM --> JG[Janggu Rhythms]:::audio
-        TM --> HG[Haegeum Melodies]:::audio
-        TM --> DG[Daegeum Flute Melodies]:::audio
+        GT[Gayageum Tones]
+        JG[Janggu Rhythms]
+        HG[Haegeum Melodies]
+        DG[Daegeum Flute Melodies]
 
-        KS --> CombatSfx[Combat Sounds (격투 효과음)]:::audio
-        KS --> MovementSfx[Movement Sounds (동작 효과음)]:::audio
-        KS --> ImpactSfx[Impact Sounds (타격 효과음)]:::audio
-        KS --> StanceSfx[Stance Change Sounds]:::audio
+        TM --> GT
+        TM --> JG
+        TM --> HG
+        TM --> DG
+
+        CombatSfx[Combat Sounds - 격투 효과음]
+        MovementSfx[Movement Sounds - 동작 효과음]
+        ImpactSfx[Impact Sounds - 타격 효과음]
+        StanceSfx[Stance Change Sounds]
+
+        KS --> CombatSfx
+        KS --> MovementSfx
+        KS --> ImpactSfx
+        KS --> StanceSfx
     end
 
     subgraph "Visual Effects System (src/components/game/HitEffectsLayer.tsx)"
-        VFX[VisualEffects Root]:::vfx
-        VFX --> KE[Ki Energy Effects]:::vfx
-        VFX --> HI[Hit Indicators]:::vfx
-        VFX --> SE[Stance Auras]:::vfx
-        VFX --> EnvFX[Background/Environmental Effects]:::vfx
+        VFX[VisualEffects Root]
+        KE[Ki Energy Effects]
+        HI[Hit Indicators]
+        SE[Stance Auras]
+        EnvFX[Background/Environmental Effects]
 
-        KE --> EP[Energy Particles (기 입자)]:::vfx
-        KE --> AF[Aura Field (오라 필드)]:::vfx
-        KE --> TG[Trigram Glyphs (팔괘 문양)]:::vfx
+        VFX --> KE
+        VFX --> HI
+        VFX --> SE
+        VFX --> EnvFX
 
-        HI --> VPMarkers[Vital Point Markers (급소 표시)]:::vfx
-        HI --> DmgNumbers[Damage Numbers (피해량 숫자 – 한글/한자)]:::vfx
-        HI --> CritEff[Critical Hit Effects (치명타 효과)]:::vfx
+        EP[Energy Particles - 기 입자]
+        AF[Aura Field - 오라 필드]
+        TG[Trigram Glyphs - 팔괘 문양]
+
+        KE --> EP
+        KE --> AF
+        KE --> TG
+
+        VPMarkers[Vital Point Markers - 급소 표시]
+        DmgNumbers[Damage Numbers - 피해량 숫자]
+        CritEff[Critical Hit Effects - 치명타 효과]
+
+        HI --> VPMarkers
+        HI --> DmgNumbers
+        HI --> CritEff
     end
 
     subgraph "Korean UI Elements (src/components/ui/base)"
-        UI[UI Root]:::ui
-        UI --> HH[Hangul Headers & Text]:::ui
-        UI --> TS[Trigram Symbols Display]:::ui
-        UI --> Bars[Health/Ki/Stamina Bars]:::ui
-        UI --> Menus[Menus & Prompts]:::ui
+        UI[UI Root]
+        HH[Hangul Headers & Text]
+        TS[Trigram Symbols Display]
+        Bars[Health/Ki/Stamina Bars]
+        Menus[Menus & Prompts]
 
-        HH --> KFont[Korean Typography (Noto Sans KR)]:::ui
-        HH --> CTerms[Cultural Terms & Descriptions]:::ui
+        UI --> HH
+        UI --> TS
+        UI --> Bars
+        UI --> Menus
 
-        TS --> TW[Trigram Wheel (팔괘휠)]:::ui
-        TS --> SI[Stance Indicator (자세 표시기)]:::ui
+        KFont[Korean Typography - Noto Sans KR]
+        CTerms[Cultural Terms & Descriptions]
+
+        HH --> KFont
+        HH --> CTerms
+
+        TW[Trigram Wheel - 팔괘휠]
+        SI[Stance Indicator - 자세 표시기]
+
+        TS --> TW
+        TS --> SI
     end
+
+    CombatFeedback[Combat Feedback]
 
     AS --> CombatFeedback
     VFX --> CombatFeedback
@@ -432,7 +472,11 @@ graph LR
 
     classDef audio fill:#4caf50,stroke:#333,color:#000
     classDef vfx fill:#ff9800,stroke:#333,color:#000
-    classDef ui fill:#9c27b0,stroke:#333,color:#000
+    classDef ui   fill:#9c27b0,stroke:#333,color:#000
+
+    class AS,TM,KS,AMB,GT,JG,HG,DG,CombatSfx,MovementSfx,ImpactSfx,StanceSfx audio
+    class VFX,KE,HI,SE,EnvFX,EP,AF,TG,VPMarkers,DmgNumbers,CritEff vfx
+    class UI,HH,TS,Bars,Menus,KFont,CTerms,TW,SI ui
 ```
 
 * **AudioSystem**:
