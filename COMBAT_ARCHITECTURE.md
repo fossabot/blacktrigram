@@ -120,26 +120,6 @@ sequenceDiagram
     participant AudioEng     as "🎵 AudioFeedbackSystem"
     participant VFX          as "✨ VisualEffectsLayer"
 
-    classDef playerClass      fill:#A0D6B4,stroke:#333,color:#000
-    classDef inputClass       fill:#87CEFA,stroke:#333,color:#000
-    classDef combatClass      fill:#00FFD0,stroke:#333,color:#000
-    classDef trigramClass     fill:#FFD700,stroke:#333,color:#000
-    classDef techniqueClass   fill:#4CAF50,stroke:#333,color:#000
-    classDef vitalClass       fill:#FF6B6B,stroke:#333,color:#000
-    classDef damageClass      fill:#FF8C00,stroke:#333,color:#000
-    classDef audioClass       fill:#9C27B0,stroke:#333,color:#FFF
-    classDef vfxClass         fill:#FF9800,stroke:#333,color:#000
-
-    class Player      playerClass
-    class InputHandler inputClass
-    class CombatCtrl  combatClass
-    class TrigramSys   trigramClass
-    class TechniqueVal techniqueClass
-    class VitalSys     vitalClass
-    class DamageCalc   damageClass
-    class AudioEng     audioClass
-    class VFX          vfxClass
-
     Note over Player,VFX: 한글 패러다임 통합 (Korean Martial Arts Sequence)
 
     Player->>InputHandler: 🥋 Press Stance Key 1–8
