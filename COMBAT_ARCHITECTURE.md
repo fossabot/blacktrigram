@@ -507,43 +507,48 @@ graph LR
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Idle : Initialize Combat Frame
+    [*] --> Idle : 🟢 Initialize Combat Frame
 
-    state Idle {
-        [*] --> Ready : Await Player Input
-        Ready --> StanceChange : Press Stance Key (1–8)
-        Ready --> TechniqueAttempt : Input Attack (Click/Touch)
-    }
+    Idle --> StanceChange : 🥋 Press 1–8 Keys
+    Idle --> TechniqueAttempt : ⚔️ Input Attack
 
-    state StanceChange {
-        [*] --> ValidatingStance : Check Ki/Stamina & Cooldown
-        ValidatingStance --> TransitioningStance : Valid
-        ValidatingStance --> Idle : Invalid (Insufficient Resources)
-        TransitioningStance --> Idle : Stance Transition Complete
-    }
+    StanceChange --> ValidatingStance : ▶️ Begin Validation
+    ValidatingStance --> TransitioningStance : ✅ Valid
+    ValidatingStance --> Idle : ❌ Invalid (Insufficient Resources)
+    TransitioningStance --> Idle : 🔄 Stance Transition Complete
 
-    state TechniqueAttempt {
-        [*] --> ValidatingTechnique : Check Stance, Resources, Cooldown
-        ValidatingTechnique --> ExecutingTechnique : Valid Technique
-        ValidatingTechnique --> Idle : Invalid Technique
-    }
+    TechniqueAttempt --> ValidatingTechnique : ▶️ Begin Validation
+    ValidatingTechnique --> ExecutingTechnique : ✅ Valid Technique
+    ValidatingTechnique --> Idle : ❌ Invalid Technique
 
-    state ExecutingTechnique {
-        [*] --> HitDetectionPhase : Perform Collision & Distance Checks
-        HitDetectionPhase --> DamageCalculationPhase : Hit Detected
-        HitDetectionPhase --> RecoveryPhase : Miss
+    ExecutingTechnique --> HitDetectionPhase : 🔍 Check Hit
+    HitDetectionPhase --> DamageCalculationPhase : 💥 Hit Detected
+    HitDetectionPhase --> RecoveryPhase : 💨 Miss
 
-        DamageCalculationPhase --> ApplyEffectsPhase : Compute Damage & Effects
-        ApplyEffectsPhase --> RecoveryPhase : Effects Applied
-    }
+    DamageCalculationPhase --> ApplyEffectsPhase : 🎯 Compute Damage
+    ApplyEffectsPhase --> RecoveryPhase : 🔄 Effects Applied
 
-    state RecoveryPhase {
-        [*] --> CooldownActive : Start Recovery Timer
-        CooldownActive --> Idle : Recovery/Cooldown Over
-    }
+    RecoveryPhase --> CooldownActive : ⏳ Start Recovery
+    CooldownActive --> Idle : ✅ Recovery/Cooldown Over
 
-    Idle --> CombatEnd : Opponent Health ≤ 0 or Time-Up
-    CombatEnd --> [*] : Display Results (Victory/Defeat)
+    Idle --> CombatEnd : 🏁 Opponent Health ≤ 0 or Time-Up
+    CombatEnd --> [*] : 🎉 Display Results (Victory/Defeat)
+
+    %% Color Classes
+    classDef idle       fill:#a0d6b4,stroke:#333,color:#000
+    classDef stance     fill:#ffd700,stroke:#333,color:#000
+    classDef tech       fill:#4caf50,stroke:#333,color:#000
+    classDef exec       fill:#ff6b6b,stroke:#333,color:#000
+    classDef recovery   fill:#87CEFA,stroke:#333,color:#000
+    classDef end        fill:#9c27b0,stroke:#333,color:#000
+
+    %% Apply Classes
+    class Idle idle
+    class StanceChange,ValidatingStance,TransitioningStance stance
+    class TechniqueAttempt,ValidatingTechnique tech
+    class ExecutingTechnique,HitDetectionPhase,DamageCalculationPhase,ApplyEffectsPhase exec
+    class RecoveryPhase,CooldownActive recovery
+    class CombatEnd end
 ```
 
 * **Idle → Ready**: Default waiting state; player can change stance or attempt a technique.
