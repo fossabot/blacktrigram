@@ -1,64 +1,86 @@
-import * as PIXI from "pixi.js";
+import React from "react";
+import { extend } from "@pixi/react";
+import { Text, TextStyle } from "pixi.js";
+import type { KoreanText } from "../types";
 import {
-  KOREAN_TEXT_SIZES,
   KOREAN_FONT_FAMILY,
-  type KoreanTextProps,
-  KoreanFontWeight,
-} from "../../../../../types/korean-text";
-import { KOREAN_COLORS } from "../../../../../types";
+  KOREAN_TEXT_SIZES,
+  KOREAN_TEXT_WEIGHTS,
+} from "../../../../../types/korean-text"; // Use constants from korean-text.ts
 
-// Fix font weight mapping to handle string values
-export function mapFontWeightToPixi(
-  weight?: KoreanFontWeight
-): number | undefined {
-  if (!weight) return undefined;
+// Extend PIXI React with Text component
+extend({ Text });
 
-  if (typeof weight === "number") {
-    return weight;
+// Declare extended components for TypeScript
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      pixiText: any;
+    }
   }
-
-  // Map string weights to numbers
-  const weightMap: Record<string, number> = {
-    regular: 400,
-    semibold: 600,
-    bold: 700,
-  };
-
-  return weightMap[weight] || 400;
 }
 
-// Create PIXI TextStyle for Korean text (PIXI v8 compatible)
-export const getPixiTextStyle = (
-  props: KoreanTextProps,
-  baseColor: number = KOREAN_COLORS.WHITE
-): PIXI.TextStyle => {
-  const fontSize =
-    typeof props.size === "number"
-      ? props.size
-      : KOREAN_TEXT_SIZES[props.size as keyof typeof KOREAN_TEXT_SIZES] ||
-        KOREAN_TEXT_SIZES.medium;
+export interface KoreanPixiTextProps {
+  text?: string | KoreanText;
+  korean?: string;
+  english?: string;
+  style?: any;
+  anchor?: [number, number] | number;
+  position?: [number, number];
+  [key: string]: any;
+}
 
-  const style = new PIXI.TextStyle({
-    fontFamily: KOREAN_FONT_FAMILY,
-    fontSize,
-    fill: baseColor,
-    fontWeight: mapFontWeightToPixi(props.weight) as any, // Fix: cast to any for PIXI compatibility
-    align: props.align || "left",
-    wordWrap: true,
-    wordWrapWidth: 600,
-  });
+export function KoreanPixiText({
+  text,
+  korean,
+  english,
+  style = {},
+  anchor = [0, 0],
+  position = [0, 0],
+  ...props
+}: KoreanPixiTextProps): React.JSX.Element {
+  // Handle different text input formats
+  let displayText: string;
 
-  // Add cyberpunk styling with PIXI v8 dropShadow object format
-  if (props.className?.includes("cyberpunk")) {
-    style.dropShadow = {
-      alpha: 0.7,
-      angle: Math.PI / 4,
-      blur: 4,
-      color: KOREAN_COLORS.CYAN,
-      distance: 2,
-    };
-    style.stroke = { color: KOREAN_COLORS.BLACK, width: 2 };
+  if (text) {
+    displayText =
+      typeof text === "string" ? text : text.korean || text.english || "";
+  } else if (korean && english) {
+    displayText = korean; // Prefer Korean if both are provided
+  } else if (korean) {
+    displayText = korean;
+  } else if (english) {
+    displayText = english;
+  } else {
+    displayText = "";
   }
 
-  return style;
-};
+  const textStyle = createKoreanTextStyle(style);
+
+  return React.createElement("pixiText", {
+    text: displayText,
+    style: textStyle,
+    anchor: typeof anchor === "object" ? anchor[0] : anchor,
+    x: Array.isArray(position) ? position[0] : 0,
+    y: Array.isArray(position) ? position[1] : 0,
+    ...props,
+  });
+}
+
+export function createKoreanTextStyle(style: any = {}): TextStyle {
+  return new TextStyle({
+    fontFamily: style.fontFamily || KOREAN_FONT_FAMILY,
+    fontSize: style.fontSize || KOREAN_TEXT_SIZES.medium,
+    fill: style.fill || 0xffffff,
+    align: style.align || "left",
+    fontWeight: style.fontWeight || KOREAN_TEXT_WEIGHTS.REGULAR,
+    wordWrap: style.wordWrap || false,
+    wordWrapWidth: style.wordWrapWidth || 0,
+    dropShadow: style.dropShadow || false,
+    ...style,
+  });
+}
+
+export function getDisplayText(text: string | KoreanText): string {
+  return typeof text === "string" ? text : text.korean || text.english || "";
+}
