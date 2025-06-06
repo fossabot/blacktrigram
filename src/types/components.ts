@@ -51,14 +51,14 @@ export interface ComponentProps extends BaseComponentProps {
 
 // Intro screen component props
 export interface IntroScreenProps extends BaseComponentProps {
-  readonly onGamePhaseChange: (phase: GamePhase | string) => void;
-  readonly onSectionChange?: (section: string) => void; // Added
+  readonly onGamePhaseChange: (phase: GamePhase | string) => void; // Ensure this is present
+  readonly onSectionChange?: (section: string) => void;
   readonly currentSection?: string;
-  readonly onStartTraining?: () => void; // Added
-  readonly onStartCombat?: () => void; // Added
-  readonly player?: any; // Added
-  readonly onPlayerChange?: (updates: any) => void; // Added
-  readonly sessionData?: any; // Added
+  readonly onStartTraining?: () => void;
+  readonly onStartCombat?: () => void;
+  readonly player?: any;
+  readonly onPlayerChange?: (updates: any) => void;
+  readonly sessionData?: any;
 }
 
 // Training screen component props
@@ -249,11 +249,14 @@ export interface AudioControlProps extends BaseComponentProps {
 // Menu section props - FIXED: Add missing onGamePhaseChange property
 export interface MenuSectionProps extends BaseComponentProps {
   readonly onGamePhaseChange: (phase: GamePhase | string) => void;
+  readonly title?: string; // Added from ui.ts
+  readonly onSelect?: (option: string) => void; // Added from ui.ts
 }
 
 // Philosophy section props - FIXED: Add consistent signature
 export interface PhilosophySectionProps extends BaseComponentProps {
   readonly onGamePhaseChange: (phase: GamePhase | string) => void;
+  readonly title?: string; // Added from ui.ts
 }
 
 // End screen props for victory/defeat - FIXED: Add missing properties
@@ -273,14 +276,14 @@ export interface EndScreenProps extends BaseComponentProps {
 export interface GameEngineProps extends BaseComponentProps {
   readonly player1: PlayerState;
   readonly player2: PlayerState;
-  readonly gamePhase?: "intro" | "training" | "combat" | "victory" | "defeat"; // Added
+  readonly gamePhase?: "intro" | "training" | "combat" | "victory" | "defeat";
   readonly onGameStateChange: (updates: any) => void;
   readonly onPlayerUpdate: (
     playerIndex: number,
     updates: Partial<PlayerState>
   ) => void;
-  readonly onGamePhaseChange: (phase: string) => void; // Add missing prop
-  readonly gameMode?: "demo" | "versus" | "training"; // Added
+  readonly onGamePhaseChange: (phase: string | GamePhase) => void; // Ensure this matches usage
+  readonly gameMode?: "demo" | "versus" | "training";
 }
 
 // Korean text component props

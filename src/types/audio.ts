@@ -133,33 +133,37 @@ export interface AudioPlaybackOptions {
 
 // Audio system state
 export interface AudioState {
-  readonly masterVolume: number;
-  readonly sfxVolume: number;
-  readonly musicVolume: number;
-  readonly muted: boolean;
-  readonly currentMusicTrack?: MusicTrackId | null; // Fixed: Use MusicTrackId
-  readonly isInitialized: boolean; // Added
-  readonly fallbackMode?: boolean; // Added
+  masterVolume: number; // Mutable
+  sfxVolume: number; // Mutable
+  musicVolume: number; // Mutable
+  muted: boolean; // Mutable
+  currentMusicTrack?: MusicTrackId | null; // Mutable
+  isInitialized: boolean; // Mutable
+  fallbackMode?: boolean; // Mutable
 }
 
 // Audio manager interface
 export interface IAudioManager {
   playSFX(id: SoundEffectId, options?: AudioPlaybackOptions): number | null;
-  playMusic(id: MusicTrackId, options?: AudioPlaybackOptions): number | null; // Fixed: Use MusicTrackId
-  stopMusic(): void; // Changed signature
+  playMusic(id: MusicTrackId, options?: AudioPlaybackOptions): number | null;
+  stopMusic(id?: MusicTrackId, fadeOutDuration?: number): void; // Updated signature
   setMasterVolume(volume: number): void;
   setSFXVolume(volume: number): void;
   setMusicVolume(volume: number): void;
   setMuted(muted: boolean): void;
-  getState(): AudioState; // Add missing method
+  getState(): AudioState;
 
   // Korean martial arts specific methods
-  playAttackSound(damage: number): void; // Added
-  playHitSound(damage: number, isVitalPoint?: boolean): void; // Added
-  playTechniqueSound(koreanName: string): void; // Added
-  playStanceChangeSound(): void; // Added
-  playBlockSound(): void; // Added
-  stopAllSounds(): void; // Added
+  playAttackSound(damage: number): void;
+  playHitSound(damage: number, isVitalPoint?: boolean): void;
+  playTechniqueSound(koreanName: string): void;
+  playStanceChangeSound(): void;
+  playBlockSound(): void;
+  stopAllSounds(): void; // Ensure this is present
+  init(): Promise<void>; // Added init
+  isInitialized: boolean; // Added isInitialized property
+  loadAudioAsset(asset: AudioAsset): Promise<void>; // Added
+  isMusicPlaying(id?: MusicTrackId): boolean; // Added
 }
 
 // Audio configuration constants
@@ -267,7 +271,8 @@ export interface ProceduralSoundConfig {
 
 // Missing audio types
 export interface AudioContextState {
-  readonly initialized: boolean;
+  // This seems like a duplicate of AudioState or for React context state specifically
+  readonly initialized: boolean; // If this is for React state, it can be readonly
   readonly suspended: boolean;
   readonly volume: number;
 }
@@ -275,10 +280,21 @@ export interface AudioContextState {
 export type SoundEffect = SoundEffectId; // Alias for compatibility
 
 export interface AudioManagerInterface {
-  readonly isInitialized: boolean; // Added
-  readonly volume: number; // Added
+  // This seems like an older or alternative interface definition
+  readonly isInitialized: boolean;
+  readonly volume: number;
   playMusic(trackId: string, loop?: boolean): void;
   stopMusic(fadeOut?: boolean): void;
-  playSFX(effectId: SoundEffectId): void; // Changed from string
+  playSFX(effectId: SoundEffectId): void;
   setVolume(volume: number): void;
+  // Add methods from IAudioManager if this is meant to be the primary one
+  init(): Promise<void>;
+  stopAllSounds(): void;
+}
+
+export interface AudioContextType extends IAudioManager {
+  // AudioContextType can extend IAudioManager or redefine if slightly different
+  // For now, let's assume it's largely the same as IAudioManager for provider
+  // Add any specific methods/properties for the context if they differ
+  getIsInitialized: () => boolean; // Example: if provider exposes it differently
 }
