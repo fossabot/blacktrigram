@@ -556,7 +556,8 @@ _Enter the shadow dojang. Master the dark arts. Walk the path of the perfect let
 %% Legend:
 %% 🟦 = Playable Cell  
 %% ⬛ = Out-of-Bounds Cell
-    ```mermaid
+
+ ```mermaid
 graph LR
   subgraph "10×10 Grid"
     direction TB
@@ -605,8 +606,8 @@ graph LR
         H1,H2,H8,H9,H10,
         I1,I2,I3,I7,I8,I9,I10,
         J1,J2,J3,J4,J7,J8,J9,J10 outOfBounds;
-    ```
-    > **Note:** Only cells whose centers lie inside or on the inscribed octagon are **playable**. Other cells are displayed in a darker shade (**out-of-bounds**).
+ ```    
+> **Note:** Only cells whose centers lie inside or on the inscribed octagon are **playable**. Other cells are displayed in a darker shade (**out-of-bounds**).
 
   - **Playable Cells:**  
     - A cell is “in-play” if its center \((x × 0.3 + 0.15,\;y × 0.3 + 0.15)\) lies inside or on the octagon boundary.
