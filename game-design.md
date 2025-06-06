@@ -559,15 +559,15 @@ _Enter the shadow dojang. Master the dark arts. Walk the path of the perfect let
 
 ```mermaid
 flowchart TB
-  %% Row 0
+  %% Row A
   A1["⬛"] --- A2["⬛"] --- A3["⬛"] --- A4["⬛"] --- A5["⬛"]
-  %% Row 1
+  %% Row B
   B1["⬛"] --- B2["🟦"] --- B3["🟦"] --- B4["🟦"] --- B5["⬛"]
-  %% Row 2
+  %% Row C
   C1["⬛"] --- C2["🟦"] --- C3["🟦"] --- C4["🟦"] --- C5["⬛"]
-  %% Row 3
+  %% Row D
   D1["⬛"] --- D2["🟦"] --- D3["🟦"] --- D4["🟦"] --- D5["⬛"]
-  %% Row 4
+  %% Row E
   E1["⬛"] --- E2["⬛"] --- E3["⬛"] --- E4["⬛"] --- E5["⬛"]
 
   %% Vertical alignment
@@ -595,7 +595,7 @@ flowchart TB
   D4 -.-> E4
   D5 -.-> E5
 
-  %% Diagonals
+  %% Diagonals between rows A↔B
   A1 --- B2
   A2 --- B1
   A2 --- B3
@@ -605,6 +605,7 @@ flowchart TB
   A4 --- B5
   A5 --- B4
 
+  %% Diagonals between rows B↔C
   B1 --- C2
   B2 --- C1
   B2 --- C3
@@ -614,6 +615,7 @@ flowchart TB
   B4 --- C5
   B5 --- C4
 
+  %% Diagonals between rows C↔D
   C1 --- D2
   C2 --- D1
   C2 --- D3
@@ -623,6 +625,7 @@ flowchart TB
   C4 --- D5
   C5 --- D4
 
+  %% Diagonals between rows D↔E
   D1 --- E2
   D2 --- E1
   D2 --- E3
