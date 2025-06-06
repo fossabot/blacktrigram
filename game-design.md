@@ -590,34 +590,398 @@ _Enter the shadow dojang. Master the dark arts. Walk the path of the perfect let
 
 ---
 
-# Black Trigram - Game Design Document
-
-## 1. Overview
-
-Black Trigram is a sophisticated 2D precision combat simulator deeply rooted in Korean martial arts and modern combat technology, set against a cyberpunk backdrop. It emphasizes anatomical realism, precise targeting, authentic martial techniques, and dark futuristic aesthetics.
-
 ## 2. Core Gameplay
 
-### 2.1. Combat System
+## 2.1 Arena: 10×10 Octagonal Grid
 
-- **Precision Targeting**: Players can target specific vital points (급소 - geupso) on the opponent's body.
-- **Trigram Stances (팔괘 - Palgwae)**: Eight unique stances, each with distinct techniques, strengths, and weaknesses.
-  - 건 (Geon - Heaven): Balanced, spiritual energy.
-  - 태 (Tae - Lake): Joyful, fluid movements.
-  - 리 (Li - Fire): Bright, aggressive attacks.
-  - 진 (Jin - Thunder): Explosive, powerful strikes.
-  - 손 (Son - Wind): Gentle, swift, penetrating.
-  - 감 (Gam - Water): Deep, adaptable, dangerous.
-  - 간 (Gan - Mountain): Stable, firm defense.
-  - 곤 (Gon - Earth): Receptive, grounded techniques.
-- **Ki Management**: Ki (기 - internal energy) is used for special techniques and can be regenerated.
-- **Stamina**: Governs movement and basic actions.
+- **Grid Layout**  
+  The combat arena is a **10×10 square grid** with coordinates (x, y) ∈ {0…9}². Each cell is ~0.3 m per side, making the square ~3 m × 3 m. Inscribed within is a **regular octagon** whose vertices touch each midpoint of the square’s edges.  
+  - **Playable Cells:** A cell is “in-play” if its center lies inside or on the octagon’s boundary.  
+  - **Out-of-Bounds Cells:** Cells outside the octagon remain visible but cannot be entered, attacked from, or used to initiate throws. Attempting to move into one triggers a **“skid” animation**, no displacement occurs, and a **8-frame recovery delay** is imposed (no stamina refund).
 
-### 2.2. Game Modes
+- **Octagon Definition**  
+  1. Draw an octagon inscribed in the 10×10 square so its vertices touch each square edge midpoint.  
+  2. For each cell (x, y), check if its center point \((x × 0.3 m + 0.15 m,\;y × 0.3 m + 0.15 m)\) lies inside or on that octagon. If yes, the cell is playable.  
+  3. Cells failing this check are displayed but off-limits for movement or attacks.
 
-- **Combat Mode (대전 모드)**: Player vs. Player or Player vs. AI.
-- **Training Mode (수련 모드)**: Practice techniques, stances, and vital point targeting.
-- **Philosophy Study (철학 연구)**: Learn about the philosophy behind the Trigrams and Korean martial arts.
+- **Starting Positions**  
+  - **Player 1** spawns at the leftmost playable edge cell (either (0, 4) or (0, 5), whichever is inside), facing east.  
+  - **Player 2** spawns symmetrically at (9, 4) or (9, 5), facing west.  
+  - Both begin in **☰ Geon (Ap Seogi)** with **right-foot forward** by default (unless the player presses `X` before moving).  
+  - Initial **CombatStats** for each player:  
+    ```typescript
+    {
+      health: 100,
+      pain: 0,
+      balance: "READY",
+      consciousness: 100,
+      bloodLoss: 0,
+      stamina: 100
+    }
+    ```
+
+- **Coordinate Validation**  
+  - A move from (x, y) → (x′, y′) is valid only if:  
+    1. 0 ≤ x′, y′ ≤ 9  
+    2. Cell (x′, y′) lies inside or on the octagon  
+  - Invalid moves (into out-of-bounds cells) play a skid animation + 8-frame recovery, no position change, no stamina refund.
+
+---
+
+## 2.2 CombatStats & States
+
+Each fighter’s condition is tracked by:
+
+| **Stat**          | **Icon** | **Range** | **Description**                                                                                                 |
+|-------------------|:--------:|:---------:|:---------------------------------------------------------------------------------------------------------------|
+| **health**        | ❤️       | 0–100     | Overall Vital Health; when ≤ 0 → **KO** (One-Strike Finish)                                                     |
+| **pain**          | 😖       | 0–100     | Current accumulated pain; influences `balance` (READY → SHAKEN → VULNERABLE → HELPLESS)                         |
+| **balance**       | ⚖️       | Enum      | “READY” (🟢) | “SHAKEN” (🟡) | “VULNERABLE” (🟠) | “HELPLESS” (🔴) – affects movement, block cost, incoming damage |
+| **consciousness** | 🧠      | 0–100     | Awareness level; if ≤ 0 → **HELPLESS** (stunned), recovers over 3 sec                                        |
+| **bloodLoss**     | 🩸      | 0–100     | Cumulative bleeding; while > 0, drains health/pain ↑/consciousness ↓; ≥ 100 → **HELPLESS** (unconscious)         |
+| **stamina**       | 🔋      | 0–100     | Energy for movement/attacks; regenerates when idle; at 0, movement/attacks are penalized                        |
+
+### 2.2.1 Balance States & Effects
+
+| **State**       | **Icon** | **Condition**                                         | **Effects**                                                                                                              |
+|-----------------|:--------:|:-----------------------------------------------------:|:-------------------------------------------------------------------------------------------------------------------------|
+| **READY**       | 🟢       | pain < 20 and consciousness > 50                       | +0 % movement penalty; normal block cost; full Vital Resistance                                                         |
+| **SHAKEN**      | 🟡       | 20 ≤ pain < 50 and consciousness > 40                   | −10 % movement speed; block cost +10 %; Vital Resistance − 5 %                                                           |
+| **VULNERABLE**  | 🟠       | 50 ≤ pain < 80 or health < 20 and consciousness > 20    | −20 % movement speed; block cost × 2; incoming damage + 10 %; attacks + 10 % extra damage                                 |
+| **HELPLESS**    | 🔴       | pain ≥ 80 or consciousness ≤ 0 or bloodLoss ≥ 100       | Cannot move, block, or attack; recovery 2–3 sec; on recovery → balance = “VULNERABLE”, pain +10 (max 100), bloodLoss − 20, consciousness = 20, health +10 (max 100) |
+
+### 2.2.2 Stat Interactions & Recovery
+
+| **Effect**                      | **Stat Impact**                            | **Details**                                                                                         |
+|---------------------------------|-------------------------------------------|-----------------------------------------------------------------------------------------------------|
+| **Pain Accumulation**           | pain += (base damage × 0.1) + attack’s pain | Each landed strike adds pain. Blocking reduces pain via Vital Resistance (see 2.6.3).              |
+| **Pain Decay**                  | pain −= 5 per second                       | If no new hits for ≥ 1 sec, pain decreases until 0.                                                    |
+| **Blood Loss Accumulation**     | bloodLoss += attack’s bleed value         | Some attacks (+10–20) induce bleeding.                                                               |
+| **Blood Loss Effects**          | If bloodLoss > 0: health −= 1/sec; pain += 2/sec; consciousness −= 2/sec | Bleed‐out over time; if bloodLoss ≥ 100 → immediate “HELPLESS” (unconscious).                         |
+| **Consciousness Drop**          | consciousness −= attack’s concussion value | Head/nerve strikes subtract consciousness. If ≤ 0 → “HELPLESS” (stunned), recovers over 3 sec.        |
+| **Stamina Drain**               | see **2.8 Stamina Costs**                   | Each move/attack/block drains varying stamina.                                                       |
+| **Stamina Regeneration**        | stamina += 10/sec (idle ≥ 1 sec)            | Regains when no movement/attack/block input. If stamina ≤ 0, movement costs + 5 and animations + 5 frames. |
+
+---
+
+## 2.3 Trigram-Based Stance System
+
+Press **1–8** to select one of the eight Trigrams (☰–☷). Each Trigram maps to a **Taekwondo/Hapkido stance**—**Short**, **Long**, **Low**, or **Deep**—which immediately adjusts hitboxes, attack/defense properties, and stat modifiers. **Foot orientation** (which leg is forward) remains under player control via `X`, auto-pivot, and `Z+Arrow`.
+
+### 2.3.1 Stance Table & Stat Modifiers
+
+| **Trigram**             | **Key** | **Category**   | **Stance Name**                     | **Stat Modifiers**                                                                                                                                                               |
+|-------------------------|:-------:|:--------------:|:------------------------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ☰ Geon (건, Heaven)     |   1     | Short Stance   | **Ap Seogi** (Walking Stance)         | +15 % movement speed; +10 % attack startup for linear bone-strikes; –10 % throw power; +5 % pivot speed; 🩸 bleed from bone-break is +5.                                          |
+| ☱ Tae (태, Lake)        |   2     | Long Stance    | **Ap Koobi Seogi** (Front Stance)     | +15 % throw/sweep reach; +10 % takedown damage; –10 % lateral agility; +5 % stability vs. pushes; 🩸 bleed from joint-locks +10.                                               |
+| ☲ Li (리, Fire)         |   3     | Low Stance     | **Juchum Seogi** (Horse Stance)       | +15 % stability vs. vital strikes; +10 % knockdown resistance; –10 % movement speed; +5 % critical hit chance; 🧠 +0 consciousness for body strikes; 🩸 +5 per hit.             |
+| ☳ Jin (진, Thunder)     |   4     | Deep Stance    | **Dwi Koobi Seogi** (Back Stance)     | +15 % shock damage on nerve strikes; +10 % stability vs. incoming force; –10 % forward mobility; +5 % pivot speed; 🧠 –30 on head strikes; 🩸 +5.                                |
+| ☴ Son (손, Wind)        |   5     | Short Stance   | **Niunja Seogi** (L-Stance)           | +10 % lateral movement; +10 % chaining speed on pressure attacks; –5 % reach; +5 % flank block coverage; 🩸 +5 per elbow grind hit.                                                |
+| ☵ Gam (감, Water)       |   6     | Long Stance    | **Narani Seogi** (Parallel Stance)    | +10 % adaptability (counter/reversal); +5 % block vs. sweeps; –5 % heavy strike damage; –5 % ground control; 🩸 +15 on rib shots.                                                   |
+| ☶ Gan (간, Mountain)    |   7     | Low Stance     | **Gibo Seogi** (Basic Stance)         | +15 % block strength; +10 % counter-strike speed; –10 % throw power; +5 % recoil stability; 🩸 +10 bleed on heavy blocks.                                                         |
+| ☷ Gon (곤, Earth)       |   8     | Deep Stance    | **Joong Ha Seogi** (Deep Stance)      | +20 % ground-control advantage; +10 % throw/lock success; –15 % movement speed; –5 % vertical reach; 🩸 +20 bleed on takedowns; 🧠 0.                                               |
+
+#### 2.3.1.1 Short Stance Details (☰ Geon, ☴ Son)
+
+- **Ap Seogi (☰ Geon)**  
+  - **Stat Changes:**  
+    - 🔋 Stamina Drain: Normal  
+    - ❤️ health unaffected passively  
+    - 😖 pain accumulation +0 (no bonus)  
+    - ⚖️ balance: “READY” baseline  
+  - **Use Case:** Fast, mobile bone-breaking jabs/palms. Vulnerable to counters if overextended.
+
+- **Niunja Seogi (☴ Son)**  
+  - **Stat Changes:**  
+    - 🔋 Stamina Drain: –5 per step (normal)  
+    - ❤️ health unaffected  
+    - 😖 pain +5 per grappling hit  
+    - ⚖️ balance: “READY” baseline, +5 % flank block  
+  - **Use Case:** Swift lateral pressure, elbow-grinds to accumulate pain.
+
+#### 2.3.1.2 Long Stance Details (☱ Tae, ☵ Gam)
+
+- **Ap Koobi Seogi (☱ Tae)**  
+  - **Stat Changes:**  
+    - 🔋 Stamina Drain: –10 per step+swap (heavy stance)  
+    - ❤️ health unaffected  
+    - 😖 pain +10 per throw  
+    - ⚖️ balance: slightly biased forward (–5 % ease of being pushed)  
+  - **Use Case:** Heavy throws, sweeps. Good reach but slow side-to-side.
+
+- **Narani Seogi (☵ Gam)**  
+  - **Stat Changes:**  
+    - 🔋 Stamina Drain: –5 per step (efficient transitions)  
+    - ❤️ health unaffected  
+    - 😖 pain +15 on rib shots  
+    - ⚖️ balance: neutral, +5 % block vs. sweeps  
+  - **Use Case:** Adaptive counters, slip-and-shuck to vital zones.
+
+#### 2.3.1.3 Low Stance Details (☲ Li, ☶ Gan)
+
+- **Juchum Seogi (☲ Li)**  
+  - **Stat Changes:**  
+    - 🔋 Stamina Drain: –10 per kick (stable)  
+    - ❤️ health unaffected  
+    - 😖 pain +0 from light strikes (stable)  
+    - ⚖️ balance: “READY” but –5 % walk speed  
+    - 🧠 Consciousness unaffected by body shots  
+  - **Use Case:** Precise vital-point strikes, stable under pressure.
+
+- **Gibo Seogi (☶ Gan)**  
+  - **Stat Changes:**  
+    - 🔋 Stamina Drain: –2/sec blocking (efficient)  
+    - ❤️ health unaffected  
+    - 😖 pain +0 on minor hits (absorbed)  
+    - ⚖️ balance: hardened, +15 % block strength  
+  - **Use Case:** Impenetrable defense, punishes reckless attackers.
+
+#### 2.3.1.4 Deep Stance Details (☳ Jin, ☷ Gon)
+
+- **Dwi Koobi Seogi (☳ Jin)**  
+  - **Stat Changes:**  
+    - 🔋 Stamina Drain: +15 on shock strikes (powerful)  
+    - ❤️ health unaffected  
+    - 😖 pain +5 on counter hits (stable)  
+    - ⚖️ balance: “SHAKEN” threshold higher (–10 % movement if shaken)  
+    - 🧠 Consciousness −30 if hit on head  
+  - **Use Case:** Shock counters, nerve breaks. Rooted but slow to advance.
+
+- **Joong Ha Seogi (☷ Gon)**  
+  - **Stat Changes:**  
+    - 🔋 Stamina Drain: –12 on takedowns (heavy)  
+    - ❤️ health unaffected  
+    - 😖 pain +20 on bad takedown (very painful)  
+    - ⚖️ balance: “VULNERABLE” threshold if pain high  
+    - 🩸 bloodLoss +20 on ground-lock  
+  - **Use Case:** Ground control throws, clinch work. High bleed potential but very slow.
+
+---
+
+### 2.3.2 Stance Switching & Footwork
+
+1. **Selecting a New Trigram Style (1–8)**  
+   - Instantly switch to that Trigram’s stance and stat modifiers (no foot change).  
+
+2. **Swap Front Foot (Mirror Stance)**  
+   - Press `X` → Flip front/back foot (mirror current stance), costing 🔋 –2. No style change.  
+
+3. **Move One Cell (Auto-Pivot)**  
+   - Arrow key alone → Move one cell. If feet would cross, auto-pivot (mirror stance, flip front foot) for 🔋 –7; else 🔋 –5. Takes 8–10 frames.  
+
+4. **Short Step (Keep Front Foot)**  
+   - Hold `Z` + Arrow → Move one cell, forcing front foot to remain forward (no pivot). Costs 🔋 –5, 10 frames.  
+
+5. **Step & Swap Foot (No Style Change)**  
+   - Hold `X` + Arrow → Swap front foot, then move one cell. Costs 🔋 –10, 14 frames.  
+
+---
+
+## 2.4 Controls & Input Mapping
+
+| **Action**                         | **Key**                           | **Effect**                                                                                                                                                                                                                                                                  |
+|------------------------------------|-----------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Select Trigram Style (☰–☷)**      | `1` – `8`                          | Switch to the corresponding Trigram stance. Applies stance’s **Stat Modifiers** immediately (no foot change).                                                                                                                                                                  |
+| **Swap Front Foot (Mirror Stance)**  | `X`                                 | Flip which leg is forward (mirror stance). Costs 🔋 –2.                                                                                                                                                                                                                       |
+| **Move One Cell (Auto-Pivot)**       | Arrow key alone (`↑`,`↓`,`←`,`→`) | Move one cell. If crossing feet, auto-pivot (mirror stance, flip front foot) for 🔋 –7; else 🔋 –5. Takes 8–10 frames.                                                                                                                                    |
+| **Short Step (Keep Front Foot)**     | `Z` + Arrow (`↑`,`↓`,`←`,`→`)       | Move one cell, forcing current front foot to stay forward (no pivot). Costs 🔋 –5, 10 frames.                                                                                                                                                                                  |
+| **Step & Swap Foot (No Style Change)**| `X` + Arrow (`↑`,`↓`,`←`,`→`)       | Swap front foot (mirror stance), then move one cell. Costs 🔋 –10, 14 frames.                                                                                                                                                                                                   |
+| **Block (Hold or Tap)**              | `B`                                 | Enter current stance’s block posture.  
+  - **Tap `B`:** Snap block (4 frames), costs 🔋 –3, grants Vital Resistance Bonus (+15 %–+30 % depending on stance).  
+  - **Hold `B`:** Sustained guard, drains 🔋 –2/sec, Vital Resistance Bonus applies each incoming hit.                                                                                  |
+| **Attack (Front-Hand & Directional)**  | **Space** (with optional Arrow)     | Press **Space** alone → perform stance’s **Front-Hand Strike** (costs 🔋 –8, 12 frames).  
+  - `Space` + `↑` → **Front-Leg Kick** (🔋 –12, 16 frames)  
+  - `Space` + `←` → **Front-Elbow Strike** (🔋 –10, 14 frames)  
+  - `Space` + `↓` → **Front-Knee Strike** (🔋 –10, 14 frames)  
+  - `Space` + `→` → **Back-Hand Strike** (🔋 –9, 13 frames)  
+  - **Rotational Backcast:** Press `Space` then `↓` in same frame → pivot 180° (10 frames) + spinning back strike (10 frames), 🔋 –15.  
+  - **Queued Attacks:** While moving (Arrow or `Z+Arrow`), hold `Space+Arrow` to queue immediate limb strike upon movement completion. |
+| **Rotate Camera / UI**               | (N/A in 2D)                        | Not applicable; combat is 2D.                                                                                                                                                                                                                                                 |
+
+---
+
+## 2.5 Stat Tables & Interactions
+
+### 2.5.1 CombatStats at a Glance
+
+| **Stat**        | **Icon** | **Initial** | **Min** | **Max** | **Decay / Regen**                                                                                                             |
+|-----------------|:--------:|:-----------:|:-------:|:-------:|:------------------------------------------------------------------------------------------------------------------------------|
+| **health**      | ❤️       | 100         | 0       | 100     | Bleed drains –1/sec; KO at 0 → “HELPLESS”                                                                                   |
+| **pain**        | 😖       | 0           | 0       | 100     | Decays –5/sec if no new hits for ≥ 1 sec; influences `balance`.                                                               |
+| **balance**     | ⚖️       | “READY”     | –       | –       | Changes based on `pain`, `health`, `bloodLoss`, `consciousness` (see 2.2.1).                                                 |
+| **consciousness**| 🧠      | 100         | 0       | 100     | Head strikes reduce; at 0 → “HELPLESS” for 3 sec, then recover to 20 (balance “VULNERABLE”).                                  |
+| **bloodLoss**   | 🩸      | 0           | 0       | 100     | Each bleeding hit adds +10–20. While > 0, health −1/sec, pain +2/sec, consciousness −2/sec. At ≥ 100 → “HELPLESS.”           |
+| **stamina**     | 🔋      | 100         | 0       | 100     | Drains per action (see 2.8). Regenerates +10/sec if idle ≥ 1 sec. At 0 → movement & attacks cost +5 more, animations +5 frames. |
+
+### 2.5.2 Balance State Transitions
+
+| **pain**      | **consciousness** | **bloodLoss** | **Balance →** | **Effects**                                                                                                                                                                                                                 |
+|---------------|-------------------|---------------|---------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| < 20          | > 50              | < 100         | 🟢 “READY”    | Full mobility; normal block cost; full Vital Resistance.                                                                                                                                                                      |
+| 20 – 49       | > 40              | < 100         | 🟡 “SHAKEN”   | –10 % movement speed; block cost +10 %; Vital Resistance – 5 %.                                                                                                                                                              |
+| 50 – 79       | > 20              | < 100         | 🟠 “VULNERABLE”| –20 % movement speed; block cost × 2; incoming damage +10 %; attacks +10 % extra damage.                                                                                                                                     |
+| ≥ 80          | ≤ anything        | ≤ 99          | 🔴 “HELPLESS” | Cannot move, block, or attack. Knockdown or stun. Recovery 2 sec, then → “VULNERABLE” with pain +10 (max 100), bloodLoss –20, consciousness = 20, health +10 (max 100).                                                   |
+| < anything    | ≤ 0               | ≤ 99          | 🔴 “HELPLESS” | Unconscious KO. Recovery 3 sec → same as above.                                                                                                                                                                               |
+| < anything    | > 0               | ≥ 100         | 🔴 “HELPLESS” | Bleed-out KO. Recovery 3 sec → same as above.                                                                                                                                                                                 |
+
+---
+
+## 2.6 Vital-Point Attack System
+
+### 2.6.1 Attack ↔ Vital Zone Mapping
+
+| **Trigram** | **Attack**                   | **Zone**             | **Damage (health)** | **Pain** | **Bleed** | **Consciousness** | **Balance Impact**                                                  |
+|-------------|------------------------------|----------------------|---------------------|---------|----------|------------------|----------------------------------------------------------------------|
+| **☲ Li**    | Needle-Point Jab             | Solar Plexus         | –20                 | +15     | +5       | 0                | If health < 50 post-hit → “VULNERABLE.”                                |
+| **☲ Li**    | Thumb-Push                   | Jugular Notch        | –75 (Critical)      | +25     | +10      | –20             | Instant KO if health ≤ 75; consciousness drop may → “HELPLESS.”       |
+| **☳ Jin**   | Shock Palm                   | Temple               | –50                 | +30     | +5       | –30             | If hit blocked, loses –10 conscience; may → “HELPLESS.”               |
+| **☳ Jin**   | Hammerfist                   | Clavicle             | –30                 | +20     | +5       | 0                | May stagger into “SHAKEN.”                                             |
+| **☴ Son**   | Continuous Elbow Grind (×n)  | Intercostal Nerves   | –15 × n              | +10 × n  | +5 × n   | 0                | Builds pain quickly; ≥ 50 → “VULNERABLE.”                               |
+| **☴ Son**   | Knee-Tap                      | Patellar Nerve       | –40                 | +30     | +10      | 0                | May → “VULNERABLE.”                                                     |
+| **☷ Gon**   | Spinning Takedown            | Lower Lumbar (Spine) | –60 (Major)         | +40     | +20      | 0                | If defender in “VULNERABLE” or “SHAKEN,” → KO; else pain → “VULNERABLE.”|
+| **☷ Gon**   | Ground-Lock                  | Brachial Plexus      | –50                 | +35     | +15      | 0                | If blocked, bleed still applies; pain → “VULNERABLE.”                   |
+| **☱ Tae**   | Thrown Arm Lock              | Elbow Joint          | –30                 | +25     | +10      | 0                | If defender “SHAKEN,” → “VULNERABLE.”                                    |
+| **☱ Tae**   | Hip Sweep                    | Sacral Region        | –40                 | +30     | +10      | 0                | If blocked, NetDamage = 40×(1–Res%); pain may → “VULNERABLE.”            |
+| **☵ Gam**   | Slip & Shuck                 | Floating Ribs        | –25                 | +20     | +15      | 0                | May induce bleed over time; pain → “SHAKEN.”                              |
+| **☵ Gam**   | Reversal Choke               | Carotid Artery       | –75 (Critical)      | +30     | +10      | 0                | Instant KO if defender’s resistance < 25 %; else “VULNERABLE.”           |
+| **☶ Gan**   | Parry + Counter Palm         | Solar Plexus         | –20                 | +15     | +10      | 0                | If defender was “READY,” counters may → “SHAKEN.”                        |
+| **☶ Gan**   | Forearm Block + Counter to Kidney | Kidney             | –35                 | +20     | +10      | 0                | Blocks bleed then punishes pain; if defender “SHAKEN,” → “VULNERABLE.”   |
+| **☰ Geon**  | Straight Bone-Break Jab      | Sternum              | –30                 | +20     | +5       | 0                | May fracture if unblocked; pain → “SHAKEN.”                                |
+| **☰ Geon**  | Cross-Bone Edge              | Mandible (Jaw)       | –40                 | +25     | +5       | 0                | If unblocked, health < 40 → “VULNERABLE.”                                  |
+
+#### 2.6.1.1 Blocking & Resistance
+
+- When **blocking with `B`**:  
+  - Determine **Vital Resistance Bonus (VRB)** based on current stance:  
+    - ☶ Gan: +30 % vs. torso (solar plexus, ribs)  
+    - ☷ Gon: +25 % vs. ground-lock zones (spine, sacrum)  
+    - ☱ Tae: +20 % vs. limb-lock zones (elbow, knee)  
+    - Other stances: +15 % generic vs. all vital zones  
+  - **Snap Block Bonus:** If `B` tapped within 3 frames before impact, VRB += 10 % (capped at 50 %).  
+  - **NetDamage =** BaseDamage × (1 – VRB).  
+  - Then:  
+    1. `health –= NetDamage`  
+    2. `pain += (attackPain + floor(NetDamage × 0.1))`  
+    3. `bloodLoss += bleedValue`  
+    4. `consciousness –= concussValue`  
+    5. Transition `balance` accordingly (see 2.2.1).  
+
+---
+
+## 2.7 Round Duration & Flow
+
+### 2.7.1 Round Structure
+
+- **Duration:** Each round is **60 seconds** (visible countdown).  
+- **Start Signal:** At 0:00, a “READY” flash and gong play → combat begins.  
+- **End Signal:** At 0:00, a second gong, 2-frame freeze → winner screen.
+
+#### Winning Conditions
+
+1. **KO via Vital-Point Strike**  
+   - If a single strike causes `health ≤ 0` → immediate KO (“One-Strike Finish”).  
+2. **Timeout (00:00)**  
+   - If no KO, compare `health` values; higher wins.  
+   - If tied, compare “first significant hit” timestamp (> 10 damage).  
+   - If still tied → draw.
+
+### 2.7.2 Sample Combat Flow
+
+| **Time** | **Action**                                                     | **Resulting Stats / Positions**                                                                                                                                                                                                                                                                                |
+|----------|----------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **0:00** | Round start:  
+- P1 @ (0, 4), ☰ Geon, {health:100, pain:0, balance:READY, conscious:100, bloodLoss:0, stamina:100}  
+- P2 @ (9, 4), ☰ Geon, identical stats | Both free to move.                                                                                                                                                                                                                                                                                              |
+| **0:58** | P1 holds `Z+→`: short-step → (1, 4). Costs 🔋 –5 → 95, 10 frames.  
+P2 holds `Z+←`: short-step → (8, 4). Costs 🔋 –5 → 95, 10 frames.              | P1 {… stamina:95}, P2 {… stamina:95}. No stat changes.                                                                                                                                                                                                                                                           |
+| **0:55** | P1 presses `2` → ☱ Tae (Ap Koobi). Stats unchanged except stance.  
+P2 presses `3` → ☲ Li (Juchum).                    | P1: stance ☱, modifiers loaded.  
+P2: stance ☲, modifiers loaded.                                                                                                                                                                                                                                                                                     |
+| **0:50** | P1 (☱, at (1, 4)) holds `Space+↓` → Tae hip sweep (–40 health, +30 pain, +10 bleed). Costs 🔋 –12 → 83.  
+Startup 14 frames.  
+P2 blocks by tap `B` in ☲: VRB=15 %+10 %=25 %.  
+→ NetDamage=40×(1–0.25)=30:  
+• `health:100→70`, `pain:0→30`, `bloodLoss:0→10`, `consciousness:100→100` → `balance=SHAKEN` (pain 30), `stamina:95→83` | P2 now {health:70, pain:30, balance:SHAKEN, cons:100, bloodLoss:10, stamina:83}.  
+P1 {health:100, pain:0, balance:READY, cons:100, bloodLoss:0, stamina:83}.                                                                                                                                                                            |
+| **0:45** | P2 (☲ at (8, 4)) taps `Space+←` → Li front-elbow to solar plexus (–20 health, +15 pain, +5 bleed). Costs 🔋 –10 → 73, 14 frames.  
+P1 didn’t block:  
+• `health:100→80`, `pain:0→20`, `bloodLoss:0→5`, `consciousness:100→100` → `balance=SHAKEN` (pain 20), `stamina:83→73`. | P1 {health:80, pain:20, balance:SHAKEN, cons:100, bloodLoss:5, stamina:73}.  
+P2 {health:70, pain:30, balance:SHAKEN, cons:100, bloodLoss:10, stamina:73}.                                                                                                                                                                            |
+| **0:40** | P1 holds `X+↑`: swap front foot (now left-lead in ☱), step to (1, 3). Costs 🔋 –10 → 63, 14 frames.  
+P2 holds `Z+↑`: short-step to (8, 3). Costs 🔋 –5 → 68, 10 frames.                          | P1 {…stamina:63}. P2 {…stamina:68}. Both `balance:SHAKEN`, both `pain>20`.                                                                                                                                                                                                                                          |
+| **0:35** | P1 (☱ at (1, 3)) steps `↑` to (2, 3) (🔋 –5 → 58, 10 frames) while queuing `Space+←`: Tae thrown arm-lock to elbow (–30 health, +25 pain, +10 bleed).  
+P2 tries to block in ☲ (didn’t press `B`) → takes full damage:  
+• `health:70→40`, `pain:30→60`, `bloodLoss:10→20`, `balance: pain 60 → VULNERABLE`, `stamina:68→68` | P2 now {health:40, pain:60, balance:VULNERABLE, cons:100, bloodLoss:20, stamina:68}.  
+P1 {health:80, pain:20, balance:SHAKEN, cons:100, bloodLoss:0, stamina:58}.                                                                                                                                                                                |
+| **0:30** | P2 presses `8` → ☷ Gon (Joong Ha). No stamina cost.  
+P1 holds `↑` to (3, 3) (🔋 –5 → 53, 10 frames) while queuing `Space+↓`: Tae hip sweep to sacral (–40 health, +30 pain, +10 bleed).  
+P2 tries to block in ☷: VRB=25 %. NetDamage=40×(1–0.25)=30:  
+• `health:40→10`, `pain:60→93`, `bloodLoss:20→30`, `balance: pain 93 → HELPLESS`, `stamina:68→68`. | P2 now {health:10, pain:93, balance:HELPLESS, cons:100, bloodLoss:30, stamina:68}.  
+P1 {health:80, pain:20, balance:SHAKEN, cons:100, bloodLoss:0, stamina:53}.  
+→ P2 knocked down; P1 wins by KO.                                                                                                                                                                                                                   |
+
+---
+
+## 2.8 Stamina Costs & Recovery
+
+| **Action**                        | **Stamina Cost** | **Frames** | **Remarks**                                                        |
+|-----------------------------------|------------------|------------|--------------------------------------------------------------------|
+| **Move One Cell (no pivot)**      | – 5               | 8          | Legal step; no stance change.                                      |
+| **Move One Cell (with pivot)**    | – 7               | 10         | Auto-pivot (mirror stance).                                         |
+| **Short Step (Z + Arrow)**        | – 5               | 10         | Forces front foot; no pivot.                                        |
+| **Step & Swap (X + Arrow)**       | – 10              | 14         | Mirror front foot, then move.                                       |
+| **Swap Foot (X alone)**           | – 2               | 6          | Mirror stance without moving.                                       |
+| **Block Tap (B)**                 | – 3               | 4          | “Snap block.” Vital Resistance applies.                              |
+| **Block Hold (B)**                | – 2 /sec          | –          | Sustained guard; Vital Resistance applies to each incoming hit.     |
+| **Front-Hand Strike (Space)**     | – 8               | 12         | Default limb attack.                                                |
+| **Front-Leg Kick (Space+↑)**      | – 12              | 16         | Powerful forward leg strike.                                        |
+| **Front-Elbow Strike (Space+←)**  | – 10              | 14         | Quick elbow blow.                                                   |
+| **Front-Knee Strike (Space+↓)**   | – 10              | 14         | Low-profile knee attack.                                             |
+| **Back-Hand Strike (Space+→)**    | – 9               | 13         | Rear hand swing.                                                     |
+| **Rotational Backcast**           | – 15              | 20         | 180° pivot + spinning strike.                                        |
+| **Hip Sweep (☱ Tae, Space+↓)**     | – 12              | 14         | Strong takedown to sacral region.                                    |
+| **Throw (☷ Gon, Space+↓)**         | – 12              | 16         | Ground-control takedown.                                             |
+
+- **Stamina Regeneration:**  
+  - If idle ≥ 1 sec, stamina regenerates at **+10 /sec**.  
+  - If `stamina ≤ 0`, all movement costs + 5 more, all attack animations + 5 frames longer.
+
+---
+
+## 2.9 Round Summary & Design Rationale
+
+1. **60-Second Round Timer**  
+   - Forces players to balance offense, defense, and stamina management under time pressure.  
+   - Encourages swift decisions: “Do I risk a low-stance vital stab or maintain distance?”
+
+2. **Octagonal Grid → Tactical Depth**  
+   - Every cell (0.3 m) is discrete; stepping diagonally changes attack angles.  
+   - Edges/corners limit escape options, creating corner-trapping strategies.
+
+3. **CombatStats → Realistic Feedback**  
+   - **health** (❤️) is true Vital Health—target specific weak points for big swings.  
+   - **pain** (😖) transitions you through **READY** → **SHAKEN** → **VULNERABLE** → **HELPLESS** (⚖️ balance states 🟢/🟡/🟠/🔴).  
+   - **consciousness** (🧠) can be knocked out by head/nerve strikes (☳ Jin’s Shock Palm → –30 consciousness).  
+   - **bloodLoss** (🩸) stacks bleed damage over time if not addressed.  
+   - **stamina** (🔋) governs movement/attack economy—run out and your options shrink.
+
+4. **Trigram Stances → Authentic Martial-Art Integration**  
+   - Each Trigram ↔ Named Stance maps to real Taekwondo/Hapkido posture, with stat modifiers reflecting that style’s strengths/weaknesses.  
+   - **Footwork** (mirror vs. pivot vs. forced short step) remains under player control, so “which Trigram” and “which foot” stay separate layers of decision-making.
+
+5. **Vital-Point Attacks → High Skill Ceiling**  
+   - Each limb attack targets a distinct anatomical zone; landing a critical zone hit (–75 Vital) can instantly KO.  
+   - Perfect timing, stance selection, and foot orientation are required to land or defend these decisive strikes.
+
+6. **Fluid, High-Risk Combat**  
+   - Combining eight-direction movement, stance switching, and vital-point targeting ensures no two exchanges are the same.  
+   - A single misstep or mistimed stance change can mean the difference between winning and a One-Strike Finish.
+
+---
+
+**🎯 Black Trigram** melds a **10×10 octagonal grid**, **authentic Taekwondo/Hapkido stances**, and a **layered CombatStat system** to deliver a visceral, high-stakes martial-arts experience. Every cell, every stance switch, and every limb strike influences **health**, **pain**, **balance**, **consciousness**, **bloodLoss**, and **stamina**—so mastery requires both tactical grid control and precise, reality-based combat discipline.  
+````
+
 
 ## 3. Winning and Losing
 
