@@ -655,29 +655,30 @@ Each fighter’s condition is tracked by six core stats:
 ```mermaid
 stateDiagram-v2
     direction LR
-    state (Ready) as ReadyState {
-        color #00cc44,stroke:#007700,stroke-width:2px
-        [*] --> READY : pain < 20  
-        READY --> SHAKEN : pain ≥ 20  
-    }
-    state (Shaken) as ShakenState {
-        color #ffcc00,stroke:#aa8800,stroke-width:2px
-        SHAKEN --> VULNERABLE : pain ≥ 50 or health < 20  
-        SHAKEN --> READY : pain < 20  
-    }
-    state (Vulnerable) as VulnerableState {
-        color #ff8800,stroke:#aa4400,stroke-width:2px
-        VULNERABLE --> HELPLESS : pain ≥ 80 or consciousness ≤ 0 or bloodLoss ≥ 100  
-        VULNERABLE --> SHAKEN : pain < 50  
-    }
-    state (Helpless) as HelplessState {
-        color #cc0000,stroke:#770000,stroke-width:2px
-        HELPLESS --> VULNERABLE : recovery complete  
-    }
-    ReadyState --> ShakenState
-    ShakenState --> VulnerableState
-    VulnerableState --> HelplessState
-    HelplessState --> VulnerableState
+
+    %% Define states with labels
+    state ReadyState as "Ready"
+    state ShakenState as "Shaken"
+    state VulnerableState as "Vulnerable"
+    state HelplessState as "Helpless"
+
+    %% Apply custom styling
+    style ReadyState fill:#00cc44,stroke:#007700,stroke-width:2px
+    style ShakenState fill:#ffcc00,stroke:#aa8800,stroke-width:2px
+    style VulnerableState fill:#ff8800,stroke:#aa4400,stroke-width:2px
+    style HelplessState fill:#cc0000,stroke:#770000,stroke-width:2px
+
+    %% Transitions
+    [*] --> ReadyState : pain < 20
+    ReadyState --> ShakenState : pain ≥ 20
+
+    ShakenState --> VulnerableState : pain ≥ 50 or health < 20
+    ShakenState --> ReadyState : pain < 20
+
+    VulnerableState --> HelplessState : pain ≥ 80 or consciousness ≤ 0 or bloodLoss ≥ 100
+    VulnerableState --> ShakenState : pain < 50
+
+    HelplessState --> VulnerableState : recovery complete
 ````
 
 * **READY (🟢):**
