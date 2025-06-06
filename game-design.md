@@ -976,7 +976,7 @@ Players press **1–8** to select one of the eight Trigrams (☰–☷). Each Tr
 
 ```mermaid
 flowchart LR
-    %% Define each state as a node with a multi‐line label
+    %% Define each state as a node with a multi-line label
     ReadyState["READY 🟢<br/>Pain &lt; 20 &amp; Cons &gt; 50 &amp; Blood &lt; 100"]
     ShakenState["SHAKEN 🟡<br/>20 ≤ Pain &lt; 50 &amp; Cons &gt; 40 &amp; Blood &lt; 100"]
     VulnerableState["VULNERABLE 🟠<br/>50 ≤ Pain &lt; 80 or Health &lt; 20<br/>Cons &gt; 20 &amp; Blood &lt; 100"]
@@ -988,13 +988,13 @@ flowchart LR
     style VulnerableState fill:#ff8800,stroke:#aa4400,stroke-width:2px
     style HelplessState fill:#cc0000,stroke:#770000,stroke-width:2px
 
-    %% Transitions
-    ReadyState --> ShakenState : pain ≥ 20
-    ShakenState --> VulnerableState : pain ≥ 50 or health < 20
-    VulnerableState --> HelplessState : pain ≥ 80 or consciousness ≤ 0 or bloodLoss ≥ 100
-    HelplessState --> VulnerableState : recovery (3 sec), pain +10, bloodLoss –20, cons = 20, health +10
-    ShakenState --> ReadyState : pain < 20
-    VulnerableState --> ShakenState : pain < 50
+    %% Transitions (no space before colon)
+    ReadyState --> ShakenState: pain ≥ 20
+    ShakenState --> VulnerableState: pain ≥ 50 or health < 20
+    VulnerableState --> HelplessState: pain ≥ 80 or consciousness ≤ 0 or bloodLoss ≥ 100
+    HelplessState --> VulnerableState: recovery (3 sec), pain +10, bloodLoss –20, cons = 20, health +10
+    ShakenState --> ReadyState: pain < 20
+    VulnerableState --> ShakenState: pain < 50
 ```
 
 ---
