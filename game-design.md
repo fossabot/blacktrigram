@@ -559,87 +559,55 @@ _Enter the shadow dojang. Master the dark arts. Walk the path of the perfect let
 
 ```mermaid
 flowchart TB
-  %% Row A
-  A1["⬛"] --- A2["⬛"] --- A3["⬛"] --- A4["⬛"] --- A5["⬛"]
-  %% Row B
-  B1["⬛"] --- B2["🟦"] --- B3["🟦"] --- B4["🟦"] --- B5["⬛"]
-  %% Row C
-  C1["⬛"] --- C2["🟦"] --- C3["🟦"] --- C4["🟦"] --- C5["⬛"]
-  %% Row D
-  D1["⬛"] --- D2["🟦"] --- D3["🟦"] --- D4["🟦"] --- D5["⬛"]
-  %% Row E
-  E1["⬛"] --- E2["⬛"] --- E3["⬛"] --- E4["⬛"] --- E5["⬛"]
+  %% ┌───┐
+  %% │ N │
+  %% └┬─┘
+  %%  │
+  %% ┌▼───┐   ┌───┐   ┌─┐
+  %% │NW  │──►│NE │──►│ E│
+  %% └┬─┬─┘   └───┘   └─┘
+  %%  │ │        ▲     
+  %% ┌▼─▼┐      ┌┴─┴┐
+  %% │W C │◄────│SE │
+  %% └┬───┘      └───┘
+  %%  │ │        ▲
+  %% ┌▼─▼┐   ┌───┐│
+  %% │SW │──►│S  ││
+  %% └───┘   └───┘│
+  %%             │
+  %% ┌───┐       │
+  %% │ E │◄──────┘
+  %% └───┘
 
-  %% Vertical alignment
-  A1 -.-> B1
-  A2 -.-> B2
-  A3 -.-> B3
-  A4 -.-> B4
-  A5 -.-> B5
+  %% Outer‐octagon (clockwise)
+  N(("N")) --- NE(("NE"))
+  NE --- E(("E"))
+  E --- SE(("SE"))
+  SE --- S(("S"))
+  S --- SW(("SW"))
+  SW --- W(("W"))
+  W --- NW(("NW"))
+  NW --- N
 
-  B1 -.-> C1
-  B2 -.-> C2
-  B3 -.-> C3
-  B4 -.-> C4
-  B5 -.-> C5
+  %% Center node
+  C(("Center"))
 
-  C1 -.-> D1
-  C2 -.-> D2
-  C3 -.-> D3
-  C4 -.-> D4
-  C5 -.-> D5
+  %% Connect center to all eight
+  C --- N
+  C --- NE
+  C --- E
+  C --- SE
+  C --- S
+  C --- SW
+  C --- W
+  C --- NW
 
-  D1 -.-> E1
-  D2 -.-> E2
-  D3 -.-> E3
-  D4 -.-> E4
-  D5 -.-> E5
-
-  %% Diagonals between rows A↔B
-  A1 --- B2
-  A2 --- B1
-  A2 --- B3
-  A3 --- B2
-  A3 --- B4
-  A4 --- B3
-  A4 --- B5
-  A5 --- B4
-
-  %% Diagonals between rows B↔C
-  B1 --- C2
-  B2 --- C1
-  B2 --- C3
-  B3 --- C2
-  B3 --- C4
-  B4 --- C3
-  B4 --- C5
-  B5 --- C4
-
-  %% Diagonals between rows C↔D
-  C1 --- D2
-  C2 --- D1
-  C2 --- D3
-  C3 --- D2
-  C3 --- D4
-  C4 --- D3
-  C4 --- D5
-  C5 --- D4
-
-  %% Diagonals between rows D↔E
-  D1 --- E2
-  D2 --- E1
-  D2 --- E3
-  D3 --- E2
-  D3 --- E4
-  D4 --- E3
-  D4 --- E5
-  D5 --- E4
-
+  %% Color definitions
   classDef playable fill:#2d2d5c,stroke:#00d1b2,stroke-width:2px,color:#ffffff;
   classDef outOfBounds fill:#111111,stroke:#444444,stroke-width:1px,color:#888888;
 
-  class B2,B3,B4,C2,C3,C4,D2,D3,D4 playable;
-  class A1,A2,A3,A4,A5,B1,B5,C1,C5,D1,D5,E1,E2,E3,E4,E5 outOfBounds;
+  %% Mark “Center” ± its eight neighbors as playable (blue)
+  class C,N,NE,E,SE,S,SW,W,NW playable;
 ```
 
 
