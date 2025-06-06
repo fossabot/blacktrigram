@@ -559,55 +559,29 @@ _Enter the shadow dojang. Master the dark arts. Walk the path of the perfect let
 
 ```mermaid
 flowchart TB
-  %% ┌───┐
-  %% │ N │
-  %% └┬─┘
-  %%  │
-  %% ┌▼───┐   ┌───┐   ┌─┐
-  %% │NW  │──►│NE │──►│ E│
-  %% └┬─┬─┘   └───┘   └─┘
-  %%  │ │        ▲     
-  %% ┌▼─▼┐      ┌┴─┴┐
-  %% │W C │◄────│SE │
-  %% └┬───┘      └───┘
-  %%  │ │        ▲
-  %% ┌▼─▼┐   ┌───┐│
-  %% │SW │──►│S  ││
-  %% └───┘   └───┘│
-  %%             │
-  %% ┌───┐       │
-  %% │ E │◄──────┘
-  %% └───┘
+  %% Top row
+  NW(("NW")) --- N(("N")) --- NE(("NE"))
+  %% Middle row
+  W(("W")) --- C(("Center")) --- E(("E"))
+  %% Bottom row
+  SW(("SW")) --- S(("S")) --- SE(("SE"))
 
-  %% Outer‐octagon (clockwise)
-  N(("N")) --- NE(("NE"))
-  NE --- E(("E"))
-  E --- SE(("SE"))
-  SE --- S(("S"))
-  S --- SW(("SW"))
-  SW --- W(("W"))
-  W --- NW(("NW"))
-  NW --- N
+  %% Vertical/horizontal adjacencies
+  NW --- W
+  N  --- C
+  NE --- E
+  W  --- SW
+  C  --- S
+  E  --- SE
 
-  %% Center node
-  C(("Center"))
+  %% Diagonal adjacencies (octagonal spokes)
+  NW --- C
+  NE --- C
+  SW --- C
+  SE --- C
 
-  %% Connect center to all eight
-  C --- N
-  C --- NE
-  C --- E
-  C --- SE
-  C --- S
-  C --- SW
-  C --- W
-  C --- NW
-
-  %% Color definitions
   classDef playable fill:#2d2d5c,stroke:#00d1b2,stroke-width:2px,color:#ffffff;
-  classDef outOfBounds fill:#111111,stroke:#444444,stroke-width:1px,color:#888888;
-
-  %% Mark “Center” ± its eight neighbors as playable (blue)
-  class C,N,NE,E,SE,S,SW,W,NW playable;
+  class NW,N,NE,W,C,E,SW,S,SE playable;
 ```
 
 
