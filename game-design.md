@@ -657,10 +657,10 @@ stateDiagram-v2
     direction LR
 
     %% Define states with labels
-    state ReadyState as "Ready"
-    state ShakenState as "Shaken"
-    state VulnerableState as "Vulnerable"
-    state HelplessState as "Helpless"
+    state ReadyState: Ready
+    state ShakenState: Shaken
+    state VulnerableState: Vulnerable
+    state HelplessState: Helpless
 
     %% Apply custom styling
     style ReadyState fill:#00cc44,stroke:#007700,stroke-width:2px
@@ -669,16 +669,16 @@ stateDiagram-v2
     style HelplessState fill:#cc0000,stroke:#770000,stroke-width:2px
 
     %% Transitions
-    [*] --> ReadyState : pain < 20
-    ReadyState --> ShakenState : pain ≥ 20
+    [*] --> ReadyState: pain < 20
+    ReadyState --> ShakenState: pain ≥ 20
 
-    ShakenState --> VulnerableState : pain ≥ 50 or health < 20
-    ShakenState --> ReadyState : pain < 20
+    ShakenState --> VulnerableState: pain ≥ 50 or health < 20
+    ShakenState --> ReadyState: pain < 20
 
-    VulnerableState --> HelplessState : pain ≥ 80 or consciousness ≤ 0 or bloodLoss ≥ 100
-    VulnerableState --> ShakenState : pain < 50
+    VulnerableState --> HelplessState: pain ≥ 80 or consciousness ≤ 0 or bloodLoss ≥ 100
+    VulnerableState --> ShakenState: pain < 50
 
-    HelplessState --> VulnerableState : recovery complete
+    HelplessState --> VulnerableState: recovery complete
 ````
 
 * **READY (🟢):**
