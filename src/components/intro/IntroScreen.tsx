@@ -1,7 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
+import { Application, extend } from "@pixi/react";
+import { Container, Graphics, Text, Sprite } from "pixi.js";
 import type { PlayerArchetype } from "../../types";
-import { KoreanText } from "../ui/base/korean-text/KoreanText";
-import "./IntroScreen.css";
+import { KoreanPixiText } from "../ui/base/korean-text/components/KoreanPixiTextUtils";
+import { KOREAN_COLORS, KOREAN_FONTS, FONT_SIZES } from "../../types/constants";
+
+// Extend @pixi/react with the Pixi components we want to use
+extend({
+  Container,
+  Graphics,
+  Text,
+  Sprite,
+});
+
+// Declare the extended components for TypeScript
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      pixiContainer: any;
+      pixiGraphics: any;
+      pixiText: any;
+      pixiSprite: any;
+    }
+  }
+}
 
 interface IntroScreenProps {
   readonly onStartTraining: () => void;
@@ -66,339 +88,305 @@ export function IntroScreen({
     (a) => a.id === selectedArchetype
   );
 
+  const handleArchetypeToggle = useCallback(() => {
+    setShowArchetypes(!showArchetypes);
+  }, [showArchetypes]);
+
+  const handleArchetypeSelect = useCallback(
+    (archetype: PlayerArchetype) => {
+      onArchetypeSelect(archetype);
+      setShowArchetypes(false);
+    },
+    [onArchetypeSelect]
+  );
+
   return (
-    <div className="intro-screen" data-testid="intro-screen">
-      <div className="intro-background">
-        <div className="intro-content">
-          {/* Main Title */}
-          <div className="title-section" data-testid="title-section">
-            <KoreanText
-              korean="흑괘 무술 도장"
-              english="Black Trigram Martial Arts"
-              className="main-title"
-              data-testid="main-title"
-            />
-            <KoreanText
-              korean="정밀 격투 시뮬레이터"
-              english="Precision Combat Simulator"
-              className="subtitle"
-              data-testid="subtitle"
-            />
-          </div>
+    <Application
+      width={window.innerWidth}
+      height={window.innerHeight}
+      backgroundColor={KOREAN_COLORS.BLACK}
+      antialias={true}
+      resizeTo={window}
+      data-testid="intro-screen"
+    >
+      <pixiContainer>
+        {/* Background Graphics */}
+        <pixiGraphics
+          draw={(g) => {
+            g.clear();
+            // Cyberpunk gradient background
+            g.beginFill(KOREAN_COLORS.BLACK);
+            g.drawRect(0, 0, window.innerWidth, window.innerHeight);
+            g.endFill();
 
-          {/* Trigram Philosophy */}
-          <div className="philosophy-section" data-testid="philosophy-section">
-            <KoreanText
-              korean="팔괘의 길"
-              english="Path of Eight Trigrams"
-              className="philosophy-title"
-              data-testid="philosophy-title"
-            />
-            <div className="trigram-symbols" data-testid="trigram-symbols">
-              ☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷
-            </div>
-          </div>
+            // Neon accent lines
+            g.lineStyle(2, KOREAN_COLORS.CYAN, 0.8);
+            g.moveTo(100, 100);
+            g.lineTo(window.innerWidth - 100, 100);
+            g.moveTo(100, window.innerHeight - 100);
+            g.lineTo(window.innerWidth - 100, window.innerHeight - 100);
+          }}
+        />
 
-          {/* Archetype Selection */}
-          <div className="archetype-section" data-testid="archetype-section">
-            <button
-              className="archetype-toggle"
-              onClick={() => setShowArchetypes(!showArchetypes)}
-              data-testid="archetype-toggle"
-            >
-              <KoreanText
-                korean={selectedArchetypeData?.korean || "무사"}
-                english={
-                  selectedArchetypeData?.english || "Traditional Warrior"
-                }
-                className="selected-archetype"
-                data-testid="selected-archetype"
+        {/* Title Section */}
+        <pixiContainer x={window.innerWidth / 2} y={150}>
+          <KoreanPixiText
+            text={{
+              korean: "흑괘 무술 도장",
+              english: "Black Trigram Martial Arts",
+            }}
+            style={{
+              fontFamily: KOREAN_FONTS.PRIMARY,
+              fontSize: FONT_SIZES.TITLE,
+              fill: KOREAN_COLORS.CYAN,
+              align: "center",
+              dropShadow: true,
+            }}
+            anchor={[0.5, 0]}
+            data-testid="main-title"
+          />
+          <KoreanPixiText
+            text={{
+              korean: "정밀 격투 시뮬레이터",
+              english: "Precision Combat Simulator",
+            }}
+            style={{
+              fontFamily: KOREAN_FONTS.PRIMARY,
+              fontSize: FONT_SIZES.LARGE,
+              fill: KOREAN_COLORS.WHITE,
+              align: "center",
+            }}
+            anchor={[0.5, 0]}
+            position={[0, 60]}
+            data-testid="subtitle"
+          />
+        </pixiContainer>
+
+        {/* Trigram Philosophy Section */}
+        <pixiContainer x={window.innerWidth / 2} y={280}>
+          <KoreanPixiText
+            text={{ korean: "팔괘의 길", english: "Path of Eight Trigrams" }}
+            style={{
+              fontFamily: KOREAN_FONTS.TRADITIONAL,
+              fontSize: FONT_SIZES.XLARGE,
+              fill: KOREAN_COLORS.GOLD,
+              align: "center",
+              dropShadow: true,
+            }}
+            anchor={[0.5, 0]}
+            data-testid="philosophy-title"
+          />
+          <pixiText
+            text="☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷"
+            style={{
+              fontFamily: KOREAN_FONTS.TRADITIONAL,
+              fontSize: FONT_SIZES.XLARGE,
+              fill: KOREAN_COLORS.GOLD,
+              align: "center",
+              letterSpacing: 20,
+              dropShadow: true,
+            }}
+            anchor={0.5}
+            x={0}
+            y={50}
+            data-testid="trigram-symbols"
+          />
+        </pixiContainer>
+
+        {/* Archetype Selection */}
+        <pixiContainer x={window.innerWidth / 2} y={450}>
+          {/* Archetype Toggle Button */}
+          <pixiGraphics
+            draw={(g: any) => {
+              g.clear();
+              g.lineStyle(2, KOREAN_COLORS.CYAN);
+              g.beginFill(
+                showArchetypes ? KOREAN_COLORS.CYAN : 0x000000,
+                showArchetypes ? 0.2 : 0
+              );
+              g.drawRoundedRect(-150, -25, 300, 50, 8);
+              g.endFill();
+            }}
+            interactive={true}
+            cursor="pointer"
+            onClick={handleArchetypeToggle}
+            data-testid="archetype-toggle"
+          />
+          <KoreanPixiText
+            korean={selectedArchetypeData?.korean || "무사"}
+            english={selectedArchetypeData?.english || "Traditional Warrior"}
+            style={{
+              fontFamily: KOREAN_FONTS.PRIMARY,
+              fontSize: FONT_SIZES.LARGE,
+              fill: KOREAN_COLORS.CYAN,
+              align: "center",
+              fontWeight: "bold",
+            }}
+            anchor={[0.5, 0.5]}
+            data-testid="selected-archetype"
+          />
+
+          {/* Archetype List */}
+          {showArchetypes && (
+            <pixiContainer x={0} y={80}>
+              <pixiGraphics
+                draw={(g) => {
+                  g.clear();
+                  g.beginFill(KOREAN_COLORS.BLACK, 0.9);
+                  g.lineStyle(1, KOREAN_COLORS.CYAN, 0.5);
+                  g.drawRoundedRect(
+                    -250,
+                    0,
+                    500,
+                    PLAYER_ARCHETYPES.length * 80,
+                    8
+                  );
+                  g.endFill();
+                }}
+                data-testid="archetype-list"
               />
-            </button>
-
-            {showArchetypes && (
-              <div className="archetype-list" data-testid="archetype-list">
-                {PLAYER_ARCHETYPES.map((archetype) => (
-                  <button
-                    key={archetype.id}
-                    className={`archetype-option ${
-                      selectedArchetype === archetype.id ? "selected" : ""
-                    }`}
-                    onClick={() => {
-                      onArchetypeSelect(archetype.id);
-                      setShowArchetypes(false);
+              {PLAYER_ARCHETYPES.map((archetype, index) => (
+                <pixiContainer key={archetype.id} x={0} y={index * 80}>
+                  <pixiGraphics
+                    draw={(g) => {
+                      g.clear();
+                      const isSelected = selectedArchetype === archetype.id;
+                      g.beginFill(
+                        isSelected ? KOREAN_COLORS.CYAN : 0x000000,
+                        isSelected ? 0.2 : 0
+                      );
+                      g.drawRect(-250, 0, 500, 80);
+                      g.endFill();
                     }}
+                    interactive={true}
+                    onClick={() => handleArchetypeSelect(archetype.id)}
                     data-testid={`archetype-option-${archetype.id}`}
-                  >
-                    <KoreanText
-                      korean={archetype.korean}
-                      english={archetype.english}
-                      className="archetype-name"
-                      data-testid={`archetype-name-${archetype.id}`}
-                    />
-                    <p className="archetype-description">
-                      {archetype.description}
-                    </p>
-                    <p className="archetype-philosophy">
-                      {archetype.philosophy}
-                    </p>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+                  />
+                  <KoreanPixiText
+                    korean={archetype.korean}
+                    english={archetype.english}
+                    style={{
+                      fontFamily: KOREAN_FONTS.PRIMARY,
+                      fontSize: FONT_SIZES.MEDIUM,
+                      fill: KOREAN_COLORS.WHITE,
+                      align: "left",
+                      fontWeight:
+                        selectedArchetype === archetype.id ? "bold" : "normal",
+                    }}
+                    anchor={[0, 0]}
+                    position={[-240, 10]}
+                    data-testid={`archetype-name-${archetype.id}`}
+                  />
+                  <pixiText
+                    text={archetype.description}
+                    style={{
+                      fontFamily: KOREAN_FONTS.PRIMARY,
+                      fontSize: FONT_SIZES.SMALL,
+                      fill: KOREAN_COLORS.WHITE,
+                      wordWrap: true,
+                      wordWrapWidth: 480,
+                    }}
+                    anchor={0} // Fixed: Use single number instead of array
+                    x={-240} // Fixed: Use separate x,y instead of position array
+                    y={35}
+                  />
+                  <pixiText
+                    text={archetype.philosophy}
+                    style={{
+                      fontFamily: KOREAN_FONTS.PRIMARY,
+                      fontSize: FONT_SIZES.SMALL,
+                      fill: KOREAN_COLORS.GOLD,
+                      wordWrap: true,
+                      wordWrapWidth: 480,
+                    }}
+                    anchor={0} // Fixed: Use single number instead of array
+                    x={-240} // Fixed: Use separate x,y instead of position array
+                    y={55}
+                  />
+                </pixiContainer>
+              ))}
+            </pixiContainer>
+          )}
+        </pixiContainer>
 
-          {/* Action Buttons */}
-          <div className="action-buttons" data-testid="action-buttons">
-            <button
-              className="primary-button"
+        {/* Action Buttons */}
+        <pixiContainer x={window.innerWidth / 2} y={650}>
+          {/* Training Button */}
+          <pixiContainer x={-120} y={0}>
+            <pixiGraphics
+              draw={(g) => {
+                g.clear();
+                g.lineStyle(2, KOREAN_COLORS.CYAN);
+                g.beginFill(0x000000, 0);
+                g.drawRoundedRect(-90, -25, 180, 50, 8);
+                g.endFill();
+              }}
+              interactive={true}
               onClick={onStartTraining}
               data-testid="training-button"
-            >
-              <KoreanText korean="수련 시작" english="Begin Training" />
-            </button>
-            <button
-              className="secondary-button"
+            />
+            <KoreanPixiText
+              korean="수련 시작"
+              english="Begin Training"
+              style={{
+                fontFamily: KOREAN_FONTS.PRIMARY,
+                fontSize: FONT_SIZES.MEDIUM,
+                fill: KOREAN_COLORS.CYAN,
+                align: "center",
+              }}
+              anchor={[0.5, 0.5]}
+            />
+          </pixiContainer>
+
+          {/* Combat Button */}
+          <pixiContainer x={120} y={0}>
+            <pixiGraphics
+              draw={(g) => {
+                g.clear();
+                g.lineStyle(2, KOREAN_COLORS.RED);
+                g.beginFill(0x000000, 0);
+                g.drawRoundedRect(-90, -25, 180, 50, 8);
+                g.endFill();
+              }}
+              interactive={true}
               onClick={onStartCombat}
               data-testid="combat-button"
-            >
-              <KoreanText korean="실전 격투" english="Enter Combat" />
-            </button>
-          </div>
-
-          {/* Korean Martial Arts Quote */}
-          <div className="quote-section" data-testid="quote-section">
-            <KoreanText
-              korean="흑괘의 길을 걸어라"
-              english="Walk the Path of the Black Trigram"
-              className="closing-quote"
-              data-testid="closing-quote"
             />
-          </div>
-        </div>
-      </div>
+            <KoreanPixiText
+              korean="실전 격투"
+              english="Enter Combat"
+              style={{
+                fontFamily: KOREAN_FONTS.PRIMARY,
+                fontSize: FONT_SIZES.MEDIUM,
+                fill: KOREAN_COLORS.RED,
+                align: "center",
+              }}
+              anchor={[0.5, 0.5]}
+            />
+          </pixiContainer>
+        </pixiContainer>
 
-      <style>{`
-        .intro-screen {
-          min-height: 100vh;
-          background: linear-gradient(135deg, 
-            rgba(10, 10, 20, 0.95), 
-            rgba(26, 26, 46, 0.95)
-          );
-          color: #ffffff;
-          overflow-y: auto;
-        }
-
-        .intro-content {
-          max-width: 1400px;
-          margin: 0 auto;
-          padding: 2rem;
-        }
-
-        .title-section {
-          text-align: center;
-          margin: 3rem 0;
-        }
-
-        .main-title {
-          font-size: 2.5rem;
-          font-weight: bold;
-          margin-bottom: 1rem;
-          text-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
-        }
-
-        .subtitle {
-          font-size: 1.2rem;
-          opacity: 0.9;
-        }
-
-        .philosophy-section {
-          text-align: center;
-          margin: 2rem 0;
-        }
-
-        .philosophy-title {
-          font-size: 2rem;
-          font-weight: bold;
-          margin-bottom: 1rem;
-          text-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
-        }
-
-        .trigram-symbols {
-          font-size: 2rem;
-          letter-spacing: 0.5rem;
-          color: #ffd700;
-          text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
-        }
-
-        .archetype-section {
-          text-align: center;
-          margin: 3rem 0;
-        }
-
-        .archetype-toggle {
-          background: transparent;
-          border: none;
-          color: #00ffff;
-          font-size: 1.2rem;
-          cursor: pointer;
-          position: relative;
-          display: inline-block;
-          padding: 0.5rem 1rem;
-          border-radius: 8px;
-          transition: all 0.3s ease;
-        }
-
-        .archetype-toggle:hover {
-          background: rgba(0, 255, 255, 0.1);
-          box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
-        }
-
-        .selected-archetype {
-          font-weight: bold;
-          text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
-        }
-
-        .archetype-list {
-          margin-top: 1rem;
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 8px;
-          overflow: hidden;
-          box-shadow: 0 4px 20px rgba(0, 255, 255, 0.2);
-        }
-
-        .archetype-option {
-          background: transparent;
-          border: none;
-          color: #ffffff;
-          font-size: 1rem;
-          cursor: pointer;
-          padding: 1rem;
-          text-align: left;
-          width: 100%;
-          transition: all 0.3s ease;
-        }
-
-        .archetype-option:hover {
-          background: rgba(0, 255, 255, 0.1);
-        }
-
-        .archetype-option.selected {
-          background: rgba(0, 255, 255, 0.2);
-          font-weight: bold;
-        }
-
-        .archetype-name {
-          font-size: 1.1rem;
-          margin: 0;
-        }
-
-        .archetype-description {
-          font-size: 0.9rem;
-          margin: 0.2rem 0;
-          opacity: 0.8;
-        }
-
-        .archetype-philosophy {
-          font-size: 0.8rem;
-          margin: 0;
-          color: #ffd700;
-        }
-
-        .action-buttons {
-          display: flex;
-          justify-content: center;
-          gap: 2rem;
-          margin: 4rem 0 2rem 0;
-        }
-
-        .primary-button,
-        .secondary-button {
-          padding: 1rem 2rem;
-          border: 2px solid;
-          border-radius: 8px;
-          background: transparent;
-          color: white;
-          font-family: "Noto Sans KR", Arial, sans-serif;
-          font-size: 1.1rem;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          min-width: 180px;
-        }
-
-        .primary-button {
-          border-color: #00ffff;
-          color: #00ffff;
-        }
-
-        .primary-button:hover {
-          background: rgba(0, 255, 255, 0.1);
-          box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
-        }
-
-        .secondary-button {
-          border-color: #ff0040;
-          color: #ff0040;
-        }
-
-        .secondary-button:hover {
-          background: rgba(255, 0, 64, 0.1);
-          box-shadow: 0 0 20px rgba(255, 0, 64, 0.3);
-        }
-
-        .quote-section {
-          text-align: center;
-          margin: 3rem 0;
-          font-size: 1.2rem;
-          font-style: italic;
-          color: #ffd700;
-          text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
-        }
-
-        /* Responsive design */
-        @media (max-width: 1024px) {
-          .trigram-symbols {
-            font-size: 1.5rem;
-          }
-
-          .archetype-toggle {
-            font-size: 1rem;
-            padding: 0.5rem;
-          }
-
-          .primary-button,
-          .secondary-button {
-            font-size: 1rem;
-            padding: 0.8rem 1.5rem;
-          }
-        }
-
-        @media (max-width: 768px) {
-          .intro-content {
-            padding: 1rem;
-          }
-
-          .archetype-list {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            z-index: 10;
-          }
-
-          .archetype-option {
-            font-size: 0.9rem;
-            padding: 0.8rem;
-          }
-
-          .primary-button,
-          .secondary-button {
-            width: 100%;
-            max-width: 300px;
-          }
-        }
-      `}</style>
-    </div>
+        {/* Korean Martial Arts Quote */}
+        <pixiContainer x={window.innerWidth / 2} y={window.innerHeight - 120}>
+          <KoreanPixiText
+            korean="흑괘의 길을 걸어라"
+            english="Walk the Path of the Black Trigram"
+            style={{
+              fontFamily: KOREAN_FONTS.TRADITIONAL,
+              fontSize: FONT_SIZES.LARGE,
+              fill: KOREAN_COLORS.GOLD,
+              align: "center",
+              fontStyle: "italic",
+              dropShadow: true,
+              dropShadowColor: KOREAN_COLORS.GOLD,
+              dropShadowBlur: 8,
+            }}
+            anchor={[0.5, 0]}
+            data-testid="closing-quote"
+          />
+        </pixiContainer>
+      </pixiContainer>
+    </Application>
   );
 }
 

@@ -3,11 +3,18 @@ import { render } from "@testing-library/react";
 import { GameEngine } from "./GameEngine";
 import { createPlayerState } from "../../utils/playerUtils";
 
+// Mock initial player states
+const mockPlayer1Initial = createPlayerState("player1", "musa", "geon", {
+  x: 100,
+  y: 300,
+});
+const mockPlayer2Initial = createPlayerState("player2", "amsalja", "tae", {
+  x: 700,
+  y: 300,
+});
+
 describe("GameEngine", () => {
-  const mockPlayers = [
-    createPlayerState("player1", "musa", "geon"), // Fixed: Correct parameter order
-    createPlayerState("player2", "amsalja", "tae"), // Fixed: Correct parameter order
-  ] as const;
+  const mockPlayers = [mockPlayer1Initial, mockPlayer2Initial] as const;
 
   const defaultProps = {
     // Fix: Use correct prop names for GameEngineProps

@@ -1,117 +1,111 @@
 import React from "react";
+import { Container, Text } from "@pixi/react";
 import type { GameUIProps } from "../../types";
+import { KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../types/constants";
 
-export function GameUI({
-  players,
+export const GameUI: React.FC<GameUIProps> = ({
+  // players,
+  gamePhase,
+  // onGamePhaseChange,
   gameTime,
   currentRound,
-  gamePhase,
-  timeRemaining = 120,
-  isPaused = false,
-  onStanceChange,
-  onPlayerUpdate,
-  onGamePhaseChange,
-  onPauseToggle,
-  combatLog = [],
-  showDebug = false,
-}: GameUIProps): React.JSX.Element {
-  // Use the props to avoid unused variable warnings
-  const player1 = players[0];
-  const player2 = players[1];
+  timeRemaining,
+  // onStanceChange,
+  combatLog,
+  // onTogglePause,
+  // onPlayerUpdate,
+  isPaused,
+  players: playerStates, // Renamed to avoid conflict if players was used
+}) => {
+  const player1 = playerStates[0];
+  const player2 = playerStates[1];
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  const handleStanceChange = (playerIndex: 0 | 1, stance: any) => {
-    onStanceChange(playerIndex, stance);
-  };
-
-  const handlePlayerUpdate = (index: number, updates: any) => {
-    onPlayerUpdate(index, updates);
-  };
-
-  const handlePhaseChange = (phase: string) => {
-    onGamePhaseChange(phase);
-  };
-
-  const handlePauseToggle = () => {
-    onPauseToggle?.();
-  };
+  if (!player1 || !player2) {
+    return null; // or some fallback UI
+  }
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        padding: "1rem",
-        background: "rgba(0,0,0,0.1)",
-      }}
-    >
-      <div
+    <Container>
+      <Text
+        text={`Phase: ${gamePhase}`}
+        x={20}
+        y={20}
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          fill: KOREAN_COLORS.WHITE,
+          fontFamily: KOREAN_FONT_FAMILY,
+          fontSize: 18,
         }}
-      >
-        <div>
-          Round {currentRound} | Time: {formatTime(timeRemaining)} | Game Time:{" "}
-          {gameTime}ms
-        </div>
-        <div>
-          Phase: {gamePhase} {isPaused && "| PAUSED"}
-        </div>
-      </div>
-
-      <div
+      />
+      <Text
+        text={`Time: ${gameTime}s`}
+        x={20}
+        y={50}
         style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginTop: "1rem",
+          fill: KOREAN_COLORS.WHITE,
+          fontFamily: KOREAN_FONT_FAMILY,
+          fontSize: 18,
         }}
-      >
-        <div>
-          <div>
-            {player1?.name}: {player1?.health}/{player1?.maxHealth} HP
-          </div>
-          <div>Stance: {player1?.stance}</div>
-        </div>
-        <div>
-          <div>
-            {player2?.name}: {player2?.health}/{player2?.maxHealth} HP
-          </div>
-          <div>Stance: {player2?.stance}</div>
-        </div>
-      </div>
-
-      {showDebug && (
-        <div style={{ marginTop: "1rem", fontSize: "0.8rem" }}>
-          <div>Combat Log: {combatLog.length} entries</div>
-        </div>
+      />
+      <Text
+        text={`Round: ${currentRound}`}
+        x={20}
+        y={80}
+        style={{
+          fill: KOREAN_COLORS.WHITE,
+          fontFamily: KOREAN_FONT_FAMILY,
+          fontSize: 18,
+        }}
+      />
+      <Text
+        text={`Time Remaining: ${timeRemaining}s`}
+        x={200}
+        y={20}
+        style={{
+          fill: KOREAN_COLORS.WHITE,
+          fontFamily: KOREAN_FONT_FAMILY,
+          fontSize: 18,
+        }}
+      />
+      {isPaused && (
+        <Text
+          text="PAUSED"
+          x={300}
+          y={300}
+          anchor={0.5}
+          style={{
+            fill: KOREAN_COLORS.NEON_RED,
+            fontFamily: KOREAN_FONT_FAMILY,
+            fontSize: 48,
+            fontWeight: "bold",
+          }}
+        />
       )}
+      {/* Display Combat Log */}
+      <Container y={600}>
+        {(combatLog || []).slice(-5).map((logEntry, index) => (
+          <Text
+            key={index}
+            text={
+              typeof logEntry === "string"
+                ? logEntry
+                : `${logEntry.korean} (${logEntry.english})`
+            }
+            x={20}
+            y={index * 20}
+            style={{
+              fill: KOREAN_COLORS.CYAN,
+              fontFamily: KOREAN_FONT_FAMILY,
+              fontSize: 14,
+            }}
+          />
+        ))}
+      </Container>
 
-      <div style={{ marginTop: "1rem" }}>
-        <button onClick={() => handleStanceChange(0, "geon")}>P1 Geon</button>
-        <button
-          onClick={() =>
-            handlePlayerUpdate(0, {
-              health: player1?.health ? player1.health - 10 : 90,
-            })
-          }
-        >
-          P1 -10 HP
-        </button>
-        <button onClick={handlePauseToggle}>
-          {isPaused ? "Resume" : "Pause"}
-        </button>
-        <button onClick={() => handlePhaseChange("menu")}>Menu</button>
-      </div>
-    </div>
+      {/* Placeholder for actual HUD and Controls if GameUI is the main combat UI view */}
+      {/* <CombatHUD players={players} timeRemaining={timeRemaining} currentRound={currentRound} isPaused={isPaused} gameTime={gameTime} /> */}
+      {/* <CombatControls player={players[0]} onStanceChange={(stance) => handleStanceChange(0, stance)} isPaused={isPaused} players={players} isExecutingTechnique={false} /> */}
+    </Container>
   );
-}
+};
+
+export default GameUI;

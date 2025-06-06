@@ -13,10 +13,16 @@ export const GAME_CONFIG = {
   PIXEL_RATIO: typeof window !== "undefined" ? window.devicePixelRatio : 1,
   BACKGROUND_COLOR: "#1a1a1a", // Added default background color
 
-  // Core gameplay mechanics
+  // Player default settings
   DEFAULT_HEALTH: 100,
   DEFAULT_KI: 100,
   DEFAULT_STAMINA: 100,
+  PLAYER_START_X: 150, // Added
+  PLAYER_START_Y: 450, // Added
+  OPPONENT_START_X: 650, // Added
+  OPPONENT_START_Y: 450, // Added
+
+  // Core gameplay mechanics
   MAX_PLAYERS: 2,
   ROUND_DURATION_SECONDS: 90, // Added round duration
   MAX_ROUNDS: 3,

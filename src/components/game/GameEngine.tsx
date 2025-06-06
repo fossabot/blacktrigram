@@ -57,7 +57,7 @@ export function GameEngine({
       const playerState = playerIndex === 0 ? player1 : player2;
 
       const canTransition = trigramSystem.canTransitionTo(
-        playerState.stance,
+        playerState.currentStance,
         newStance as any,
         playerState
       );

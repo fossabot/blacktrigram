@@ -1,13 +1,19 @@
 import { describe, it, expect, vi } from "vitest";
 import { render } from "../../test/test-utils";
-import { GameUI } from "./GameUI";
+import GameUI from "./GameUI";
 import { createPlayerState } from "../../utils/playerUtils";
 
 describe("GameUI", () => {
-  const mockPlayers = [
-    createPlayerState("player1", "musa", "geon"), // Fixed parameter order
-    createPlayerState("player2", "amsalja", "tae"), // Fixed parameter order
-  ] as const;
+  const mockPlayer1 = createPlayerState("player1", "musa", "geon", {
+    x: 0,
+    y: 0,
+  });
+  const mockPlayer2 = createPlayerState("player2", "amsalja", "tae", {
+    x: 0,
+    y: 0,
+  });
+
+  const mockPlayers = [mockPlayer1, mockPlayer2] as const;
 
   const defaultProps = {
     players: mockPlayers,

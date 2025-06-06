@@ -69,12 +69,13 @@ export interface GameAction {
   readonly data?: unknown;
 }
 
-export interface IntroScreenProps {
-  onArchetypeSelect: (archetype: PlayerArchetype) => void; // Use PlayerArchetype directly
+// Renamed to avoid conflict with IntroScreenProps in types/components.ts
+export interface IntroSetupProps {
+  onArchetypeSelect: (archetype: PlayerArchetype) => void;
   onStanceSelect: (stance: TrigramStance) => void;
   onStartTraining: () => void;
   onStartCombat: () => void;
-  selectedArchetype: PlayerArchetype; // Use PlayerArchetype directly
+  selectedArchetype: PlayerArchetype;
   selectedStance: TrigramStance;
 }
 

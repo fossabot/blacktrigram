@@ -21,7 +21,7 @@ export function CombatControls({
 }: CombatControlsProps): React.JSX.Element {
   const audio = useAudio(); // Now properly typed
   const [selectedStance, setSelectedStance] = useState<TrigramStance>(
-    player.stance
+    player.currentStance
   );
 
   // Use combatData to satisfy TypeScript
@@ -52,7 +52,7 @@ export function CombatControls({
   };
 
   const currentTechnique = useMemo(() => {
-    const trigramData = TRIGRAM_DATA[player.stance];
+    const trigramData = TRIGRAM_DATA[player.currentStance];
     return (
       trigramData?.technique || {
         koreanName: "기본 기법",
@@ -60,7 +60,7 @@ export function CombatControls({
         damage: 10,
       }
     );
-  }, [player.stance]);
+  }, [player.currentStance]);
 
   const getStanceButtonStyle = (
     stance: TrigramStance,

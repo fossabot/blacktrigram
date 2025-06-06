@@ -1,16 +1,19 @@
-import { describe, it, expect, vi } from "vitest"; // Remove unused beforeEach
+import { describe, it, expect, vi } from "vitest";
 import { render } from "@testing-library/react";
-import { Player } from "../Player";
+import Player from "../Player"; // Assuming default export
+import { createPlayerState } from "../../../utils/playerUtils";
 import type {
   PlayerProps,
   PlayerArchetype,
   TrigramStance,
 } from "../../../types"; // Remove unused PlayerState
-import { createPlayerState } from "../../../utils/playerUtils";
 
 describe("Player Component", () => {
   const defaultProps: PlayerProps = {
-    playerState: createPlayerState("Test Player", "musa", "geon"),
+    playerState: createPlayerState("Test Player", "musa", "geon", {
+      x: 0,
+      y: 0,
+    }),
     playerIndex: 0,
     onStateUpdate: vi.fn(),
     archetype: "musa" as PlayerArchetype,
