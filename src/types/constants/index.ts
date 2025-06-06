@@ -8,13 +8,29 @@ import { COMBAT_CONTROLS as CORE_COMBAT_CONTROLS } from "./controls";
 // Re-export all color constants
 export * from "./colors"; // This exports everything from colors.ts, including STANCE_VISUAL_THEMES
 export * from "./combat";
+export * from "./controls";
 export * from "./game";
 export * from "./player";
 export * from "./techniques";
 export * from "./trigram";
 export * from "./typography";
 export * from "./vital-points";
-export * from "./controls"; // Ensure COMBAT_CONTROLS is exported from here
+
+// Make sure AUDIO_CONFIG is exported if it exists, e.g.
+// export * from "./audio"; // If there is an audio.ts constants file
+// Or if it's defined in one of the above, ensure it's exported from there.
+// For now, assuming AUDIO_CONFIG might be part of GAME_CONFIG or a similar general constants file.
+// If DEFAULT_AUDIO_CONFIG is a specific object, it should be defined and exported here or in a dedicated audio constants file.
+// Example:
+export const AUDIO_CONFIG = {
+  MASTER_VOLUME: 0.7,
+  SFX_VOLUME: 0.8,
+  MUSIC_VOLUME: 0.6,
+  AMBIENT_VOLUME: 0.5,
+  FADE_DURATION: 1000, // ms
+  MAX_CONCURRENT_SOUNDS: 10,
+  // Add other audio-related constants here
+} as const;
 
 // Export combined constants
 export const GAME_CONSTANTS = {

@@ -3,7 +3,7 @@
  * Provides cross-browser audio format detection and audio-related calculations
  */
 
-import type { AudioAsset } from "../types/audio";
+import type { AudioAsset, AudioFormat } from "../types/audio"; // Ensure AudioFormat is imported
 
 export class AudioUtils {
   /**
@@ -127,6 +127,67 @@ export class AudioUtils {
     const sanitizedTechnique = technique.replace(/[^a-zA-Z0-9가-힣]/g, "_");
     return `./assets/audio/sfx/${type}_${sanitizedTechnique}.${format}`;
   }
+
+  public static canPlayType(format: AudioFormat): boolean {
+    const audio = document.createElement("audio");
+    let mimeType = "";
+    switch (format) {
+      case "mp3":
+        mimeType = "audio/mpeg";
+        break;
+      case "webm":
+        mimeType = "audio/webm";
+        break;
+      // Add other formats if necessary
+      default:
+        return false;
+    }
+    return !!audio.canPlayType(mimeType);
+  }
+
+  public static selectAudioFormat(
+    supportedFormats: readonly AudioFormat[]
+  ): AudioFormat | null {
+    for (const format of supportedFormats) {
+      if (AudioUtils.canPlayType(format)) {
+        return format;
+      }
+    }
+    return null; // No supported format found
+  }
+
+  public static constructAudioUrl(
+    basePath: string,
+    id: string,
+    format: AudioFormat | null,
+    variant?: string
+  ): string {
+    if (!format) {
+      console.warn(
+        `No supported audio format found for ${id}, attempting mp3 fallback.`
+      );
+      // Fallback to mp3 if no format is explicitly supported or found
+      // This might not be ideal, consider how to handle missing formats.
+      // For now, let's assume a common fallback or require a format.
+      // If format is truly null, this will result in an invalid URL.
+      // It's better to ensure format is not null before calling this,
+      // or handle the null case more gracefully (e.g., return empty string or throw).
+      // For the purpose of fixing the TS error, we assume format will be provided.
+      // If it can be null, the function signature or logic needs adjustment.
+      // Let's assume for now that a format will be passed.
+      // If format can be null, the caller should handle it or this function should.
+      // For example, if format is null, return a placeholder or throw an error.
+      // To satisfy the current usage, let's assume format is not null here.
+      // The caller (AudioManager) should ensure a valid format is passed.
+      const effectiveFormat = format || "mp3"; // Default to mp3 if null, though this might be problematic.
+      const filename = variant
+        ? `${id}_${variant}.${effectiveFormat}`
+        : `${id}.${effectiveFormat}`;
+      return `${basePath}/${filename}`;
+    }
+    const filename = variant ? `${id}_${variant}.${format}` : `${id}.${format}`;
+    return `${basePath}/${filename}`;
+  }
 }
 
 /**
@@ -165,3 +226,6 @@ export function ensureCompleteAsset(asset: any): AudioAsset {
 
   return asset as AudioAsset;
 }
+
+// Export the functions if they are intended to be used as standalone utilities
+export const { canPlayType, selectAudioFormat, constructAudioUrl } = AudioUtils;

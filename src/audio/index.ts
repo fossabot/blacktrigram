@@ -1,9 +1,18 @@
-export { AudioManager, audioManager } from "./AudioManager";
-export { AudioProvider, useAudio } from "./AudioProvider";
-export { DefaultSoundGenerator } from "./DefaultSoundGenerator";
-export { AUDIO_ASSET_REGISTRY } from "./AudioAssetRegistry";
-export { VariantSelector } from "./VariantSelector";
+export * from "./AudioManager";
+export * from "./AudioProvider";
 export * from "./AudioUtils";
-
-// Re-export useAudio as default for backward compatibility
-export { useAudio as default } from "./AudioProvider";
+export * from "./DefaultSoundGenerator";
+export * from "./VariantSelector";
+export type {
+  AudioState,
+  IAudioManager,
+  AudioContextState, // Use AudioContextState if it's the intended context type
+  SoundEffectId,
+  MusicTrackId,
+  AudioPlaybackOptions,
+  AudioAsset,
+  AudioAssetRegistry,
+  AudioFormat,
+  SoundLibrary,
+} from "../types/audio"; // Ensure AudioContextState is exported from types/audio
+export { PLACEHOLDER_AUDIO_ASSETS } from "./placeholder-sounds";

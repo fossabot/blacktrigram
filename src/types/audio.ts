@@ -124,7 +124,7 @@ export interface AudioAssetRegistry {
 export interface AudioPlaybackOptions {
   readonly volume?: number;
   readonly loop?: boolean;
-  readonly rate?: number;
+  readonly rate?: number; // Corresponds to playbackRate
   readonly fadeIn?: number; // Added
   readonly fadeOut?: number; // Added
   readonly delay?: number; // Added
@@ -237,10 +237,8 @@ export interface AudioAnalytics {
   readonly memoryUsage: number;
 }
 
-// Added missing types
-export type SoundLibrary = {
-  readonly [K in SoundEffectId]?: HTMLAudioElement | AudioBuffer;
-};
+// Changed SoundLibrary to be a mutable record of HTMLAudioElement
+export type SoundLibrary = Partial<Record<SoundEffectId, HTMLAudioElement>>;
 
 export interface MusicPlaylist {
   readonly id: string;
@@ -293,8 +291,6 @@ export interface AudioManagerInterface {
 }
 
 export interface AudioContextType extends IAudioManager {
-  // AudioContextType can extend IAudioManager or redefine if slightly different
-  // For now, let's assume it's largely the same as IAudioManager for provider
-  // Add any specific methods/properties for the context if they differ
-  getIsInitialized: () => boolean; // Example: if provider exposes it differently
+  // isInitialized is already part of IAudioManager, so it's inherited.
+  getIsInitialized: () => boolean;
 }
