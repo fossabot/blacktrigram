@@ -580,7 +580,7 @@ flowchart TB
   %% Row 9
   J1["⬛"] --- J2["⬛"] --- J3["⬛"] --- J4["⬛"] --- J5["🟦"] --- J6["🟦"] --- J7["⬛"] --- J8["⬛"] --- J9["⬛"] --- J10["⬛"]
 
-  %% Vertical alignment (each link must be on its own line)
+  %% Vertical alignment (each link on its own line)
   A1 -.-> B1
   A2 -.-> B2
   A3 -.-> B3
@@ -680,28 +680,11 @@ flowchart TB
   I9 -.-> J9
   I10 -.-> J10
 
-  classDef playable fill:#2d2d5c,stroke:#00d1b2,stroke-width:2px, color:#ffffff;
-  classDef outOfBounds fill:#111111,stroke:#444444,stroke-width:1px, color:#888888;
+  classDef playable fill:#2d2d5c,stroke:#00d1b2,stroke-width:2px,color:#ffffff;
+  classDef outOfBounds fill:#111111,stroke:#444444,stroke-width:1px,color:#888888;
 
-  class A4,A5,
-        B3,B4,B5,B6,
-        C2,C3,C4,C5,C6,C7,
-        D1,D2,D3,D4,D5,D6,D7,D8,
-        E1,E2,E3,E4,E5,E6,E7,E8,E9,E10,
-        F1,F2,F3,F4,F5,F6,F7,F8,F9,F10,
-        G1,G2,G3,G4,G5,G6,G7,G8,
-        H3,H4,H5,H6,H7,
-        I4,I5,I6,
-        J5,J6 playable;
-
-  class A1,A2,A3,A6,A7,A8,A9,A10,
-        B1,B2,B7,B8,B9,B10,
-        C1,C8,C9,C10,
-        D9,D10,
-        G9,G10,
-        H1,H2,H8,H9,H10,
-        I1,I2,I3,I7,I8,I9,I10,
-        J1,J2,J3,J4,J7,J8,J9,J10 outOfBounds;
+  class A4,A5,B3,B4,B5,B6,C2,C3,C4,C5,C6,C7,D1,D2,D3,D4,D5,D6,D7,D8,E1,E2,E3,E4,E5,E6,E7,E8,E9,E10,F1,F2,F3,F4,F5,F6,F7,F8,F9,F10,G1,G2,G3,G4,G5,G6,G7,G8,H3,H4,H5,H6,H7,I4,I5,I6,J5,J6 playable;
+  class A1,A2,A3,A6,A7,A8,A9,A10,B1,B2,B7,B8,B9,B10,C1,C8,C9,C10,D9,D10,G9,G10,H1,H2,H8,H9,H10,I1,I2,I3,I7,I8,I9,I10,J1,J2,J3,J4,J7,J8,J9,J10 outOfBounds;
 ```
 
 
