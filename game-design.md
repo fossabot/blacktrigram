@@ -580,22 +580,128 @@ flowchart TB
   %% Row 9
   J1["⬛"] --- J2["⬛"] --- J3["⬛"] --- J4["⬛"] --- J5["🟦"] --- J6["🟦"] --- J7["⬛"] --- J8["⬛"] --- J9["⬛"] --- J10["⬛"]
 
-  %% Vertical alignment (invisible dashed links)
-  A1 -.-> B1   A2 -.-> B2   A3 -.-> B3   A4 -.-> B4   A5 -.-> B5   A6 -.-> B6   A7 -.-> B7   A8 -.-> B8   A9 -.-> B9   A10 -.-> B10
-  B1 -.-> C1   B2 -.-> C2   B3 -.-> C3   B4 -.-> C4   B5 -.-> C5   B6 -.-> C6   B7 -.-> C7   B8 -.-> C8   B9 -.-> C9   B10 -.-> C10
-  C1 -.-> D1   C2 -.-> D2   C3 -.-> D3   C4 -.-> D4   C5 -.-> D5   C6 -.-> D6   C7 -.-> D7   C8 -.-> D8   C9 -.-> D9   C10 -.-> D10
-  D1 -.-> E1   D2 -.-> E2   D3 -.-> E3   D4 -.-> E4   D5 -.-> E5   D6 -.-> E6   D7 -.-> E7   D8 -.-> E8   D9 -.-> E9   D10 -.-> E10
-  E1 -.-> F1   E2 -.-> F2   E3 -.-> F3   E4 -.-> F4   E5 -.-> F5   E6 -.-> F6   E7 -.-> F7   E8 -.-> F8   E9 -.-> F9   E10 -.-> F10
-  F1 -.-> G1   F2 -.-> G2   F3 -.-> G3   F4 -.-> G4   F5 -.-> G5   F6 -.-> G6   F7 -.-> G7   F8 -.-> G8   F9 -.-> G9   F10 -.-> G10
-  G1 -.-> H1   G2 -.-> H2   G3 -.-> H3   G4 -.-> H4   G5 -.-> H5   G6 -.-> H6   G7 -.-> H7   G8 -.-> H8   G9 -.-> H9   G10 -.-> H10
-  H1 -.-> I1   H2 -.-> I2   H3 -.-> I3   H4 -.-> I4   H5 -.-> I5   H6 -.-> I6   H7 -.-> I7   H8 -.-> I8   H9 -.-> I9   H10 -.-> I10
-  I1 -.-> J1   I2 -.-> J2   I3 -.-> J3   I4 -.-> J4   I5 -.-> J5   I6 -.-> J6   I7 -.-> J7   I8 -.-> J8   I9 -.-> J9   I10 -.-> J10
+  %% Vertical alignment (each link must be on its own line)
+  A1 -.-> B1
+  A2 -.-> B2
+  A3 -.-> B3
+  A4 -.-> B4
+  A5 -.-> B5
+  A6 -.-> B6
+  A7 -.-> B7
+  A8 -.-> B8
+  A9 -.-> B9
+  A10 -.-> B10
 
-  classDef playable fill:#2d2d5c,stroke:#00d1b2,stroke-width:2px,color:#ffffff;
-  classDef outOfBounds fill:#111111,stroke:#444444,stroke-width:1px,color:#888888;
+  B1 -.-> C1
+  B2 -.-> C2
+  B3 -.-> C3
+  B4 -.-> C4
+  B5 -.-> C5
+  B6 -.-> C6
+  B7 -.-> C7
+  B8 -.-> C8
+  B9 -.-> C9
+  B10 -.-> C10
 
-  class A4,A5,B3,B4,B5,B6,C2,C3,C4,C5,C6,C7,D1,D2,D3,D4,D5,D6,D7,D8,E1,E2,E3,E4,E5,E6,E7,E8,E9,E10,F1,F2,F3,F4,F5,F6,F7,F8,F9,F10,G1,G2,G3,G4,G5,G6,G7,G8,H3,H4,H5,H6,H7,I4,I5,I6,J5,J6 playable;
-  class A1,A2,A3,A6,A7,A8,A9,A10,B1,B2,B7,B8,B9,B10,C1,C8,C9,C10,D9,D10,G9,G10,H1,H2,H8,H9,H10,I1,I2,I3,I7,I8,I9,I10,J1,J2,J3,J4,J7,J8,J9,J10 outOfBounds;
+  C1 -.-> D1
+  C2 -.-> D2
+  C3 -.-> D3
+  C4 -.-> D4
+  C5 -.-> D5
+  C6 -.-> D6
+  C7 -.-> D7
+  C8 -.-> D8
+  C9 -.-> D9
+  C10 -.-> D10
+
+  D1 -.-> E1
+  D2 -.-> E2
+  D3 -.-> E3
+  D4 -.-> E4
+  D5 -.-> E5
+  D6 -.-> E6
+  D7 -.-> E7
+  D8 -.-> E8
+  D9 -.-> E9
+  D10 -.-> E10
+
+  E1 -.-> F1
+  E2 -.-> F2
+  E3 -.-> F3
+  E4 -.-> F4
+  E5 -.-> F5
+  E6 -.-> F6
+  E7 -.-> F7
+  E8 -.-> F8
+  E9 -.-> F9
+  E10 -.-> F10
+
+  F1 -.-> G1
+  F2 -.-> G2
+  F3 -.-> G3
+  F4 -.-> G4
+  F5 -.-> G5
+  F6 -.-> G6
+  F7 -.-> G7
+  F8 -.-> G8
+  F9 -.-> G9
+  F10 -.-> G10
+
+  G1 -.-> H1
+  G2 -.-> H2
+  G3 -.-> H3
+  G4 -.-> H4
+  G5 -.-> H5
+  G6 -.-> H6
+  G7 -.-> H7
+  G8 -.-> H8
+  G9 -.-> H9
+  G10 -.-> H10
+
+  H1 -.-> I1
+  H2 -.-> I2
+  H3 -.-> I3
+  H4 -.-> I4
+  H5 -.-> I5
+  H6 -.-> I6
+  H7 -.-> I7
+  H8 -.-> I8
+  H9 -.-> I9
+  H10 -.-> I10
+
+  I1 -.-> J1
+  I2 -.-> J2
+  I3 -.-> J3
+  I4 -.-> J4
+  I5 -.-> J5
+  I6 -.-> J6
+  I7 -.-> J7
+  I8 -.-> J8
+  I9 -.-> J9
+  I10 -.-> J10
+
+  classDef playable fill:#2d2d5c,stroke:#00d1b2,stroke-width:2px, color:#ffffff;
+  classDef outOfBounds fill:#111111,stroke:#444444,stroke-width:1px, color:#888888;
+
+  class A4,A5,
+        B3,B4,B5,B6,
+        C2,C3,C4,C5,C6,C7,
+        D1,D2,D3,D4,D5,D6,D7,D8,
+        E1,E2,E3,E4,E5,E6,E7,E8,E9,E10,
+        F1,F2,F3,F4,F5,F6,F7,F8,F9,F10,
+        G1,G2,G3,G4,G5,G6,G7,G8,
+        H3,H4,H5,H6,H7,
+        I4,I5,I6,
+        J5,J6 playable;
+
+  class A1,A2,A3,A6,A7,A8,A9,A10,
+        B1,B2,B7,B8,B9,B10,
+        C1,C8,C9,C10,
+        D9,D10,
+        G9,G10,
+        H1,H2,H8,H9,H10,
+        I1,I2,I3,I7,I8,I9,I10,
+        J1,J2,J3,J4,J7,J8,J9,J10 outOfBounds;
 ```
 
 
