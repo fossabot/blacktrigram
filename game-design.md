@@ -989,12 +989,12 @@ flowchart LR
     style HelplessState fill:#cc0000,stroke:#770000,stroke-width:2px
 
     %% Transitions
-    ReadyState --> ShakenState: pain ≥ 20
-    ShakenState --> VulnerableState: pain ≥ 50 or health < 20
-    VulnerableState --> HelplessState: pain ≥ 80 or consciousness ≤ 0 or bloodLoss ≥ 100
-    HelplessState --> VulnerableState: recovery (3 sec), pain +10, bloodLoss –20, cons = 20, health +10
-    ShakenState --> ReadyState: pain < 20
-    VulnerableState --> ShakenState: pain < 50
+    ReadyState --> ShakenState : pain ≥ 20
+    ShakenState --> VulnerableState : pain ≥ 50 or health < 20
+    VulnerableState --> HelplessState : pain ≥ 80 or consciousness ≤ 0 or bloodLoss ≥ 100
+    HelplessState --> VulnerableState : recovery (3 sec), pain +10, bloodLoss –20, cons = 20, health +10
+    ShakenState --> ReadyState : pain < 20
+    VulnerableState --> ShakenState : pain < 50
 ```
 
 ---
