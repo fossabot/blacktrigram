@@ -344,54 +344,7 @@ COMBAT STATES:
 
 ## Technical Implementation
 
-### Realistic Physics Engine
-
-```typescript
-// Authentic combat mechanics
-interface CombatMechanics {
-  health: number; // 0-100 overall condition
-  pain: number; // Current pain level affecting performance
-  balance: CombatState; // READY | SHAKEN | VULNERABLE | HELPLESS
-  consciousness: number; // 0-100 awareness level
-  bloodLoss: number; // Cumulative bleeding effects
-  stamina: number; // Energy and endurance status
-}
-
-// Real vital point data
-interface VitalPoint {
-  name: string; // Korean and English names
-  location: { x: number; y: number };
-  combatEffect: string; // Actual physiological consequence
-  difficulty: number; // 1-5 precision rating
-  technique: string[]; // Appropriate striking methods
-  recovery: number; // Time to recover from hit
-}
-```
-
 ### Realistic Combat Calculation
-
-```typescript
-// Authentic combat calculation
-function calculateCombatDamage(
-  strike: StrikeData,
-  target: VitalPoint,
-  force: number,
-  angle: number
-): CombatResult {
-  const accuracy = calculateStrikePrecision(strike, target);
-  const effectiveness = determineCombatEffect(target, force);
-  const consciousness = calculateConsciousnessImpact(target, force);
-
-  return {
-    physicalDamage: effectiveness,
-    painLevel: calculatePainResponse(target, force),
-    balanceEffect: determineCombatImpact(target, angle),
-    consciousnessLoss: consciousness,
-    bleedingAmount: calculateBleeding(target, force),
-    recoveryTime: estimateRecoveryPeriod(target, effectiveness),
-  };
-}
-```
 
 ## Cultural and Traditional Integration
 
