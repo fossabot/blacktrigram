@@ -1,295 +1,241 @@
-import React, { useState, useCallback, useEffect, useReducer } from "react";
-import { AudioProvider } from "./audio/AudioProvider";
-import { IntroScreen } from "./components/intro/IntroScreen";
-import { TrainingScreen } from "./components/training/TrainingScreen";
-import { CombatScreen } from "./components/combat/CombatScreen";
-import EndScreen from "./components/ui/EndScreen";
-import type {
-  AppState,
-  GamePhase,
-  PlayerState,
-  PlayerArchetype,
-  TrigramStance,
-} from "./types";
-import { createPlayerState } from "./utils/playerUtils";
-import { KOREAN_COLORS } from "./types/constants";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  // useMemo, // Removed unused import
+  useRef,
+} from "react";
+import { Application } from "@pixi/react";
+import * as PIXI from "pixi.js";
 import "./App.css";
 
-// App state reducer for complex state management
-interface AppAction {
-  readonly type:
-    | "SET_PHASE"
-    | "UPDATE_PLAYER"
-    | "UPDATE_GAME_TIME"
-    | "SET_WINNER"
-    | "RESET_GAME"
-    | "TOGGLE_PAUSE"
-    | "ADD_COMBAT_LOG";
-  readonly payload?: any;
-}
+import { GameUI } from "./components/game/GameUI";
+import { AudioManager } from "./audio/AudioManager";
+import { AudioProvider, useAudio } from "./audio/AudioProvider";
+import { PLACEHOLDER_AUDIO_ASSETS } from "./audio/placeholder-sounds";
+import CombatScreen from "./components/combat/CombatScreen"; // Changed to default import
+import { IntroScreen } from "./components/intro/IntroScreen";
+import { TrainingScreen } from "./components/training/TrainingScreen";
+import { EndScreen } from "./components/ui/EndScreen";
+import {
+  KOREAN_COLORS,
+  GAME_CONFIG,
+  // CYBERPUNK_DOJANG, // Removed unused import
+  // PLAYER_ARCHETYPES, // Using string literals directly
+} from "./types";
+import type {
+  PlayerState,
+  GamePhase,
+  TrigramStance,
+  KoreanText,
+  PlayerArchetype,
+} from "./types";
+import { createPlayerState } from "./utils/playerUtils";
 
-function appReducer(state: AppState, action: AppAction): AppState {
-  switch (action.type) {
-    case "SET_PHASE":
-      return { ...state, gamePhase: action.payload };
+// Initialize AudioManager instance
+const audioManagerInstance = new AudioManager(PLACEHOLDER_AUDIO_ASSETS);
 
-    case "UPDATE_PLAYER":
-      const { playerIndex, updates } = action.payload;
-      const newPlayers = [...state.players] as [PlayerState, PlayerState];
-      newPlayers[playerIndex] = { ...newPlayers[playerIndex], ...updates };
-      return { ...state, players: newPlayers };
+const App: React.FC = () => {
+  const [gamePhase, setGamePhase] = useState<GamePhase>("intro");
+  const [player1, setPlayer1] = useState<PlayerState>(() =>
+    createPlayerState(
+      "player1",
+      "musa" as PlayerArchetype, // Use string literal
+      "geon" as TrigramStance, // Add initial stance
+      { x: 200, y: GAME_CONFIG.CANVAS_HEIGHT / 2 },
+      "right"
+    )
+  );
+  const [player2, setPlayer2] = useState<PlayerState>(() =>
+    createPlayerState(
+      "player2",
+      "amsalja" as PlayerArchetype, // Use string literal
+      "geon" as TrigramStance, // Add initial stance
+      { x: GAME_CONFIG.CANVAS_WIDTH - 200, y: GAME_CONFIG.CANVAS_HEIGHT / 2 },
+      "left"
+    )
+  );
 
-    case "UPDATE_GAME_TIME":
-      return {
-        ...state,
-        gameTime: action.payload,
-        timeRemaining: Math.max(0, state.timeRemaining - action.payload),
-      };
+  const [gameTime, _setGameTime] = useState(0); // setGameTime is unused, aliased with _
+  const [currentRound, setCurrentRound] = useState(1);
+  const [timeRemaining, setTimeRemaining] = useState(
+    GAME_CONFIG.ROUND_DURATION_SECONDS
+  );
+  const [isPaused, setIsPaused] = useState(false);
+  const [winnerId, setWinnerId] = useState<string | null>(null);
+  const [combatLog, _setCombatLog] = useState<KoreanText[]>([]); // setCombatLog is unused, aliased with _
+  const pixiAppRef = useRef<PIXI.Application>(null);
 
-    case "SET_WINNER":
-      return { ...state, winnerId: action.payload };
+  // Audio context
+  const audio = useAudio(); // Assuming useAudio provides initialization status
 
-    case "TOGGLE_PAUSE":
-      return { ...state, isPaused: !state.isPaused };
+  useEffect(() => {
+    // Initialize audio manager when the component mounts
+    // and audio context is available but not yet initialized.
+    if (audio && !audio.isInitialized) {
+      // Corrected: use audio.isInitialized
+      audio
+        .init()
+        .then(() => {
+          console.log("Audio Manager initialized via App.tsx effect");
+          audio.playMusic("menu_theme");
+        })
+        .catch((error) => {
+          console.error("Failed to initialize audio manager from App:", error);
+        });
+    }
+  }, [audio]);
 
-    case "ADD_COMBAT_LOG":
-      return {
-        ...state,
-        combatLog: [...state.combatLog.slice(-9), action.payload],
-      };
+  const handleGamePhaseChange = useCallback(
+    (phaseValue: string) => {
+      const newPhase = phaseValue as GamePhase;
+      setGamePhase(newPhase);
+      setWinnerId(null); // Reset winner when phase changes
+      if (newPhase === "combat") {
+        setCurrentRound(1);
+        setTimeRemaining(GAME_CONFIG.ROUND_DURATION_SECONDS);
+        // Reset players for a new match
+        setPlayer1(
+          createPlayerState(
+            "player1",
+            "musa" as PlayerArchetype, // Use string literal
+            "geon" as TrigramStance, // Add initial stance
+            { x: 200, y: GAME_CONFIG.CANVAS_HEIGHT / 2 },
+            "right"
+          )
+        );
+        setPlayer2(
+          createPlayerState(
+            "player2",
+            "amsalja" as PlayerArchetype, // Use string literal
+            "geon" as TrigramStance, // Add initial stance
+            {
+              x: GAME_CONFIG.CANVAS_WIDTH - 200,
+              y: GAME_CONFIG.CANVAS_HEIGHT / 2,
+            },
+            "left"
+          )
+        );
+        audio?.playMusic("combat_theme");
+      } else if (newPhase === "intro") {
+        audio?.playMusic("menu_theme");
+      }
+    },
+    [audio]
+  );
 
-    case "RESET_GAME":
-      return {
-        ...state,
-        gamePhase: "intro",
-        gameTime: 0,
-        currentRound: 1,
-        timeRemaining: 180000,
-        combatLog: [],
-        isPaused: false,
-        winnerId: null,
-        players: [
-          createPlayerState("player1", "musa"),
-          createPlayerState("training_dummy", "musa"),
-        ],
-      };
-
-    default:
-      return state;
-  }
-}
-
-// Initial app state
-const initialAppState: AppState = {
-  gamePhase: "intro",
-  players: [
-    createPlayerState("player1", "musa"),
-    createPlayerState("training_dummy", "musa"),
-  ],
-  gameTime: 0,
-  currentRound: 1,
-  timeRemaining: 180000, // 3 minutes default
-  combatLog: [],
-  isPaused: false,
-  winnerId: null,
-};
-
-export default function App(): React.JSX.Element {
-  const [appState, dispatch] = useReducer(appReducer, initialAppState);
-  const [selectedArchetype, setSelectedArchetype] =
-    useState<PlayerArchetype>("musa");
-
-  // Handle game phase changes with proper type conversion
-  const handlePhaseChange = useCallback((phase: GamePhase | string) => {
-    const validPhase = phase as GamePhase;
-    dispatch({ type: "SET_PHASE", payload: validPhase });
-  }, []);
-
-  // Handle player updates
   const handlePlayerUpdate = useCallback(
     (playerIndex: number, updates: Partial<PlayerState>) => {
-      dispatch({ type: "UPDATE_PLAYER", payload: { playerIndex, updates } });
+      if (playerIndex === 0) {
+        setPlayer1((prev) => ({ ...prev, ...updates }));
+      } else {
+        setPlayer2((prev) => ({ ...prev, ...updates }));
+      }
     },
     []
   );
 
-  // Handle archetype selection
-  const handleArchetypeSelect = useCallback(
-    (archetype: PlayerArchetype) => {
-      setSelectedArchetype(archetype);
-      // Update player 1 with new archetype
-      const updatedPlayer = createPlayerState("player1", archetype);
-      handlePlayerUpdate(0, updatedPlayer);
+  const handleStanceChangeLocal = useCallback(
+    // Renamed to avoid conflict if imported
+    (playerIndex: number, stance: TrigramStance) => {
+      const playerToUpdate = playerIndex === 0 ? player1 : player2;
+      // Assuming TrigramSystem instance is available or stance change logic is here
+      console.log(`Player ${playerToUpdate.id} changed stance to ${stance}`);
+      // Example: Directly update stance, or use a TrigramSystem
+      handlePlayerUpdate(playerIndex, { currentStance: stance });
+      audio?.playSFX("stance_change");
     },
-    [handlePlayerUpdate]
+    [player1, player2, handlePlayerUpdate, audio]
   );
 
-  // Handle stance selection
-  const handleStanceSelect = useCallback(
-    (stance: TrigramStance) => {
-      handlePlayerUpdate(0, { stance });
-    },
-    [handlePlayerUpdate]
-  );
-
-  // Game timer effect
-  useEffect(() => {
-    if (appState.gamePhase === "combat" && !appState.isPaused) {
-      const interval = setInterval(() => {
-        dispatch({ type: "UPDATE_GAME_TIME", payload: 16 }); // ~60fps
-      }, 16);
-
-      return () => clearInterval(interval);
-    }
-  }, [appState.gamePhase, appState.isPaused]);
-
-  // Check for victory conditions
-  useEffect(() => {
-    if (appState.gamePhase === "combat") {
-      const [player1, player2] = appState.players;
-
-      if (player1.health <= 0) {
-        dispatch({ type: "SET_WINNER", payload: player2.id });
-        handlePhaseChange("defeat");
-      } else if (player2.health <= 0) {
-        dispatch({ type: "SET_WINNER", payload: player1.id });
-        handlePhaseChange("victory");
-      } else if (appState.timeRemaining <= 0) {
-        // Time up - determine winner by health
-        const winner =
-          player1.health > player2.health ? player1.id : player2.id;
-        dispatch({ type: "SET_WINNER", payload: winner });
-        handlePhaseChange(
-          player1.health > player2.health ? "victory" : "defeat"
-        );
-      }
-    }
-  }, [
-    appState.players,
-    appState.timeRemaining,
-    appState.gamePhase,
-    handlePhaseChange,
-  ]);
-
-  // Render current game phase
-  const renderCurrentPhase = () => {
-    switch (appState.gamePhase) {
+  const renderScene = () => {
+    switch (gamePhase) {
       case "intro":
-        return (
-          <IntroScreen
-            onArchetypeSelect={handleArchetypeSelect}
-            onStartTraining={() => handlePhaseChange("training")}
-            onStartCombat={() => handlePhaseChange("combat")}
-            selectedArchetype={selectedArchetype}
-            data-testid="intro-screen"
-          />
-        );
-
+        return <IntroScreen onGamePhaseChange={handleGamePhaseChange} />;
       case "training":
         return (
           <TrainingScreen
-            players={appState.players}
+            players={[player1, player2]} // Pass player1 and player2
+            onGamePhaseChange={handleGamePhaseChange}
             onPlayerUpdate={handlePlayerUpdate}
-            onStanceChange={handleStanceSelect}
-            gameTime={appState.gameTime}
-            onReturnToMenu={() => handlePhaseChange("intro")}
-            onStartCombat={() => handlePhaseChange("combat")}
-            data-testid="training-screen"
+            onStanceChange={(stance) => handleStanceChangeLocal(0, stance)} // Example for player 1
+            selectedStance={player1.currentStance} // Use player1
+            gameTime={gameTime}
+            currentRound={currentRound}
           />
         );
-
       case "combat":
         return (
           <CombatScreen
-            players={appState.players}
-            onGamePhaseChange={handlePhaseChange}
+            players={[player1, player2]}
+            onGamePhaseChange={handleGamePhaseChange}
             onPlayerUpdate={handlePlayerUpdate}
-            gameTime={appState.gameTime}
-            currentRound={appState.currentRound}
-            timeRemaining={appState.timeRemaining}
-            isPaused={appState.isPaused}
-            data-testid="combat-screen"
+            gameTime={gameTime}
+            currentRound={currentRound}
+            timeRemaining={timeRemaining}
+            isPaused={isPaused}
           />
         );
-
       case "victory":
       case "defeat":
         return (
           <EndScreen
-            winnerId={appState.winnerId}
-            onRestart={() => dispatch({ type: "RESET_GAME" })}
-            onMenu={() => handlePhaseChange("intro")}
-            winner={appState.winnerId || ""}
-            data-testid="end-screen"
+            winnerId={winnerId}
+            onRestart={() => handleGamePhaseChange("combat")}
+            onMenu={() => handleGamePhaseChange("intro")}
           />
         );
-
       default:
-        return (
-          <div
-            style={{
-              color: `#${KOREAN_COLORS.WHITE.toString(16)}`,
-              backgroundColor: `#${KOREAN_COLORS.BLACK.toString(16)}`,
-              minHeight: "100vh",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-            data-testid="loading-screen"
-          >
-            <h1>흑괘 (Black Trigram) - Loading...</h1>
-          </div>
-        );
+        console.warn(`Unhandled game phase: ${gamePhase}, returning to intro.`);
+        setGamePhase("intro"); // Fallback to intro
+        return <IntroScreen onGamePhaseChange={handleGamePhaseChange} />;
     }
   };
 
-  return (
-    <AudioProvider>
-      <div
-        className="app"
-        style={{
-          minHeight: "100vh",
-          background: `linear-gradient(135deg, #${KOREAN_COLORS.BLACK.toString(
-            16
-          )} 0%, #1a1a2e 50%, #16213e 100%)`,
-          color: `#${KOREAN_COLORS.WHITE.toString(16)}`,
-          fontFamily: '"Noto Sans KR", Arial, sans-serif',
-        }}
-        data-testid="app-container"
-      >
-        {renderCurrentPhase()}
+  if (!audio?.isInitialized) {
+    // Corrected: use audio.isInitialized
+    // Optionally, render a loading state or a silent experience until audio is ready
+    // For now, rendering the app anyway, but audio features might not work immediately.
+    // console.log("Audio manager not yet initialized. App might be silent.");
+  }
 
-        {/* Debug information in development */}
-        {process.env.NODE_ENV === "development" && (
-          <div
-            style={{
-              position: "fixed",
-              top: 10,
-              right: 10,
-              backgroundColor: "rgba(0,0,0,0.7)",
-              color: `#${KOREAN_COLORS.CYAN.toString(16)}`,
-              padding: "10px",
-              borderRadius: "5px",
-              fontSize: "12px",
-              fontFamily: "monospace",
-              zIndex: 1000,
-            }}
-            data-testid="debug-panel"
-          >
-            <div data-testid="debug-phase">Phase: {appState.gamePhase}</div>
-            <div data-testid="debug-time">
-              Time: {Math.floor(appState.gameTime / 1000)}s
-            </div>
-            <div data-testid="debug-round">Round: {appState.currentRound}</div>
-            <div data-testid="debug-p1-health">
-              P1: {appState.players[0].health}HP
-            </div>
-            <div data-testid="debug-p2-health">
-              P2: {appState.players[1].health}HP
-            </div>
-          </div>
-        )}
-      </div>
-    </AudioProvider>
+  return (
+    <div className="app-container">
+      <GameUI
+        players={[player1, player2]}
+        gamePhase={gamePhase}
+        onGamePhaseChange={handleGamePhaseChange}
+        gameTime={gameTime}
+        currentRound={currentRound}
+        timeRemaining={timeRemaining}
+        onStanceChange={handleStanceChangeLocal}
+        combatLog={combatLog}
+        onPlayerUpdate={handlePlayerUpdate}
+        isPaused={isPaused}
+        onTogglePause={() => setIsPaused(!isPaused)}
+      />
+      {/* Use @pixi/react Application component */}
+      <Application
+        ref={pixiAppRef}
+        width={GAME_CONFIG.CANVAS_WIDTH}
+        height={GAME_CONFIG.CANVAS_HEIGHT}
+        options={{
+          backgroundColor: KOREAN_COLORS.BLACK, // Use a color from KOREAN_COLORS
+          // CYBERPUNK_DOJANG.BACKGROUND_COLOR does not exist.
+          antialias: true,
+          resolution: window.devicePixelRatio || 1,
+        }}
+      >
+        {renderScene()}
+      </Application>
+    </div>
   );
-}
+};
+
+const AppWithAudio: React.FC = () => (
+  <AudioProvider manager={audioManagerInstance}>
+    <App />
+  </AudioProvider>
+);
+
+export default AppWithAudio;

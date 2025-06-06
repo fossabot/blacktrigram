@@ -320,7 +320,7 @@ export interface BaseButtonProps
 // Added missing types
 export interface BackgroundGridProps extends GameComponentProps {
   readonly gridSize?: number;
-  readonly lineColor?: number;
+  readonly lineColor?: number; // Ensure this exists
   readonly lineWidth?: number;
 }
 
@@ -399,6 +399,13 @@ export interface CombatControlsProps extends BaseComponentProps {
   readonly isExecutingTechnique: boolean; // Added
   readonly isPaused: boolean; // Added
   readonly showVitalPoints?: boolean; // Added
+}
+
+// Add missing ControlsSectionProps interface
+export interface ControlsSectionProps extends BaseComponentProps {
+  readonly onGamePhaseChange: (phase: GamePhase | string) => void;
+  readonly title?: string;
+  // Add any other props specific to ControlsSection
 }
 
 // Player visuals props - FIXED: Complete interface
