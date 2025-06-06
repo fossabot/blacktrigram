@@ -3,32 +3,124 @@
  * Provides cross-browser audio format detection and audio-related calculations
  */
 
-import type { AudioAsset, AudioFormat } from "../types/audio"; // Ensure AudioFormat is imported
+import type { AudioAsset } from "../types"; // KoreanText is still used by completeAudioAsset
+import type { AudioFormat } from "../types/audio"; // Corrected import for AudioFormat
 
 export class AudioUtils {
+  private static audioTestElement: HTMLAudioElement | null = null;
+
   /**
-   * Detects the preferred audio format based on browser support
-   * Prioritizes OGG for better compression, falls back to MP3, then WAV
+   * Checks if a given audio MIME type can be played by the browser.
+   * @param mimeType - The MIME type string (e.g., "audio/mpeg", "audio/webm").
+   * @returns True if the format is likely playable, false otherwise.
    */
-  static getPreferredAudioFormat(
-    availableFormats: readonly string[], // Changed from AudioFormat[] to string[] to match usage
-    baseUrl?: string // Optional baseUrl if needed for full path construction
-  ): string | string[] {
-    const preferredOrder: string[] = ["webm", "mp3"]; // Keep as string[]
+  public static canPlayType(mimeType: string): boolean {
+    if (!AudioUtils.audioTestElement) {
+      AudioUtils.audioTestElement = document.createElement("audio");
+    }
+    return !!AudioUtils.audioTestElement.canPlayType(mimeType);
+  }
+
+  /**
+   * Selects the best available audio format from a list based on browser support and preferred order.
+   * @param availableFormats - An array of available AudioFormat strings for the asset.
+   * @param preferredOrder - An array of AudioFormat strings representing the desired order of preference.
+   * @returns The preferred and supported AudioFormat string, or null if none are supported.
+   */
+  public static selectAudioFormat(
+    availableFormats: readonly AudioFormat[],
+    preferredOrder: readonly AudioFormat[]
+  ): AudioFormat | null {
     for (const format of preferredOrder) {
       if (availableFormats.includes(format)) {
-        return baseUrl ? `${baseUrl}.${format}` : format; // Return full path or just format extension
+        const mimeType = `audio/${format === "mp3" ? "mpeg" : format}`;
+        if (AudioUtils.canPlayType(mimeType)) {
+          return format;
+        }
       }
     }
-    // Fallback to the first available format if preferred ones are not found
-    if (availableFormats.length > 0) {
-      return baseUrl
-        ? `${baseUrl}.${availableFormats[0]}`
-        : availableFormats[0];
+    // Fallback: check any available format if preferred ones are not supported
+    for (const format of availableFormats) {
+      if (!preferredOrder.includes(format)) {
+        // Only check those not already checked
+        const mimeType = `audio/${format === "mp3" ? "mpeg" : format}`;
+        if (AudioUtils.canPlayType(mimeType)) {
+          return format;
+        }
+      }
     }
-    // This case should ideally not be reached if assets always define formats
-    console.warn("No suitable audio format found, or no formats provided.");
-    return baseUrl || ""; // Fallback to base URL or empty string
+    return null;
+  }
+
+  /**
+   * Constructs the full URL for an audio asset given its base path, file name (asset ID), and format.
+   * @param basePath - The base directory path for the audio asset.
+   * @param fileName - The name of the audio file (typically the asset ID).
+   * @param format - The AudioFormat (e.g., "mp3", "webm").
+   * @param variant - Optional variant string (e.g., "_male", "_female").
+   * @returns The full URL string for the audio asset.
+   */
+  public static constructAudioUrl(
+    basePath: string,
+    fileName: string,
+    format: AudioFormat | null, // Allow null for cases where format might not be determined
+    variant: string = ""
+  ): string {
+    if (!format) {
+      // Handle cases where format is null, e.g., return a placeholder or throw error
+      console.warn(
+        `Cannot construct audio URL for ${fileName}: format is null.`
+      );
+      return `${basePath}/${fileName}${variant}.error`; // Placeholder for error
+    }
+    return `${basePath}/${fileName}${variant}.${format}`;
+  }
+
+  /**
+   * Gets the preferred audio format URL for an asset.
+   * @param availableFormats - Formats the asset is available in.
+   * @param preferredOrder - Order of preference for formats.
+   * @param assetUrlOrBasePath - If it's a full URL template (e.g. asset.url which might contain {format}), use it. Otherwise, it's a basePath.
+   * @param assetId - The ID of the asset, used if assetUrlOrBasePath is a basePath.
+   * @param variant - Optional variant.
+   * @returns The URL string for the best supported format, or the original URL if no format selection is needed.
+   */
+  public static getPreferredFormat(
+    availableFormats: readonly AudioFormat[],
+    assetUrlOrBasePath: string, // Can be a template URL or a base path
+    preferredOrder: readonly AudioFormat[] = ["webm", "mp3"], // Default preference
+    assetId?: string, // Required if assetUrlOrBasePath is a basePath
+    variant?: string
+  ): string {
+    const selectedFormat = AudioUtils.selectAudioFormat(
+      availableFormats,
+      preferredOrder
+    );
+
+    if (assetUrlOrBasePath.includes("{format}")) {
+      // Check if it's a template URL
+      return selectedFormat
+        ? assetUrlOrBasePath.replace("{format}", selectedFormat)
+        : assetUrlOrBasePath.replace("{format}", availableFormats[0] || "mp3");
+    } else if (assetId && selectedFormat) {
+      // It's a basePath, construct the URL
+      return AudioUtils.constructAudioUrl(
+        assetUrlOrBasePath,
+        assetId,
+        selectedFormat,
+        variant
+      );
+    } else if (assetId && !selectedFormat && availableFormats.length > 0) {
+      // Fallback to first available if selection fails
+      return AudioUtils.constructAudioUrl(
+        assetUrlOrBasePath,
+        assetId,
+        availableFormats[0],
+        variant
+      );
+    }
+    // If it's a direct URL (not a template, not a base path needing construction) or if format selection fails with no fallback
+    return assetUrlOrBasePath; // Return the original URL/path
   }
 
   static clampVolume(volume: number): number {
@@ -118,104 +210,76 @@ export class AudioUtils {
     return `./assets/audio/sfx/${type}_${sanitizedTechnique}.${format}`;
   }
 
-  public static canPlayType(format: AudioFormat): boolean {
-    const audio = document.createElement("audio");
-    let mimeType = "";
-    switch (format) {
-      case "mp3":
-        mimeType = "audio/mpeg";
-        break;
-      case "webm":
-        mimeType = "audio/webm";
-        break;
-      // Add other formats if necessary
-      default:
-        return false;
-    }
-    return !!audio.canPlayType(mimeType);
-  }
+  /**
+   * Completes a partial AudioAsset with default values and constructs the full URL.
+   * @param partialAsset - The partial audio asset data.
+   * @param defaultBasePath - The default base path if not provided in the asset.
+   * @param defaultFormats - Default formats if not provided.
+   * @param defaultVolume - Default volume if not provided.
+   * @param defaultPreload - Default preload flag if not provided.
+   * @param defaultLoop - Default loop flag if not provided.
+   * @returns The completed AudioAsset.
+   */
+  public static completeAudioAsset(
+    partialAsset: Partial<AudioAsset> & Pick<AudioAsset, "id" | "category">,
+    defaultBasePath: string = "assets/audio/",
+    defaultFormats: readonly AudioFormat[] = ["mp3", "webm"],
+    defaultVolume: number = 0.7,
+    defaultPreload: boolean = true,
+    defaultLoop: boolean = false
+  ): AudioAsset {
+    const basePath = partialAsset.basePath ?? defaultBasePath;
+    const id = partialAsset.id;
+    const koreanContext = partialAsset.koreanContext ?? {
+      korean: "",
+      english: "",
+    };
+    const formats = partialAsset.formats ?? defaultFormats;
+    const category = partialAsset.category;
 
-  public static selectAudioFormat(
-    supportedFormats: readonly AudioFormat[]
-  ): AudioFormat | null {
-    for (const format of supportedFormats) {
-      if (AudioUtils.canPlayType(format)) {
-        return format;
-      }
-    }
-    return null; // No supported format found
-  }
-
-  public static constructAudioUrl(
-    basePath: string,
-    id: string,
-    format: AudioFormat | null,
-    variant?: string
-  ): string {
-    if (!format) {
-      console.warn(
-        `No supported audio format found for ${id}, attempting mp3 fallback.`
+    const url =
+      partialAsset.url ??
+      AudioUtils.constructAudioUrl(
+        // Changed to AudioUtils.constructAudioUrl
+        basePath.endsWith("/") ? basePath : `${basePath}/`,
+        id,
+        formats[0]
       );
-      // Fallback to mp3 if no format is explicitly supported or found
-      // This might not be ideal, consider how to handle missing formats.
-      // For now, let's assume a common fallback or require a format.
-      // If format is truly null, this will result in an invalid URL.
-      // It's better to ensure format is not null before calling this,
-      // or handle the null case more gracefully (e.g., return empty string or throw).
-      // For the purpose of fixing the TS error, we assume format will be provided.
-      // If it can be null, the function signature or logic needs adjustment.
-      // Let's assume for now that a format will be passed.
-      // If format can be null, the caller should handle it or this function should.
-      // For example, if format is null, return a placeholder or throw an error.
-      // To satisfy the current usage, let's assume format is not null here.
-      // The caller (AudioManager) should ensure a valid format is passed.
-      const effectiveFormat = format || "mp3"; // Default to mp3 if null, though this might be problematic.
-      const filename = variant
-        ? `${id}_${variant}.${effectiveFormat}`
-        : `${id}.${effectiveFormat}`;
-      return `${basePath}/${filename}`;
-    }
-    const filename = variant ? `${id}_${variant}.${format}` : `${id}.${format}`;
-    return `${basePath}/${filename}`;
-  }
-}
 
-/**
- * Completes the properties of an audio asset with default values
- */
-export function completeAudioAsset(
-  partialAsset: Partial<AudioAsset> & { id: string; category: string }
-): AudioAsset {
-  return {
-    basePath: "/audio/default",
-    koreanContext: {
-      korean: partialAsset.id,
-      english: partialAsset.id.replace(/_/g, " "),
-      culturalNote: "Traditional Korean martial arts audio",
-    },
-    formats: ["webm", "mp3"],
-    volume: 0.5,
-    preload: false,
-    ...partialAsset,
-  } as AudioAsset;
-}
-
-// Apply default properties to incomplete assets
-export function ensureCompleteAsset(asset: any): AudioAsset {
-  if (!asset.basePath) {
-    asset.basePath = `/audio/${asset.category}`;
-  }
-
-  if (!asset.koreanContext) {
-    asset.koreanContext = {
-      korean: asset.id,
-      english: asset.id.replace(/_/g, " "),
-      culturalNote: "Korean martial arts audio element",
+    return {
+      id,
+      url,
+      category,
+      basePath,
+      koreanContext,
+      formats,
+      volume: partialAsset.volume ?? defaultVolume,
+      preload: partialAsset.preload ?? defaultPreload,
+      loop: partialAsset.loop ?? defaultLoop,
+      fadeIn: partialAsset.fadeIn,
+      fadeOut: partialAsset.fadeOut,
+      variants: partialAsset.variants,
+      trigram: partialAsset.trigram,
+      culturalSignificance: partialAsset.culturalSignificance,
+      techniqueAssociation: partialAsset.techniqueAssociation,
     };
   }
 
-  return asset as AudioAsset;
-}
+  // Apply default properties to incomplete assets
+  public static ensureCompleteAsset(asset: any): AudioAsset {
+    // Changed to public static
+    if (!asset.basePath) {
+      asset.basePath = `/audio/${asset.category}`;
+    }
 
-// Export the functions if they are intended to be used as standalone utilities
-export const { canPlayType, selectAudioFormat, constructAudioUrl } = AudioUtils;
+    if (!asset.koreanContext) {
+      asset.koreanContext = {
+        korean: asset.id,
+        english: asset.id.replace(/_/g, " "),
+        culturalNote: "Korean martial arts audio element",
+      };
+    }
+
+    return asset as AudioAsset;
+  }
+}
