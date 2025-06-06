@@ -976,25 +976,25 @@ Players press **1–8** to select one of the eight Trigrams (☰–☷). Each Tr
 
 ```mermaid
 flowchart LR
-    subgraph Pain<20 & Cons>50 & Blood<100 ["READY 🟢"]
-      style Pain<20 & Cons>50 & Blood<100 fill:#00cc44,stroke:#007700,stroke-width:2px
-    end
-    subgraph 20≤Pain<50 & Cons>40 & Blood<100 ["SHAKEN 🟡"]
-      style 20≤Pain<50 & Cons>40 & Blood<100 fill:#ffcc00,stroke:#aa8800,stroke-width:2px
-    end
-    subgraph 50≤Pain<80 or Health<20 & Cons>20 & Blood<100 ["VULNERABLE 🟠"]
-      style 50≤Pain<80 or Health<20 & Cons>20 & Blood<100 fill:#ff8800,stroke:#aa4400,stroke-width:2px
-    end
-    subgraph Pain≥80 or Cons≤0 or Blood≥100 ["HELPLESS 🔴"]
-      style Pain≥80 or Cons≤0 or Blood≥100 fill:#cc0000,stroke:#770000,stroke-width:2px
-    end
+    %% Define each state as a node with a multi‐line label
+    ReadyState["READY 🟢<br/>Pain &lt; 20 &amp; Cons &gt; 50 &amp; Blood &lt; 100"]
+    ShakenState["SHAKEN 🟡<br/>20 ≤ Pain &lt; 50 &amp; Cons &gt; 40 &amp; Blood &lt; 100"]
+    VulnerableState["VULNERABLE 🟠<br/>50 ≤ Pain &lt; 80 or Health &lt; 20<br/>Cons &gt; 20 &amp; Blood &lt; 100"]
+    HelplessState["HELPLESS 🔴<br/>Pain ≥ 80 or Cons ≤ 0 or Blood ≥ 100"]
 
-    Ready --> Shaken    : pain ≥ 20  
-    Shaken --> Vulnerable : pain ≥ 50 or health < 20  
-    Vulnerable --> Helpless : pain ≥ 80 or consciousness ≤ 0 or bloodLoss ≥ 100  
-    Helpless --> Vulnerable : recovery (3 sec), set pain+10, bloodLoss–20, consciousness=20, health+10  
-    Shaken --> Ready    : pain < 20  
-    Vulnerable --> Shaken : pain < 50  
+    %% Apply custom styling
+    style ReadyState fill:#00cc44,stroke:#007700,stroke-width:2px
+    style ShakenState fill:#ffcc00,stroke:#aa8800,stroke-width:2px
+    style VulnerableState fill:#ff8800,stroke:#aa4400,stroke-width:2px
+    style HelplessState fill:#cc0000,stroke:#770000,stroke-width:2px
+
+    %% Transitions
+    ReadyState --> ShakenState    : pain ≥ 20
+    ShakenState --> VulnerableState : pain ≥ 50 or health < 20
+    VulnerableState --> HelplessState : pain ≥ 80 or consciousness ≤ 0 or bloodLoss ≥ 100
+    HelplessState --> VulnerableState : recovery (3 sec), pain +10, bloodLoss –20, cons = 20, health +10
+    ShakenState --> ReadyState    : pain < 20
+    VulnerableState --> ShakenState : pain < 50
 ```
 
 ---
