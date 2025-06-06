@@ -4,7 +4,26 @@ import type {
   SoundEffectId,
   MusicTrackId,
 } from "../types/audio";
-import { constructAudioUrl } from "./AudioUtils"; // Assuming AudioUtils is in the same directory or path is correct
+import { AudioUtils } from "./AudioUtils"; // Import the AudioUtils class
+
+// const placeholderBasePath = "/assets/audio/placeholders/";
+
+// Helper to construct placeholder assets
+/*
+// Error TS6133: 'createPlaceholderAsset' is declared but its value is never read.
+// Commenting out the unused function.
+const createPlaceholderAsset = (id: string): AudioAsset => ({
+  id,
+  url: `placeholder_audio_${id}.mp3`, // Construct a placeholder URL
+  category: "sfx", // Default category
+  basePath: "assets/audio/sfx/", // Default base path
+  koreanContext: { korean: id, english: id }, // Placeholder context
+  formats: ["mp3"], // Default format
+  volume: 0.5,
+  preload: false,
+  loop: false,
+});
+*/
 
 // Helper to create asset data with less repetition
 const createAsset = (
@@ -36,7 +55,7 @@ const createAsset = (
   // The error was in constructAudioUrl call, let's assume it's:
   // constructAudioUrl(basePath: string, fileName: string, format: AudioFormat | null, variant?: string)
   // For a generic URL, we can pick the first format.
-  const exampleUrl = constructAudioUrl(
+  const exampleUrl = AudioUtils.constructAudioUrl(
     assetData.basePath,
     assetData.id,
     assetData.formats[0]
@@ -466,7 +485,7 @@ export const getExampleSfxUrl = (
   if (!asset) throw new Error(`SFX asset ${id} not found`);
   // Original problematic call: constructAudioUrl(asset, format)
   // Corrected call:
-  return constructAudioUrl(asset.basePath, asset.id, format);
+  return AudioUtils.constructAudioUrl(asset.basePath, asset.id, format);
 };
 
 export const getExampleMusicUrl = (
@@ -477,5 +496,5 @@ export const getExampleMusicUrl = (
   if (!asset) throw new Error(`Music asset ${id} not found`);
   // Original problematic call: constructAudioUrl(asset, format)
   // Corrected call:
-  return constructAudioUrl(asset.basePath, asset.id, format);
+  return AudioUtils.constructAudioUrl(asset.basePath, asset.id, format);
 };
