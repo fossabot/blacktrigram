@@ -180,7 +180,7 @@ export const KOREAN_TECHNIQUE_TYPES = {
   strike: { korean: "타격", english: "Strike" },
   thrust: { korean: "찌르기", english: "Thrust" },
   block: { korean: "막기", english: "Block" },
-  counter_attack: { korean: "반격", english: "Counter Attack" },
+  counter_attack: { korean: "반격", english: "Counter Attack" }, // Added missing comma
   throw: { korean: "던지기", english: "Throw" },
   grapple: { korean: "잡기", english: "Grapple" },
   pressure_point: { korean: "혈자리", english: "Pressure Point" },

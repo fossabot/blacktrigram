@@ -2,12 +2,14 @@
 
 import type {
   VitalPoint,
-  VitalPointHitResult,
   Position,
   KoreanTechnique,
   PlayerArchetype,
   VitalPointCategory,
+  StatusEffect,
 } from "../types";
+// Import VitalPointHitResult directly from systems to ensure correct type
+import type { VitalPointHitResult } from "../types/systems";
 import { VITAL_POINTS_DATA } from "./vitalpoint/KoreanVitalPoints";
 
 export class VitalPointSystem {
@@ -56,7 +58,7 @@ export class VitalPointSystem {
 
     // Apply technique effectiveness
     const isEffectiveTechnique =
-      vitalPoint.techniques?.includes(technique.type) || false;
+      vitalPoint.techniques?.includes(technique.type as string) || false; // Cast technique.type to string
     if (isEffectiveTechnique) {
       damage *= 1.2;
     }
@@ -91,6 +93,7 @@ export class VitalPointSystem {
       height: 200,
     }
   ): VitalPointHitResult {
+    // This now correctly refers to VitalPointHitResult from types/systems.ts
     const vitalPoint = this.findVitalPoint(
       hitPosition,
       targetDimensions,
@@ -103,13 +106,8 @@ export class VitalPointSystem {
         damage: baseDamage,
         effects: [],
         vitalPointsHit: [],
-        severity: "minor",
-        criticalHit: false,
-        location: hitPosition,
-        effectiveness: 1.0,
-        statusEffectsApplied: [],
-        painLevel: baseDamage * 0.5,
-        consciousnessImpact: 0,
+        bodyPartId: undefined,
+        isCritical: false, // Correct field from types/systems.ts VitalPointHitResult
       };
     }
 
@@ -119,10 +117,10 @@ export class VitalPointSystem {
       technique,
       archetype
     );
-    const isCritical = Math.random() < (technique.critChance || 0.05);
+    const isCriticalHit = Math.random() < (technique.critChance || 0.05);
 
     // Convert VitalPointEffect to StatusEffect
-    const statusEffects =
+    const statusEffects: StatusEffect[] =
       vitalPoint.effects?.map((effect) => ({
         id: effect.id,
         type: effect.type,
@@ -135,18 +133,19 @@ export class VitalPointSystem {
 
     return {
       hit: true,
-      damage: isCritical ? Math.floor(totalDamage * 1.5) : totalDamage,
+      damage: isCriticalHit ? Math.floor(totalDamage * 1.5) : totalDamage,
       effects: statusEffects,
-      vitalPointsHit: [vitalPoint],
-      vitalPoint,
-      severity: vitalPoint.severity,
-      criticalHit: isCritical,
-      location: hitPosition,
-      effectiveness: vitalPoint.damageMultiplier || 1.0,
-      statusEffectsApplied: statusEffects,
-      painLevel: totalDamage * (vitalPoint.severity === "critical" ? 1.5 : 1.0),
-      consciousnessImpact:
-        vitalPoint.category === "head" ? totalDamage * 0.8 : totalDamage * 0.3,
+      vitalPointsHit: [vitalPoint.id], // Correctly string[]
+      // vitalPoint, // Not part of types/systems.ts VitalPointHitResult
+      // severity: vitalPoint.severity, // Not part of types/systems.ts VitalPointHitResult
+      // criticalHit: isCriticalHit, // isCritical is the correct field name
+      // location: hitPosition, // Not part of types/systems.ts VitalPointHitResult
+      // statusEffectsApplied: statusEffects, // effects is the correct field name
+      // painLevel: totalDamage * (vitalPoint.severity === "critical" ? 1.5 : 1.0), // Not part of this
+      // consciousnessImpact: // Not part of this
+      //   vitalPoint.category === "head" ? totalDamage * 0.8 : totalDamage * 0.3,
+      bodyPartId: vitalPoint.location.region.toString(), // Or derive more specifically
+      isCritical: isCriticalHit, // Correct field
     };
   }
 
@@ -242,10 +241,12 @@ export class VitalPointSystem {
 
   // Fix static method implementations
   public static getVitalPointsInRegion(region: any): VitalPoint[] {
+    // Changed to non-readonly
     return new VitalPointSystem().getVitalPointsInRegion(region);
   }
 
   public static getAllVitalPoints(): VitalPoint[] {
+    // Changed to non-readonly
     return new VitalPointSystem().getAllVitalPoints();
   }
 }

@@ -47,11 +47,11 @@ export interface PlayerState {
   position: Position;
   facing: "left" | "right"; // Made mutable for updates
   currentTargetId?: string | null; // Made mutable for updates
-  activeEffects: readonly StatusEffect[]; // Made mutable for updates
+  activeEffects: readonly StatusEffect[]; // Made mutable for updates // Changed from StatusEffect[]
   readonly attributes: PlayerAttributes;
   readonly skills: PlayerSkills;
   combatState: CombatState; // Made mutable for updates
-  readonly lastActionTime: number;
+  readonly lastActionTime: number; // Changed from mutable
   lastStanceChangeTime: number; // Made mutable for updates
   comboCount: number; // Made mutable for updates
   readonly vitalPointDamage: Record<string, number>;
@@ -72,12 +72,12 @@ export interface PlayerArchetypeData {
   readonly preferredTrigrams: readonly string[];
   readonly specialization: string; // Add missing property
   readonly bonuses: {
-    readonly damageBonus: number;
-    readonly accuracyBonus: number;
-    readonly speedBonus: number;
-    readonly defenseBonus: number;
-    readonly damageResistance?: number;
-    readonly precisionBonus?: number;
+    readonly damageBonus: number; // Changed from damageMultiplier
+    readonly accuracyBonus: number; // Changed from accuracyMultiplier
+    readonly speedBonus: number; // Changed from speedMultiplier
+    readonly defenseBonus: number; // Changed from defenseMultiplier
+    readonly damageResistance?: number; // Added
+    readonly precisionBonus?: number; // Added
   };
 }
 
@@ -100,7 +100,7 @@ export interface PlayerCombatStats {
   >;
   readonly knownTechniques: readonly string[];
   readonly currentStance: TrigramStance;
-  readonly combatReadiness: CombatReadiness;
+  readonly combatReadiness: CombatReadiness; // Added
 }
 
 export interface PlayerProgression {

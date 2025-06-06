@@ -30,36 +30,36 @@ export type TechniqueType =
 // Combat technique definition
 export interface KoreanTechnique {
   readonly id: string;
-  readonly name: string;
+  readonly name: string; // Added
   readonly koreanName: string;
   readonly englishName: string;
-  readonly romanized: string;
+  readonly romanized: string; // Added
   readonly description: KoreanText;
   readonly stance: TrigramStance;
   readonly type: CombatAttackType; // Uses CombatAttackType (alias for EnumCombatAttackType)
-  readonly damageType?: DamageType;
+  readonly damageType?: DamageType; // Added
   readonly damage?: number;
   readonly kiCost?: number;
   readonly staminaCost?: number;
   readonly damageRange?: DamageRange;
-  readonly executionTime?: number;
-  readonly recoveryTime?: number;
+  readonly executionTime?: number; // Added
+  readonly recoveryTime?: number; // Added
   readonly accuracy?: number;
-  readonly range?: number;
+  readonly range?: number; // Added
   readonly effects?: readonly StatusEffect[];
-  readonly damageMultiplier?: number;
-  readonly critMultiplier?: number;
-  readonly critChance?: number;
-  readonly properties?: readonly string[];
+  readonly damageMultiplier?: number; // Added
+  readonly critMultiplier?: number; // Added
+  readonly critChance?: number; // Added
+  readonly properties?: readonly string[]; // Added
 }
 
 // Combat result from technique execution
 export interface CombatResult {
-  readonly winner?: string;
+  readonly winner?: string; // Added
   readonly damage: number;
-  readonly technique?: string;
+  readonly technique?: string; // Added
   readonly newState: CombatState; // Now properly imported and used
-  readonly hitLocation?: string;
+  readonly hitLocation?: string; // Added
   readonly damageType: DamageType;
   readonly isVitalPoint: boolean;
   readonly effects: readonly StatusEffect[];
@@ -68,25 +68,25 @@ export interface CombatResult {
   readonly vitalPointsHit: readonly AnatomyVitalPoint[];
   readonly attacker: PlayerArchetype;
   readonly defender: PlayerArchetype;
-  readonly damagePrevented: number;
-  readonly staminaUsed: number;
-  readonly kiUsed: number;
-  readonly defenderDamaged: boolean;
-  readonly attackerStance: TrigramStance;
-  readonly defenderStance: TrigramStance;
+  readonly damagePrevented: number; // Added
+  readonly staminaUsed: number; // Added
+  readonly kiUsed: number; // Added
+  readonly defenderDamaged: boolean; // Added
+  readonly attackerStance: TrigramStance; // Added
+  readonly defenderStance: TrigramStance; // Added
 
   // Enhanced pain and consciousness system
-  readonly painLevel: number;
-  readonly consciousnessImpact: number;
-  readonly balanceEffect: number;
-  readonly bloodLoss: number;
-  readonly stunDuration: number;
-  readonly statusEffects: readonly StatusEffect[];
-  readonly hitType: "miss" | "normal" | "critical" | "vital";
-  readonly techniqueUsed: KoreanTechnique;
-  readonly effectiveness: number;
-  readonly hitPosition: Position;
-  readonly vitalPoint?: AnatomyVitalPoint;
+  readonly painLevel: number; // Added
+  readonly consciousnessImpact: number; // Added
+  readonly balanceEffect: number; // Added
+  readonly bloodLoss: number; // Added
+  readonly stunDuration: number; // Added
+  readonly statusEffects: readonly StatusEffect[]; // Added
+  readonly hitType: "miss" | "normal" | "critical" | "vital"; // Added
+  readonly techniqueUsed: KoreanTechnique; // Added
+  readonly effectiveness: number; // Added
+  readonly hitPosition: Position; // Added
+  readonly vitalPoint?: AnatomyVitalPoint; // Added
 }
 
 // Type alias for HitResult as requested by error messages
@@ -113,16 +113,16 @@ export interface CombatEvent {
     | "dodge"
     | "stance_change"
     | "effect_applied"
-    | "round_end"
-    | "match_end";
+    | "round_end" // Added
+    | "match_end"; // Added
   readonly attackerId?: string;
   readonly defenderId?: string;
-  readonly techniqueId?: string;
+  readonly techniqueId?: string; // Added
   readonly damage?: number;
-  readonly resultText: KoreanText;
-  readonly effectId?: string;
-  readonly roundNumber?: number;
-  readonly winnerId?: string;
+  readonly resultText: KoreanText; // Added
+  readonly effectId?: string; // Added
+  readonly roundNumber?: number; // Added
+  readonly winnerId?: string; // Added
 }
 
 // Fix exports - remove CombatState

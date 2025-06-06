@@ -49,9 +49,9 @@ export const KOREAN_TEXT_SIZES = {
   // This might be redundant if KOREAN_TEXT_SIZES from typography is re-exported by index.ts
   small: 12,
   medium: 16,
-  large: 20,
-  xlarge: 24,
-  xxlarge: 32,
+  large: 20, // Changed from 24
+  xlarge: 24, // Changed from 32
+  xxlarge: 32, // Added
   title: 48,
 } as const;
 

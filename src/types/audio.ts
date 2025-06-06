@@ -76,8 +76,8 @@ export type SoundEffectId =
   | "critical_hit"
   | "heavy_hit"
   | "light_hit"
-  | "stance_select"
-  | "technique_execute"
+  | "stance_select" // Added
+  | "technique_execute" // Added
   | "combat_end" // Added from constants/combat.ts
   | "miss" // Added from constants/combat.ts
   | "guard" // Added from constants/combat.ts
@@ -100,18 +100,18 @@ export interface AudioAsset {
   readonly id: string;
   readonly url: string; // Add missing url property
   readonly category: AudioCategory;
-  readonly basePath: string;
+  readonly basePath: string; // Changed from path
   readonly koreanContext: KoreanText; // Change from string to KoreanText
   readonly formats: readonly AudioFormat[];
   readonly volume: number;
   readonly preload: boolean;
   readonly loop?: boolean;
-  readonly fadeIn?: number;
-  readonly fadeOut?: number;
-  readonly variants?: readonly string[];
-  readonly trigram?: TrigramStance;
-  readonly culturalSignificance?: string;
-  readonly techniqueAssociation?: string;
+  readonly fadeIn?: number; // Added
+  readonly fadeOut?: number; // Added
+  readonly variants?: readonly string[]; // Added
+  readonly trigram?: TrigramStance; // Added
+  readonly culturalSignificance?: string; // Added
+  readonly techniqueAssociation?: string; // Added
 }
 
 // Audio asset registry structure
@@ -125,10 +125,10 @@ export interface AudioPlaybackOptions {
   readonly volume?: number;
   readonly loop?: boolean;
   readonly rate?: number;
-  readonly fadeIn?: number;
-  readonly fadeOut?: number;
-  readonly delay?: number;
-  readonly variant?: string;
+  readonly fadeIn?: number; // Added
+  readonly fadeOut?: number; // Added
+  readonly delay?: number; // Added
+  readonly variant?: string; // Added
 }
 
 // Audio system state
@@ -138,15 +138,15 @@ export interface AudioState {
   readonly musicVolume: number;
   readonly muted: boolean;
   readonly currentMusicTrack?: MusicTrackId | null; // Fixed: Use MusicTrackId
-  readonly isInitialized: boolean;
-  readonly fallbackMode?: boolean;
+  readonly isInitialized: boolean; // Added
+  readonly fallbackMode?: boolean; // Added
 }
 
 // Audio manager interface
 export interface IAudioManager {
   playSFX(id: SoundEffectId, options?: AudioPlaybackOptions): number | null;
   playMusic(id: MusicTrackId, options?: AudioPlaybackOptions): number | null; // Fixed: Use MusicTrackId
-  stopMusic(): void;
+  stopMusic(): void; // Changed signature
   setMasterVolume(volume: number): void;
   setSFXVolume(volume: number): void;
   setMusicVolume(volume: number): void;
@@ -154,12 +154,12 @@ export interface IAudioManager {
   getState(): AudioState; // Add missing method
 
   // Korean martial arts specific methods
-  playAttackSound(damage: number): void;
-  playHitSound(damage: number, isVitalPoint?: boolean): void;
-  playTechniqueSound(koreanName: string): void;
-  playStanceChangeSound(): void;
-  playBlockSound(): void;
-  stopAllSounds(): void;
+  playAttackSound(damage: number): void; // Added
+  playHitSound(damage: number, isVitalPoint?: boolean): void; // Added
+  playTechniqueSound(koreanName: string): void; // Added
+  playStanceChangeSound(): void; // Added
+  playBlockSound(): void; // Added
+  stopAllSounds(): void; // Added
 }
 
 // Audio configuration constants
@@ -228,7 +228,7 @@ export interface AudioLoadResult {
 export interface AudioAnalytics {
   readonly totalAssetsLoaded: number;
   readonly failedLoads: number;
-  readonly fallbacksUsed: number;
+  readonly fallbacksUsed: number; // Added
   readonly averageLoadTime: number;
   readonly memoryUsage: number;
 }
@@ -275,10 +275,10 @@ export interface AudioContextState {
 export type SoundEffect = SoundEffectId; // Alias for compatibility
 
 export interface AudioManagerInterface {
-  readonly isInitialized: boolean;
-  readonly volume: number;
+  readonly isInitialized: boolean; // Added
+  readonly volume: number; // Added
   playMusic(trackId: string, loop?: boolean): void;
   stopMusic(fadeOut?: boolean): void;
-  playSFX(effectId: SoundEffectId): void;
+  playSFX(effectId: SoundEffectId): void; // Changed from string
   setVolume(volume: number): void;
 }

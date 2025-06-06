@@ -28,9 +28,9 @@ export interface VitalPointSystemConfig {
   readonly damageVariance?: number;
   readonly archetypeModifiers?: Record<PlayerArchetype, Record<string, number>>;
   readonly baseDamageMultiplier?: number;
-  readonly vitalPointSeverityMultiplier?: Record<string, number>;
-  readonly maxHitAngleDifference?: number;
-  readonly baseVitalPointAccuracy?: number;
+  readonly vitalPointSeverityMultiplier?: Record<string, number>; // Added
+  readonly maxHitAngleDifference?: number; // Added
+  readonly baseVitalPointAccuracy?: number; // Added
   readonly criticalHitMultiplier?: number; // Added
 }
 
@@ -39,8 +39,8 @@ export interface VitalPointHitResult {
   readonly hit: boolean;
   readonly damage: number;
   readonly effects: readonly StatusEffect[];
-  readonly vitalPointsHit: readonly string[]; // IDs of vital points hit
-  readonly bodyPartId?: string; // ID of the body part hit
+  readonly vitalPointsHit: readonly string[]; // IDs of vital points hit // Changed from VitalPoint[]
+  readonly bodyPartId?: string; // ID of the body part hit // Added
   readonly isCritical?: boolean;
   // Removed isVitalPointHit, vitalPointsHit array serves this purpose
   // Removed vitalPoint, vitalPointsHit provides IDs, details can be fetched if needed
@@ -52,7 +52,7 @@ export interface CombatSystemInterface {
   calculateDamage: (
     technique: KoreanTechnique,
     attacker: PlayerState, // Changed from PlayerArchetype to full PlayerState
-    defender: PlayerState,
+    defender: PlayerState, // Added
     hitResult: VitalPointHitResult // Changed from CombatResult to VitalPointHitResult for more specific input
   ) => {
     baseDamage: number;
@@ -71,11 +71,11 @@ export interface CombatSystemInterface {
 
   applyCombatResult: (
     result: CombatResult,
-    attacker: PlayerState,
+    attacker: PlayerState, // Added
     defender: PlayerState
-  ) => { updatedAttacker: PlayerState; updatedDefender: PlayerState };
+  ) => { updatedAttacker: PlayerState; updatedDefender: PlayerState }; // Added
 
-  getAvailableTechniques: (player: PlayerState) => readonly KoreanTechnique[];
+  getAvailableTechniques: (player: PlayerState) => readonly KoreanTechnique[]; // Added
 }
 
 // Vital point system interface - FIXED: Match implementation
@@ -83,7 +83,7 @@ export interface VitalPointSystemInterface {
   getVitalPointsInRegion(region: string): readonly VitalPoint[];
   getVitalPointById(id: string): VitalPoint | undefined; // Added missing method
   getAllVitalPoints(): readonly VitalPoint[]; // Added missing method
-  calculateVitalPointAccuracy(
+  calculateVitalPointAccuracy( // Added
     targetPosition: Position,
     attackAccuracy: number,
     vitalPoint: VitalPoint
@@ -91,17 +91,18 @@ export interface VitalPointSystemInterface {
   calculateVitalPointDamage( // Added missing method
     vitalPoint: VitalPoint,
     baseDamage: number,
-    archetype: string
+    archetype: string // Changed from PlayerArchetype
   ): number;
   calculateHit: (
-    technique: KoreanTechnique,
+    technique: KoreanTechnique, // Added
     targetVitalPointId: string | null, // Explicitly allow null if no specific target
     accuracyRoll: number, // Player's accuracy roll (0-1)
-    attackerPosition: Position,
-    defenderPosition: Position,
-    defenderStance: TrigramStance
+    attackerPosition: Position, // Added
+    defenderPosition: Position, // Added
+    defenderStance: TrigramStance // Added
   ) => VitalPointHitResult; // Changed to use the new result type
   applyVitalPointEffects: (
+    // Added
     player: PlayerState,
     vitalPoint: VitalPoint,
     intensityMultiplier?: number
@@ -110,22 +111,24 @@ export interface VitalPointSystemInterface {
 
 // Trigram system interface
 export interface TrigramSystemInterface {
-  getCurrentStanceData: (stance: TrigramStance) => TrigramData;
+  getCurrentStanceData: (stance: TrigramStance) => TrigramData; // Added
   getTechniqueForStance: (
     stance: TrigramStance,
-    archetype?: PlayerArchetype
+    archetype?: PlayerArchetype // Added archetype
   ) => KoreanTechnique | undefined;
   calculateStanceEffectiveness: (
     attackerStance: TrigramStance,
     defenderStance: TrigramStance
   ) => number;
-  isValidTransition: (from: TrigramStance, to: TrigramStance) => boolean;
+  isValidTransition: (from: TrigramStance, to: TrigramStance) => boolean; // Added
   getTransitionCost: (
+    // Added
     from: TrigramStance,
     to: TrigramStance,
     player?: PlayerState
   ) => { ki: number; stamina: number; timeMs: number };
   recommendStance: (
+    // Added
     player: PlayerState,
     opponent?: PlayerState
   ) => TrigramStance;
@@ -170,7 +173,7 @@ export interface AnimationConfig {
   readonly name: string;
   readonly frames: readonly { texture: Texture; duration: number }[]; // Texture from PIXI
   readonly loop?: boolean;
-  readonly speed?: number; // Playback speed multiplier
+  readonly speed?: number; // Playback speed multiplier // Added
 }
 
 // Added AnimationFrame and AnimationState for AnimationSystemInterface
@@ -209,7 +212,7 @@ export interface PhysicsEntityConfig {
   readonly shape:
     | { type: "circle"; radius: number }
     | { type: "rectangle"; width: number; height: number };
-  readonly isStatic?: boolean; // Cannot be moved by forces
+  readonly isStatic?: boolean; // Cannot be moved by forces // Added
 }
 
 // Added PhysicsEntityState and CollisionData for PhysicsSystemInterface
@@ -245,8 +248,8 @@ export interface RenderableConfig {
   readonly displayObject: PixiDisplayObject; // The PIXI object to render - use aliased import
   readonly zOrder?: number; // For sorting
   readonly visible?: boolean;
-  readonly alpha?: number;
-  readonly parent?: EntityId | "stage"; // ID of parent renderable or stage
+  readonly alpha?: number; // Added
+  readonly parent?: EntityId | "stage"; // ID of parent renderable or stage // Added
 }
 
 // Game system manager

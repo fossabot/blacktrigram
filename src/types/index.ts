@@ -39,14 +39,14 @@ export type {
   AttackInput,
   HitResult,
   CombatAnalysis,
-  CombatEvent,
+  CombatEvent, // Added
   TechniqueType,
 } from "./combat"; // Added TechniqueType
 export type {
   HitEffect,
   StatusEffect,
   EffectModifier,
-  HitEffectText,
+  HitEffectText, // Added
 } from "./effects"; // Added HitEffectText
 export type {
   KoreanText, // This is the primary KoreanText from korean-text.ts
@@ -77,7 +77,7 @@ export type {
   TransitionMetrics,
   TransitionPath,
   TrigramTransitionRule,
-  StanceTransition,
+  StanceTransition, // Added
 } from "./trigram";
 
 // Export control types

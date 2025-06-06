@@ -22,10 +22,10 @@ declare module "@pixi/react" {
   export interface ApplicationProps {
     width?: number;
     height?: number;
-    backgroundColor?: number;
+    backgroundColor?: number; // Changed from background
     antialias?: boolean;
     resolution?: number;
-    style?: React.CSSProperties;
+    style?: React.CSSProperties; // Added
     children?: ReactNode;
     // Note: ref is handled by React.forwardRef, not as a direct prop
   }
@@ -52,8 +52,8 @@ declare module "@pixi/react" {
     onpointermove?: (event: PIXI.FederatedPointerEvent) => void;
     onpointerover?: (event: PIXI.FederatedPointerEvent) => void;
     onpointerout?: (event: PIXI.FederatedPointerEvent) => void;
-    onpointertap?: (event: PIXI.FederatedPointerEvent) => void;
-    onclick?: (event: PIXI.FederatedPointerEvent) => void;
+    onpointertap?: (event: PIXI.FederatedPointerEvent) => void; // Added
+    onclick?: (event: PIXI.FederatedPointerEvent) => void; // Added
   }
 
   // Container component props

@@ -109,6 +109,18 @@ export const KOREAN_COLORS = {
   TECH_WHITE: 0xffffff, // Mapping to WHITE as per CYBERPUNK_PALETTE
 } as const;
 
+// Stance-specific visual themes (Added from instructions)
+export const STANCE_VISUAL_THEMES = {
+  geon: { primary: 0xffd700, secondary: 0x8b7355, glow: 0xffed4e },
+  tae: { primary: 0x87ceeb, secondary: 0x4682b4, glow: 0xb0e0e6 },
+  li: { primary: 0xff4500, secondary: 0x8b0000, glow: 0xff6347 },
+  jin: { primary: 0x9370db, secondary: 0x4b0082, glow: 0xda70d6 },
+  son: { primary: 0x98fb98, secondary: 0x228b22, glow: 0x90ee90 },
+  gam: { primary: 0x4169e1, secondary: 0x191970, glow: 0x6495ed },
+  gan: { primary: 0x8b4513, secondary: 0x654321, glow: 0xd2691e },
+  gon: { primary: 0x654321, secondary: 0x8b4513, glow: 0xa0522d },
+} as const;
+
 // Combat-specific color themes
 export const COMBAT_COLORS = {
   HEALTH_CRITICAL: KOREAN_COLORS.RED,
@@ -121,12 +133,14 @@ export const COMBAT_COLORS = {
   VITAL_POINT: KOREAN_COLORS.VITAL_POINT,
 } as const;
 
-// Dojang environment colors
+// Dojang environment colors (Updated based on DOJANG_ENVIRONMENT from instructions)
 export const DOJANG_COLORS = {
-  FLOOR: 0x2d2d2d,
-  WALLS: 0x1a1a1a,
-  LIGHTING_AMBIENT: 0x333333,
-  LIGHTING_ACCENT: KOREAN_COLORS.CYAN,
+  FLOOR: 0x2d2d2d, // Example, can be derived from DOJANG_ENVIRONMENT.textures
+  WALLS: 0x1a1a1a, // Example, can be derived from DOJANG_ENVIRONMENT.textures
+  LIGHTING_AMBIENT: 0x0a0a0a, // From DOJANG_ENVIRONMENT.lighting.ambient
+  LIGHTING_ACCENT_NEON: [0x00ffff, 0xff0040, 0x00ff00], // From DOJANG_ENVIRONMENT.lighting.neonAccents
+  LIGHTING_ACCENT_TRADITIONAL: 0xffd700, // From DOJANG_ENVIRONMENT.lighting.traditional
+  BLOOD_STAINS: 0x8b0000, // From DOJANG_ENVIRONMENT.lighting.bloodStains
   TRAINING_EQUIPMENT: 0x654321,
   MEDITATION_AREA: 0x4a4a4a,
 } as const;

@@ -1,4 +1,4 @@
-import type { TrigramStance } from "./trigram"; // This should be from enums or a central types/index.ts
+import type { TrigramStance } from "./enums"; // Changed from ./trigram
 
 /**
  * Details for a specific stance control binding.

@@ -24,8 +24,8 @@ export interface BaseComponentProps {
   readonly y?: number;
   readonly width?: number;
   readonly height?: number;
-  readonly visible?: boolean;
-  readonly interactive?: boolean;
+  readonly visible?: boolean; // Added
+  readonly interactive?: boolean; // Added
 }
 
 // Game component props for combat components
@@ -39,8 +39,8 @@ export interface GameComponentProps extends BaseComponentProps {
   readonly onClick?: (event: FederatedPointerEvent) => void;
   readonly onPointerDown?: (event: FederatedPointerEvent) => void;
   readonly onPointerUp?: (event: FederatedPointerEvent) => void;
-  readonly onPointerOver?: (event: FederatedPointerEvent) => void;
-  readonly onPointerOut?: (event: FederatedPointerEvent) => void;
+  readonly onPointerOver?: (event: FederatedPointerEvent) => void; // Added
+  readonly onPointerOut?: (event: FederatedPointerEvent) => void; // Added
 }
 
 // Component props for different game elements
@@ -51,33 +51,34 @@ export interface ComponentProps extends BaseComponentProps {
 // Intro screen component props
 export interface IntroScreenProps extends BaseComponentProps {
   readonly onGamePhaseChange: (phase: GamePhase | string) => void;
-  readonly onSectionChange?: (section: string) => void;
+  readonly onSectionChange?: (section: string) => void; // Added
   readonly currentSection?: string;
-  readonly onStartTraining?: () => void;
-  readonly onStartCombat?: () => void;
-  readonly player?: any;
-  readonly onPlayerChange?: (updates: any) => void;
-  readonly sessionData?: any;
+  readonly onStartTraining?: () => void; // Added
+  readonly onStartCombat?: () => void; // Added
+  readonly player?: any; // Added
+  readonly onPlayerChange?: (updates: any) => void; // Added
+  readonly sessionData?: any; // Added
 }
 
 // Training screen component props
 export interface TrainingScreenProps extends BaseComponentProps {
-  readonly players?: readonly [PlayerState, PlayerState];
+  readonly players?: readonly [PlayerState, PlayerState]; // Added
   readonly player?: PlayerState;
   readonly onGamePhaseChange?: (phase: GamePhase | string) => void;
   readonly onPlayerUpdate?: (
+    // Added
     playerIndex: number,
     updates: Partial<PlayerState>
   ) => void;
   readonly onPlayerStateChange?: (updates: Partial<PlayerState>) => void;
-  readonly onReturnToMenu?: () => void;
-  readonly onStartCombat?: () => void;
+  readonly onReturnToMenu?: () => void; // Added
+  readonly onStartCombat?: () => void; // Added
   readonly onStanceChange?: (stance: EnumTrigramStance) => void; // Use aliased TrigramStance
   readonly selectedStance?: EnumTrigramStance; // Use aliased TrigramStance
-  readonly gameTime?: number;
-  readonly currentRound?: number;
-  readonly showVitalPoints?: boolean;
-  readonly difficulty?: string;
+  readonly gameTime?: number; // Added
+  readonly currentRound?: number; // Added
+  readonly showVitalPoints?: boolean; // Added
+  readonly difficulty?: string; // Added
 }
 
 // Game UI component props
@@ -86,43 +87,44 @@ export interface GameUIProps extends BaseComponentProps {
   readonly gameTime: number;
   readonly currentRound: number;
   readonly gamePhase: GamePhase;
-  readonly timeRemaining?: number;
-  readonly isPaused?: boolean;
+  readonly timeRemaining?: number; // Added
+  readonly isPaused?: boolean; // Added
   readonly onStanceChange: (
     playerIndex: 0 | 1,
     stance: EnumTrigramStance
   ) => void; // Use aliased TrigramStance
   readonly onPlayerUpdate: (
+    // Added
     playerIndex: number,
     updates: Partial<PlayerState>
   ) => void;
   readonly onGamePhaseChange: (phase: GamePhase | string) => void;
-  readonly onPauseToggle?: () => void;
-  readonly combatLog?: readonly KoreanText[] | readonly string[];
-  readonly showDebug?: boolean;
-  readonly onStartMatch?: () => void;
-  readonly onResetMatch?: () => void;
-  readonly onTogglePause?: () => void;
+  readonly onPauseToggle?: () => void; // Added
+  readonly combatLog?: readonly KoreanText[] | readonly string[]; // Changed to allow string array
+  readonly showDebug?: boolean; // Added
+  readonly onStartMatch?: () => void; // Added
+  readonly onResetMatch?: () => void; // Added
+  readonly onTogglePause?: () => void; // Added
 }
 
 // Player props interface - FIXED: Complete interface
 export interface PlayerProps extends GameComponentProps {
   readonly playerState: PlayerState;
   readonly playerIndex: number;
-  readonly onStateUpdate: (updates: Partial<PlayerState>) => void;
-  readonly onAttack?: (targetPosition?: Position) => void;
-  readonly isPlayer1?: boolean;
+  readonly onStateUpdate: (updates: Partial<PlayerState>) => void; // Changed from onStateChange
+  readonly onAttack?: (targetPosition?: Position) => void; // Added
+  readonly isPlayer1?: boolean; // Added
   readonly archetype: PlayerArchetype;
   readonly stance: EnumTrigramStance; // Use aliased TrigramStance
   readonly position: Position;
   readonly facing: "left" | "right";
-  readonly isAttacking?: boolean;
-  readonly health: number;
-  readonly maxHealth: number;
-  readonly ki: number;
-  readonly maxKi: number;
-  readonly stamina: number;
-  readonly maxStamina: number;
+  readonly isAttacking?: boolean; // Added
+  readonly health: number; // Added
+  readonly maxHealth: number; // Added
+  readonly ki: number; // Added
+  readonly maxKi: number; // Added
+  readonly stamina: number; // Added
+  readonly maxStamina: number; // Added
 }
 
 // Progress tracker props - make health/ki/stamina optional for general use
@@ -134,9 +136,9 @@ export interface ProgressTrackerProps extends BaseComponentProps {
   readonly maxKi?: number;
   readonly maxStamina?: number;
   readonly label?: string;
-  readonly value?: number;
-  readonly maxValue?: number;
-  readonly barColor?: number;
+  readonly value?: number; // Added
+  readonly maxValue?: number; // Added
+  readonly barColor?: number; // Changed from ColorValue
   readonly backgroundColor?: ColorValue;
   readonly borderColor?: ColorValue;
   readonly showText?: boolean;
@@ -147,8 +149,8 @@ export interface ProgressTrackerProps extends BaseComponentProps {
   readonly y?: number;
   readonly width?: number;
   readonly height?: number;
-  readonly showLabels?: boolean;
-  readonly spacing?: number;
+  readonly showLabels?: boolean; // Added
+  readonly spacing?: number; // Added
 }
 
 // Dojang background props
@@ -163,26 +165,26 @@ export interface DojangBackgroundProps extends GameComponentProps {
 export interface TrigramWheelProps extends BaseComponentProps {
   readonly currentStance: EnumTrigramStance; // Use aliased TrigramStance
   readonly onStanceSelect: (stance: EnumTrigramStance) => void; // Use aliased TrigramStance
-  readonly selectedStance?: EnumTrigramStance; // Use aliased TrigramStance
-  readonly onStanceChange?: (stance: EnumTrigramStance) => void; // Use aliased TrigramStance
-  readonly isEnabled?: boolean;
+  readonly selectedStance?: EnumTrigramStance; // Use aliased TrigramStance // Added
+  readonly onStanceChange?: (stance: EnumTrigramStance) => void; // Use aliased TrigramStance // Added
+  readonly isEnabled?: boolean; // Added
   readonly interactive?: boolean;
-  readonly showLabels?: boolean;
+  readonly showLabels?: boolean; // Added
   readonly size?: number;
   readonly position?: Position;
-  readonly time?: number;
+  readonly time?: number; // Added
 }
 
 // Korean header props - FIXED: Remove title prop, use korean/english
 export interface KoreanHeaderProps {
   readonly korean: string;
   readonly english?: string;
-  readonly subtitle?: string | KoreanText;
+  readonly subtitle?: string | KoreanText; // Changed to allow KoreanText
   readonly level?: 1 | 2 | 3;
-  readonly showLogo?: boolean;
-  readonly style?: Record<string, any>;
-  readonly onBackButtonClick?: () => void;
-  readonly className?: string;
+  readonly showLogo?: boolean; // Added
+  readonly style?: Record<string, any>; // Added
+  readonly onBackButtonClick?: () => void; // Added
+  readonly className?: string; // Added
 }
 
 // Hit effects layer props - add this missing interface
@@ -260,23 +262,23 @@ export interface EndScreenProps extends BaseComponentProps {
   readonly onReturnToMenu?: () => void; // Add missing prop
   readonly winner?: string; // Add missing prop
   readonly gameStats?: any; // Add missing prop
-  readonly loser?: PlayerState;
-  readonly onGamePhaseChange?: (phase: GamePhase | string) => void;
-  readonly matchStats?: any;
+  readonly loser?: PlayerState; // Added
+  readonly onGamePhaseChange?: (phase: GamePhase | string) => void; // Added
+  readonly matchStats?: any; // Added
 }
 
 // Game engine props - FIXED: Add onGamePhaseChange to match usage
 export interface GameEngineProps extends BaseComponentProps {
   readonly player1: PlayerState;
   readonly player2: PlayerState;
-  readonly gamePhase?: "intro" | "training" | "combat" | "victory" | "defeat";
+  readonly gamePhase?: "intro" | "training" | "combat" | "victory" | "defeat"; // Added
   readonly onGameStateChange: (updates: any) => void;
   readonly onPlayerUpdate: (
     playerIndex: number,
     updates: Partial<PlayerState>
   ) => void;
   readonly onGamePhaseChange: (phase: string) => void; // Add missing prop
-  readonly gameMode?: "demo" | "versus" | "training";
+  readonly gameMode?: "demo" | "versus" | "training"; // Added
 }
 
 // Korean text component props
@@ -330,9 +332,10 @@ export interface CombatScreenProps extends BaseComponentProps {
   ) => void;
   readonly gameTime: number;
   readonly currentRound: number;
-  readonly timeRemaining: number;
-  readonly isPaused: boolean;
+  readonly timeRemaining: number; // Added
+  readonly isPaused: boolean; // Added
   readonly matchState?: {
+    // Added
     currentRound: number;
     scores: Record<string, number>;
     roundWinner?: string | null;
@@ -357,7 +360,7 @@ export interface CombatArenaProps extends BaseComponentProps {
     technique: any
   ) => Promise<void>;
   readonly combatEffects: readonly HitEffect[];
-  readonly isExecutingTechnique: boolean;
+  readonly isExecutingTechnique: boolean; // Added
   readonly isActive?: boolean; // Add missing prop
   readonly showVitalPoints?: boolean; // Add missing prop
   readonly showDebugInfo?: boolean; // Add missing prop
@@ -379,13 +382,13 @@ export interface CombatHUDProps extends BaseComponentProps {
 
 // Add missing CombatControlsProps interface
 export interface CombatControlsProps extends BaseComponentProps {
-  readonly players: readonly [PlayerState, PlayerState];
+  readonly players: readonly [PlayerState, PlayerState]; // Added
   readonly player: PlayerState; // Current active player
   readonly onStanceChange: (
     playerIndex: number,
     stance: EnumTrigramStance
   ) => void; // Use aliased TrigramStance
-  readonly isExecutingTechnique: boolean;
-  readonly isPaused: boolean;
-  readonly showVitalPoints?: boolean;
+  readonly isExecutingTechnique: boolean; // Added
+  readonly isPaused: boolean; // Added
+  readonly showVitalPoints?: boolean; // Added
 }

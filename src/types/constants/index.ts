@@ -1,12 +1,12 @@
 // Central export hub for all Black Trigram game constants
 
 // Import KOREAN_COLORS before using it
-import { KOREAN_COLORS } from "./colors";
+import { KOREAN_COLORS } from "./colors"; // STANCE_VISUAL_THEMES removed from here
 import { GAME_CONFIG as CORE_GAME_CONFIG } from "./game"; // Alias to avoid name clash
 import { COMBAT_CONTROLS as CORE_COMBAT_CONTROLS } from "./controls";
 
 // Re-export all color constants
-export * from "./colors";
+export * from "./colors"; // This exports everything from colors.ts, including STANCE_VISUAL_THEMES
 export * from "./combat";
 export * from "./game";
 export * from "./player";
@@ -24,7 +24,11 @@ export const GAME_CONSTANTS = {
 } as const;
 
 // Export Korean color constants with cyberpunk theme
-export { KOREAN_COLORS } from "./colors";
+// The line below is redundant if `export * from "./colors";` is used and STANCE_VISUAL_THEMES is in colors.ts
+// And KOREAN_COLORS is also exported via `export * from "./colors";`
+// export { KOREAN_COLORS, STANCE_VISUAL_THEMES } from "./colors"; // This line can be removed if `export * from "./colors"` covers it.
+// For clarity and to ensure STANCE_VISUAL_THEMES is explicitly available if `export *` behavior is nuanced:
+export { STANCE_VISUAL_THEMES } from "./colors"; // Explicitly re-export if not covered or to be very clear.
 export { TRIGRAM_DATA, STANCE_EFFECTIVENESS_MATRIX } from "./trigram";
 
 // Add missing constants that systems reference

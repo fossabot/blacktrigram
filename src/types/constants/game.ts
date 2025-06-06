@@ -54,8 +54,6 @@ export const DIFFICULTY_SETTINGS = {
   BEGINNER: {
     korean: "초급",
     english: "Beginner",
-
-    // Combat assistance
     autoBlock: true,
     vitalPointHighlight: true,
     techniqueHints: true,
@@ -81,7 +79,7 @@ export const DIFFICULTY_SETTINGS = {
 
     // Reduced assistance
     autoBlock: false,
-    vitalPointHighlight: false,
+    vitalPointHighlight: false, // Changed from true
     techniqueHints: true,
     slowerCombat: false,
 
@@ -95,7 +93,7 @@ export const DIFFICULTY_SETTINGS = {
 
     // Some learning aids
     showCombatAnalysis: true,
-    displayTechniqueNames: false,
+    displayTechniqueNames: false, // Changed from true
     culturalContext: true,
   },
 

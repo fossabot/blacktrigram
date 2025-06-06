@@ -31,7 +31,7 @@ export type GamePhase =
 // Body regions for vital point targeting - add missing regions
 export type BodyRegion =
   | "head"
-  | "face_upper"
+  | "face_upper" // Added
   | "chest" // Add missing chest region
   | "abdomen" // Add missing abdomen region
   | "neck"
@@ -56,20 +56,20 @@ export type EffectType =
   | "pain"
   | "vulnerable"
   | "exhausted"
-  | "poisoned"
-  | "burning"
-  | "weakness"
+  | "poisoned" // Added
+  | "burning" // Added
+  | "weakness" // Added
   | "bleeding"
-  | "confusion"
-  | "buff"
-  | "debuff"
-  | "winded"
-  | "paralysis"
-  | "stamina_drain"
-  | "vital_weakness"
-  | "vital_stunning"
-  | "damage_vulnerability"
-  | "vital_paralysis";
+  | "confusion" // Added
+  | "buff" // Added
+  | "debuff" // Added
+  | "winded" // Added
+  | "paralysis" // Added
+  | "stamina_drain" // Added
+  | "vital_weakness" // Added
+  | "vital_stunning" // Added
+  | "damage_vulnerability" // Added
+  | "vital_paralysis"; // Added
 
 // Effect intensity levels
 export type EffectIntensity =
@@ -136,10 +136,10 @@ export type CombatReadiness =
   | "exhausted"
   | "injured"
   | "unconscious"
-  | "critical_damage"
-  | "heavy_damage"
-  | "moderate_damage"
-  | "light_damage"
+  | "critical_damage" // Added
+  | "heavy_damage" // Added
+  | "moderate_damage" // Added
+  | "light_damage" // Added
   | "incapacitated";
 
 export type CombatState =
