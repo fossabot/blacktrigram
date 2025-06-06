@@ -10,39 +10,29 @@ export class AudioUtils {
    * Detects the preferred audio format based on browser support
    * Prioritizes OGG for better compression, falls back to MP3, then WAV
    */
-  static getPreferredAudioFormat(): string {
-    if (typeof window === "undefined") {
-      // Server-side rendering - default to OGG
-      return "ogg";
+  static getPreferredAudioFormat(
+    availableFormats: readonly string[], // Changed from AudioFormat[] to string[] to match usage
+    baseUrl?: string // Optional baseUrl if needed for full path construction
+  ): string | string[] {
+    const preferredOrder: string[] = ["webm", "mp3"]; // Keep as string[]
+    for (const format of preferredOrder) {
+      if (availableFormats.includes(format)) {
+        return baseUrl ? `${baseUrl}.${format}` : format; // Return full path or just format extension
+      }
     }
-
-    try {
-      const audio = new Audio();
-
-      // Check OGG support first (better compression for Korean martial arts sound effects)
-      const oggSupport = audio.canPlayType("audio/ogg; codecs=vorbis");
-      if (oggSupport === "probably" || oggSupport === "maybe") {
-        return "ogg";
-      }
-
-      // Fallback to MP3 (wider browser support)
-      const mp3Support = audio.canPlayType("audio/mpeg");
-      if (mp3Support === "probably" || mp3Support === "maybe") {
-        return "mp3";
-      }
-
-      // Final fallback to WAV (universal support but larger files)
-      const wavSupport = audio.canPlayType("audio/wav");
-      if (wavSupport === "probably" || wavSupport === "maybe") {
-        return "wav";
-      }
-
-      // Ultimate fallback if no format is detected
-      return "mp3";
-    } catch (error) {
-      console.warn("Audio format detection failed:", error);
-      return "ogg"; // Default fallback
+    // Fallback to the first available format if preferred ones are not found
+    if (availableFormats.length > 0) {
+      return baseUrl
+        ? `${baseUrl}.${availableFormats[0]}`
+        : availableFormats[0];
     }
+    // This case should ideally not be reached if assets always define formats
+    console.warn("No suitable audio format found, or no formats provided.");
+    return baseUrl || ""; // Fallback to base URL or empty string
+  }
+
+  static clampVolume(volume: number): number {
+    return Math.max(0, Math.min(1, volume));
   }
 
   /**

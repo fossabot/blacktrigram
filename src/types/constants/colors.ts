@@ -175,3 +175,72 @@ export const COLORS = {
   STAMINA_GREEN: 0x32cd32, // A specific green, KOREAN_COLORS.GREEN is 0x00ff00
   CRITICAL_HIT: 0xff6347, // A specific red/orange, KOREAN_COLORS.CRITICAL_HIT is 0xff0040
 } as const;
+
+// Korean traditional and cyberpunk color palette
+export const KOREAN_COLORS_PALETTE = {
+  // Traditional Korean Colors (오방색 - Obangsaek & 오간색 - Ogansaek)
+  TRADITIONAL_RED: 0xd82322, // 적색 (Jeoksaek) - Fire, South, Summer
+  TRADITIONAL_BLUE: 0x2a5caa, // 청색 (Cheongsaek) - Wood, East, Spring (can also be green)
+  TRADITIONAL_YELLOW: 0xffc400, // 황색 (Hwangsaek) - Earth, Center, Late Summer
+  TRADITIONAL_WHITE: 0xffffff, // 백색 (Baeksaek) - Metal, West, Autumn
+  TRADITIONAL_BLACK: 0x000000, // 흑색 (Heuksaek) - Water, North, Winter
+
+  // Secondary Traditional Colors (오간색 - Ogansaek)
+  TRADITIONAL_GREEN: 0x006400, // 녹색 (Noksaek) - Blue-Yellow
+  TRADITIONAL_LIGHT_BLUE: 0x87ceeb, // 벽색 (Byeoksaek) - Blue-White
+  TRADITIONAL_BRIGHT_RED: 0xff4500, // 홍색 (Hongsaek) - Red-White
+  TRADITIONAL_PURPLE: 0x800080, // 자색 (Jasaek) - Red-Black
+  TRADITIONAL_OCHRE: 0xcc7722, // 유황색 (Yuhwangsaek) - Yellow-Black (Ochre/Earthy Yellow)
+
+  // Cyberpunk Palette
+  CYAN: 0x00ffff,
+  NEON_PINK: 0xff00ff,
+  ELECTRIC_GREEN: 0x39ff14,
+  NEON_ORANGE: 0xffa500,
+  NEON_RED: 0xff0040, // More vibrant red for cyberpunk
+  DEEP_PURPLE: 0x301934,
+  MIDNIGHT_BLUE: 0x191970,
+  DOJANG_BLUE: 0x2c3e50, // A darker, more serious blue for the dojang
+
+  // UI and General Purpose Colors
+  GOLD: 0xffd700,
+  SILVER: 0xc0c0c0,
+  BRONZE: 0xcd7f32,
+  GREY: 0x808080,
+  LIGHT_GREY: 0xd3d3d3,
+  DARK_GREY: 0xa9a9a9,
+  BLACK: 0x000000,
+  WHITE: 0xffffff,
+
+  // Semantic Colors
+  SUCCESS: 0x28a745,
+  WARNING: 0xffc107,
+  ERROR: 0xdc3545,
+  INFO: 0x17a2b8,
+
+  // Translucent Colors
+  SHADOW_BLACK: 0x0a0a0a, // For deep shadows
+  SHADOW_BLACK_70: 0x000000b3, // Black with 70% alpha (approx)
+  WHITE_TRANSLUCENT_50: 0xffffff80, // White with 50% alpha
+  CYAN_TRANSLUCENT_30: 0x00ffff4d, // Cyan with 30% alpha
+
+  // Stance Specific (examples, can be expanded)
+  GEON_PRIMARY: 0xffd700, // Gold
+  TAE_PRIMARY: 0x87ceeb, // Light Blue
+  LI_PRIMARY: 0xff4500, // Bright Red
+  JIN_PRIMARY: 0x9370db, // Medium Purple
+  SON_PRIMARY: 0x98fb98, // Pale Green
+  GAM_PRIMARY: 0x4169e1, // Royal Blue
+  GAN_PRIMARY: 0x8b4513, // Saddle Brown
+  GON_PRIMARY: 0x654321, // Dark Brown
+
+  // For UI elements like health bars, ki meters
+  HEALTH_GREEN: 0x00ff00,
+  KI_BLUE: 0x00bfff,
+  STAMINA_YELLOW: 0xffff00,
+  PAIN_RED: 0xff0000,
+
+  // Tech/Digital Colors
+  DIGITAL_GOLD: 0xffb400,
+  TECH_WHITE: 0xf0f0f0,
+} as const;

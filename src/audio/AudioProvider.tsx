@@ -1,99 +1,147 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import type { AudioManager } from "./AudioManager";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+} from "react";
+import type {
+  IAudioManager,
+  AudioPlaybackOptions,
+  MusicTrackId,
+} from "../types/audio"; // Removed unused SoundEffectId
+import type { AudioManager as AudioManagerClass } from "./AudioManager"; // Use type import for the class
 
-interface AudioContextType {
-  audioManager: AudioManager | null;
-  isReady: boolean;
+interface AudioContextValue extends IAudioManager {
+  isInitialized: boolean;
+  // Add any other state or methods you want to expose via context
+  masterVolume: number;
+  sfxVolume: number;
+  musicVolume: number;
+  isMuted: boolean;
+  currentMusicTrack: MusicTrackId | null | undefined;
 }
 
-const AudioContext = createContext<AudioContextType>({
-  audioManager: null,
-  isReady: false,
-});
+const AudioContext = createContext<AudioContextValue | undefined>(undefined);
 
-export function useAudioContext(): AudioContextType {
+export const useAudio = (): AudioContextValue => {
   const context = useContext(AudioContext);
   if (!context) {
-    throw new Error("useAudioContext must be used within AudioProvider");
+    throw new Error("useAudio must be used within an AudioProvider");
   }
   return context;
-}
-
-// Add this hook for compatibility with rest of codebase
-export function useAudio() {
-  const { audioManager } = useAudioContext();
-  return audioManager;
-}
+};
 
 interface AudioProviderProps {
-  readonly children: React.ReactNode;
+  children: React.ReactNode;
+  manager: AudioManagerClass; // Use the AudioManager class instance
 }
 
-export function AudioProvider({
+export const AudioProvider: React.FC<AudioProviderProps> = ({
   children,
-}: AudioProviderProps): React.JSX.Element {
-  const [audioManager, setAudioManager] = useState<AudioManager | null>(null);
-  const [isReady, setIsReady] = useState(false);
+  manager,
+}) => {
+  const [isInitialized, setIsInitialized] = useState(manager.isInitialized);
+  const [masterVolume, setMasterVolumeState] = useState(
+    manager.getState().masterVolume
+  );
+  const [sfxVolume, setSfxVolumeState] = useState(manager.getState().sfxVolume);
+  const [musicVolume, setMusicVolumeState] = useState(
+    manager.getState().musicVolume
+  );
+  const [isMuted, setIsMutedState] = useState(manager.getState().muted);
+  const [currentMusicTrack, setCurrentMusicTrackState] = useState(
+    manager.getState().currentMusicTrack
+  );
 
   useEffect(() => {
-    let mounted = true;
+    const handleInit = () => setIsInitialized(true);
+    const handleError = () => setIsInitialized(false); // Or handle error state
 
-    async function initializeAudio() {
-      try {
-        // Import the actual AudioManager implementation
-        const { AudioManager: AudioManagerClass } = await import(
-          "./AudioManager"
-        );
-        const manager = new AudioManagerClass();
-
-        if (mounted) {
-          setAudioManager(manager);
-          setIsReady(true);
-        }
-      } catch (error) {
-        console.warn("Audio initialization failed:", error);
-        if (mounted) {
-          setIsReady(true); // Continue without audio
-        }
-      }
+    // Assuming AudioManager has an event emitter or similar mechanism
+    // For simplicity, directly checking state or using a callback
+    if (!manager.isInitialized) {
+      manager.init().then(handleInit).catch(handleError);
+    } else {
+      handleInit();
     }
 
-    initializeAudio();
+    // Example of listening to events from AudioManager if it had an emitter
+    // manager.on('initialized', handleInit);
+    // manager.on('stateChanged', (newState) => { /* update states */ });
+    // return () => {
+    //   manager.off('initialized', handleInit);
+    //   manager.off('stateChanged', ...);
+    // };
+  }, [manager]);
 
-    return () => {
-      mounted = false;
-      // Check if audioManager has cleanup methods before calling them
-      if (audioManager) {
-        // Use proper cleanup method based on AudioManager interface
-        if (
-          "cleanup" in audioManager &&
-          typeof audioManager.cleanup === "function"
-        ) {
-          audioManager.cleanup();
-        } else if (
-          "dispose" in audioManager &&
-          typeof audioManager.dispose === "function"
-        ) {
-          (audioManager as any).dispose();
-        }
-        // If no cleanup method exists, just set volume to 0 for graceful shutdown
-        try {
-          audioManager.setMasterVolume(0);
-        } catch (error) {
-          console.warn("Failed to cleanup audio manager:", error);
-        }
-      }
-    };
-  }, [audioManager]);
-
-  const contextValue: AudioContextType = {
-    audioManager,
-    isReady,
-  };
+  const audioContextValue = useMemo<AudioContextValue>(
+    () => ({
+      // Spread the manager's methods
+      ...manager,
+      // Expose state and wrapped setters
+      isInitialized,
+      masterVolume,
+      sfxVolume,
+      musicVolume,
+      isMuted,
+      currentMusicTrack,
+      // Wrap manager methods to update local state as well, if needed, or ensure manager emits events
+      setMasterVolume: (vol: number) => {
+        manager.setMasterVolume(vol);
+        setMasterVolumeState(manager.getState().masterVolume);
+      },
+      setSFXVolume: (vol: number) => {
+        manager.setSFXVolume(vol);
+        setSfxVolumeState(manager.getState().sfxVolume);
+      },
+      setMusicVolume: (vol: number) => {
+        manager.setMusicVolume(vol);
+        setMusicVolumeState(manager.getState().musicVolume);
+      },
+      setMuted: (muted: boolean) => {
+        manager.setMuted(muted);
+        setIsMutedState(manager.getState().muted);
+      },
+      playMusic: (id: MusicTrackId, options?: AudioPlaybackOptions) => {
+        const soundId = manager.playMusic(id, options);
+        setCurrentMusicTrackState(manager.getState().currentMusicTrack);
+        return soundId;
+      },
+      stopMusic: (id?: MusicTrackId, fadeOutDuration?: number) => {
+        manager.stopMusic(id, fadeOutDuration);
+        setCurrentMusicTrackState(manager.getState().currentMusicTrack);
+      },
+      // Ensure all IAudioManager methods are correctly exposed
+      // If manager's methods directly update its internal state and that's what getState() returns,
+      // then we might not need to call setXXXState for volume/mute if manager emits events for these changes.
+      // For now, this explicit update ensures UI reflects changes made via these context methods.
+      init: manager.init.bind(manager),
+      playSFX: manager.playSFX.bind(manager),
+      stopAllSounds: manager.stopAllSounds.bind(manager),
+      getState: manager.getState.bind(manager),
+      isMusicPlaying: manager.isMusicPlaying.bind(manager),
+      loadAudioAsset: manager.loadAudioAsset.bind(manager),
+      playAttackSound: manager.playAttackSound.bind(manager),
+      playHitSound: manager.playHitSound.bind(manager),
+      playTechniqueSound: manager.playTechniqueSound.bind(manager),
+      playStanceChangeSound: manager.playStanceChangeSound.bind(manager),
+      playBlockSound: manager.playBlockSound.bind(manager),
+    }),
+    [
+      isInitialized,
+      manager,
+      masterVolume,
+      sfxVolume,
+      musicVolume,
+      isMuted,
+      currentMusicTrack,
+    ]
+  );
 
   return (
-    <AudioContext.Provider value={contextValue}>
+    <AudioContext.Provider value={audioContextValue}>
       {children}
     </AudioContext.Provider>
   );
-}
+};

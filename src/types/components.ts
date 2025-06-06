@@ -51,7 +51,7 @@ export interface ComponentProps extends BaseComponentProps {
 
 // Intro screen component props
 export interface IntroScreenProps extends BaseComponentProps {
-  readonly onGamePhaseChange: (phase: GamePhase | string) => void; // Ensure this is present
+  readonly onGamePhaseChange: (phase: GamePhase | string) => void; // This definition seems correct
   readonly onSectionChange?: (section: string) => void;
   readonly currentSection?: string;
   readonly onStartTraining?: () => void;
@@ -302,9 +302,9 @@ export interface BaseButtonProps
     React.ButtonHTMLAttributes<HTMLButtonElement>,
     "onClick" | "onPointerOver" | "onPointerOut" | "style" | "className"
   > {
-  readonly koreanText?: KoreanText | string;
-  readonly englishText?: string;
-  readonly variant?: "primary" | "secondary" | "danger" | "link";
+  readonly text?: KoreanText | string; // Changed from koreanText and englishText
+  readonly englishText?: string; // Kept for now if some components still use it, but prefer 'text'
+  readonly variant?: "primary" | "secondary" | "danger" | "link" | "ghost";
   readonly size?: "small" | "medium" | "large";
   readonly icon?: React.ReactNode;
   readonly onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
@@ -313,6 +313,8 @@ export interface BaseButtonProps
   readonly isLoading?: boolean;
   readonly style?: React.CSSProperties;
   readonly className?: string;
+  readonly fullWidth?: boolean; // Added
+  readonly testId?: string; // Added
 }
 
 // Added missing types
