@@ -553,37 +553,40 @@ _Enter the shadow dojang. Master the dark arts. Walk the path of the perfect let
   - Inscribed within the square is a **regular octagon** whose vertices touch the midpoints of each edge of the square.
   - Visual Representation (conceptual):
 
-%% Legend:
-%% 🟦 = Playable Cell  
-%% ⬛ = Out-of-Bounds Cell
+%% Legend:  
+%% 🔵 = Fighter A  
+%% 🔴 = Fighter B  
+%% 🟩 = Possible Move  
+%% ⬜ = Playable Cell  
 
-```mermaid
-flowchart TB
-  %% Top row
-  NW(("NW")) --- N(("N")) --- NE(("NE"))
-  %% Middle row
-  W(("W")) --- C(("Center")) --- E(("E"))
-  %% Bottom row
-  SW(("SW")) --- S(("S")) --- SE(("SE"))
+Both fighters can move in any of the eight adjacent directions (↑ ↓ ← → ↖ ↗ ↘ ↙). Below is an 8×8 grid showing Fighter A (🔵) at (4, 3) and Fighter B (🔴) at (5, 6), along with all of their possible moves (🟩):
 
-  %% Vertical/horizontal adjacencies
-  NW --- W
-  N  --- C
-  NE --- E
-  W  --- SW
-  C  --- S
-  E  --- SE
+|     |     |     |     |     |     |     |     |
+|-----|-----|-----|-----|-----|-----|-----|-----|
+| ⬜  | ⬜  | ⬜  | ⬜  | ⬜  | ⬜  | ⬜  | ⬜  | 1
+| ⬜  | ⬜  | ⬜  | ⬜  | ⬜  | ⬜  | ⬜  | ⬜  | 2
+| ⬜  | 🟩  | 🟩  | 🟩  | ⬜  | ⬜  | ⬜  | ⬜  | 3
+| ⬜  | 🟩  | 🔵  | 🟩  | 🟩  | 🟩  | 🟩  | ⬜  | 4
+| ⬜  | 🟩  | 🟩  | 🟩  | 🟩  | 🔴  | 🟩  | ⬜  | 5
+| ⬜  | ⬜  | ⬜  | ⬜  | 🟩  | 🟩  | 🟩  | ⬜  | 6
+| ⬜  | ⬜  | ⬜  | ⬜  | ⬜  | ⬜  | ⬜  | ⬜  | 7
+| ⬜  | ⬜  | ⬜  | ⬜  | ⬜  | ⬜  | ⬜  | ⬜  | 8
+  1    2    3    4    5    6    7    8  
 
-  %% Diagonal adjacencies (octagonal spokes)
-  NW --- C
-  NE --- C
-  SW --- C
-  SE --- C
+- Fighter A (🔵) is at row 4, column 3.  
+- Fighter B (🔴) is at row 5, column 6.  
 
-  classDef playable fill:#2d2d5c,stroke:#00d1b2,stroke-width:2px,color:#ffffff;
-  class NW,N,NE,W,C,E,SW,S,SE playable;
-```
+**Fighter A’s possible moves (🟩):**  
+- Row 3: (3, 2), (3, 3), (3, 4)  
+- Row 4: (4, 2), (4, 4)  
+- Row 5: (5, 2), (5, 3), (5, 4)  
 
+**Fighter B’s possible moves (🟩):**  
+- Row 4: (4, 5), (4, 6), (4, 7)  
+- Row 5: (5, 5), (5, 7)  
+- Row 6: (6, 5), (6, 6), (6, 7)  
+
+All other cells are playable (⬜) but not occupied or targeted this turn.  
 
 > **Note:** Only cells whose centers lie inside or on the inscribed octagon are **playable**. Other cells are displayed in a darker shade (**out-of-bounds**).
 
