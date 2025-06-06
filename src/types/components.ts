@@ -1,6 +1,6 @@
 // Combat component prop interfaces for Black Trigram Korean martial arts game
 
-import type { FederatedPointerEvent, Graphics } from "pixi.js";
+import type { FederatedPointerEvent, Graphics, Texture } from "pixi.js"; // Added Texture
 import type React from "react";
 import type { ReactNode } from "react";
 import type { KoreanText } from "./korean-text";
@@ -13,6 +13,7 @@ import type {
   // Position, // Already imported from common
   HitEffect,
   CombatResult,
+  KoreanTechnique,
 } from "./index";
 
 // Base component props
@@ -110,7 +111,7 @@ export interface GameUIProps extends BaseComponentProps {
 // Player props interface - FIXED: Complete interface
 export interface PlayerProps extends GameComponentProps {
   readonly playerState: PlayerState;
-  readonly playerIndex: number;
+  readonly playerIndex: 0 | 1; // Changed from number
   readonly onStateUpdate: (updates: Partial<PlayerState>) => void; // Changed from onStateChange
   readonly onAttack?: (targetPosition?: Position) => void; // Added
   readonly isPlayer1?: boolean; // Added
@@ -125,6 +126,7 @@ export interface PlayerProps extends GameComponentProps {
   readonly maxKi: number; // Added
   readonly stamina: number; // Added
   readonly maxStamina: number; // Added
+  readonly showVitalPoints?: boolean; // Added showVitalPoints
 }
 
 // Progress tracker props - make health/ki/stamina optional for general use
@@ -356,9 +358,10 @@ export interface CombatArenaProps extends BaseComponentProps {
   readonly onOpponentStateChange?: (updates: Partial<PlayerState>) => void; // Add missing prop
   readonly onCombatResult?: (result: CombatResult) => void; // Add missing prop
   readonly onTechniqueExecute: (
-    playerIndex: number,
-    technique: any
-  ) => Promise<void>;
+    // Adjusted to match handler
+    playerIndex: 0 | 1,
+    technique: KoreanTechnique
+  ) => Promise<CombatResult | undefined>;
   readonly combatEffects: readonly HitEffect[];
   readonly isExecutingTechnique: boolean; // Added
   readonly isActive?: boolean; // Add missing prop
@@ -385,10 +388,20 @@ export interface CombatControlsProps extends BaseComponentProps {
   readonly players: readonly [PlayerState, PlayerState]; // Added
   readonly player: PlayerState; // Current active player
   readonly onStanceChange: (
-    playerIndex: number,
+    playerIndex: 0 | 1, // Changed from number
     stance: EnumTrigramStance
   ) => void; // Use aliased TrigramStance
   readonly isExecutingTechnique: boolean; // Added
   readonly isPaused: boolean; // Added
   readonly showVitalPoints?: boolean; // Added
+}
+
+// Player visuals props - FIXED: Complete interface
+export interface PlayerVisualsProps extends GameComponentProps {
+  playerState: PlayerState;
+  playerIndex: 0 | 1; // 0 for player 1, 1 for player 2
+  texture?: Texture | undefined; // Allow undefined, use imported Texture
+  showVitalPoints?: boolean;
+  x?: number; // Added x
+  y?: number; // Added y
 }

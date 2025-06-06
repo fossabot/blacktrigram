@@ -112,6 +112,7 @@ export type {
   EndScreenProps,
   KoreanHeaderProps,
   PlayerProps,
+  PlayerVisualsProps, // Added PlayerVisualsProps
 } from "./components";
 
 // Export UI types

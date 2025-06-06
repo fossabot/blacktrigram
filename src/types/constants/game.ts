@@ -6,16 +6,29 @@ export const DEFAULT_GAME_SPEED = 1.0;
 
 // Main game configuration
 export const GAME_CONFIG = {
-  // Canvas and rendering
+  // Canvas and rendering settings
   CANVAS_WIDTH: 800,
   CANVAS_HEIGHT: 600,
   TARGET_FPS: 60,
-  PIXEL_RATIO: window.devicePixelRatio || 1,
+  PIXEL_RATIO: typeof window !== "undefined" ? window.devicePixelRatio : 1,
+  BACKGROUND_COLOR: "#1a1a1a", // Added default background color
 
-  // Combat mechanics
+  // Core gameplay mechanics
   DEFAULT_HEALTH: 100,
   DEFAULT_KI: 100,
   DEFAULT_STAMINA: 100,
+  MAX_PLAYERS: 2,
+  ROUND_DURATION_SECONDS: 90, // Added round duration
+  MAX_ROUNDS: 3,
+
+  // Physics and collision settings
+  PHYSICS_TIMESTEP: 16.67, // ~60 FPS
+  GRAVITY: 9.81, // Earth gravity in m/s^2
+  AIR_RESISTANCE: 0.1, // Drag coefficient
+
+  // Combat mechanics
+  DEFAULT_COMBO_WINDOW: 300, // In milliseconds
+  COUNTER_ATTACK_WINDOW: 200, // In milliseconds
 
   // Korean martial arts transition costs
   MAX_TRANSITION_COST_KI: 50,
@@ -26,6 +39,13 @@ export const GAME_CONFIG = {
   DEFAULT_VOLUME: 0.7,
   SFX_VOLUME: 0.8,
   MUSIC_VOLUME: 0.6,
+
+  // Vital point system
+  VITAL_POINT_SYSTEM: {
+    SHOW_VITAL_POINTS: true, // Default value, can be overridden by settings
+    HIGHLIGHT_COLOR: 0xff0000, // Red for highlighted vital points
+    TARGETING_ASSIST_LEVEL: 0.5, // 0 (none) to 1 (full assist)
+  } as const,
 } as const;
 
 // Korean martial arts philosophy integration
