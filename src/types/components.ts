@@ -52,7 +52,7 @@ export interface ComponentProps extends BaseComponentProps {
 // Intro screen component props
 export interface IntroScreenProps extends BaseComponentProps {
   readonly onGamePhaseChange: (phase: GamePhase | string) => void; // This definition seems correct
-  readonly onSectionChange?: (section: string) => void;
+  readonly onSectionChange?: (section: string) => void; // Added
   readonly currentSection?: string;
   readonly onStartTraining?: () => void;
   readonly onStartCombat?: () => void;
@@ -250,12 +250,12 @@ export interface AudioControlProps extends BaseComponentProps {
 export interface MenuSectionProps extends BaseComponentProps {
   readonly onGamePhaseChange: (phase: GamePhase | string) => void;
   readonly title?: string;
-  readonly onSelect?: (option: string) => void;
+  readonly onSelect?: (option: string) => void; // Added
 }
 
 // Philosophy section props - FIXED: Add consistent signature
 export interface PhilosophySectionProps extends BaseComponentProps {
-  readonly onGamePhaseChange: (phase: GamePhase | string) => void;
+  readonly onGamePhaseChange: (phase: GamePhase | string) => void; // Added
   readonly title?: string;
 }
 
@@ -320,8 +320,8 @@ export interface BaseButtonProps
 // Added missing types
 export interface BackgroundGridProps extends GameComponentProps {
   readonly gridSize?: number;
-  readonly lineColor?: number; // Ensure this exists
-  readonly lineWidth?: number;
+  readonly lineColor?: number; // Added
+  readonly lineWidth?: number; // Added
 }
 
 export interface CyberpunkBackgroundProps extends GameComponentProps {
@@ -404,7 +404,7 @@ export interface CombatControlsProps extends BaseComponentProps {
 // Add missing ControlsSectionProps interface
 export interface ControlsSectionProps extends BaseComponentProps {
   readonly onGamePhaseChange: (phase: GamePhase | string) => void;
-  readonly title?: string;
+  readonly title?: string; // Added based on typical section structure
   // Add any other props specific to ControlsSection
 }
 

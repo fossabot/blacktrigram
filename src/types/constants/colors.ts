@@ -51,7 +51,7 @@ export const GON_COLOR = TRIGRAM_STANCE_COLORS.gon;
 
 // Comprehensive Korean Colors System - Single declaration
 export const KOREAN_COLORS = {
-  // Existing trigram colors
+  // Existing trigram colors (ensure these are the primary definitions if used directly)
   geon: 0xffd700,
   tae: 0x87ceeb,
   li: 0xff4500,
@@ -107,9 +107,53 @@ export const KOREAN_COLORS = {
   DIGITAL_GOLD: 0xffd700, // Mapping to GOLD as per CYBERPUNK_PALETTE
   SHADOW_BLACK: 0x0a0a0a, // Added from user instructions CYBERPUNK_PALETTE
   TECH_WHITE: 0xffffff, // Mapping to WHITE as per CYBERPUNK_PALETTE
+
+  // Derived colors for UI states (examples)
+  PRIMARY_CYAN_DARK: 0x00cccc,
+  PRIMARY_CYAN_LIGHT: 0x66ffff,
+  TRADITIONAL_RED_DARK: 0xcc0033,
+  TRADITIONAL_RED_LIGHT: 0xff6688,
+  GOLD_DARK: 0xcca300,
+  GOLD_LIGHT: 0xffeb99,
+
+  NEUTRAL_GREY: 0x808080,
+  NEUTRAL_GREY_LIGHT: 0xb0b0b0,
+  NEUTRAL_GREY_DARK: 0x505050,
+  NEUTRAL_GREY_MEDIUM: 0x696969,
+
+  TECH_WHITE_TRANS: 0xffffffaa, // White with some transparency
+  TRANSLUCENT_BLACK_30: 0x0000004d,
+  TRANSLUCENT_BLACK_50: 0x00000080,
+  TRANSLUCENT_BLACK_70: 0x000000b3,
+
+  TEXT_GREY_LIGHT: 0xcccccc,
+
+  // Button specific colors (can map to cyberpunk palette)
+  PRIMARY_BUTTON_BG: 0x00ffff, // CYAN
+  PRIMARY_BUTTON_TEXT: 0x0a0a0a, // SHADOW_BLACK
+  PRIMARY_BUTTON_HOVER_BG: 0x66ffff, // PRIMARY_CYAN_LIGHT
+  PRIMARY_BUTTON_PRESSED_BG: 0x00cccc, // PRIMARY_CYAN_DARK
+
+  SECONDARY_BUTTON_BG: 0x808080, // NEUTRAL_GREY
+  SECONDARY_BUTTON_TEXT: 0xffffff, // TECH_WHITE
+
+  DANGER_BUTTON_BG: 0xff0040, // NEON_RED
+  DANGER_BUTTON_TEXT: 0xffffff, // TECH_WHITE
+
+  DISABLED_BUTTON_BG: 0x505050, // NEUTRAL_GREY_DARK
+  DISABLED_BUTTON_TEXT: 0xb0b0b0, // NEUTRAL_GREY_LIGHT
+
+  // Stance Colors were previously duplicated here and have been removed.
+  // The definitions at the top of this object are the canonical ones for direct use.
+  // STANCE_VISUAL_THEMES (defined elsewhere, e.g., in instructions or a theme file)
+  // would handle more complex theme objects per stance.
+
+  CYAN_DARK: 0x008b8b, // Example dark cyan
 } as const;
 
-// Stance-specific visual themes (Added from instructions)
+// Stance-specific visual themes (This constant is usually defined where themes are managed,
+// e.g., in a dedicated theme file or directly in components if not globally shared.
+// For now, ensuring KOREAN_COLORS above is clean.)
 export const STANCE_VISUAL_THEMES = {
   geon: { primary: 0xffd700, secondary: 0x8b7355, glow: 0xffed4e },
   tae: { primary: 0x87ceeb, secondary: 0x4682b4, glow: 0xb0e0e6 },
