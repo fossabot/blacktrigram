@@ -102,6 +102,11 @@ export const KOREAN_COLORS = {
   TRADITIONAL_BLUE: 0x1e3a8a,
   ACCENT_BLUE: 0x3b82f6,
   TRADITIONAL_GREEN: 0x16a34a,
+  NEON_RED: 0xff0040, // Added from user instructions CYBERPUNK_PALETTE
+  ELECTRIC_BLUE: 0x4682b4, // Mapping to DOJANG_BLUE as per CYBERPUNK_PALETTE
+  DIGITAL_GOLD: 0xffd700, // Mapping to GOLD as per CYBERPUNK_PALETTE
+  SHADOW_BLACK: 0x0a0a0a, // Added from user instructions CYBERPUNK_PALETTE
+  TECH_WHITE: 0xffffff, // Mapping to WHITE as per CYBERPUNK_PALETTE
 } as const;
 
 // Combat-specific color themes
@@ -147,11 +152,12 @@ export const getKiColor = (percentage: number): number => {
 // Additional Colors
 export const COLORS = {
   // Existing colors...
+  ...KOREAN_COLORS, // Merge KOREAN_COLORS here to consolidate
 
-  // Add missing colors
-  ORANGE: 0xffa500,
-  CRITICAL_RED: 0xff0000,
-  HEALTH_RED: 0xdc143c,
-  STAMINA_GREEN: 0x32cd32,
-  CRITICAL_HIT: 0xff6347,
+  // Add missing colors (some might be duplicates now, review KOREAN_COLORS)
+  ORANGE: 0xffa500, // Already in KOREAN_COLORS
+  CRITICAL_RED: 0xff0000, // Already in KOREAN_COLORS as RED or CRITICAL_HIT
+  HEALTH_RED: 0xdc143c, // Already in KOREAN_COLORS as TRADITIONAL_RED
+  STAMINA_GREEN: 0x32cd32, // A specific green, KOREAN_COLORS.GREEN is 0x00ff00
+  CRITICAL_HIT: 0xff6347, // A specific red/orange, KOREAN_COLORS.CRITICAL_HIT is 0xff0040
 } as const;

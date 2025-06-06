@@ -2,6 +2,8 @@
 
 // Import KOREAN_COLORS before using it
 import { KOREAN_COLORS } from "./colors";
+import { GAME_CONFIG as CORE_GAME_CONFIG } from "./game"; // Alias to avoid name clash
+import { COMBAT_CONTROLS as CORE_COMBAT_CONTROLS } from "./controls";
 
 // Re-export all color constants
 export * from "./colors";
@@ -18,6 +20,7 @@ export * from "./controls"; // Ensure COMBAT_CONTROLS is exported from here
 export const GAME_CONSTANTS = {
   ...KOREAN_COLORS, // Now properly imported
   // ...other constants...
+  ...CORE_GAME_CONFIG,
 } as const;
 
 // Export Korean color constants with cyberpunk theme
@@ -42,3 +45,4 @@ export const KOREAN_COLORS_EXTENDED = {
 
 // Re-export game types that App.tsx needs
 export type { GameState, GameScreen, SessionData, GameSettings } from "../game";
+export { CORE_COMBAT_CONTROLS as COMBAT_CONTROLS }; // Re-export with original name

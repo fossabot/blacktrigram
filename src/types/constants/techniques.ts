@@ -1,9 +1,29 @@
 // Korean martial arts techniques for Black Trigram
 
-import type { DamageType } from "../combat";
+import type { DamageType, EnumCombatAttackType } from "../index"; // Use EnumCombatAttackType
 
 // Single TECHNIQUE_PROPERTIES declaration - Korean martial arts authentic
-export const TECHNIQUE_PROPERTIES = {
+export const TECHNIQUE_PROPERTIES: Record<
+  Extract<
+    EnumCombatAttackType,
+    | "strike"
+    | "thrust"
+    | "block"
+    | "counter_attack"
+    | "throw"
+    | "grapple"
+    | "pressure_point"
+    | "nerve_strike"
+    | "punch"
+  >,
+  {
+    baseDamage: number;
+    range: number;
+    accuracy: number;
+    kiCost: number;
+    staminaCost: number;
+  }
+> = {
   strike: {
     baseDamage: 20,
     range: 1.0,
@@ -59,6 +79,14 @@ export const TECHNIQUE_PROPERTIES = {
     accuracy: 0.9,
     kiCost: 22,
     staminaCost: 12,
+  },
+  punch: {
+    // Added punch properties
+    baseDamage: 18,
+    range: 0.9,
+    accuracy: 0.88,
+    kiCost: 12,
+    staminaCost: 8,
   },
 } as const;
 

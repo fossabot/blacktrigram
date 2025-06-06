@@ -1,10 +1,10 @@
-import type { TrigramStance } from "./trigram";
+import type { TrigramStance } from "./trigram"; // This should be from enums or a central types/index.ts
 
 /**
  * Details for a specific stance control binding.
  */
 export interface StanceControlDetail {
-  stance: TrigramStance;
+  stance: TrigramStance; // Consider aliasing if TrigramStance is also defined in enums.ts
   korean: string;
   technique: string;
 }

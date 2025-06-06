@@ -12,18 +12,18 @@ export const COMBAT_CONTROLS: CombatControlsConfig = {
     "8": { stance: "gon", korean: "곤", technique: "대지포옹" },
   },
   movement: {
-    WASD: "Tactical positioning and footwork",
-    ArrowKeys: "Alternative movement system",
+    WASD: "전술적 위치 선정 및 발놀림",
+    ArrowKeys: "대체 이동 시스템",
   },
   combat: {
-    SPACE: "Execute current stance technique",
-    SHIFT: "Defensive guard/block position",
-    CTRL: "Precision vital point targeting mode",
-    TAB: "Cycle through player archetypes",
+    SPACE: "현재 자세 기술 실행",
+    SHIFT: "방어 자세/블록 위치",
+    CTRL: "정밀한 급소 타격 모드",
+    TAB: "플레이어 전형 전환",
   },
   system: {
-    ESC: "Pause menu / Return to intro",
-    F1: "Help / Controls guide",
-    M: "Mute / Audio settings",
+    ESC: "일시 정지 메뉴 / 소개로 돌아가기",
+    F1: "도움말 / 컨트롤 가이드",
+    M: "음소거 / 오디오 설정",
   },
 };

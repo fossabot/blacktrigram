@@ -4,13 +4,13 @@ import type { FederatedPointerEvent, Graphics } from "pixi.js";
 import type React from "react";
 import type { ReactNode } from "react";
 import type { KoreanText } from "./korean-text";
-import type { GamePhase } from "./enums";
-import type { ColorValue } from "./common"; // Add missing import
+import type { GamePhase, TrigramStance as EnumTrigramStance } from "./enums"; // Renamed TrigramStance to avoid conflict
+import type { ColorValue, Position } from "./common"; // Add missing import for Position
 import type {
   PlayerState,
   PlayerArchetype,
-  TrigramStance,
-  Position,
+  // TrigramStance, // Use EnumTrigramStance
+  // Position, // Already imported from common
   HitEffect,
   CombatResult,
 } from "./index";
@@ -72,8 +72,8 @@ export interface TrainingScreenProps extends BaseComponentProps {
   readonly onPlayerStateChange?: (updates: Partial<PlayerState>) => void;
   readonly onReturnToMenu?: () => void;
   readonly onStartCombat?: () => void;
-  readonly onStanceChange?: (stance: TrigramStance) => void;
-  readonly selectedStance?: TrigramStance;
+  readonly onStanceChange?: (stance: EnumTrigramStance) => void; // Use aliased TrigramStance
+  readonly selectedStance?: EnumTrigramStance; // Use aliased TrigramStance
   readonly gameTime?: number;
   readonly currentRound?: number;
   readonly showVitalPoints?: boolean;
@@ -88,7 +88,10 @@ export interface GameUIProps extends BaseComponentProps {
   readonly gamePhase: GamePhase;
   readonly timeRemaining?: number;
   readonly isPaused?: boolean;
-  readonly onStanceChange: (playerIndex: 0 | 1, stance: TrigramStance) => void;
+  readonly onStanceChange: (
+    playerIndex: 0 | 1,
+    stance: EnumTrigramStance
+  ) => void; // Use aliased TrigramStance
   readonly onPlayerUpdate: (
     playerIndex: number,
     updates: Partial<PlayerState>
@@ -110,7 +113,7 @@ export interface PlayerProps extends GameComponentProps {
   readonly onAttack?: (targetPosition?: Position) => void;
   readonly isPlayer1?: boolean;
   readonly archetype: PlayerArchetype;
-  readonly stance: TrigramStance;
+  readonly stance: EnumTrigramStance; // Use aliased TrigramStance
   readonly position: Position;
   readonly facing: "left" | "right";
   readonly isAttacking?: boolean;
@@ -158,10 +161,10 @@ export interface DojangBackgroundProps extends GameComponentProps {
 
 // Trigram wheel props - FIXED: Match ui.ts interface
 export interface TrigramWheelProps extends BaseComponentProps {
-  readonly currentStance: TrigramStance;
-  readonly onStanceSelect: (stance: TrigramStance) => void;
-  readonly selectedStance?: TrigramStance;
-  readonly onStanceChange?: (stance: TrigramStance) => void;
+  readonly currentStance: EnumTrigramStance; // Use aliased TrigramStance
+  readonly onStanceSelect: (stance: EnumTrigramStance) => void; // Use aliased TrigramStance
+  readonly selectedStance?: EnumTrigramStance; // Use aliased TrigramStance
+  readonly onStanceChange?: (stance: EnumTrigramStance) => void; // Use aliased TrigramStance
   readonly isEnabled?: boolean;
   readonly interactive?: boolean;
   readonly showLabels?: boolean;
@@ -378,7 +381,10 @@ export interface CombatHUDProps extends BaseComponentProps {
 export interface CombatControlsProps extends BaseComponentProps {
   readonly players: readonly [PlayerState, PlayerState];
   readonly player: PlayerState; // Current active player
-  readonly onStanceChange: (playerIndex: number, stance: TrigramStance) => void;
+  readonly onStanceChange: (
+    playerIndex: number,
+    stance: EnumTrigramStance
+  ) => void; // Use aliased TrigramStance
   readonly isExecutingTechnique: boolean;
   readonly isPaused: boolean;
   readonly showVitalPoints?: boolean;

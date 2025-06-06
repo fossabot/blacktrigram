@@ -1,7 +1,7 @@
 // Core audio system types for Korean martial arts combat game
 
 import { TrigramStance } from "./enums";
-import { KoreanText } from "./korean-text";
+import type { KoreanText } from "./korean-text"; // Corrected import
 
 // Audio format and quality configuration - ONLY MP3 and WebM
 export type AudioFormat = "webm" | "mp3";
@@ -77,7 +77,11 @@ export type SoundEffectId =
   | "heavy_hit"
   | "light_hit"
   | "stance_select"
-  | "technique_execute";
+  | "technique_execute"
+  | "combat_end" // Added from constants/combat.ts
+  | "miss" // Added from constants/combat.ts
+  | "guard" // Added from constants/combat.ts
+  | "technique"; // Added from constants/combat.ts
 
 // Music track IDs for Korean martial arts themes
 export type MusicTrackId =
@@ -94,6 +98,7 @@ export type MusicId = MusicTrackId;
 // Audio asset configuration
 export interface AudioAsset {
   readonly id: string;
+  readonly url: string; // Add missing url property
   readonly category: AudioCategory;
   readonly basePath: string;
   readonly koreanContext: KoreanText; // Change from string to KoreanText

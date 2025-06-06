@@ -1,13 +1,13 @@
 // Status effects system for Korean martial arts
 
-import type { EffectType, EffectIntensity } from "./enums";
+import type { EffectType, EffectIntensity, DamageType } from "./enums"; // Added DamageType
 import type { KoreanText } from "./korean-text";
 import type { Position } from "./common";
 
 export interface StatusEffect {
   readonly id: string;
   readonly type: EffectType;
-  readonly intensity: EffectIntensity;
+  readonly intensity: EffectIntensity; // Uses EffectIntensity from enums
   readonly duration: number; // in milliseconds
   readonly description: KoreanText;
   readonly stackable: boolean;
@@ -20,6 +20,7 @@ export interface EffectModifier {
   readonly attribute: string;
   readonly value: number;
   readonly type: "flat" | "percentage";
+  readonly damageType?: DamageType; // Added optional damageType
 }
 
 export interface VitalPointEffect extends StatusEffect {

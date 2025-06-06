@@ -196,10 +196,12 @@ export const DAMAGE_CATEGORIES = {
   CRITICAL: { min: 76, max: 100, korean: "치명적", english: "Critical" },
 } as const;
 
-// Add missing SoundEffectId values
+// Sound effect IDs for combat
 export const COMBAT_SOUND_EFFECTS = {
-  combat_end: "combat_end",
-  miss: "miss",
-  guard: "guard",
-  technique: "technique",
-} as const;
+  combat_end: "combat_end" as const,
+  miss: "miss" as const,
+  guard: "guard" as const,
+  technique: "technique" as const,
+  // Add other combat-specific sound effect IDs here if they are distinct
+  // from the main SoundEffectId list or need specific grouping.
+};

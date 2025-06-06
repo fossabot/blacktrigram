@@ -15,8 +15,8 @@ import type {
 
 // PIXI.js React integration type declarations
 declare module "@pixi/react" {
-  import { ComponentType, ReactNode, RefObject } from "react";
   import * as PIXI from "pixi.js";
+  import { ComponentType, ReactNode, RefObject } from "react";
 
   // Application component props (this is the React component, not the PIXI.Application class)
   export interface ApplicationProps {
@@ -169,5 +169,3 @@ declare global {
     // If PIXI's own types are not being found, you might need to ensure @types/pixi.js is installed and configured.
   }
 }
-
-export {}; // Ensures this is treated as a module

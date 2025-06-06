@@ -6,7 +6,7 @@ import type {
   SoundEffectId,
   MusicTrackId,
 } from "./audio";
-import type { PlayerArchetype, TrigramStance, InputAction } from "./enums";
+import type { PlayerArchetype, TrigramStance } from "./enums";
 import type { KoreanTechnique, CombatResult } from "./combat"; // Removed unused CombatEvent
 import type { PlayerState } from "./player";
 import type { StatusEffect } from "./effects";
@@ -133,11 +133,10 @@ export interface TrigramSystemInterface {
 
 // Input system interface
 export interface InputSystemInterface {
-  registerAction: (action: InputAction, callback: () => void) => void;
-  handleKeyPress: (key: string) => void;
-  handleGamePadInput: (gamepadState: GamepadState) => void;
-  getLastInputTime: () => Timestamp;
-  isActionActive: (action: InputAction) => boolean;
+  registerAction: (action: string, callback: () => void) => void;
+  unregisterAction: (action: string) => void;
+  clearActions: () => void;
+  isActionActive: (action: string) => boolean;
 }
 
 // Gamepad state

@@ -1,8 +1,10 @@
 // Types related to game flow, UI props for game screens, and training
 
-import { TrigramStance } from "./enums";
-import type { PlayerState } from "./player"; // Import from player
-import type { PlayerArchetype } from "./player";
+import { TrigramStance, PlayerArchetype } from "./enums"; // Changed import for PlayerArchetype
+import type {
+  PlayerState,
+  // PlayerArchetype as PlayerArchetypeEnum, // Removed this alias
+} from "./player"; // Import from player
 
 export interface AppState {
   readonly gamePhase: GamePhase;
@@ -66,20 +68,20 @@ export interface GameAction {
 }
 
 export interface IntroScreenProps {
-  onArchetypeSelect: (archetype: PlayerArchetype) => void;
+  onArchetypeSelect: (archetype: PlayerArchetype) => void; // Use PlayerArchetype directly
   onStanceSelect: (stance: TrigramStance) => void;
   onStartTraining: () => void;
   onStartCombat: () => void;
-  selectedArchetype: PlayerArchetype;
+  selectedArchetype: PlayerArchetype; // Use PlayerArchetype directly
   selectedStance: TrigramStance;
 }
 
 export interface TrainingScreenProps {
-  archetype: PlayerArchetype;
+  archetype: PlayerArchetype; // Use PlayerArchetype directly
   stance: TrigramStance;
   onBack: () => void;
   onStartCombat: () => void;
 }
 
 // Re-export from player types for convenience
-export type { PlayerArchetype } from "./player";
+export type { PlayerArchetype } from "./enums"; // Export PlayerArchetype from enums

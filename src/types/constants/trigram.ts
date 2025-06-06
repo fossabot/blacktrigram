@@ -7,6 +7,24 @@ import type {
   KoreanText,
 } from "../index";
 
+// Define TrigramData interface comprehensively here if it's the primary source
+export interface TrigramData {
+  readonly id: TrigramStance;
+  readonly name: KoreanText;
+  readonly symbol: string;
+  readonly element: KoreanText;
+  readonly direction: string;
+  readonly philosophy: KoreanText;
+  readonly combatRole: KoreanText;
+  readonly technique: KoreanTechnique;
+  readonly strengths?: readonly string[];
+  readonly weaknesses?: readonly string[];
+  readonly offensiveBonus?: number;
+  readonly defensiveBonus?: number;
+  readonly color: number;
+  readonly kiFlowModifier?: number;
+}
+
 // Create individual techniques to avoid array/single confusion
 const GEON_TECHNIQUE: KoreanTechnique = {
   id: "geon_primary",
@@ -403,23 +421,5 @@ export const TRIGRAM_STANCES_ORDER: readonly TrigramStance[] = [
   "gan",
   "gon",
 ] as const;
-
-// Additional TrigramData interface with strengths property
-export interface TrigramData {
-  readonly id: TrigramStance;
-  readonly name: KoreanText;
-  readonly symbol: string;
-  readonly element: KoreanText;
-  readonly direction: string;
-  readonly philosophy: KoreanText;
-  readonly combatRole: KoreanText;
-  readonly technique: KoreanTechnique;
-  readonly strengths?: readonly string[];
-  readonly weaknesses?: readonly string[];
-  readonly offensiveBonus?: number;
-  readonly defensiveBonus?: number;
-  readonly color: number; // Add missing color property
-  readonly kiFlowModifier?: number;
-}
 
 export { TRIGRAM_DATA as default };

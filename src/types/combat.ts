@@ -1,16 +1,16 @@
 // Combat mechanics types for Korean martial arts game
 
 import type {
-  TrigramStance,
   PlayerArchetype,
+  TrigramStance,
   DamageType,
-  CombatState,
-  CombatAttackType as EnumCombatAttackType,
+  CombatState, // Add CombatState import
+  EnumCombatAttackType,
 } from "./enums";
 import type { PlayerState } from "./player";
 import type { DamageRange, Position } from "./common";
-import { StatusEffect } from "./effects";
-import { KoreanText } from "./korean-text";
+import type { StatusEffect } from "./effects"; // Ensure this is the correct StatusEffect
+import type { KoreanText } from "./korean-text";
 import type { VitalPoint as AnatomyVitalPoint } from "./anatomy";
 
 // Use the enum type directly
@@ -36,7 +36,7 @@ export interface KoreanTechnique {
   readonly romanized: string;
   readonly description: KoreanText;
   readonly stance: TrigramStance;
-  readonly type: CombatAttackType;
+  readonly type: CombatAttackType; // Uses CombatAttackType (alias for EnumCombatAttackType)
   readonly damageType?: DamageType;
   readonly damage?: number;
   readonly kiCost?: number;
@@ -55,10 +55,13 @@ export interface KoreanTechnique {
 
 // Combat result from technique execution
 export interface CombatResult {
+  readonly winner?: string;
   readonly damage: number;
+  readonly technique?: string;
+  readonly newState: CombatState; // Now properly imported and used
+  readonly hitLocation?: string;
   readonly damageType: DamageType;
   readonly isVitalPoint: boolean;
-  readonly newState: CombatState;
   readonly effects: readonly StatusEffect[];
   readonly hit: boolean;
   readonly critical: boolean;
@@ -84,10 +87,6 @@ export interface CombatResult {
   readonly effectiveness: number;
   readonly hitPosition: Position;
   readonly vitalPoint?: AnatomyVitalPoint;
-
-  // Added missing winner and loser properties
-  readonly winner?: string;
-  readonly loser?: string;
 }
 
 // Type alias for HitResult as requested by error messages
@@ -126,7 +125,8 @@ export interface CombatEvent {
   readonly winnerId?: string;
 }
 
-export type { CombatState, DamageType } from "./enums";
+// Fix exports - remove CombatState
+export type { DamageType } from "./enums";
 
 // Attack input for combat system
 export interface AttackInput {

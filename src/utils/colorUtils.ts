@@ -36,3 +36,20 @@ export function ensurePixiColor(color: number | string): number {
   }
   return hexToNumeric(color);
 }
+
+/**
+ * Lighten a color
+ * @param color - The original color
+ * @returns The lightened color
+ */
+export function lightenColor(color: number): number {
+  let r = (color >> 16) & 0xff;
+  let g = (color >> 8) & 0xff;
+  let b = color & 0xff;
+
+  r = Math.min(255, r + 25);
+  g = Math.min(255, g + 25);
+  b = Math.min(255, b + 25);
+
+  return (r << 16) | (g << 8) | b;
+}

@@ -1,20 +1,26 @@
 // Player archetype data for Korean martial arts
 
-import type { PlayerArchetype } from "../enums";
+import type { PlayerArchetype, TrigramStance } from "../enums"; // Added TrigramStance
+import type { PlayerAttributes, PlayerSkills } from "../player"; // These should now be found
+import type { KoreanText } from "../korean-text"; // Added KoreanText
 
 // Remove conflicting import and define interface locally
 export interface PlayerArchetypeData {
-  readonly name: { korean: string; english: string };
-  readonly description: { korean: string; english: string };
-  readonly preferredTrigrams: readonly string[];
+  readonly name: KoreanText; // Use KoreanText
+  readonly description: KoreanText; // Use KoreanText
+  readonly preferredTrigrams: readonly TrigramStance[]; // Use TrigramStance
   readonly specialization: string; // Add missing property
+  readonly baseAttributes?: PlayerAttributes; // Optional for now
+  readonly baseSkills?: PlayerSkills; // Optional for now
+  readonly uniqueAbility?: { name: KoreanText; description: KoreanText }; // Optional for now
   readonly bonuses: {
-    readonly damageBonus: number;
-    readonly accuracyBonus: number;
-    readonly speedBonus: number;
-    readonly defenseBonus: number;
+    readonly damageBonus?: number; // Made optional for consistency
+    readonly accuracyBonus?: number; // Made optional
+    readonly speedBonus?: number; // Made optional
+    readonly defenseBonus?: number; // Made optional
     readonly damageResistance?: number;
     readonly precisionBonus?: number;
+    [key: string]: number | undefined; // Allow other specific bonuses
   };
 }
 

@@ -9,19 +9,47 @@
 export * from "./enums";
 
 // Export core types (avoid duplicates by being specific)
-export type { Position, CombatCondition } from "./common";
-export type { PlayerState, PlayerArchetypeData } from "./player";
+export type {
+  Position,
+  CombatCondition,
+  DamageRange,
+  // KoreanText as CommonKoreanText, // This was aliasing a potentially problematic local type from common.ts
+  ColorValue as CommonColorValue,
+} from "./common"; // Aliased to avoid name clashes if re-exporting KoreanText from korean-text.ts
+export type {
+  PlayerState,
+  PlayerArchetypeData,
+  PlayerAttributes, // Should now be found
+  PlayerSkills, // Should now be found
+} from "./player"; // Added PlayerAttributes, PlayerSkills
 export type {
   VitalPoint,
   VitalPointEffect,
   VitalPointHitResult,
   AnatomicalLocation,
   RegionData,
+  VitalPointCategory, // Re-exporting from anatomy which aliases from enums
+  VitalPointSeverity, // Re-exporting from anatomy which aliases from enums
+  BodyPart,
+  AnatomyModel,
 } from "./anatomy";
-export type { KoreanTechnique, CombatResult, AttackInput } from "./combat";
-export type { HitEffect, StatusEffect } from "./effects";
 export type {
-  KoreanText,
+  KoreanTechnique,
+  CombatResult,
+  AttackInput,
+  HitResult,
+  CombatAnalysis,
+  CombatEvent,
+  TechniqueType,
+} from "./combat"; // Added TechniqueType
+export type {
+  HitEffect,
+  StatusEffect,
+  EffectModifier,
+  HitEffectText,
+} from "./effects"; // Added HitEffectText
+export type {
+  KoreanText, // This is the primary KoreanText from korean-text.ts
   KoreanTextProps,
   KoreanTextHeaderProps,
   KoreanTitleProps,
@@ -100,6 +128,12 @@ export type {
   AudioContextState,
   SoundEffect,
   AudioManagerInterface,
+  AudioState, // Added AudioState
+  IAudioManager, // Added IAudioManager
+  MusicTrackId, // Added MusicTrackId
+  SoundEffectId, // Added SoundEffectId
+  AudioAsset, // Added AudioAsset
+  AudioPlaybackOptions, // Added AudioPlaybackOptions
 } from "./audio";
 
 // Export constants (value exports)
@@ -118,5 +152,5 @@ export {
 
 // Export utility functions
 export { createPlayerState } from "../utils/playerUtils";
-export type { DamageRange } from "./common";
+// export type { DamageRange } from "./common"; // Already exported
 export type { BodyRegion } from "./enums";

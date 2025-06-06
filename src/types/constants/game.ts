@@ -1,4 +1,3 @@
-// filepath: /workspaces/blacktrigram/src/types/constants/game.ts
 // General game engine and application constants
 
 export const DEFAULT_GAME_SPEED = 1.0;
@@ -234,8 +233,10 @@ export const PERFORMANCE_THRESHOLDS = {
 } as const;
 
 // Export individual constants (no duplicates)
-export const {
-  MAX_TRANSITION_COST_KI,
-  MAX_TRANSITION_COST_STAMINA,
-  MAX_TRANSITION_TIME_MILLISECONDS,
-} = GAME_CONFIG;
+// These are already part of GAME_CONFIG, so direct export might be redundant
+// unless specifically needed for tree-shaking or direct import clarity.
+// export const {
+//   MAX_TRANSITION_COST_KI,
+//   MAX_TRANSITION_COST_STAMINA,
+//   MAX_TRANSITION_TIME_MILLISECONDS,
+// } = GAME_CONFIG;

@@ -2,7 +2,7 @@
 
 // Korean font families for authentic display
 export const KOREAN_FONT_FAMILY_PRIMARY = "Noto Sans KR";
-export const KOREAN_FONT_FAMILY_SECONDARY = "Malgun Gothic, 맑은 고딕";
+export const KOREAN_FONT_FAMILY_SECONDARY = "Malgun Gothic, 맑은 고딕"; // Fallback or alternative
 
 // Korean text sizes mapping
 export const KOREAN_TEXT_SIZES = {
@@ -99,7 +99,7 @@ export const KOREAN_LETTER_SPACING = {
 } as const;
 
 // Export main font family for backward compatibility
-export const KOREAN_FONT_FAMILY = KOREAN_FONT_FAMILY_COMBINED;
+export const KOREAN_FONT_FAMILY = `${KOREAN_FONT_FAMILY_PRIMARY}, Arial, sans-serif`; // Corrected definition
 
 // Additional Korean typography constants
 export const KOREAN_FONTS = {

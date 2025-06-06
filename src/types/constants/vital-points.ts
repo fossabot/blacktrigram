@@ -1,6 +1,8 @@
 // Korean Martial Arts Vital Points Data for Black Trigram
 
 import type { VitalPoint } from "../anatomy";
+// Assuming VITAL_POINTS_DATA is correctly exported from KoreanVitalPoints.ts
+import { VITAL_POINTS_DATA as ALL_VITAL_POINTS } from "../../systems/vitalpoint/KoreanVitalPoints";
 
 // Export vital points data - this will be populated from KoreanVitalPoints.ts
 export const VITAL_POINTS_CONSTANTS = {
@@ -31,10 +33,12 @@ export { VITAL_POINTS_DATA } from "../../systems/vitalpoint/KoreanVitalPoints";
 
 // Helper function to get vital point by ID
 export function getVitalPointById(id: string): VitalPoint | undefined {
-  // Dynamic import to avoid circular dependency
-  return import("../../systems/vitalpoint/KoreanAnatomy").then(
-    ({ VITAL_POINTS_DATA }) => VITAL_POINTS_DATA.find((vp) => vp.id === id)
-  ) as any; // Type assertion for immediate use
+  // Direct access is generally safer and more performant for static data
+  return ALL_VITAL_POINTS.find((vp) => vp.id === id);
+  // Dynamic import can be problematic for static data and build tools
+  // return import("../../systems/vitalpoint/KoreanAnatomy").then(
+  //   ({ VITAL_POINTS_DATA }) => VITAL_POINTS_DATA.find((vp) => vp.id === id)
+  // ) as any; // Type assertion for immediate use
 }
 
 // Export vital point categories for filtering
