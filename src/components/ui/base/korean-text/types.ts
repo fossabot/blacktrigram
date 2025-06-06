@@ -57,17 +57,38 @@ export type KoreanFontWeight =
 
 // PIXI text style configuration
 export interface PixiTextStyleConfig {
-  // Ensure this is exported
   fontFamily?: string;
   fontSize?: number;
-  fontWeight?: KoreanFontWeight;
-  fill?: string | string[];
-  stroke?: string;
-  strokeThickness?: number;
+  fontWeight?: string | number; // PIXI fontWeight can be string ('bold') or number
+  fontStyle?: string;
+  fill?: number | string | string[] | number[] | CanvasGradient | CanvasPattern; // Allow number, string, or array for gradients
+  align?: "left" | "center" | "right" | "justify"; // PIXI align options
   letterSpacing?: number;
   lineHeight?: number;
+  dropShadow?: boolean;
+  dropShadowColor?: number | string;
+  dropShadowBlur?: number;
+  dropShadowAngle?: number;
+  dropShadowDistance?: number;
+  dropShadowAlpha?: number;
+  stroke?: number | string;
+  strokeThickness?: number;
   wordWrap?: boolean;
   wordWrapWidth?: number;
+  padding?: number; // Added padding
+  textBaseline?:
+    | "alphabetic"
+    | "top"
+    | "hanging"
+    | "middle"
+    | "ideographic"
+    | "bottom"; // Added textBaseline
+  lineJoin?: "miter" | "round" | "bevel"; // Added lineJoin
+  miterLimit?: number; // Added miterLimit
+  whiteSpace?: "normal" | "pre" | "pre-line"; // Added whiteSpace
+  leading?: number; // Added leading
+  breakWords?: boolean; // Added breakWords
+  // text?: string; // Text content is usually set directly on the Text object, not in style
 }
 
 // Export the font sizes with proper name

@@ -147,8 +147,6 @@ export interface ProgressTrackerProps extends BaseComponentProps {
   readonly textColor?: ColorValue;
   readonly borderWidth?: number;
   readonly color?: string;
-  readonly x?: number; // Add missing position props
-  readonly y?: number; // Add missing position props
   readonly width?: number;
   readonly height?: number;
   readonly showLabels?: boolean; // Added
@@ -174,8 +172,6 @@ export interface TrigramWheelProps extends BaseComponentProps {
   readonly showLabels?: boolean; // Added
   readonly size?: number;
   readonly position?: Position; // Keep this for potential direct use
-  readonly x?: number; // Add x for individual positioning
-  readonly y?: number; // Add y for individual positioning
   readonly time?: number; // Added
 }
 
@@ -322,8 +318,8 @@ export interface BaseButtonProps
 // Added missing types
 export interface BackgroundGridProps extends GameComponentProps {
   readonly gridSize?: number;
-  readonly lineColor?: number; // Added
-  readonly lineWidth?: number; // Added
+  readonly lineColor?: number;
+  readonly lineWidth?: number;
 }
 
 export interface CyberpunkBackgroundProps extends GameComponentProps {
@@ -405,7 +401,7 @@ export interface CombatControlsProps extends BaseComponentProps {
 
 // Add missing ControlsSectionProps interface
 export interface ControlsSectionProps extends BaseComponentProps {
-  readonly onGamePhaseChange: (phase: GamePhase | string) => void; // Added
+  readonly onGamePhaseChange: (phase: GamePhase | string) => void;
   readonly title?: string; // Added based on typical section structure
   // Add any other props specific to ControlsSection
 }
