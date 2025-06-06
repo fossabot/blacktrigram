@@ -5,7 +5,10 @@ import type { Position, HitEffect } from "../../types";
 import { CombatSystem } from "../../systems/CombatSystem";
 import { TrigramSystem } from "../../systems/TrigramSystem";
 import { AudioManager } from "../../audio/AudioManager";
+import { PLACEHOLDER_AUDIO_ASSETS } from "../../audio/placeholder-sounds";
 import type { GameEngineProps } from "../../types/components";
+
+const audioManager = new AudioManager(PLACEHOLDER_AUDIO_ASSETS); // Fix: Create instance with assets
 
 export function GameEngine({
   player1,
@@ -32,7 +35,6 @@ export function GameEngine({
 
   const [combatEffects, setCombatEffects] = useState<readonly HitEffect[]>([]);
   const trigramSystem = new TrigramSystem();
-  const audioManager = new AudioManager(); // Fix: Create instance
 
   const updateCombatEffects = useCallback(() => {
     setCombatEffects((prev) =>
