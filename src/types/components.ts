@@ -148,7 +148,7 @@ export interface ProgressTrackerProps extends BaseComponentProps {
   readonly borderWidth?: number;
   readonly color?: string;
   readonly x?: number; // Add missing position props
-  readonly y?: number;
+  readonly y?: number; // Add missing position props
   readonly width?: number;
   readonly height?: number;
   readonly showLabels?: boolean; // Added
@@ -173,7 +173,9 @@ export interface TrigramWheelProps extends BaseComponentProps {
   readonly interactive?: boolean;
   readonly showLabels?: boolean; // Added
   readonly size?: number;
-  readonly position?: Position;
+  readonly position?: Position; // Keep this for potential direct use
+  readonly x?: number; // Add x for individual positioning
+  readonly y?: number; // Add y for individual positioning
   readonly time?: number; // Added
 }
 
@@ -403,7 +405,7 @@ export interface CombatControlsProps extends BaseComponentProps {
 
 // Add missing ControlsSectionProps interface
 export interface ControlsSectionProps extends BaseComponentProps {
-  readonly onGamePhaseChange: (phase: GamePhase | string) => void;
+  readonly onGamePhaseChange: (phase: GamePhase | string) => void; // Added
   readonly title?: string; // Added based on typical section structure
   // Add any other props specific to ControlsSection
 }
