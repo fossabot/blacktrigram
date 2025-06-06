@@ -980,7 +980,6 @@ P1 {health:80, pain:20, balance:SHAKEN, cons:100, bloodLoss:0, stamina:53}.
 ---
 
 **🎯 Black Trigram** melds a **10×10 octagonal grid**, **authentic Taekwondo/Hapkido stances**, and a **layered CombatStat system** to deliver a visceral, high-stakes martial-arts experience. Every cell, every stance switch, and every limb strike influences **health**, **pain**, **balance**, **consciousness**, **bloodLoss**, and **stamina**—so mastery requires both tactical grid control and precise, reality-based combat discipline.  
-````
 
 
 ## 3. Winning and Losing
