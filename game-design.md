@@ -553,11 +553,10 @@ _Enter the shadow dojang. Master the dark arts. Walk the path of the perfect let
   - Inscribed within the square is a **regular octagon** whose vertices touch the midpoints of each edge of the square.
   - Visual Representation (conceptual):
 
-    ```mermaid
 %% Legend:
 %% 🟦 = Playable Cell  
 %% ⬛ = Out-of-Bounds Cell
-
+    ```mermaid
 graph LR
   subgraph "10×10 Grid"
     direction TB
