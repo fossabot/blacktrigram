@@ -69,7 +69,7 @@ export type PlayerArchetype = PlayerArchetypeEnum; // Export PlayerArchetype typ
 export interface PlayerArchetypeData {
   readonly name: { korean: string; english: string };
   readonly description: { korean: string; english: string };
-  readonly preferredTrigrams: readonly string[];
+  readonly preferredTrigrams: readonly TrigramStance[]; // Changed from readonly string[]
   readonly specialization: string; // Add missing property
   readonly bonuses: {
     readonly damageBonus: number; // Changed from damageMultiplier

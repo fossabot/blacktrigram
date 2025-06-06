@@ -76,24 +76,16 @@ export const DIFFICULTY_SETTINGS = {
   INTERMEDIATE: {
     korean: "중급",
     english: "Intermediate",
-
-    // Reduced assistance
     autoBlock: false,
-    vitalPointHighlight: false, // Changed from true
+    vitalPointHighlight: false,
     techniqueHints: true,
     slowerCombat: false,
-
-    // Balanced damage
     playerDamageMultiplier: 1.0,
     enemyDamageMultiplier: 1.0,
-
-    // Standard timing
     extendedBlockWindow: 1.0,
     extendedCounterWindow: 1.0,
-
-    // Some learning aids
     showCombatAnalysis: true,
-    displayTechniqueNames: false, // Changed from true
+    displayTechniqueNames: false,
     culturalContext: true,
   },
 
@@ -217,17 +209,13 @@ export const PERFORMANCE_THRESHOLDS = {
   FPS_SAMPLE_SIZE: 60, // Frames to average for FPS calculation
 
   // Memory usage alerts
-  MAX_MEMORY_MB: 512, // Maximum memory usage in MB
-  MEMORY_WARNING_THRESHOLD: 0.8, // Warning at 80% of max
-  GARBAGE_COLLECTION_THRESHOLD: 0.9, // Force GC at 90% of max
-
-  // Audio performance
-  MAX_AUDIO_LATENCY: 100, // Maximum audio latency in ms
-  AUDIO_BUFFER_SIZE: 4096, // Audio buffer size
-
-  // Rendering performance
-  MAX_DRAW_CALLS: 100, // Maximum draw calls per frame
-  TEXTURE_CACHE_LIMIT: 50, // Maximum cached textures
+  MAX_MEMORY_MB: 512,
+  MEMORY_WARNING_THRESHOLD: 0.8,
+  GARBAGE_COLLECTION_THRESHOLD: 0.9,
+  MAX_AUDIO_LATENCY: 100,
+  AUDIO_BUFFER_SIZE: 4096,
+  MAX_DRAW_CALLS: 100,
+  TEXTURE_CACHE_LIMIT: 50,
 } as const;
 
 // Export individual constants (no duplicates)
