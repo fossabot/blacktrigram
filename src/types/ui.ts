@@ -105,7 +105,7 @@ export interface GameUIProps extends BaseUIComponentProps {
 
 // Intro screen props
 export interface IntroScreenProps extends BaseUIComponentProps {
-  readonly onGamePhaseChange: (phase: GamePhase) => void;
+  readonly onGamePhaseChange: (phase: GamePhase | string) => void; // Ensure this matches string usage in App.tsx
   readonly currentSection?: string;
 }
 
