@@ -10,7 +10,11 @@ import type { PlayerArchetype, TrigramStance } from "./enums";
 import type { KoreanTechnique, CombatResult } from "./combat"; // Removed unused CombatEvent
 import type { PlayerState } from "./player";
 import type { StatusEffect } from "./effects";
-import type { VitalPoint } from "./anatomy"; // Removed unused TargetingResult, InjuryReport
+// Use VitalPointHitResult from anatomy.ts for consistency
+import type {
+  VitalPoint,
+  VitalPointHitResult as AnatomyVitalPointHitResult,
+} from "./anatomy";
 import type {
   TrigramData,
   // TrigramTransition, // Unused
@@ -34,18 +38,8 @@ export interface VitalPointSystemConfig {
   readonly criticalHitMultiplier?: number; // Added
 }
 
-// Result from VitalPointSystem's hit calculation
-export interface VitalPointHitResult {
-  readonly hit: boolean;
-  readonly damage: number;
-  readonly effects: readonly StatusEffect[];
-  readonly vitalPointsHit: readonly string[]; // IDs of vital points hit // Changed from VitalPoint[]
-  readonly bodyPartId?: string; // ID of the body part hit // Added
-  readonly isCritical?: boolean;
-  // Removed isVitalPointHit, vitalPointsHit array serves this purpose
-  // Removed vitalPoint, vitalPointsHit provides IDs, details can be fetched if needed
-  // Removed damageDealt, use 'damage' field
-}
+// Result from VitalPointSystem's hit calculation - unified with anatomy.ts version
+export type VitalPointHitResult = AnatomyVitalPointHitResult;
 
 // Combat system interface
 export interface CombatSystemInterface {
@@ -53,7 +47,7 @@ export interface CombatSystemInterface {
     technique: KoreanTechnique,
     attacker: PlayerState, // Changed from PlayerArchetype to full PlayerState
     defender: PlayerState, // Added
-    hitResult: VitalPointHitResult // Changed from CombatResult to VitalPointHitResult for more specific input
+    hitResult: VitalPointHitResult // Changed to use the unified VitalPointHitResult
   ) => {
     baseDamage: number;
     modifierDamage: number;
@@ -93,20 +87,28 @@ export interface VitalPointSystemInterface {
     baseDamage: number,
     archetype: string // Changed from PlayerArchetype
   ): number;
+  processHit: (
+    // Added processHit to match usage in playerUtils
+    targetPosition: Position,
+    technique: KoreanTechnique,
+    baseDamage: number,
+    attackerArchetype: PlayerArchetype,
+    targetDimensions: { width: number; height: number }
+  ) => VitalPointHitResult; // Returns the detailed VitalPointHitResult from anatomy.ts
   calculateHit: (
-    technique: KoreanTechnique, // Added
-    targetVitalPointId: string | null, // Explicitly allow null if no specific target
-    accuracyRoll: number, // Player's accuracy roll (0-1)
-    attackerPosition: Position, // Added
-    defenderPosition: Position, // Added
-    defenderStance: TrigramStance // Added
-  ) => VitalPointHitResult; // Changed to use the new result type
+    // This might be an internal or alternative method
+    technique: KoreanTechnique,
+    targetVitalPointId: string | null,
+    accuracyRoll: number,
+    attackerPosition: Position,
+    defenderPosition: Position,
+    defenderStance: TrigramStance
+  ) => VitalPointHitResult;
   applyVitalPointEffects: (
-    // Added
     player: PlayerState,
     vitalPoint: VitalPoint,
     intensityMultiplier?: number
-  ) => PlayerState; // Returns updated player state
+  ) => PlayerState;
 }
 
 // Trigram system interface

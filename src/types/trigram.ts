@@ -68,7 +68,7 @@ export interface TrigramData {
   readonly name: KoreanText;
   readonly symbol: string;
   readonly element: KoreanText; // Changed from string to KoreanText
-  readonly direction: string;
+  readonly direction?: string; // Made optional
   readonly philosophy: KoreanText; // Added philosophy property
   readonly combatRole: KoreanText; // Added combat role property
   readonly technique: KoreanTechnique; // Associated signature technique
@@ -78,6 +78,14 @@ export interface TrigramData {
   readonly defensiveBonus?: number; // Added
   readonly kiFlowModifier?: number; // How this stance affects Ki recovery or usage
   readonly staminaModifier?: number; // How this stance affects Stamina recovery or usage
+  readonly theme?: {
+    // Added theme for visual styling
+    readonly primary: number;
+    readonly secondary: number;
+    readonly active: number;
+    readonly hover: number;
+    readonly glow: number;
+  };
 }
 
 // Effectiveness matrix for stance combinations

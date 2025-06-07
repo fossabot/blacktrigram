@@ -64,8 +64,11 @@ export interface MenuSectionProps extends BaseUIComponentProps {
 
 // Philosophy section props - FIXED: Ensure consistent with components.ts
 export interface PhilosophySectionProps extends BaseUIComponentProps {
-  readonly onGamePhaseChange: (phase: GamePhase | string) => void;
-  readonly title?: string; // Added
+  readonly onGamePhaseChange: (phase: GamePhase) => void;
+  readonly title?: string;
+  readonly selectedArchetype?: PlayerArchetype;
+  readonly onArchetypeSelect?: (archetype: PlayerArchetype) => void;
+  readonly onArchetypeChange?: (archetype: PlayerArchetype) => void;
 }
 
 // Training screen props

@@ -47,3 +47,6 @@ export const KOREAN_FONT_WEIGHTS = {
 
 // Re-export from other constant files
 // export * from "./constants/index"; // Already at the top
+
+// Re-export typography constants
+export * from "./constants/typography";

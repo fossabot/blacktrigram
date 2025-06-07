@@ -1,5 +1,10 @@
+/**
+ * Combat control configuration for Korean martial arts
+ */
+
 import type { CombatControlsConfig } from "../controls";
 
+// Define the combat controls configuration
 export const COMBAT_CONTROLS: CombatControlsConfig = {
   stanceControls: {
     "1": { stance: "geon", korean: "건", technique: "천둥벽력" },
@@ -12,18 +17,54 @@ export const COMBAT_CONTROLS: CombatControlsConfig = {
     "8": { stance: "gon", korean: "곤", technique: "대지포옹" },
   },
   movement: {
-    WASD: "전술적 위치 선정 및 발놀림",
-    ArrowKeys: "대체 이동 시스템",
+    KeyW: "전진 (Forward)",
+    KeyA: "좌측 이동 (Move Left)",
+    KeyS: "후진 (Backward)",
+    KeyD: "우측 이동 (Move Right)",
+    ArrowUp: "전진 (Forward)",
+    ArrowLeft: "좌측 이동 (Move Left)",
+    ArrowDown: "후진 (Backward)",
+    ArrowRight: "우측 이동 (Move Right)",
   },
   combat: {
-    SPACE: "현재 자세 기술 실행",
-    SHIFT: "방어 자세/블록 위치",
-    CTRL: "정밀한 급소 타격 모드",
-    TAB: "플레이어 전형 전환",
+    Space: "기술 실행 (Execute Technique)",
+    ShiftLeft: "방어 자세 (Defensive Guard)",
+    ControlLeft: "급소 조준 모드 (Vital Point Targeting)",
+    Tab: "플레이어 전환 (Switch Player)",
+    Enter: "확인 (Confirm)",
   },
   system: {
-    ESC: "일시 정지 메뉴 / 소개로 돌아가기",
-    F1: "도움말 / 컨트롤 가이드",
-    M: "음소거 / 오디오 설정",
+    Escape: "일시정지 / 메뉴 (Pause / Menu)",
+    F1: "도움말 (Help)",
+    KeyM: "음소거 (Mute)",
+    F11: "전체화면 (Fullscreen)",
   },
 };
+
+// Key mapping for easier lookup
+export const KEY_MAPPINGS = {
+  STANCE_KEYS: ["1", "2", "3", "4", "5", "6", "7", "8"],
+  MOVEMENT_KEYS: [
+    "KeyW",
+    "KeyA",
+    "KeyS",
+    "KeyD",
+    "ArrowUp",
+    "ArrowLeft",
+    "ArrowDown",
+    "ArrowRight",
+  ],
+  COMBAT_KEYS: ["Space", "ShiftLeft", "ControlLeft"],
+  SYSTEM_KEYS: ["Escape", "F1", "KeyM", "F11"],
+} as const;
+
+// Input action types
+export const INPUT_ACTIONS = {
+  STANCE_CHANGE: "stance_change",
+  ATTACK: "attack",
+  DEFEND: "defend",
+  MOVE: "move",
+  SPECIAL: "special",
+  PAUSE: "pause",
+  TARGET: "target",
+} as const;

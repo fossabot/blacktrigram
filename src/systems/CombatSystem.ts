@@ -5,10 +5,11 @@ import type {
   PlayerArchetype,
   TrigramStance,
   CombatState, // Added CombatState
+  VitalPointHitResult,
 } from "../types";
 import { STANCE_EFFECTIVENESS_MATRIX } from "../types/constants";
 import {
-  executeTechnique,
+  executeTechnique as executeTechniqueUtil, // Renamed to avoid conflict
   isPlayerCapacitated,
   calculateArchetypeDamage,
 } from "../utils/playerUtils";
@@ -24,7 +25,8 @@ export class CombatSystem {
     targetPoint?: string | null
   ): Promise<CombatResult> {
     // Use playerUtils' executeTechnique for core logic
-    const { hitResult } = executeTechnique(
+    const { hitResult } = executeTechniqueUtil(
+      // Use renamed util
       attacker,
       defender,
       technique,
@@ -48,6 +50,7 @@ export class CombatSystem {
    * Calculate technique damage and effects using playerUtils.
    */
   public static calculateTechnique(
+    // This seems more like a stateless calculation for UI or prediction
     technique: KoreanTechnique,
     archetype: PlayerArchetype
   ): CombatResult {
@@ -64,33 +67,33 @@ export class CombatSystem {
 
     return {
       attacker: archetype,
-      defender: archetype,
+      defender: archetype, // Placeholder, defender not known in this context
       damage: isCritical
         ? Math.round(damage * (technique.critMultiplier ?? 1.5))
         : Math.round(damage),
-      hit: true,
+      hit: true, // Assumes hit for calculation purposes
       critical: isCritical,
       techniqueUsed: technique,
       effects: technique.effects || [],
       vitalPointsHit: [],
-      defenderDamaged: true,
+      defenderDamaged: true, // Assumes damage for calculation
       damageType: technique.damageType || "blunt",
-      isVitalPoint: false,
-      newState: "ready" as CombatState, // Cast to CombatState
+      isVitalPoint: false, // Cannot determine without target
+      newState: "ready" as CombatState, // Placeholder
       damagePrevented: 0,
       staminaUsed: technique.staminaCost || 0,
       kiUsed: technique.kiCost || 0,
-      attackerStance: technique.stance || "geon",
-      defenderStance: "geon",
-      painLevel: damage * 0.5,
-      consciousnessImpact: damage * 0.1,
+      attackerStance: technique.stance || "geon", // Default if not specified
+      defenderStance: "geon", // Placeholder
+      painLevel: damage * 0.5, // Example
+      consciousnessImpact: damage * 0.1, // Example
       balanceEffect: 0,
       bloodLoss: 0,
       stunDuration: isCritical ? 1000 : 0,
       statusEffects: technique.effects || [],
       hitType: isCritical ? "critical" : "normal",
-      effectiveness: 1.0,
-      hitPosition: { x: 0, y: 0 },
+      effectiveness: 1.0, // Placeholder
+      hitPosition: { x: 0, y: 0 }, // Placeholder
     };
   }
 
@@ -117,29 +120,30 @@ export class CombatSystem {
 
   /**
    * Execute a technique for test purposes (stateless).
+   * This is similar to calculateTechnique but might involve randomness for hit chance.
    */
   public static executeTechnique(
+    // Renamed from the one in playerUtils to avoid confusion if this is kept separate
     technique: KoreanTechnique,
     attackerArchetype: PlayerArchetype,
-    defenderArchetype?: PlayerArchetype
+    defenderArchetype?: PlayerArchetype // Defender archetype might not always be known for pure calculation
   ): CombatResult {
-    // Use playerUtils' calculateArchetypeDamage for base damage
     const baseDamage =
       technique.damage ??
       (technique.damageRange
         ? (technique.damageRange.min + technique.damageRange.max) / 2
         : 10);
-    const damage = calculateArchetypeDamage(attackerArchetype, baseDamage); // Use attackerArchetype
+    const damage = calculateArchetypeDamage(attackerArchetype, baseDamage);
     const accuracy = technique.accuracy ?? 0.8;
     const hit = Math.random() < accuracy;
     const isCritical =
-      hit && // Critical only if hit
+      hit &&
       (Math.random() < (technique.critChance ?? 0.1) ||
-        (!!technique.critMultiplier && Math.random() < 0.05)); // Ensure boolean evaluation
+        (!!technique.critMultiplier && Math.random() < 0.05));
 
     return {
       attacker: attackerArchetype,
-      defender: defenderArchetype || attackerArchetype,
+      defender: defenderArchetype || attackerArchetype, // Default to attacker if no defender
       damage: hit
         ? isCritical
           ? Math.round(damage * (technique.critMultiplier ?? 1.5))
@@ -150,15 +154,15 @@ export class CombatSystem {
       techniqueUsed: technique,
       effects: technique.effects || [],
       vitalPointsHit: [],
-      defenderDamaged: hit,
+      defenderDamaged: hit && damage > 0,
       damageType: technique.damageType || "blunt",
       isVitalPoint: false,
-      newState: "ready" as CombatState, // Cast to CombatState
+      newState: "ready" as CombatState,
       damagePrevented: 0,
       staminaUsed: technique.staminaCost || 0,
       kiUsed: technique.kiCost || 0,
       attackerStance: technique.stance || "geon",
-      defenderStance: "geon",
+      defenderStance: "geon", // Placeholder
       painLevel: hit ? damage * 0.5 : 0,
       consciousnessImpact: hit ? damage * 0.1 : 0,
       balanceEffect: 0,
@@ -168,6 +172,75 @@ export class CombatSystem {
       hitType: hit ? (isCritical ? "critical" : "normal") : "miss",
       effectiveness: 1.0,
       hitPosition: { x: 0, y: 0 },
+    };
+  }
+
+  static resolveAttack(
+    attacker: PlayerState,
+    defender: PlayerState,
+    technique: KoreanTechnique,
+    targetedVitalPointId?: string
+  ): {
+    combatResult: CombatResult;
+    updatedAttacker: PlayerState;
+    updatedDefender: PlayerState;
+  } {
+    const result = executeTechniqueUtil(
+      attacker,
+      defender,
+      technique,
+      targetedVitalPointId
+    );
+
+    return {
+      combatResult: result.hitResult,
+      updatedAttacker: result.updatedAttacker,
+      updatedDefender: result.updatedDefender,
+    };
+  }
+
+  static checkWinCondition(
+    players: readonly [PlayerState, PlayerState]
+  ): string | null {
+    const [player1, player2] = players;
+
+    if (player1.health <= 0) {
+      return player2.id;
+    }
+
+    if (player2.health <= 0) {
+      return player1.id;
+    }
+
+    if (player1.consciousness <= 0) {
+      return player2.id;
+    }
+
+    if (player2.consciousness <= 0) {
+      return player1.id;
+    }
+
+    return null;
+  }
+
+  static calculateDamage(
+    technique: KoreanTechnique,
+    attacker: PlayerState,
+    defender: PlayerState,
+    hitResult?: VitalPointHitResult
+  ): {
+    baseDamage: number;
+    modifierDamage: number;
+    totalDamage: number;
+  } {
+    const baseDamage = technique.damage || 10;
+    const modifierDamage = hitResult?.damage || 0;
+    const totalDamage = baseDamage + modifierDamage;
+
+    return {
+      baseDamage,
+      modifierDamage,
+      totalDamage,
     };
   }
 }

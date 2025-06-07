@@ -1,180 +1,273 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Container, Text } from "@pixi/react";
+import React, { useCallback, useState, useMemo, useEffect } from "react";
+import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import type {
-  CombatScreenProps,
-  TrigramStance,
-  KoreanTechnique,
   CombatResult,
+  CombatScreenProps,
+  KoreanTechnique,
+  TrigramStance,
 } from "../../types";
-import { CombatArena } from "./components/CombatArena"; // Named import
-import CombatControls from "./components/CombatControls";
-import CombatHUD from "./components/CombatHUD";
+import {
+  CYBERPUNK_PALETTE,
+  GAME_CONFIG,
+  TRIGRAM_DATA,
+} from "../../types/constants";
+import { CombatArena } from "./components/CombatArena";
+import { CombatHUD } from "./components/CombatHUD";
+import { CombatControls } from "./components/CombatControls";
+import { CombatSystem } from "../../systems/CombatSystem";
+import {
+  KOREAN_FONT_FAMILY,
+  KoreanText as KoreanTextType,
+} from "../../types/korean-text";
+import { executeTechnique } from "../../utils/playerUtils";
 import { useAudio } from "../../audio/AudioProvider";
-import { KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../types/constants";
 
-const CombatScreen: React.FC<CombatScreenProps> = ({
+export const CombatScreen: React.FC<CombatScreenProps> = ({
   players,
-  onGamePhaseChange,
   onPlayerUpdate,
-  gameTime,
   currentRound,
   timeRemaining,
   isPaused,
+  width = GAME_CONFIG.CANVAS_WIDTH,
+  height = GAME_CONFIG.CANVAS_HEIGHT,
 }) => {
-  const [combatLog, setCombatLog] = useState<string[]>([]);
-  const [lastTechnique, setLastTechnique] = useState<KoreanTechnique | null>(
-    null
-  );
-  const audio = useAudio();
+  const [combatLog, setCombatLog] = useState<KoreanTextType[]>([]);
+  const [activePlayerIndex, setActivePlayerIndex] = useState<0 | 1>(0);
+  const [isExecutingTechnique, setIsExecutingTechnique] = useState(false);
+  const [roundTimer, setRoundTimer] = useState(timeRemaining);
 
-  const handleStanceChange = useCallback(
-    (playerIndex: 0 | 1, stance: TrigramStance) => {
-      onPlayerUpdate(playerIndex, { currentStance: stance });
-      setCombatLog((prevLog) => [
-        ...prevLog,
-        `Player ${playerIndex + 1} changed to ${stance} stance.`,
-      ]);
-      audio?.playSFX("stance_change");
-    },
-    [onPlayerUpdate, audio]
-  );
+  const audioManager = useAudio();
 
-  const handleTechniqueExecution = useCallback(
+  // Handle timer countdown
+  useEffect(() => {
+    setRoundTimer(timeRemaining);
+
+    if (timeRemaining <= 10 && timeRemaining > 0) {
+      audioManager.playSFX("countdown");
+    }
+  }, [timeRemaining, audioManager]);
+
+  // Check for win conditions
+  useEffect(() => {
+    const winner = CombatSystem.checkWinCondition(players);
+    if (winner) {
+      console.log(`Winner detected: ${winner}`);
+      // In a full implementation, this would trigger game phase change
+    }
+  }, [players]);
+
+  const handleTechniqueExecute = useCallback(
     async (
       playerIndex: 0 | 1,
       technique: KoreanTechnique
     ): Promise<CombatResult | undefined> => {
-      setLastTechnique(technique);
-      setCombatLog((prevLog) => [
-        ...prevLog,
-        `Player ${playerIndex + 1} used ${technique.koreanName}.`,
-      ]);
-      audio?.playSFX("technique_execute"); // Or a more specific sound
+      if (isExecutingTechnique || isPaused) return;
 
-      // Simulate a combat result
-      const opponentIndex = playerIndex === 0 ? 1 : 0;
-      const damageDealt =
-        Math.floor(Math.random() * (technique.damage ?? 20)) + 5;
+      const attacker = players[playerIndex];
+      const defender = players[1 - playerIndex];
 
-      onPlayerUpdate(opponentIndex, {
-        health: Math.max(0, players[opponentIndex].health - damageDealt),
-      });
+      try {
+        setIsExecutingTechnique(true);
+        const result = executeTechnique(attacker, defender, technique);
 
-      // Placeholder CombatResult
-      const result: CombatResult = {
-        damage: damageDealt,
-        hit: true,
-        critical: Math.random() < 0.1,
-        techniqueUsed: technique,
-        effects: technique.effects || [],
-        vitalPointsHit: [],
-        attacker: players[playerIndex].archetype,
-        defender: players[opponentIndex].archetype,
-        defenderDamaged: true,
-        damageType: technique.damageType || "blunt",
-        isVitalPoint: false,
-        newState:
-          players[opponentIndex].health - damageDealt <= 0
-            ? "defeated"
-            : "idle",
-        damagePrevented: 0,
-        staminaUsed: technique.staminaCost || 0,
-        kiUsed: technique.kiCost || 0,
-        attackerStance: players[playerIndex].currentStance,
-        defenderStance: players[opponentIndex].currentStance,
-        painLevel: damageDealt * 0.5,
-        consciousnessImpact: damageDealt * 0.1,
-        balanceEffect: 0,
-        bloodLoss: 0,
-        stunDuration: 0,
-        statusEffects: [],
-        hitType: "normal",
-        effectiveness: 1.0,
-        hitPosition: { x: 0, y: 0 },
-      };
+        // Play appropriate audio
+        audioManager.playSFX("attack_light");
+        if (result.hitResult.hit) {
+          audioManager.playSFX("hit_light");
+        }
 
-      if (players[opponentIndex].health - damageDealt <= 0) {
-        onGamePhaseChange("victory"); // Or pass winner ID
+        // Update combat log
+        const logEntry: KoreanTextType = {
+          korean: `${attacker.name.korean}이(가) ${
+            technique.koreanName
+          } 사용! ${
+            result.hitResult.hit ? `${result.hitResult.damage} 피해` : "빗나감"
+          }.`,
+          english: `${attacker.name.english} used ${technique.englishName}! ${
+            result.hitResult.hit ? `${result.hitResult.damage} damage` : "Miss"
+          }.`,
+        };
+        setCombatLog((prev) => [logEntry, ...prev.slice(0, 4)]);
+
+        // Update player states
+        onPlayerUpdate(playerIndex, result.updatedAttacker);
+        onPlayerUpdate(1 - playerIndex, result.updatedDefender);
+
+        // Switch active player after technique
+        setActivePlayerIndex((prev) => (prev === 0 ? 1 : 0));
+
+        return result.hitResult;
+      } catch (error) {
+        console.error("Failed to execute technique:", error);
+        const errorLog: KoreanTextType = {
+          korean: "기술 실행 실패",
+          english: "Technique execution failed",
+        };
+        setCombatLog((prev) => [errorLog, ...prev.slice(0, 4)]);
+      } finally {
+        setIsExecutingTechnique(false);
       }
-      return result;
     },
-    [onPlayerUpdate, audio, players, onGamePhaseChange]
+    [players, isExecutingTechnique, isPaused, onPlayerUpdate, audioManager]
   );
 
-  useEffect(() => {
-    // Example: Log round start
-    setCombatLog((prevLog) => [...prevLog, `Round ${currentRound} Start!`]);
-  }, [currentRound]);
+  const handleStanceChange = useCallback(
+    (playerIndex: 0 | 1, stance: (typeof players)[0]["currentStance"]) => {
+      if (isPaused) return;
 
-  if (!players || players.length < 2) {
-    return (
-      <Text
-        text="Waiting for players..."
-        x={100}
-        y={100}
-        style={new PIXI.TextStyle({ fill: KOREAN_COLORS.WHITE, fontSize: 24 })}
-      />
-    );
-  }
+      onPlayerUpdate(playerIndex, { currentStance: stance });
+      audioManager.playSFX("stance_change");
+
+      const stanceData = TRIGRAM_DATA[stance as TrigramStance];
+      const logEntry: KoreanTextType = {
+        korean: `${players[playerIndex].name.korean}이(가) ${
+          stanceData?.name.korean || stance
+        } 자세로 변경.`,
+        english: `${players[playerIndex].name.english} changed to ${
+          stanceData?.name.english || stance
+        } stance.`,
+      };
+      setCombatLog((prevLog) => [logEntry, ...prevLog.slice(0, 4)]);
+    },
+    [players, onPlayerUpdate, isPaused, audioManager]
+  );
+
+  const combatLogStyle = useMemo(
+    () =>
+      new PIXI.TextStyle({
+        fontFamily: KOREAN_FONT_FAMILY,
+        fontSize: 14,
+        fill: CYBERPUNK_PALETTE.TEXT_SECONDARY,
+        align: "left",
+        wordWrap: true,
+        wordWrapWidth: GAME_CONFIG.CANVAS_WIDTH - 40,
+      }),
+    []
+  );
+
+  const backgroundDraw = useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+      g.beginFill(CYBERPUNK_PALETTE.UI_BACKGROUND_DARK, 0.9);
+      g.drawRect(0, 0, width, height);
+      g.endFill();
+
+      // Combat arena outline
+      g.lineStyle(2, CYBERPUNK_PALETTE.PRIMARY_CYAN, 0.3);
+      g.moveTo(20, height - 150);
+      g.lineTo(width - 20, height - 150);
+    },
+    [width, height]
+  );
 
   return (
     <Container>
+      <Graphics draw={backgroundDraw} />
+
+      {/* Combat HUD */}
       <CombatHUD
         players={players}
-        timeRemaining={timeRemaining}
+        timeRemaining={roundTimer}
         currentRound={currentRound}
+        maxRounds={3}
         isPaused={isPaused}
-        gameTime={gameTime}
+        isPlayerTurn={activePlayerIndex === 0}
+        x={0}
+        y={0}
       />
+
+      {/* Combat Arena */}
       <CombatArena
         players={players}
         onPlayerUpdate={onPlayerUpdate}
-        onTechniqueExecute={handleTechniqueExecution}
-        combatEffects={[]} // Placeholder for actual hit effects
-        isExecutingTechnique={false} // Placeholder
+        onTechniqueExecute={handleTechniqueExecute}
+        combatEffects={[]}
+        isExecutingTechnique={isExecutingTechnique}
+        showVitalPoints={false}
+        showDebugInfo={false}
+        x={0}
+        y={GAME_CONFIG.CANVAS_HEIGHT * 0.15}
+        width={GAME_CONFIG.CANVAS_WIDTH}
+        height={GAME_CONFIG.CANVAS_HEIGHT * 0.6}
       />
+
+      {/* Combat Controls */}
       <CombatControls
-        player={players[0]} // Example: controls for player 1
-        onStanceChange={(playerIndex: number, stance: TrigramStance) =>
-          handleStanceChange(playerIndex as 0 | 1, stance)
-        } // Example for player 1
-        isExecutingTechnique={false} // Placeholder
-        isPaused={isPaused}
-        // players prop is required by CombatControlsProps, but might be redundant if 'player' is specific
         players={players}
+        player={players[activePlayerIndex]}
+        onStanceChange={handleStanceChange}
+        isExecutingTechnique={isExecutingTechnique}
+        isPaused={isPaused}
+        showVitalPoints={false}
+        x={0}
+        y={GAME_CONFIG.CANVAS_HEIGHT - 120}
+        width={GAME_CONFIG.CANVAS_WIDTH}
+        height={120}
       />
-      {/* Combat Log Display (Simplified) */}
-      <Container y={500}>
-        {combatLog.slice(-5).map((log, index) => (
+
+      {/* Combat Log */}
+      <Container y={GAME_CONFIG.CANVAS_HEIGHT - 200} x={20}>
+        {combatLog.map((entry, index) => (
           <Text
-            key={index}
-            text={log}
-            x={20}
-            y={index * 20}
-            style={
-              new PIXI.TextStyle({
-                fontFamily: KOREAN_FONT_FAMILY,
-                fontSize: 14,
-                fill: KOREAN_COLORS.CYAN,
-              })
-            }
+            key={`log-${index}`}
+            text={`${entry.korean} / ${entry.english}`}
+            style={combatLogStyle}
+            y={index * -18}
+            x={0}
+            alpha={1 - index * 0.2}
           />
         ))}
       </Container>
-      {lastTechnique && (
-        <Text
-          text={`Last Technique: ${lastTechnique.koreanName}`}
-          x={20}
-          y={600}
-          style={
-            new PIXI.TextStyle({
-              fontFamily: KOREAN_FONT_FAMILY,
-              fontSize: 18,
-              fill: KOREAN_COLORS.GOLD,
-            })
-          }
-        />
+
+      {/* Pause Overlay */}
+      {isPaused && (
+        <Container>
+          <Graphics
+            draw={(g: PIXI.Graphics) => {
+              g.clear();
+              g.beginFill(CYBERPUNK_PALETTE.UI_BACKGROUND_DARK, 0.8);
+              g.drawRect(
+                0,
+                0,
+                GAME_CONFIG.CANVAS_WIDTH,
+                GAME_CONFIG.CANVAS_HEIGHT
+              );
+              g.endFill();
+            }}
+          />
+          <Container
+            x={GAME_CONFIG.CANVAS_WIDTH / 2}
+            y={GAME_CONFIG.CANVAS_HEIGHT / 2}
+          >
+            <Text
+              text="일시정지 (Paused)"
+              anchor={0.5}
+              style={
+                new PIXI.TextStyle({
+                  fontFamily: KOREAN_FONT_FAMILY,
+                  fontSize: 48,
+                  fill: CYBERPUNK_PALETTE.TEXT_ACCENT,
+                  align: "center",
+                })
+              }
+              y={-50}
+            />
+            <Text
+              text="SPACE: 계속 (Resume) | ESC: 메뉴 (Menu)"
+              anchor={0.5}
+              style={
+                new PIXI.TextStyle({
+                  fontFamily: KOREAN_FONT_FAMILY,
+                  fontSize: 24,
+                  fill: CYBERPUNK_PALETTE.TEXT_SECONDARY,
+                  align: "center",
+                })
+              }
+              y={20}
+            />
+          </Container>
+        </Container>
       )}
     </Container>
   );

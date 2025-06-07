@@ -66,19 +66,28 @@ export interface PlayerState {
 
 export type PlayerArchetype = PlayerArchetypeEnum; // Export PlayerArchetype type alias
 
+// Player archetype specific bonuses
+export interface PlayerArchetypeBonuses {
+  readonly damageBonus: number;
+  readonly accuracyBonus: number;
+  readonly speedBonus: number;
+  readonly defenseBonus: number;
+  readonly damageResistance?: number;
+  readonly precisionBonus?: number;
+  readonly kiEfficiency?: number; // Added
+  readonly staminaEfficiency?: number; // Added
+  // Allow other string-based descriptive bonuses if necessary,
+  // but calculation-relevant ones should be numbers.
+  [key: string]: number | string | undefined;
+}
+
+// Player archetype data structure - Consolidated definition
 export interface PlayerArchetypeData {
   readonly name: { korean: string; english: string };
   readonly description: { korean: string; english: string };
-  readonly preferredTrigrams: readonly TrigramStance[]; // Changed from readonly string[]
-  readonly specialization: string; // Add missing property
-  readonly bonuses: {
-    readonly damageBonus: number; // Changed from damageMultiplier
-    readonly accuracyBonus: number; // Changed from accuracyMultiplier
-    readonly speedBonus: number; // Changed from speedMultiplier
-    readonly defenseBonus: number; // Changed from defenseMultiplier
-    readonly damageResistance?: number; // Added
-    readonly precisionBonus?: number; // Added
-  };
+  readonly preferredTrigrams: readonly TrigramStance[];
+  readonly specialization: string;
+  readonly bonuses: PlayerArchetypeBonuses; // Unified to use PlayerArchetypeBonuses
 }
 
 export interface PlayerCombatStats {

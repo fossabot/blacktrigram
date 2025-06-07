@@ -1,109 +1,126 @@
 import React from "react";
 import { Container, Text } from "@pixi/react";
 import type { GameUIProps } from "../../types";
-import { KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../types/constants";
+import { Player } from "./Player";
+import {
+  KOREAN_COLORS,
+  FONT_FAMILY,
+  GAME_CONFIG,
+  FONT_SIZES,
+} from "../../types/constants";
+import * as PIXI from "pixi.js";
 
 export const GameUI: React.FC<GameUIProps> = ({
-  // players,
-  gamePhase,
-  // onGamePhaseChange,
-  gameTime,
+  players,
   currentRound,
+  gamePhase: currentGamePhase,
   timeRemaining,
-  // onStanceChange,
-  combatLog,
-  // onTogglePause,
-  // onPlayerUpdate,
   isPaused,
-  players: playerStates, // Renamed to avoid conflict if players was used
+  onStanceChange,
+  onPlayerUpdate,
+  onGamePhaseChange,
+  width = GAME_CONFIG.CANVAS_WIDTH,
+  height = GAME_CONFIG.CANVAS_HEIGHT,
+  ...props
 }) => {
-  const player1 = playerStates[0];
-  const player2 = playerStates[1];
+  const headerStyle = React.useMemo(
+    () =>
+      new PIXI.TextStyle({
+        fontFamily: FONT_FAMILY.PRIMARY,
+        fontSize: FONT_SIZES.medium,
+        fill: KOREAN_COLORS.TEXT_PRIMARY,
+        stroke: KOREAN_COLORS.BLACK_SOLID,
+        align: "center",
+      }),
+    []
+  );
 
-  if (!player1 || !player2) {
-    return null; // or some fallback UI
-  }
+  const roundTextStyle = React.useMemo(
+    () =>
+      new PIXI.TextStyle({
+        fontFamily: FONT_FAMILY.PRIMARY,
+        fontSize: FONT_SIZES.large,
+        fill: KOREAN_COLORS.ACCENT_PRIMARY,
+        stroke: KOREAN_COLORS.BLACK_SOLID,
+        align: "center",
+      }),
+    []
+  );
+
+  const renderPlayerUI = (playerState: (typeof players)[0], index: number) => {
+    if (!playerState) return null;
+    return (
+      <Player
+        key={playerState.id}
+        playerState={playerState}
+        onStateUpdate={(updates: Partial<typeof playerState>) =>
+          onPlayerUpdate(index, updates)
+        }
+        archetype={playerState.archetype}
+        stance={playerState.currentStance}
+        position={playerState.position}
+        facing={playerState.facing}
+        health={playerState.health}
+        maxHealth={playerState.maxHealth}
+        ki={playerState.ki}
+        maxKi={playerState.maxKi}
+        stamina={playerState.stamina}
+        maxStamina={playerState.maxStamina}
+        showVitalPoints={GAME_CONFIG.SHOW_VITAL_POINTS_DEBUG}
+        x={index === 0 ? 50 : width - 250}
+        y={50}
+        width={200}
+        height={150}
+      />
+    );
+  };
 
   return (
-    <Container>
-      <Text
-        text={`Phase: ${gamePhase}`}
-        x={20}
-        y={20}
-        style={{
-          fill: KOREAN_COLORS.WHITE,
-          fontFamily: KOREAN_FONT_FAMILY,
-          fontSize: 18,
-        }}
-      />
-      <Text
-        text={`Time: ${gameTime}s`}
-        x={20}
-        y={50}
-        style={{
-          fill: KOREAN_COLORS.WHITE,
-          fontFamily: KOREAN_FONT_FAMILY,
-          fontSize: 18,
-        }}
-      />
-      <Text
-        text={`Round: ${currentRound}`}
-        x={20}
-        y={80}
-        style={{
-          fill: KOREAN_COLORS.WHITE,
-          fontFamily: KOREAN_FONT_FAMILY,
-          fontSize: 18,
-        }}
-      />
-      <Text
-        text={`Time Remaining: ${timeRemaining}s`}
-        x={200}
-        y={20}
-        style={{
-          fill: KOREAN_COLORS.WHITE,
-          fontFamily: KOREAN_FONT_FAMILY,
-          fontSize: 18,
-        }}
-      />
+    <Container {...props} width={width} height={height}>
+      {players.map((p, i) => renderPlayerUI(p, i))}
+
+      {currentGamePhase === "combat" && !isPaused && (
+        <Container x={width / 2} y={30}>
+          <Text
+            text={`Round: ${currentRound}`}
+            anchor={0.5}
+            style={roundTextStyle}
+            y={0}
+          />
+          <Text
+            text={`Time: ${timeRemaining?.toFixed(1)}s`}
+            anchor={0.5}
+            style={headerStyle}
+            y={30}
+          />
+        </Container>
+      )}
+
       {isPaused && (
         <Text
           text="PAUSED"
-          x={300}
-          y={300}
           anchor={0.5}
+          x={width / 2}
+          y={height / 2}
+          style={roundTextStyle}
+        />
+      )}
+      {(currentGamePhase === "victory" || currentGamePhase === "defeat") && (
+        <Text
+          text={currentGamePhase === "victory" ? "VICTORY!" : "DEFEAT!"}
+          anchor={0.5}
+          x={width / 2}
+          y={height / 2}
           style={{
-            fill: KOREAN_COLORS.NEON_RED,
-            fontFamily: KOREAN_FONT_FAMILY,
-            fontSize: 48,
-            fontWeight: "bold",
+            ...roundTextStyle,
+            fontSize: FONT_SIZES.xlarge,
+            fill:
+              currentGamePhase === "victory"
+                ? KOREAN_COLORS.POSITIVE_GREEN
+                : KOREAN_COLORS.NEGATIVE_RED,
           }}
         />
       )}
-      {/* Display Combat Log */}
-      <Container y={600}>
-        {(combatLog || []).slice(-5).map((logEntry, index) => (
-          <Text
-            key={index}
-            text={
-              typeof logEntry === "string"
-                ? logEntry
-                : `${logEntry.korean} (${logEntry.english})`
-            }
-            x={20}
-            y={index * 20}
-            style={{
-              fill: KOREAN_COLORS.CYAN,
-              fontFamily: KOREAN_FONT_FAMILY,
-              fontSize: 14,
-            }}
-          />
-        ))}
-      </Container>
-
-      {/* Placeholder for actual HUD and Controls if GameUI is the main combat UI view */}
-      {/* <CombatHUD players={players} timeRemaining={timeRemaining} currentRound={currentRound} isPaused={isPaused} gameTime={gameTime} /> */}
-      {/* <CombatControls player={players[0]} onStanceChange={(stance) => handleStanceChange(0, stance)} isPaused={isPaused} players={players} isExecutingTechnique={false} /> */}
     </Container>
   );
 };

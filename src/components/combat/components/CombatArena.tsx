@@ -1,83 +1,144 @@
-import React from "react";
-import { Container as PixiContainer } from "@pixi/react"; // Use PixiContainer for PIXI.Container
-import Player from "../../../components/game/Player"; // Keep one Player import
-import type { CombatArenaProps } from "../../../types";
-import { HitEffectsLayer } from "../../../components/game/HitEffectsLayer";
+import React, { useCallback, useMemo, useState } from "react";
+import { Container, useTick } from "@pixi/react";
+import type {
+  CombatArenaProps,
+  HitEffect,
+  Position,
+  VitalPoint,
+} from "../../../types";
+import PlayerVisuals from "../../game/PlayerVisuals"; // Changed to default import
+import { HitEffectsLayer } from "../../game/HitEffectsLayer";
+import { KOREAN_COLORS, GAME_CONFIG } from "../../../types/constants";
 
 export const CombatArena: React.FC<CombatArenaProps> = ({
   players,
-  onPlayerUpdate,
-  combatEffects,
+  onTechniqueExecute,
+  combatEffects: externalCombatEffects, // Renamed to avoid conflict
   isExecutingTechnique,
   showVitalPoints,
   showDebugInfo,
-}: CombatArenaProps): React.JSX.Element => {
-  if (!players || players.length < 2) {
-    return <></>; // Return a fragment instead of null
-  }
+  width = GAME_CONFIG.CANVAS_WIDTH,
+  height = GAME_CONFIG.CANVAS_HEIGHT - 200, // Adjusted for HUD and Controls
+  ...props
+}) => {
+  const [internalCombatEffects, setInternalCombatEffects] = useState<
+    readonly HitEffect[]
+  >([]);
+  const [selectedTarget, setSelectedTarget] = useState<{
+    playerId: string;
+    vitalPointId?: string;
+  } | null>(null);
+
+  const allCombatEffects = useMemo(() => {
+    return [...(externalCombatEffects || []), ...internalCombatEffects].slice(
+      -10
+    );
+  }, [externalCombatEffects, internalCombatEffects]);
+
+  const handlePlayerClick = useCallback(
+    async (playerIndex: 0 | 1, vitalPoint?: VitalPoint) => {
+      const targetPlayer = players[playerIndex];
+      if (!targetPlayer) return;
+
+      // For now, let's assume a default technique or the currently selected one
+      // This part needs more logic for technique selection by the active player
+      const activePlayerIndex = players[0].combatState !== "idle" ? 0 : 1; // Simplified active player
+      const activePlayer = players[activePlayerIndex];
+
+      // Find a sample technique (e.g., the first known one)
+      const techniqueToExecute =
+        activePlayer.knownTechniques.length > 0
+          ? CombatSystem.getTechniqueById(activePlayer.knownTechniques[0]) // Assuming CombatSystem.getTechniqueById exists
+          : undefined;
+
+      if (techniqueToExecute && activePlayer.id !== targetPlayer.id) {
+        // Cannot attack self
+        setSelectedTarget({
+          playerId: targetPlayer.id,
+          vitalPointId: vitalPoint?.id,
+        });
+        // Pass the actual KoreanTechnique object
+        const result = await onTechniqueExecute(
+          activePlayerIndex,
+          techniqueToExecute
+        );
+        if (result && result.hit) {
+          const newEffect: HitEffect = {
+            id: `hit-effect-${Date.now()}`,
+            type: result.critical ? "critical" : "medium",
+            position: result.hitPosition || targetPlayer.position,
+            damage: result.damage,
+            timestamp: Date.now(),
+            duration: 500,
+            color: KOREAN_COLORS.ACCENT_RED, // Example color
+            playerId: targetPlayer.id,
+          };
+          setInternalCombatEffects((prev) => [...prev, newEffect]);
+        }
+      }
+    },
+    [players, onTechniqueExecute]
+  );
+
+  // Animation/update logic if needed
+  useTick(() => {
+    // Animation logic here
+  });
 
   const player1 = players[0];
   const player2 = players[1];
 
-  if (!player1 || !player2) {
-    // console.error("CombatArena: Player data is missing.");
-    return <></>; // Or a loading indicator
-  }
+  if (!player1 || !player2) return <Container />;
 
-  // Memoize player visuals to prevent unnecessary re-renders
+  // Simplified positioning for now
+  const player1Position: Position = { x: width * 0.25, y: height * 0.65 };
+  const player2Position: Position = { x: width * 0.75, y: height * 0.65 };
+
   return (
-    <PixiContainer>
-      {/* Player 1 */}
-      <Player
+    <Container width={width} height={height} {...props}>
+      {/* Background elements can be added here */}
+
+      {/* Player 1 Visuals */}
+      <PlayerVisuals
         playerState={player1}
         playerIndex={0}
-        x={player1.position.x}
-        y={player1.position.y}
-        position={player1.position} // Add missing position prop
+        x={player1Position.x}
+        y={player1Position.y}
         showVitalPoints={showVitalPoints}
-        onStateUpdate={(updates) => onPlayerUpdate(0, updates)}
-        archetype={player1.archetype}
-        stance={player1.currentStance}
-        facing={player1.facing}
-        health={player1.health}
-        maxHealth={player1.maxHealth}
-        ki={player1.ki}
-        maxKi={player1.maxKi}
-        stamina={player1.stamina}
-        maxStamina={player1.maxStamina}
-        isAttacking={isExecutingTechnique && player1.id === "attacker1"} // Example logic
-        // onAttack might be needed if Player component handles attack initiation
+        interactive={true}
+        // Use pointertap for Pixi events, ensure PlayerVisualsProps accepts it
+        pointertap={() => handlePlayerClick(0)}
       />
 
-      {/* Player 2 */}
-      <Player
+      {/* Player 2 Visuals */}
+      <PlayerVisuals
         playerState={player2}
         playerIndex={1}
-        x={player2.position.x}
-        y={player2.position.y}
-        position={player2.position} // Add missing position prop
+        x={player2Position.x}
+        y={player2Position.y}
         showVitalPoints={showVitalPoints}
-        onStateUpdate={(updates) => onPlayerUpdate(1, updates)}
-        archetype={player2.archetype}
-        stance={player2.currentStance}
-        facing={player2.facing}
-        health={player2.health}
-        maxHealth={player2.maxHealth}
-        ki={player2.ki}
-        maxKi={player2.maxKi}
-        stamina={player2.stamina}
-        maxStamina={player2.maxStamina}
-        isAttacking={isExecutingTechnique && player2.id === "attacker2"} // Example logic
-        // onAttack might be needed
+        interactive={true}
+        pointertap={() => handlePlayerClick(1)}
       />
 
-      <HitEffectsLayer effects={combatEffects} />
+      <HitEffectsLayer effects={allCombatEffects} />
 
-      {showDebugInfo && (
-        <PixiContainer>
-          {/* Debug text can be added here using Pixi Text component */}
-        </PixiContainer>
+      {/* Debug Info (Optional) */}
+      {showDebugInfo && selectedTarget && (
+        <Container>{/* Add Pixi Text component for debug output */}</Container>
       )}
-    </PixiContainer>
+    </Container>
   );
+};
+
+// Placeholder for CombatSystem if not imported, ensure it's available
+const CombatSystem = {
+  getTechniqueById: (id: string) =>
+    ({
+      id,
+      name: { korean: id, english: id },
+      description: { korean: "", english: "" },
+      stance: "geon",
+      type: "strike",
+    } as any), // Mock
 };

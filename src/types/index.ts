@@ -113,6 +113,7 @@ export type {
   KoreanHeaderProps,
   PlayerProps,
   PlayerVisualsProps, // Added PlayerVisualsProps
+  DojangBackgroundProps, // Added DojangBackgroundProps
 } from "./components";
 
 // Export UI types
@@ -155,3 +156,95 @@ export {
 export { createPlayerState } from "../utils/playerUtils";
 // export type { DamageRange } from "./common"; // Already exported
 export type { BodyRegion } from "./enums";
+export type { MatchState } from "./game";
+export type {
+  Trigram,
+  TrigramTechnique,
+  TrigramAttributes,
+  TrigramInteraction,
+} from "./trigram";
+export type { CombatSystemInterface } from "./systems";
+export type {
+  KoreanTextStyles,
+  KoreanFontFamily,
+  KoreanTextStyle,
+  KoreanTextConfig,
+  KoreanCharacterData,
+  KoreanSyllable,
+} from "./korean-text";
+export type {
+  PixiComponentProps,
+  PixiContainerProps,
+  PixiSpriteProps,
+  PixiTextProps,
+  PixiGraphicsProps,
+} from "./pixi-react.d";
+export type {
+  PlayerEquipment,
+  PlayerStatus,
+  PlayerAction,
+  PlayerMovement,
+  PlayerCombatState,
+  PlayerAnimations,
+} from "./player";
+
+// Core type system exports - comprehensive interface definitions
+
+// Re-export all major type categories
+export * from "./anatomy";
+export * from "./audio";
+export * from "./combat";
+export * from "./common";
+export * from "./components";
+export * from "./constants";
+export * from "./controls";
+export * from "./effects";
+export * from "./enums";
+export * from "./game";
+export * from "./korean-text";
+export * from "./player";
+export * from "./systems";
+export * from "./trigram";
+export * from "./ui";
+
+// Ensure all component prop types are exported
+export type {
+  GameEngineProps,
+  GameUIProps,
+  CombatScreenProps,
+  CombatArenaProps,
+  CombatHUDProps,
+  CombatControlsProps,
+  PlayerProps,
+  PlayerVisualsProps,
+  DojangBackgroundProps,
+  IntroScreenProps,
+  TrainingScreenProps,
+} from "./components";
+
+// Essential game state types
+export type {
+  PlayerState,
+  GameState,
+  CombatResult,
+  HitEffect,
+  VitalPoint,
+  KoreanTechnique,
+  Position,
+} from "./game";
+
+// Korean text and cultural types
+export type {
+  KoreanText,
+  KoreanTextVariant,
+  KoreanTextStyle,
+} from "./korean-text";
+
+// Enum exports
+export {
+  PlayerArchetype,
+  TrigramStance,
+  CombatState,
+  GamePhase,
+  CombatReadiness,
+} from "./enums";

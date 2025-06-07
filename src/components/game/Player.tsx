@@ -1,65 +1,165 @@
 // Complete Player component with Korean martial arts character rendering
 
-import React from "react";
+import React, { useMemo } from "react";
+import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import { Container, Text } from "@pixi/react";
-import type { PlayerProps } from "../../types";
-import { PlayerVisuals } from "./PlayerVisuals"; // Ensure named import
-import { KOREAN_COLORS, KOREAN_FONT_FAMILY } from "../../types/constants";
+import type { PlayerProps, TrigramStance } from "../../types";
+import {
+  KOREAN_COLORS,
+  FONT_FAMILY,
+  FONT_SIZES,
+  FONT_WEIGHTS,
+  TRIGRAM_DATA,
+} from "../../types/constants";
 
-const Player: React.FC<PlayerProps> = ({
+const getStanceColor = (stance: string): number => {
+  const stanceData = TRIGRAM_DATA[stance as keyof typeof TRIGRAM_DATA];
+  return stanceData?.theme?.primary || KOREAN_COLORS.UI_STEEL_GRAY;
+};
+
+export const Player: React.FC<PlayerProps> = ({
   playerState,
-  playerIndex,
-  // onStateUpdate, // Currently unused, but part of props
-  // onAttack, // Currently unused
+  onStateUpdate,
+  archetype,
+  stance,
+  position,
+  facing,
+  health,
+  maxHealth,
+  ki,
+  maxKi,
+  stamina,
+  maxStamina,
   showVitalPoints,
+  x = 0,
+  y = 0,
+  width = 200,
+  height = 150,
+  ...props
 }) => {
-  const { x, y } = playerState.position;
-  const nameStyle = new PIXI.TextStyle({
-    fontFamily: KOREAN_FONT_FAMILY,
-    fontSize: 18,
-    fill: KOREAN_COLORS.WHITE,
-    stroke: KOREAN_COLORS.BLACK,
-    strokeThickness: 2,
-    align: "center",
-  } as Partial<PIXI.TextStyle>); // Cast to Partial<PIXI.TextStyle>
+  const { name, currentStance } = playerState;
 
-  const healthStyle = new PIXI.TextStyle({
-    fontFamily: KOREAN_FONT_FAMILY,
-    fontSize: 14,
-    fill:
-      playerState.health > 30 ? KOREAN_COLORS.GREEN : KOREAN_COLORS.NEON_RED,
-    stroke: KOREAN_COLORS.BLACK,
-    strokeThickness: 3,
-    align: "center",
-  } as Partial<PIXI.TextStyle>); // Cast to Partial<PIXI.TextStyle>
+  const nameTextStyle = useMemo(
+    () =>
+      new PIXI.TextStyle({
+        fontFamily: FONT_FAMILY.KOREAN_BATTLE,
+        fontSize: FONT_SIZES.medium,
+        fill: KOREAN_COLORS.TEXT_ACCENT,
+        fontWeight: FONT_WEIGHTS.bold.toString() as PIXI.TextStyleFontWeight,
+        stroke: { color: KOREAN_COLORS.BLACK_SOLID, width: 2 }, // Fixed: use stroke object
+      }),
+    []
+  );
 
-  // const handlePlayerClick = () => {
-  //   onStateUpdate(playerIndex, { ...playerState, health: playerState.health - 10 });
-  // };
+  const barHeight = 15;
+  const barWidth = width * 0.8;
+  const barSpacing = 5;
+
+  const drawBar = (
+    g: PIXI.Graphics,
+    currentValue: number,
+    maxValue: number,
+    color: number,
+    yOffset: number
+  ) => {
+    const ratio = currentValue / maxValue;
+
+    // Background bar
+    g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK);
+    g.drawRect(10, yOffset, barWidth, barHeight);
+    g.endFill();
+
+    // Fill bar
+    g.beginFill(color);
+    g.drawRect(10, yOffset, barWidth * ratio, barHeight);
+    g.endFill();
+
+    // Border
+    g.lineStyle(1, KOREAN_COLORS.UI_BORDER);
+    g.drawRect(10, yOffset, barWidth, barHeight);
+  };
+
+  const drawPlayerInfo = React.useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+
+      // Player background
+      g.beginFill(getStanceColor(currentStance), 0.2);
+      g.lineStyle(2, getStanceColor(currentStance));
+      g.drawRoundedRect(0, 0, width, height, 10);
+      g.endFill();
+
+      // Health bar
+      drawBar(g, health, maxHealth, KOREAN_COLORS.POSITIVE_GREEN, 30);
+
+      // Ki bar
+      drawBar(
+        g,
+        ki,
+        maxKi,
+        KOREAN_COLORS.PRIMARY_BLUE_LIGHT,
+        30 + barHeight + barSpacing
+      );
+
+      // Stamina bar
+      drawBar(
+        g,
+        stamina,
+        maxStamina,
+        KOREAN_COLORS.SECONDARY_YELLOW_LIGHT,
+        30 + (barHeight + barSpacing) * 2
+      );
+    },
+    [
+      width,
+      height,
+      health,
+      maxHealth,
+      ki,
+      maxKi,
+      stamina,
+      maxStamina,
+      currentStance,
+      drawBar,
+    ]
+  );
 
   return (
-    <Container x={x} y={y}>
-      <PlayerVisuals
-        playerState={playerState}
-        playerIndex={playerIndex}
-        showVitalPoints={showVitalPoints}
-        x={0}
-        y={0}
-      />
+    <Container x={x} y={y} {...props}>
+      <Graphics draw={drawPlayerInfo} />
+
       <Text
-        text={`${playerState.name.korean} (${playerState.name.english})`}
-        anchor={{ x: 0.5, y: 0 }}
-        position={{ x: 0, y: -80 }}
-        style={nameStyle}
+        text={name.korean}
+        anchor={0.5}
+        x={width / 2}
+        y={10}
+        style={nameTextStyle}
       />
+
       <Text
-        text={`체력: ${playerState.health}/${playerState.maxHealth} | 기: ${playerState.ki}/${playerState.maxKi} | 지구력: ${playerState.stamina}/${playerState.maxStamina}`}
-        anchor={{ x: 0.5, y: 0 }}
-        position={{ x: 0, y: -50 }}
-        style={healthStyle}
+        text={
+          TRIGRAM_DATA[currentStance as TrigramStance]?.name.korean ||
+          currentStance
+        }
+        anchor={0.5}
+        x={width / 2}
+        y={height - 20}
+        style={{
+          ...nameTextStyle,
+          fontSize: FONT_SIZES.small,
+          fill: getStanceColor(currentStance),
+        }}
       />
-      {/* Add more visual elements like stance indicator, effects, etc. */}
+
+      {showVitalPoints && (
+        <Graphics
+          draw={(g: PIXI.Graphics) => {
+            g.beginFill(KOREAN_COLORS.NEGATIVE_RED, 0.7);
+            g.drawCircle(width / 2, height / 2, 3);
+            g.endFill();
+          }}
+        />
+      )}
     </Container>
   );
 };

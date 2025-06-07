@@ -1,461 +1,462 @@
-import React from "react";
-import { extend } from "@pixi/react";
-import { Container, Graphics, Text } from "pixi.js";
+import React, { useMemo, useCallback, useState } from "react";
+import { Container, Graphics, Text, Sprite } from "@pixi/react";
+import * as PIXI from "pixi.js";
 import {
   KOREAN_COLORS,
-  KOREAN_FONTS,
+  FONT_FAMILY,
   FONT_SIZES,
-  TRIGRAM_STANCES_ORDER,
+  FONT_WEIGHTS,
   TRIGRAM_DATA,
+  // TRIGRAM_STANCES_ORDER, // Unused
+  KOREAN_FONT_FAMILY, // Use this for Korean fonts
 } from "../../../types/constants";
+// import { KoreanPixiText } from "./korean-text"; // Unused
 import type {
+  KoreanText as KoreanTextType, // Keep this alias if used locally
   TrigramStance,
-  PlayerState,
+  // ProgressTrackerProps, // Unused
+  BaseComponentProps,
   ColorValue,
   Position,
 } from "../../../types";
+import { useTexture } from "../../../hooks/useTexture"; // Assuming useTexture hook
 
-// Extend @pixi/react with PIXI components
-extend({ Container, Graphics, Text });
+// ... (Keep existing interfaces like KoreanStyledTextProps, KoreanStyledButtonProps etc. if they are used elsewhere)
 
-// Declare extended components for TypeScript
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      pixiContainer: any;
-      pixiGraphics: any;
-      pixiText: any;
-    }
-  }
+// KoreanPixiProgressTracker
+interface KoreanPixiProgressTrackerProps extends BaseComponentProps {
+  label?: string | KoreanTextType;
+  value: number;
+  maxValue: number;
+  barColor?: ColorValue;
+  backgroundColor?: ColorValue;
+  borderColor?: ColorValue; // Added from props
+  borderWidth?: number; // Added from props
+  showText?: boolean;
+  textColor?: ColorValue; // Added from props
 }
 
-// Korean PIXI text utility function
-export function createKoreanPixiText(
-  korean: string,
-  english: string,
-  style: any = {},
-  position: Position = { x: 0, y: 0 }
-): React.JSX.Element {
-  const displayText = korean || english || "";
-
-  return (
-    <pixiText
-      text={displayText}
-      style={{
-        fontFamily: KOREAN_FONTS.PRIMARY,
-        fontSize: FONT_SIZES.MEDIUM,
-        fill: KOREAN_COLORS.WHITE,
-        ...style,
-      }}
-      x={position.x}
-      y={position.y}
-    />
-  );
-}
-
-// Progress tracker props interface
-export interface PixiProgressTrackerProps {
-  readonly label: string;
-  readonly value: number;
-  readonly maxValue: number;
-  readonly barColor?: ColorValue;
-  readonly backgroundColor?: ColorValue;
-  readonly borderColor?: ColorValue;
-  readonly position?: Position; // Fixed: Use Position type instead of number[]
-  readonly width?: number;
-  readonly height?: number;
-  readonly showText?: boolean;
-  readonly textColor?: ColorValue;
-  readonly borderWidth?: number;
-}
-
-// Trigram wheel props interface
-export interface PixiTrigramWheelProps {
-  readonly currentStance: TrigramStance;
-  readonly onStanceSelect: (stance: TrigramStance) => void;
-  readonly size?: number;
-  readonly position?: Position; // Fixed: Use Position type
-  readonly interactive?: boolean;
-}
-
-// Combat HUD props interface
-export interface PixiCombatHUDProps {
-  readonly players: readonly PlayerState[];
-  readonly timeRemaining: number;
-  readonly currentRound: number;
-  readonly isPaused: boolean;
-  readonly position?: Position; // Fixed: Use Position type
-}
-
-// Combat controls props interface
-export interface PixiCombatControlsProps {
-  readonly players: readonly PlayerState[];
-  readonly onStanceChange?: (
-    playerIndex: number,
-    stance: TrigramStance
-  ) => void;
-  readonly position?: Position; // Fixed: Use Position type
-}
-
-// Combat arena props interface
-export interface PixiCombatArenaProps {
-  readonly players: readonly PlayerState[];
-  readonly width: number;
-  readonly height: number;
-  readonly position?: Position; // Fixed: Use Position type
-}
-
-// Progress Tracker Component
-export function PixiProgressTracker({
+export const KoreanPixiProgressTracker: React.FC<
+  KoreanPixiProgressTrackerProps
+> = ({
   label,
   value,
   maxValue,
-  barColor = KOREAN_COLORS.CYAN,
-  backgroundColor = KOREAN_COLORS.BLACK,
   width = 200,
   height = 20,
+  barColor = KOREAN_COLORS.PRIMARY_CYAN,
+  backgroundColor = KOREAN_COLORS.UI_BACKGROUND_SURFACE,
+  borderColor = KOREAN_COLORS.UI_STEEL_GRAY, // Used
+  borderWidth = 1, // Used
   showText = true,
-  textColor = KOREAN_COLORS.WHITE,
-  position = { x: 0, y: 0 }, // Use proper Position object
-}: PixiProgressTrackerProps): React.JSX.Element {
-  const percentage = Math.max(0, Math.min(1, value / maxValue));
+  textColor = KOREAN_COLORS.TEXT_PRIMARY, // Used
+  x = 0, // Use prop x
+  y = 0, // Use prop y
+}) => {
+  // ... (implementation similar to ProgressTracker.tsx, using PIXI components)
+  const percentage =
+    maxValue > 0 ? Math.max(0, Math.min(1, value / maxValue)) : 0;
 
-  return React.createElement("pixiContainer", {
-    x: position.x,
-    y: position.y,
-    children: [
-      // Background bar
-      React.createElement("pixiGraphics", {
-        key: "background",
-        draw: (g: any) => {
-          g.clear();
-          g.beginFill(backgroundColor);
-          g.drawRect(0, 0, width, height);
-          g.endFill();
-        },
+  const textStyle = useMemo(
+    () =>
+      new PIXI.TextStyle({
+        fontFamily: FONT_FAMILY.MONO,
+        fontSize: FONT_SIZES.small * 0.9,
+        fill: textColor as number,
+        align: "center",
       }),
-      // Progress bar
-      React.createElement("pixiGraphics", {
-        key: "progress",
-        draw: (g: any) => {
-          g.clear();
-          g.beginFill(barColor);
-          g.drawRect(0, 0, width * percentage, height);
-          g.endFill();
-        },
+    [textColor]
+  );
+
+  const labelStyle = useMemo(
+    () =>
+      new PIXI.TextStyle({
+        fontFamily: KOREAN_FONT_FAMILY, // Use Korean font
+        fontSize: FONT_SIZES.small,
+        fill: KOREAN_COLORS.TEXT_SECONDARY,
+        fontWeight:
+          FONT_WEIGHTS.semibold.toString() as PIXI.TextStyleFontWeight,
       }),
-      // Text label
-      showText &&
-        React.createElement("pixiText", {
-          key: "label",
-          text: `${label}: ${value}/${maxValue}`,
-          style: {
-            fontFamily: KOREAN_FONTS.PRIMARY,
-            fontSize: FONT_SIZES.SMALL,
-            fill: textColor,
-          },
-          x: width / 2,
-          y: height / 2,
-          anchor: 0.5,
-        }),
-    ].filter(Boolean),
-  });
+    []
+  );
+
+  const labelText = typeof label === "string" ? label : label?.korean;
+
+  const draw = useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+      g.beginFill(backgroundColor as number, 0.8);
+      if (borderWidth > 0) {
+        g.lineStyle(borderWidth, borderColor as number, 1);
+      }
+      g.drawRoundedRect(0, 0, width, height, height / 4);
+      g.endFill();
+
+      if (percentage > 0) {
+        g.beginFill(barColor as number, 1);
+        g.lineStyle(0);
+        g.drawRoundedRect(
+          borderWidth,
+          borderWidth,
+          (width - borderWidth * 2) * percentage,
+          height - borderWidth * 2,
+          (height - borderWidth * 2) / 4
+        );
+        g.endFill();
+      }
+    },
+    [
+      width,
+      height,
+      backgroundColor,
+      borderColor,
+      borderWidth,
+      barColor,
+      percentage,
+    ]
+  );
+
+  return (
+    <Container x={x} y={y}>
+      {labelText && (
+        <Text text={labelText} y={-(FONT_SIZES.small + 5)} style={labelStyle} />
+      )}
+      <Graphics draw={draw} />
+      {showText && (
+        <Text
+          text={`${Math.round(value)} / ${maxValue}`}
+          anchor={0.5}
+          x={width / 2}
+          y={height / 2}
+          style={textStyle}
+        />
+      )}
+    </Container>
+  );
+};
+
+// KoreanPixiTrigramWheel (Simplified example)
+interface KoreanPixiTrigramWheelProps extends BaseComponentProps {
+  currentStance: TrigramStance;
+  onStanceSelect: (stance: TrigramStance) => void;
+  size?: number;
+  isEnabled?: boolean;
 }
 
-// Trigram Wheel Component
-export function PixiTrigramWheel({
+export const KoreanPixiTrigramWheel: React.FC<KoreanPixiTrigramWheelProps> = ({
   currentStance,
   onStanceSelect,
-  size = 200,
-  position = { x: 0, y: 0 },
-  interactive = true,
-}: PixiTrigramWheelProps): React.JSX.Element {
-  return React.createElement("pixiContainer", {
-    x: position.x,
-    y: position.y,
-    children: [
-      // Wheel background
-      React.createElement("pixiGraphics", {
-        draw: (g: any) => {
-          g.clear();
-          g.beginFill(KOREAN_COLORS.BLACK, 0.8);
-          g.lineStyle(2, KOREAN_COLORS.CYAN, 0.8);
-          g.drawCircle(0, 0, size / 2);
-          g.endFill();
-        },
-      }),
+  size = 150,
+  isEnabled = true,
+  x = 0,
+  y = 0,
+}) => {
+  const radius = size / 2;
+  const segmentAngle = (2 * Math.PI) / TRIGRAM_DATA.orderedStances.length;
 
-      // Trigram segments
-      TRIGRAM_STANCES_ORDER.map((stance, index) => {
-        const angle = (index / 8) * Math.PI * 2 - Math.PI / 2;
-        const segmentX = Math.cos(angle) * ((size / 2) * 0.7);
-        const segmentY = Math.sin(angle) * ((size / 2) * 0.7);
-        const isSelected = stance === currentStance;
+  const drawWheel = useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+      TRIGRAM_DATA.orderedStances.forEach((stanceId, index) => {
+        const stanceTheme = TRIGRAM_DATA[stanceId]?.theme;
+        const startAngle =
+          index * segmentAngle - Math.PI / 2 - segmentAngle / 2;
+        const endAngle = startAngle + segmentAngle;
+        const isActive = stanceId === currentStance;
 
-        return (
-          <pixiContainer key={stance} x={segmentX} y={segmentY}>
-            <pixiGraphics
-              draw={(g: any) => {
-                g.clear();
-                const segmentRadius = 25;
-                const stanceColor =
-                  KOREAN_COLORS[stance] || KOREAN_COLORS.WHITE;
-                g.beginFill(
-                  isSelected ? stanceColor : KOREAN_COLORS.BLACK,
-                  isSelected ? 0.8 : 0.3
-                );
-                g.lineStyle(2, stanceColor, 1.0);
-                g.drawCircle(0, 0, segmentRadius);
-                g.endFill();
-              }}
-              interactive={interactive}
-              cursor={interactive ? "pointer" : undefined}
-              onClick={interactive ? () => onStanceSelect(stance) : undefined}
-            />
-
-            <pixiText
-              text={TRIGRAM_DATA[stance]?.symbol || ""}
-              style={{
-                fontFamily: KOREAN_FONTS.PRIMARY,
-                fontSize: FONT_SIZES.LARGE,
-                fill: isSelected ? KOREAN_COLORS.BLACK : KOREAN_COLORS.WHITE,
-                align: "center",
-              }}
-              anchor={0.5}
-              x={0}
-              y={0}
-            />
-          </pixiContainer>
+        g.lineStyle(
+          2,
+          isActive
+            ? stanceTheme?.glow || KOREAN_COLORS.ACCENT_PRIMARY
+            : stanceTheme?.secondary || KOREAN_COLORS.UI_BORDER,
+          isEnabled ? 1 : 0.5
         );
+        g.beginFill(
+          isActive
+            ? stanceTheme?.active || KOREAN_COLORS.ACCENT_PRIMARY_LIGHT
+            : stanceTheme?.primary || KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
+          isEnabled ? (isActive ? 0.9 : 0.7) : 0.4
+        );
+        g.moveTo(radius, radius);
+        g.arc(radius, radius, radius - 2, startAngle, endAngle);
+        g.lineTo(radius, radius);
+        g.endFill();
+      });
+      // Center circle
+      g.lineStyle(
+        2,
+        TRIGRAM_DATA[currentStance]?.theme.secondary || KOREAN_COLORS.UI_BORDER
+      );
+      g.beginFill(
+        TRIGRAM_DATA[currentStance]?.theme.primary ||
+          KOREAN_COLORS.UI_BACKGROUND_DARK
+      );
+      g.drawCircle(radius, radius, radius * 0.3);
+      g.endFill();
+    },
+    [radius, segmentAngle, currentStance, isEnabled]
+  );
+
+  return (
+    <Container x={x} y={y}>
+      <Graphics draw={drawWheel} />
+      {TRIGRAM_DATA.orderedStances.map((stanceId, index) => {
+        const angle = index * segmentAngle - Math.PI / 2;
+        const textRadius = radius * 0.7;
+        const textX = radius + textRadius * Math.cos(angle);
+        const textY = radius + textRadius * Math.sin(angle);
+        return (
+          <Text
+            key={stanceId}
+            text={TRIGRAM_DATA[stanceId]?.symbol || ""}
+            x={textX}
+            y={textY}
+            anchor={0.5}
+            interactive={isEnabled}
+            buttonMode={isEnabled}
+            pointertap={() => isEnabled && onStanceSelect(stanceId)}
+            style={{
+              fontFamily: FONT_FAMILY.SYMBOL,
+              fontSize: FONT_SIZES.large * (size / 150),
+              fill:
+                stanceId === currentStance
+                  ? KOREAN_COLORS.BLACK_SOLID
+                  : KOREAN_COLORS.TEXT_PRIMARY,
+              fontWeight:
+                FONT_WEIGHTS.bold.toString() as PIXI.TextStyleFontWeight,
+            }}
+          />
+        );
+      })}
+      <Text
+        text={TRIGRAM_DATA[currentStance]?.symbol}
+        x={radius}
+        y={radius}
+        anchor={0.5}
+        style={{
+          fontFamily: FONT_FAMILY.SYMBOL,
+          fontSize: FONT_SIZES.xlarge * (size / 150),
+          fill: KOREAN_COLORS.BLACK_SOLID, // Color for current stance symbol in center
+          fontWeight: FONT_WEIGHTS.bold.toString() as PIXI.TextStyleFontWeight,
+        }}
+      />
+    </Container>
+  );
+};
+
+// KoreanPixiHeader
+interface KoreanPixiHeaderProps extends BaseComponentProps {
+  korean: string;
+  english?: string;
+  level?: 1 | 2 | 3;
+}
+export const KoreanPixiHeader: React.FC<KoreanPixiHeaderProps> = ({
+  korean,
+  english,
+  level = 1,
+  width = 800,
+  height = 60,
+  x = 0,
+  y = 0,
+}) => {
+  const titleStyle = useMemo(
+    () =>
+      new PIXI.TextStyle({
+        fontFamily: KOREAN_FONT_FAMILY,
+        fontSize:
+          level === 1
+            ? FONT_SIZES.xlarge
+            : level === 2
+            ? FONT_SIZES.large
+            : FONT_SIZES.medium,
+        fill: KOREAN_COLORS.ACCENT_PRIMARY,
+        fontWeight: FONT_WEIGHTS.bold.toString() as PIXI.TextStyleFontWeight,
       }),
+    [level]
+  );
 
-      // Center current stance display
-      <pixiContainer x={0} y={0}>
-        <pixiGraphics
-          draw={(g: any) => {
-            g.clear();
-            const centerColor =
-              KOREAN_COLORS[currentStance] || KOREAN_COLORS.WHITE;
-            g.beginFill(centerColor, 0.9);
-            g.lineStyle(3, KOREAN_COLORS.WHITE);
-            g.drawCircle(0, 0, 40);
-            g.endFill();
-          }}
-        />
+  const englishStyle = useMemo(
+    () =>
+      new PIXI.TextStyle({
+        fontFamily: FONT_FAMILY.PRIMARY,
+        fontSize: level === 1 ? FONT_SIZES.medium : FONT_SIZES.small,
+        fill: KOREAN_COLORS.TEXT_SECONDARY,
+      }),
+    [level]
+  );
 
-        <pixiText
-          text={TRIGRAM_DATA[currentStance]?.symbol || ""}
-          style={{
-            fontFamily: KOREAN_FONTS.PRIMARY,
-            fontSize: FONT_SIZES.XLARGE,
-            fill: KOREAN_COLORS.BLACK,
-            align: "center",
-            fontWeight: "bold",
-          }}
+  const drawBg = useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK_TRANSLUCENT, 0.9);
+      g.lineStyle(1, KOREAN_COLORS.PRIMARY_CYAN, 0.8);
+      g.drawRect(0, 0, width, height);
+      g.endFill();
+    },
+    [width, height]
+  );
+
+  return (
+    <Container x={x} y={y}>
+      <Graphics draw={drawBg} />
+      <Text
+        text={korean}
+        x={width / 2}
+        y={english ? height / 2 - 10 : height / 2}
+        anchor={0.5}
+        style={titleStyle}
+      />
+      {english && (
+        <Text
+          text={english}
+          x={width / 2}
+          y={height / 2 + 10}
           anchor={0.5}
-          x={0}
-          y={0}
+          style={englishStyle}
         />
-      </pixiContainer>,
-    ],
-  });
-}
-
-// Trigram Display Component
-export function PixiTrigramDisplay({
-  stance,
-  position = { x: 0, y: 0 },
-}: {
-  stance: TrigramStance;
-  position?: Position;
-}) {
-  const size = 200; // Fixed size for the display
-
-  return React.createElement("pixiContainer", {
-    x: position.x,
-    y: position.y,
-    children: [
-      // Top part
-      React.createElement("pixiContainer", {
-        x: 20,
-        y: 20,
-        children: [
-          React.createElement("pixiText", {
-            text: TRIGRAM_DATA[stance]?.symbol || "",
-            style: {
-              fontFamily: KOREAN_FONTS.PRIMARY,
-              fontSize: FONT_SIZES.XLARGE,
-              fill: KOREAN_COLORS.WHITE,
-              align: "center",
-              fontWeight: "bold",
-            },
-            anchor: 0.5,
-            x: size / 2,
-            y: size / 2,
-          }),
-        ],
-      }),
-
-      // Bottom part
-      React.createElement("pixiContainer", {
-        x: 20,
-        y: 20,
-        children: [
-          React.createElement("pixiGraphics", {
-            draw: (g: any) => {
-              g.clear();
-              g.beginFill(KOREAN_COLORS.BLACK, 0.8);
-              g.lineStyle(2, KOREAN_COLORS.CYAN, 0.8);
-              g.drawRoundedRect(0, 0, size, size, 10);
-              g.endFill();
-            },
-          }),
-
-          React.createElement("pixiText", {
-            text: stance,
-            style: {
-              fontFamily: KOREAN_FONTS.PRIMARY,
-              fontSize: FONT_SIZES.MEDIUM,
-              fill: KOREAN_COLORS.CYAN,
-              align: "center",
-            },
-            anchor: 0.5,
-            x: size / 2,
-            y: size / 2,
-          }),
-        ],
-      }),
-
-      // Center symbol
-      React.createElement("pixiContainer", {
-        x: size / 2,
-        y: 20,
-        children: [
-          React.createElement("pixiGraphics", {
-            draw: (g: any) => {
-              g.clear();
-              const centerColor = KOREAN_COLORS[stance] || KOREAN_COLORS.WHITE;
-              g.beginFill(centerColor, 0.9);
-              g.lineStyle(3, KOREAN_COLORS.WHITE);
-              g.drawCircle(0, 0, 40);
-              g.endFill();
-            },
-          }),
-
-          React.createElement("pixiText", {
-            text: TRIGRAM_DATA[stance]?.symbol || "",
-            style: {
-              fontFamily: KOREAN_FONTS.PRIMARY,
-              fontSize: FONT_SIZES.XLARGE,
-              fill: KOREAN_COLORS.BLACK,
-              align: "center",
-              fontWeight: "bold",
-            },
-            anchor: 0.5,
-            x: 0,
-            y: 0,
-          }),
-        ],
-      }),
-    ],
-  });
-}
-
-// Combat HUD Component
-export function PixiCombatHUD({
-  position = { x: 0, y: 0 },
-}: PixiCombatHUDProps): React.JSX.Element {
-  return (
-    <pixiContainer x={position.x} y={position.y}>
-      <pixiGraphics
-        draw={(g: any) => {
-          g.clear();
-          g.beginFill(KOREAN_COLORS.BLACK, 0.8);
-          g.lineStyle(1, KOREAN_COLORS.CYAN, 0.5);
-          g.drawRoundedRect(0, 0, 400, 100, 5);
-          g.endFill();
-        }}
-      />
-
-      {createKoreanPixiText(
-        "전투 정보",
-        "Combat HUD",
-        {
-          fontFamily: KOREAN_FONTS.PRIMARY,
-          fontSize: FONT_SIZES.LARGE,
-          fill: KOREAN_COLORS.CYAN,
-        },
-        { x: 20, y: 20 }
       )}
-    </pixiContainer>
+    </Container>
   );
+};
+
+// KoreanPixiButton (Simplified from BaseButton)
+interface KoreanPixiButtonProps extends BaseComponentProps {
+  text: string | KoreanTextType;
+  onClick?: (event: PIXI.FederatedPointerEvent) => void;
+  variant?: "primary" | "secondary" | "ghost";
+  disabled?: boolean;
+  icon?: string | PIXI.Texture; // Path to icon texture or Texture object
+  color?: number; // Added color prop
 }
 
-// Combat Controls Component
-export function PixiCombatControls({
-  position = { x: 0, y: 0 },
-}: PixiCombatControlsProps): React.JSX.Element {
+export const KoreanPixiButton: React.FC<KoreanPixiButtonProps> = ({
+  text,
+  onClick,
+  variant = "primary",
+  disabled = false,
+  icon,
+  width = 150,
+  height = 40,
+  x = 0,
+  y = 0,
+  color = KOREAN_COLORS.PRIMARY_CYAN, // Default color
+  ...props
+}) => {
+  const [isHover, setIsHover] = useState(false);
+  const [isDown, setIsDown] = useState(false);
+
+  const iconTexture =
+    typeof icon === "string"
+      ? useTexture(icon)
+      : icon instanceof PIXI.Texture
+      ? icon
+      : null;
+
+  const drawButton = useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+      let currentFill = color;
+      let alpha = disabled ? 0.5 : 1;
+
+      if (!disabled) {
+        if (isDown)
+          currentFill = PIXI.utils.mixColors(
+            color,
+            KOREAN_COLORS.BLACK_SOLID,
+            0.3
+          );
+        else if (isHover)
+          currentFill = PIXI.utils.mixColors(
+            color,
+            KOREAN_COLORS.WHITE_SOLID,
+            0.2
+          );
+      }
+
+      switch (variant) {
+        case "secondary":
+          currentFill =
+            isHover && !disabled
+              ? KOREAN_COLORS.UI_BACKGROUND_LIGHT
+              : KOREAN_COLORS.UI_BACKGROUND_MEDIUM;
+          break;
+        case "ghost":
+          currentFill =
+            isHover && !disabled
+              ? KOREAN_COLORS.UI_BUTTON_HOVER_BG
+              : KOREAN_COLORS.TRANSPARENT;
+          break;
+      }
+
+      g.beginFill(currentFill, alpha);
+      g.lineStyle(
+        2,
+        variant === "ghost" && !isHover
+          ? KOREAN_COLORS.TRANSPARENT
+          : PIXI.utils.mixColors(currentFill, KOREAN_COLORS.BLACK_SOLID, 0.2),
+        alpha
+      );
+      g.drawRoundedRect(0, 0, width, height, height / 4);
+      g.endFill();
+    },
+    [width, height, color, disabled, isHover, isDown, variant]
+  );
+
+  const textContent = typeof text === "string" ? text : text.korean;
+  const textStyle = useMemo(
+    () =>
+      new PIXI.TextStyle({
+        fontFamily: KOREAN_FONT_FAMILY,
+        fontSize: FONT_SIZES.small,
+        fill: disabled
+          ? KOREAN_COLORS.UI_DISABLED_TEXT
+          : variant === "primary"
+          ? KOREAN_COLORS.BLACK_SOLID
+          : KOREAN_COLORS.TEXT_PRIMARY,
+        align: "center",
+      }),
+    [disabled, variant]
+  );
+
+  // PIXI.TextMetrics.measureText is available.
+  // const textMetrics = PIXI.TextMetrics.measureText(textContent, textStyle);
+  // const textX = iconTexture ? (width - textMetrics.width) / 2 + 15 : (width - textMetrics.width) / 2;
+  // const textY = (height - textMetrics.height) / 2;
+
   return (
-    <pixiContainer x={position.x} y={position.y}>
-      <pixiGraphics
-        draw={(g: any) => {
-          g.clear();
-          g.beginFill(KOREAN_COLORS.BLACK, 0.8);
-          g.lineStyle(1, KOREAN_COLORS.CYAN, 0.5);
-          g.drawRoundedRect(0, 0, 800, 100, 5);
-          g.endFill();
-        }}
-      />
-
-      {createKoreanPixiText(
-        "전투 제어",
-        "Combat Controls",
-        {
-          fontFamily: KOREAN_FONTS.PRIMARY,
-          fontSize: FONT_SIZES.MEDIUM,
-          fill: KOREAN_COLORS.CYAN,
-        },
-        { x: 20, y: 20 }
+    <Container
+      x={x}
+      y={y}
+      interactive={!disabled}
+      buttonMode={!disabled}
+      pointertap={!disabled ? onClick : undefined}
+      pointerover={() => setIsHover(true)}
+      pointerout={() => {
+        setIsHover(false);
+        setIsDown(false);
+      }}
+      pointerdown={() => setIsDown(true)}
+      pointerup={() => setIsDown(false)}
+      {...props}
+    >
+      <Graphics draw={drawButton} />
+      {iconTexture && (
+        <Sprite
+          texture={iconTexture}
+          x={10}
+          y={height / 2}
+          anchor={0.5}
+          width={height * 0.6}
+          height={height * 0.6}
+        />
       )}
-    </pixiContainer>
-  );
-}
-
-// Combat Arena Component
-export function PixiCombatArena({
-  width,
-  height,
-  position = { x: 0, y: 0 },
-}: PixiCombatArenaProps): React.JSX.Element {
-  return (
-    <pixiContainer x={position.x} y={position.y}>
-      <pixiGraphics
-        draw={(g: any) => {
-          g.clear();
-          g.beginFill(KOREAN_COLORS.BLACK, 0.1);
-          g.lineStyle(2, KOREAN_COLORS.CYAN, 0.8);
-          g.drawRect(0, 0, width, height);
-          g.endFill();
-
-          // Center circle
-          g.lineStyle(1, KOREAN_COLORS.GOLD, 0.6);
-          g.drawCircle(width / 2, height / 2, 100);
-        }}
+      <Text
+        text={textContent}
+        x={width / 2}
+        y={height / 2}
+        anchor={0.5}
+        style={textStyle}
       />
-
-      {createKoreanPixiText(
-        "전투 무대",
-        "Combat Arena",
-        {
-          fontFamily: KOREAN_FONTS.PRIMARY,
-          fontSize: FONT_SIZES.MEDIUM,
-          fill: KOREAN_COLORS.CYAN,
-        },
-        { x: width / 2, y: 20 }
-      )}
-    </pixiContainer>
+    </Container>
   );
-}
-
-// Export all components - single declaration each
-export { PixiProgressTracker as default };
+};

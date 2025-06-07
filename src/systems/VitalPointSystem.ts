@@ -2,15 +2,23 @@
 
 import type {
   VitalPoint,
+  VitalPointHitResult,
+  AnatomicalHit,
+  RegionData,
+  VitalPointEffect as AnatomyVitalPointEffect, // Use alias if VitalPointEffect is also local
+  AnatomyModel,
+  BodyPart,
+  VitalPointCategory,
+} from "../types/anatomy";
+import type {
+  PlayerState,
+  StatusEffect,
   Position,
+  DamageType,
   KoreanTechnique,
   PlayerArchetype,
-  VitalPointCategory,
-  StatusEffect,
-} from "../types";
-// Import VitalPointHitResult directly from systems to ensure correct type
-import type { VitalPointHitResult } from "../types/systems";
-import { VITAL_POINTS_DATA } from "./vitalpoint/KoreanVitalPoints";
+} from "../types"; // Ensure Position and DamageType are imported
+import { VITAL_POINTS_DATA, ANATOMICAL_REGIONS_DATA } from "../types/constants"; // Assuming these constants exist
 
 export class VitalPointSystem {
   private readonly vitalPoints: readonly VitalPoint[];
@@ -248,6 +256,83 @@ export class VitalPointSystem {
   public static getAllVitalPoints(): VitalPoint[] {
     // Changed to non-readonly
     return new VitalPointSystem().getAllVitalPoints();
+  }
+
+  public static getHitResult(
+    attacker: PlayerState,
+    defender: PlayerState,
+    techniqueVitalPoints: readonly string[], // IDs of vital points targeted by technique
+    hitPosition: Position, // Precise hit location on defender
+    baseDamage: number,
+    accuracyRoll: number // e.g., 0-1, result of an accuracy check
+  ): VitalPointHitResult {
+    const hitVitalPoints: VitalPoint[] = [];
+    let totalDamage = 0;
+    const appliedEffects: StatusEffect[] = [];
+    let mostSevereVitalPoint: VitalPoint | undefined = undefined;
+
+    // Basic proximity check for vital points near hitPosition
+    // This is a simplified model. A real system would use defender's posture, hit angle, etc.
+    for (const vpId of Object.keys(VITAL_POINTS_DATA)) {
+      const vitalPoint = VITAL_POINTS_DATA[vpId];
+      // Example: Check if hitPosition is within a certain radius of the vital point's location
+      // This requires vitalPoint.location to be in world coordinates or relative to defender's origin
+      // For now, assume if a technique targets it, and accuracy is good, it's a potential hit.
+      if (techniqueVitalPoints.includes(vpId)) {
+        // Simplified hit chance: if accuracyRoll is high enough for this VP
+        if (
+          accuracyRoll * attacker.skills.striking >
+          (1 - vitalPoint.baseAccuracy) * 100
+        ) {
+          // Example calc
+          hitVitalPoints.push(vitalPoint);
+          totalDamage +=
+            (baseDamage + vitalPoint.baseDamage) * vitalPoint.damageMultiplier;
+          vitalPoint.effects.forEach((effect) => {
+            // Convert AnatomyVitalPointEffect to StatusEffect
+            appliedEffects.push({
+              id: effect.id,
+              type: effect.type,
+              intensity: effect.intensity,
+              duration: effect.duration,
+              description: effect.description,
+              stackable: effect.stackable,
+              source: `vp:${vpId}`,
+            });
+          });
+          if (
+            !mostSevereVitalPoint ||
+            VitalPointSystem.isSeverityGreater(
+              vitalPoint.severity,
+              mostSevereVitalPoint.severity
+            )
+          ) {
+            mostSevereVitalPoint = vitalPoint;
+          }
+        }
+      }
+    }
+
+    const criticalHit = Math.random() < attacker.skills.focus / 200; // Example crit chance
+    if (criticalHit && mostSevereVitalPoint) {
+      totalDamage *= 1.5; // Crit damage multiplier
+    }
+
+    return {
+      hit: hitVitalPoints.length > 0,
+      damage: totalDamage,
+      effects: appliedEffects,
+      vitalPointsHit: hitVitalPoints, // This should be VitalPoint[]
+      vitalPoint: mostSevereVitalPoint,
+      severity: mostSevereVitalPoint?.severity,
+      criticalHit: criticalHit && hitVitalPoints.length > 0,
+      location: hitPosition,
+      effectiveness: hitVitalPoints.length / (techniqueVitalPoints.length || 1), // Example effectiveness
+      statusEffectsApplied: appliedEffects, // Duplicate of effects, can be merged
+      painLevel: totalDamage * 0.5, // Example pain calculation
+      consciousnessImpact: totalDamage * 0.2, // Example consciousness impact
+      // bodyPartId: undefined, // Removed, not part of VitalPointHitResult
+    };
   }
 }
 
