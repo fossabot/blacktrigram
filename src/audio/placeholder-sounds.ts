@@ -1,500 +1,385 @@
-import type {
-  AudioAssetRegistry,
-  AudioAsset,
+/**
+ * Placeholder sound data and fallback audio system
+ * Provides silent audio and basic procedural sounds when real audio assets are unavailable
+ */
+
+import type { SoundEffectId, MusicTrackId, AudioAsset } from "../types/audio";
+import { AudioUtils } from "./AudioUtils";
+import { DefaultSoundGenerator } from "./DefaultSoundGenerator";
+
+// Placeholder audio data URLs (silent audio)
+const SILENT_AUDIO_DATA_URL = AudioUtils.createSilenceDataUrl(0.1);
+const LONG_SILENT_AUDIO_DATA_URL = AudioUtils.createSilenceDataUrl(10);
+
+/**
+ * Create placeholder sound effects with silent audio
+ */
+export function createPlaceholderSoundEffects(): Record<
   SoundEffectId,
-  MusicTrackId,
-} from "../types/audio";
-import { AudioUtils } from "./AudioUtils"; // Import the AudioUtils class
-
-// const placeholderBasePath = "/assets/audio/placeholders/";
-
-// Helper to construct placeholder assets
-/*
-// Error TS6133: 'createPlaceholderAsset' is declared but its value is never read.
-// Commenting out the unused function.
-const createPlaceholderAsset = (id: string): AudioAsset => ({
-  id,
-  url: `placeholder_audio_${id}.mp3`, // Construct a placeholder URL
-  category: "sfx", // Default category
-  basePath: "assets/audio/sfx/", // Default base path
-  koreanContext: { korean: id, english: id }, // Placeholder context
-  formats: ["mp3"], // Default format
-  volume: 0.5,
-  preload: false,
-  loop: false,
-});
-*/
-
-// Helper to create asset data with less repetition
-const createAsset = (
-  id: string,
-  basePathSuffix: string,
-  korean: string,
-  english: string,
-  category: AudioAsset["category"], // Added category parameter
-  isMusic: boolean = false,
-  volume: number = 0.7,
-  loop: boolean = false,
-  preload: boolean = true
-): AudioAsset => {
-  const assetData = {
+  AudioAsset
+> {
+  const createPlaceholderSfx = (
+    id: SoundEffectId,
+    korean: string,
+    english: string,
+    duration: number = 0.1
+  ): AudioAsset => ({
     id,
-    basePath: `assets/audio/${basePathSuffix}`, // Example base path structure
+    url: duration > 5 ? LONG_SILENT_AUDIO_DATA_URL : SILENT_AUDIO_DATA_URL,
+    category: "sfx",
+    basePath: `/placeholder/sfx/${id}`,
     koreanContext: { korean, english },
-    formats: ["webm", "mp3"] as ("webm" | "mp3")[],
-    volume,
-    preload,
-    loop: isMusic ? loop || true : loop, // Music often loops by default
-    category, // Assign category
+    formats: ["webm", "mp3"],
+    volume: 0.7,
+    preload: false,
+    loop: false,
+  });
+
+  return {
+    // Menu interface sounds
+    menu_hover: createPlaceholderSfx("menu_hover", "메뉴 호버", "Menu Hover"),
+    menu_select: createPlaceholderSfx(
+      "menu_select",
+      "메뉴 선택",
+      "Menu Select"
+    ),
+    menu_back: createPlaceholderSfx("menu_back", "뒤로가기", "Back"),
+
+    // Combat attack sounds
+    attack_light: createPlaceholderSfx(
+      "attack_light",
+      "가벼운 공격",
+      "Light Attack"
+    ),
+    attack_medium: createPlaceholderSfx(
+      "attack_medium",
+      "중간 공격",
+      "Medium Attack"
+    ),
+    attack_heavy: createPlaceholderSfx(
+      "attack_heavy",
+      "강한 공격",
+      "Heavy Attack"
+    ),
+    attack_critical: createPlaceholderSfx(
+      "attack_critical",
+      "치명적 공격",
+      "Critical Attack"
+    ),
+
+    // Hit impact sounds
+    hit_light: createPlaceholderSfx("hit_light", "가벼운 타격", "Light Hit"),
+    hit_medium: createPlaceholderSfx("hit_medium", "중간 타격", "Medium Hit"),
+    hit_heavy: createPlaceholderSfx("hit_heavy", "강한 타격", "Heavy Hit"),
+    hit_critical: createPlaceholderSfx(
+      "hit_critical",
+      "치명적 타격",
+      "Critical Hit"
+    ),
+    critical_hit: createPlaceholderSfx(
+      "critical_hit",
+      "급소 타격",
+      "Vital Point Hit"
+    ),
+
+    // Blocking and defensive sounds
+    block_success: createPlaceholderSfx(
+      "block_success",
+      "막기 성공",
+      "Block Success"
+    ),
+    block_break: createPlaceholderSfx(
+      "block_break",
+      "막기 파괴",
+      "Guard Break"
+    ),
+    guard: createPlaceholderSfx("guard", "방어", "Guard"),
+
+    // Movement and stance sounds
+    stance_change: createPlaceholderSfx(
+      "stance_change",
+      "자세 변경",
+      "Stance Change"
+    ),
+    stance_select: createPlaceholderSfx(
+      "stance_select",
+      "자세 선택",
+      "Stance Select"
+    ),
+
+    // Ki energy system sounds
+    ki_charge: createPlaceholderSfx("ki_charge", "기 충전", "Ki Charge"),
+    ki_release: createPlaceholderSfx("ki_release", "기 방출", "Ki Release"),
+    energy_pulse: createPlaceholderSfx(
+      "energy_pulse",
+      "에너지 파동",
+      "Energy Pulse"
+    ),
+
+    // Match flow sounds
+    match_start: createPlaceholderSfx(
+      "match_start",
+      "경기 시작",
+      "Match Start"
+    ),
+    match_end: createPlaceholderSfx("match_end", "경기 종료", "Match End"),
+    combat_end: createPlaceholderSfx("combat_end", "전투 종료", "Combat End"),
+    victory: createPlaceholderSfx("victory", "승리", "Victory"),
+    defeat: createPlaceholderSfx("defeat", "패배", "Defeat"),
+    countdown: createPlaceholderSfx("countdown", "카운트다운", "Countdown"),
+
+    // Combo and special effects
+    combo_buildup: createPlaceholderSfx(
+      "combo_buildup",
+      "연속기 축적",
+      "Combo Buildup"
+    ),
+    combo_finish: createPlaceholderSfx(
+      "combo_finish",
+      "연속기 완료",
+      "Combo Finish"
+    ),
+    perfect_strike: createPlaceholderSfx(
+      "perfect_strike",
+      "완벽한 타격",
+      "Perfect Strike"
+    ),
+    technique_execute: createPlaceholderSfx(
+      "technique_execute",
+      "기술 실행",
+      "Technique Execute"
+    ),
+    technique: createPlaceholderSfx("technique", "기술", "Technique"),
+
+    // Status and warning sounds
+    health_low: createPlaceholderSfx("health_low", "체력 부족", "Low Health"),
+    stamina_depleted: createPlaceholderSfx(
+      "stamina_depleted",
+      "체력 고갈",
+      "Stamina Depleted"
+    ),
+
+    // Environmental sounds
+    dojang_ambience: createPlaceholderSfx(
+      "dojang_ambience",
+      "도장 분위기",
+      "Dojang Ambience",
+      10
+    ),
+    wind_effect: createPlaceholderSfx(
+      "wind_effect",
+      "바람 효과",
+      "Wind Effect",
+      3
+    ),
+
+    // Generic/misc sounds
+    body_realistic_sound: createPlaceholderSfx(
+      "body_realistic_sound",
+      "몸 타격음",
+      "Body Impact"
+    ),
+    action_blocked: createPlaceholderSfx(
+      "action_blocked",
+      "액션 차단",
+      "Action Blocked"
+    ),
+    heavy_hit: createPlaceholderSfx("heavy_hit", "강한 충격", "Heavy Impact"),
+    light_hit: createPlaceholderSfx("light_hit", "가벼운 충격", "Light Impact"),
+    miss: createPlaceholderSfx("miss", "빗나감", "Miss"),
   };
-  // The URL will be constructed by Howler or dynamically if needed,
-  // but if required by AudioAsset, construct one format as a placeholder/default.
-  // This specific URL construction might vary based on how AudioUtils.getPreferredFormat and Howler work.
-  // For placeholder-sounds, we might not need to resolve the full URL here if Howler does it.
-  // However, if AudioAsset requires 'url', we provide one.
-  // The error was in constructAudioUrl call, let's assume it's:
-  // constructAudioUrl(basePath: string, fileName: string, format: AudioFormat | null, variant?: string)
-  // For a generic URL, we can pick the first format.
-  const exampleUrl = AudioUtils.constructAudioUrl(
-    assetData.basePath,
-    assetData.id,
-    assetData.formats[0]
-  );
+}
 
-  return { ...assetData, url: exampleUrl };
-};
+/**
+ * Create placeholder music tracks with silent audio
+ */
+export function createPlaceholderMusicTracks(): Record<
+  MusicTrackId,
+  AudioAsset
+> {
+  const createPlaceholderMusic = (
+    id: MusicTrackId,
+    korean: string,
+    english: string
+  ): AudioAsset => ({
+    id,
+    url: LONG_SILENT_AUDIO_DATA_URL,
+    category: "music",
+    basePath: `/placeholder/music/${id}`,
+    koreanContext: { korean, english },
+    formats: ["webm", "mp3"],
+    volume: 0.5,
+    preload: true,
+    loop: true,
+  });
 
-// Define SFX assets
-const sfxAssets: Record<SoundEffectId, AudioAsset> = {
-  menu_hover: createAsset(
-    "menu_hover",
-    "sfx/ui",
-    "메뉴 호버",
-    "Menu Hover",
-    "ui",
-    false,
-    0.5
-  ),
-  menu_select: createAsset(
-    "menu_select",
-    "sfx/ui",
-    "메뉴 선택",
-    "Menu Select",
-    "ui",
-    false,
-    0.6
-  ),
-  menu_back: createAsset(
-    "menu_back",
-    "sfx/ui",
-    "메뉴 뒤로",
-    "Menu Back",
-    "ui",
-    false,
-    0.5
-  ),
+  return {
+    combat_theme: createPlaceholderMusic(
+      "combat_theme",
+      "전투 테마",
+      "Combat Theme"
+    ),
+    menu_theme: createPlaceholderMusic("menu_theme", "메뉴 테마", "Menu Theme"),
+    training_theme: createPlaceholderMusic(
+      "training_theme",
+      "훈련 테마",
+      "Training Theme"
+    ),
+    intro_theme: createPlaceholderMusic(
+      "intro_theme",
+      "인트로 테마",
+      "Intro Theme"
+    ),
+    victory_theme: createPlaceholderMusic(
+      "victory_theme",
+      "승리 테마",
+      "Victory Theme"
+    ),
+    ambient_dojang: createPlaceholderMusic(
+      "ambient_dojang",
+      "도장 배경음",
+      "Dojang Ambient"
+    ),
+  };
+}
 
-  attack_light: createAsset(
-    "attack_light",
-    "sfx/combat",
-    "가벼운 공격",
-    "Light Attack",
-    "combat"
-  ),
-  attack_medium: createAsset(
-    "attack_medium",
-    "sfx/combat",
-    "중간 공격",
-    "Medium Attack",
-    "combat"
-  ),
-  attack_heavy: createAsset(
-    "attack_heavy",
-    "sfx/combat",
-    "강한 공격",
-    "Heavy Attack",
-    "combat"
-  ),
-  attack_critical: createAsset(
-    "attack_critical",
-    "sfx/combat",
-    "치명적 공격",
-    "Critical Attack",
-    "combat",
-    false,
-    0.8
-  ),
+/**
+ * Procedural sound generator instance for runtime sound generation
+ */
+let soundGenerator: DefaultSoundGenerator | null = null;
 
-  hit_light: createAsset(
-    "hit_light",
-    "sfx/combat",
-    "가벼운 타격",
-    "Light Hit",
-    "combat"
-  ),
-  hit_medium: createAsset(
-    "hit_medium",
-    "sfx/combat",
-    "중간 타격",
-    "Medium Hit",
-    "combat"
-  ),
-  hit_heavy: createAsset(
-    "hit_heavy",
-    "sfx/combat",
-    "강한 타격",
-    "Heavy Hit",
-    "combat"
-  ),
-  hit_critical: createAsset(
-    "hit_critical",
-    "sfx/combat",
-    "치명적 타격",
-    "Critical Hit",
-    "combat",
-    false,
-    0.9
-  ),
+/**
+ * Get or create the sound generator
+ */
+function getSoundGenerator(): DefaultSoundGenerator {
+  if (!soundGenerator) {
+    soundGenerator = new DefaultSoundGenerator();
+  }
+  return soundGenerator;
+}
 
-  critical_hit: createAsset(
-    "critical_hit",
-    "sfx/combat",
-    "치명타",
-    "Critical Hit Sound",
-    "combat",
-    false,
-    0.9
-  ), // Duplicate of hit_critical?
-  heavy_hit: createAsset(
-    "heavy_hit",
-    "sfx/combat",
-    "강타",
-    "Heavy Hit Sound",
-    "combat"
-  ), // Duplicate of hit_heavy?
-  light_hit: createAsset(
-    "light_hit",
-    "sfx/combat",
-    "경타",
-    "Light Hit Sound",
-    "combat"
-  ), // Duplicate of hit_light?
+/**
+ * Play a procedural sound effect
+ */
+export async function playProceduralSound(
+  type: "strike" | "hit" | "block" | "stance_change" | "ki_energy",
+  intensity: number = 0.5,
+  volume: number = 0.7
+): Promise<void> {
+  try {
+    const generator = getSoundGenerator();
+    await generator.playGeneratedSound(type, intensity, volume);
+  } catch (error) {
+    console.warn("Could not play procedural sound:", error);
+  }
+}
 
-  block_success: createAsset(
-    "block_success",
-    "sfx/combat",
-    "방어 성공",
-    "Block Success",
-    "combat"
-  ),
-  block_break: createAsset(
-    "block_break",
-    "sfx/combat",
-    "방어 파괴",
-    "Block Break",
-    "combat",
-    false,
-    0.8
-  ),
-  action_blocked: createAsset(
-    "action_blocked",
-    "sfx/combat",
-    "행동 방해됨",
-    "Action Blocked",
-    "combat"
-  ),
+/**
+ * Create enhanced placeholder sounds with procedural generation capability
+ */
+export interface EnhancedPlaceholderSound {
+  asset: AudioAsset;
+  canGenerateProcedural: boolean;
+  proceduralType?: "strike" | "hit" | "block" | "stance_change" | "ki_energy";
+}
 
-  stance_change: createAsset(
-    "stance_change",
-    "sfx/combat",
-    "자세 변경",
-    "Stance Change",
-    "combat"
-  ),
-  stance_select: createAsset(
-    "stance_select",
-    "sfx/ui",
-    "자세 선택",
-    "Stance Select",
-    "ui"
-  ),
-  technique_execute: createAsset(
-    "technique_execute",
-    "sfx/combat",
-    "기술 실행",
-    "Technique Execute",
-    "combat"
-  ),
+/**
+ * Create enhanced placeholder sound effects with procedural fallbacks
+ */
+export function createEnhancedPlaceholderSounds(): Record<
+  SoundEffectId,
+  EnhancedPlaceholderSound
+> {
+  const baseSounds = createPlaceholderSoundEffects();
+  const enhanced: Record<SoundEffectId, EnhancedPlaceholderSound> = {} as any;
 
-  ki_charge: createAsset(
-    "ki_charge",
-    "sfx/combat/ki",
-    "기 충전",
-    "Ki Charge",
-    "ki_energy"
-  ),
-  ki_release: createAsset(
-    "ki_release",
-    "sfx/combat/ki",
-    "기 방출",
-    "Ki Release",
-    "ki_energy"
-  ),
-  energy_pulse: createAsset(
-    "energy_pulse",
-    "sfx/combat/ki",
-    "에너지 파동",
-    "Energy Pulse",
-    "ki_energy"
-  ),
+  // Map sound effects to procedural types
+  const proceduralMapping: Partial<
+    Record<
+      SoundEffectId,
+      "strike" | "hit" | "block" | "stance_change" | "ki_energy"
+    >
+  > = {
+    attack_light: "strike",
+    attack_medium: "strike",
+    attack_heavy: "strike",
+    attack_critical: "strike",
+    hit_light: "hit",
+    hit_medium: "hit",
+    hit_heavy: "hit",
+    hit_critical: "hit",
+    critical_hit: "hit",
+    block_success: "block",
+    block_break: "block",
+    guard: "block",
+    stance_change: "stance_change",
+    stance_select: "stance_change",
+    ki_charge: "ki_energy",
+    ki_release: "ki_energy",
+    energy_pulse: "ki_energy",
+  };
 
-  match_start: createAsset(
-    "match_start",
-    "sfx/match",
-    "경기 시작",
-    "Match Start",
-    "match",
-    false,
-    0.8
-  ),
-  match_end: createAsset(
-    "match_end",
-    "sfx/match",
-    "경기 종료",
-    "Match End",
-    "match",
-    false,
-    0.8
-  ),
-  combat_end: createAsset(
-    "combat_end",
-    "sfx/match",
-    "전투 종료",
-    "Combat End",
-    "match",
-    false,
-    0.8
-  ),
-  victory: createAsset(
-    "victory",
-    "sfx/match",
-    "승리",
-    "Victory",
-    "match",
-    false,
-    0.9
-  ),
-  defeat: createAsset(
-    "defeat",
-    "sfx/match",
-    "패배",
-    "Defeat",
-    "match",
-    false,
-    0.7
-  ),
-  countdown: createAsset(
-    "countdown",
-    "sfx/match",
-    "카운트다운",
-    "Countdown",
-    "match",
-    false,
-    0.6
-  ),
+  // Create enhanced versions
+  for (const [id, asset] of Object.entries(baseSounds) as [
+    SoundEffectId,
+    AudioAsset
+  ][]) {
+    const proceduralType = proceduralMapping[id];
+    enhanced[id] = {
+      asset,
+      canGenerateProcedural: !!proceduralType,
+      proceduralType,
+    };
+  }
 
-  miss: createAsset(
-    "miss",
-    "sfx/combat",
-    "빗나감",
-    "Miss",
-    "combat",
-    false,
-    0.4
-  ),
-  guard: createAsset(
-    "guard",
-    "sfx/combat",
-    "가드",
-    "Guard",
-    "combat",
-    false,
-    0.6
-  ),
-  technique: createAsset(
-    "technique",
-    "sfx/combat",
-    "특수 기술",
-    "Technique Sound",
-    "combat",
-    false,
-    0.7
-  ),
+  return enhanced;
+}
 
-  combo_buildup: createAsset(
-    "combo_buildup",
-    "sfx/combat/combo",
-    "콤보 빌드업",
-    "Combo Buildup",
-    "combo"
-  ),
-  combo_finish: createAsset(
-    "combo_finish",
-    "sfx/combat/combo",
-    "콤보 마무리",
-    "Combo Finish",
-    "combo",
-    false,
-    0.8
-  ),
-  perfect_strike: createAsset(
-    "perfect_strike",
-    "sfx/combat/combo",
-    "완벽한 일격",
-    "Perfect Strike",
-    "combo",
-    false,
-    0.9
-  ),
-
-  health_low: createAsset(
-    "health_low",
-    "sfx/status",
-    "체력 낮음",
-    "Health Low",
-    "status",
-    false,
-    0.7
-  ),
-  stamina_depleted: createAsset(
-    "stamina_depleted",
-    "sfx/status",
-    "스태미나 고갈",
-    "Stamina Depleted",
-    "status",
-    false,
-    0.7
-  ),
-
-  dojang_ambience: createAsset(
-    "dojang_ambience",
-    "ambient",
-    "도장 주변음",
-    "Dojang Ambience",
-    "ambient",
-    true,
-    0.3,
-    true
-  ), // Loop ambient sounds
-  wind_effect: createAsset(
-    "wind_effect",
-    "ambient",
-    "바람 소리",
-    "Wind Effect",
-    "ambient",
-    true,
-    0.4,
-    true
-  ),
-
-  body_realistic_sound: createAsset(
-    "body_realistic_sound",
-    "sfx/combat/realistic",
-    "사실적인 몸체 소리",
-    "Realistic Body Sound",
-    "combat"
-  ),
-};
-
-// Define Music assets
-const musicAssets: Record<MusicTrackId, AudioAsset> = {
-  combat_theme: createAsset(
-    "combat_theme",
-    "music",
-    "전투 테마",
-    "Combat Theme",
-    "music",
-    true,
-    0.5,
-    true
-  ),
-  menu_theme: createAsset(
-    "menu_theme",
-    "music",
-    "메인 메뉴 테마",
-    "Main Menu Theme",
-    "music",
-    true,
-    0.4,
-    true
-  ),
-  training_theme: createAsset(
-    "training_theme",
-    "music",
-    "훈련 테마",
-    "Training Theme",
-    "music",
-    true,
-    0.45,
-    true
-  ),
-  intro_theme: createAsset(
-    "intro_theme",
-    "music",
-    "소개 테마",
-    "Intro Theme",
-    "music",
-    true,
-    0.4,
-    true
-  ),
-  victory_theme: createAsset(
-    "victory_theme",
-    "music",
-    "승리 테마",
-    "Victory Theme",
-    "music",
-    true,
-    0.6,
-    false
-  ), // Victory usually doesn't loop
-  ambient_dojang: createAsset(
-    "ambient_dojang",
-    "music",
-    "도장 배경 음악",
-    "Ambient Dojang Music",
-    "ambient",
-    true,
-    0.3,
-    true
-  ),
-};
-
-export const PLACEHOLDER_AUDIO_ASSETS: AudioAssetRegistry = {
-  sfx: sfxAssets,
-  music: musicAssets,
-};
-
-// Example of how constructAudioUrl was likely intended to be used if url was not part of createAsset
-// This is for reference, the createAsset helper now includes a basic URL.
-export const getExampleSfxUrl = (
+/**
+ * Play enhanced placeholder sound (tries procedural if available)
+ */
+export async function playEnhancedPlaceholderSound(
   id: SoundEffectId,
-  format: "webm" | "mp3"
-): string => {
-  const asset = sfxAssets[id];
-  if (!asset) throw new Error(`SFX asset ${id} not found`);
-  // Original problematic call: constructAudioUrl(asset, format)
-  // Corrected call:
-  return AudioUtils.constructAudioUrl(asset.basePath, asset.id, format);
-};
+  intensity: number = 0.5,
+  volume: number = 0.7
+): Promise<void> {
+  const enhanced = createEnhancedPlaceholderSounds();
+  const sound = enhanced[id];
 
-export const getExampleMusicUrl = (
-  id: MusicTrackId,
-  format: "webm" | "mp3"
-): string => {
-  const asset = musicAssets[id];
-  if (!asset) throw new Error(`Music asset ${id} not found`);
-  // Original problematic call: constructAudioUrl(asset, format)
-  // Corrected call:
-  return AudioUtils.constructAudioUrl(asset.basePath, asset.id, format);
-};
+  if (sound?.canGenerateProcedural && sound.proceduralType) {
+    await playProceduralSound(sound.proceduralType, intensity, volume);
+  } else {
+    // Fallback to silent audio or HTML5 audio element
+    console.log(
+      `Playing placeholder sound: ${id} (${sound?.asset.koreanContext.korean})`
+    );
+  }
+}
+
+// Export placeholder audio assets for testing
+export const PLACEHOLDER_AUDIO_ASSETS = initializePlaceholderAudio();
+
+/**
+ * Initialize placeholder audio system
+ */
+export function initializePlaceholderAudio(): {
+  sfx: Record<SoundEffectId, AudioAsset>;
+  music: Record<MusicTrackId, AudioAsset>;
+  enhanced: Record<SoundEffectId, EnhancedPlaceholderSound>;
+} {
+  return {
+    sfx: createPlaceholderSoundEffects(),
+    music: createPlaceholderMusicTracks(),
+    enhanced: createEnhancedPlaceholderSounds(),
+  };
+}
+
+/**
+ * Cleanup placeholder audio resources
+ */
+export function cleanupPlaceholderAudio(): void {
+  if (soundGenerator) {
+    soundGenerator.dispose();
+    soundGenerator = null;
+  }
+}

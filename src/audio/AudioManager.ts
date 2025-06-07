@@ -8,17 +8,15 @@ declare global {
 import { Howl, Howler } from "howler";
 import type {
   IAudioManager,
-  AudioState,
-  MusicTrackId,
-  SoundEffectId,
-  AudioPlaybackOptions,
   AudioAsset,
   AudioAssetRegistry,
-  AudioConfig, // Assuming AudioConfig is defined elsewhere
+  AudioState,
+  SoundEffectId,
+  MusicTrackId,
+  AudioPlaybackOptions,
 } from "../types/audio";
 import { AudioUtils } from "./AudioUtils";
-// import { DefaultSoundGenerator } from "./DefaultSoundGenerator"; // TS6133: Unused import
-// import { VariantSelector } from "./VariantSelector";
+import { createPlaceholderAudioAssets } from "./AudioAssetRegistry";
 
 // Placeholder for a simple event emitter if not using a library
 class SimpleEventEmitter {
@@ -34,7 +32,7 @@ class SimpleEventEmitter {
   }
 }
 
-const DEFAULT_AUDIO_CONFIG: AudioConfig = {
+const DEFAULT_AUDIO_CONFIG = {
   MASTER_VOLUME: 0.7,
   SFX_VOLUME: 0.8,
   MUSIC_VOLUME: 0.5,
@@ -60,24 +58,23 @@ export class AudioManager implements IAudioManager {
   private sfxGain: GainNode | null = null;
   private musicGain: GainNode | null = null;
   public isInitialized: boolean = false;
-  // private isSuspended: boolean = false; // Unused
   private audioState: AudioState;
   private assetRegistry: AudioAssetRegistry;
-  // private soundGenerator: DefaultSoundGenerator; // TS6133: Instance is unused
   private activeSounds: Record<number, Howl> = {};
   private activeMusic: {
     id: MusicTrackId;
     howl: Howl;
     soundId: number;
   } | null = null;
-  private config: AudioConfig = DEFAULT_AUDIO_CONFIG; // Added config property
-  private eventEmitter = new SimpleEventEmitter(); // Added eventEmitter
+  private config = DEFAULT_AUDIO_CONFIG;
+  private eventEmitter = new SimpleEventEmitter();
 
   constructor(
-    assetRegistry: AudioAssetRegistry,
+    assetRegistry?: AudioAssetRegistry,
     initialAudioState?: Partial<AudioState>
   ) {
-    this.assetRegistry = assetRegistry;
+    // Use provided registry or create placeholder registry with all required assets
+    this.assetRegistry = assetRegistry || createPlaceholderAudioAssets();
     this.audioState = {
       ...DEFAULT_AUDIO_STATE,
       ...(initialAudioState || {}),
@@ -116,12 +113,11 @@ export class AudioManager implements IAudioManager {
       if (this.audioContext.state === "suspended") {
         console.log(
           "AudioContext is initially suspended. Waiting for user interaction."
-        ); // Explicit use
+        );
         // Try to resume on first user interaction
         const resumeContext = async () => {
           if (this.audioContext && this.audioContext.state === "suspended") {
             await this.audioContext.resume();
-            // this.isSuspended = false; // isSuspended is unused
             console.log("AudioContext resumed on user interaction.");
           }
           document.removeEventListener("click", resumeContext);
@@ -148,8 +144,8 @@ export class AudioManager implements IAudioManager {
   }
 
   private async preloadAssets(): Promise<void> {
-    const sfxAssets = Object.values(this.assetRegistry.sfx);
-    const musicAssets = Object.values(this.assetRegistry.music);
+    const sfxAssets = Object.values(this.assetRegistry.sfx).filter(Boolean);
+    const musicAssets = Object.values(this.assetRegistry.music).filter(Boolean);
     const assetsToLoad = [...sfxAssets, ...musicAssets].filter(
       (asset) => asset.preload
     );
@@ -161,22 +157,20 @@ export class AudioManager implements IAudioManager {
 
   public async loadAudioAsset(asset: AudioAsset): Promise<void> {
     return new Promise((resolve, reject) => {
-      /*const sound =*/ new Howl({
-        src: AudioUtils.getPreferredFormat(asset.formats, asset.url), // Corrected method name
+      new Howl({
+        src: AudioUtils.getPreferredFormat(asset.formats, asset.url),
         volume: asset.volume,
         loop: asset.loop ?? false,
-        preload: true, // Ensure Howler preloads it
+        preload: true,
         onload: () => {
           console.log(`Loaded audio asset: ${asset.id}`);
           resolve();
         },
         onloaderror: (_id, err) => {
-          // Prefix unused 'id' with underscore
           console.error(`Error loading audio asset ${asset.id}:`, err);
           reject(err);
         },
       });
-      // Howler handles its own loading, no need to store 'sound' here unless for specific active tracking
     });
   }
 
@@ -202,28 +196,18 @@ export class AudioManager implements IAudioManager {
     if (this.audioState.muted) return null;
 
     let soundToPlay: Howl | undefined = new Howl({
-      src: AudioUtils.getPreferredFormat(sfxAsset.formats, sfxAsset.url), // Corrected method name
+      src: AudioUtils.getPreferredFormat(sfxAsset.formats, sfxAsset.url),
       volume: finalVolume,
       loop: options?.loop ?? sfxAsset.loop ?? false,
       rate: options?.rate ?? 1.0,
-      // Howler handles its own preloading if src is an array or if preload:true
     });
 
-    const soundId = soundToPlay.play(); // Howl.play() returns a soundId (number)
+    const soundId = soundToPlay.play();
 
     if (soundToPlay && soundId !== undefined) {
-      // Howl's volume, loop, rate are set at instantiation or via methods on the Howl instance itself
-      // For a specific playing instance (soundId), these are controlled via Howler global or the instance.
-      // Example: soundToPlay.volume(finalVolume, soundId); // This is incorrect for instance method
-      // Correct for instance: soundToPlay.volume(finalVolume); then play.
-      // Or Howler.volume(finalVolume, soundId); for global control of a specific sound instance.
-
-      // If options are per-play, they should be applied to the Howl instance before play or via Howler global after play.
-      // For simplicity, we assume Howl instance methods are sufficient here.
-      // Rate can be set on the instance:
       if (options?.rate) soundToPlay.rate(options.rate, soundId);
 
-      this.activeSounds[soundId] = soundToPlay; // Store the Howl instance
+      this.activeSounds[soundId] = soundToPlay;
 
       soundToPlay.once(
         "end",
@@ -234,7 +218,7 @@ export class AudioManager implements IAudioManager {
           this.eventEmitter.emit("sfxEnded", id, soundId);
         },
         soundId
-      ); // Scope 'once' to this specific soundId
+      );
       this.eventEmitter.emit("sfxPlayed", id, soundId);
       return soundId;
     }
@@ -250,12 +234,10 @@ export class AudioManager implements IAudioManager {
       return null;
     }
     if (this.activeMusic && this.activeMusic.id === id) {
-      // If the same music is already playing, either restart or do nothing
-      // For now, let's assume we stop the current and play new, or just return existing soundId
       return this.activeMusic.soundId;
     }
 
-    this.stopMusic(); // Stop any currently playing music
+    this.stopMusic();
 
     const musicAsset = this.assetRegistry.music[id];
     if (!musicAsset) {
@@ -270,11 +252,11 @@ export class AudioManager implements IAudioManager {
     if (this.audioState.muted) return null;
 
     let soundToPlay: Howl | undefined = new Howl({
-      src: AudioUtils.getPreferredFormat(musicAsset.formats, musicAsset.url), // Corrected method name
+      src: AudioUtils.getPreferredFormat(musicAsset.formats, musicAsset.url),
       volume: finalVolume,
       loop: options?.loop ?? musicAsset.loop ?? true,
       rate: options?.rate ?? 1.0,
-      html5: true, // Often recommended for longer tracks / music
+      html5: true,
       onload: () => {
         this.eventEmitter.emit("musicLoaded", id);
       },
@@ -289,7 +271,6 @@ export class AudioManager implements IAudioManager {
         }
       },
       onfade: (soundId) => {
-        // Use soundToPlay.volume(soundId) to get volume for a specific instance
         const currentVolume = soundToPlay?.volume(soundId) as
           | number
           | undefined;
@@ -308,10 +289,10 @@ export class AudioManager implements IAudioManager {
 
     if (soundToPlay && soundId !== undefined) {
       if (options?.fadeIn && options.fadeIn > 0) {
-        soundToPlay.volume(0, soundId); // Start at 0 volume
+        soundToPlay.volume(0, soundId);
         soundToPlay.fade(0, finalVolume, options.fadeIn, soundId);
       } else {
-        soundToPlay.volume(finalVolume, soundId); // Set volume directly
+        soundToPlay.volume(finalVolume, soundId);
       }
 
       this.activeMusic = { id, howl: soundToPlay, soundId };
@@ -345,8 +326,6 @@ export class AudioManager implements IAudioManager {
           duration,
           soundInstanceToStop.soundId
         );
-        // Howler's fade will eventually call stop if it fades to 0 and is not looping.
-        // We set a timeout to ensure it's cleared if Howler doesn't stop it (e.g. if fade is interrupted)
         setTimeout(() => {
           if (
             this.activeMusic &&
@@ -357,7 +336,7 @@ export class AudioManager implements IAudioManager {
             this.audioState.currentMusicTrack = null;
             this.eventEmitter.emit("musicStopped", soundInstanceToStop.id);
           }
-        }, duration + 50); // Add a small buffer
+        }, duration + 50);
       } else {
         soundInstanceToStop.howl.stop(soundInstanceToStop.soundId);
         this.activeMusic = null;
@@ -365,7 +344,6 @@ export class AudioManager implements IAudioManager {
         this.eventEmitter.emit("musicStopped", soundInstanceToStop.id);
       }
     } else if (!id && this.activeMusic) {
-      // If no id specified, stop current active music
       this.stopMusic(this.activeMusic.id, fadeOutDuration);
     }
   }
@@ -377,19 +355,18 @@ export class AudioManager implements IAudioManager {
   }
 
   public setMasterVolume(volume: number): void {
-    this.audioState.masterVolume = AudioUtils.clampVolume(volume); // Corrected: Use existing or new clamp utility
+    this.audioState.masterVolume = AudioUtils.clampVolume(volume);
     Howler.volume(this.audioState.masterVolume);
     this.eventEmitter.emit("masterVolumeChanged", this.audioState.masterVolume);
   }
 
   public setSFXVolume(volume: number): void {
-    this.audioState.sfxVolume = AudioUtils.clampVolume(volume); // Corrected: Use existing or new clamp utility
-    // Adjust volumes of active SFX or rely on new SFX picking up this volume
+    this.audioState.sfxVolume = AudioUtils.clampVolume(volume);
     this.eventEmitter.emit("sfxVolumeChanged", this.audioState.sfxVolume);
   }
 
   public setMusicVolume(volume: number): void {
-    this.audioState.musicVolume = AudioUtils.clampVolume(volume); // Corrected: Use existing or new clamp utility
+    this.audioState.musicVolume = AudioUtils.clampVolume(volume);
     if (
       this.activeMusic &&
       this.activeMusic.howl &&
@@ -417,8 +394,35 @@ export class AudioManager implements IAudioManager {
     return { ...this.audioState };
   }
 
+  // Korean martial arts specific methods
+  public playAttackSound(damage: number): void {
+    if (damage > 50) this.playSFX("attack_heavy");
+    else if (damage > 20) this.playSFX("attack_medium");
+    else this.playSFX("attack_light");
+  }
+
+  public playHitSound(damage: number, isVitalPoint?: boolean): void {
+    if (isVitalPoint) this.playSFX("critical_hit");
+    else if (damage > 50) this.playSFX("hit_heavy");
+    else if (damage > 20) this.playSFX("hit_medium");
+    else this.playSFX("hit_light");
+  }
+
+  public playTechniqueSound(koreanName: string): void {
+    console.log(`Playing sound for technique: ${koreanName}`);
+    this.playSFX("technique_execute");
+  }
+
+  public playStanceChangeSound(): void {
+    this.playSFX("stance_change");
+  }
+
+  public playBlockSound(): void {
+    this.playSFX("block_success");
+  }
+
   public stopAllSounds(): void {
-    Howler.stop(); // Stops all sounds
+    Howler.stop();
     this.activeSounds = {};
     if (this.activeMusic) {
       this.activeMusic = null;
@@ -438,31 +442,5 @@ export class AudioManager implements IAudioManager {
       this.activeMusic !== null &&
       (this.activeMusic?.howl?.playing(this.activeMusic.soundId) ?? false)
     );
-  }
-
-  // Placeholder implementations for IAudioManager Korean martial arts specific methods
-  public playAttackSound(damage: number): void {
-    // Determine sound based on damage
-    if (damage > 50) this.playSFX("attack_heavy");
-    else if (damage > 20) this.playSFX("attack_medium");
-    else this.playSFX("attack_light");
-  }
-
-  public playHitSound(damage: number, isVitalPoint?: boolean): void {
-    if (isVitalPoint) this.playSFX("critical_hit");
-    else if (damage > 50) this.playSFX("hit_heavy");
-    else if (damage > 20) this.playSFX("hit_medium");
-    else this.playSFX("hit_light");
-  }
-  public playTechniqueSound(koreanName: string): void {
-    // This might map koreanName to a specific SoundEffectId or use text-to-speech
-    console.log(`Playing sound for technique: ${koreanName}`);
-    this.playSFX("technique_execute"); // Generic for now
-  }
-  public playStanceChangeSound(): void {
-    this.playSFX("stance_change");
-  }
-  public playBlockSound(): void {
-    this.playSFX("block_success");
   }
 }

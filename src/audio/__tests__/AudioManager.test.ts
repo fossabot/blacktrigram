@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import type { AudioAsset } from "../../types/audio"; // AudioAssetRegistry unused
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { AudioManager } from "../AudioManager";
 import { PLACEHOLDER_AUDIO_ASSETS } from "../placeholder-sounds";
+import { AudioAsset } from "@/types";
 
 // Mock Howler
 vi.mock("howler", () => {
@@ -72,10 +72,6 @@ describe("AudioManager", () => {
     // or mock parts of init.
     // If init is essential for the method being tested:
     await audioManagerInstance.init();
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
   });
 
   it("should initialize correctly", async () => {

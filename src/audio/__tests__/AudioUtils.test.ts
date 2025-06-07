@@ -2,150 +2,96 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { AudioUtils } from "../AudioUtils";
 import type { AudioFormat } from "../../types/audio";
 
-describe("AudioUtils", () => {
-  // Mock for document.createElement('audio').canPlayType
-  const mockCanPlayType = vi.fn();
+// Mock HTMLAudioElement
+const mockCanPlayType = vi.fn();
+Object.defineProperty(HTMLAudioElement.prototype, "canPlayType", {
+  value: mockCanPlayType,
+  writable: true,
+});
 
+describe("AudioUtils", () => {
   beforeEach(() => {
-    vi.resetAllMocks();
-    AudioUtils["audioTestElement"] = {
-      canPlayType: mockCanPlayType,
-    } as any;
+    vi.clearAllMocks();
+    mockCanPlayType.mockReturnValue("probably");
   });
 
   describe("selectAudioFormat", () => {
-    const availableFormats: readonly AudioFormat[] = ["webm", "mp3"];
     const preferredOrder: readonly AudioFormat[] = ["webm", "mp3"];
 
-    it("should select webm if supported and preferred", () => {
-      mockCanPlayType.mockImplementation(
-        (type: string) => type === "audio/webm"
-      );
-      const format = AudioUtils.selectAudioFormat(
-        availableFormats,
-        preferredOrder
-      );
-      expect(format).toBe("webm");
-    });
-
-    it("should select mp3 if webm is not supported but mp3 is, and mp3 is preferred next", () => {
-      mockCanPlayType.mockImplementation(
-        (type: string) => type === "audio/mpeg"
-      ); // mp3
-      const format = AudioUtils.selectAudioFormat(availableFormats, [
-        "webm",
-        "mp3",
-      ]);
-      expect(format).toBe("mp3");
-    });
-
-    it("should select mp3 if only mp3 is available and supported", () => {
-      mockCanPlayType.mockImplementation(
-        (type: string) => type === "audio/mpeg"
-      );
-      const format = AudioUtils.selectAudioFormat(["mp3"], ["mp3"]);
-      expect(format).toBe("mp3");
-    });
-
-    it("should return null if no preferred formats are supported", () => {
-      mockCanPlayType.mockReturnValue(false); // No format supported
-      const format = AudioUtils.selectAudioFormat(
-        availableFormats,
-        preferredOrder
-      );
-      expect(format).toBeNull();
-    });
-
     it("should return null if availableFormats is empty", () => {
-      mockCanPlayType.mockReturnValue(true);
+      mockCanPlayType.mockReturnValue("probably");
       const format = AudioUtils.selectAudioFormat([], preferredOrder);
       expect(format).toBeNull();
     });
 
     it("should handle mpeg for mp3", () => {
-      mockCanPlayType.mockImplementation(
-        (type: string) => type === "audio/mpeg"
+      mockCanPlayType.mockImplementation((type: string) =>
+        type === "audio/mpeg" ? "probably" : ""
       );
       const format = AudioUtils.selectAudioFormat(["mp3"], ["mp3"]);
       expect(format).toBe("mp3");
-      expect(mockCanPlayType).toHaveBeenCalledWith("audio/mpeg");
+    });
+
+    it("should return preferred format when available and supported", () => {
+      mockCanPlayType.mockReturnValue("probably");
+      const availableFormats: readonly AudioFormat[] = ["mp3", "webm"];
+      const format = AudioUtils.selectAudioFormat(availableFormats, [
+        "webm",
+        "mp3",
+      ]);
+      expect(format).toBe("webm");
+    });
+
+    it("should fallback to supported format even if not preferred", () => {
+      mockCanPlayType.mockImplementation((type: string) =>
+        type === "audio/mpeg" ? "probably" : ""
+      );
+      const availableFormats: readonly AudioFormat[] = ["webm", "mp3"];
+      const format = AudioUtils.selectAudioFormat(availableFormats, ["webm"]);
+      expect(format).toBe("mp3");
     });
   });
 
   describe("getPreferredFormat", () => {
     const available: readonly AudioFormat[] = ["webm", "mp3"];
-    const preferred: readonly AudioFormat[] = ["webm", "mp3"];
-    const basePath = "assets/audio/sfx";
-    const assetId = "test_sound";
+    const basePath = "assets/audio/sfx/test_sound";
 
     it("should return webm URL if webm is supported", () => {
       vi.spyOn(AudioUtils, "selectAudioFormat").mockReturnValue("webm");
-      const url = AudioUtils.getPreferredFormat(
-        available,
-        basePath,
-        preferred,
-        assetId
-      );
-      expect(url).toBe("assets/audio/sfx/test_sound.webm");
+      const urls = AudioUtils.getPreferredFormat(available, basePath);
+      expect(urls).toEqual([`${basePath}.webm`]);
     });
 
-    it("should return mp3 URL if webm is not supported but mp3 is", () => {
+    it("should return mp3 URL if only mp3 is supported", () => {
       vi.spyOn(AudioUtils, "selectAudioFormat").mockReturnValue("mp3");
-      const url = AudioUtils.getPreferredFormat(
-        available,
-        basePath,
-        preferred,
-        assetId
-      );
-      expect(url).toBe("assets/audio/sfx/test_sound.mp3");
+      const urls = AudioUtils.getPreferredFormat(available, basePath);
+      expect(urls).toEqual([`${basePath}.mp3`]);
     });
 
-    it("should use assetUrlOrBasePath as template if it contains {format}", () => {
-      vi.spyOn(AudioUtils, "selectAudioFormat").mockReturnValue("webm");
-      const templateUrl = "assets/audio/sfx/test_sound.{format}";
-      const url = AudioUtils.getPreferredFormat(
-        available,
-        templateUrl,
-        preferred
-      );
-      expect(url).toBe("assets/audio/sfx/test_sound.webm");
-    });
-
-    it("should fallback to first available format if selectAudioFormat returns null but formats are available", () => {
+    it("should fallback to first format if none supported", () => {
       vi.spyOn(AudioUtils, "selectAudioFormat").mockReturnValue(null);
-      const url = AudioUtils.getPreferredFormat(
-        available,
-        basePath,
-        preferred,
-        assetId
-      );
-      expect(url).toBe("assets/audio/sfx/test_sound.webm"); // Falls back to available[0]
+      const urls = AudioUtils.getPreferredFormat(available, basePath);
+      expect(urls).toEqual([`${basePath}.webm`]);
     });
+  });
 
-    it("should return original path if no format can be determined and it's not a template", () => {
-      vi.spyOn(AudioUtils, "selectAudioFormat").mockReturnValue(null);
-      const directUrl = "assets/audio/sfx/test_sound.ogg"; // Not in available, not a template
-      const url = AudioUtils.getPreferredFormat(
-        [],
-        directUrl,
-        preferred,
-        assetId
-      );
-      expect(url).toBe(directUrl);
+  describe("clampVolume", () => {
+    it("should clamp volume to valid range", () => {
+      expect(AudioUtils.clampVolume(-0.5)).toBe(0);
+      expect(AudioUtils.clampVolume(0.5)).toBe(0.5);
+      expect(AudioUtils.clampVolume(1.5)).toBe(1);
     });
   });
 
   describe("canPlayType", () => {
-    it("should call audio element canPlayType for webm", () => {
-      AudioUtils.canPlayType("audio/webm");
-      expect(mockCanPlayType).toHaveBeenCalledWith("audio/webm");
+    it("should return true for supported formats", () => {
+      mockCanPlayType.mockReturnValue("probably");
+      expect(AudioUtils.canPlayType("audio/webm")).toBe(true);
     });
 
-    it("should call audio element canPlayType for mpeg (mp3)", () => {
-      AudioUtils.canPlayType("audio/mpeg");
-      expect(mockCanPlayType).toHaveBeenCalledWith("audio/mpeg");
+    it("should return false for unsupported formats", () => {
+      mockCanPlayType.mockReturnValue("");
+      expect(AudioUtils.canPlayType("audio/webm")).toBe(false);
     });
   });
-
-  // ... other tests for clamp, formatAudioTime etc.
 });

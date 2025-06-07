@@ -1,18 +1,37 @@
-export * from "./AudioManager";
-export * from "./AudioProvider";
-export * from "./AudioUtils";
-export * from "./DefaultSoundGenerator";
-export * from "./VariantSelector";
+/**
+ * Main audio system exports for Black Trigram Korean martial arts
+ */
+
+// Core audio manager and interfaces
+export { AudioManager } from "./AudioManager";
+export { AudioProvider } from "./AudioProvider";
+export { DefaultSoundGenerator } from "./DefaultSoundGenerator";
+export { VariantSelector } from "./VariantSelector";
+export { AudioUtils } from "./AudioUtils";
+
+// Asset registry and management
+export { createPlaceholderAudioAssets } from "./AudioAssetRegistry";
+
+// Placeholder and procedural audio
+export {
+  initializePlaceholderAudio,
+  cleanupPlaceholderAudio,
+  PLACEHOLDER_AUDIO_ASSETS,
+} from "./placeholder-sounds";
+
+// Re-export types for convenience
 export type {
-  AudioState,
-  IAudioManager,
-  AudioContextState, // Use AudioContextState if it's the intended context type
-  SoundEffectId,
-  MusicTrackId,
-  AudioPlaybackOptions,
   AudioAsset,
   AudioAssetRegistry,
+  AudioPlaybackOptions,
+  AudioState,
+  SoundEffectId,
+  MusicTrackId,
   AudioFormat,
-  SoundLibrary,
-} from "../types/audio"; // Ensure AudioContextState is exported from types/audio
-export { PLACEHOLDER_AUDIO_ASSETS } from "./placeholder-sounds";
+  AudioCategory,
+  CombatAudioEvent,
+  ProceduralSoundConfig,
+} from "../types/audio";
+
+export type { AudioVariantContext } from "./VariantSelector";
+export type { EnhancedPlaceholderSound } from "./placeholder-sounds";
