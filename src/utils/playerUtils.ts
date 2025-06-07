@@ -78,47 +78,126 @@ export function createPlayerState(
 }
 
 /**
+ * Check if player is incapacitated
+ */
+export function isPlayerCapacitated(player: PlayerState): boolean {
+  return (
+    player.health > 0 &&
+    player.consciousness > 0 &&
+    player.combatState !== "stunned"
+  );
+}
+
+/**
+ * Calculate archetype-specific damage modifiers
+ */
+export function calculateArchetypeDamage(
+  archetype: PlayerArchetype,
+  baseDamage: number
+): number {
+  const modifiers: Record<PlayerArchetype, number> = {
+    musa: 1.1, // Traditional warrior - high damage
+    amsalja: 1.2, // Assassin - highest damage
+    hacker: 0.9, // Cyber warrior - lower physical damage
+    jeongbo_yowon: 1.0, // Intelligence operative - balanced
+    jojik_pokryeokbae: 1.15, // Organized crime - high brutal damage
+  };
+
+  return baseDamage * (modifiers[archetype] || 1.0);
+}
+
+/**
  * Execute a technique between attacker and defender
  */
 export function executeTechnique(
   attacker: PlayerState,
   defender: PlayerState,
-  technique: KoreanTechnique
+  technique: KoreanTechnique,
+  targetPoint?: string | null
 ): {
   updatedAttacker: Partial<PlayerState>;
   updatedDefender: Partial<PlayerState>;
   hitResult: CombatResult;
 } {
-  // Calculate basic damage
+  // Calculate basic damage with archetype modifiers
   const baseDamage = technique.damage || 20;
-  const damage = Math.floor(baseDamage * (0.8 + Math.random() * 0.4));
+  const archetypeDamage = calculateArchetypeDamage(
+    attacker.archetype,
+    baseDamage
+  );
+  const damage = Math.floor(archetypeDamage * (0.8 + Math.random() * 0.4));
 
-  // Determine if hit connects
-  const hitChance = 0.8; // 80% base hit chance
+  // Determine if hit connects based on attacker/defender states
+  const attackerEffectiveness = calculateCombatEffectiveness(attacker);
+  const defenderEffectiveness = calculateCombatEffectiveness(defender);
+  const hitChance = 0.8 * attackerEffectiveness * (2 - defenderEffectiveness);
   const hit = Math.random() < hitChance;
+
+  // Check for critical hit or vital point hit
+  const isCritical = hit && Math.random() < 0.1;
+  const isVitalPoint = hit && targetPoint && Math.random() < 0.15;
+
+  const finalDamage = hit
+    ? isCritical || isVitalPoint
+      ? Math.floor(damage * 1.5)
+      : damage
+    : 0;
 
   const hitResult: CombatResult = {
     hit,
-    damage: hit ? damage : 0,
-    critical: hit && Math.random() < 0.1, // 10% crit chance
+    damage: finalDamage,
+    critical: isCritical,
     blocked: false,
-    stunned: false,
+    stunned: isCritical && Math.random() < 0.3,
     knockdown: false,
-    vitalPointHit: false,
+    vitalPointHit: isVitalPoint,
     hitPosition: defender.position,
+    // Enhanced properties
+    attacker: attacker.archetype,
+    defender: defender.archetype,
+    damagePrevented: 0,
+    staminaUsed: technique.staminaCost || 10,
+    kiUsed: technique.kiCost || 0,
+    defenderDamaged: hit,
+    attackerStance: attacker.currentStance,
+    defenderStance: defender.currentStance,
+    painLevel: finalDamage * 0.5,
+    consciousnessImpact: finalDamage * 0.1,
+    balanceEffect: isCritical ? 20 : 0,
+    bloodLoss: isVitalPoint ? finalDamage * 0.2 : 0,
+    stunDuration: isCritical ? 1000 : 0,
+    statusEffects: technique.effects || [],
+    hitType: isCritical ? "critical" : hit ? "normal" : "miss",
+    effectiveness: attackerEffectiveness,
+    vitalPointsHit: [],
+    effects: technique.effects || [],
+    damageType: technique.damageType || "blunt",
+    isVitalPoint: isVitalPoint,
+    newState: hit ? "attacking" : "ready",
   };
 
   const updatedAttacker: Partial<PlayerState> = {
-    stamina: Math.max(0, attacker.stamina - 5),
+    stamina: Math.max(0, attacker.stamina - (technique.staminaCost || 10)),
+    ki: Math.max(0, attacker.ki - (technique.kiCost || 0)),
     lastActionTime: Date.now(),
+    combatState: "attacking",
   };
 
   const updatedDefender: Partial<PlayerState> = hit
     ? {
-        health: Math.max(0, defender.health - damage),
-        pain: Math.min(100, defender.pain + damage * 0.5),
+        health: Math.max(0, defender.health - finalDamage),
+        pain: Math.min(100, defender.pain + hitResult.painLevel),
+        consciousness: Math.max(
+          0,
+          defender.consciousness - hitResult.consciousnessImpact
+        ),
+        balance: Math.max(0, defender.balance - hitResult.balanceEffect),
+        bloodLoss: defender.bloodLoss + hitResult.bloodLoss,
+        combatState: hitResult.stunned ? "stunned" : "defending",
       }
-    : {};
+    : {
+        combatState: "defending",
+      };
 
   return {
     updatedAttacker,

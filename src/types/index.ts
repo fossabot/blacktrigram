@@ -114,6 +114,7 @@ export type {
   PlayerProps,
   PlayerVisualsProps, // Added PlayerVisualsProps
   DojangBackgroundProps, // Added DojangBackgroundProps
+  HitEffectsLayerProps, // Added
 } from "./components";
 
 // Export UI types

@@ -43,7 +43,7 @@ export function GameEngine({
 
   const checkWinCondition = useCallback(() => {
     const result = CombatSystem.checkWinCondition([player1, player2]);
-    if (result) {
+    if (result && onGamePhaseChange) {
       onGamePhaseChange("victory");
     }
   }, [player1, player2, onGamePhaseChange]);
@@ -69,8 +69,12 @@ export function GameEngine({
           newStance as any
         );
 
-        if (transitionResult.success && transitionResult.newState) {
-          onPlayerUpdate(playerIndex, transitionResult.newState);
+        if (
+          transitionResult.success &&
+          transitionResult.newState &&
+          onPlayerUpdate
+        ) {
+          onPlayerUpdate(playerIndex as 0 | 1, transitionResult.newState);
           audioManager.playSFX("stance_change");
         }
       }
@@ -111,14 +115,16 @@ export function GameEngine({
         setCombatEffects((prev) => [...prev, newEffect]);
 
         // Update defender
-        onPlayerUpdate(attackerIndex === 0 ? 1 : 0, {
-          health: Math.max(0, defender.health - result.damage),
-          pain: Math.min(100, defender.pain + result.painLevel),
-          consciousness: Math.max(
-            0,
-            defender.consciousness - result.consciousnessImpact
-          ),
-        });
+        if (onPlayerUpdate) {
+          onPlayerUpdate(attackerIndex === 0 ? 1 : 0, {
+            health: Math.max(0, defender.health - result.damage),
+            pain: Math.min(100, defender.pain + result.painLevel),
+            consciousness: Math.max(
+              0,
+              defender.consciousness - result.consciousnessImpact
+            ),
+          });
+        }
 
         // Play appropriate sound effect
         audioManager.playSFX(result.critical ? "critical_hit" : "hit_light");
@@ -137,13 +143,15 @@ export function GameEngine({
 
   // Use gameState to update parent component
   useEffect(() => {
-    onGameStateChange({
-      phase: gameState.phase,
-      isTraining: gameState.isTraining,
-      player1: gameState.player1,
-      player2: gameState.player2,
-      combatEffects, // Use the actual combatEffects array
-    });
+    if (onGameStateChange) {
+      onGameStateChange({
+        phase: gameState.phase,
+        isTraining: gameState.isTraining,
+        player1: gameState.player1,
+        player2: gameState.player2,
+        combatEffects, // Use the actual combatEffects array
+      });
+    }
   }, [gameState, combatEffects, onGameStateChange]);
 
   // Use systemConfig in useEffect to avoid unused warning

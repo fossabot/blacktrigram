@@ -88,9 +88,10 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
   return (
     <Container x={props.x} y={props.y} width={width} height={height}>
       {TRIGRAM_STANCES_ORDER.map((stance, index) => {
-        const stanceDetail = COMBAT_CONTROLS.stanceControls[
-          (index + 1).toString()
-        ] as { stance: TrigramStance; korean: string; technique: string };
+        const stanceKey = (
+          index + 1
+        ).toString() as keyof typeof COMBAT_CONTROLS.stanceControls;
+        const stanceDetail = COMBAT_CONTROLS.stanceControls[stanceKey];
         const isCurrentStance = player.currentStance === stance;
 
         return (

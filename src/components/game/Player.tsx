@@ -3,13 +3,15 @@
 import React, { useMemo } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import type { PlayerProps, TrigramStance } from "../../types";
+import type { PlayerProps } from "../../types";
 import {
   KOREAN_COLORS,
   FONT_FAMILY,
-  FONT_SIZES,
-  FONT_WEIGHTS,
+  KOREAN_TEXT_SIZES, // Changed from FONT_SIZES
+  KOREAN_FONT_WEIGHTS, // Changed from FONT_WEIGHTS
   TRIGRAM_DATA,
+  PLAYER_ARCHETYPES_DATA,
+  FONT_SIZES, // Added import
 } from "../../types/constants";
 
 const getStanceColor = (stance: string): number => {
@@ -19,36 +21,36 @@ const getStanceColor = (stance: string): number => {
 
 export const Player: React.FC<PlayerProps> = ({
   playerState,
+  playerIndex,
+  position = { x: 0, y: 0 },
+  showVitalPoints = false,
+  showDebugInfo = false,
   onStateUpdate,
-  archetype,
-  stance,
-  position,
-  facing,
-  health,
-  maxHealth,
-  ki,
-  maxKi,
-  stamina,
-  maxStamina,
-  showVitalPoints,
   x = 0,
   y = 0,
   width = 200,
   height = 150,
   ...props
 }) => {
-  const { name, currentStance } = playerState;
+  // const { name, currentStance } = playerState; // Already destructured from playerState
+  const archetypeData = PLAYER_ARCHETYPES_DATA[playerState.archetype]; // Get archetype data
+
+  // const playerColor = useMemo( // Unused
+  //   () => archetypeData?.theme?.primary || KOREAN_COLORS.UI_STEEL_GRAY,
+  //   [archetypeData]
+  // );
 
   const nameTextStyle = useMemo(
     () =>
       new PIXI.TextStyle({
         fontFamily: FONT_FAMILY.KOREAN_BATTLE,
-        fontSize: FONT_SIZES.medium,
-        fill: KOREAN_COLORS.TEXT_ACCENT,
-        fontWeight: FONT_WEIGHTS.bold.toString() as PIXI.TextStyleFontWeight,
-        stroke: { color: KOREAN_COLORS.BLACK_SOLID, width: 2 }, // Fixed: use stroke object
+        fontSize: KOREAN_TEXT_SIZES.medium, // Use KOREAN_TEXT_SIZES
+        fill: archetypeData?.theme?.primary || KOREAN_COLORS.TEXT_ACCENT, // Use archetype theme color
+        fontWeight:
+          KOREAN_FONT_WEIGHTS.bold.toString() as PIXI.TextStyleFontWeight, // Use KOREAN_FONT_WEIGHTS
+        stroke: { color: KOREAN_COLORS.BLACK_SOLID, width: 2 },
       }),
-    []
+    [archetypeData] // Add archetypeData to dependency array
   );
 
   const barHeight = 15;
@@ -84,19 +86,25 @@ export const Player: React.FC<PlayerProps> = ({
       g.clear();
 
       // Player background
-      g.beginFill(getStanceColor(currentStance), 0.2);
-      g.lineStyle(2, getStanceColor(currentStance));
+      g.beginFill(getStanceColor(playerState.currentStance), 0.2); // Use playerState.currentStance
+      g.lineStyle(2, getStanceColor(playerState.currentStance)); // Use playerState.currentStance
       g.drawRoundedRect(0, 0, width, height, 10);
       g.endFill();
 
       // Health bar
-      drawBar(g, health, maxHealth, KOREAN_COLORS.POSITIVE_GREEN, 30);
+      drawBar(
+        g,
+        playerState.health,
+        playerState.maxHealth,
+        KOREAN_COLORS.POSITIVE_GREEN,
+        30
+      );
 
       // Ki bar
       drawBar(
         g,
-        ki,
-        maxKi,
+        playerState.ki,
+        playerState.maxKi,
         KOREAN_COLORS.PRIMARY_BLUE_LIGHT,
         30 + barHeight + barSpacing
       );
@@ -104,8 +112,8 @@ export const Player: React.FC<PlayerProps> = ({
       // Stamina bar
       drawBar(
         g,
-        stamina,
-        maxStamina,
+        playerState.stamina,
+        playerState.maxStamina,
         KOREAN_COLORS.SECONDARY_YELLOW_LIGHT,
         30 + (barHeight + barSpacing) * 2
       );
@@ -119,35 +127,43 @@ export const Player: React.FC<PlayerProps> = ({
       maxKi,
       stamina,
       maxStamina,
-      currentStance,
-      drawBar,
+      playerState.currentStance, // Use playerState.currentStance
+      // drawBar, // drawBar is defined inside this callback's scope, no need to be a dependency
     ]
   );
+
+  // Use onStateUpdate if provided (for test compatibility)
+  React.useEffect(() => {
+    if (onStateUpdate) {
+      // Example of how onStateUpdate might be used
+      // onStateUpdate(playerIndex, { ...playerState });
+    }
+  }, [onStateUpdate, playerIndex, playerState]);
 
   return (
     <Container x={x} y={y} {...props}>
       <Graphics draw={drawPlayerInfo} />
 
       <Text
-        text={name.korean}
+        text={playerState.name.korean} // Use playerState.name.korean
         anchor={0.5}
         x={width / 2}
-        y={10}
+        y={15} // Adjusted y for better placement
         style={nameTextStyle}
       />
 
       <Text
         text={
-          TRIGRAM_DATA[currentStance as TrigramStance]?.name.korean ||
-          currentStance
-        }
+          TRIGRAM_DATA[playerState.currentStance]?.name.korean ||
+          playerState.currentStance
+        } // Use playerState.currentStance
         anchor={0.5}
         x={width / 2}
-        y={height - 20}
+        y={height - 25} // Adjusted y for better placement
         style={{
           ...nameTextStyle,
-          fontSize: FONT_SIZES.small,
-          fill: getStanceColor(currentStance),
+          fontSize: KOREAN_TEXT_SIZES.small, // Use KOREAN_TEXT_SIZES
+          fill: getStanceColor(playerState.currentStance), // Use playerState.currentStance
         }}
       />
 
@@ -159,6 +175,31 @@ export const Player: React.FC<PlayerProps> = ({
             g.endFill();
           }}
         />
+      )}
+
+      {showDebugInfo && (
+        <Container>
+          <Text
+            text={`Archetype: ${archetype}`}
+            x={10}
+            y={height + 5}
+            style={{
+              ...nameTextStyle,
+              fontSize: FONT_SIZES.xsmall,
+              fill: KOREAN_COLORS.TEXT_SECONDARY,
+            }}
+          />
+          <Text
+            text={`Position: ${position.x}, ${position.y}`}
+            x={10}
+            y={height + 15}
+            style={{
+              ...nameTextStyle,
+              fontSize: FONT_SIZES.xsmall,
+              fill: KOREAN_COLORS.TEXT_SECONDARY,
+            }}
+          />
+        </Container>
       )}
     </Container>
   );

@@ -90,9 +90,9 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         };
         setCombatLog((prev) => [logEntry, ...prev.slice(0, 4)]);
 
-        // Update player states
+        // Update player states - Fix type casting
         onPlayerUpdate(playerIndex, result.updatedAttacker);
-        onPlayerUpdate(1 - playerIndex, result.updatedDefender);
+        onPlayerUpdate((1 - playerIndex) as 0 | 1, result.updatedDefender);
 
         // Switch active player after technique
         setActivePlayerIndex((prev) => (prev === 0 ? 1 : 0));
@@ -149,7 +149,7 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
   const backgroundDraw = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
-      g.beginFill(CYBERPUNK_PALETTE.UI_BACKGROUND_DARK, 0.9);
+      g.beginFill(CYBERPUNK_PALETTE.BACKGROUND_DARK, 0.9); // Fix: use correct property
       g.drawRect(0, 0, width, height);
       g.endFill();
 
@@ -226,7 +226,7 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
           <Graphics
             draw={(g: PIXI.Graphics) => {
               g.clear();
-              g.beginFill(CYBERPUNK_PALETTE.UI_BACKGROUND_DARK, 0.8);
+              g.beginFill(CYBERPUNK_PALETTE.BACKGROUND_DARK, 0.8); // Fix: use correct property
               g.drawRect(
                 0,
                 0,

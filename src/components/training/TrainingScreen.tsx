@@ -11,7 +11,8 @@ import {
   FONT_FAMILY,
   FONT_SIZES,
   GAME_CONFIG,
-  PLAYER_ARCHETYPE_DATA,
+  PLAYER_ARCHETYPES_DATA,
+  TRIGRAM_STANCES_ORDER,
 } from "../../types/constants";
 
 export const TrainingScreen: React.FC<TrainingScreenProps> = ({
@@ -26,7 +27,9 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = ({
 }) => {
   const [player, setPlayer] = useState<PlayerState | undefined>(initialPlayer);
 
-  const archetypeData = player ? PLAYER_ARCHETYPE_DATA[player.archetype] : null;
+  const archetypeData = player
+    ? PLAYER_ARCHETYPES_DATA[player.archetype]
+    : null;
 
   const handleStanceSelect = useCallback(
     (stance: TrigramStance) => {
@@ -57,7 +60,7 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = ({
   const infoStyle = useMemo(
     () =>
       new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.SECONDARY,
+        fontFamily: FONT_FAMILY.PRIMARY,
         fontSize: FONT_SIZES.medium,
         fill: KOREAN_COLORS.TEXT_SECONDARY,
         wordWrap: true,
@@ -105,6 +108,59 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = ({
         y={120}
         style={infoStyle}
       />
+
+      {/* Stance Training Section */}
+      <Container x={50} y={200}>
+        <Text
+          text="자세 연습 (Stance Practice)"
+          x={0}
+          y={0}
+          style={infoStyle}
+        />
+        <Text
+          text="1-8 키를 눌러 자세를 변경하세요"
+          x={0}
+          y={30}
+          style={{
+            ...infoStyle,
+            fontSize: FONT_SIZES.small,
+            fill: KOREAN_COLORS.TEXT_TERTIARY,
+          }}
+        />
+
+        {/* Interactive stance buttons */}
+        <Container y={70}>
+          {TRIGRAM_STANCES_ORDER.map((stance, index) => (
+            <Container
+              key={stance}
+              x={(index % 4) * 150}
+              y={Math.floor(index / 4) * 60}
+              interactive={true}
+              buttonMode={true}
+              pointertap={() => handleStanceSelect(stance)}
+            >
+              <Graphics
+                draw={(g: PIXI.Graphics) => {
+                  g.clear();
+                  g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.8);
+                  g.lineStyle(2, KOREAN_COLORS.UI_BORDER);
+                  g.drawRoundedRect(0, 0, 140, 50, 5);
+                  g.endFill();
+                }}
+              />
+              <Text
+                text={`${index + 1}. ${stance}`}
+                x={10}
+                y={15}
+                style={{
+                  ...infoStyle,
+                  fontSize: FONT_SIZES.small,
+                }}
+              />
+            </Container>
+          ))}
+        </Container>
+      </Container>
     </Container>
   );
 };

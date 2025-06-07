@@ -1,100 +1,73 @@
-import React, { ReactElement } from "react";
+import React from "react";
 import { render, RenderOptions } from "@testing-library/react";
-import { vi } from "vitest";
-import type { PlayerState, KoreanText } from "../src/types";
-import { createPlayerState } from "../src/utils/playerUtils";
+import { Application } from "@pixi/react";
+import { AudioProvider } from "../src/audio/AudioProvider";
+import type { IAudioManager } from "../src/types/audio";
 
-// Mock graphics context for PixiJS testing
-export const mockGraphicsContext = {
-  clear: vi.fn(),
-  setFillStyle: vi.fn(),
-  setStrokeStyle: vi.fn(),
-  rect: vi.fn(),
-  circle: vi.fn(),
-  moveTo: vi.fn(),
-  lineTo: vi.fn(),
-  roundRect: vi.fn(),
-  fill: vi.fn(),
-  stroke: vi.fn(),
-  closePath: vi.fn(),
-  lineStyle: vi.fn(),
-};
+// Mock audio manager for testing
+class MockAudioManager implements IAudioManager {
+  isInitialized = true;
 
-// Mock AudioManager for tests
-const mockAudioManager = {
-  playMusic: vi.fn(),
-  stopMusic: vi.fn(),
-  playSFX: vi.fn(),
-  playAttackSound: vi.fn(),
-  playHitSound: vi.fn(),
-  playTechniqueSound: vi.fn(),
-  setVolume: vi.fn(),
-  isEnabled: true,
-};
+  async init() {}
+  playSFX() {
+    return null;
+  }
+  playMusic() {
+    return null;
+  }
+  stopMusic() {}
+  setMasterVolume() {}
+  setSFXVolume() {}
+  setMusicVolume() {}
+  setMuted() {}
+  getState() {
+    return {
+      masterVolume: 0.7,
+      sfxVolume: 0.8,
+      musicVolume: 0.5,
+      muted: false,
+      currentMusicTrack: null,
+      isInitialized: true,
+      fallbackMode: false,
+    };
+  }
+  playAttackSound() {}
+  playHitSound() {}
+  playTechniqueSound() {}
+  playStanceChangeSound() {}
+  playBlockSound() {}
+  stopAllSounds() {}
+  async loadAudioAsset() {}
+  isMusicPlaying() {
+    return false;
+  }
+}
 
-// Audio Provider wrapper for tests
-const AudioProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  return <div data-testid="audio-provider">{children}</div>;
-};
+// Test wrapper with providers
+interface TestWrapperProps {
+  children: React.ReactNode;
+}
 
-// Custom render function that includes audio context
-const customRender = (
-  ui: ReactElement,
+function TestWrapper({ children }: TestWrapperProps) {
+  const mockAudioManager = new MockAudioManager();
+
+  return (
+    <AudioProvider manager={mockAudioManager}>
+      <Application width={800} height={600}>
+        {children}
+      </Application>
+    </AudioProvider>
+  );
+}
+
+// Custom render function
+function customRender(
+  ui: React.ReactElement,
   options?: Omit<RenderOptions, "wrapper">
-) =>
-  render(ui, {
-    wrapper: AudioProvider,
-    ...options,
-  });
-
-// Mock audio context function
-export function mockAudioContext() {
-  return mockAudioManager;
+) {
+  return render(ui, { wrapper: TestWrapper, ...options });
 }
 
 // Re-export everything
 export * from "@testing-library/react";
 export { customRender as render };
-
-// Helper function to render with audio context
-export function renderWithAudio(
-  ui: ReactElement,
-  options?: Omit<RenderOptions, "wrapper">
-) {
-  return customRender(ui, options);
-}
-
-// Render function for PixiJS Stage components
-export function renderInStage(ui: ReactElement): ReturnType<typeof render> {
-  return render(ui);
-}
-
-// Test utilities for Korean martial arts game testing
-export const testUtils = {
-  mockGraphicsContext,
-  renderInStage,
-};
-
-// Player state factory for tests
-export function createTestPlayerState(
-  overrides: Partial<PlayerState> = {}
-): PlayerState {
-  const defaultName: KoreanText = {
-    korean: "테스트 플레이어",
-    english: "Test Player",
-  };
-
-  const basePlayer = createPlayerState(
-    "test-player",
-    "musa",
-    defaultName,
-    "geon"
-  );
-
-  return {
-    ...basePlayer,
-    ...overrides,
-  };
-}

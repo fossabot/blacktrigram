@@ -83,11 +83,25 @@ export interface PlayerArchetypeBonuses {
 
 // Player archetype data structure - Consolidated definition
 export interface PlayerArchetypeData {
-  readonly name: { korean: string; english: string };
-  readonly description: { korean: string; english: string };
-  readonly preferredTrigrams: readonly TrigramStance[];
-  readonly specialization: string;
-  readonly bonuses: PlayerArchetypeBonuses; // Unified to use PlayerArchetypeBonuses
+  readonly name: KoreanText;
+  readonly description: KoreanText;
+  readonly colors: {
+    readonly primary: number;
+    readonly secondary: number;
+    readonly accent: number;
+    readonly background: number;
+  };
+  readonly baseStats: {
+    readonly health: number;
+    readonly ki: number;
+    readonly stamina: number;
+    readonly strength: number;
+    readonly agility: number;
+    readonly technique: number;
+  };
+  readonly preferredStances: readonly TrigramStance[];
+  readonly specialAbilities: readonly string[];
+  readonly culturalBackground: KoreanText;
 }
 
 export interface PlayerCombatStats {
