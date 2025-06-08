@@ -1,79 +1,45 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { Container, Graphics } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import { KOREAN_COLORS, GAME_CONFIG } from "../../../types/constants";
+import { KOREAN_COLORS } from "../../../types/constants";
 
-interface LocalBackgroundGridProps {
-  readonly gridSize?: number;
-  readonly lineColor?: number;
-  readonly lineAlpha?: number;
-  readonly width?: number;
-  readonly height?: number;
-  readonly x?: number;
-  readonly y?: number;
-  readonly showMajorLines?: boolean;
-  readonly majorLineInterval?: number;
+export interface BackgroundGridProps {
+  width?: number;
+  height?: number;
+  cellSize?: number;
+  color?: number;
+  alpha?: number;
 }
 
-export const BackgroundGrid: React.FC<LocalBackgroundGridProps> = ({
-  gridSize = 50,
-  lineColor = KOREAN_COLORS.UI_BORDER,
-  lineAlpha = 0.3,
-  width = GAME_CONFIG.CANVAS_WIDTH,
-  height = GAME_CONFIG.CANVAS_HEIGHT,
-  x = 0,
-  y = 0,
-  showMajorLines = true,
-  majorLineInterval = 5,
+export const BackgroundGrid: React.FC<BackgroundGridProps> = ({
+  width = 800,
+  height = 600,
+  cellSize = 50,
+  color = KOREAN_COLORS.UI_BORDER,
+  alpha = 0.3,
 }) => {
-  const safeWidth = width ?? GAME_CONFIG.CANVAS_WIDTH;
-  const safeHeight = height ?? GAME_CONFIG.CANVAS_HEIGHT;
-
-  const drawGrid = useMemo(() => {
-    return (g: PIXI.Graphics) => {
+  const drawGrid = React.useCallback(
+    (g: PIXI.Graphics) => {
       g.clear();
+      g.lineStyle(1, color, alpha);
 
-      // Draw vertical lines
-      g.lineStyle(1, lineColor, lineAlpha);
-      for (let px = 0; px <= safeWidth; px += gridSize) {
-        for (let py = 0; py <= safeHeight; py += gridSize) {
-          g.moveTo(px, 0);
-          g.lineTo(px, safeHeight);
-        }
+      // Vertical lines
+      for (let x = 0; x <= width; x += cellSize) {
+        g.moveTo(x, 0);
+        g.lineTo(x, height);
       }
 
-      // Draw horizontal lines
-      for (let py = 0; py <= safeHeight; py += gridSize) {
-        g.moveTo(0, py);
-        g.lineTo(safeWidth, py);
+      // Horizontal lines
+      for (let y = 0; y <= height; y += cellSize) {
+        g.moveTo(0, y);
+        g.lineTo(width, y);
       }
-
-      // Draw major grid lines if enabled
-      if (showMajorLines) {
-        g.lineStyle(2, lineColor, lineAlpha * 1.5);
-        for (let px = 0; px <= safeWidth; px += gridSize * majorLineInterval) {
-          g.moveTo(px, 0);
-          g.lineTo(px, safeHeight);
-        }
-
-        for (let py = 0; py <= safeHeight; py += gridSize * majorLineInterval) {
-          g.moveTo(0, py);
-          g.lineTo(safeWidth, py);
-        }
-      }
-    };
-  }, [
-    safeWidth,
-    safeHeight,
-    gridSize,
-    lineColor,
-    lineAlpha,
-    showMajorLines,
-    majorLineInterval,
-  ]);
+    },
+    [width, height, cellSize, color, alpha]
+  );
 
   return (
-    <Container x={x} y={y}>
+    <Container>
       <Graphics draw={drawGrid} />
     </Container>
   );

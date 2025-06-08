@@ -2,58 +2,33 @@
  * Main constants export for Black Trigram Korean martial arts system
  */
 
-// Re-export all constants from subdirectories
+// This file re-exports constants from other files in this directory.
+// Ensure that there are no naming conflicts between re-exported members.
+
+// Re-export all constants from individual files
 export * from "./colors";
-export * from "./combat";
-export * from "./controls";
+export * from "./typography";
 export * from "./game";
 export * from "./player";
-export * from "./techniques";
+export * from "./combat";
 export * from "./trigram";
-export * from "./typography";
+export * from "./techniques";
 export * from "./vital-points";
+export * from "./controls";
+export * from "./ui";
+export * from "./animations";
 
-// Legacy exports for compatibility
-export { KOREAN_COLORS } from "./colors";
-export { CYBERPUNK_PALETTE } from "./colors";
-
-// Additional constants that don't fit in specific categories
-export const APP_CONSTANTS = {
-  NAME: "흑괘 (Black Trigram)",
-  VERSION: "1.0.0",
-  DESCRIPTION: "Korean Martial Arts Combat Simulator",
-} as const;
-
-// Export typography constants
-export * from "./typography";
-
-// Re-export font constants for compatibility
-export {
-  KOREAN_FONT_FAMILY,
-  KOREAN_TEXT_SIZES,
-  KOREAN_FONT_WEIGHTS,
-  KOREAN_BASE_TEXT_STYLES,
-  COMBAT_TEXT_STYLES,
-  UI_TEXT_STYLES,
-} from "./typography";
-
-// Create aliases for backward compatibility
-export const FONT_FAMILY = {
-  PRIMARY: '"Noto Sans KR", "Malgun Gothic", Arial, sans-serif',
-  SECONDARY: '"Nanum Gothic", Arial, sans-serif',
-  MONO: '"Nanum Gothic Coding", monospace',
-  KOREAN_BATTLE: '"Noto Sans KR", Impact, sans-serif',
-} as const;
-
-export const FONT_SIZES = {
-  xsmall: 10,
-  small: 12,
-  medium: 16,
-  large: 20,
-  xlarge: 24,
-  xxlarge: 32,
-  title: 48,
-} as const;
+// Additional exports that might be needed
+export const TRIGRAM_STANCES_ORDER = [
+  "geon",
+  "tae",
+  "li",
+  "jin",
+  "son",
+  "gam",
+  "gan",
+  "gon",
+] as const;
 
 export const FONT_WEIGHTS = {
   light: 300,
@@ -63,3 +38,25 @@ export const FONT_WEIGHTS = {
   bold: 700,
   heavy: 900,
 } as const;
+
+// Legacy export for compatibility
+export { KOREAN_FONT_WEIGHTS as FONT_WEIGHTS_LEGACY } from "./typography";
+
+// Explicitly export from typography if they were missed by wildcard
+export {
+  FONT_FAMILY,
+  FONT_SIZES,
+  KOREAN_TEXT_SIZES,
+  KOREAN_FONT_WEIGHTS,
+  KOREAN_FONT_FAMILY, // Ensure this is exported from typography.ts
+  // KOREAN_FONT_FAMILY_PRIMARY, // If these are distinct and needed, ensure they are defined and exported
+  // KOREAN_FONT_FAMILY_SECONDARY,
+  PIXI_TEXT_STYLES,
+  CYBERPUNK_TEXT_STYLES,
+} from "./typography";
+
+// Resolve specific export conflicts if they exist by aliasing or choosing one source
+// Example: if COMBAT_CONTROLS is in both ./combat and ./controls
+// import { COMBAT_CONTROLS as GameCombatControls } from "./combat";
+// import { COMBAT_CONTROLS as UiCombatControls } from "./controls";
+// export { GameCombatControls, UiCombatControls };

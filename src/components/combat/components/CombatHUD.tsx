@@ -1,66 +1,151 @@
-import React from "react";
+import React, { useMemo } from "react";
+import { Container, Graphics, Text } from "@pixi/react";
+import * as PIXI from "pixi.js";
 import type { CombatHUDProps } from "../../../types/components";
+import {
+  KOREAN_COLORS,
+  FONT_FAMILY,
+  FONT_SIZES,
+  GAME_CONFIG,
+} from "../../../types/constants";
+import { RoundTimer } from "../../ui/RoundTimer";
+import { HealthBar } from "../../ui/HealthBar";
 
-export function CombatHUD({
+export const CombatHUD: React.FC<CombatHUDProps> = ({
   players,
-  player, // Direct prop for player 1
-  opponent, // Direct prop for player 2
   timeRemaining,
   currentRound,
-  maxRounds = 3, // Default value
-  gameTime, // Added from props
-  isPlayerTurn, // Added from props
+  maxRounds,
   isPaused,
-}: CombatHUDProps): React.JSX.Element {
-  const player1 = player || players[0]; // Fallback to players array if direct prop not provided
-  const player2 = opponent || players[1]; // Fallback to players array
+  isPlayerTurn,
+  x = 0,
+  y = 0,
+  width = GAME_CONFIG.CANVAS_WIDTH,
+  height = 100,
+}) => {
+  const [player1, player2] = players;
+
+  const roundTextStyle = useMemo(
+    () =>
+      new PIXI.TextStyle({
+        fontFamily: FONT_FAMILY.PRIMARY,
+        fontSize: FONT_SIZES.medium,
+        fill: KOREAN_COLORS.TEXT_PRIMARY,
+        align: "center",
+        fontWeight: "bold",
+      }),
+    []
+  );
+
+  const pauseTextStyle = useMemo(
+    () =>
+      new PIXI.TextStyle({
+        fontFamily: FONT_FAMILY.PRIMARY,
+        fontSize: FONT_SIZES.large,
+        fill: KOREAN_COLORS.WARNING_YELLOW,
+        align: "center",
+        fontWeight: "bold",
+      }),
+    []
+  );
+
+  const hudBackgroundDraw = useMemo(
+    () => (g: PIXI.Graphics) => {
+      g.clear();
+      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK);
+      g.drawRect(0, 0, width, height);
+      g.endFill();
+    },
+    [width, height]
+  );
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        height: "80px",
-        background: "rgba(0,0,0,0.8)",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: "0 20px",
-        color: "white",
-      }}
-    >
-      {/* Player 1 stats */}
-      <div>
-        <div>{player1.name.english}</div>
-        <div>
-          체력: {player1.health}/{player1.maxHealth}
-        </div>
-      </div>
+    <Container x={x} y={y}>
+      <Graphics draw={hudBackgroundDraw} />
 
-      {/* Game info */}
-      <div style={{ textAlign: "center" }}>
-        <div>
-          {currentRound}라운드 / {maxRounds}
-        </div>
-        <div>남은 시간: {Math.max(0, timeRemaining)}초</div>
-        {typeof gameTime === "number" && <div>게임 시간: {gameTime}초</div>}
-        {typeof isPlayerTurn === "boolean" && (
-          <div>턴: {isPlayerTurn ? "플레이어" : "상대방"}</div>
-        )}
-        {isPaused && <div>일시정지</div>}
-      </div>
+      {/* Timer in center */}
+      <Container x={width / 2} y={height / 2}>
+        <RoundTimer
+          timeRemaining={timeRemaining}
+          currentRound={currentRound}
+          maxRounds={maxRounds}
+          x={GAME_CONFIG.CANVAS_WIDTH / 2 - 100}
+          y={20}
+        />
 
-      {/* Player 2 stats */}
-      <div style={{ textAlign: "right" }}>
-        <div>{player2.name.english}</div>
-        <div>
-          체력: {player2.health}/{player2.maxHealth}
-        </div>
-      </div>
-    </div>
+        {/* Round indicator */}
+        <Text
+          text={`Round ${currentRound}/${maxRounds}`}
+          style={roundTextStyle}
+          anchor={0.5}
+          y={30}
+        />
+      </Container>
+
+      {/* Player 1 Health Bar */}
+      <HealthBar
+        currentHealth={player1.health}
+        maxHealth={player1.maxHealth}
+        x={20}
+        y={20}
+        width={200}
+        height={20}
+        showText={true}
+      />
+
+      {/* Player 1 Name */}
+      <Text text={player1.name.korean} style={roundTextStyle} x={20} y={0} />
+
+      {/* Player 2 Health Bar */}
+      <HealthBar
+        currentHealth={player2.health}
+        maxHealth={player2.maxHealth}
+        x={width - 220}
+        y={20}
+        width={200}
+        height={20}
+        showText={true}
+      />
+
+      {/* Player 2 Name */}
+      <Text
+        text={player2.name.korean}
+        style={roundTextStyle}
+        x={width - 220}
+        y={0}
+      />
+
+      {/* Pause Indicator */}
+      {isPaused && (
+        <Text
+          text="일시정지 (PAUSED)"
+          style={pauseTextStyle}
+          anchor={0.5}
+          x={width / 2}
+          y={height - 20}
+        />
+      )}
+
+      {/* Turn Indicator */}
+      {isPlayerTurn !== undefined && (
+        <Text
+          text={isPlayerTurn ? "Your Turn" : "Opponent's Turn"}
+          style={
+            new PIXI.TextStyle({
+              fontFamily: FONT_FAMILY.PRIMARY,
+              fontSize: FONT_SIZES.small,
+              fill: isPlayerTurn
+                ? KOREAN_COLORS.POSITIVE_GREEN
+                : KOREAN_COLORS.WARNING_ORANGE,
+            })
+          }
+          anchor={0.5}
+          x={width / 2}
+          y={height - 40}
+        />
+      )}
+    </Container>
   );
-}
+};
 
 export default CombatHUD;

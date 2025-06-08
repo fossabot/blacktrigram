@@ -1,162 +1,120 @@
-import React, { useCallback, useState, useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
-import type { CombatControlsProps } from "../../../types";
-import { TrigramStance } from "../../../types/enums";
+import * as PIXI from "pixi.js";
+import type { CombatControlsProps } from "../../../types/components";
+import type { TrigramStance } from "../../../types/enums";
 import {
-  TRIGRAM_STANCES_ORDER, // This MUST be of type readonly TrigramStance[] from constants/trigram.ts
-  TRIGRAM_DATA,
+  KOREAN_COLORS,
   FONT_FAMILY,
   FONT_SIZES,
   FONT_WEIGHTS,
-  KOREAN_COLORS,
+  TRIGRAM_DATA,
+  TRIGRAM_STANCES_ORDER,
 } from "../../../types/constants";
-import * as PIXI from "pixi.js";
 
 export const CombatControls: React.FC<CombatControlsProps> = ({
-  players, // Now used
   player,
   onStanceChange,
-  isExecutingTechnique,
-  isPaused,
-  showVitalPoints, // Now used
-  width = 800, // Default width
-  height = 100, // Default height
-  ...props
+  isExecutingTechnique = false,
+  isPaused = false,
+  x = 0,
+  y = 0,
 }) => {
-  const [hoveredStance, setHoveredStance] = useState<TrigramStance | null>(
-    null
-  );
-
   const handleStanceClick = useCallback(
     (stance: TrigramStance) => {
-      onStanceChange(player.id === players[0].id ? 0 : 1, stance);
-    },
-    [onStanceChange, player, players]
-  );
-
-  const buttonWidth = width / TRIGRAM_STANCES_ORDER.length - 10;
-  const buttonHeight = height - 20;
-
-  const drawButton = useCallback(
-    (g: PIXI.Graphics, stance: TrigramStance, isCurrent: boolean) => {
-      const stanceData = TRIGRAM_DATA[stance];
-      const isDisabled = isExecutingTechnique || isPaused;
-      const isHover = hoveredStance === stance;
-
-      let fillColor =
-        stanceData?.theme?.primary || KOREAN_COLORS.UI_BACKGROUND_MEDIUM; // Fixed theme access
-      let lineColor = stanceData?.theme?.secondary || KOREAN_COLORS.UI_BORDER; // Fixed theme access
-      let alpha = isDisabled ? 0.5 : 1;
-
-      if (isCurrent) {
-        fillColor = stanceData?.theme?.active || KOREAN_COLORS.PRIMARY_CYAN; // Fixed theme access and color
-        lineColor = stanceData?.theme?.secondary || KOREAN_COLORS.WHITE_SOLID; // Fixed color
-      } else if (isHover && !isDisabled) {
-        fillColor =
-          stanceData?.theme?.hover || KOREAN_COLORS.UI_BACKGROUND_LIGHT; // Fixed theme access
-        lineColor = stanceData?.theme?.secondary || KOREAN_COLORS.PRIMARY_CYAN; // Fixed color
+      if (!isPaused && !isExecutingTechnique) {
+        onStanceChange(0, stance);
       }
-
-      g.clear();
-      g.beginFill(fillColor, alpha);
-      g.lineStyle(2, lineColor, alpha);
-      g.drawRoundedRect(0, 0, buttonWidth, buttonHeight, 10);
-      g.endFill();
     },
-    [
-      buttonWidth,
-      buttonHeight,
-      hoveredStance,
-      isExecutingTechnique,
-      isPaused,
-      player.currentStance,
-    ] // Added player.currentStance
+    [onStanceChange, isPaused, isExecutingTechnique]
   );
 
-  // Fix text style
-  const textStyle = useMemo(
+  const stanceButtonStyle = useMemo(
     () =>
       new PIXI.TextStyle({
         fontFamily: FONT_FAMILY.PRIMARY,
         fontSize: FONT_SIZES.small,
         fill: KOREAN_COLORS.TEXT_PRIMARY,
-        fontWeight: FONT_WEIGHTS.regular.toString() as PIXI.TextStyleFontWeight, // Fixed: use lowercase
+        fontWeight: FONT_WEIGHTS.medium.toString() as PIXI.TextStyleFontWeight,
         align: "center",
+        stroke: KOREAN_COLORS.BLACK_SOLID,
       }),
     []
   );
 
-  return (
-    <Container {...props}>
-      {/* ... other elements ... */}
-      <Container x={10} y={10}>
-        {/* Ensure TRIGRAM_STANCES_ORDER is `readonly TrigramStance[]` */}
-        {(TRIGRAM_STANCES_ORDER as readonly TrigramStance[]).map(
-          (stance: TrigramStance, index) => {
-            // Added type assertion for safety
-            const isCurrentStance = player.currentStance === stance;
-            const buttonX = index * (buttonWidth + 5);
-            const stanceData = TRIGRAM_DATA[stance];
+  const renderStanceButton = useCallback(
+    (stance: TrigramStance) => {
+      const stanceData = TRIGRAM_DATA[stance];
+      const isSelected = player.currentStance === stance;
 
-            return (
-              <Container
-                key={stance} // stance is a TrigramStance enum member, which is a string at runtime
-                x={buttonX}
-                y={0}
-                interactive={!(isExecutingTechnique || isPaused)}
-                buttonMode={!(isExecutingTechnique || isPaused)}
-                pointertap={() => {
-                  if (!(isExecutingTechnique || isPaused)) {
-                    handleStanceClick(stance);
-                  }
-                }}
-                pointerover={() => {
-                  if (!(isExecutingTechnique || isPaused)) {
-                    setHoveredStance(stance);
-                  }
-                }}
-                pointerout={() => setHoveredStance(null)}
-              >
-                <Graphics
-                  draw={(g: PIXI.Graphics) =>
-                    drawButton(g, stance, isCurrentStance)
-                  }
-                />
-                <Text
-                  text={stanceData?.symbol || ""}
-                  anchor={0.5}
-                  x={buttonWidth / 2}
-                  y={buttonHeight / 2 - 10}
-                  style={{
-                    ...textStyle,
-                    fontSize: FONT_SIZES.large,
-                    fill: isCurrentStance
-                      ? KOREAN_COLORS.BLACK_SOLID
-                      : KOREAN_COLORS.TEXT_PRIMARY,
-                  }}
-                />
-                <Text
-                  text={
-                    stanceData?.name.korean || // Use stanceData for Korean name
-                    stance.toString() // Fallback to string representation of enum value
-                  }
-                  anchor={0.5}
-                  x={buttonWidth / 2}
-                  y={buttonHeight / 2 + 10}
-                  style={{
-                    ...textStyle,
-                    fontSize: FONT_SIZES.small,
-                    fill: isCurrentStance
-                      ? KOREAN_COLORS.BLACK_SOLID
-                      : KOREAN_COLORS.TEXT_SECONDARY,
-                  }}
-                />
-              </Container>
-            );
-          }
-        )}
+      return (
+        <Container
+          key={stance}
+          interactive={true}
+          buttonMode={true}
+          pointertap={() => handleStanceClick(stance)}
+        >
+          <Graphics
+            draw={(g: PIXI.Graphics) => {
+              g.clear();
+              const fillColor = isSelected
+                ? KOREAN_COLORS.ACCENT_PRIMARY
+                : stanceData.theme?.primary ||
+                  KOREAN_COLORS.UI_BACKGROUND_MEDIUM;
+
+              g.beginFill(fillColor, 0.8);
+              g.drawRect(0, 0, 60, 60);
+              g.endFill();
+
+              // Draw trigram symbol
+              g.lineStyle(3, KOREAN_COLORS.TEXT_PRIMARY, 1);
+              for (let i = 0; i < 3; i++) {
+                g.moveTo(10, 15 + i * 15);
+                g.lineTo(50, 15 + i * 15);
+              }
+            }}
+          />
+
+          <Text
+            text={stanceData.name?.korean || stance}
+            style={stanceButtonStyle}
+            x={30}
+            y={45}
+            anchor={0.5}
+          />
+        </Container>
+      );
+    },
+    [player.currentStance, handleStanceClick, stanceButtonStyle]
+  );
+
+  return (
+    <Container x={x} y={y}>
+      {/* Current stance display */}
+      <Text
+        text={`현재 자세: ${
+          TRIGRAM_DATA[player.currentStance as TrigramStance].name?.korean
+        } (${
+          TRIGRAM_DATA[player.currentStance as TrigramStance].name?.english
+        })`}
+        style={stanceButtonStyle}
+        x={20}
+        y={20}
+      />
+
+      {/* Stance buttons grid */}
+      <Container x={20} y={50}>
+        {TRIGRAM_STANCES_ORDER.map((stance, index) => (
+          <Container
+            key={stance}
+            x={(index % 4) * 70}
+            y={Math.floor(index / 4) * 70}
+          >
+            {renderStanceButton(stance as TrigramStance)}{" "}
+            {/* Fix: type assertion */}
+          </Container>
+        ))}
       </Container>
-      {/* ... other controls ... */}
     </Container>
   );
 };

@@ -44,20 +44,6 @@ Black Trigram is a **realistic 2D precision combat simulator** deeply rooted in 
 
 ### System
 
-src/assets/visual
-src/assets/visual/bg
-src/assets/visual/bg/archetyples
-src/assets/visual/bg/archetyples/CyberpunkTeamDynamics.png
-src/assets/visual/bg/archetyples/PlayerArchetypesExplained.png
-src/assets/visual/bg/archetyples/PlayerArchetypesOverview.png
-src/assets/visual/bg/dojang
-src/assets/visual/bg/dojang/dojang_floor_tex.png
-src/assets/visual/bg/dojang/dojang_wall_tex.png
-src/assets/visual/bg/intro
-src/assets/visual/bg/intro/intro_bg_loop.png
-src/assets/visual/logo
-src/assets/visual/logo/black-trigram-256.png
-src/assets/visual/logo/black-trigram.png
 src/audio/AudioAssetRegistry.ts
 src/audio/AudioManager.ts
 src/audio/AudioManager.tsx
@@ -115,6 +101,7 @@ src/components/ui/base/korean-text/components
 src/components/ui/base/korean-text/components/index.ts
 src/components/ui/base/korean-text/components/KoreanMartialText.tsx
 src/components/ui/base/korean-text/components/KoreanPixiTextUtils.ts
+src/components/ui/base/korean-text/components/KoreanPixiTextUtils.tsx
 src/components/ui/base/korean-text/components/KoreanStatusText.tsx
 src/components/ui/base/korean-text/components/KoreanTechniqueText.tsx
 src/components/ui/base/korean-text/components/KoreanText.tsx
@@ -135,6 +122,8 @@ src/components/ui/KoreanHeader.tsx
 src/components/ui/Player.tsx
 src/components/ui/PlayerVisuals.tsx
 src/components/ui/ProgressTracker.tsx
+src/components/ui/RoundTimer.tsx
+src/components/ui/ScoreDisplay.tsx
 src/components/ui/StanceIndicator.tsx
 src/components/ui/TrigramWheel.tsx
 src/hooks/useTexture.ts
@@ -158,6 +147,7 @@ src/types/combat.ts
 src/types/common.ts
 src/types/components.ts
 src/types/constants
+src/types/constants/animations.ts
 src/types/constants/colors.ts
 src/types/constants/combat.ts
 src/types/constants/controls.ts
@@ -168,6 +158,7 @@ src/types/constants/techniques.ts
 src/types/constants/trigram.ts
 src/types/constants.ts
 src/types/constants/typography.ts
+src/types/constants/ui.ts
 src/types/constants/vital-points.ts
 src/types/controls.ts
 src/types/effects.ts

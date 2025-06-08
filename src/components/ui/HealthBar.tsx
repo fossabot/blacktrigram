@@ -1,58 +1,25 @@
-import React, { useMemo, useCallback } from "react";
+import React, { useMemo } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import type { KoreanText } from "../../types";
+import type { HealthBarProps } from "../../types/components";
 import { KOREAN_COLORS, FONT_FAMILY, FONT_SIZES } from "../../types/constants";
-
-export interface HealthBarProps {
-  readonly currentHealth: number;
-  readonly maxHealth: number;
-  readonly label?: KoreanText;
-  readonly x?: number;
-  readonly y?: number;
-  readonly width?: number;
-  readonly height?: number;
-  readonly showNumbers?: boolean;
-}
+import { getHealthColor } from "../../utils/colorUtils";
 
 export const HealthBar: React.FC<HealthBarProps> = ({
   currentHealth,
   maxHealth,
-  label,
   x = 0,
   y = 0,
   width = 200,
   height = 20,
-  showNumbers = true,
+  backgroundColor = KOREAN_COLORS.UI_BACKGROUND_DARK,
+  borderColor = KOREAN_COLORS.UI_BORDER,
+  criticalColor = KOREAN_COLORS.NEGATIVE_RED,
+  showText = true,
+  ...props
 }) => {
-  const healthPercentage = Math.max(0, Math.min(1, currentHealth / maxHealth));
-
-  const barColor = useMemo(() => {
-    if (healthPercentage > 0.6) return KOREAN_COLORS.POSITIVE_GREEN;
-    if (healthPercentage > 0.3) return KOREAN_COLORS.WARNING_ORANGE;
-    return KOREAN_COLORS.NEGATIVE_RED;
-  }, [healthPercentage]);
-
-  const barDraw = useCallback(
-    (g: PIXI.Graphics) => {
-      g.clear();
-
-      // Background
-      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.8);
-      g.drawRoundedRect(0, 0, width, height, 4);
-      g.endFill();
-
-      // Health fill
-      g.beginFill(barColor, 0.9);
-      g.drawRoundedRect(2, 2, (width - 4) * healthPercentage, height - 4, 2);
-      g.endFill();
-
-      // Border
-      g.lineStyle(1, KOREAN_COLORS.UI_BORDER, 0.5);
-      g.drawRoundedRect(0, 0, width, height, 4);
-    },
-    [width, height, healthPercentage, barColor]
-  );
+  const healthPercent = Math.max(0, Math.min(1, currentHealth / maxHealth));
+  const fillColor = getHealthColor(healthPercent);
 
   const textStyle = useMemo(
     () =>
@@ -65,19 +32,35 @@ export const HealthBar: React.FC<HealthBarProps> = ({
     []
   );
 
+  const drawHealthBar = (g: PIXI.Graphics) => {
+    g.clear();
+
+    // Background
+    g.beginFill(backgroundColor);
+    g.drawRect(0, 0, width, height);
+    g.endFill();
+
+    // Health fill
+    const fillWidth = width * healthPercent;
+    g.beginFill(fillColor);
+    g.drawRect(0, 0, fillWidth, height);
+    g.endFill();
+
+    // Border
+    g.lineStyle(1, borderColor);
+    g.drawRect(0, 0, width, height);
+  };
+
   return (
-    <Container x={x} y={y}>
-      {label && <Text text={label.korean} style={textStyle} x={0} y={-18} />}
-
-      <Graphics draw={barDraw} />
-
-      {showNumbers && (
+    <Container x={x} y={y} {...props}>
+      <Graphics draw={drawHealthBar} />
+      {showText && (
         <Text
-          text={`${Math.round(currentHealth)}/${Math.round(maxHealth)}`}
-          style={textStyle}
+          text={`${Math.ceil(currentHealth)}/${maxHealth}`}
+          anchor={0.5}
           x={width / 2}
           y={height / 2}
-          anchor={0.5}
+          style={textStyle}
         />
       )}
     </Container>

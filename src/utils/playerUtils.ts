@@ -5,242 +5,154 @@ import type {
   PlayerArchetype,
   KoreanText,
   Position,
+  TrigramStance,
+  CombatState,
+  StatusEffect,
   KoreanTechnique,
-  CombatResult,
-  HitResult,
+  VitalPoint,
 } from "../types";
-import { PLAYER_ARCHETYPES_DATA } from "../types/constants";
+import { PLAYER_ARCHETYPES_DATA, TRIGRAM_DATA } from "../types/constants";
 
-/**
- * Create a new player state with default values
- */
+// Export the player update function type
+export type PlayerUpdateFunction = (
+  playerIndex: number,
+  updates: Partial<PlayerState>
+) => void;
+
 export function createPlayerState(
   id: string,
   archetype: PlayerArchetype,
   name: KoreanText,
-  position: Position = { x: 0, y: 0 }
-): PlayerState {
-  return {
-    id,
-    name,
-    archetype,
-    position,
-    currentStance: "geon",
-    facing: "right",
-    health: 100,
-    maxHealth: 100,
-    ki: 100,
-    maxKi: 100,
-    stamina: 100,
-    maxStamina: 100,
-    consciousness: 100,
-    pain: 0,
-    balance: 100,
-    bloodLoss: 0,
-    lastStanceChangeTime: 0,
-    combatReadiness: "ready",
-    activeEffects: [],
-    combatState: "idle",
-    comboCount: 0,
-    lastActionTime: 0,
-    vitalPointDamage: {},
-    bodyPartStatus: {
-      head: "healthy",
-      face_upper: "healthy",
-      chest: "healthy",
-      abdomen: "healthy",
-      neck: "healthy",
-      torso: "healthy",
-      left_arm: "healthy",
-      right_arm: "healthy",
-      left_leg: "healthy",
-      right_leg: "healthy",
-    },
-    knownTechniques: [],
-    currentTargetId: null,
-    attributes: {
-      strength: 10,
-      agility: 10,
-      endurance: 10,
-      intelligence: 10,
-      focus: 10,
-      resilience: 10,
-    },
-    skills: {
-      striking: 10,
-      kicking: 10,
-      grappling: 10,
-      weaponry: 0,
-      meditation: 5,
-      strategy: 5,
-    },
-  };
-}
-
-/**
- * Create a default player state for Korean martial arts combat
- */
-export function createDefaultPlayerState(
-  id: string,
-  archetype: PlayerArchetype,
-  name: KoreanText,
-  position: Position,
-  direction: "left" | "right" = "right"
+  position: Position
 ): PlayerState {
   const archetypeData = PLAYER_ARCHETYPES_DATA[archetype];
 
   return {
     id,
-    name,
     archetype,
-    currentStance: archetypeData.coreStance,
-
-    // Combat stats
+    name,
     health: archetypeData.baseHealth,
     maxHealth: archetypeData.baseHealth,
     ki: archetypeData.baseKi,
     maxKi: archetypeData.baseKi,
     stamina: archetypeData.baseStamina,
     maxStamina: archetypeData.baseStamina,
-
-    // Physical condition
-    consciousness: 100,
-    maxConsciousness: 100,
     pain: 0,
+    consciousness: 100,
     balance: 100,
-    focus: 100,
-
-    // Combat state
-    combatState: "idle",
+    currentStance: archetypeData.coreStance,
     position,
-    direction,
-
-    // Vital points (simplified - in full game would have all 70)
-    vitalPoints: {
-      head_temple: {
-        id: "head_temple",
-        status: "normal",
-        damage: 0,
-        painLevel: 0,
-        isBlocked: false,
-        lastHit: null,
-        location: { x: 50, y: 20 }, // Head area
-      },
-      torso_solar_plexus: {
-        id: "torso_solar_plexus",
-        status: "normal",
-        damage: 0,
-        painLevel: 0,
-        isBlocked: false,
-        lastHit: null,
-        location: { x: 50, y: 60 }, // Torso area
-      },
-    },
-
-    // Status effects
-    statusEffects: [],
-
-    // Combat modifiers
-    attackPower: 1.0,
-    defensePower: 1.0,
-    speed: 1.0,
-    accuracy: 1.0,
-
-    // Technique tracking
-    lastTechniqueUsed: null,
-    comboCount: 0,
-
-    // Animation state
-    animationState: "idle",
-
-    // Combat timing
+    combatState: "ready" as CombatState,
+    isBlocking: false,
+    isCountering: false,
+    isStunned: false,
     lastActionTime: 0,
-    recoveryTime: 0,
-
-    // Korean martial arts specific
-    kiFlow: "balanced",
-    mentalState: "focused",
-    breathingPattern: "normal",
+    lastStanceChangeTime: 0,
+    statusEffects: [],
+    vitalPoints: undefined,
+    availableTechniques: [
+      TRIGRAM_DATA[archetypeData.coreStance]?.technique,
+    ].filter(Boolean) as KoreanTechnique[],
+    skills: {
+      striking: 50,
+      grappling: 50,
+      defense: 50,
+      mobility: 50,
+      focus: 50,
+      endurance: 50,
+    },
+    combo: {
+      count: 0,
+      multiplier: 1.0,
+      lastTechniqueTime: 0,
+    },
   };
 }
 
-/**
- * Execute a technique between attacker and defender
- */
-export interface CombatResult {
-  hit: boolean;
-  damage: number;
-  critical: boolean;
-  hitPosition?: Position;
-  updatedAttacker: Partial<PlayerState>;
-  updatedDefender: Partial<PlayerState>;
-}
-
+// Fix: Proper implementation with correct return types
 export function executeTechnique(
   attacker: PlayerState,
   defender: PlayerState,
-  technique: KoreanTechnique
-): CombatResult {
-  // Calculate hit chance based on technique accuracy and player stats
-  const baseAccuracy = technique.accuracy || 85;
-  const attackerBonus = attacker.technique || 0;
-  const defenderPenalty = defender.speed || 0;
+  technique: KoreanTechnique,
+  targetVitalPoint?: string | null
+): {
+  hitResult: import("../types").CombatResult;
+  updatedAttacker: PlayerState;
+  updatedDefender: PlayerState;
+} {
+  // Calculate hit chance and damage
+  const hitRoll = Math.random();
+  const hit = hitRoll < (technique.accuracy || 0.8);
 
-  const finalAccuracy = Math.min(
-    95,
-    Math.max(5, baseAccuracy + attackerBonus / 10 - defenderPenalty / 15)
-  );
-
-  const hit = Math.random() * 100 < finalAccuracy;
-
-  if (!hit) {
-    return {
-      hit: false,
-      damage: 0,
-      critical: false,
-      updatedAttacker: {
-        stamina: Math.max(0, attacker.stamina - (technique.staminaCost || 10)),
-      },
-      updatedDefender: {},
-    };
-  }
-
-  // Calculate damage
   const baseDamage = technique.damage || 10;
-  const attackPower = attacker.attackPower || 50;
-  const defense = defender.defense || 50;
+  const actualDamage = hit ? baseDamage : 0;
 
-  const damage = Math.max(
-    1,
-    Math.floor((baseDamage * attackPower) / (100 + defense))
-  );
+  const isCritical = hit && Math.random() < (technique.critChance || 0.1);
+  const finalDamage = isCritical
+    ? Math.floor(actualDamage * (technique.critMultiplier || 1.5))
+    : actualDamage;
 
-  // Check for critical hit
-  const criticalChance = 10 + (attacker.technique || 0) / 10;
-  const critical = Math.random() * 100 < criticalChance;
-  const finalDamage = critical ? Math.floor(damage * 1.5) : damage;
-
-  // Calculate hit position
-  const hitPosition: Position = {
-    x: defender.position.x + (Math.random() - 0.5) * 50,
-    y: defender.position.y + (Math.random() - 0.5) * 50,
+  // Update attacker (reduce ki/stamina)
+  const updatedAttacker: PlayerState = {
+    ...attacker,
+    ki: Math.max(0, attacker.ki - (technique.kiCost || 0)),
+    stamina: Math.max(0, attacker.stamina - (technique.staminaCost || 0)),
+    lastActionTime: Date.now(),
   };
 
-  return {
-    hit: true,
+  // Update defender (apply damage)
+  const updatedDefender: PlayerState = {
+    ...defender,
+    health: Math.max(0, defender.health - finalDamage),
+    pain: Math.min(100, defender.pain + finalDamage * 0.5),
+    consciousness: Math.max(0, defender.consciousness - finalDamage * 0.1),
+  };
+
+  const hitResult: import("../types").CombatResult = {
+    attacker: attacker.archetype,
+    defender: defender.archetype,
     damage: finalDamage,
-    critical,
-    hitPosition,
-    updatedAttacker: {
-      stamina: Math.max(0, attacker.stamina - (technique.staminaCost || 10)),
-      ki: Math.max(0, attacker.ki - (technique.kiCost || 5)),
-    },
-    updatedDefender: {
-      health: Math.max(0, defender.health - finalDamage),
-      pain: Math.min(100, defender.pain + finalDamage / 5),
-      consciousness: Math.max(0, defender.consciousness - (critical ? 10 : 5)),
-    },
+    hit,
+    critical: isCritical,
+    techniqueUsed: technique,
+    effects: technique.effects || [],
+    vitalPointsHit: targetVitalPoint ? [targetVitalPoint] : [],
+    defenderDamaged: hit && finalDamage > 0,
+    damageType: technique.damageType || "blunt",
+    isVitalPoint: !!targetVitalPoint,
+    newState: "ready" as CombatState,
+    damagePrevented: 0,
+    staminaUsed: technique.staminaCost || 0,
+    kiUsed: technique.kiCost || 0,
+    attackerStance: attacker.currentStance,
+    defenderStance: defender.currentStance,
+    painLevel: finalDamage * 0.5,
+    consciousnessImpact: finalDamage * 0.1,
+    balanceEffect: 0,
+    bloodLoss: 0,
+    stunDuration: isCritical ? 1000 : 0,
+    statusEffects: technique.effects || [],
+    hitType: hit ? (isCritical ? "critical" : "normal") : "miss",
+    effectiveness: hit ? 1.0 : 0.0,
+    hitPosition: defender.position,
+    updatedAttacker,
+    updatedDefender,
   };
+
+  return { hitResult, updatedAttacker, updatedDefender };
+}
+
+export function calculateArchetypeDamage(
+  archetype: PlayerArchetype,
+  baseDamage: number
+): number {
+  const archetypeData = PLAYER_ARCHETYPES_DATA[archetype];
+  const damageMultiplier = (archetypeData.stats.attackPower || 100) / 100;
+  return Math.round(baseDamage * damageMultiplier);
+}
+
+export function isPlayerCapacitated(player: PlayerState): boolean {
+  return player.health <= 0 || player.consciousness <= 0;
 }
 
 /**

@@ -1,82 +1,117 @@
-import React, { useMemo, useCallback } from "react";
+import React, { useCallback } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import type { StanceIndicatorProps } from "../../types";
+import type { TrigramStance } from "../../types/enums";
 import {
-  TRIGRAM_DATA,
   KOREAN_COLORS,
   FONT_FAMILY,
-  PIXI_FONT_WEIGHTS,
+  FONT_SIZES,
+  TRIGRAM_DATA,
 } from "../../types/constants";
+
+export interface StanceIndicatorProps {
+  readonly stance: TrigramStance;
+  readonly size?: number;
+  readonly x?: number;
+  readonly y?: number;
+  readonly isActive?: boolean;
+  readonly showText?: boolean;
+  readonly showLabel?: boolean;
+  readonly onClick?: (stance: TrigramStance) => void;
+}
 
 export const StanceIndicator: React.FC<StanceIndicatorProps> = ({
   stance,
+  size = 50,
+  isActive = false,
+  showText = true,
+  showLabel = false,
   x = 0,
   y = 0,
-  size = 50,
-  showLabel = false,
+  onClick,
 }) => {
   const stanceData = TRIGRAM_DATA[stance];
+  const labelText = stanceData?.name.korean || "";
 
-  const drawIndicator = useCallback(
+  const indicatorDraw = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
-      const baseColor = stanceData?.theme?.primary || KOREAN_COLORS.UI_BORDER;
 
-      // Outer ring
-      g.lineStyle(3, baseColor, 0.8);
-      g.drawCircle(size / 2, size / 2, size / 2 - 2);
+      // Background circle
+      const bgColor = isActive
+        ? stanceData?.theme?.active || KOREAN_COLORS.ACCENT_GOLD
+        : stanceData?.theme?.primary || KOREAN_COLORS.UI_BORDER;
 
-      // Inner fill if active or specific style
-      if (stanceData?.theme?.active) {
-        g.beginFill(stanceData.theme.active, 0.3);
-        g.drawCircle(size / 2, size / 2, size / 2 - 5);
-        g.endFill();
+      g.beginFill(bgColor, isActive ? 0.8 : 0.6);
+      g.drawCircle(0, 0, size / 2);
+      g.endFill();
+
+      // Border
+      const borderColor = isActive
+        ? KOREAN_COLORS.ACCENT_GOLD
+        : stanceData?.theme?.secondary || KOREAN_COLORS.UI_BORDER_LIGHT;
+
+      g.lineStyle(2, borderColor, 1.0);
+      g.drawCircle(0, 0, size / 2);
+
+      // Trigram symbol (simplified representation)
+      g.lineStyle(3, KOREAN_COLORS.TEXT_PRIMARY, 1.0);
+      const symbolSize = size * 0.3;
+      for (let i = 0; i < 3; i++) {
+        const y = (i - 1) * (symbolSize / 3);
+        g.moveTo(-symbolSize / 2, y);
+        g.lineTo(symbolSize / 2, y);
       }
     },
-    [stance, size, stanceData]
+    [stance, size, isActive, stanceData]
   );
 
-  const symbolTextStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY, // Or a specific symbol font
-        fontSize: size * 0.6,
-        fill: stanceData?.theme?.text || KOREAN_COLORS.TEXT_PRIMARY, // Ensure theme.text exists
-        align: "center",
-        fontWeight: PIXI_FONT_WEIGHTS.bold,
-      }),
-    [size, stanceData]
-  );
+  const textColor = isActive
+    ? KOREAN_COLORS.ACCENT_GOLD
+    : KOREAN_COLORS.TEXT_PRIMARY;
 
-  const labelTextStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.SECONDARY,
-        fontSize: size * 0.25,
-        fill: stanceData?.theme?.text || KOREAN_COLORS.TEXT_SECONDARY, // Ensure theme.text exists
-        align: "center",
-      }),
-    [size, stanceData]
-  );
+  const textStyle = new PIXI.TextStyle({
+    fontFamily: FONT_FAMILY.PRIMARY,
+    fontSize: FONT_SIZES.small,
+    fill: textColor,
+    align: "center",
+  });
+
+  const handleClick = useCallback(() => {
+    onClick?.(stance);
+  }, [onClick, stance]);
 
   return (
-    <Container x={x} y={y}>
-      <Graphics draw={drawIndicator} />
-      <Text
-        text={stanceData?.symbol || "?"}
-        anchor={0.5}
-        x={size / 2}
-        y={size / 2}
-        style={symbolTextStyle}
-      />
+    <Container
+      x={x}
+      y={y}
+      interactive={!!onClick}
+      buttonMode={!!onClick}
+      pointerdown={handleClick}
+    >
+      <Graphics draw={indicatorDraw} />
+
+      {showText && (
+        <Text
+          text={stanceData?.symbol || stance}
+          style={textStyle}
+          anchor={0.5}
+        />
+      )}
+
       {showLabel && (
         <Text
-          text={stanceData?.name.korean || stance.toString()} // Using stance prop for label
+          text={labelText}
+          style={
+            new PIXI.TextStyle({
+              fontFamily: FONT_FAMILY.PRIMARY,
+              fontSize: FONT_SIZES.xsmall,
+              fill: textColor,
+              align: "center",
+            })
+          }
           anchor={0.5}
-          x={size / 2}
-          y={size + size * 0.15} // Position label below the indicator
-          style={labelTextStyle}
+          y={size / 2 + 10}
         />
       )}
     </Container>

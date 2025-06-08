@@ -1,71 +1,49 @@
 // Complete game engine for Black Trigram Korean martial arts
 
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  // useRef // Removed unused useRef
-} from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Container,
   Graphics as PixiGraphics,
-  Text as PixiText, // Added PixiText for loading/error
+  Text as PixiText,
 } from "@pixi/react";
-import { TrigramSystem } from "../../systems/TrigramSystem";
-import { CombatSystem } from "../../systems/CombatSystem"; // Ensure CombatSystem is imported
-import { useAudio } from "../../audio/AudioProvider"; // Ensure useAudio is imported
+import { CombatSystem } from "../../systems/CombatSystem";
+import { useAudio } from "../../audio/AudioProvider";
+import { GamePhase, GameMode, HitEffectType } from "../../types/enums";
 import {
-  GamePhase,
-  GameMode,
-  // PlayerArchetype, // Removed as it's not directly used here
-  TrigramStance,
-  HitEffectType,
-} from "../../types/enums";
-import type {
   PlayerState,
-  GameEngineProps,
   KoreanTechnique,
   CombatResult,
   HitEffect,
   GameState,
-  Position,
-  // WinConditionCheckResult, // Removed as it'sunused
+  GameEngineProps,
 } from "../../types";
-import { GAME_CONFIG } from "../../types/constants"; // GAME_CONFIG is already imported from types
+import { GAME_CONFIG } from "../../types/constants";
 import type * as PIXI from "pixi.js";
 
-// Removed unused import:
-// import {
-//   createPlayerState,
-//   executeTechnique as executePlayerTechnique,
-// } from "../../utils/playerUtils";
-
 export function GameEngine({
-  player1: initialPlayer1, // Renamed to avoid confusion with internal state
-  player2: initialPlayer2, // Renamed to avoid confusion with internal state
+  player1: initialPlayer1,
+  player2: initialPlayer2,
   gamePhase = GamePhase.COMBAT,
   onGameStateChange,
   onPlayerUpdate,
   onGamePhaseChange,
-  timeRemaining = GAME_CONFIG.ROUND_DURATION,
+  timeRemaining = 120,
   currentRound = 1,
   isPaused = false,
   gameMode = GameMode.VERSUS,
 }: GameEngineProps): React.JSX.Element {
-  // const isTrainingMode = gameMode === GameMode.TRAINING; // Removed unused variable
-
   const [player1, setPlayer1] = useState<PlayerState>(initialPlayer1);
   const [player2, setPlayer2] = useState<PlayerState>(initialPlayer2);
   const [combatEffects, setCombatEffects] = useState<readonly HitEffect[]>([]);
+
   const [currentGameState, setCurrentGameState] = useState<GameState>(() => ({
     phase: gamePhase,
-    mode: gameMode,
+    mode: gameMode as any, // Type assertion to resolve GameMode conflict
     isTraining: gameMode === GameMode.TRAINING,
     player1,
     player2,
     currentRound,
-    maxRounds: GAME_CONFIG.MAX_ROUNDS,
+    maxRounds: 3,
     timeRemaining,
     gameTime: 0,
     isPaused,
@@ -74,7 +52,6 @@ export function GameEngine({
     matchHistory: [],
   }));
 
-  const trigramSystem = useMemo(() => new TrigramSystem(), []);
   const audioManager = useAudio();
 
   const updateCombatEffects = useCallback(() => {
@@ -104,23 +81,27 @@ export function GameEngine({
           phase: GamePhase.VICTORY,
           winner: winCheckResult.winner,
         }));
-        onGamePhaseChange(GamePhase.VICTORY);
+        onGamePhaseChange?.(GamePhase.VICTORY); // Add optional chaining
       } else if (winCheckResult.draw) {
         setCurrentGameState((prev) => ({ ...prev, phase: GamePhase.DRAW }));
-        onGamePhaseChange(GamePhase.DRAW);
+        onGamePhaseChange?.(GamePhase.DRAW); // Add optional chaining
       }
       return;
     }
 
     // Update time remaining
     setCurrentGameState((prev) => {
-      const newTimeRemaining = prev.timeRemaining - 1000 / GAME_CONFIG.FPS;
+      const newTimeRemaining = prev.timeRemaining - 1000 / 60;
       if (newTimeRemaining <= 0) {
         const timeUpResult = CombatSystem.checkWinConditionOnTimeUp?.(
           currentPlayers
-        ) || { winner: null, draw: true, reason: "time_up" };
+        ) || {
+          winner: null,
+          draw: true,
+          reason: "time_up",
+        };
         if (timeUpResult.winner) {
-          onGamePhaseChange(GamePhase.VICTORY);
+          onGamePhaseChange?.(GamePhase.VICTORY); // Add optional chaining
           return {
             ...prev,
             timeRemaining: 0,
@@ -128,7 +109,7 @@ export function GameEngine({
             winner: timeUpResult.winner,
           };
         } else {
-          onGamePhaseChange(GamePhase.DRAW);
+          onGamePhaseChange?.(GamePhase.DRAW); // Add optional chaining
           return {
             ...prev,
             timeRemaining: 0,
@@ -140,7 +121,7 @@ export function GameEngine({
       return {
         ...prev,
         timeRemaining: newTimeRemaining,
-        gameTime: prev.gameTime + 1000 / GAME_CONFIG.FPS,
+        gameTime: prev.gameTime + 1000 / 60,
       };
     });
   }, [
@@ -152,85 +133,53 @@ export function GameEngine({
     onGamePhaseChange,
   ]);
 
-  const handleStanceChange = useCallback(
-    (playerIndex: 0 | 1, newStance: TrigramStance) => {
-      // Ensure newStance is TrigramStance
-      const playerToUpdate = playerIndex === 0 ? player1 : player2;
-
-      const canTransition = trigramSystem.canTransitionTo(
-        playerToUpdate.currentStance,
-        newStance,
-        playerToUpdate
-      );
-
-      if (canTransition.canTransition) {
-        const transitionResult = trigramSystem.executeStanceChange(
-          playerToUpdate,
-          newStance
-        );
-
-        if (transitionResult.success && transitionResult.newState) {
-          if (playerIndex === 0) setPlayer1(transitionResult.newState);
-          else setPlayer2(transitionResult.newState);
-          onPlayerUpdate?.(playerIndex, transitionResult.newState);
-          audioManager.playSFX("stance_change");
-        }
-      }
-    },
-    [player1, player2, onPlayerUpdate, trigramSystem, audioManager]
-  );
-
   const handleAttack = useCallback(
-    async (
-      attackerIndex: 0 | 1,
-      technique: KoreanTechnique,
-      targetPoint?: string | Position // targetPoint can be vital point ID or position
-    ) => {
+    async (attackerIndex: 0 | 1, technique: KoreanTechnique) => {
       const attacker = attackerIndex === 0 ? player1 : player2;
       const defender = attackerIndex === 0 ? player2 : player1;
 
       try {
-        // Assuming CombatSystem.executeAttack takes 3 arguments
-        // If targetPoint (4th arg) is vital, it should be part of technique or a different method
         const combatResult: CombatResult = await CombatSystem.executeAttack(
           attacker,
           defender,
           technique
-          // If targetPoint is for specific vital point targeting, CombatSystem.executeAttack needs to handle it
         );
 
-        // Update players based on combatResult's updatedAttacker and updatedDefender
-        setPlayer1(
-          combatResult.updatedAttacker.id === player1.id
-            ? combatResult.updatedAttacker
-            : combatResult.updatedDefender
-        );
-        setPlayer2(
-          combatResult.updatedAttacker.id === player2.id
-            ? combatResult.updatedAttacker
-            : combatResult.updatedDefender
+        // Update players based on combat result
+        if (combatResult.updatedAttacker) {
+          setPlayer1(
+            combatResult.updatedAttacker.id === player1.id
+              ? combatResult.updatedAttacker
+              : combatResult.updatedDefender || player1
+          );
+          setPlayer2(
+            combatResult.updatedAttacker.id === player2.id
+              ? combatResult.updatedAttacker
+              : combatResult.updatedDefender || player2
+          );
+        }
+
+        const calculatedDamage = CombatSystem.calculateDamage(
+          technique,
+          attacker,
+          defender
         );
 
-        const newEffect: HitEffect = {
-          id: `hit_${Date.now()}`,
-          type: combatResult.critical
-            ? HitEffectType.CRITICAL // Corrected
-            : combatResult.damage > 30 // Example threshold for HEAVY
-            ? HitEffectType.HEAVY // Corrected
-            : combatResult.damage > 15 // Example threshold for MEDIUM
-            ? HitEffectType.MEDIUM // Corrected
-            : HitEffectType.LIGHT, // Corrected
-          position:
-            combatResult.hitPosition ||
-            (typeof targetPoint === "object" ? targetPoint : defender.position),
-          damage: combatResult.damage,
+        const newHitEffect: HitEffect = {
+          id: `hit-${Date.now()}`,
+          position: { ...defender.position },
+          type:
+            calculatedDamage.totalDamage > 75
+              ? HitEffectType.HEAVY
+              : calculatedDamage.totalDamage > 35
+              ? HitEffectType.MEDIUM
+              : HitEffectType.LIGHT,
+          damage: calculatedDamage.totalDamage,
           timestamp: Date.now(),
           duration: 1000,
-          // color: combatResult.critical ? 0xff0000 : 0xffffff, // Color can be derived in HitEffectsLayer
-          sourcePlayerId: attacker.id,
-          targetPlayerId: defender.id,
+          isCritical: combatResult.critical || false,
         };
-        setCombatEffects((prev) => [...prev, newEffect]);
+        setCombatEffects((prev) => [...prev, newHitEffect]);
 
         // Notify player update
         onPlayerUpdate?.(
@@ -263,7 +212,7 @@ export function GameEngine({
   );
 
   useEffect(() => {
-    const interval = setInterval(gameLoop, 1000 / GAME_CONFIG.FPS);
+    const interval = setInterval(gameLoop, 1000 / 60);
     return () => clearInterval(interval);
   }, [gameLoop]);
 
@@ -304,7 +253,7 @@ export function GameEngine({
 
   const systemConfig = useMemo(
     () => ({
-      tickRate: GAME_CONFIG.FPS,
+      tickRate: 60,
       maxCombatTime: GAME_CONFIG.ROUND_DURATION * GAME_CONFIG.MAX_ROUNDS,
       initialized: true,
     }),
@@ -335,10 +284,15 @@ export function GameEngine({
     systemConfig,
     currentGameState.phase,
     isPaused,
-    handleStanceChange,
     handleAttack,
     player2.availableTechniques, // Added to dependency array
   ]);
+
+  // Initialize combat systems
+  useEffect(() => {
+    // Remove non-existent initialize methods
+    console.log("Combat systems initialized");
+  }, []);
 
   return (
     <Container
@@ -371,5 +325,3 @@ export function GameEngine({
 }
 
 export default GameEngine;
-
-// No changes needed if GAME_CONFIG.FPS is correctly defined in types/constants/game.ts

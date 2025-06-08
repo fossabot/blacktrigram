@@ -5,10 +5,14 @@ import type {
   VitalPoint,
   Position,
   WinConditionCheckResult,
+  VitalPointHitResult,
+  CombatState,
+  PlayerArchetype,
+  TrigramStance,
 } from "../types";
 import { STANCE_EFFECTIVENESS_MATRIX } from "../types/constants";
 import {
-  executeTechnique as executeTechniqueUtil, // Renamed to avoid conflict
+  executeTechnique as executeTechniqueUtil,
   isPlayerCapacitated,
   calculateArchetypeDamage,
 } from "../utils/playerUtils";
@@ -242,31 +246,7 @@ export class CombatSystem {
     };
   }
 
-  static checkWinCondition(
-    players: readonly [PlayerState, PlayerState]
-  ): string | null {
-    const [player1, player2] = players;
-
-    if (player1.health <= 0) {
-      return player2.id;
-    }
-
-    if (player2.health <= 0) {
-      return player1.id;
-    }
-
-    if (player1.consciousness <= 0) {
-      return player2.id;
-    }
-
-    if (player2.consciousness <= 0) {
-      return player1.id;
-    }
-
-    return null;
-  }
-
-  static calculateDamage(
+  public static calculateDamage(
     technique: KoreanTechnique,
     attacker: PlayerState,
     defender: PlayerState,
@@ -285,5 +265,32 @@ export class CombatSystem {
       modifierDamage,
       totalDamage,
     };
+  }
+
+  // Fix checkWinCondition to return proper type
+  static checkWinCondition(
+    players: readonly [PlayerState, PlayerState]
+  ): WinConditionCheckResult | null {
+    const [player1, player2] = players;
+
+    if (player1.health <= 0 && player2.health <= 0) {
+      return { winner: null, draw: true, reason: "mutual_knockout" };
+    }
+    if (player1.health <= 0) {
+      return {
+        winner: player2,
+        draw: false,
+        reason: "player1_health_depleted",
+      };
+    }
+    if (player2.health <= 0) {
+      return {
+        winner: player1,
+        draw: false,
+        reason: "player2_health_depleted",
+      };
+    }
+
+    return null;
   }
 }

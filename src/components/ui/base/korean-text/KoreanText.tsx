@@ -1,14 +1,13 @@
-import React from "react";
-import type { KoreanTextProps } from "../../../../types"; // Assuming KoreanTextType is the object form
-import {
-  KOREAN_FONT_FAMILY,
-  KOREAN_TEXT_SIZES,
-  KOREAN_FONT_WEIGHTS, // Corrected: Was KOREAN_TEXT_WEIGHTS
-} from "../../../../types/constants";
+import React, { useMemo } from "react";
+import { weightToCSSValue } from "../utils";
+import type { KoreanTextComponentProps } from "../types";
+import { KOREAN_FONT_FAMILY } from "../../../../../types/constants";
 
-export const KoreanText: React.FC<KoreanTextProps> = ({
-  korean,
-  english,
+export const KoreanText: React.FC<KoreanTextComponentProps> = ({
+  text,
+  showBoth = true,
+  koreanFirst = true,
+  separator = " / ",
   size = "medium",
   weight = "regular",
   color,
@@ -17,58 +16,48 @@ export const KoreanText: React.FC<KoreanTextProps> = ({
   className,
   style: customStyle,
 }) => {
-  // Determine the text content to render
-  // If 'korean' is an object, use its 'korean' property, otherwise use 'korean' as is (if string)
-  const textToRender = typeof korean === "string" ? korean : korean.korean;
-  const titleAttribute =
-    typeof korean === "string" ? english : korean.english || english;
+  const displayText = useMemo(() => {
+    if (typeof text === "string") return text;
 
-  const fontSize = typeof size === "number" ? size : KOREAN_TEXT_SIZES[size];
+    if (!showBoth) {
+      return koreanFirst ? text.korean : text.english;
+    }
 
-  // Ensure weight is a key of KOREAN_FONT_WEIGHTS or a number
-  let resolvedFontWeight: string | number;
-  if (typeof weight === "number") {
-    resolvedFontWeight = weight;
-  } else if (
-    weight &&
-    KOREAN_FONT_WEIGHTS[weight as keyof typeof KOREAN_FONT_WEIGHTS]
-  ) {
-    resolvedFontWeight =
-      KOREAN_FONT_WEIGHTS[weight as keyof typeof KOREAN_FONT_WEIGHTS];
-  } else {
-    resolvedFontWeight = KOREAN_FONT_WEIGHTS.regular;
-  }
+    return koreanFirst
+      ? `${text.korean}${separator}${text.english}`
+      : `${text.english}${separator}${text.korean}`;
+  }, [text, showBoth, koreanFirst, separator]);
 
-  const styles: React.CSSProperties = {
-    fontFamily: KOREAN_FONT_FAMILY,
-    fontSize: `${fontSize}px`,
-    fontWeight: resolvedFontWeight,
-    textAlign: align,
-    // Convert color to string if it's a number (hex value)
-    color:
-      typeof color === "number"
-        ? `#${color.toString(16).padStart(6, "0")}`
-        : color,
-    ...customStyle,
-  };
+  const fontSize = typeof size === "number" ? size : 16;
 
-  if (emphasis === "bold") styles.fontWeight = KOREAN_FONT_WEIGHTS.bold;
-  if (emphasis === "italic") styles.fontStyle = "italic";
-  if (emphasis === "underline") styles.textDecoration = "underline";
-  // Note: 'glow', 'shadow', 'outline' would require more complex CSS (e.g., text-shadow, filters) or SVG.
+  const styles = useMemo(
+    () => ({
+      fontFamily: KOREAN_FONT_FAMILY,
+      fontSize: `${fontSize}px`,
+      fontWeight: weightToCSSValue(weight),
+      color:
+        typeof color === "number"
+          ? `#${color.toString(16).padStart(6, "0")}`
+          : color || "#ffffff",
+      textAlign: align as React.CSSProperties["textAlign"],
+      fontStyle:
+        emphasis === "italic" ? ("italic" as const) : ("normal" as const),
+      textDecoration: emphasis === "underline" ? "underline" : "none",
+      ...customStyle,
+    }),
+    [fontSize, weight, color, align, emphasis, customStyle]
+  );
 
-  // Variant-specific styling could be added here
-  // Example: if (variant === 'title') { styles.color = KOREAN_COLORS.GOLD; }
-  // This would require KOREAN_COLORS to be imported and used.
+  const titleAttribute = useMemo(() => {
+    if (typeof text === "string") return text;
+    return `${text.korean} (${text.english})`;
+  }, [text]);
 
   return (
-    <span
-      className={className}
-      style={styles}
-      title={titleAttribute}
-      data-testid="korean-text-component"
-    >
-      {textToRender} {/* Corrected: Ensure a string is rendered */}
+    <span className={className} style={styles} title={titleAttribute}>
+      {displayText}
     </span>
   );
 };
+
+export default KoreanText;

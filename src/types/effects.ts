@@ -49,6 +49,7 @@ export interface HitEffect {
   readonly color?: number; // For colored effects (e.g., based on damage type)
   readonly soundId?: string; // Sound to play with the effect
   readonly isCritical?: boolean;
+  readonly targetId?: string; // Added targetId
 }
 
 // Combat effect types

@@ -22,22 +22,21 @@ export enum TrigramStance {
 // Game phases for different modes
 export enum GamePhase {
   INTRO = "intro",
-  MENU = "menu",
-  PREPARATION = "preparation", // Added PREPARATION
-  COMBAT = "combat",
   TRAINING = "training",
+  COMBAT = "combat",
+  STORY = "story", // Add missing STORY phase
   VICTORY = "victory",
   DEFEAT = "defeat",
-  DRAW = "draw", // Added DRAW
-  END_SCREEN = "end_screen",
-  PAUSED = "paused",
+  DRAW = "draw",
+  PAUSE = "pause",
 }
 
-// Game modes available
 export enum GameMode {
   VERSUS = "versus",
   TRAINING = "training",
   STORY = "story",
+  ARCADE = "arcade",
+  ONLINE = "online",
 }
 
 // Combat states for player characters
@@ -55,19 +54,12 @@ export enum HitEffectType {
   MEDIUM = "medium",
   HEAVY = "heavy",
   CRITICAL = "critical",
-  BLOCK = "block",
-  MISS = "miss",
   PERFECT = "perfect",
   COUNTER = "counter",
-  SPECIAL = "special", // Example of another type
-  DODGE = "dodge",
-  PARRY = "parry",
-  KI_BLAST = "ki_blast",
-  ENVIRONMENTAL = "environmental",
-  BUFF = "buff",
-  DEBUFF = "debuff",
-  HEAL = "heal",
-  NORMAL = "normal", // Added based on HitEffectsLayer usage
+  BLOCK = "block",
+  MISS = "miss",
+  NORMAL = "normal",
+  HIT = "hit", // Add missing HIT value
 }
 
 // Animation states for character sprites

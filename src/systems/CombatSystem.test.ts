@@ -1,112 +1,59 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { CombatSystem } from "./CombatSystem";
-import type {
+import {
   PlayerState,
-  TrigramStance,
   KoreanTechnique,
-  VitalPoint,
-  VitalPointCategory,
-  VitalPointSeverity,
-  EffectType,
-  EffectIntensity,
+  HitEffectType, // Fix: Use correct import name
   PlayerArchetype,
-  Position,
-  VitalPointEffect,
-  BodyRegion,
-  CombatReadiness,
-  CombatState,
-  KoreanText, // Added KoreanText
+  TrigramStance,
 } from "../types";
-import { TRIGRAM_DATA, STANCE_EFFECTIVENESS_MATRIX } from "../types/constants";
-
-const createMockPlayer = (
-  id: string,
-  archetype: PlayerArchetype,
-  stance: TrigramStance,
-  health: number = 100,
-  ki: number = 100,
-  stamina: number = 100,
-  position: Position = { x: 0, y: 0 },
-  consciousness: number = 100 // Added consciousness parameter
-): PlayerState => ({
-  id,
-  name: {
-    korean: `${archetype} ${id}`,
-    english: `${archetype} ${id}`,
-  } as KoreanText, // Use KoreanText and cast
-  archetype,
-  currentStance: stance, // Changed from stance to currentStance
-  health,
-  maxHealth: 100,
-  ki,
-  maxKi: 100,
-  stamina,
-  maxStamina: 100,
-  position,
-  facing: "right",
-  consciousness, // Use the parameter
-  pain: 0,
-  balance: 100,
-  bloodLoss: 0,
-  lastStanceChangeTime: 0,
-  // isAttacking: false, // Removed, not in PlayerState
-  combatReadiness: "ready" as CombatReadiness,
-  activeEffects: [],
-  combatState: "idle" as CombatState,
-  // conditions: [], // Removed, not in PlayerState
-  // Added missing required fields from PlayerState
-  attributes: {
-    strength: 10,
-    agility: 10,
-    endurance: 10,
-    intelligence: 10,
-    focus: 10,
-    resilience: 10,
-  },
-  skills: {
-    striking: 10,
-    kicking: 10,
-    grappling: 10,
-    weaponry: 0,
-    meditation: 10,
-    strategy: 10,
-  },
-  lastActionTime: 0,
-  comboCount: 0,
-  vitalPointDamage: {},
-  bodyPartStatus: {} as Record<BodyRegion, "healthy" | "injured" | "critical">,
-  knownTechniques: [],
-});
-
-const mockGeonTechnique: KoreanTechnique = TRIGRAM_DATA.geon.technique;
-
-const mockVitalPoint: VitalPoint = {
-  id: "vp_test_head",
-  name: { korean: "테스트 머리 급소", english: "Test Head Vital Point" },
-  koreanName: "테스트 머리 급소",
-  englishName: "Test Head Vital Point",
-  category: "head" as VitalPointCategory,
-  description: { korean: "테스트용 급소", english: "A test vital point" },
-  location: { x: 50, y: 20, region: "head" as BodyRegion },
-  severity: "moderate" as VitalPointSeverity,
-  baseAccuracy: 0.9,
-  baseDamage: 10,
-  damageMultiplier: 1.5,
-  effects: [
-    {
-      id: "vp_stun",
-      type: "stun" as EffectType,
-      intensity: "moderate" as EffectIntensity,
-      duration: 1000,
-      description: { korean: "기절", english: "Stun" },
-      stackable: false,
-    },
-  ] as VitalPointEffect[],
-  techniques: ["strike"],
-  damage: 10,
-};
+import { createPlayerState } from "../utils/playerUtils";
 
 describe("CombatSystem", () => {
+  let player1: PlayerState;
+  let player2: PlayerState;
+  let basicTechnique: KoreanTechnique;
+
+  beforeEach(() => {
+    player1 = createPlayerState(
+      "Test Player 1",
+      PlayerArchetype.MUSA,
+      TrigramStance.GEON,
+      "p1"
+    );
+    player2 = createPlayerState(
+      "Test Player 2",
+      PlayerArchetype.AMSALJA,
+      TrigramStance.TAE,
+      "p2"
+    );
+
+    basicTechnique = {
+      id: "test_strike",
+      name: "테스트 타격",
+      koreanName: "테스트 타격",
+      englishName: "Test Strike",
+      romanized: "test_strike",
+      description: {
+        korean: "테스트용 기본 타격",
+        english: "Basic test strike",
+      },
+      stance: "geon",
+      type: "strike",
+      damageType: "blunt",
+      damage: 20,
+      kiCost: 10,
+      staminaCost: 15,
+      accuracy: 0.8,
+      range: 1.0,
+      executionTime: 500,
+      recoveryTime: 300,
+      critChance: 0.1,
+      critMultiplier: 1.5,
+      effects: [],
+    };
+  });
+
   describe("calculateTechnique", () => {
     it("should calculate base damage for a technique", () => {
       const result = CombatSystem.calculateTechnique(mockGeonTechnique, "musa");

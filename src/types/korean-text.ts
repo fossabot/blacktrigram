@@ -1,6 +1,11 @@
 // Korean text system types for Black Trigram
 
 import type { TrigramStance } from "./enums";
+import type {
+  TextStyle as PixiTextStyle,
+  Point as PixiPoint,
+  TextStyleOptions as PixiTextStyleOptions,
+} from "pixi.js";
 
 // Base Korean text interface
 export interface KoreanText {
@@ -8,6 +13,14 @@ export interface KoreanText {
   readonly english: string;
   readonly romanized?: string;
 }
+
+export interface BaseKoreanText {
+  korean: string;
+  english?: string;
+  romanized?: string;
+}
+
+export type ColorValue = number | string; // Hex number or CSS color string
 
 export interface KoreanTextConfig {
   readonly primary: string;
@@ -18,52 +31,46 @@ export interface KoreanTextConfig {
 }
 
 export interface KoreanPixiTextProps {
-  text: string | KoreanText;
-  style?: any;
-  anchor?: [number, number] | number;
-  position?: [number, number];
+  text: string | BaseKoreanText; // Use BaseKoreanText
+  style?: Partial<PixiTextStyleOptions>; // Use imported PixiTextStyleOptions
+  anchor?: [number, number] | number | PixiPoint; // Use imported PixiPoint
+  position?: [number, number] | PixiPoint; // Use imported PixiPoint
   [key: string]: any;
 }
 
 // Korean text display utilities
-export interface KoreanTextStyle {
-  readonly fontFamily: string;
-  readonly fontSize: number;
-  readonly fill: number;
-  readonly align?: string;
-  readonly fontWeight?: string | number;
-  readonly dropShadow?: boolean;
-  readonly dropShadowColor?: number;
-  readonly dropShadowBlur?: number;
-  readonly fontStyle?: string;
-  readonly letterSpacing?: number;
-  readonly wordWrap?: boolean;
-  readonly wordWrapWidth?: number;
-  readonly alpha?: number;
+export interface KoreanTextStyleInternal extends Partial<PixiTextStyleOptions> {
+  // Use imported PixiTextStyleOptions
+  // This interface seems to be for internal PIXI text styling.
+  // Properties here should align with PIXI.TextStyle options.
 }
 
 // Korean martial arts specific text types
-export interface KoreanMartialText extends KoreanText {
+export interface KoreanMartialText extends BaseKoreanText {
+  // Use BaseKoreanText
   readonly technique?: string;
   readonly stance?: string;
   readonly philosophy?: string;
 }
 
-export interface KoreanArchetypeText extends KoreanText {
-  readonly description: KoreanText;
-  readonly philosophy: KoreanText;
+export interface KoreanArchetypeText extends BaseKoreanText {
+  // Use BaseKoreanText
+  readonly description: BaseKoreanText; // Use BaseKoreanText
+  readonly philosophy: BaseKoreanText; // Use BaseKoreanText
   readonly specialization?: string;
 }
 
 // Korean text size type
 export type KoreanTextSize =
+  | "xsmall" // Added xsmall based on KOREAN_TEXT_SIZES definition
   | "small"
   | "medium"
   | "large"
   | "xlarge"
-  | "xxlarge" // Added
-  | "title"; // Added title to match KOREAN_TEXT_SIZES in constants/typography.ts and constants.ts
+  | "xxlarge"
+  | "title";
 export const KOREAN_TEXT_SIZES: Record<KoreanTextSize, number> = {
+  xsmall: 10,
   small: 12,
   medium: 16,
   large: 20,
@@ -80,17 +87,25 @@ export type KoreanFontWeight =
   | 600
   | 700
   | 900
+  | "light" // Added string versions
   | "regular"
+  | "medium"
   | "semibold"
-  | "bold";
+  | "bold"
+  | "heavy";
 
 // Korean text variant
 export type KoreanTextVariant =
   | "body"
   | "title"
+  | "subtitle" // Added subtitle
+  | "caption" // Added caption
+  | "button" // Added button
   | "technique"
   | "status"
-  | "martial";
+  | "martial"
+  | "debug" // Added debug
+  | "default"; // Added default
 
 // Korean text emphasis
 export type KoreanTextEmphasis =
@@ -129,11 +144,16 @@ export type StatusKey =
   | "success"
   | "failure"
   | "warning"
-  | "info";
+  | "info"
+  | "default"; // Added default
 
 // Martial variant type
-export type MartialVariant = "practitioner" | "master" | "grandmaster";
-export type HonorLevel = "student" | "instructor" | "master";
+export type MartialVariant =
+  | "practitioner"
+  | "master"
+  | "grandmaster"
+  | "default"; // Added default
+export type HonorLevel = "student" | "instructor" | "master" | "grandmaster"; // Added grandmaster
 
 // Font weight type alias
 export type FontWeight = KoreanFontWeight;
@@ -143,36 +163,39 @@ export type ColorValue = number;
 
 // Base Korean text props
 export interface KoreanTextProps {
-  readonly korean: string | KoreanText;
+  readonly korean: string | BaseKoreanText; // Use BaseKoreanText
   readonly english?: string;
   readonly size?: KoreanTextSize | number;
   readonly weight?: KoreanFontWeight;
-  readonly color?: number | string; // Allow both number and string for compatibility
+  readonly color?: number | string;
   readonly variant?: KoreanTextVariant;
   readonly emphasis?: KoreanTextEmphasis;
   readonly align?: "left" | "center" | "right";
   readonly className?: string;
   readonly style?: React.CSSProperties;
+  readonly children?: React.ReactNode; // Added children
+  // Allow any other standard HTML attributes for span
+  [key: string]: any;
 }
 
 // Korean title props
-export interface KoreanTextHeaderProps extends KoreanTextProps {
-  readonly korean: string;
+export interface KoreanTextHeaderProps extends Omit<KoreanTextProps, "korean"> {
+  readonly korean: string; // Keep as string if it's just the header text
   readonly english?: string;
-  readonly subtitle?: string;
+  readonly subtitle?: string | BaseKoreanText; // Allow BaseKoreanText for subtitle
   readonly level?: 1 | 2 | 3 | 4 | 5 | 6;
 }
 
 // Korean title props alias
-export type KoreanTitleProps = KoreanTextHeaderProps;
+export type KoreanTitleProps = KoreanTextHeaderProps; // KoreanTitleProps can be an alias or extend KoreanTextHeaderProps
 
 // Korean technique text props
 export interface KoreanTechniqueTextProps extends KoreanTextProps {
-  readonly korean: string | KoreanText;
+  readonly korean: string | BaseKoreanText; // Use BaseKoreanText
   readonly english?: string;
   readonly koreanName?: string;
   readonly englishName?: string;
-  readonly trigram?: TrigramStance;
+  readonly trigram?: TrigramStance; // Use full import if TrigramStance is not in scope
   readonly showStanceSymbol?: boolean;
   readonly damage?: number | string;
   readonly mastered?: boolean;
@@ -180,7 +203,7 @@ export interface KoreanTechniqueTextProps extends KoreanTextProps {
 
 // Korean status text props
 export interface KoreanStatusTextProps extends KoreanTextProps {
-  readonly korean: string | KoreanText;
+  readonly korean: string | BaseKoreanText; // Use BaseKoreanText
   readonly statusKey: StatusKey;
   readonly value: number;
   readonly maxValue: number;
@@ -191,38 +214,28 @@ export interface KoreanStatusTextProps extends KoreanTextProps {
 
 // Korean martial text props
 export interface KoreanMartialTextProps extends KoreanTextProps {
-  readonly korean: string | KoreanText;
+  readonly korean: string | BaseKoreanText; // Use BaseKoreanText
   readonly english?: string;
   readonly martialVariant: MartialVariant;
   readonly honorLevel?: HonorLevel;
   readonly showHonorific?: boolean;
-  readonly rank?: HonorLevel;
+  readonly rank?: HonorLevel; // rank can be used if different from honorLevel
 }
 
 // PIXI text style configuration
-export interface PixiTextStyleConfig {
-  fontFamily?: string;
-  fontSize?: number;
-  fontWeight?: string | number;
-  fontStyle?: string;
-  fill?: number | string;
-  align?: string;
-  letterSpacing?: number;
-  lineHeight?: number;
-  dropShadow?: boolean;
-  dropShadowColor?: number | string;
-  dropShadowBlur?: number;
-  dropShadowAngle?: number;
-  dropShadowDistance?: number;
-  dropShadowAlpha?: number;
-  stroke?: number | string;
-  strokeThickness?: number;
-  wordWrap?: boolean;
-  wordWrapWidth?: number;
+export interface PixiTextStyleConfig extends Partial<PixiTextStyleOptions> {
+  // This seems to be the main PIXI text style config.
+  // Allow any PIXI.TextStyleOptions properties
+  size?: KoreanTextSize | number; // Custom prop for easier size handling
+  weight?: KoreanFontWeight; // Custom prop for easier weight handling
+  variant?: KoreanTextVariant; // Custom prop for style variants
+  emphasis?: KoreanTextEmphasis; // Custom prop for emphasis effects
+  statusKey?: StatusKey; // For status text styling
+  martialVariant?: MartialVariant; // For martial text styling
+  trigram?: import("./enums").TrigramStance; // For trigram-specific styling
+  mastered?: boolean; // For technique styling
 }
-
-// For PIXI text config in UI
-export type KoreanPixiTextConfig = PixiTextStyleConfig;
+export type KoreanPixiTextConfig = PixiTextStyleConfig; // Alias
 
 // Fix font family to be a string, not object
 export const KOREAN_FONT_FAMILY = "Noto Sans KR, Arial, sans-serif"; // Standardized
@@ -237,13 +250,23 @@ export const KOREAN_TEXT_ALIGNMENT = {
   RIGHT: "right",
 } as const;
 
-export const KOREAN_TEXT_WEIGHTS = {
-  LIGHT: 300,
-  REGULAR: 400,
-  MEDIUM: 500,
-  BOLD: 700,
-  HEAVY: 900,
-} as const;
+export const KOREAN_TEXT_WEIGHTS: Record<
+  Extract<KoreanFontWeight, string | number>, // Allow both string and number keys
+  number
+> = {
+  light: 300,
+  regular: 400,
+  medium: 500,
+  semibold: 600,
+  bold: 700,
+  heavy: 900,
+  300: 300,
+  400: 400,
+  500: 500,
+  600: 600,
+  700: 700,
+  900: 900,
+};
 
 export const KOREAN_TEXT_STYLES = {
   NORMAL: "normal",

@@ -1,10 +1,11 @@
 import React from "react";
 import type { KoreanStatusTextProps } from "../../../../../types";
-import { KoreanText } from "./KoreanText";
+import { KoreanText } from "./KoreanText"; // Assuming this is the React DOM KoreanText
 import { KOREAN_COLORS } from "../../../../../types/constants";
+import type { StatusKey } from "../../../../../types/korean-text"; // For explicit StatusKey type
 
 const getStatusColor = (
-  statusKey: KoreanStatusTextProps["statusKey"],
+  statusKey: StatusKey, // Use imported StatusKey
   value: number,
   maxValue: number,
   criticalThreshold?: number,
@@ -19,14 +20,28 @@ const getStatusColor = (
     return KOREAN_COLORS.WARNING_ORANGE;
   }
 
-  if (statusKey.startsWith("health")) return KOREAN_COLORS.POSITIVE_GREEN;
-  if (statusKey.startsWith("ki")) return KOREAN_COLORS.PRIMARY_BLUE;
-  if (statusKey.startsWith("stamina")) return KOREAN_COLORS.SECONDARY_YELLOW;
-  if (statusKey === "pain") return KOREAN_COLORS.WARNING_ORANGE;
-  if (statusKey === "stunned") return KOREAN_COLORS.STATUS_STUNNED_YELLOW;
-  if (statusKey === "bleeding") return KOREAN_COLORS.NEGATIVE_RED_LIGHT;
+  // Use a mapping or switch for more robust color selection
+  const colorMap: Partial<Record<StatusKey, number>> = {
+    health: KOREAN_COLORS.POSITIVE_GREEN,
+    health_critical: KOREAN_COLORS.NEGATIVE_RED,
+    ki: KOREAN_COLORS.PRIMARY_BLUE,
+    ki_depleted: KOREAN_COLORS.PRIMARY_BLUE_DARK || KOREAN_COLORS.PRIMARY_BLUE,
+    stamina: KOREAN_COLORS.SECONDARY_YELLOW,
+    stamina_low: KOREAN_COLORS.WARNING_ORANGE,
+    pain: KOREAN_COLORS.WARNING_ORANGE,
+    stunned: KOREAN_COLORS.STATUS_STUNNED_YELLOW || KOREAN_COLORS.ACCENT_YELLOW, // Added fallback
+    bleeding: KOREAN_COLORS.NEGATIVE_RED_LIGHT || KOREAN_COLORS.NEGATIVE_RED, // Added fallback
+    poisoned: KOREAN_COLORS.NEGATIVE_GREEN || KOREAN_COLORS.POSITIVE_GREEN_DARK,
+    burning: KOREAN_COLORS.ACCENT_ORANGE,
+    frozen: KOREAN_COLORS.SECONDARY_BLUE_LIGHT,
+    // ... add all status keys and their colors
+  };
 
-  // Fallback colors for general statuses
+  if (colorMap[statusKey]) {
+    return colorMap[statusKey]!;
+  }
+
+  // Fallback colors for general statuses based on keywords
   if (statusKey.includes("critical") || statusKey.includes("failure"))
     return KOREAN_COLORS.NEGATIVE_RED;
   if (
@@ -46,45 +61,44 @@ const getStatusColor = (
 };
 
 export const KoreanStatusText: React.FC<KoreanStatusTextProps> = ({
-  korean, // This prop might be the label or part of the statusKey's translation
-  statusKey,
-  value,
-  maxValue,
-  showPercentage = false,
-  criticalThreshold = 0.2, // Default 20%
-  warningThreshold = 0.5, // Default 50%
-  ...props
+  status,
+  size = "medium", // Fix: Use valid size
+  weight = "regular", // Fix: Use valid weight
+  variant = "primary",
+  emphasis = "none", // Fix: Use valid emphasis
+  display = "both",
+  order = "korean_first",
+  showIcon = false,
+  showValue = true,
+  className,
+  style,
+  ...rest
 }) => {
-  // const statusInfo = KOREAN_STATUS_TRANSLATIONS[statusKey] || { korean: statusKey, english: statusKey }; // Fallback if not found
-  const statusInfo = {
-    korean: typeof korean === "string" ? korean : korean.korean,
-    english:
-      typeof korean === "string"
-        ? props.english || statusKey
-        : korean.english || statusKey,
-  };
-
-  let displayValue = `${value}/${maxValue}`;
-  if (showPercentage) {
-    const percentage = maxValue > 0 ? Math.round((value / maxValue) * 100) : 0;
-    displayValue = `${percentage}% (${value}/${maxValue})`;
-  }
+  const statusKoreanLabel = showValue
+    ? `${status.korean}: ${status.value || ""}`
+    : status.korean;
 
   const color = getStatusColor(
-    statusKey,
-    value,
-    maxValue,
-    criticalThreshold,
-    warningThreshold
+    status.key,
+    status.value,
+    status.maxValue,
+    status.criticalThreshold,
+    status.warningThreshold
   );
 
   return (
     <KoreanText
-      korean={`${statusInfo.korean}: ${displayValue}`}
-      english={props.english ? `${props.english}: ${displayValue}` : undefined}
-      color={color}
-      variant="status"
-      {...props}
+      korean={statusKoreanLabel}
+      english={status.english}
+      size={size}
+      weight={weight}
+      variant={variant}
+      emphasis={emphasis}
+      display={display}
+      order={order}
+      className={className}
+      style={style}
+      {...rest}
     />
   );
 };

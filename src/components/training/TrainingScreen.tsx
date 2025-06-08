@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import type { TrainingScreenProps, KoreanText } from "../../types";
+import type { TrainingScreenProps } from "../../types/components";
 import {
   KOREAN_COLORS,
   FONT_FAMILY,
@@ -9,12 +9,18 @@ import {
   GAME_CONFIG,
 } from "../../types/constants";
 import { ProgressTracker } from "../ui/ProgressTracker";
+import { BaseButton } from "../ui/base/BaseButton";
+import { TrigramWheel } from "../ui/TrigramWheel";
+import { TrigramStance } from "../../types/enums";
 
 export const TrainingScreen: React.FC<TrainingScreenProps> = ({
   players,
-  selectedStance = "geon",
+  onPlayerUpdate,
+  onReturnToMenu,
   width = GAME_CONFIG.CANVAS_WIDTH,
   height = GAME_CONFIG.CANVAS_HEIGHT,
+  x = 0,
+  y = 0,
 }) => {
   const player = players?.[0];
 
@@ -25,141 +31,74 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = ({
       g.drawRect(0, 0, width, height);
       g.endFill();
 
-      // Training dojo atmosphere
-      g.lineStyle(2, KOREAN_COLORS.ACCENT_GOLD, 0.3);
+      // Training area outline
+      g.lineStyle(2, KOREAN_COLORS.PRIMARY_CYAN, 0.5);
       g.drawRect(50, 50, width - 100, height - 100);
     },
     [width, height]
   );
 
-  const headerStyle = useMemo(
+  const titleStyle = useMemo(
     () =>
       new PIXI.TextStyle({
         fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.large,
-        fill: KOREAN_COLORS.TEXT_PRIMARY,
-        align: "center",
-        fontWeight: "bold",
-      }),
-    []
-  );
-
-  const instructionStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.medium,
-        fill: KOREAN_COLORS.TEXT_SECONDARY,
-        align: "center",
-        wordWrap: true,
-        wordWrapWidth: width - 100,
-      }),
-    [width]
-  );
-
-  const stanceStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.small,
-        fill: KOREAN_COLORS.PRIMARY_CYAN,
+        fontSize: FONT_SIZES.title,
+        fill: KOREAN_COLORS.ACCENT_GOLD,
         align: "center",
       }),
     []
   );
 
-  if (!player) {
-    return (
-      <Container>
-        <Text
-          text="훈련 모드를 위한 플레이어가 필요합니다"
-          style={headerStyle}
-          x={width / 2}
-          y={height / 2}
-          anchor={0.5}
-        />
-      </Container>
-    );
-  }
-
-  // Create proper KoreanText objects for labels
-  const healthLabel: KoreanText = { korean: "체력", english: "Health" };
-  const kiLabel: KoreanText = { korean: "기", english: "Ki" };
-  const staminaLabel: KoreanText = { korean: "체력", english: "Stamina" };
+  const handleStanceSelect = useCallback(
+    (stance: TrigramStance) => {
+      if (player && onPlayerUpdate) {
+        onPlayerUpdate(0, { currentStance: stance });
+      }
+    },
+    [player, onPlayerUpdate]
+  );
 
   return (
-    <Container>
+    <Container x={x} y={y}>
       <Graphics draw={backgroundDraw} />
 
-      {/* Training Header */}
       <Text
-        text="훈련 모드 (Training Mode)"
-        style={headerStyle}
+        text="훈련모드 (Training Mode)"
+        style={titleStyle}
         x={width / 2}
-        y={80}
+        y={50}
         anchor={0.5}
       />
 
-      {/* Player Stats */}
       {player && (
-        <Container x={50} y={150}>
-          <ProgressTracker
-            label={healthLabel}
-            current={player.health}
-            maximum={player.maxHealth}
-            x={0}
-            y={0}
-            width={300}
-            height={20}
-          />
-
-          <ProgressTracker
-            label={kiLabel}
-            current={player.ki}
-            maximum={player.maxKi}
-            x={0}
-            y={40}
-            width={300}
-            height={20}
-          />
-
-          <ProgressTracker
-            label={staminaLabel}
-            current={player.stamina}
-            maximum={player.maxStamina}
-            x={0}
-            y={80}
-            width={300}
-            height={20}
-          />
-        </Container>
+        <ProgressTracker
+          currentValue={player.health} // Fix: Use currentValue instead of current
+          maxValue={player.maxHealth} // Fix: Use maxValue instead of max
+          x={20}
+          y={height - 120}
+          width={200}
+          height={20}
+        />
       )}
 
-      {/* Training Instructions */}
-      <Text
-        text="자세를 선택하고 기술을 연습하세요\nSelect stance and practice techniques"
-        style={instructionStyle}
+      <TrigramWheel
+        currentStance={player?.currentStance || "geon"} // Fix: Use currentStance instead of selectedStance
+        onStanceChange={(stance: TrigramStance) => {
+          // Fix: Use onStanceChange instead of onStanceSelect
+          onPlayerUpdate(0, { currentStance: stance });
+        }}
         x={width / 2}
         y={height / 2}
-        anchor={0.5}
+        size={100} // Fix: Use size instead of radius
       />
 
-      {/* Current Stance Display */}
-      <Text
-        text={`현재 자세: ${selectedStance} / Current Stance: ${selectedStance}`}
-        style={stanceStyle}
-        x={width / 2}
+      <BaseButton
+        text="돌아가기 (Return)"
+        onClick={onReturnToMenu}
+        x={width / 2 - 100}
         y={height - 100}
-        anchor={0.5}
-      />
-
-      {/* Training Controls */}
-      <Text
-        text="1-8: 팔괘 자세 변경 / Change Trigram Stance\nSPACE: 기술 연습 / Practice Technique"
-        style={instructionStyle}
-        x={width / 2}
-        y={height - 60}
-        anchor={0.5}
+        width={200}
+        height={50}
       />
     </Container>
   );

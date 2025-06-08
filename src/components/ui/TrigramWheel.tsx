@@ -1,186 +1,186 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import type { TrigramWheelProps } from "../../types";
-import { TrigramStance } from "../../types/enums";
+import { TrigramStance } from "../../types/enums"; // Remove 'type' to allow value usage
 import {
-  TRIGRAM_STANCES_ORDER,
-  TRIGRAM_DATA,
   KOREAN_COLORS,
   FONT_FAMILY,
   FONT_SIZES,
-  DEFAULT_TRIGRAM_THEME,
+  TRIGRAM_DATA,
 } from "../../types/constants";
 
-const RADIUS = 150;
-const SEGMENT_ARC = (2 * Math.PI) / TRIGRAM_STANCES_ORDER.length;
+export interface TrigramWheelProps {
+  currentStance: TrigramStance; // This is the correct prop name
+  onStanceChange: (stance: TrigramStance) => void;
+  size?: number;
+  x?: number;
+  y?: number;
+  showLabels?: boolean;
+  interactive?: boolean;
+}
 
 export const TrigramWheel: React.FC<TrigramWheelProps> = ({
+  currentStance,
+  onStanceChange,
+  size = 100,
   x = 0,
   y = 0,
-  selectedStance,
-  onStanceSelect,
+  showLabels = true,
   interactive = true,
 }) => {
-  const [hoveredStance, setHoveredStance] = useState<TrigramStance | null>(
-    null
-  );
+  const stances: TrigramStance[] = [
+    TrigramStance.GEON,
+    TrigramStance.TAE,
+    TrigramStance.LI,
+    TrigramStance.JIN,
+    TrigramStance.SON,
+    TrigramStance.GAM,
+    TrigramStance.GAN,
+    TrigramStance.GON,
+  ];
 
-  const drawSegments = useCallback(
+  const wheelDraw = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
-      TRIGRAM_STANCES_ORDER.forEach((stance: TrigramStance, index) => {
-        const stanceData = TRIGRAM_DATA[stance];
-        const theme = stanceData?.theme || DEFAULT_TRIGRAM_THEME;
-        const startAngle = index * SEGMENT_ARC - Math.PI / 2 - SEGMENT_ARC / 2;
-        const endAngle = startAngle + SEGMENT_ARC;
 
-        const isHovered = hoveredStance === stance;
-        const isSelected = selectedStance === stance;
+      // Draw wheel background
+      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.8);
+      g.drawCircle(0, 0, size);
+      g.endFill();
 
-        let fillColor = theme.primary;
-        let lineColor = theme.secondary;
-        let alpha = 0.8;
+      // Draw wheel border
+      g.lineStyle(3, KOREAN_COLORS.PRIMARY_CYAN, 1.0);
+      g.drawCircle(0, 0, size);
 
-        if (isSelected) {
-          fillColor = theme.active;
-          lineColor = theme.secondary; // Or theme.active for more highlight
-          alpha = 1;
-        } else if (isHovered) {
-          fillColor = theme.hover;
-          lineColor = theme.active; // Or theme.hover for softer highlight
-          alpha = 0.9;
-        }
+      // Draw stance segments
+      const angleStep = (Math.PI * 2) / stances.length;
+      stances.forEach((stance, index) => {
+        const angle = index * angleStep - Math.PI / 2;
+        const isSelected = stance === currentStance;
 
-        g.lineStyle(2, lineColor, alpha);
-        g.beginFill(fillColor, alpha);
-        g.moveTo(x, y);
-        g.arc(x, y, RADIUS, startAngle, endAngle);
-        g.lineTo(x, y);
+        // Segment color
+        const segmentColor = isSelected
+          ? KOREAN_COLORS.ACCENT_GOLD
+          : TRIGRAM_DATA[stance]?.theme?.primary || KOREAN_COLORS.UI_BORDER;
+
+        // Draw segment
+        g.beginFill(segmentColor, isSelected ? 0.6 : 0.3);
+        g.moveTo(0, 0);
+        g.arc(0, 0, size * 0.8, angle - angleStep / 2, angle + angleStep / 2);
+        g.lineTo(0, 0);
         g.endFill();
+
+        // Draw segment border
+        g.lineStyle(1, KOREAN_COLORS.UI_BORDER_LIGHT, 0.8);
+        g.moveTo(0, 0);
+        g.arc(0, 0, size * 0.8, angle - angleStep / 2, angle + angleStep / 2);
+        g.lineTo(0, 0);
       });
     },
-    [hoveredStance, selectedStance, x, y]
+    [size, currentStance, stances]
   );
 
-  const handlePointerMove = useCallback(
-    (event: PIXI.FederatedPointerEvent) => {
-      if (!interactive) return;
-      const point = event.global;
-      const dx = point.x - x;
-      const dy = point.y - y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
+  const textStyle = useMemo(
+    () =>
+      new PIXI.TextStyle({
+        fontFamily: FONT_FAMILY.PRIMARY,
+        fontSize: FONT_SIZES.small,
+        fill: KOREAN_COLORS.TEXT_PRIMARY,
+        align: "center",
+      }),
+    []
+  );
 
-      if (dist > 0 && dist <= RADIUS) {
-        let angle = Math.atan2(dy, dx) + Math.PI / 2 + SEGMENT_ARC / 2;
-        if (angle < 0) angle += 2 * Math.PI;
-        const segmentIndex =
-          Math.floor(angle / SEGMENT_ARC) % TRIGRAM_STANCES_ORDER.length;
-        const currentHoveredStance = TRIGRAM_STANCES_ORDER[segmentIndex];
-        if (hoveredStance !== currentHoveredStance) {
-          setHoveredStance(currentHoveredStance as TrigramStance);
-        }
-      } else {
-        if (hoveredStance !== null) {
-          setHoveredStance(null);
-        }
+  const centerTextStyle = useMemo(
+    () =>
+      new PIXI.TextStyle({
+        fontFamily: FONT_FAMILY.PRIMARY,
+        fontSize: FONT_SIZES.medium,
+        fill: KOREAN_COLORS.ACCENT_GOLD,
+        fontWeight: "bold",
+        align: "center",
+      }),
+    []
+  );
+
+  const handleStanceClick = useCallback(
+    (stance: TrigramStance) => {
+      if (interactive) {
+        onStanceChange(stance);
       }
     },
-    [x, y, interactive, hoveredStance]
-  );
-
-  const handlePointerTap = useCallback(
-    (_event: PIXI.FederatedPointerEvent) => {
-      if (!interactive || !hoveredStance) return;
-      onStanceSelect(hoveredStance);
-    },
-    [interactive, hoveredStance, onStanceSelect]
-  );
-
-  const symbolTextStyle = useMemo(
-    () =>
-      (stance: TrigramStance): PIXI.TextStyle => {
-        const stanceData = TRIGRAM_DATA[stance];
-        const theme = stanceData?.theme || DEFAULT_TRIGRAM_THEME;
-        return new PIXI.TextStyle({
-          fontFamily: FONT_FAMILY.PRIMARY,
-          fontSize: FONT_SIZES.large,
-          fill:
-            selectedStance === stance
-              ? theme.active
-              : hoveredStance === stance
-              ? theme.hover
-              : theme.text,
-          fontWeight: "bold", // Corrected: Use string literal 'bold'
-        });
-      },
-    [selectedStance, hoveredStance]
-  );
-
-  const labelTextStyle = useMemo(
-    () =>
-      (stance: TrigramStance): PIXI.TextStyle => {
-        const stanceData = TRIGRAM_DATA[stance];
-        const theme = stanceData?.theme || DEFAULT_TRIGRAM_THEME;
-        return new PIXI.TextStyle({
-          fontFamily: FONT_FAMILY.SECONDARY,
-          fontSize: FONT_SIZES.small,
-          fill: theme.text,
-        });
-      },
-    [] // No direct dependencies on selectedStance/hoveredStance for this style
+    [interactive, onStanceChange]
   );
 
   return (
-    <Container
-      interactive={interactive}
-      pointermove={handlePointerMove}
-      pointertap={handlePointerTap}
-      pointerout={() => interactive && setHoveredStance(null)}
-    >
-      <Graphics draw={drawSegments} />
-      {TRIGRAM_STANCES_ORDER.map((stance: TrigramStance, index) => {
-        const stanceData = TRIGRAM_DATA[stance];
-        const angle = index * SEGMENT_ARC - Math.PI / 2;
-        const textX = x + (RADIUS - 30) * Math.cos(angle);
-        const textY = y + (RADIUS - 30) * Math.sin(angle);
+    <Container x={x} y={y} data-testid="trigram-wheel">
+      {/* Wheel background and segments */}
+      <Graphics draw={wheelDraw} />
 
-        return (
-          <Container key={stance} x={textX} y={textY}>
-            <Text
-              text={stanceData?.symbol || ""}
-              anchor={0.5}
-              style={symbolTextStyle(stance)}
-            />
-            <Text
-              text={stanceData?.name.korean || ""}
-              anchor={[0.5, -0.5]} // Position below the symbol
-              style={labelTextStyle(stance)}
-            />
-          </Container>
-        );
-      })}
+      {/* Center text showing current stance */}
+      <Container data-testid="trigram-wheel-center-text">
+        <Text
+          text={TRIGRAM_DATA[currentStance]?.symbol || currentStance}
+          style={centerTextStyle}
+          anchor={0.5}
+        />
+      </Container>
+
+      {/* Yin-Yang symbol in center */}
+      <Container data-testid="yin-yang-symbol">
+        <Graphics
+          draw={(g: PIXI.Graphics) => {
+            g.clear();
+            g.beginFill(KOREAN_COLORS.WHITE_SOLID);
+            g.drawCircle(-5, 0, 15);
+            g.endFill();
+            g.beginFill(KOREAN_COLORS.BLACK_SOLID);
+            g.drawCircle(5, 0, 15);
+            g.endFill();
+          }}
+        />
+      </Container>
+
+      {/* Current stance indicator */}
+      <Container data-testid="current-stance-indicator">
+        <Graphics
+          draw={(g: PIXI.Graphics) => {
+            g.clear();
+            g.beginFill(KOREAN_COLORS.ACCENT_GOLD, 0.8);
+            g.drawCircle(0, -size + 10, 8);
+            g.endFill();
+          }}
+        />
+      </Container>
+
+      {/* Stance labels */}
+      {showLabels &&
+        stances.map((stance, index) => {
+          const angleStep = (Math.PI * 2) / stances.length;
+          const angle = index * angleStep - Math.PI / 2;
+          const labelRadius = size + 20;
+          const labelX = Math.cos(angle) * labelRadius;
+          const labelY = Math.sin(angle) * labelRadius;
+
+          return (
+            <Container
+              key={stance}
+              x={labelX}
+              y={labelY}
+              interactive={interactive}
+              buttonMode={interactive}
+              pointerdown={() => handleStanceClick(stance)}
+            >
+              <Text
+                text={TRIGRAM_DATA[stance]?.name.korean || stance}
+                style={textStyle}
+                anchor={0.5}
+              />
+            </Container>
+          );
+        })}
     </Container>
   );
 };
 
-export const TrigramWheelWithBackground: React.FC<TrigramWheelProps> = (
-  props
-) => {
-  const drawBackground = useCallback(
-    (g: PIXI.Graphics) => {
-      g.clear();
-      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.7);
-      g.drawCircle(props.x ?? 0, props.y ?? 0, RADIUS + 20);
-      g.endFill();
-    },
-    [props.x, props.y]
-  );
-
-  return (
-    <Container x={props.x} y={props.y}>
-      <Graphics draw={drawBackground} />
-      <TrigramWheel {...props} />
-    </Container>
-  );
-};
+export default TrigramWheel;

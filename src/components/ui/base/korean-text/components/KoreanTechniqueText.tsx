@@ -1,44 +1,57 @@
 import React from "react";
-import type { KoreanTechniqueTextProps } from "../../../../../types";
-import { KoreanText } from "./KoreanText"; // Use the React DOM KoreanText component
-import { TRIGRAM_SYMBOL_DATA } from "../constants"; // Import from local constants
+import { KoreanText } from "./KoreanText";
+import { TRIGRAM_DATA } from "../../../../../types/constants/trigram";
+import type { KoreanTechniqueTextProps } from "../types";
+import type { TrigramStance } from "../../../../../types";
 
 export const KoreanTechniqueText: React.FC<KoreanTechniqueTextProps> = ({
-  korean,
-  english,
-  koreanName: propKoreanName, // Use prop names
-  englishName: propEnglishName,
-  trigram,
-  showStanceSymbol = false,
-  damage,
-  mastered = false,
-  ...props
+  technique,
+  size = "medium",
+  weight = "regular",
+  variant = "primary",
+  emphasis = "none",
+  display = "both",
+  order = "korean_first",
+  showStance = true,
+  showDescription = false,
+  showEffects = false,
+  className,
+  style,
+  ...rest
 }) => {
-  const baseKorean = typeof korean === "string" ? korean : korean.korean;
-  const baseEnglish =
-    typeof korean === "string" ? english : korean.english || english;
-
-  const techniqueKoreanName = propKoreanName || baseKorean;
-  const techniqueEnglishName = propEnglishName || baseEnglish || "";
-
-  let displayText = techniqueKoreanName;
-  if (showStanceSymbol && trigram && TRIGRAM_SYMBOL_DATA[trigram]) {
-    displayText = `${TRIGRAM_SYMBOL_DATA[trigram]} ${displayText}`;
-  }
-  if (damage) {
-    displayText = `${displayText} (${damage})`;
-  }
-  if (mastered) {
-    displayText = `★ ${displayText}`;
-  }
+  const stanceData = TRIGRAM_DATA[technique.stance as TrigramStance];
 
   return (
-    <KoreanText // Use the React DOM KoreanText component
-      korean={displayText}
-      english={techniqueEnglishName}
-      variant="technique"
-      // style={KOREAN_TECHNIQUE_TEXT_STYLES.default} // Apply styles via props or CSS
-      {...props}
-    />
+    <div className={className} style={style}>
+      <KoreanText
+        korean={technique.koreanName}
+        english={technique.englishName}
+        size={size}
+        weight={weight}
+        variant={variant}
+        emphasis={emphasis}
+        {...rest}
+      />
+
+      {showStance && stanceData && (
+        <KoreanText
+          korean={`(${stanceData.name.korean})`}
+          english={`(${stanceData.name.english})`}
+          size="small"
+          weight="light"
+          variant="secondary"
+        />
+      )}
+
+      {showDescription && technique.description && (
+        <KoreanText
+          korean={technique.description.korean}
+          english={technique.description.english}
+          size="small"
+          weight="light"
+          variant="secondary"
+        />
+      )}
+    </div>
   );
 };

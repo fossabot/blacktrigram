@@ -1,57 +1,97 @@
 import React, { useMemo } from "react";
 import { Container, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import type { KoreanHeaderProps } from "../../types";
-import {
-  KOREAN_COLORS,
-  FONT_FAMILY,
-  FONT_SIZES,
-  FONT_WEIGHTS,
-} from "../../types/constants";
+import type { KoreanHeaderProps } from "../../types/components";
+import { KOREAN_COLORS, FONT_FAMILY, FONT_SIZES } from "../../types/constants";
 
 export const KoreanHeader: React.FC<KoreanHeaderProps> = ({
-  text,
-  variant = "primary",
-  size = "large",
+  title,
+  subtitle,
   x = 0,
   y = 0,
-  anchor = 0.5,
-  ...props
+  width = 400,
+  fontSize = FONT_SIZES.xlarge,
+  textColor = KOREAN_COLORS.TEXT_PRIMARY,
+  accentColor = KOREAN_COLORS.PRIMARY_CYAN,
+  showUnderline = true,
+  align = "center",
 }) => {
   const titleStyle = useMemo(
     () =>
       new PIXI.TextStyle({
         fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: size === "large" ? FONT_SIZES.xlarge : FONT_SIZES.large,
-        fill:
-          variant === "primary"
-            ? KOREAN_COLORS.TEXT_PRIMARY
-            : KOREAN_COLORS.ACCENT_PRIMARY,
-        fontWeight: FONT_WEIGHTS.bold.toString() as PIXI.TextStyleFontWeight,
-        align: "center",
-        stroke: { color: KOREAN_COLORS.BLACK_SOLID, width: 2 },
-        dropShadow: {
-          color: KOREAN_COLORS.BLACK_SOLID,
-          blur: 3,
-          distance: 2,
-        },
+        fontSize,
+        fill: textColor,
+        fontWeight: "bold",
+        align,
+        stroke: KOREAN_COLORS.BLACK_SOLID,
+        // strokeThickness: 2, // Remove this line to fix PIXI error
       }),
-    [variant, size]
+    [fontSize, textColor, align]
   );
 
+  const subtitleStyle = useMemo(
+    () =>
+      new PIXI.TextStyle({
+        fontFamily: FONT_FAMILY.PRIMARY,
+        fontSize: fontSize * 0.6,
+        fill: accentColor,
+        align,
+      }),
+    [fontSize, accentColor, align]
+  );
+
+  const underlineStyle = useMemo(
+    () =>
+      new PIXI.TextStyle({
+        fontSize: fontSize * 0.3,
+        fill: accentColor,
+        align,
+      }),
+    [fontSize, accentColor, align]
+  );
+
+  const getDisplayText = (text: typeof title) => {
+    if (typeof text === "string") return text;
+    return `${text.korean} (${text.english})`;
+  };
+
+  // Create underline text safely
+  const createUnderlineText = () => {
+    const underlineChar = "━";
+    const repeatCount = Math.floor(width / (fontSize * 0.6));
+    return underlineChar.repeat(Math.max(1, repeatCount));
+  };
+
   return (
-    <Container x={x} y={y} {...props}>
-      <Text text={text.korean} anchor={anchor} style={titleStyle} />
+    <Container x={x} y={y}>
       <Text
-        text={text.english}
-        anchor={anchor}
-        y={30}
-        style={{
-          ...titleStyle,
-          fontSize: FONT_SIZES.medium,
-          fill: KOREAN_COLORS.TEXT_SECONDARY,
-        }}
+        text={getDisplayText(title)}
+        style={titleStyle}
+        anchor={align === "center" ? 0.5 : align === "right" ? 1 : 0}
       />
+
+      {subtitle && (
+        <Text
+          text={getDisplayText(subtitle)}
+          y={fontSize + 10}
+          style={subtitleStyle}
+          anchor={align === "center" ? 0.5 : align === "right" ? 1 : 0}
+        />
+      )}
+
+      {showUnderline && (
+        <Text
+          text={createUnderlineText()}
+          y={
+            fontSize +
+            (subtitle ? fontSize * 0.6 + 20 : 20) +
+            (align === "center" ? -fontSize * 0.3 : 0)
+          }
+          style={underlineStyle}
+          anchor={align === "center" ? 0.5 : align === "right" ? 1 : 0}
+        />
+      )}
     </Container>
   );
 };

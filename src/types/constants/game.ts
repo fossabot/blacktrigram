@@ -17,6 +17,11 @@ export const GAME_CONFIG = {
   ROUND_DURATION: 180, // 3 minutes in seconds
   MAX_ROUNDS: 3,
 
+  // Player positioning
+  PLAYER_START_POS_X_1: 480,
+  PLAYER_START_POS_X_2: 1440,
+  PLAYER_START_POS_Y: 540,
+
   // Player visuals
   PLAYER_VISUAL_WIDTH: 100,
   PLAYER_VISUAL_HEIGHT: 150,

@@ -5,53 +5,117 @@
 
 // Core type system for Black Trigram Korean martial arts game
 
-// Export all enums first
-export * from "./enums";
+// Base types
+export type { Nullable, AnyObject, Dimensions, Coordinate } from "./common";
+export type { KoreanText, BaseKoreanText, ColorValue } from "./korean-text"; // Ensure BaseKoreanText is exported if used
+export type { Position } from "./common"; // Assuming Position is defined in common.ts
 
-// Export core types (avoid duplicates by being specific)
-export type {
-  Position,
-  CombatCondition,
-  DamageRange,
-  // KoreanText as CommonKoreanText, // This was aliasing a potentially problematic local type from common.ts
-  ColorValue as CommonColorValue,
-} from "./common"; // Aliased to avoid name clashes if re-exporting KoreanText from korean-text.ts
+// Enums - export directly from enums.ts or re-export selectively
+export * from "./enums"; // This will export all enums
+
+// Game-specific types
 export type {
   PlayerState,
+  PlayerAttributes,
+  PlayerSkills,
+  PlayerEquipment, // Added
+  PlayerStatus, // Added (if different from PlayerState)
+  PlayerAction, // Added
+  PlayerMovement, // Added
+  PlayerCombatStats, // Added (if different from PlayerAttributes/Skills)
+  PlayerAnimations, // Added
   PlayerArchetypeData,
-  PlayerAttributes, // Should now be found
-  PlayerSkills, // Should now be found
-} from "./player"; // Added PlayerAttributes, PlayerSkills
-export type {
-  VitalPoint,
-  VitalPointEffect,
-  VitalPointHitResult,
-  AnatomicalLocation,
-  RegionData,
-  VitalPointCategory, // Re-exporting from anatomy which aliases from enums
-  VitalPointSeverity, // Re-exporting from anatomy which aliases from enums
-  BodyPart,
-  AnatomyModel,
-} from "./anatomy";
+  // PlayerArchetype is already exported from enums via *
+} from "./player";
+
 export type {
   KoreanTechnique,
   CombatResult,
-  AttackInput,
-  HitResult,
-  CombatAnalysis,
-  CombatEvent, // Added
-  TechniqueType,
-} from "./combat"; // Added TechniqueType
+  DamageRange,
+  TechniqueEffect,
+  TargetingInfo,
+  CombatLogEntry,
+  // DamageType is already exported from enums
+  // CombatAttackType is already exported from enums
+  // HitEffectType is already exported from enums
+} from "./combat";
+
+export type {
+  VitalPoint,
+  VitalPointEffect,
+  BodyRegionData,
+  AnatomyModel, // Added
+  AnatomicalHit, // Added
+  RegionData, // Added
+  // VitalPointCategory, VitalPointSeverity, BodyRegion are exported from enums
+} from "./anatomy";
+
+export type {
+  TrigramData,
+  TrigramTheme,
+  TrigramInteraction, // Added
+  TrigramAttributes, // Added
+  // TrigramStance is exported from enums
+  // TrigramTechnique, // This might be an alias for KoreanTechnique filtered by stance
+} from "./trigram";
+
+export type {
+  GameSettings,
+  GameState,
+  RoundState,
+  MatchState,
+  // GamePhase is exported from enums
+  // GameMode is exported from enums
+} from "./game";
+
 export type {
   HitEffect,
   StatusEffect,
-  EffectModifier,
+  TemporaryEffect,
+  PersistentEffect,
   HitEffectText, // Added
-} from "./effects"; // Added HitEffectText
+  // EffectIntensity is exported from enums
+  // EffectType (if different from HitEffectType)
+} from "./effects";
+
+// UI Component Props
 export type {
-  KoreanText, // This is the primary KoreanText from korean-text.ts
+  BaseComponentProps, // Added
+  KoreanHeaderProps,
+  BaseButtonProps,
+  ProgressTrackerProps,
+  TrigramWheelProps,
+  HitEffectsLayerProps, // Added
+  MenuSectionProps, // Added
+  PhilosophySectionProps, // Added
+  ControlsSectionProps,
+  PlayerProps, // Added
+  PlayerVisualsProps, // Added
+  DojangBackgroundProps, // Added
+  EndScreenProps,
+  StanceIndicatorProps,
+  KoreanPixiProgressTrackerProps,
+  KoreanPixiTrigramWheelProps,
+  KoreanPixiHeaderProps,
+  KoreanPixiButtonProps,
+} from "./components";
+
+// Screen Props
+export type {
+  IntroScreenProps,
+  TrainingScreenProps,
+  CombatScreenProps,
+  GameUIProps, // Added
+  CombatHUDProps, // Added
+  CombatArenaProps, // Added
+  CombatControlsProps, // Added
+  MatchStats, // Added (ensure this is defined in ui.ts or imported correctly)
+} from "./ui"; // Assuming these are defined in ui.ts or re-exported there
+
+// Korean Text specific types (re-exporting from korean-text.ts for clarity if needed)
+export type {
   KoreanTextProps,
-  KoreanTextHeaderProps,
+  KoreanTextHeaderProps, // Already in components.ts, ensure consistency
   KoreanTitleProps,
   KoreanTechniqueTextProps,
   KoreanStatusTextProps,
@@ -62,132 +126,47 @@ export type {
   KoreanTextEmphasis,
   MartialVariant,
   HonorLevel,
-  FontWeight,
+  FontWeight, // Alias for KoreanFontWeight
   StatusKey,
-  ColorValue,
   PixiTextStyleConfig,
   KoreanPixiTextConfig,
+  // KoreanTextStyle, // This might be PIXI.TextStyle or a custom config object
+  // KoreanCharacterData, // Added
+  // KoreanSyllable, // Added
 } from "./korean-text";
+
+// Control types
 export type {
-  TrigramStance,
-  TrigramData,
-  TrigramEffectivenessMatrix,
+  ControlScheme,
+  KeyBinding,
+  StanceControlDetail,
+} from "./controls";
+
+// PIXI specific types (if you have custom declarations in pixi-react.d.ts)
+// export type {
+//   PixiComponentProps,
+//   PixiContainerProps,
+//   PixiSpriteProps,
+//   PixiTextProps,
+//   PixiGraphicsProps,
+// } from './pixi-react.d';
+
+// Constants (re-exporting from constants/index.ts for a single point of access if preferred)
+// Alternatively, allow direct imports from './constants'
+export * as Constants from "./constants"; // This makes them accessible via Constants.KOREAN_COLORS etc.
+// Or re-export specific constants if preferred:
+// export { KOREAN_COLORS, GAME_CONFIG, KOREAN_FONT_FAMILY_PRIMARY, KOREAN_FONT_FAMILY_SECONDARY } from "./constants";
+
+// System-related types (if any are defined at this level)
+export type {
+  CombatSystemInterface,
   TrigramSystemInterface,
-  TrigramTransitionCost,
-  TransitionMetrics,
-  TransitionPath,
-  TrigramTransitionRule,
-  StanceTransition, // Added
-} from "./trigram";
-
-// Export control types
-export type { CombatControlsConfig, StanceControlDetail } from "./controls";
-
-// Export game types
-export type {
-  AppState,
-  GameState,
-  GameSettings,
-  GameScreen,
-  SessionData,
-  TrainingStats,
-  CombatStats,
-} from "./game";
-
-// Export component types
-export type {
-  GameUIProps,
-  GameEngineProps,
-  IntroScreenProps,
-  TrainingScreenProps,
-  CombatScreenProps,
-  CombatHUDProps,
-  CombatArenaProps,
-  CombatControlsProps,
-  ProgressTrackerProps,
-  TrigramWheelProps,
-  BaseComponentProps,
-  MenuSectionProps,
-  PhilosophySectionProps,
-  EndScreenProps,
-  KoreanHeaderProps,
-  PlayerProps,
-  PlayerVisualsProps, // Added PlayerVisualsProps
-  DojangBackgroundProps, // Added DojangBackgroundProps
-  HitEffectsLayerProps, // Added
-} from "./components";
-
-// Export UI types
-export type { UITheme, ColorScheme } from "./ui";
-
-// Export system interfaces
-export type {
   VitalPointSystemInterface,
-  VitalPointSystemConfig,
+  AISystemInterface,
 } from "./systems";
 
-// Export audio types
-export type {
-  AudioContextState,
-  SoundEffect,
-  AudioManagerInterface,
-  AudioState, // Added AudioState
-  IAudioManager, // Added IAudioManager
-  MusicTrackId, // Added MusicTrackId
-  SoundEffectId, // Added SoundEffectId
-  AudioAsset, // Added AudioAsset
-  AudioPlaybackOptions, // Added AudioPlaybackOptions
-} from "./audio";
-
-// Export constants (value exports)
-export {
-  KOREAN_COLORS,
-  TRIGRAM_DATA,
-  STANCE_EFFECTIVENESS_MATRIX,
-  TRIGRAM_STANCES_ORDER,
-  VITAL_POINTS_DATA,
-  KOREAN_FONT_FAMILY_PRIMARY,
-  KOREAN_FONT_FAMILY_SECONDARY,
-  KOREAN_FONT_FAMILY,
-  GAME_CONFIG,
-  COMBAT_CONTROLS, // Ensure COMBAT_CONTROLS is exported here
-} from "./constants";
-
-// Export utility functions
-export { createPlayerState } from "../utils/playerUtils";
-// export type { DamageRange } from "./common"; // Already exported
-export type { BodyRegion } from "./enums";
-export type { MatchState } from "./game";
-export type {
-  Trigram,
-  TrigramTechnique,
-  TrigramAttributes,
-  TrigramInteraction,
-} from "./trigram";
-export type { CombatSystemInterface } from "./systems";
-export type {
-  KoreanTextStyles,
-  KoreanFontFamily,
-  KoreanTextStyle,
-  KoreanTextConfig,
-  KoreanCharacterData,
-  KoreanSyllable,
-} from "./korean-text";
-export type {
-  PixiComponentProps,
-  PixiContainerProps,
-  PixiSpriteProps,
-  PixiTextProps,
-  PixiGraphicsProps,
-} from "./pixi-react.d";
-export type {
-  PlayerEquipment,
-  PlayerStatus,
-  PlayerAction,
-  PlayerMovement,
-  PlayerCombatState,
-  PlayerAnimations,
-} from "./player";
+// Utility types (if any are defined at this level)
+// export type { DeepPartial, ReadonlyRecord } from './utils';
 
 // Core type system exports - comprehensive interface definitions
 
@@ -249,3 +228,66 @@ export {
   GamePhase,
   CombatReadiness,
 } from "./enums";
+
+// Korean text type
+export interface KoreanText {
+  readonly korean: string;
+  readonly english: string;
+  readonly romanized?: string;
+}
+
+// Vital point type
+export interface VitalPoint {
+  readonly id: string;
+  readonly name: KoreanText;
+  readonly location: {
+    readonly x: number;
+    readonly y: number;
+    readonly region: string;
+  };
+  readonly category: string;
+  readonly severity: "minor" | "moderate" | "severe" | "critical";
+  readonly damageMultiplier: number;
+  readonly baseAccuracy: number;
+  readonly baseDamage: number;
+  readonly techniques?: readonly string[];
+  readonly effects: readonly VitalPointEffect[];
+}
+
+export interface VitalPointEffect {
+  readonly id: string;
+  readonly type: string;
+  readonly intensity: number;
+  readonly duration: number;
+  readonly description: KoreanText;
+  readonly stackable: boolean;
+}
+
+// Add experience field to PlayerState
+export interface PlayerSkills {
+  readonly striking: number;
+  readonly grappling: number;
+  readonly defense: number;
+  readonly focus: number;
+  readonly experience: number; // Add experience field
+}
+
+// Match statistics interface
+export interface MatchStatistics {
+  readonly roundsWon: {
+    readonly player1: number;
+    readonly player2: number;
+  };
+  readonly totalDamageDealt: {
+    readonly player1: number;
+    readonly player2: number;
+  };
+  readonly techniquesUsed: {
+    readonly player1: number;
+    readonly player2: number;
+  };
+  readonly vitalPointsHit: {
+    readonly player1: number;
+    readonly player2: number;
+  };
+}

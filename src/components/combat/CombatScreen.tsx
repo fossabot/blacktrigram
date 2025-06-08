@@ -73,29 +73,35 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
 
         // Play appropriate audio
         audioManager.playSFX("attack_light");
-        if (result.hit) {
-          audioManager.playSFX("hit_light");
+        if (result.hitResult.hit) {
+          audioManager.playSFX(
+            result.hitResult.critical ? "critical_hit" : "hit_medium"
+          );
+        } else {
+          audioManager.playSFX("miss");
         }
 
         // Update combat log
         const logEntry: KoreanTextType = {
           korean: `${attacker.name.korean}이(가) ${
             technique.koreanName
-          } 사용! ${result.hit ? `${result.damage} 피해` : "빗나감"}.`,
+          } 사용! ${
+            result.hitResult.hit ? `${result.hitResult.damage} 피해` : "빗나감"
+          }.`,
           english: `${attacker.name.english} used ${technique.englishName}! ${
-            result.hit ? `${result.damage} damage` : "Miss"
+            result.hitResult.hit ? `${result.hitResult.damage} damage` : "Miss"
           }.`,
         };
         setCombatLog((prev) => [logEntry, ...prev.slice(0, 4)]);
 
-        // Update player states - Fix: use updatedAttacker and updatedDefender
+        // Update player states
         onPlayerUpdate(playerIndex, result.updatedAttacker);
         onPlayerUpdate((1 - playerIndex) as 0 | 1, result.updatedDefender);
 
         // Switch active player after technique
         setActivePlayerIndex((prev) => (prev === 0 ? 1 : 0));
 
-        return result; // Fix: return the full result instead of result.hitResult
+        return result.hitResult;
       } catch (error) {
         console.error("Failed to execute technique:", error);
         const errorLog: KoreanTextType = {

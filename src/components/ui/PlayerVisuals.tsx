@@ -1,25 +1,39 @@
 import React, { useMemo } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import type { PlayerVisualsProps, TrigramStance } from "../../types";
+import type { PlayerState } from "../../types";
+import { TrigramStance } from "../../types/enums";
 import {
   KOREAN_COLORS,
-  TRIGRAM_DATA,
   FONT_FAMILY,
   FONT_SIZES,
+  TRIGRAM_DATA,
 } from "../../types/constants";
+
+export interface PlayerVisualsProps {
+  readonly playerState: PlayerState;
+  readonly playerIndex: number;
+  readonly x?: number;
+  readonly y?: number;
+  readonly width?: number;
+  readonly height?: number;
+  readonly showDetails?: boolean;
+  readonly onPlayerClick?: (playerIndex: number) => void;
+  readonly interactive?: boolean;
+}
 
 export const PlayerVisuals: React.FC<PlayerVisualsProps> = ({
   playerState,
   playerIndex,
-  showVitalPoints = false,
   x = 0,
   y = 0,
-  interactive = false,
+  width = 100,
+  height = 150,
+  showDetails = true,
   onPlayerClick,
+  interactive = true,
   ...props
 }) => {
-  // Type-safe access to trigram data
   const currentStance = playerState.currentStance as TrigramStance;
   const stanceData = TRIGRAM_DATA[currentStance];
 
@@ -56,13 +70,17 @@ export const PlayerVisuals: React.FC<PlayerVisualsProps> = ({
     [stanceData]
   );
 
+  const handleClick = () => {
+    onPlayerClick?.(playerIndex);
+  };
+
   return (
     <Container
       x={x}
       y={y}
       interactive={interactive}
       buttonMode={interactive}
-      pointertap={onPlayerClick}
+      pointertap={handleClick}
       {...props}
     >
       <Graphics draw={drawPlayer} />

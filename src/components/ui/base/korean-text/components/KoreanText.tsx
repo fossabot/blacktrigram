@@ -1,54 +1,82 @@
-import React, { useMemo } from "react";
-import type {
-  KoreanTextProps,
-  // KoreanText as KoreanTextType, // Unused
-} from "../../../../../types";
-import { useKoreanTextStyle } from "../hooks/useKoreanTextStyle"; // Assuming this hook returns CSSProperties or similar
-import type { KoreanTextStyleOptions } from "./KoreanPixiTextUtils"; // For options type
+import React from "react";
+import { weightToCSSValue } from "../utils";
+import type { KoreanTextComponentProps } from "../types";
+import { KOREAN_FONT_FAMILY } from "../../../../../types/constants";
 
-export const KoreanText: React.FC<KoreanTextProps> = ({
-  korean,
-  english,
-  size,
-  weight,
-  color,
-  variant, // Used by useKoreanTextStyle
-  emphasis,
-  align,
+export const KoreanText: React.FC<KoreanTextComponentProps> = ({
+  korean = "",
+  english = "",
+  size = "medium",
+  weight = "regular",
+  variant = "primary",
+  emphasis = "none",
+  display = "both",
+  order = "korean_first",
   className,
-  style: customStyle, // React CSSProperties
+  cyberpunk = false,
+  showUnderline = false,
+  color,
+  style,
+  onClick,
+  id,
   children,
-  ...props // Other HTML attributes
+  ...rest
 }) => {
-  const textContent = typeof korean === "string" ? korean : korean.korean;
-  const titleContent =
-    typeof korean === "string" ? english : korean.english || english;
+  const sizeInPixels =
+    typeof size === "number"
+      ? size
+      : {
+          small: 12,
+          medium: 16,
+          large: 20,
+          xlarge: 24,
+          xxlarge: 32,
+          title: 48,
+        }[size] || 16;
 
-  // This hook is for PIXI styles. For React DOM, we need a CSS properties hook or direct styling.
-  // For simplicity, we'll pass some props directly to style or use className.
-  // const pixiStyleOptions: KoreanTextStyleOptions = { size, weight, color, variant, emphasis, align };
-  // const resolvedPixiStyle = useKoreanTextStyle(pixiStyleOptions); // This returns PIXI.TextStyle
+  const fontWeight = weightToCSSValue(weight);
 
-  // Create React CSSProperties based on props
-  const reactStyle: React.CSSProperties = useMemo(() => {
-    const style: React.CSSProperties = { ...customStyle };
-    if (align) style.textAlign = align;
-    if (color && typeof color === "string") style.color = color; // Only apply if string (hex/named color)
-    // Size and weight would typically be handled by CSS classes or more complex logic
-    // For example, mapping KoreanTextSize to font-size values
-    // if (size && typeof size === 'string') style.fontSize = mapKoreanSizeToCSS(size);
-    // if (weight) style.fontWeight = mapKoreanWeightToCSS(weight);
-    return style;
-  }, [customStyle, align, color, size, weight]);
+  const baseColor = color || KOREAN_COLORS.TEXT_PRIMARY;
+
+  const styles: React.CSSProperties = {
+    fontFamily: KOREAN_FONT_FAMILY,
+    fontSize: `${sizeInPixels}px`,
+    fontWeight: fontWeight.toString(),
+    color:
+      typeof baseColor === "number"
+        ? `#${baseColor.toString(16).padStart(6, "0")}`
+        : baseColor,
+    textDecoration: showUnderline ? "underline" : "none",
+    cursor: onClick ? "pointer" : "default",
+    ...style,
+  };
+
+  const displayText =
+    display === "korean"
+      ? korean
+      : display === "english"
+      ? english
+      : order === "korean_first"
+      ? `${korean} / ${english}`
+      : `${english} / ${korean}`;
+
+  const titleAttribute =
+    display === "both"
+      ? `${korean} / ${english}`
+      : display === "korean"
+      ? english
+      : korean;
 
   return (
     <span
-      title={titleContent}
-      className={className} // Apply className for CSS styling
-      style={reactStyle} // Apply direct styles
-      {...props}
+      className={className}
+      style={styles}
+      title={titleAttribute}
+      onClick={onClick}
+      id={id}
+      {...rest}
     >
-      {textContent}
+      {displayText}
       {children}
     </span>
   );

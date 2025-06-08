@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, fireEvent, screen } from "@testing-library/react";
 import React, { type ReactElement } from "react";
+import "@testing-library/jest-dom";
+import { TRIGRAM_DATA, TRIGRAM_STANCES_ORDER } from "../../types/constants";
 
 // Mock audio manager
 const mockAudio = {
@@ -122,12 +124,12 @@ describe("Game Audio Integration", () => {
     });
 
     it("should validate Korean technique names are displayed", () => {
-      const TrigramStanceComponent = (): ReactElement => {
-        const trigrams = [
-          { name: "건", element: "Heaven", technique: "천둥벽력" },
-          { name: "리", element: "Fire", technique: "화염지창" },
-        ];
+      const trigrams = TRIGRAM_STANCES_ORDER.map((stance) => ({
+        name: TRIGRAM_DATA[stance].name.korean,
+        technique: TRIGRAM_DATA[stance].technique?.koreanName || "기본기술",
+      }));
 
+      const TrigramStanceComponent = (): ReactElement => {
         return React.createElement(
           "div",
           { "data-testid": "trigram-selector" },
@@ -147,7 +149,7 @@ describe("Game Audio Integration", () => {
       render(<TrigramStanceComponent />);
 
       expect(screen.getByText(/건 - 천둥벽력/)).toBeInTheDocument();
-      expect(screen.getByText(/리 - 화염지창/)).toBeInTheDocument();
+      expect(screen.getByText(/태 - 유수연타/)).toBeInTheDocument();
     });
   });
 });

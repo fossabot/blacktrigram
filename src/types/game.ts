@@ -159,5 +159,8 @@ export interface TrainingScreenProps {
   onStartCombat: () => void;
 }
 
+// Re-export GameMode from enums to ensure consistency
+export { GameMode, GamePhase } from "./enums";
+
 // Re-export from player types for convenience
 export type { PlayerArchetype } from "./enums"; // Export PlayerArchetype from enums

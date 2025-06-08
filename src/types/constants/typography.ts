@@ -1,206 +1,159 @@
-import * as PIXI from "pixi.js";
-import { KOREAN_FONT_WEIGHTS, KOREAN_TEXT_SIZES } from ".";
+import * as PIXI from "pixi.js"; // Import PIXI
+import type { KoreanTextSize, KoreanFontWeight } from "../korean-text"; // Corrected path
+import { KOREAN_COLORS } from "./colors"; // Assuming KOREAN_COLORS is defined here
 
-// Typography constants for Korean martial arts UI
-
-// Font families optimized for Korean text display
+// Font Families
 export const FONT_FAMILY = {
   PRIMARY: '"Noto Sans KR", "Malgun Gothic", Arial, sans-serif',
   SECONDARY: '"Nanum Gothic", Arial, sans-serif',
   MONO: '"Nanum Gothic Coding", monospace',
-  KOREAN_BATTLE: '"Noto Sans KR", Impact, sans-serif',
-  CYBER: '"Orbitron", "Noto Sans KR", monospace', // Ensure this line is present
-
-  // Add missing font families for backwards compatibility
-  KOREAN: '"Noto Sans KR", "Malgun Gothic", Arial, sans-serif',
-  ENGLISH: 'Arial, "Helvetica Neue", sans-serif',
+  KOREAN_BATTLE: '"Noto Sans KR", Impact, sans-serif', // For impactful in-game text
+  CYBER: '"Orbitron", "Noto Sans KR", monospace', // Cyberpunk style font
+  SYMBOL: '"Arial Unicode MS", Arial, sans-serif', // For special symbols like Trigrams
+  KOREAN: '"Noto Sans KR", "Malgun Gothic", Arial, sans-serif', // General Korean font
 } as const;
 
-// Font sizes for different UI elements
-export const FONT_SIZES = {
+export const KOREAN_FONT_WEIGHTS = {
+  light: 300,
+  regular: 400,
+  medium: 500,
+  semibold: 600, // Add missing semibold
+  bold: 700,
+  heavy: 900,
+} as const;
+
+// Export both names for compatibility
+export const FONT_WEIGHTS = KOREAN_FONT_WEIGHTS;
+
+// Add missing font family exports
+export const KOREAN_FONT_FAMILY = FONT_FAMILY.PRIMARY;
+
+// Font Sizes (Numeric values in pixels)
+export const KOREAN_TEXT_SIZES: Record<
+  KoreanTextSize | "default" | "extraLarge",
+  number
+> = {
+  default: 16, // Default size if not specified
   xsmall: 10,
   small: 12,
   medium: 16,
   large: 20,
   xlarge: 24,
   xxlarge: 32,
-  extraLarge: 36, // Ensure this line is present
+  extraLarge: 36, // Add missing size
   title: 48,
+};
+export const FONT_SIZES = KOREAN_TEXT_SIZES; // Alias for general use
 
-  // Add missing font sizes
-  huge: 64,
-  massive: 80,
-} as const;
-
-// Font weights for Korean text
-export const FONT_WEIGHTS = {
-  thin: 100,
-  extraLight: 200,
-  light: 300,
-  regular: 400, // Corresponds to 'normal'
-  medium: 500,
-  semiBold: 600,
-  bold: 700, // Corresponds to 'bold'
-  extraBold: 800,
-  black: 900,
-} as const;
-
-// Mapping for PIXI.TextStyleFontWeight which expects specific string values or numbers
+// PIXI specific font weights (must be strings as per PIXI.TextStyleFontWeight)
 export const PIXI_FONT_WEIGHTS: Record<
-  keyof typeof FONT_WEIGHTS,
-  typeof PIXI.TextStyle.defaultStyle.fontWeight
+  Extract<KoreanFontWeight, string>,
+  PIXI.TextStyleFontWeight
 > = {
-  thin: "100",
-  extraLight: "200",
   light: "300",
-  regular: "normal", // or "400"
+  regular: "400",
   medium: "500",
-  semiBold: "600",
-  bold: "bold", // or "700"
-  extraBold: "800",
-  black: "900",
-} as const;
+  semibold: "600",
+  bold: "700",
+  heavy: "900",
+};
 
-// Line heights optimized for Korean text readability
-export const LINE_HEIGHTS = {
-  tight: 1.2,
-  normal: 1.5,
-  relaxed: 1.7,
-  loose: 2.0,
-} as const;
+// Default PIXI TextStyle (example)
+export const DEFAULT_PIXI_TEXT_STYLE: Partial<PIXI.TextStyleOptions> = {
+  fontFamily: KOREAN_FONT_FAMILY,
+  fontSize: KOREAN_TEXT_SIZES.medium,
+  fill: KOREAN_COLORS.TEXT_PRIMARY,
+  align: "left",
+  wordWrap: false,
+  fontWeight: PIXI_FONT_WEIGHTS.regular,
+};
 
-// Letter spacing for Korean characters
-export const LETTER_SPACING = {
-  tight: "-0.025em",
-  normal: "0em",
-  wide: "0.025em",
-  wider: "0.05em",
-} as const;
+// Example of PIXI.TextStyle.defaultTextStyle usage (if needed, though direct creation is common)
+// const defaultPixiFontWeight = PIXI.TextStyle.defaultTextStyle.fontWeight;
 
-// Legacy aliases
-export const FONT_SIZES_LEGACY = FONT_SIZES;
-export const FONT_WEIGHTS_LEGACY = KOREAN_FONT_WEIGHTS;
-
-// Korean text size constants
-export const KOREAN_TEXT_SIZES_LEGACY = {
-  xsmall: 12,
-  small: 16, // Korean text needs slightly larger sizes
-  medium: 20,
-  large: 28,
-  xlarge: 36,
-  xxlarge: 52,
-} as const;
-
-// Korean font weight constants
-export const KOREAN_FONT_WEIGHTS_LEGACY = {
-  light: 300,
-  regular: 400,
-  medium: 500,
-  bold: 700,
-  black: 900,
-} as const;
-
-// PixiJS compatible text style options
-export interface KoreanTextStyleOptions extends Partial<PIXI.TextStyleOptions> {
-  // Korean specific extensions
-  hangeulSpacing?: number;
-  verticalAlignment?: "top" | "middle" | "bottom";
-  koreanEmphasis?: "normal" | "bold" | "outline" | "glow";
-}
-
-// Base Korean text styles for different contexts
-export const KOREAN_BASE_TEXT_STYLES: Record<string, KoreanTextStyleOptions> = {
-  default: {
-    fontFamily: FONT_FAMILY.KOREAN_UI,
+// PIXI Text Style Collections
+export const PIXI_TEXT_STYLES = {
+  DEFAULT: new PIXI.TextStyle(DEFAULT_PIXI_TEXT_STYLE),
+  TITLE: new PIXI.TextStyle({
+    ...DEFAULT_PIXI_TEXT_STYLE,
+    fontFamily: FONT_FAMILY.KOREAN_BATTLE,
+    fontSize: KOREAN_TEXT_SIZES.title,
+    fontWeight: PIXI_FONT_WEIGHTS.bold,
+    fill: KOREAN_COLORS.ACCENT_PRIMARY,
+    align: "center",
+  }),
+  SUBTITLE: new PIXI.TextStyle({
+    ...DEFAULT_PIXI_TEXT_STYLE,
+    fontSize: KOREAN_TEXT_SIZES.large,
+    fontWeight: PIXI_FONT_WEIGHTS.regular,
+    fill: KOREAN_COLORS.TEXT_SECONDARY,
+    align: "center",
+  }),
+  BODY: new PIXI.TextStyle({
+    ...DEFAULT_PIXI_TEXT_STYLE,
     fontSize: KOREAN_TEXT_SIZES.medium,
-    fontWeight:
-      KOREAN_FONT_WEIGHTS.regular.toString() as PIXI.TextStyleFontWeight,
-    fill: 0xffffff,
+    lineHeight: KOREAN_TEXT_SIZES.medium * 1.5,
+  }),
+  BUTTON: new PIXI.TextStyle({
+    ...DEFAULT_PIXI_TEXT_STYLE,
+    fontSize: KOREAN_TEXT_SIZES.medium,
+    fontWeight: PIXI_FONT_WEIGHTS.semibold,
+    fill: KOREAN_COLORS.TEXT_PRIMARY,
+    align: "center",
+  }),
+  DEBUG: new PIXI.TextStyle({
+    fontFamily: FONT_FAMILY.MONO,
+    fontSize: KOREAN_TEXT_SIZES.small,
+    fill: KOREAN_COLORS.DEBUG_TEXT,
     align: "left",
-  },
-  title: {
-    fontFamily: FONT_FAMILY.KOREAN_UI,
-    fontSize: KOREAN_TEXT_SIZES.xxlarge,
-    fontWeight: KOREAN_FONT_WEIGHTS.bold.toString() as PIXI.TextStyleFontWeight,
-    fill: 0x00ffcc,
-    align: "center",
-  },
-  body: {
-    fontFamily: FONT_FAMILY.KOREAN_UI,
-    fontSize: KOREAN_TEXT_SIZES.medium,
-    fontWeight:
-      KOREAN_FONT_WEIGHTS.regular.toString() as PIXI.TextStyleFontWeight,
-    fill: 0xcccccc,
-    wordWrap: true,
-    wordWrapWidth: 400,
-  },
-  small: {
-    fontFamily: FONT_FAMILY.KOREAN_UI,
-    fontSize: KOREAN_TEXT_SIZES.small,
-    fontWeight:
-      KOREAN_FONT_WEIGHTS.regular.toString() as PIXI.TextStyleFontWeight,
-    fill: 0x999999,
-  },
-};
+  }),
+  // Add more predefined styles as needed
+} as const;
 
-// Combat specific text styles
-export const COMBAT_TEXT_STYLES: Record<string, KoreanTextStyleOptions> = {
-  damage: {
-    fontFamily: FONT_FAMILY.KOREAN_UI,
-    fontSize: KOREAN_TEXT_SIZES.large,
-    fontWeight: KOREAN_FONT_WEIGHTS.bold.toString() as PIXI.TextStyleFontWeight,
-    fill: 0xff4444,
-    stroke: { color: 0x000000, width: 2 },
-  },
-  critical: {
-    fontFamily: FONT_FAMILY.KOREAN_UI,
+// Cyberpunk specific text styles
+export const CYBERPUNK_TEXT_STYLES = {
+  // ... (define cyberpunk styles using CYBERPUNK_PALETTE and FONT_FAMILY.CYBER)
+  // Example:
+  HEADER: new PIXI.TextStyle({
+    fontFamily: FONT_FAMILY.CYBER,
     fontSize: KOREAN_TEXT_SIZES.xlarge,
-    fontWeight:
-      KOREAN_FONT_WEIGHTS.black.toString() as PIXI.TextStyleFontWeight,
-    fill: 0xffaa00,
-    stroke: { color: 0x000000, width: 3 },
+    fill: KOREAN_COLORS.PRIMARY_CYAN, // Using KOREAN_COLORS as CYBERPUNK_PALETTE might not be fully defined
+    stroke: { color: KOREAN_COLORS.BLACK_SOLID, width: 2 },
     dropShadow: {
-      color: 0xff0000,
+      color: KOREAN_COLORS.ACCENT_MAGENTA,
+      alpha: 0.7,
+      angle: Math.PI / 4,
       blur: 4,
-      distance: 2,
+      distance: 3,
     },
-  },
-  status: {
-    fontFamily: FONT_FAMILY.KOREAN_UI,
-    fontSize: KOREAN_TEXT_SIZES.small,
-    fontWeight:
-      KOREAN_FONT_WEIGHTS.medium.toString() as PIXI.TextStyleFontWeight,
-    fill: 0x00ff88,
-  },
-};
-
-// UI specific text styles
-export const UI_TEXT_STYLES: Record<string, KoreanTextStyleOptions> = {
-  button: {
-    fontFamily: FONT_FAMILY.KOREAN_UI,
+    align: "center",
+  }),
+  BODY_NEON: new PIXI.TextStyle({
+    fontFamily: FONT_FAMILY.CYBER,
     fontSize: KOREAN_TEXT_SIZES.medium,
-    fontWeight:
-      KOREAN_FONT_WEIGHTS.semibold.toString() as PIXI.TextStyleFontWeight,
-    fill: 0xffffff,
-    align: "center",
-  },
-  menu: {
-    fontFamily: FONT_FAMILY.KOREAN_UI,
-    fontSize: KOREAN_TEXT_SIZES.large,
-    fontWeight:
-      KOREAN_FONT_WEIGHTS.medium.toString() as PIXI.TextStyleFontWeight,
-    fill: 0x00ffcc,
-    align: "center",
-  },
-  label: {
-    fontFamily: FONT_FAMILY.KOREAN_UI,
-    fontSize: KOREAN_TEXT_SIZES.small,
-    fontWeight:
-      KOREAN_FONT_WEIGHTS.regular.toString() as PIXI.TextStyleFontWeight,
-    fill: 0xaaaaaa,
-  },
-};
+    fill: KOREAN_COLORS.ACCENT_GREEN,
+    dropShadow: {
+      color: KOREAN_COLORS.ACCENT_GREEN,
+      alpha: 0.5,
+      blur: 8,
+      distance: 0,
+    },
+  }),
+  // ...
+} as const;
 
-// Export convenience type
-export type KoreanTextSize = keyof typeof KOREAN_TEXT_SIZES;
-export type KoreanFontWeight = keyof typeof KOREAN_FONT_WEIGHTS;
+// For KOREAN_UI font family, ensure FONT_FAMILY.KOREAN is used or define FONT_FAMILY.KOREAN_UI
+// If KOREAN_UI was meant to be FONT_FAMILY.KOREAN:
+// export const KOREAN_UI_TEXT_STYLE_OPTIONS: Partial<PIXI.TextStyleOptions> = {
+//   fontFamily: FONT_FAMILY.KOREAN, // Corrected
+//   fontSize: KOREAN_TEXT_SIZES.medium,
+//   fill: KOREAN_COLORS.TEXT_UI_PRIMARY,
+// };
+
+// Default styles for HTML elements (React components)
+export const HTML_DEFAULT_TEXT_STYLE: React.CSSProperties = {
+  fontFamily: KOREAN_FONT_FAMILY,
+  fontSize: `${KOREAN_TEXT_SIZES.medium}px`,
+  color: `#${KOREAN_COLORS.TEXT_PRIMARY.toString(16).padStart(6, "0")}`,
+  fontWeight: KOREAN_FONT_WEIGHTS.regular,
+};

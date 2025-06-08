@@ -25,6 +25,7 @@ export const KOREAN_COLORS = {
   // UI colors with cyberpunk theme
   PRIMARY_CYAN: 0x00ffff, // Neon cyan
   PRIMARY_BLUE: 0x0088ff,
+  SECONDARY_BLUE: 0x0066cc, // Add missing color
   SECONDARY_BLUE_DARK: 0x001144,
   SECONDARY_BLUE_LIGHT: 0x88ccff,
   SECONDARY_YELLOW: 0xffcc00,
@@ -75,7 +76,7 @@ export const KOREAN_COLORS = {
   UI_BORDER: 0x444444,
   UI_BORDER_LIGHT: 0x666666,
   UI_STEEL_GRAY: 0x708090,
-  UI_GRAY: 0x808080,
+  UI_GRAY: 0x808080, // Add missing color
   UI_GRAY_LIGHT: 0xc0c0c0,
   UI_DISABLED_FILL: 0x333333,
   UI_DISABLED_BORDER: 0x444444,
@@ -91,6 +92,33 @@ export const KOREAN_COLORS = {
 
   // Overlay colors
   OVERLAY_BACKGROUND: 0x000000, // Black for overlays
+
+  // Add missing UI colors
+  UI_DISABLED_TEXT: 0x666666, // Add missing color
+  BLACK_SOLID_TRANSLUCENT: 0x000000, // Add missing color
+  PRIMARY_CYAN_DARK_TRANSLUCENT: 0x004444, // Add missing color
+  PRIMARY_CYAN_DARK: 0x008888, // Add missing color
+  ACCENT_PRIMARY_DARK: 0xcc00cc, // Add missing color
+  ACCENT_PRIMARY_LIGHT: 0xff66ff, // Add missing color
+  NEGATIVE_RED_DARK: 0xcc0000, // Add missing color
+  NEGATIVE_RED_LIGHT: 0xff6666, // Add missing color
+  UI_BACKGROUND_SURFACE: 0x1e1e1e,
+  UI_GRAY_DARK: 0x404040,
+  UI_GRAY_MEDIUM: 0x606060,
+  UI_LIGHT_GRAY: 0xa0a0a0,
+  UI_DISABLED_BG: 0x2a2a2a,
+  UI_BACKGROUND_DARK_TRANSLUCENT: 0x0a0a0a,
+  PRIMARY_CYAN_LIGHT: 0x66ffff,
+
+  // Add missing color constants
+  PRIMARY_BLUE_DARK: 0x004488,
+  STATUS_STUNNED_YELLOW: 0xffcc00,
+  NEGATIVE_GREEN: 0x008800,
+  POSITIVE_GREEN_DARK: 0x006600,
+  POSITIVE_GREEN_LIGHT: 0x88ff88,
+  DEBUG_TEXT: 0xff00ff,
+
+  // ...existing code...
 } as const;
 
 // Cyberpunk palette alias for backward compatibility

@@ -84,15 +84,17 @@ export const CombatArena: React.FC<CombatArenaProps> = ({
         if (result && result.hit) {
           const newEffect: HitEffect = {
             id: `hit-effect-${Date.now()}`,
-            type: result.critical
-              ? HitEffectType.CRITICAL // Corrected
-              : HitEffectType.MEDIUM, // Corrected
+            type: result.hit
+              ? result.critical
+                ? HitEffectType.CRITICAL
+                : HitEffectType.NORMAL // Use NORMAL instead of HIT
+              : HitEffectType.MISS,
             position: result.hitPosition || targetPlayer.position,
             damage: result.damage,
             timestamp: Date.now(),
             duration: 500,
             color: KOREAN_COLORS.ACCENT_RED,
-            targetPlayerId: targetPlayer.id, // Corrected property name
+            targetId: targetPlayer.id, // This should now be valid
           };
           setInternalCombatEffects((prev) => [...prev, newEffect]);
         }

@@ -4,17 +4,23 @@ import type { KoreanMartialTextProps } from "../../../../../types"; // Use types
 import { KoreanText } from "./KoreanText"; // Assuming this is the React DOM component
 
 export const KoreanMartialText: React.FC<KoreanMartialTextProps> = ({
-  korean,
-  english,
-  martialVariant,
-  honorLevel,
-  showHonorific = false,
-  rank, // Can be used if different from honorLevel
-  ...props
+  technique,
+  size = "medium", // Fix: Use valid size
+  weight = "regular", // Fix: Use valid weight
+  variant = "primary",
+  emphasis = "none", // Fix: Use valid emphasis
+  display = "both",
+  order = "korean_first",
+  showTechnique = true,
+  showArchetype = false,
+  className,
+  style,
+  ...rest
 }) => {
-  let textToDisplay = typeof korean === "string" ? korean : korean.korean;
-  const englishToDisplay =
-    typeof korean === "string" ? english : korean.english || english;
+  // Remove unused englishToDisplay variable
+  const koreanToDisplay = showTechnique
+    ? technique.koreanName
+    : technique.description.korean;
 
   // const styleKey = martialVariant || "default";
   // const baseStyle = KOREAN_MARTIAL_TEXT_STYLES[styleKey] || KOREAN_MARTIAL_TEXT_STYLES.default;
@@ -35,13 +41,17 @@ export const KoreanMartialText: React.FC<KoreanMartialTextProps> = ({
 
   return (
     <KoreanText
-      korean={textToDisplay}
-      english={englishToDisplay || undefined}
-      // style={baseStyle} // Apply styles via props or CSS classes
-      variant="martial" // Pass variant for styling
-      {...props}
-    >
-      {/* Additional elements like rank icons can be added here */}
-    </KoreanText>
+      korean={koreanToDisplay}
+      english={technique.englishName}
+      size={size}
+      weight={weight}
+      variant={variant}
+      emphasis={emphasis}
+      display={display}
+      order={order}
+      className={className}
+      style={style}
+      {...rest}
+    />
   );
 };

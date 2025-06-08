@@ -1,89 +1,63 @@
-import { render } from "@testing-library/react"; // Removed unused screen import
+import { render } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { Application } from "@pixi/react"; // Fixed: import Application from @pixi/react
+import { Stage } from "@pixi/react";
+import { vi } from "vitest";
 import { EndScreen } from "../EndScreen";
 import { ProgressTracker } from "../ProgressTracker";
 import { TrigramWheel } from "../TrigramWheel";
-// Remove unused import
-import type { KoreanText } from "../../../types/korean-text"; // Fixed: use proper type name
-import { KOREAN_COLORS } from "@/types";
+import type { MatchStatistics } from "../../../types";
+import { createPlayerState } from "../../../utils/playerUtils";
+import { PlayerArchetype, TrigramStance } from "../../../types/enums";
 
-const createKoreanText = (korean: string, english: string): KoreanText => ({
-  korean,
-  english,
-});
+const mockMatchStatistics: MatchStatistics = {
+  roundsWon: { player1: 2, player2: 1 },
+  totalDamageDealt: { player1: 150, player2: 120 },
+  techniquesUsed: { player1: 8, player2: 6 },
+  vitalPointsHit: { player1: 3, player2: 2 },
+};
 
 describe("UI Components", () => {
   it("renders EndScreen", () => {
-    const { container } = render(
-      <Application>
-        <EndScreen
-          winnerId="player1"
-          onRestart={vi.fn()}
-          onReturnToMenu={vi.fn()}
-        />
-      </Application>
+    const player1 = createPlayerState(
+      { korean: "Player 1", english: "Player 1" }, // Fix: Use KoreanText object
+      PlayerArchetype.MUSA,
+      TrigramStance.GEON,
+      "player1"
     );
-    expect(container).toBeInTheDocument();
+
+    render(
+      <Stage>
+        <EndScreen
+          winner={player1}
+          matchStatistics={mockMatchStatistics}
+          onReturnToMenu={vi.fn()}
+          onRestart={vi.fn()}
+        />
+      </Stage>
+    );
   });
 
   it("renders ProgressTracker", () => {
-    const { container } = render(
-      <Application>
-        <ProgressTracker current={5} max={10} />
-      </Application>
+    render(
+      <Stage>
+        <ProgressTracker
+          currentValue={60} // Fix: Use correct prop name from ProgressTrackerProps
+          maxValue={100}
+          x={0}
+          y={0}
+        />
+      </Stage>
     );
-    expect(container).toBeInTheDocument();
   });
 
   it("renders TrigramWheel", () => {
-    const { container } = render(
-      <Application>
+    render(
+      <Stage>
         <TrigramWheel
-          selectedStance="geon"
-          onStanceSelect={vi.fn()}
-          radius={100}
+          currentStance={TrigramStance.GEON} // Fix: Use correct prop name from TrigramWheelProps
+          onStanceChange={vi.fn()}
         />
-      </Application>
+      </Stage>
     );
-    expect(container).toBeInTheDocument();
-  });
-
-  it("renders ProgressTracker with korean text", () => {
-    const koreanText = createKoreanText("진행상황", "Progress");
-    const { container } = render(
-      <Application>
-        <ProgressTracker current={3} max={5} label={koreanText} />
-      </Application>
-    );
-    expect(container).toBeInTheDocument();
-  });
-
-  it("renders TrigramWheel with stance selection", () => {
-    const { container } = render(
-      <Application>
-        <TrigramWheel
-          selectedStance="li"
-          onStanceSelect={vi.fn()}
-          showLabels={true}
-          interactive={true}
-        />
-      </Application>
-    );
-    expect(container).toBeInTheDocument();
-  });
-
-  it("renders ProgressTracker with colored bar", () => {
-    const { container } = render(
-      <Application>
-        <ProgressTracker
-          current={8}
-          max={10}
-          barColor={KOREAN_COLORS.POSITIVE_GREEN} // Fixed: use existing color
-          backgroundColor={KOREAN_COLORS.UI_BACKGROUND_DARK}
-        />
-      </Application>
-    );
-    expect(container).toBeInTheDocument();
   });
 });

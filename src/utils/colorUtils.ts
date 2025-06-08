@@ -195,266 +195,177 @@ export function adjustSaturation(hex: number, amount: number): number {
 }
 
 /**
- * Create a gradient color between two colors
+ * Color utility functions for Korean martial arts aesthetics
+ */
+
+import { KOREAN_COLORS } from "../types/constants";
+
+/**
+ * Blend two colors together
  */
 export function blendColors(
   color1: number,
   color2: number,
-  ratio: number
+  ratio: number = 0.5
 ): number {
-  const rgb1 = hexToRgb(color1);
-  const rgb2 = hexToRgb(color2);
+  const r1 = (color1 >> 16) & 0xff;
+  const g1 = (color1 >> 8) & 0xff;
+  const b1 = color1 & 0xff;
 
-  const r = Math.round(rgb1.r + (rgb2.r - rgb1.r) * ratio);
-  const g = Math.round(rgb1.g + (rgb2.g - rgb1.g) * ratio);
-  const b = Math.round(rgb1.b + (rgb2.b - rgb1.b) * ratio);
+  const r2 = (color2 >> 16) & 0xff;
+  const g2 = (color2 >> 8) & 0xff;
+  const b2 = color2 & 0xff;
 
-  return rgbToHex(r, g, b);
+  const r = Math.round(r1 * (1 - ratio) + r2 * ratio);
+  const g = Math.round(g1 * (1 - ratio) + g2 * ratio);
+  const b = Math.round(b1 * (1 - ratio) + b2 * ratio);
+
+  return (r << 16) | (g << 8) | b;
 }
 
 /**
- * Get Korean martial arts themed color based on archetype
+ * Convert hex color to RGB components
  */
-export function getArchetypeColor(archetype: string): number {
-  switch (archetype) {
-    case "musa":
-      return KOREAN_COLORS.SECONDARY_BROWN; // Traditional warrior - brown/gold
-    case "amsalja":
-      return KOREAN_COLORS.SECONDARY_PURPLE_DARK; // Shadow assassin - dark purple
-    case "hacker":
-      return KOREAN_COLORS.PRIMARY_CYAN; // Cyber warrior - cyan
-    case "jeongbo_yowon":
-      return KOREAN_COLORS.SECONDARY_BLUE; // Intelligence - blue
-    case "jojik_pokryeokbae":
-      return KOREAN_COLORS.ACCENT_RED; // Crime - red
+export function hexToRgb(hex: number): { r: number; g: number; b: number } {
+  return {
+    r: (hex >> 16) & 0xff,
+    g: (hex >> 8) & 0xff,
+    b: hex & 0xff,
+  };
+}
+
+/**
+ * Convert RGB components to hex color
+ */
+export function rgbToHex(r: number, g: number, b: number): number {
+  return (r << 16) | (g << 8) | b;
+}
+
+/**
+ * Darken a color by a percentage
+ */
+export function darkenColor(color: number, amount: number = 0.1): number {
+  const { r, g, b } = hexToRgb(color);
+  const factor = 1 - amount;
+  return rgbToHex(
+    Math.round(r * factor),
+    Math.round(g * factor),
+    Math.round(b * factor)
+  );
+}
+
+/**
+ * Lighten a color by a percentage
+ */
+export function lightenColor(color: number, amount: number = 0.1): number {
+  const { r, g, b } = hexToRgb(color);
+  const factor = amount;
+  return rgbToHex(
+    Math.min(255, Math.round(r + (255 - r) * factor)),
+    Math.min(255, Math.round(g + (255 - g) * factor)),
+    Math.min(255, Math.round(b + (255 - b) * factor))
+  );
+}
+
+/**
+ * Get color for health percentage
+ */
+export function getHealthColor(healthPercent: number): number {
+  if (healthPercent > 0.75) return KOREAN_COLORS.POSITIVE_GREEN;
+  if (healthPercent > 0.5) return KOREAN_COLORS.ACCENT_YELLOW;
+  if (healthPercent > 0.25) return KOREAN_COLORS.WARNING_ORANGE;
+  return KOREAN_COLORS.NEGATIVE_RED;
+}
+
+/**
+ * Get color for damage type
+ */
+export function getDamageTypeColor(damageType: string): number {
+  switch (damageType) {
+    case "critical":
+      return KOREAN_COLORS.CRITICAL_HIT;
+    case "vital_point":
+      return KOREAN_COLORS.VITAL_POINT_HIT;
+    case "blocked":
+      return KOREAN_COLORS.BLOCKED_ATTACK;
+    case "perfect":
+      return KOREAN_COLORS.PERFECT_STRIKE;
     default:
       return KOREAN_COLORS.TEXT_PRIMARY;
   }
 }
 
 /**
- * Get stance-based color for trigram system
+ * Add alpha to a color
+ */
+export function addAlpha(color: number, alpha: number): string {
+  const hex = color.toString(16).padStart(6, "0");
+  const alphaHex = Math.round(alpha * 255)
+    .toString(16)
+    .padStart(2, "0");
+  return `#${hex}${alphaHex}`;
+}
+
+/**
+ * Get trigram stance color
  */
 export function getTrigramColor(stance: string): number {
   switch (stance) {
-    case "geon": // Heaven - bright gold
-      return KOREAN_COLORS.ACCENT_GOLD;
-    case "tae": // Lake - blue
-      return KOREAN_COLORS.PRIMARY_BLUE;
-    case "li": // Fire - red/orange
-      return KOREAN_COLORS.ACCENT_RED;
-    case "jin": // Thunder - electric blue
-      return KOREAN_COLORS.PRIMARY_CYAN;
-    case "son": // Wind - green
-      return KOREAN_COLORS.POSITIVE_GREEN;
-    case "gam": // Water - deep blue
-      return KOREAN_COLORS.SECONDARY_BLUE_DARK;
-    case "gan": // Mountain - brown
-      return KOREAN_COLORS.SECONDARY_BROWN;
-    case "gon": // Earth - yellow/brown
-      return KOREAN_COLORS.SECONDARY_YELLOW;
+    case "geon":
+      return KOREAN_COLORS.TRIGRAM_GEON_PRIMARY;
+    case "tae":
+      return KOREAN_COLORS.TRIGRAM_TAE_PRIMARY;
+    case "li":
+      return KOREAN_COLORS.TRIGRAM_LI_PRIMARY;
+    case "jin":
+      return KOREAN_COLORS.TRIGRAM_JIN_PRIMARY;
+    case "son":
+      return KOREAN_COLORS.TRIGRAM_SON_PRIMARY;
+    case "gam":
+      return KOREAN_COLORS.TRIGRAM_GAM_PRIMARY;
+    case "gan":
+      return KOREAN_COLORS.TRIGRAM_GAN_PRIMARY;
+    case "gon":
+      return KOREAN_COLORS.TRIGRAM_GON_PRIMARY;
     default:
-      return KOREAN_COLORS.TEXT_SECONDARY;
+      return KOREAN_COLORS.TEXT_PRIMARY;
   }
 }
 
 /**
- * Create cyberpunk glow effect color
+ * Create gradient color array for smooth transitions
  */
-export function createGlowColor(
-  baseColor: number,
-  intensity: number = 0.5
-): number {
-  const hsl = hexToHsl(baseColor);
-  // Increase saturation and lightness for glow effect
-  hsl.s = Math.min(100, hsl.s + intensity * 30);
-  hsl.l = Math.min(80, hsl.l + intensity * 20);
-  return hslToHex(hsl.h, hsl.s, hsl.l);
-}
-
-/**
- * Get damage-based color for visual feedback
- */
-export function getDamageColor(
-  damage: number,
-  maxDamage: number = 100
-): number {
-  const ratio = Math.min(1, damage / maxDamage);
-
-  if (ratio < 0.3) {
-    // Light damage - green to yellow
-    return blendColors(
-      KOREAN_COLORS.POSITIVE_GREEN,
-      KOREAN_COLORS.ACCENT_YELLOW,
-      ratio * 3.33
-    );
-  } else if (ratio < 0.7) {
-    // Medium damage - yellow to orange
-    return blendColors(
-      KOREAN_COLORS.ACCENT_YELLOW,
-      KOREAN_COLORS.WARNING_ORANGE,
-      (ratio - 0.3) * 2.5
-    );
-  } else {
-    // Heavy damage - orange to red
-    return blendColors(
-      KOREAN_COLORS.WARNING_ORANGE,
-      KOREAN_COLORS.ACCENT_RED,
-      (ratio - 0.7) * 3.33
-    );
+export function createGradient(
+  startColor: number,
+  endColor: number,
+  steps: number
+): number[] {
+  const gradient: number[] = [];
+  for (let i = 0; i < steps; i++) {
+    const ratio = i / (steps - 1);
+    gradient.push(blendColors(startColor, endColor, ratio));
   }
+  return gradient;
 }
 
-/**
- * Generate Korean martial arts combat palette
- */
-export function generateCombatPalette(primaryColor: number) {
-  return {
-    primary: primaryColor,
-    secondary: adjustSaturation(darkenColor(primaryColor, 20), -20),
-    accent: lightenColor(adjustSaturation(primaryColor, 30), 15),
-    glow: createGlowColor(primaryColor, 0.8),
-    dark: darkenColor(primaryColor, 40),
-    light: lightenColor(primaryColor, 30),
-  };
-}
-
-/**
- * Get health-based color transition
- */
-export function getHealthColor(
-  currentHealth: number,
-  maxHealth: number
-): number {
-  const ratio = currentHealth / maxHealth;
-
-  if (ratio > 0.6) {
-    return KOREAN_COLORS.POSITIVE_GREEN;
-  } else if (ratio > 0.3) {
-    return blendColors(
-      KOREAN_COLORS.ACCENT_RED,
-      KOREAN_COLORS.ACCENT_YELLOW,
-      (ratio - 0.3) / 0.3
-    );
-  } else {
-    return KOREAN_COLORS.ACCENT_RED;
-  }
-}
-
-/**
- * Apply cyberpunk color filter effect
- */
-export function applyCyberpunkFilter(
-  color: number,
-  filterType: "neon" | "matrix" | "retro" = "neon"
-): number {
-  const hsl = hexToHsl(color);
-
-  switch (filterType) {
-    case "neon":
-      // Enhance saturation and add cyan tint
-      hsl.s = Math.min(100, hsl.s + 40);
-      hsl.h = (hsl.h + 180) % 360; // Shift hue towards cyan
-      return hslToHex(hsl.h, hsl.s, hsl.l);
-
-    case "matrix":
-      // Green-tinted matrix effect
-      return blendColors(color, KOREAN_COLORS.POSITIVE_GREEN, 0.3);
-
-    case "retro":
-      // Pink/purple retro wave effect
-      return blendColors(color, KOREAN_COLORS.SECONDARY_PURPLE, 0.4);
-
-    default:
-      return color;
-  }
-}
-
-/**
- * Validate color contrast for accessibility
- */
-export function getContrastRatio(color1: number, color2: number): number {
-  const getLuminance = (color: number) => {
-    const rgb = hexToRgb(color);
-    const sRGB = [rgb.r, rgb.g, rgb.b].map((c) => {
-      c /= 255;
-      return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-    });
-    return 0.2126 * sRGB[0] + 0.7152 * sRGB[1] + 0.0722 * sRGB[2];
-  };
-
-  const lum1 = getLuminance(color1);
-  const lum2 = getLuminance(color2);
-  const brightest = Math.max(lum1, lum2);
-  const darkest = Math.min(lum1, lum2);
-
-  return (brightest + 0.05) / (darkest + 0.05);
-}
-
-/**
- * Ensure sufficient contrast for Korean text readability
- */
-export function ensureReadableContrast(
-  textColor: number,
-  backgroundColor: number
-): number {
-  const contrastRatio = getContrastRatio(textColor, backgroundColor);
-
-  if (contrastRatio < 4.5) {
-    // WCAG AA standard
-    // Adjust text color for better contrast
-    const textHsl = hexToHsl(textColor);
-    const bgHsl = hexToHsl(backgroundColor);
-
-    if (bgHsl.l > 50) {
-      // Light background, darken text
-      textHsl.l = Math.max(0, textHsl.l - 50);
-    } else {
-      // Dark background, lighten text
-      textHsl.l = Math.min(100, textHsl.l + 50);
-    }
-
-    return hslToHex(textHsl.h, textHsl.s, textHsl.l);
-  }
-
-  return textColor;
-}
-
-/**
- * Lighten a color
- * @param color - The original color
- * @returns The lightened color
- */
-export function lightenColor(color: number): number {
-  let r = (color >> 16) & 0xff;
-  let g = (color >> 8) & 0xff;
-  let b = color & 0xff;
-
-  r = Math.min(255, r + 25);
-  g = Math.min(255, g + 25);
-  b = Math.min(255, b + 25);
-
-  return (r << 16) | (g << 8) | b;
-}
-
-import { STANCE_VISUAL_THEMES, CYBERPUNK_PALETTE } from "../types/constants";
-
-export function getTrigramColor(
-  stance: TrigramStance,
-  type: "primary" | "secondary" | "glow" = "primary"
-): number {
-  const theme = STANCE_VISUAL_THEMES[stance];
-  if (theme) {
-    return theme[type];
-  }
-  // Fallback color if stance or type is not found
-  return CYBERPUNK_PALETTE.TEXT_SECONDARY; // Cyberpunk neutral fallback
-}
-
-export function getTrigramColorFromTheme(
-  stance: TrigramStance,
-  themePart: "primary" | "secondary" | "glow" = "primary"
-): number {
-  const theme = STANCE_VISUAL_THEMES[stance];
-  return theme ? theme[themePart] : CYBERPUNK_PALETTE.TECH_WHITE; // Default to tech white if not found
-}
+export default {
+  numericToHex,
+  hexToNumeric,
+  convertKoreanColorForCSS,
+  ensurePixiColor,
+  hexToRgb,
+  rgbToHex,
+  hexToHsl,
+  rgbToHsl,
+  hslToRgb,
+  hslToHex,
+  darkenColor,
+  lightenColor,
+  adjustSaturation,
+  blendColors,
+  getHealthColor,
+  getDamageTypeColor,
+  addAlpha,
+  getTrigramColor,
+  createGradient,
+};
