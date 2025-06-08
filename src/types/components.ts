@@ -14,8 +14,11 @@ import type {
   Position,
   KoreanText,
   VitalPoint,
+  KoreanTextEmphasis,
+  KoreanTextSize,
 } from "./index";
-import type { GameMode } from "./enums";
+import type { GameMode, PlayerArchetype } from "./enums";
+import { KoreanTextWeight } from "@/components";
 
 // Base component props for all PixiJS components
 export interface BaseComponentProps {
@@ -280,10 +283,10 @@ export interface BaseButtonProps {
 }
 
 // PIXI component type aliases for cleaner usage
-export type PixiContainerProps = ComponentProps<"Container"> & BasePixiProps;
-export type PixiGraphicsProps = ComponentProps<"Graphics"> & BasePixiProps;
-export type PixiTextProps = ComponentProps<"Text"> & BasePixiProps;
-export type PixiSpriteProps = ComponentProps<"Sprite"> & BasePixiProps;
+export type PixiContainerProps = ComponentProps<PIXI.Container> & BasePixiProps;
+export type PixiGraphicsProps = ComponentProps<PIXI.Graphics> & BasePixiProps;
+export type PixiTextProps = ComponentProps<Text> & BasePixiProps;
+export type PixiSpriteProps = ComponentProps<PIXI.Sprite> & BasePixiProps;
 
 // Export PIXI component references
 export const PixiComponents = {
@@ -334,11 +337,11 @@ export interface RoundTimerProps extends BaseComponentProps {
 }
 
 export interface ControlsSectionProps {
-  readonly width?: number;
-  readonly height?: number;
-  readonly onBack?: () => void;
-  readonly x?: number;
-  readonly y?: number;
+  width?: number;
+  height?: number;
+  x?: number;
+  y?: number;
+  onBack?: () => void;
 }
 
 // Korean header component props
@@ -465,4 +468,69 @@ export interface KoreanPixiButtonProps {
   readonly y?: number;
   readonly width?: number;
   readonly height?: number;
+}
+
+// Player archetype data interface{
+export interface PlayerArchetypeData {
+  id: PlayerArchetype;
+  name: KoreanText;
+  description: KoreanText;
+  baseHealth: number;
+  baseKi: number;
+  baseStamina: number;
+  coreStance: TrigramStance;
+  theme: {
+    primary: number;
+    secondary: number;
+  };
+  colors: {
+    primary: number;
+    secondary: number;
+  };
+  stats: {
+    attackPower: number;
+    defense: number;
+    speed: number;
+    technique: number;
+  };
+  favoredStances: readonly TrigramStance[];
+  specialAbilities: readonly string[];
+  philosophy: KoreanText;
+}
+
+export interface MenuSectionProps {
+  width?: number;
+  height?: number;
+  x?: number;
+  y?: number;
+  selectedMode?: GameMode;
+  onModeSelect: (mode: GameMode) => void;
+  onStartGame: () => void;
+  onShowPhilosophy?: () => void;
+  onShowControls?: () => void;
+}
+
+export interface PhilosophySectionProps {
+  width?: number;
+  height?: number;
+  onBack?: () => void; // Add missing onBack prop
+  onGamePhaseChange?: (phase: GamePhase) => void;
+}
+
+export interface ControlsSectionProps {
+  width?: number;
+  height?: number;
+  x?: number;
+  y?: number;
+  onBack?: () => void;
+}
+
+export interface ScoreDisplayProps {
+  score1: number;
+  score2: number;
+  maxScore?: number;
+  width?: number;
+  height?: number;
+  x?: number;
+  y?: number;
 }

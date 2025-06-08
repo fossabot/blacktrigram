@@ -51,6 +51,27 @@ export const KOREAN_TEXT_VARIANT_CONFIGS: Record<
   },
 };
 
+// Korean text system constants
+
+export const KOREAN_TEXT_SIZES = {
+  xsmall: 10,
+  small: 12,
+  medium: 16,
+  large: 20,
+  xlarge: 24,
+  xxlarge: 32,
+  title: 48,
+} as const;
+
+export const KOREAN_FONT_WEIGHTS = {
+  light: 300,
+  regular: 400,
+  medium: 500,
+  semibold: 600,
+  bold: 700,
+  heavy: 900,
+} as const;
+
 // Export font family for convenience
 export const KOREAN_FONT_FAMILY = FONT_FAMILY.PRIMARY;
 

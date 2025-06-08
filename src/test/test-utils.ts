@@ -1,28 +1,7 @@
-import { ReactElement } from "react";
-import { render, RenderOptions } from "@testing-library/react";
-import { vi } from "vitest";
-
-// Mock graphics context for testing
-export const mockGraphicsContext = {
-  clear: vi.fn(),
-  beginFill: vi.fn(),
-  endFill: vi.fn(),
-  drawRect: vi.fn(),
-  drawCircle: vi.fn(),
-  lineStyle: vi.fn(),
-  moveTo: vi.fn(),
-  lineTo: vi.fn(),
-};
-
-// Mock audio context
-export const mockAudio = {
-  playSFX: vi.fn(),
-  playAttackSound: vi.fn(),
-  playHitSound: vi.fn(),
-  playMenuSound: vi.fn(),
-  setVolume: vi.fn(),
-  getIsInitialized: vi.fn(() => true),
-};
+import { render, type RenderOptions } from "@testing-library/react";
+import { Stage } from "@pixi/react";
+import type { ReactElement } from "react";
+import React from "react"; // Add React import for JSX
 
 // Custom render function for testing Korean martial arts components
 export function renderKoreanMartialArtsComponent(
@@ -36,15 +15,25 @@ export function renderKoreanMartialArtsComponent(
 
 // Render function for PixiJS Stage components
 export function renderInStage(ui: ReactElement): ReturnType<typeof render> {
-  return render(ui);
+  return render(React.createElement(Stage, {}, ui)); // Fix: Use React.createElement instead of JSX
 }
 
 // Test utilities for Korean martial arts game testing
-export const testUtils = {
-  mockGraphicsContext,
-  mockAudio,
-  renderKoreanMartialArtsComponent,
-  renderInStage,
-};
+export const TEST_CONSTANTS = {
+  MOCK_CANVAS_WIDTH: 800,
+  MOCK_CANVAS_HEIGHT: 600,
+  MOCK_PLAYER_ID: "test-player",
+} as const;
 
-export * from "@testing-library/react";
+// Mock player state factory
+export function createMockPlayerState(overrides?: Partial<any>) {
+  return {
+    id: TEST_CONSTANTS.MOCK_PLAYER_ID,
+    name: { korean: "테스트", english: "Test" },
+    health: 100,
+    maxHealth: 100,
+    currentStance: "geon",
+    position: { x: 0, y: 0 },
+    ...overrides,
+  };
+}

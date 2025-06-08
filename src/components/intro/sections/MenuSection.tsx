@@ -21,13 +21,10 @@ interface MenuSectionProps {
 }
 
 export const MenuSection: React.FC<MenuSectionProps> = ({
-  selectedMode,
-  onModeSelect,
-  onStartGame,
-  onShowPhilosophy,
-  onShowControls,
   width = GAME_CONFIG.CANVAS_WIDTH,
   height = GAME_CONFIG.CANVAS_HEIGHT,
+  onModeSelect,
+  onStartGame,
 }) => {
   const titleStyle = useMemo(
     () =>
@@ -47,18 +44,6 @@ export const MenuSection: React.FC<MenuSectionProps> = ({
     []
   );
 
-  const subtitleStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.SECONDARY,
-        fontSize: FONT_SIZES.large,
-        fill: KOREAN_COLORS.TEXT_SECONDARY,
-        fontWeight: FONT_WEIGHTS.regular.toString() as PIXI.TextStyleFontWeight,
-        align: "center",
-      }),
-    []
-  );
-
   const buttonStyle = useMemo(
     () =>
       new PIXI.TextStyle({
@@ -71,206 +56,114 @@ export const MenuSection: React.FC<MenuSectionProps> = ({
     []
   );
 
-  const selectedButtonStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.medium,
-        fill: KOREAN_COLORS.BLACK_SOLID,
-        fontWeight: FONT_WEIGHTS.bold.toString() as PIXI.TextStyleFontWeight,
-        align: "center",
-      }),
-    []
+  const backgroundDraw = useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.9);
+      g.drawRect(0, 0, width, height);
+      g.endFill();
+
+      // Title background
+      g.beginFill(KOREAN_COLORS.ACCENT_PRIMARY, 0.1);
+      g.drawRoundedRect(50, 20, width - 100, 80, 10);
+      g.endFill();
+    },
+    [width, height]
   );
 
-  const renderModeButton = useCallback(
-    (
-      mode: GameMode,
-      koreanText: string,
-      englishText: string,
-      x: number,
-      y: number
-    ) => {
-      const isSelected = selectedMode === mode;
-      return (
-        <Container
-          x={x}
-          y={y}
-          interactive
-          buttonMode
-          pointertap={() => onModeSelect(mode)}
-        >
-          <Graphics
-            draw={(g: PIXI.Graphics) => {
-              g.clear();
-              if (isSelected) {
-                g.beginFill(KOREAN_COLORS.PRIMARY_CYAN, 0.8);
-                g.lineStyle(2, KOREAN_COLORS.ACCENT_CYAN);
-              } else {
-                g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.6);
-                g.lineStyle(2, KOREAN_COLORS.UI_BORDER);
-              }
-              g.drawRoundedRect(0, 0, 200, 80, 10);
-              g.endFill();
-            }}
-          />
-          <Text
-            text={koreanText}
-            anchor={0.5}
-            x={100}
-            y={25}
-            style={isSelected ? selectedButtonStyle : buttonStyle}
-          />
-          <Text
-            text={englishText}
-            anchor={0.5}
-            x={100}
-            y={50}
-            style={isSelected ? selectedButtonStyle : buttonStyle}
-          />
-        </Container>
-      );
-    },
-    [selectedMode, onModeSelect, buttonStyle, selectedButtonStyle]
-  );
+  const handleStartClick = useCallback(() => {
+    onStartGame();
+  }, [onStartGame]);
 
   return (
     <Container width={width} height={height}>
-      {/* Background */}
-      <Graphics
-        draw={(g: PIXI.Graphics) => {
-          g.clear();
-          g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.9);
-          g.drawRect(0, 0, width, height);
-          g.endFill();
-        }}
-      />
+      <Graphics draw={backgroundDraw} />
 
       {/* Title */}
-      <Text text="흑괘" anchor={0.5} x={width / 2} y={100} style={titleStyle} />
       <Text
-        text="Black Trigram"
-        anchor={0.5}
+        text="흑괘 (Black Trigram)"
+        style={titleStyle}
         x={width / 2}
-        y={160}
-        style={subtitleStyle}
+        y={60}
+        anchor={0.5}
       />
 
       {/* Game Mode Selection */}
-      <Container x={(width - 660) / 2} y={250}>
-        {renderModeButton(GameMode.VERSUS, "대전 모드", "Versus Mode", 0, 0)}
-        {renderModeButton(
-          GameMode.TRAINING,
-          "훈련 모드",
-          "Training Mode",
-          220,
-          0
-        )}
-        {renderModeButton(GameMode.STORY, "스토리 모드", "Story Mode", 440, 0)}
-      </Container>
-
-      {/* Start Game Button */}
-      <Container
-        x={width / 2 - 100}
-        y={380}
-        interactive
-        buttonMode
-        pointertap={onStartGame}
-      >
-        <Graphics
-          draw={(g: PIXI.Graphics) => {
-            g.clear();
-            g.beginFill(KOREAN_COLORS.ACCENT_GOLD, 0.9);
-            g.lineStyle(3, KOREAN_COLORS.ACCENT_YELLOW);
-            g.drawRoundedRect(0, 0, 200, 60, 15);
-            g.endFill();
-          }}
-        />
-        <Text
-          text="게임 시작"
-          anchor={0.5}
-          x={100}
-          y={20}
-          style={
-            new PIXI.TextStyle({
-              fontFamily: FONT_FAMILY.PRIMARY,
-              fontSize: FONT_SIZES.large,
-              fill: KOREAN_COLORS.BLACK_SOLID,
-              fontWeight:
-                FONT_WEIGHTS.bold.toString() as PIXI.TextStyleFontWeight,
-              align: "center",
-            })
-          }
-        />
-        <Text
-          text="Start Game"
-          anchor={0.5}
-          x={100}
-          y={40}
-          style={
-            new PIXI.TextStyle({
-              fontFamily: FONT_FAMILY.SECONDARY,
-              fontSize: FONT_SIZES.medium,
-              fill: KOREAN_COLORS.BLACK_SOLID,
-              fontWeight:
-                FONT_WEIGHTS.medium.toString() as PIXI.TextStyleFontWeight,
-              align: "center",
-            })
-          }
-        />
-      </Container>
-
-      {/* Menu Options */}
-      <Container x={(width - 400) / 2} y={480}>
+      <Container x={(width - 640) / 2} y={140}>
         <Container
-          x={0}
-          y={0}
-          interactive
-          buttonMode
-          pointertap={onShowPhilosophy}
+          interactive={true}
+          pointerdown={() => onModeSelect(GameMode.VERSUS)}
         >
           <Graphics
             draw={(g: PIXI.Graphics) => {
-              g.clear();
-              g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.7);
-              g.lineStyle(1, KOREAN_COLORS.UI_BORDER);
-              g.drawRoundedRect(0, 0, 180, 40, 8);
-              g.endFill();
+              g.clear()
+                .lineStyle(2, KOREAN_COLORS.PRIMARY_CYAN)
+                .beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.8)
+                .drawRoundedRect(0, 0, 200, 60, 10)
+                .endFill();
             }}
           />
           <Text
-            text="철학 (Philosophy)"
-            anchor={0.5}
-            x={90}
-            y={20}
+            text="대전 (Versus)"
             style={buttonStyle}
+            x={100}
+            y={30}
+            anchor={0.5}
           />
         </Container>
 
         <Container
           x={220}
-          y={0}
-          interactive
-          buttonMode
-          pointertap={onShowControls}
+          interactive={true}
+          pointerdown={() => onModeSelect(GameMode.TRAINING)}
         >
           <Graphics
             draw={(g: PIXI.Graphics) => {
-              g.clear();
-              g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.7);
-              g.lineStyle(1, KOREAN_COLORS.UI_BORDER);
-              g.drawRoundedRect(0, 0, 180, 40, 8);
-              g.endFill();
+              g.clear()
+                .lineStyle(2, KOREAN_COLORS.ACCENT_GOLD)
+                .beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.8)
+                .drawRoundedRect(0, 0, 200, 60, 10)
+                .endFill();
             }}
           />
           <Text
-            text="조작법 (Controls)"
-            anchor={0.5}
-            x={90}
-            y={20}
+            text="훈련 (Training)"
             style={buttonStyle}
+            x={100}
+            y={30}
+            anchor={0.5}
           />
         </Container>
+      </Container>
+
+      {/* Start Button */}
+      <Container
+        x={width / 2 - 100}
+        y={height - 100}
+        interactive={true}
+        pointerdown={handleStartClick}
+      >
+        <Graphics
+          draw={(g: PIXI.Graphics) => {
+            g.clear()
+              .lineStyle(2, KOREAN_COLORS.ACCENT_GOLD)
+              .beginFill(KOREAN_COLORS.ACCENT_PRIMARY, 0.8)
+              .drawRoundedRect(0, 0, 200, 60, 10)
+              .endFill();
+          }}
+        />
+
+        <Text
+          text="시작 (Start)"
+          style={{
+            ...buttonStyle,
+            fontSize: FONT_SIZES.large,
+            fill: KOREAN_COLORS.BLACK_SOLID,
+          }}
+          x={100}
+          y={30}
+          anchor={0.5}
+        />
       </Container>
     </Container>
   );

@@ -1,55 +1,73 @@
 import { useMemo } from "react";
-import * as PIXI from "pixi.js"; // Fix: Import PIXI as value, not type
-import type { KoreanTextVariant } from "../types";
+import type {
+  KoreanTextSize,
+  KoreanTextWeight,
+  KoreanTextVariant,
+} from "../types";
+import { weightToCSSValue, sizeToPixels } from "../utils";
 import {
-  KOREAN_TEXT_COLORS,
-  KOREAN_TEXT_VARIANT_SIZES,
-  KOREAN_TEXT_VARIANT_CONFIGS,
-} from "../constants";
-import {
-  KOREAN_FONT_FAMILY,
   KOREAN_COLORS,
+  KOREAN_FONT_FAMILY,
 } from "../../../../../types/constants";
 
-interface UseKoreanTextStyleProps {
+export interface UseKoreanTextStyleProps {
+  size?: KoreanTextSize | number;
+  weight?: KoreanTextWeight;
   variant?: KoreanTextVariant;
-  color?: number;
-  fontSize?: number;
+  color?: string | number;
   cyberpunk?: boolean;
 }
 
 export function useKoreanTextStyle({
+  size = "medium",
+  weight = "regular",
   variant = "primary",
   color,
-  fontSize,
   cyberpunk = false,
-}: UseKoreanTextStyleProps = {}): PIXI.TextStyle {
+}: UseKoreanTextStyleProps) {
   return useMemo(() => {
-    const baseColor = color || KOREAN_TEXT_COLORS[variant];
-    const baseSize = fontSize || KOREAN_TEXT_VARIANT_SIZES[variant];
+    const fontSize = typeof size === "number" ? size : sizeToPixels(size);
+    const fontWeight = weightToCSSValue(weight);
 
-    const styleOptions: Partial<PIXI.TextStyleOptions> = {
+    let textColor = color;
+    if (!textColor) {
+      switch (variant) {
+        case "primary":
+          textColor = KOREAN_COLORS.TEXT_PRIMARY;
+          break;
+        case "secondary":
+          textColor = KOREAN_COLORS.TEXT_SECONDARY;
+          break;
+        case "accent":
+          textColor = KOREAN_COLORS.TEXT_ACCENT;
+          break;
+        case "combat":
+          textColor = KOREAN_COLORS.NEGATIVE_RED;
+          break;
+        default:
+          textColor = KOREAN_COLORS.TEXT_PRIMARY;
+      }
+    }
+
+    const baseStyle: React.CSSProperties = {
       fontFamily: KOREAN_FONT_FAMILY,
-      fontSize: baseSize,
-      fill: baseColor,
-      align: "left",
-      stroke: KOREAN_COLORS.BLACK_SOLID,
+      fontSize: `${fontSize}px`,
+      fontWeight,
+      color:
+        typeof textColor === "number"
+          ? `#${textColor.toString(16).padStart(6, "0")}`
+          : textColor,
+      lineHeight: 1.4,
     };
 
     if (cyberpunk) {
-      styleOptions.dropShadow = {
-        color: KOREAN_COLORS.PRIMARY_CYAN,
-        blur: 5,
-        angle: Math.PI / 6,
-        distance: 3,
+      return {
+        ...baseStyle,
+        textShadow: `0 0 10px ${baseStyle.color}, 0 0 20px ${baseStyle.color}`,
+        filter: "brightness(1.1)",
       };
     }
 
-    return new PIXI.TextStyle(styleOptions);
-  }, [variant, color, fontSize, cyberpunk]);
-}
-
-export function useKoreanTextConfig(variant: KoreanTextVariant = "primary") {
-  const config = useMemo(() => KOREAN_TEXT_VARIANT_CONFIGS[variant], [variant]);
-  return config;
+    return baseStyle;
+  }, [size, weight, variant, color, cyberpunk]);
 }

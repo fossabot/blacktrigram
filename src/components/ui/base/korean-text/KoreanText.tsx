@@ -1,60 +1,59 @@
-import React, { useMemo } from "react";
-import { weightToCSSValue } from "../utils";
-import type { KoreanTextComponentProps } from "../types";
-import { KOREAN_FONT_FAMILY } from "../../../../../types/constants";
+import React from "react"; // Remove unused useMemo
+import type { KoreanTextComponentProps } from "./types";
 
 export const KoreanText: React.FC<KoreanTextComponentProps> = ({
   text,
+  korean = "",
+  english = "",
   showBoth = true,
   koreanFirst = true,
   separator = " / ",
-  size = "medium",
-  weight = "regular",
-  color,
-  emphasis = "none",
-  align = "left",
   className,
-  style: customStyle,
+  style,
+  // Remove color from rest parameters to avoid conflicts
+  color,
+  ...rest
 }) => {
-  const displayText = useMemo(() => {
+  const getDisplayText = (): string => {
     if (typeof text === "string") return text;
 
+    if (text && typeof text === "object") {
+      if (!showBoth) {
+        return koreanFirst ? text.korean || "" : text.english || "";
+      }
+
+      const koreanText = text.korean || "";
+      const englishText = text.english || "";
+
+      return koreanFirst
+        ? `${koreanText}${separator}${englishText}`
+        : `${englishText}${separator}${koreanText}`;
+    }
+
     if (!showBoth) {
-      return koreanFirst ? text.korean : text.english;
+      return koreanFirst ? korean : english;
     }
 
     return koreanFirst
-      ? `${text.korean}${separator}${text.english}`
-      : `${text.english}${separator}${text.korean}`;
-  }, [text, showBoth, koreanFirst, separator]);
+      ? `${korean}${separator}${english}`
+      : `${english}${separator}${korean}`;
+  };
 
-  const fontSize = typeof size === "number" ? size : 16;
+  const displayText = getDisplayText();
 
-  const styles = useMemo(
-    () => ({
-      fontFamily: KOREAN_FONT_FAMILY,
-      fontSize: `${fontSize}px`,
-      fontWeight: weightToCSSValue(weight),
+  // Handle color conversion for CSS
+  const cssStyle = {
+    ...style,
+    ...(color && {
       color:
         typeof color === "number"
           ? `#${color.toString(16).padStart(6, "0")}`
-          : color || "#ffffff",
-      textAlign: align as React.CSSProperties["textAlign"],
-      fontStyle:
-        emphasis === "italic" ? ("italic" as const) : ("normal" as const),
-      textDecoration: emphasis === "underline" ? "underline" : "none",
-      ...customStyle,
+          : color,
     }),
-    [fontSize, weight, color, align, emphasis, customStyle]
-  );
-
-  const titleAttribute = useMemo(() => {
-    if (typeof text === "string") return text;
-    return `${text.korean} (${text.english})`;
-  }, [text]);
+  };
 
   return (
-    <span className={className} style={styles} title={titleAttribute}>
+    <span className={className} style={cssStyle} {...rest}>
       {displayText}
     </span>
   );

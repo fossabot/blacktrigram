@@ -1,11 +1,12 @@
-// Main components export - resolve naming conflicts
+// Main components export - resolve all naming conflicts with aliases
 
-// Game components (Player component from game)
+// Game components (use aliases to avoid conflicts)
 export { Player as GamePlayer } from "./game/Player";
+export { PlayerVisuals as GamePlayerVisuals } from "./game/PlayerVisuals";
 export { GameEngine } from "./game/GameEngine";
 export { GameUI } from "./game/GameUI";
 export { DojangBackground } from "./game/DojangBackground";
-export { HitEffectsLayer } from "./game/HitEffectsLayer";
+export { HitEffectsLayer as GameHitEffectsLayer } from "./game/HitEffectsLayer";
 
 // Combat components
 export { default as CombatScreen } from "./combat/CombatScreen";
@@ -14,13 +15,15 @@ export * from "./combat/components";
 // Training components
 export * from "./training";
 
-// Intro components
-export * from "./intro";
+// Intro components (sections only, not duplicate components)
+export { default as IntroScreen } from "./intro/IntroScreen";
+export * from "./intro/sections";
 
-// UI components (Player component from UI)
+// UI components (use aliases for conflicts)
 export { Player as UIPlayer } from "./ui/Player";
+export { PlayerVisuals as UIPlayerVisuals } from "./ui/PlayerVisuals";
+export { HitEffectsLayer as UIHitEffectsLayer } from "./ui/HitEffectsLayer";
 export * from "./ui/base";
 export * from "./ui/ProgressTracker";
 export * from "./ui/TrigramWheel";
 export * from "./ui/EndScreen";
-export { default as PlayerVisuals } from "./game/PlayerVisuals"; // Fixed export

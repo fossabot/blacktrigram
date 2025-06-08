@@ -1,13 +1,14 @@
 // This file should primarily re-export types from the main /src/types/korean-text.ts
 // or define very local, component-specific sub-types if absolutely necessary.
 
-import type { CSSProperties } from "react";
 import type { TextStyle as PixiTextStyle } from "pixi.js";
 import type { KoreanText } from "../../../../types/korean-text";
 import type { TrigramStance } from "../../../../types";
+import type { ReactNode } from "react";
 
-// Clean types - remove conflicts
+// Add xsmall to KoreanTextSize
 export type KoreanTextSize =
+  | "xsmall"
   | "small"
   | "medium"
   | "large"
@@ -24,46 +25,99 @@ export type KoreanTextWeight =
 export type KoreanTextEmphasis = "none" | "bold" | "italic" | "underline";
 export type KoreanTextVariant = "primary" | "secondary" | "accent" | "combat";
 export type KoreanTextDisplay = "korean" | "english" | "both";
-export type KoreanTextOrder = "korean_first" | "english_first";
+export type KoreanTextOrder = "korean_first" | "english_first"; // Fix: Use underscore format
 
-// Size mapping
-export const KOREAN_TEXT_SIZES: Record<KoreanTextSize, number> = {
-  small: 12,
-  medium: 16,
-  large: 20,
-  xlarge: 24,
-  xxlarge: 32, // Add missing size
-  title: 48, // Add missing size
-};
+// Main component props interface
+export interface KoreanTextComponentProps {
+  readonly korean?: string;
+  readonly english?: string;
+  readonly text?: string | { korean?: string; english?: string };
+  readonly size?: KoreanTextSize | number;
+  readonly weight?: KoreanTextWeight;
+  readonly variant?: KoreanTextVariant;
+  readonly emphasis?: KoreanTextEmphasis;
+  readonly display?: KoreanTextDisplay;
+  readonly order?: KoreanTextOrder;
+  readonly showBoth?: boolean; // Compatibility
+  readonly koreanFirst?: boolean; // Compatibility
+  readonly separator?: string;
+  readonly cyberpunk?: boolean;
+  readonly showUnderline?: boolean;
+  readonly align?: "left" | "center" | "right";
+  readonly color?: string | number;
+  readonly className?: string;
+  readonly style?: React.CSSProperties;
+  readonly onClick?: () => void;
+  readonly id?: string;
+  readonly children?: ReactNode;
+}
 
-// Korean text configuration interface
+// Configuration interface
 export interface KoreanTextConfig {
   readonly variant: KoreanTextVariant;
   readonly size: KoreanTextSize;
   readonly weight: KoreanTextWeight;
   readonly order: KoreanTextOrder;
+  readonly display?: KoreanTextDisplay; // Add optional display
   readonly cyberpunk: boolean;
+  readonly showRomanization?: boolean; // Add optional showRomanization
 }
 
-// Component props interfaces - Fix prop names to match actual usage
-export interface KoreanTextComponentProps {
-  readonly korean?: string;
-  readonly english?: string;
+// Technique text props
+export interface KoreanTechniqueTextProps {
+  readonly technique: {
+    readonly stance: string;
+    readonly koreanName: string;
+    readonly englishName: string;
+    readonly description?: {
+      readonly korean: string;
+      readonly english: string;
+    };
+  };
   readonly size?: KoreanTextSize | number;
   readonly weight?: KoreanTextWeight;
   readonly variant?: KoreanTextVariant;
   readonly emphasis?: KoreanTextEmphasis;
-  readonly className?: string;
-  readonly style?: CSSProperties;
   readonly display?: KoreanTextDisplay;
   readonly order?: KoreanTextOrder;
-  readonly cyberpunk?: boolean;
-  readonly showUnderline?: boolean;
-  readonly color?: string | number;
-  readonly onClick?: () => void;
-  readonly id?: string;
-  readonly children?: React.ReactNode;
+  readonly showStance?: boolean;
+  readonly showDescription?: boolean;
+  readonly showEffects?: boolean;
+  readonly className?: string;
+  readonly style?: React.CSSProperties;
 }
+
+// Title props
+export interface KoreanTitleProps {
+  readonly korean: string;
+  readonly english: string;
+  readonly level?: 1 | 2 | 3 | 4 | 5 | 6;
+  readonly variant?: KoreanTextVariant;
+  readonly cyberpunk?: boolean;
+  readonly glow?: boolean;
+  readonly className?: string;
+  readonly style?: React.CSSProperties;
+  readonly display?: KoreanTextDisplay;
+  readonly order?: KoreanTextOrder;
+  readonly centerAlign?: boolean;
+}
+
+// Legacy compatibility type
+export type KoreanTextProps = KoreanTextComponentProps;
+
+// Size mapping
+export const KOREAN_TEXT_SIZES: Record<KoreanTextSize, number> = {
+  xsmall: 10,
+  small: 12,
+  medium: 16,
+  large: 20,
+  xlarge: 24,
+  xxlarge: 32,
+  title: 48,
+};
+
+// Font family constant
+export const KOREAN_FONT_FAMILY = "'Noto Sans KR', 'Malgun Gothic', sans-serif";
 
 // Pixi-specific interfaces
 export interface KoreanPixiTextProps {
@@ -122,9 +176,6 @@ export interface KoreanPixiButtonProps {
   readonly disabled?: boolean;
 }
 
-// Font family constant
-export const KOREAN_FONT_FAMILY = "'Noto Sans KR', 'Malgun Gothic', sans-serif";
-
 // Add missing utility interfaces
 export interface KoreanTextStyleOptions {
   fontSize?: number;
@@ -133,45 +184,4 @@ export interface KoreanTextStyleOptions {
   align?: "left" | "center" | "right";
   stroke?: number;
   cyberpunk?: boolean;
-}
-
-// Legacy compatibility
-export type KoreanTextProps = KoreanTextComponentProps;
-
-// Fix missing KoreanTechniqueTextProps export
-export interface KoreanTechniqueTextProps {
-  readonly technique: {
-    readonly stance: string;
-    readonly koreanName: string;
-    readonly englishName: string;
-    readonly description?: {
-      readonly korean: string;
-      readonly english: string;
-    };
-  };
-  readonly size?: KoreanTextSize | number;
-  readonly weight?: KoreanTextWeight;
-  readonly variant?: KoreanTextVariant;
-  readonly emphasis?: KoreanTextEmphasis;
-  readonly display?: KoreanTextDisplay;
-  readonly order?: KoreanTextOrder;
-  readonly showStance?: boolean;
-  readonly showDescription?: boolean;
-  readonly showEffects?: boolean;
-  readonly className?: string;
-  readonly style?: React.CSSProperties;
-}
-
-export interface KoreanTitleProps {
-  readonly korean: string;
-  readonly english: string;
-  readonly level?: 1 | 2 | 3 | 4 | 5 | 6;
-  readonly variant?: KoreanTextVariant;
-  readonly cyberpunk?: boolean;
-  readonly glow?: boolean;
-  readonly className?: string;
-  readonly style?: React.CSSProperties;
-  readonly display?: KoreanTextDisplay;
-  readonly order?: KoreanTextOrder;
-  readonly centerAlign?: boolean;
 }

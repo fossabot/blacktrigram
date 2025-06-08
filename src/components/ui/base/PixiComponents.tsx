@@ -131,7 +131,7 @@ export const CyberpunkButton: React.FC<{
   height?: number;
 }> = ({
   label,
-  onClick = () => {}, // Provide default to avoid unused warning
+  onClick, // Remove default value to fix unused warning
   variant = "primary",
   disabled = false,
   x = 0,
@@ -350,11 +350,6 @@ export const PixiButton: React.FC<BaseButtonProps> = ({
   variant = "primary",
   disabled = false,
 }) => {
-  // Remove unused onClick variable - use callback directly
-  const handleClick = useCallback(() => {
-    console.log(`Button clicked: ${label}`);
-  }, [label]);
-
   const [isHovered, setIsHovered] = useState(false);
 
   const buttonStyle = useMemo(() => {
@@ -412,7 +407,11 @@ export const PixiButton: React.FC<BaseButtonProps> = ({
         interactive={!disabled}
         pointerover={() => setIsHovered(true)}
         pointerout={() => setIsHovered(false)}
-        pointerdown={handleClick}
+        pointerdown={() => {
+          if (!disabled && onClick) {
+            onClick(); // Use onClick directly
+          }
+        }}
       />
       <Text
         text={label}

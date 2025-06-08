@@ -120,3 +120,13 @@ export interface BaseUIProps {
   readonly interactive?: boolean;
   readonly testId?: string;
 }
+
+// Add missing GameUIProps export
+export interface GameUIProps extends BaseUIProps {
+  player1: PlayerState;
+  player2: PlayerState;
+  timeRemaining: number;
+  currentRound: number;
+  maxRounds: number;
+  combatEffects: readonly HitEffect[];
+}

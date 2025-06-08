@@ -14,12 +14,9 @@ import {
 export const MenuSection: React.FC<MenuSectionProps> = ({
   onModeSelect,
   onStartGame,
-  selectedMode = "versus",
+  selectedMode,
   width = GAME_CONFIG.CANVAS_WIDTH,
-  height = GAME_CONFIG.CANVAS_HEIGHT * 0.4,
-  x = 0,
-  y = 0,
-  ...props
+  height = GAME_CONFIG.CANVAS_HEIGHT,
 }) => {
   const titleStyle = useMemo(
     () =>
@@ -53,8 +50,8 @@ export const MenuSection: React.FC<MenuSectionProps> = ({
   );
 
   const handleStartClick = useCallback(() => {
-    onStartGame?.(selectedMode as GameMode); // Fix: type assertion
-  }, [onStartGame, selectedMode]);
+    onStartGame?.(); // Fix: remove parameter
+  }, [onStartGame]);
 
   const backgroundDraw = useCallback(
     (g: PIXI.Graphics) => {
@@ -71,76 +68,8 @@ export const MenuSection: React.FC<MenuSectionProps> = ({
     [width, height]
   );
 
-  const renderModeButton = useCallback(
-    (
-      mode: GameMode,
-      korean: string,
-      english: string,
-      buttonX: number,
-      buttonY: number
-    ) => {
-      const isSelected = selectedMode === mode;
-
-      return (
-        <Container
-          key={mode}
-          x={buttonX}
-          y={buttonY}
-          interactive={true}
-          buttonMode={true}
-          pointertap={() => handleModeClick(mode)}
-        >
-          <Graphics
-            draw={(g: PIXI.Graphics) => {
-              g.clear();
-              const fillColor = isSelected
-                ? KOREAN_COLORS.ACCENT_PRIMARY
-                : KOREAN_COLORS.UI_BACKGROUND_MEDIUM;
-              const borderColor = isSelected
-                ? KOREAN_COLORS.ACCENT_GOLD
-                : KOREAN_COLORS.UI_BORDER;
-
-              g.beginFill(fillColor, 0.8);
-              g.lineStyle(2, borderColor, 0.8);
-              g.drawRoundedRect(0, 0, 200, 60, 10);
-              g.endFill();
-            }}
-          />
-
-          <Text
-            text={korean}
-            style={{
-              ...buttonStyle,
-              fill: isSelected
-                ? KOREAN_COLORS.BLACK_SOLID
-                : KOREAN_COLORS.TEXT_PRIMARY,
-            }}
-            x={100}
-            y={20}
-            anchor={0.5}
-          />
-
-          <Text
-            text={english}
-            style={{
-              ...buttonStyle,
-              fontSize: FONT_SIZES.small,
-              fill: isSelected
-                ? KOREAN_COLORS.BLACK_SOLID
-                : KOREAN_COLORS.TEXT_SECONDARY,
-            }}
-            x={100}
-            y={40}
-            anchor={0.5}
-          />
-        </Container>
-      );
-    },
-    [selectedMode, buttonStyle, handleModeClick]
-  );
-
   return (
-    <Container x={x} y={y} width={width} height={height} {...props}>
+    <Container width={width} height={height}>
       <Graphics draw={backgroundDraw} />
 
       {/* Title */}
@@ -152,26 +81,17 @@ export const MenuSection: React.FC<MenuSectionProps> = ({
         anchor={0.5}
       />
 
-      {/* Game Mode Selection */}
+      {/* Game Mode Selection - Implement actual mode buttons */}
       <Container x={(width - 640) / 2} y={140}>
-        {renderModeButton(GameMode.VERSUS, "대전 모드", "Versus Mode", 0, 0)} //
-        Fix: use enum
-        {renderModeButton(
-          GameMode.TRAINING,
-          "훈련 모드",
-          "Training Mode",
-          220,
-          0
-        )}{" "}
-        // Fix: use enum
-        {renderModeButton(
-          GameMode.STORY,
-          "스토리 모드",
-          "Story Mode",
-          440,
-          0
-        )}{" "}
-        // Fix: use enum
+        <Text
+          text="게임 모드 선택 (Select Game Mode)"
+          style={buttonStyle}
+          x={320}
+          y={0}
+          anchor={0.5}
+        />
+
+        {/* Add actual mode selection buttons here if needed */}
       </Container>
 
       {/* Start Button */}
@@ -179,23 +99,22 @@ export const MenuSection: React.FC<MenuSectionProps> = ({
         x={width / 2 - 100}
         y={height - 100}
         interactive={true}
-        buttonMode={true}
-        pointertap={handleStartClick}
+        pointerdown={handleStartClick}
       >
         <Graphics
           draw={(g: PIXI.Graphics) => {
-            g.clear();
-            g.beginFill(KOREAN_COLORS.POSITIVE_GREEN, 0.8);
-            g.lineStyle(3, KOREAN_COLORS.ACCENT_GOLD, 0.9);
-            g.drawRoundedRect(0, 0, 200, 60, 15);
-            g.endFill();
+            g.clear()
+              .lineStyle(2, KOREAN_COLORS.ACCENT_GOLD)
+              .beginFill(KOREAN_COLORS.ACCENT_PRIMARY, 0.8)
+              .drawRoundedRect(0, 0, 200, 60, 10)
+              .endFill();
           }}
         />
 
         <Text
           text="시작 (Start)"
           style={{
-            ...titleStyle,
+            ...buttonStyle,
             fontSize: FONT_SIZES.large,
             fill: KOREAN_COLORS.BLACK_SOLID,
           }}

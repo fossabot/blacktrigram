@@ -107,6 +107,7 @@ export interface PlayerArchetypeData {
   readonly preferredStances: readonly TrigramStance[];
   readonly specialAbilities: readonly string[];
   readonly culturalBackground: KoreanText;
+  readonly philosophy: KoreanText; // Add missing philosophy property
 }
 
 export interface PlayerCombatStats {

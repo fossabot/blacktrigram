@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import type { TrainingScreenProps } from "../../types/components";
@@ -31,75 +31,67 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = ({
       g.drawRect(0, 0, width, height);
       g.endFill();
 
-      // Training area outline
-      g.lineStyle(2, KOREAN_COLORS.PRIMARY_CYAN, 0.5);
-      g.drawRect(50, 50, width - 100, height - 100);
+      // Training area border
+      g.lineStyle(2, KOREAN_COLORS.PRIMARY_CYAN, 0.6);
+      g.drawRect(20, 20, width - 40, height - 40);
     },
     [width, height]
   );
 
-  const titleStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.title,
-        fill: KOREAN_COLORS.ACCENT_GOLD,
-        align: "center",
-      }),
-    []
-  );
-
-  const handleStanceSelect = useCallback(
-    (stance: TrigramStance) => {
+  const handleStanceChange = useCallback(
+    (newStance: TrigramStance) => {
       if (player && onPlayerUpdate) {
-        onPlayerUpdate(0, { currentStance: stance });
+        onPlayerUpdate(0, { ...player, currentStance: newStance });
       }
     },
     [player, onPlayerUpdate]
   );
 
   return (
-    <Container x={x} y={y}>
+    <Container x={x} y={y} width={width} height={height}>
       <Graphics draw={backgroundDraw} />
 
-      <Text
-        text="훈련모드 (Training Mode)"
-        style={titleStyle}
-        x={width / 2}
-        y={50}
-        anchor={0.5}
-      />
-
-      {player && (
-        <ProgressTracker
-          currentValue={player.health} // Fix: Use currentValue instead of current
-          maxValue={player.maxHealth} // Fix: Use maxValue instead of max
-          x={20}
-          y={height - 120}
-          width={200}
-          height={20}
+      {/* Training UI */}
+      <Container x={50} y={50}>
+        <Text
+          text="Training Mode / 훈련 모드"
+          style={
+            new PIXI.TextStyle({
+              fontFamily: FONT_FAMILY.PRIMARY,
+              fontSize: FONT_SIZES.title,
+              fill: KOREAN_COLORS.TEXT_PRIMARY,
+              fontWeight: "bold",
+            })
+          }
         />
-      )}
 
-      <TrigramWheel
-        currentStance={player?.currentStance || "geon"} // Fix: Use currentStance instead of selectedStance
-        onStanceChange={(stance: TrigramStance) => {
-          // Fix: Use onStanceChange instead of onStanceSelect
-          onPlayerUpdate(0, { currentStance: stance });
-        }}
-        x={width / 2}
-        y={height / 2}
-        size={100} // Fix: Use size instead of radius
-      />
+        {player && (
+          <>
+            <ProgressTracker
+              currentValue={player.health}
+              maxValue={player.maxHealth}
+              x={0}
+              y={80}
+              width={200}
+              height={20}
+            />
 
-      <BaseButton
-        text="돌아가기 (Return)"
-        onClick={onReturnToMenu}
-        x={width / 2 - 100}
-        y={height - 100}
-        width={200}
-        height={50}
-      />
+            <TrigramWheel
+              currentStance={player.currentStance}
+              onStanceChange={handleStanceChange}
+              x={300}
+              y={100}
+            />
+          </>
+        )}
+
+        <BaseButton
+          text="Return to Menu" // Fix: Use 'text' instead of 'label'
+          x={0}
+          y={height - 150}
+          onClick={onReturnToMenu}
+        />
+      </Container>
     </Container>
   );
 };

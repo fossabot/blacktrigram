@@ -1,9 +1,8 @@
 import React from "react";
-import { weightToCSSValue } from "../utils";
 import type { KoreanTextComponentProps } from "../types";
-import { KOREAN_FONT_FAMILY } from "../../../../../types/constants";
 
 export const KoreanText: React.FC<KoreanTextComponentProps> = ({
+  text,
   korean = "",
   english = "",
   size = "medium",
@@ -12,69 +11,61 @@ export const KoreanText: React.FC<KoreanTextComponentProps> = ({
   emphasis = "none",
   display = "both",
   order = "korean_first",
-  className,
+  showBoth = true,
+  koreanFirst = true,
+  separator = " / ",
   cyberpunk = false,
   showUnderline = false,
+  align = "left",
   color,
+  className,
   style,
   onClick,
   id,
   children,
   ...rest
 }) => {
-  const sizeInPixels =
-    typeof size === "number"
-      ? size
-      : {
-          small: 12,
-          medium: 16,
-          large: 20,
-          xlarge: 24,
-          xxlarge: 32,
-          title: 48,
-        }[size] || 16;
+  // Handle text content
+  const getDisplayText = (): string => {
+    // Fix: Properly handle text parameter
+    if (typeof text === "string") {
+      return text;
+    }
 
-  const fontWeight = weightToCSSValue(weight);
+    if (text && typeof text === "object" && text !== null) {
+      // Handle KoreanText object
+      const koreanText = text.korean || "";
+      const englishText = text.english || "";
+      return `${koreanText} / ${englishText}`;
+    }
 
-  const baseColor = color || KOREAN_COLORS.TEXT_PRIMARY;
-
-  const styles: React.CSSProperties = {
-    fontFamily: KOREAN_FONT_FAMILY,
-    fontSize: `${sizeInPixels}px`,
-    fontWeight: fontWeight.toString(),
-    color:
-      typeof baseColor === "number"
-        ? `#${baseColor.toString(16).padStart(6, "0")}`
-        : baseColor,
-    textDecoration: showUnderline ? "underline" : "none",
-    cursor: onClick ? "pointer" : "default",
-    ...style,
+    // Fallback to individual props
+    return `${korean} / ${english}`;
   };
 
-  const displayText =
-    display === "korean"
-      ? korean
-      : display === "english"
-      ? english
-      : order === "korean_first"
-      ? `${korean} / ${english}`
-      : `${english} / ${korean}`;
+  const displayText = getDisplayText();
 
-  const titleAttribute =
-    display === "both"
-      ? `${korean} / ${english}`
-      : display === "korean"
-      ? english
-      : korean;
+  const spanStyle: React.CSSProperties = {
+    fontSize: typeof size === "number" ? `${size}px` : undefined,
+    fontWeight: weight,
+    color:
+      typeof color === "string"
+        ? color
+        : color
+        ? `#${color.toString(16).padStart(6, "0")}`
+        : undefined,
+    textAlign: align,
+    textDecoration: showUnderline ? "underline" : "none",
+    ...style,
+  };
 
   return (
     <span
       className={className}
-      style={styles}
-      title={titleAttribute}
+      style={spanStyle}
       onClick={onClick}
       id={id}
-      {...rest}
+      {...(rest as React.HTMLAttributes<HTMLSpanElement>)}
     >
       {displayText}
       {children}

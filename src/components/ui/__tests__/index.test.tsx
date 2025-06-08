@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react";
+import { render } from "@testing-library/react"; // Remove unused React import
 import "@testing-library/jest-dom";
 import { Stage } from "@pixi/react";
 import { vi } from "vitest";
@@ -19,10 +19,10 @@ const mockMatchStatistics: MatchStatistics = {
 describe("UI Components", () => {
   it("renders EndScreen", () => {
     const player1 = createPlayerState(
-      { korean: "Player 1", english: "Player 1" }, // Fix: Use KoreanText object
+      "Player 1",
       PlayerArchetype.MUSA,
-      TrigramStance.GEON,
-      "player1"
+      { korean: "건", english: "Heaven" },
+      { x: 0, y: 0 } // Fix: Use Position object instead of string
     );
 
     render(
@@ -40,12 +40,7 @@ describe("UI Components", () => {
   it("renders ProgressTracker", () => {
     render(
       <Stage>
-        <ProgressTracker
-          currentValue={60} // Fix: Use correct prop name from ProgressTrackerProps
-          maxValue={100}
-          x={0}
-          y={0}
-        />
+        <ProgressTracker currentValue={60} maxValue={100} x={0} y={0} />
       </Stage>
     );
   });
@@ -54,7 +49,7 @@ describe("UI Components", () => {
     render(
       <Stage>
         <TrigramWheel
-          currentStance={TrigramStance.GEON} // Fix: Use correct prop name from TrigramWheelProps
+          currentStance={TrigramStance.GEON}
           onStanceChange={vi.fn()}
         />
       </Stage>
