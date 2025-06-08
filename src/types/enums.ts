@@ -176,3 +176,18 @@ export const DAMAGE_TYPES = DamageType;
 export const STATUS_EFFECTS = StatusEffect;
 export const HIT_EFFECT_TYPES = HitEffectType;
 export const GAME_MODES = GameMode;
+
+// Additional enums for combat and training
+export enum CombatPhase {
+  PREPARATION = "preparation",
+  COMBAT = "combat",
+  RESOLUTION = "resolution",
+  VICTORY = "victory",
+}
+
+export enum TrainingMode {
+  BASIC_FORMS = "basic_forms",
+  VITAL_POINTS = "vital_points",
+  STANCE_TRANSITIONS = "stance_transitions",
+  COMBAT_SIMULATION = "combat_simulation",
+}

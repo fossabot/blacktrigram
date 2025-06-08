@@ -1,106 +1,164 @@
-import React, { useState, useCallback } from "react";
-import { Container } from "@pixi/react";
-import { AudioProvider } from "./audio/AudioProvider";
+import { useState, useCallback } from "react";
+import { Application, Stage } from "@pixi/react";
+import { GameMode, PlayerArchetype, TrigramStance } from "./types/enums"; // Fix: Import TrigramStance
 import { IntroScreen } from "./components/intro/IntroScreen";
 import { CombatScreen } from "./components/combat/CombatScreen";
 import { TrainingScreen } from "./components/training/TrainingScreen";
-import { createPlayerState } from "./utils/playerUtils";
-import { GamePhase, PlayerArchetype } from "./types/enums";
-import { GameMode } from "./types/game"; // Fix: Only import GameMode from one source
-import type { GameState, PlayerState } from "./types";
+import { AudioProvider } from "./audio/AudioProvider";
 import { GAME_CONFIG } from "./types/constants";
+import type { PlayerState } from "./types";
 import "./App.css";
 
-export function App(): React.JSX.Element {
-  const [gamePhase, setGamePhase] = useState<GamePhase>(GamePhase.INTRO);
-  const [gameState, setGameState] = useState<GameState>(() => ({
-    mode: GameMode.VERSUS,
-    phase: GamePhase.INTRO,
-    isTraining: false,
-    player1: createPlayerState(
-      { korean: "Player 1", english: "Player 1" },
-      PlayerArchetype.MUSA,
-      { korean: "건", english: "geon" },
-      "player1"
-    ),
-    player2: createPlayerState(
-      { korean: "Player 2", english: "Player 2" },
-      PlayerArchetype.AMSALJA,
-      { korean: "태", english: "tae" },
-      "player2"
-    ),
-    currentRound: 1,
-    maxRounds: 3,
-    timeRemaining: 120,
-    isPaused: false,
-    combatEffects: [],
-    matchHistory: [],
-    // Fix: Add missing properties
-    gameTime: 0,
-    winner: null,
-  }));
+function App() {
+  const [currentMode, setCurrentMode] = useState<GameMode | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Create default players for combat
+  const createDefaultPlayers = useCallback((): [PlayerState, PlayerState] => {
+    const player1: PlayerState = {
+      id: "player1",
+      name: { korean: "플레이어 1", english: "Player 1" },
+      archetype: PlayerArchetype.MUSA,
+      health: 100,
+      maxHealth: 100,
+      ki: 100,
+      maxKi: 100,
+      stamina: 100,
+      maxStamina: 100,
+      currentStance: TrigramStance.GEON,
+      position: { x: 200, y: 300 },
+      isGuarding: false,
+      stunDuration: 0,
+      comboCount: 0,
+      lastActionTime: 0,
+      consciousness: 100,
+      pain: 0,
+      balance: 100,
+      bloodLoss: 0,
+      currentTechnique: null,
+      activeEffects: [],
+      vitalPoints: [], // Fix: Use vitalPoints instead of vitalPointHits
+      defensiveBonus: 0,
+      attackPower: 1.0,
+      movementSpeed: 1.0,
+      reactionTime: 1.0,
+      focusLevel: 100,
+      battleExperience: 0,
+      injuredLimbs: [],
+      statusConditions: [],
+    };
+
+    const player2: PlayerState = {
+      id: "player2",
+      name: { korean: "플레이어 2", english: "Player 2" },
+      archetype: PlayerArchetype.AMSALJA,
+      health: 100,
+      maxHealth: 100,
+      ki: 100,
+      maxKi: 100,
+      stamina: 100,
+      maxStamina: 100,
+      currentStance: TrigramStance.TAE,
+      position: { x: 600, y: 300 },
+      isGuarding: false,
+      stunDuration: 0,
+      comboCount: 0,
+      lastActionTime: 0,
+      consciousness: 100,
+      pain: 0,
+      balance: 100,
+      bloodLoss: 0,
+      currentTechnique: null,
+      activeEffects: [],
+      vitalPoints: [], // Fix: Use vitalPoints instead of vitalPointHits
+      defensiveBonus: 0,
+      attackPower: 1.0,
+      movementSpeed: 1.0,
+      reactionTime: 1.0,
+      focusLevel: 100,
+      battleExperience: 0,
+      injuredLimbs: [],
+      statusConditions: [],
+    };
+
+    return [player1, player2];
+  }, []);
 
   const handleMenuSelect = useCallback((mode: GameMode) => {
-    setGamePhase(
-      mode === GameMode.TRAINING ? GamePhase.TRAINING : GamePhase.COMBAT
-    );
-    setGameState((prev) => ({
-      ...prev,
-      mode, // Fix: Use compatible GameMode type
-      phase: mode === GameMode.TRAINING ? GamePhase.TRAINING : GamePhase.COMBAT,
-      isTraining: mode === GameMode.TRAINING,
-    }));
+    setCurrentMode(mode);
+    setIsInitialized(true);
   }, []);
 
-  const handlePlayerUpdate = useCallback(
-    (playerIndex: number, updates: Partial<PlayerState>) => {
-      setGameState((prev) => ({
-        ...prev,
-        player1:
-          playerIndex === 0 ? { ...prev.player1, ...updates } : prev.player1,
-        player2:
-          playerIndex === 1 ? { ...prev.player2, ...updates } : prev.player2,
-      }));
-    },
-    []
-  );
-
-  const handleReturnToMenu = useCallback(() => {
-    setGamePhase(GamePhase.INTRO);
-    setGameState((prev) => ({ ...prev, phase: GamePhase.INTRO }));
+  const handleBackToMenu = useCallback(() => {
+    setCurrentMode(null);
+    setIsInitialized(false);
   }, []);
+
+  const renderCurrentScreen = () => {
+    if (!isInitialized || !currentMode) {
+      return <IntroScreen onMenuSelect={handleMenuSelect} />;
+    }
+
+    switch (currentMode) {
+      case GameMode.VERSUS:
+        return (
+          <CombatScreen
+            onReturnToMenu={handleBackToMenu}
+            players={createDefaultPlayers()}
+          />
+        ); // Fix: Add players prop
+      case GameMode.TRAINING:
+        return (
+          <TrainingScreen
+            selectedArchetype={PlayerArchetype.MUSA} // Fix: Use PlayerArchetype enum
+            onBack={handleBackToMenu}
+            onTrainingComplete={() => {
+              console.log("Training completed");
+            }}
+          />
+        );
+      case GameMode.STORY:
+        return (
+          <CombatScreen
+            onReturnToMenu={handleBackToMenu}
+            players={createDefaultPlayers()}
+          />
+        ); // Fix: Add players prop
+      case GameMode.ARCADE:
+        return (
+          <CombatScreen
+            onReturnToMenu={handleBackToMenu}
+            players={createDefaultPlayers()}
+          />
+        ); // Fix: Add players prop
+      case GameMode.SURVIVAL:
+        return (
+          <CombatScreen
+            onReturnToMenu={handleBackToMenu}
+            players={createDefaultPlayers()}
+          />
+        ); // Fix: Add players prop
+      default:
+        return <IntroScreen onMenuSelect={handleMenuSelect} />;
+    }
+  };
 
   return (
     <AudioProvider>
-      <Container
-        width={GAME_CONFIG.CANVAS_WIDTH}
-        height={GAME_CONFIG.CANVAS_HEIGHT}
-      >
-        {gamePhase === GamePhase.INTRO && (
-          <IntroScreen onMenuSelect={handleMenuSelect} />
-        )}
-
-        {gamePhase === GamePhase.TRAINING && (
-          <TrainingScreen
-            selectedArchetype={gameState.player1.archetype}
-            onBack={handleReturnToMenu}
-            onTrainingComplete={(result) => {
-              console.log("Training completed:", result);
-              setGamePhase(GamePhase.INTRO);
-            }}
-          />
-        )}
-
-        {gamePhase === GamePhase.COMBAT && (
-          <CombatScreen
-            players={[gameState.player1, gameState.player2] as const}
-            onPlayerUpdate={handlePlayerUpdate}
-            onReturnToMenu={handleReturnToMenu}
-            // Fix: Remove invalid matchStatistics prop
-            timeRemaining={120}
-          />
-        )}
-      </Container>
+      <div className="app">
+        <Application
+          width={GAME_CONFIG.CANVAS_WIDTH}
+          height={GAME_CONFIG.CANVAS_HEIGHT}
+          options={{
+            backgroundColor: 0x000000,
+            antialias: true,
+            resolution: window.devicePixelRatio || 1,
+            autoDensity: true,
+          }}
+        >
+          <Stage>{renderCurrentScreen()}</Stage>
+        </Application>
+      </div>
     </AudioProvider>
   );
 }

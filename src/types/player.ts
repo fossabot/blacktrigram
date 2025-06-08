@@ -5,7 +5,8 @@ import type {
   TrigramStance,
   CombatState,
   BodyRegion,
-  CombatReadiness, // Import CombatReadiness
+  CombatReadiness,
+  PlayerArchetype, // Import CombatReadiness
 } from "./enums";
 import type { Position, KoreanText } from "./index"; // Imports from the main index file
 import type { StatusEffect } from "./effects";
@@ -33,44 +34,36 @@ export interface PlayerSkills {
 
 export interface PlayerState {
   readonly id: string;
-  readonly archetype: PlayerArchetypeEnum; // Use aliased PlayerArchetypeEnum
-  name: KoreanText; // Made mutable for updates
+  readonly name: KoreanText;
+  readonly archetype: PlayerArchetype;
   health: number;
   readonly maxHealth: number;
-  ki: number; // Spiritual energy
+  ki: number;
   readonly maxKi: number;
-  stamina: number; // Physical endurance
+  stamina: number;
   readonly maxStamina: number;
-  consciousness: number; // Awareness, 0 = unconscious
-  pain: number; // Current pain level, affects actions
-  balance: number; // Stability, 0 = fallen
-  bloodLoss: number; // Cumulative blood loss
-  position: Position;
-  facing: "left" | "right"; // Made mutable for updates
-  currentTargetId?: string | null; // Made mutable for updates
-  activeEffects: readonly StatusEffect[]; // Made mutable for updates // Changed from StatusEffect[]
-  readonly attributes: PlayerAttributes;
-  readonly skills: PlayerSkills;
-  combatState: CombatState; // Made mutable for updates
-  readonly lastActionTime: number; // Changed from mutable
-  lastStanceChangeTime: number; // Made mutable for updates
-  comboCount: number; // Made mutable for updates
-  readonly vitalPointDamage: Record<string, number>;
-  readonly bodyPartStatus: Record<
-    BodyRegion,
-    "healthy" | "injured" | "critical"
-  >;
-  readonly knownTechniques: readonly string[];
-  currentStance: TrigramStance; // Made mutable for updates
-  combatReadiness?: CombatReadiness; // Added optional combatReadiness
-  readonly availableTechniques: readonly KoreanTechnique[]; // Added
-  isGuarding: boolean; // Fix: Add missing isGuarding property
-
-  // Vital points (simplified - in full game would have all 70)
-  vitalPoints?: Record<string, VitalPoint>; // Add missing property
+  readonly currentStance: TrigramStance;
+  readonly position: Position;
+  readonly isGuarding: boolean;
+  readonly stunDuration: number;
+  readonly comboCount: number;
+  readonly lastActionTime: number;
+  readonly consciousness: number;
+  readonly pain: number;
+  readonly balance: number;
+  readonly bloodLoss: number;
+  readonly currentTechnique: string | null;
+  readonly activeEffects: readonly string[];
+  readonly vitalPoints: readonly string[]; // Fix: Use vitalPoints instead of vitalPointHits
+  readonly defensiveBonus: number;
+  readonly attackPower: number;
+  readonly movementSpeed: number;
+  readonly reactionTime: number;
+  readonly focusLevel: number;
+  readonly battleExperience: number;
+  readonly injuredLimbs: readonly string[];
+  readonly statusConditions: readonly string[];
 }
-
-export type PlayerArchetype = PlayerArchetypeEnum; // Export PlayerArchetype type alias
 
 // Player archetype specific bonuses
 export interface PlayerArchetypeBonuses {

@@ -75,19 +75,9 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = ({
   );
 
   const handleCompleteTraining = useCallback(() => {
-    onTrainingComplete?.({
-      archetype: selectedArchetype,
-      stance: currentStance,
-      progress,
-      completedModes: [trainingMode],
-    });
-  }, [
-    onTrainingComplete,
-    selectedArchetype,
-    currentStance,
-    progress,
-    trainingMode,
-  ]);
+    // Fix: Call without parameters
+    onTrainingComplete?.();
+  }, [onTrainingComplete]);
 
   const backgroundDraw = useCallback((g: PIXI.Graphics) => {
     g.clear();

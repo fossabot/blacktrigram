@@ -73,6 +73,8 @@ export enum GameMode {
   VERSUS = "versus",
   TRAINING = "training",
   STORY = "story",
+  ARCADE = "arcade", // Fix: Add missing ARCADE mode
+  SURVIVAL = "survival",
 }
 
 /**
@@ -169,3 +171,6 @@ export { GamePhase } from "./enums";
 
 // Re-export from player types for convenience
 export type { PlayerArchetype } from "./enums"; // Export PlayerArchetype from enums
+
+// Fix: Export GameMode as value, not just type
+export { GameMode } from "./enums";

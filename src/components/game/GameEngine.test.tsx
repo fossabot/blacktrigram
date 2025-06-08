@@ -4,7 +4,7 @@ import { Application } from "@pixi/react";
 import { GameEngine } from "./GameEngine";
 import { MockAudioProvider } from "../../test/test-utils";
 import { GamePhase, PlayerArchetype } from "../../types/enums";
-import { GameMode } from "../../types/game"; // Fix: Import from correct location
+import { GameMode } from "../../types/enums"; // Fix: Use enums instead of game
 import { createPlayerState } from "../../utils/playerUtils";
 
 // Fix: Add missing mock data

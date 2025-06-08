@@ -3,6 +3,7 @@
  */
 
 import type { SoundEffectId } from "../audio";
+import type { TrigramStance } from "../enums";
 
 // Combat configuration
 export const COMBAT_CONFIG = {
@@ -102,20 +103,48 @@ export const TRIGRAM_STANCES_ORDER = [
 export const COMBAT_CONTROLS = {
   // Trigram stance system (1-8 keys)
   stanceControls: {
-    "1": { stance: "geon", korean: "건", technique: "천둥벽력" },
-    "2": { stance: "tae", korean: "태", technique: "유수연타" },
-    "3": { stance: "li", korean: "리", technique: "화염지창" },
-    "4": { stance: "jin", korean: "진", technique: "벽력일섬" },
-    "5": { stance: "son", korean: "손", technique: "선풍연격" },
-    "6": { stance: "gam", korean: "감", technique: "수류반격" },
-    "7": { stance: "gan", korean: "간", technique: "반석방어" },
-    "8": { stance: "gon", korean: "곤", technique: "대지포옹" },
+    "1": {
+      stance: "geon" as TrigramStance,
+      korean: "건",
+      technique: "천둥벽력",
+    },
+    "2": {
+      stance: "tae" as TrigramStance,
+      korean: "태",
+      technique: "유수연타",
+    },
+    "3": { stance: "li" as TrigramStance, korean: "리", technique: "화염지창" },
+    "4": {
+      stance: "jin" as TrigramStance,
+      korean: "진",
+      technique: "벽력일섬",
+    },
+    "5": {
+      stance: "son" as TrigramStance,
+      korean: "손",
+      technique: "선풍연격",
+    },
+    "6": {
+      stance: "gam" as TrigramStance,
+      korean: "감",
+      technique: "수류반격",
+    },
+    "7": {
+      stance: "gan" as TrigramStance,
+      korean: "간",
+      technique: "반석방어",
+    },
+    "8": {
+      stance: "gon" as TrigramStance,
+      korean: "곤",
+      technique: "대지포옹",
+    },
   },
 
   // Movement controls
   movement: {
     WASD: "Tactical positioning and footwork",
-    "Arrow Keys": "Alternative movement system",
+    ArrowKeys: "Alternative movement system",
   },
 
   // Combat actions
@@ -132,6 +161,23 @@ export const COMBAT_CONTROLS = {
     F1: "Help / Controls guide",
     M: "Mute / Audio settings",
   },
+} as const;
+
+// Damage types
+export const DAMAGE_TYPES = {
+  PHYSICAL: "physical",
+  ENERGY: "energy",
+  VITAL_POINT: "vital_point",
+  PSYCHOLOGICAL: "psychological",
+} as const;
+
+// Combat phases
+export const COMBAT_PHASES = {
+  PREPARATION: "preparation",
+  ENGAGEMENT: "engagement",
+  EXECUTION: "execution",
+  RECOVERY: "recovery",
+  RESOLUTION: "resolution",
 } as const;
 
 // Combat audio mapping

@@ -1,7 +1,7 @@
 import React, { useMemo, useCallback } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import { GameMode } from "../../../types/game"; // Fix: Import from correct location
+import { GameMode } from "../../../types/enums"; // Fix: Use enums instead of game
 import { MenuSectionProps } from "../../../types";
 import {
   KOREAN_COLORS,

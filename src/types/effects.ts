@@ -37,15 +37,18 @@ export interface HitEffect {
   readonly position: Position;
   readonly damage?: number;
   readonly color?: number;
-  readonly lifespan: number; // Fix: Add missing lifespan property
+  readonly lifespan: number;
   readonly velocity?: {
-    // Fix: Add missing velocity property
     readonly x: number;
     readonly y: number;
   };
-  readonly effectType?: HitEffectType;
-  readonly duration?: number;
+  readonly effectType: HitEffectType; // Fix: Make required
+  readonly duration: number; // Fix: Make required
   readonly intensity?: number;
+  readonly type: HitEffectType; // Fix: Add missing type property
+  readonly timestamp: number; // Fix: Add missing timestamp property
+  readonly text?: string; // Fix: Add missing text property
+  readonly targetId?: string; // Fix: Add missing targetId property
 }
 
 // Combat effect types

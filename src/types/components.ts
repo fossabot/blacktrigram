@@ -144,6 +144,11 @@ export interface CombatScreenProps {
   readonly gamePhase?: GamePhase; // Fix: Now properly typed
   readonly onGamePhaseChange?: (phase: GamePhase) => void; // Fix: Now properly typed
   readonly timeRemaining?: number;
+  readonly gameMode?: GameMode;
+  readonly player1Archetype?: PlayerArchetype;
+  readonly player2Archetype?: PlayerArchetype;
+  readonly width?: number;
+  readonly height?: number;
 }
 
 // Game engine props
@@ -242,36 +247,41 @@ export interface EndScreenProps {
 }
 
 // Intro screen props
-export interface IntroScreenProps extends BaseComponentProps {
-  readonly onMenuSelect: (mode: GameMode) => void;
-  readonly onStartGame?: () => void; // Add missing prop
-  readonly onTrainingMode?: () => void; // Add missing prop
-  readonly onSettings?: () => void; // Add missing prop
-  readonly onExit?: () => void; // Add missing prop
-  readonly onShowPhilosophy?: () => void;
-  readonly onShowControls?: () => void;
+export interface IntroScreenProps {
+  readonly onMenuSelect: (mode: GameMode) => void; // Now uses GameMode from enums
+  readonly width?: number;
+  readonly height?: number;
+  readonly x?: number;
+  readonly y?: number;
 }
 
 // Training screen props
 export interface TrainingScreenProps {
-  readonly selectedArchetype: PlayerArchetype;
+  readonly selectedArchetype: PlayerArchetype; // Fix: Use PlayerArchetype enum instead of string
   readonly onBack?: () => void;
-  readonly onTrainingComplete?: (result: any) => void;
+  readonly onTrainingComplete?: () => void; // Fix: Remove parameter requirement
+  readonly width?: number;
+  readonly height?: number;
+}
+
+export interface MenuSectionProps {
+  readonly selectedMode?: GameMode;
+  readonly onModeSelect?: (mode: GameMode) => void;
+  readonly onStartGame?: () => void;
+  readonly onShowPhilosophy?: () => void;
+  readonly onShowControls?: () => void;
+  readonly width?: number;
+  readonly height?: number;
 }
 
 // Combat screen props
 export interface CombatScreenProps {
-  readonly players: readonly [PlayerState, PlayerState];
-  readonly onPlayerUpdate: (
-    playerIndex: number,
-    updates: Partial<PlayerState>
-  ) => void;
-  readonly onReturnToMenu?: () => void;
-  readonly gamePhase?: GamePhase;
-  readonly onGamePhaseChange?: (phase: GamePhase) => void;
-  readonly matchStatistics?: MatchStatistics;
-  readonly timeRemaining?: number;
-  // Fix: Remove onMatchStatisticsUpdate - not needed
+  readonly onReturnToMenu?: () => void; // Fix: Add missing prop
+  readonly gameMode?: GameMode;
+  readonly player1Archetype?: PlayerArchetype;
+  readonly player2Archetype?: PlayerArchetype;
+  readonly width?: number;
+  readonly height?: number;
 }
 
 // Base button component props for Korean martial arts UI
@@ -514,13 +524,13 @@ export interface PlayerArchetypeData {
 }
 
 export interface MenuSectionProps {
-  selectedMode: GameMode;
-  onModeSelect?: (mode: GameMode) => void;
-  onStartGame?: () => void;
-  onShowPhilosophy?: () => void;
-  onShowControls?: () => void;
-  width?: number;
-  height?: number;
+  readonly selectedMode?: GameMode;
+  onModeSelect?: (mode: GameMode) => void; // Now uses GameMode from enums
+  readonly onStartGame?: () => void;
+  readonly onShowPhilosophy?: () => void;
+  readonly onShowControls?: () => void;
+  readonly width?: number;
+  readonly height?: number;
 }
 
 export interface PhilosophySectionProps {
