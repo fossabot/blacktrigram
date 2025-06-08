@@ -1,16 +1,16 @@
 import React, { useCallback, useState, useMemo } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
-import type { CombatControlsProps, TrigramStance } from "../../../types";
+import type { CombatControlsProps } from "../../../types";
+import { TrigramStance } from "../../../types/enums";
 import {
-  KOREAN_COLORS,
+  TRIGRAM_STANCES_ORDER, // This MUST be of type readonly TrigramStance[] from constants/trigram.ts
   TRIGRAM_DATA,
-  TRIGRAM_STANCES_ORDER,
   FONT_FAMILY,
   FONT_SIZES,
   FONT_WEIGHTS,
-  COMBAT_CONTROLS,
+  KOREAN_COLORS,
 } from "../../../types/constants";
-import * as PIXI from "pixi.js"; // Import PIXI for PIXI.Graphics
+import * as PIXI from "pixi.js";
 
 export const CombatControls: React.FC<CombatControlsProps> = ({
   players, // Now used
@@ -29,15 +29,9 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
 
   const handleStanceClick = useCallback(
     (stance: TrigramStance) => {
-      if (!isExecutingTechnique && !isPaused) {
-        // Determine player index - assuming 'player' prop is the one to control
-        const playerIndex = players.findIndex((p) => p.id === player.id);
-        if (playerIndex !== -1) {
-          onStanceChange(playerIndex as 0 | 1, stance);
-        }
-      }
+      onStanceChange(player.id === players[0].id ? 0 : 1, stance);
     },
-    [onStanceChange, isExecutingTechnique, isPaused, player, players]
+    [onStanceChange, player, players]
   );
 
   const buttonWidth = width / TRIGRAM_STANCES_ORDER.length - 10;
@@ -69,7 +63,14 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
       g.drawRoundedRect(0, 0, buttonWidth, buttonHeight, 10);
       g.endFill();
     },
-    [buttonWidth, buttonHeight, hoveredStance, isExecutingTechnique, isPaused]
+    [
+      buttonWidth,
+      buttonHeight,
+      hoveredStance,
+      isExecutingTechnique,
+      isPaused,
+      player.currentStance,
+    ] // Added player.currentStance
   );
 
   // Fix text style
@@ -86,74 +87,76 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
   );
 
   return (
-    <Container x={props.x} y={props.y} width={width} height={height}>
-      {TRIGRAM_STANCES_ORDER.map((stance, index) => {
-        const stanceKey = (
-          index + 1
-        ).toString() as keyof typeof COMBAT_CONTROLS.stanceControls;
-        const stanceDetail = COMBAT_CONTROLS.stanceControls[stanceKey];
-        const isCurrentStance = player.currentStance === stance;
+    <Container {...props}>
+      {/* ... other elements ... */}
+      <Container x={10} y={10}>
+        {/* Ensure TRIGRAM_STANCES_ORDER is `readonly TrigramStance[]` */}
+        {(TRIGRAM_STANCES_ORDER as readonly TrigramStance[]).map(
+          (stance: TrigramStance, index) => {
+            // Added type assertion for safety
+            const isCurrentStance = player.currentStance === stance;
+            const buttonX = index * (buttonWidth + 5);
+            const stanceData = TRIGRAM_DATA[stance];
 
-        return (
-          <Container
-            key={stance}
-            x={index * (buttonWidth + 10) + 5}
-            y={10}
-            interactive={!isExecutingTechnique && !isPaused}
-            buttonMode={!isExecutingTechnique && !isPaused}
-            pointertap={() => handleStanceClick(stance)}
-            pointerover={() => setHoveredStance(stance)}
-            pointerout={() => setHoveredStance(null)}
-          >
-            <Graphics
-              draw={(g: PIXI.Graphics) =>
-                drawButton(g, stance, isCurrentStance)
-              }
-            />
-            <Text
-              text={TRIGRAM_DATA[stance]?.symbol || ""}
-              anchor={0.5}
-              x={buttonWidth / 2}
-              y={buttonHeight / 2 - 10}
-              style={{
-                ...textStyle,
-                fontSize: FONT_SIZES.large,
-                fill: isCurrentStance
-                  ? KOREAN_COLORS.BLACK_SOLID
-                  : KOREAN_COLORS.TEXT_PRIMARY,
-              }}
-            />
-            <Text
-              text={
-                stanceDetail?.korean ||
-                TRIGRAM_DATA[stance]?.name.korean ||
-                stance
-              }
-              anchor={0.5}
-              x={buttonWidth / 2}
-              y={buttonHeight / 2 + 10}
-              style={{
-                ...textStyle,
-                fontSize: FONT_SIZES.small,
-                fill: isCurrentStance
-                  ? KOREAN_COLORS.BLACK_SOLID
-                  : KOREAN_COLORS.TEXT_SECONDARY,
-              }}
-            />
-          </Container>
-        );
-      })}
-      {showVitalPoints && ( // Example of using showVitalPoints
-        <Graphics
-          x={10}
-          y={10}
-          draw={(g: PIXI.Graphics) => {
-            g.beginFill(KOREAN_COLORS.POSITIVE_GREEN, 0.5);
-            g.drawCircle(0, 0, 5);
-            g.endFill();
-          }}
-        />
-      )}
+            return (
+              <Container
+                key={stance} // stance is a TrigramStance enum member, which is a string at runtime
+                x={buttonX}
+                y={0}
+                interactive={!(isExecutingTechnique || isPaused)}
+                buttonMode={!(isExecutingTechnique || isPaused)}
+                pointertap={() => {
+                  if (!(isExecutingTechnique || isPaused)) {
+                    handleStanceClick(stance);
+                  }
+                }}
+                pointerover={() => {
+                  if (!(isExecutingTechnique || isPaused)) {
+                    setHoveredStance(stance);
+                  }
+                }}
+                pointerout={() => setHoveredStance(null)}
+              >
+                <Graphics
+                  draw={(g: PIXI.Graphics) =>
+                    drawButton(g, stance, isCurrentStance)
+                  }
+                />
+                <Text
+                  text={stanceData?.symbol || ""}
+                  anchor={0.5}
+                  x={buttonWidth / 2}
+                  y={buttonHeight / 2 - 10}
+                  style={{
+                    ...textStyle,
+                    fontSize: FONT_SIZES.large,
+                    fill: isCurrentStance
+                      ? KOREAN_COLORS.BLACK_SOLID
+                      : KOREAN_COLORS.TEXT_PRIMARY,
+                  }}
+                />
+                <Text
+                  text={
+                    stanceData?.name.korean || // Use stanceData for Korean name
+                    stance.toString() // Fallback to string representation of enum value
+                  }
+                  anchor={0.5}
+                  x={buttonWidth / 2}
+                  y={buttonHeight / 2 + 10}
+                  style={{
+                    ...textStyle,
+                    fontSize: FONT_SIZES.small,
+                    fill: isCurrentStance
+                      ? KOREAN_COLORS.BLACK_SOLID
+                      : KOREAN_COLORS.TEXT_SECONDARY,
+                  }}
+                />
+              </Container>
+            );
+          }
+        )}
+      </Container>
+      {/* ... other controls ... */}
     </Container>
   );
 };

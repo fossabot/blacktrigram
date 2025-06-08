@@ -1,90 +1,62 @@
 import React, { useState, useCallback } from "react";
 import { Container } from "@pixi/react";
-import type { IntroScreenProps, PlayerArchetype } from "../../types";
+import type { IntroScreenProps } from "../../types";
+import { GameMode } from "../../types/enums";
 import { GAME_CONFIG } from "../../types/constants";
-import { MenuSection } from "./components/MenuSection";
-import { PhilosophySection } from "./components/PhilosophySection";
-import { ControlsSection } from "./components/ControlsSection";
-
-type IntroView = "menu" | "philosophy" | "controls" | "training" | "credits";
+import { MenuSection } from "./sections/MenuSection";
+import { PhilosophySection } from "./sections/PhilosophySection";
+import { ControlsSection } from "./sections/ControlsSection";
 
 export const IntroScreen: React.FC<IntroScreenProps> = ({
-  onGamePhaseChange,
-  onStartCombat,
-  onStartTraining,
-  onArchetypeSelect,
+  onGameStart,
+  onModeSelect,
   width = GAME_CONFIG.CANVAS_WIDTH,
   height = GAME_CONFIG.CANVAS_HEIGHT,
-  ...props
 }) => {
-  const [currentView, setCurrentView] = useState<IntroView>("menu");
-  const [selectedArchetype, setSelectedArchetype] =
-    useState<PlayerArchetype>("musa");
+  const [activeSection, setActiveSection] = useState<
+    "menu" | "philosophy" | "controls"
+  >("menu");
+  const [selectedMode, setSelectedMode] = useState<GameMode>(GameMode.VERSUS);
 
-  const handleArchetypeSelect = useCallback(
-    (archetype: PlayerArchetype) => {
-      setSelectedArchetype(archetype);
-      if (onArchetypeSelect) {
-        onArchetypeSelect(archetype);
-      }
+  const handleGameStart = useCallback(() => {
+    onGameStart?.(selectedMode);
+  }, [onGameStart, selectedMode]);
+
+  const handleModeSelect = useCallback(
+    (mode: GameMode) => {
+      setSelectedMode(mode);
+      onModeSelect?.(mode);
     },
-    [onArchetypeSelect]
+    [onModeSelect]
   );
 
-  const handleStartCombat = useCallback(() => {
-    if (onStartCombat) {
-      onStartCombat();
-    } else {
-      onGamePhaseChange("combat");
-    }
-  }, [onStartCombat, onGamePhaseChange]);
-
-  const handleStartTraining = useCallback(() => {
-    if (onStartTraining) {
-      onStartTraining();
-    } else {
-      onGamePhaseChange("training");
-    }
-  }, [onStartTraining, onGamePhaseChange]);
-
-  const renderCurrentView = () => {
-    switch (currentView) {
+  const renderCurrentSection = () => {
+    switch (activeSection) {
       case "philosophy":
         return (
           <PhilosophySection
-            onGamePhaseChange={onGamePhaseChange}
-            onBackToMenu={() => setCurrentView("menu")}
-            selectedArchetype={selectedArchetype}
-            onArchetypeSelect={handleArchetypeSelect}
-            x={0}
-            y={0}
             width={width}
             height={height}
+            onBack={() => setActiveSection("menu")}
           />
         );
       case "controls":
         return (
           <ControlsSection
-            title="게임 조작법 (Game Controls)"
-            onBackToMenu={() => setCurrentView("menu")}
-            x={0}
-            y={0}
             width={width}
             height={height}
+            onBack={() => setActiveSection("menu")}
           />
         );
       case "menu":
       default:
         return (
           <MenuSection
-            onStartCombat={handleStartCombat}
-            onStartTraining={handleStartTraining}
-            onShowPhilosophy={() => setCurrentView("philosophy")}
-            onShowControls={() => setCurrentView("controls")}
-            onShowTraining={() => setCurrentView("training")}
-            onShowCredits={() => setCurrentView("credits")}
-            x={0}
-            y={0}
+            selectedMode={selectedMode}
+            onModeSelect={handleModeSelect}
+            onStartGame={handleGameStart}
+            onShowPhilosophy={() => setActiveSection("philosophy")}
+            onShowControls={() => setActiveSection("controls")}
             width={width}
             height={height}
           />
@@ -93,8 +65,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
   };
 
   return (
-    <Container width={width} height={height} {...props}>
-      {renderCurrentView()}
+    <Container width={width} height={height}>
+      {renderCurrentSection()}
     </Container>
   );
 };

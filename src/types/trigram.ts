@@ -127,3 +127,13 @@ export interface StanceTransition {
   readonly duration: number; // Added
   readonly difficulty: number; // Added
 }
+
+// Ensure TrigramTheme has a text property
+export interface TrigramTheme {
+  primary: number;
+  secondary: number;
+  active: number;
+  hover: number;
+  text: number; // Ensure text property is present
+  glow?: number; // Optional glow color
+}

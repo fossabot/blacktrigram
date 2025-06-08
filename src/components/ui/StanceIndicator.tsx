@@ -1,102 +1,85 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useCallback } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import type { BaseUIComponentProps, TrigramStance } from "../../types";
+import type { StanceIndicatorProps } from "../../types";
+import { TrigramStance } from "../../types/enums";
 import {
-  KOREAN_COLORS,
-  FONT_FAMILY,
-  FONT_SIZES,
   TRIGRAM_DATA,
+  KOREAN_COLORS,
+  FONT_FAMILY, // Added import
+  FONT_SIZES, // Added import
 } from "../../types/constants";
-
-interface StanceIndicatorProps extends BaseUIComponentProps {
-  readonly stance: TrigramStance;
-  readonly size?: number;
-  readonly x?: number;
-  readonly y?: number;
-  readonly interactive?: boolean;
-  readonly onStanceSelect?: (stance: TrigramStance) => void;
-}
 
 export const StanceIndicator: React.FC<StanceIndicatorProps> = ({
   stance,
-  size = 60,
   x = 0,
   y = 0,
-  interactive = false,
-  onStanceSelect,
-  ...props
+  size = 50,
 }) => {
   const stanceData = TRIGRAM_DATA[stance];
 
-  const symbolStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.xlarge,
-        fill: KOREAN_COLORS.TEXT_PRIMARY,
-        align: "center",
-        fontWeight: "bold",
-      }),
-    []
+  const drawIndicator = useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+      const baseColor = stanceData?.theme?.primary || KOREAN_COLORS.UI_BORDER;
+
+      // Outer ring
+      g.lineStyle(3, baseColor, 0.8);
+      g.drawCircle(size / 2, size / 2, size / 2 - 2);
+
+      // Inner fill if active or specific style
+      if (stanceData?.theme?.active) {
+        g.beginFill(stanceData.theme.active, 0.3);
+        g.drawCircle(size / 2, size / 2, size / 2 - 5);
+        g.endFill();
+      }
+    },
+    [stance, size, stanceData]
   );
 
-  const labelStyle = useMemo(
+  const symbolTextStyle = useMemo(
     () =>
       new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.small,
-        fill: KOREAN_COLORS.TEXT_SECONDARY,
+        fontFamily: FONT_FAMILY.PRIMARY, // Ensure FONT_FAMILY is imported
+        fontSize: FONT_SIZES.large, // Ensure FONT_SIZES is imported
+        fill: stanceData?.theme?.text || KOREAN_COLORS.TEXT_PRIMARY, // Ensure theme.text exists or use a fallback
         align: "center",
       }),
-    []
+    [size, stanceData]
   );
 
-  const drawBackground = (g: PIXI.Graphics) => {
-    g.clear();
-
-    const color =
-      stanceData?.theme?.primary || KOREAN_COLORS.UI_BACKGROUND_MEDIUM;
-    const borderColor = stanceData?.theme?.secondary || KOREAN_COLORS.UI_BORDER;
-
-    g.beginFill(color, 0.3);
-    g.lineStyle(2, borderColor, 0.8);
-    g.drawCircle(size / 2, size / 2, size / 2 - 2);
-    g.endFill();
-  };
-
-  const handleClick = () => {
-    if (interactive && onStanceSelect) {
-      onStanceSelect(stance);
-    }
-  };
+  const nameTextStyle = useMemo(
+    () =>
+      new PIXI.TextStyle({
+        fontFamily: FONT_FAMILY.PRIMARY, // Ensure FONT_FAMILY is imported
+        fontSize: FONT_SIZES.small, // Ensure FONT_SIZES is imported
+        fill: stanceData?.theme?.text || KOREAN_COLORS.TEXT_SECONDARY, // Ensure theme.text exists or use a fallback
+        align: "center",
+      }),
+    [size, stanceData]
+  );
 
   return (
-    <Container
-      x={x}
-      y={y}
-      interactive={interactive}
-      buttonMode={interactive}
-      pointertap={handleClick}
-      {...props}
-    >
-      <Graphics draw={drawBackground} />
+    <Container x={x} y={y}>
+      <Graphics draw={drawIndicator} />
 
       <Text
         text={stanceData?.symbol || "☰"}
-        anchor={0.5}
+        style={symbolTextStyle}
         x={size / 2}
-        y={size / 2 - 5}
-        style={symbolStyle}
+        y={size / 2}
+        anchor={0.5}
       />
 
-      <Text
-        text={stanceData?.name.korean || stance}
-        anchor={0.5}
-        x={size / 2}
-        y={size + 5}
-        style={labelStyle}
-      />
+      {showLabel && (
+        <Text
+          text={stanceData?.name.korean || currentStance}
+          style={nameTextStyle}
+          x={size / 2}
+          y={size + 10}
+          anchor={0.5}
+        />
+      )}
     </Container>
   );
 };

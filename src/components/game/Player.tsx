@@ -1,205 +1,111 @@
 // Complete Player component with Korean martial arts character rendering
 
-import React, { useMemo } from "react";
+import React, { useCallback } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import type { PlayerProps } from "../../types";
+import type { PlayerState } from "../../types";
 import {
   KOREAN_COLORS,
   FONT_FAMILY,
-  KOREAN_TEXT_SIZES, // Changed from FONT_SIZES
-  KOREAN_FONT_WEIGHTS, // Changed from FONT_WEIGHTS
-  TRIGRAM_DATA,
+  FONT_SIZES,
   PLAYER_ARCHETYPES_DATA,
-  FONT_SIZES, // Added import
 } from "../../types/constants";
 
-const getStanceColor = (stance: string): number => {
-  const stanceData = TRIGRAM_DATA[stance as keyof typeof TRIGRAM_DATA];
-  return stanceData?.theme?.primary || KOREAN_COLORS.UI_STEEL_GRAY;
-};
+export interface PlayerProps {
+  readonly playerState: PlayerState;
+  readonly x?: number;
+  readonly y?: number;
+  readonly showStats?: boolean;
+  readonly interactive?: boolean;
+  readonly onClick?: () => void;
+}
 
 export const Player: React.FC<PlayerProps> = ({
   playerState,
-  playerIndex,
-  position = { x: 0, y: 0 },
-  showVitalPoints = false,
-  showDebugInfo = false,
-  onStateUpdate,
   x = 0,
   y = 0,
-  width = 200,
-  height = 150,
-  ...props
+  showStats = true,
+  interactive = false,
+  onClick,
 }) => {
-  // const { name, currentStance } = playerState; // Already destructured from playerState
-  const archetypeData = PLAYER_ARCHETYPES_DATA[playerState.archetype]; // Get archetype data
-
-  // const playerColor = useMemo( // Unused
-  //   () => archetypeData?.theme?.primary || KOREAN_COLORS.UI_STEEL_GRAY,
-  //   [archetypeData]
-  // );
-
-  const nameTextStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.KOREAN_BATTLE,
-        fontSize: KOREAN_TEXT_SIZES.medium, // Use KOREAN_TEXT_SIZES
-        fill: archetypeData?.theme?.primary || KOREAN_COLORS.TEXT_ACCENT, // Use archetype theme color
-        fontWeight:
-          KOREAN_FONT_WEIGHTS.bold.toString() as PIXI.TextStyleFontWeight, // Use KOREAN_FONT_WEIGHTS
-        stroke: { color: KOREAN_COLORS.BLACK_SOLID, width: 2 },
-      }),
-    [archetypeData] // Add archetypeData to dependency array
-  );
-
-  const barHeight = 15;
-  const barWidth = width * 0.8;
-  const barSpacing = 5;
-
-  const drawBar = (
-    g: PIXI.Graphics,
-    currentValue: number,
-    maxValue: number,
-    color: number,
-    yOffset: number
-  ) => {
-    const ratio = currentValue / maxValue;
-
-    // Background bar
-    g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK);
-    g.drawRect(10, yOffset, barWidth, barHeight);
-    g.endFill();
-
-    // Fill bar
-    g.beginFill(color);
-    g.drawRect(10, yOffset, barWidth * ratio, barHeight);
-    g.endFill();
-
-    // Border
-    g.lineStyle(1, KOREAN_COLORS.UI_BORDER);
-    g.drawRect(10, yOffset, barWidth, barHeight);
-  };
-
-  const drawPlayerInfo = React.useCallback(
+  const playerDraw = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
 
-      // Player background
-      g.beginFill(getStanceColor(playerState.currentStance), 0.2); // Use playerState.currentStance
-      g.lineStyle(2, getStanceColor(playerState.currentStance)); // Use playerState.currentStance
-      g.drawRoundedRect(0, 0, width, height, 10);
+      const archetype = playerState.archetype;
+      const archetypeData = PLAYER_ARCHETYPES_DATA[archetype];
+      const primaryColor =
+        archetypeData?.colors?.primary || KOREAN_COLORS.UI_GRAY; // Fix: use colors property
+
+      // Draw player body
+      g.beginFill(primaryColor, 0.8);
+      g.lineStyle(2, KOREAN_COLORS.WHITE_SOLID, 1);
+      g.drawRect(-25, -50, 50, 100);
       g.endFill();
 
-      // Health bar
-      drawBar(
-        g,
-        playerState.health,
-        playerState.maxHealth,
-        KOREAN_COLORS.POSITIVE_GREEN,
-        30
+      // Health indicator
+      const healthPercent = playerState.health / playerState.maxHealth;
+      g.beginFill(
+        healthPercent > 0.5
+          ? KOREAN_COLORS.POSITIVE_GREEN
+          : KOREAN_COLORS.WARNING_ORANGE,
+        0.8
       );
+      g.drawRect(-30, -60, 60 * healthPercent, 5);
+      g.endFill();
 
-      // Ki bar
-      drawBar(
-        g,
-        playerState.ki,
-        playerState.maxKi,
-        KOREAN_COLORS.PRIMARY_BLUE_LIGHT,
-        30 + barHeight + barSpacing
-      );
+      if (showStats) {
+        // Ki meter background
+        g.beginFill(KOREAN_COLORS.SECONDARY_BLUE_DARK, 0.3); // Fix: use existing color
+        g.drawRect(-30, 15, 60, 8);
+        g.endFill();
 
-      // Stamina bar
-      drawBar(
-        g,
-        playerState.stamina,
-        playerState.maxStamina,
-        KOREAN_COLORS.SECONDARY_YELLOW_LIGHT,
-        30 + (barHeight + barSpacing) * 2
-      );
+        // Ki meter fill
+        const kiPercent = playerState.ki / playerState.maxKi;
+        g.beginFill(KOREAN_COLORS.PRIMARY_CYAN, 0.8);
+        g.drawRect(-30, 15, 60 * kiPercent, 8);
+        g.endFill();
+
+        // Stamina meter background
+        g.beginFill(KOREAN_COLORS.SECONDARY_YELLOW, 0.3); // Fix: use existing color
+        g.drawRect(-30, 25, 60, 8);
+        g.endFill();
+
+        // Stamina meter fill
+        const staminaPercent = playerState.stamina / playerState.maxStamina;
+        g.beginFill(KOREAN_COLORS.SECONDARY_YELLOW, 0.8);
+        g.drawRect(-30, 25, 60 * staminaPercent, 8);
+        g.endFill();
+      }
     },
-    [
-      width,
-      height,
-      health,
-      maxHealth,
-      ki,
-      maxKi,
-      stamina,
-      maxStamina,
-      playerState.currentStance, // Use playerState.currentStance
-      // drawBar, // drawBar is defined inside this callback's scope, no need to be a dependency
-    ]
+    [playerState, showStats]
   );
 
-  // Use onStateUpdate if provided (for test compatibility)
-  React.useEffect(() => {
-    if (onStateUpdate) {
-      // Example of how onStateUpdate might be used
-      // onStateUpdate(playerIndex, { ...playerState });
-    }
-  }, [onStateUpdate, playerIndex, playerState]);
-
   return (
-    <Container x={x} y={y} {...props}>
-      <Graphics draw={drawPlayerInfo} />
+    <Container
+      x={x}
+      y={y}
+      interactive={interactive}
+      buttonMode={interactive}
+      pointertap={onClick}
+    >
+      <Graphics draw={playerDraw} />
 
-      <Text
-        text={playerState.name.korean} // Use playerState.name.korean
-        anchor={0.5}
-        x={width / 2}
-        y={15} // Adjusted y for better placement
-        style={nameTextStyle}
-      />
-
-      <Text
-        text={
-          TRIGRAM_DATA[playerState.currentStance]?.name.korean ||
-          playerState.currentStance
-        } // Use playerState.currentStance
-        anchor={0.5}
-        x={width / 2}
-        y={height - 25} // Adjusted y for better placement
-        style={{
-          ...nameTextStyle,
-          fontSize: KOREAN_TEXT_SIZES.small, // Use KOREAN_TEXT_SIZES
-          fill: getStanceColor(playerState.currentStance), // Use playerState.currentStance
-        }}
-      />
-
-      {showVitalPoints && (
-        <Graphics
-          draw={(g: PIXI.Graphics) => {
-            g.beginFill(KOREAN_COLORS.NEGATIVE_RED, 0.7);
-            g.drawCircle(width / 2, height / 2, 3);
-            g.endFill();
-          }}
+      {showStats && (
+        <Text
+          text={playerState.name.korean}
+          style={
+            new PIXI.TextStyle({
+              fontFamily: FONT_FAMILY.PRIMARY,
+              fontSize: FONT_SIZES.small,
+              fill: KOREAN_COLORS.TEXT_PRIMARY,
+              align: "center",
+            })
+          }
+          anchor={0.5}
+          x={0}
+          y={-80}
         />
-      )}
-
-      {showDebugInfo && (
-        <Container>
-          <Text
-            text={`Archetype: ${archetype}`}
-            x={10}
-            y={height + 5}
-            style={{
-              ...nameTextStyle,
-              fontSize: FONT_SIZES.xsmall,
-              fill: KOREAN_COLORS.TEXT_SECONDARY,
-            }}
-          />
-          <Text
-            text={`Position: ${position.x}, ${position.y}`}
-            x={10}
-            y={height + 15}
-            style={{
-              ...nameTextStyle,
-              fontSize: FONT_SIZES.xsmall,
-              fill: KOREAN_COLORS.TEXT_SECONDARY,
-            }}
-          />
-        </Container>
       )}
     </Container>
   );

@@ -3,6 +3,8 @@
 import type { EffectType, EffectIntensity, DamageType } from "./enums"; // Added DamageType
 import type { KoreanText } from "./korean-text";
 import type { Position } from "./common";
+import type { DamageType } from "./combat";
+import { HitEffectType } from "./enums"; // Import the enum
 
 export interface StatusEffect {
   readonly id: string;
@@ -32,13 +34,21 @@ export interface VitalPointEffect extends StatusEffect {
 // Hit effect for visual combat feedback
 export interface HitEffect {
   readonly id: string;
-  readonly type: "light" | "medium" | "heavy" | "critical";
+  readonly type: HitEffectType; // Use the enum here
   readonly position: Position;
-  readonly damage: number;
-  readonly timestamp: number;
-  readonly duration: number;
-  readonly color: number; // PIXI color value
-  readonly playerId: string;
+  readonly duration: number; // milliseconds
+  readonly timestamp: number; // Date.now() when created
+  readonly sourcePlayerId?: string; // Added
+  readonly targetPlayerId?: string; // Added (used as playerId in CombatArena)
+  readonly damage?: number;
+  readonly damageType?: DamageType;
+  readonly text?: string; // e.g., "CRITICAL!", "MISS!"
+  readonly rotation?: number; // For angled effects
+  readonly scale?: number; // For size variation
+  readonly opacity?: number; // For fading effects
+  readonly color?: number; // For colored effects (e.g., based on damage type)
+  readonly soundId?: string; // Sound to play with the effect
+  readonly isCritical?: boolean;
 }
 
 // Combat effect types

@@ -5,11 +5,11 @@ import type {
   PlayerArchetype,
   KoreanText,
   Position,
-  TrigramStance,
   KoreanTechnique,
   CombatResult,
+  HitResult,
 } from "../types";
-import { TRIGRAM_DATA } from "../types/constants";
+import { PLAYER_ARCHETYPES_DATA } from "../types/constants";
 
 /**
  * Create a new player state with default values
@@ -78,171 +78,254 @@ export function createPlayerState(
 }
 
 /**
- * Check if player is incapacitated
+ * Create a default player state for Korean martial arts combat
  */
-export function isPlayerCapacitated(player: PlayerState): boolean {
-  return (
-    player.health > 0 &&
-    player.consciousness > 0 &&
-    player.combatState !== "stunned"
-  );
-}
-
-/**
- * Calculate archetype-specific damage modifiers
- */
-export function calculateArchetypeDamage(
+export function createDefaultPlayerState(
+  id: string,
   archetype: PlayerArchetype,
-  baseDamage: number
-): number {
-  const modifiers: Record<PlayerArchetype, number> = {
-    musa: 1.1, // Traditional warrior - high damage
-    amsalja: 1.2, // Assassin - highest damage
-    hacker: 0.9, // Cyber warrior - lower physical damage
-    jeongbo_yowon: 1.0, // Intelligence operative - balanced
-    jojik_pokryeokbae: 1.15, // Organized crime - high brutal damage
-  };
+  name: KoreanText,
+  position: Position,
+  direction: "left" | "right" = "right"
+): PlayerState {
+  const archetypeData = PLAYER_ARCHETYPES_DATA[archetype];
 
-  return baseDamage * (modifiers[archetype] || 1.0);
+  return {
+    id,
+    name,
+    archetype,
+    currentStance: archetypeData.coreStance,
+
+    // Combat stats
+    health: archetypeData.baseHealth,
+    maxHealth: archetypeData.baseHealth,
+    ki: archetypeData.baseKi,
+    maxKi: archetypeData.baseKi,
+    stamina: archetypeData.baseStamina,
+    maxStamina: archetypeData.baseStamina,
+
+    // Physical condition
+    consciousness: 100,
+    maxConsciousness: 100,
+    pain: 0,
+    balance: 100,
+    focus: 100,
+
+    // Combat state
+    combatState: "idle",
+    position,
+    direction,
+
+    // Vital points (simplified - in full game would have all 70)
+    vitalPoints: {
+      head_temple: {
+        id: "head_temple",
+        status: "normal",
+        damage: 0,
+        painLevel: 0,
+        isBlocked: false,
+        lastHit: null,
+        location: { x: 50, y: 20 }, // Head area
+      },
+      torso_solar_plexus: {
+        id: "torso_solar_plexus",
+        status: "normal",
+        damage: 0,
+        painLevel: 0,
+        isBlocked: false,
+        lastHit: null,
+        location: { x: 50, y: 60 }, // Torso area
+      },
+    },
+
+    // Status effects
+    statusEffects: [],
+
+    // Combat modifiers
+    attackPower: 1.0,
+    defensePower: 1.0,
+    speed: 1.0,
+    accuracy: 1.0,
+
+    // Technique tracking
+    lastTechniqueUsed: null,
+    comboCount: 0,
+
+    // Animation state
+    animationState: "idle",
+
+    // Combat timing
+    lastActionTime: 0,
+    recoveryTime: 0,
+
+    // Korean martial arts specific
+    kiFlow: "balanced",
+    mentalState: "focused",
+    breathingPattern: "normal",
+  };
 }
 
 /**
  * Execute a technique between attacker and defender
  */
+export interface CombatResult {
+  hit: boolean;
+  damage: number;
+  critical: boolean;
+  hitPosition?: Position;
+  updatedAttacker: Partial<PlayerState>;
+  updatedDefender: Partial<PlayerState>;
+}
+
 export function executeTechnique(
   attacker: PlayerState,
   defender: PlayerState,
-  technique: KoreanTechnique,
-  targetPoint?: string | null
-): {
-  updatedAttacker: Partial<PlayerState>;
-  updatedDefender: Partial<PlayerState>;
-  hitResult: CombatResult;
-} {
-  // Calculate basic damage with archetype modifiers
-  const baseDamage = technique.damage || 20;
-  const archetypeDamage = calculateArchetypeDamage(
-    attacker.archetype,
-    baseDamage
+  technique: KoreanTechnique
+): CombatResult {
+  // Calculate hit chance based on technique accuracy and player stats
+  const baseAccuracy = technique.accuracy || 85;
+  const attackerBonus = attacker.technique || 0;
+  const defenderPenalty = defender.speed || 0;
+
+  const finalAccuracy = Math.min(
+    95,
+    Math.max(5, baseAccuracy + attackerBonus / 10 - defenderPenalty / 15)
   );
-  const damage = Math.floor(archetypeDamage * (0.8 + Math.random() * 0.4));
 
-  // Determine if hit connects based on attacker/defender states
-  const attackerEffectiveness = calculateCombatEffectiveness(attacker);
-  const defenderEffectiveness = calculateCombatEffectiveness(defender);
-  const hitChance = 0.8 * attackerEffectiveness * (2 - defenderEffectiveness);
-  const hit = Math.random() < hitChance;
+  const hit = Math.random() * 100 < finalAccuracy;
 
-  // Check for critical hit or vital point hit
-  const isCritical = hit && Math.random() < 0.1;
-  const isVitalPoint = hit && targetPoint && Math.random() < 0.15;
+  if (!hit) {
+    return {
+      hit: false,
+      damage: 0,
+      critical: false,
+      updatedAttacker: {
+        stamina: Math.max(0, attacker.stamina - (technique.staminaCost || 10)),
+      },
+      updatedDefender: {},
+    };
+  }
 
-  const finalDamage = hit
-    ? isCritical || isVitalPoint
-      ? Math.floor(damage * 1.5)
-      : damage
-    : 0;
+  // Calculate damage
+  const baseDamage = technique.damage || 10;
+  const attackPower = attacker.attackPower || 50;
+  const defense = defender.defense || 50;
 
-  const hitResult: CombatResult = {
-    hit,
-    damage: finalDamage,
-    critical: isCritical,
-    blocked: false,
-    stunned: isCritical && Math.random() < 0.3,
-    knockdown: false,
-    vitalPointHit: isVitalPoint,
-    hitPosition: defender.position,
-    // Enhanced properties
-    attacker: attacker.archetype,
-    defender: defender.archetype,
-    damagePrevented: 0,
-    staminaUsed: technique.staminaCost || 10,
-    kiUsed: technique.kiCost || 0,
-    defenderDamaged: hit,
-    attackerStance: attacker.currentStance,
-    defenderStance: defender.currentStance,
-    painLevel: finalDamage * 0.5,
-    consciousnessImpact: finalDamage * 0.1,
-    balanceEffect: isCritical ? 20 : 0,
-    bloodLoss: isVitalPoint ? finalDamage * 0.2 : 0,
-    stunDuration: isCritical ? 1000 : 0,
-    statusEffects: technique.effects || [],
-    hitType: isCritical ? "critical" : hit ? "normal" : "miss",
-    effectiveness: attackerEffectiveness,
-    vitalPointsHit: [],
-    effects: technique.effects || [],
-    damageType: technique.damageType || "blunt",
-    isVitalPoint: isVitalPoint,
-    newState: hit ? "attacking" : "ready",
+  const damage = Math.max(
+    1,
+    Math.floor((baseDamage * attackPower) / (100 + defense))
+  );
+
+  // Check for critical hit
+  const criticalChance = 10 + (attacker.technique || 0) / 10;
+  const critical = Math.random() * 100 < criticalChance;
+  const finalDamage = critical ? Math.floor(damage * 1.5) : damage;
+
+  // Calculate hit position
+  const hitPosition: Position = {
+    x: defender.position.x + (Math.random() - 0.5) * 50,
+    y: defender.position.y + (Math.random() - 0.5) * 50,
   };
-
-  const updatedAttacker: Partial<PlayerState> = {
-    stamina: Math.max(0, attacker.stamina - (technique.staminaCost || 10)),
-    ki: Math.max(0, attacker.ki - (technique.kiCost || 0)),
-    lastActionTime: Date.now(),
-    combatState: "attacking",
-  };
-
-  const updatedDefender: Partial<PlayerState> = hit
-    ? {
-        health: Math.max(0, defender.health - finalDamage),
-        pain: Math.min(100, defender.pain + hitResult.painLevel),
-        consciousness: Math.max(
-          0,
-          defender.consciousness - hitResult.consciousnessImpact
-        ),
-        balance: Math.max(0, defender.balance - hitResult.balanceEffect),
-        bloodLoss: defender.bloodLoss + hitResult.bloodLoss,
-        combatState: hitResult.stunned ? "stunned" : "defending",
-      }
-    : {
-        combatState: "defending",
-      };
 
   return {
-    updatedAttacker,
-    updatedDefender,
-    hitResult,
+    hit: true,
+    damage: finalDamage,
+    critical,
+    hitPosition,
+    updatedAttacker: {
+      stamina: Math.max(0, attacker.stamina - (technique.staminaCost || 10)),
+      ki: Math.max(0, attacker.ki - (technique.kiCost || 5)),
+    },
+    updatedDefender: {
+      health: Math.max(0, defender.health - finalDamage),
+      pain: Math.min(100, defender.pain + finalDamage / 5),
+      consciousness: Math.max(0, defender.consciousness - (critical ? 10 : 5)),
+    },
   };
 }
 
 /**
- * Get archetype display name
+ * Update player's vital point status
  */
-export function getArchetypeDisplayName(
-  archetype: PlayerArchetype
-): KoreanText {
-  const names: Record<PlayerArchetype, KoreanText> = {
-    musa: { korean: "무사", english: "Warrior" },
-    amsalja: { korean: "암살자", english: "Assassin" },
-    hacker: { korean: "해커", english: "Hacker" },
-    jeongbo_yowon: { korean: "정보요원", english: "Intelligence Operative" },
-    jojik_pokryeokbae: { korean: "조직폭력배", english: "Organized Crime" },
+export function updateVitalPoint(
+  player: PlayerState,
+  vitalPointId: string,
+  damage: number
+): PlayerState {
+  const vitalPoint = player.vitalPoints[vitalPointId];
+  if (!vitalPoint) return player;
+
+  const updatedVitalPoint = {
+    ...vitalPoint,
+    damage: vitalPoint.damage + damage,
+    status:
+      vitalPoint.damage + damage > 50
+        ? ("critical" as const)
+        : vitalPoint.damage + damage > 20
+        ? ("damaged" as const)
+        : ("normal" as const),
+    lastHit: Date.now(),
   };
 
-  return names[archetype];
+  return {
+    ...player,
+    vitalPoints: {
+      ...player.vitalPoints,
+      [vitalPointId]: updatedVitalPoint,
+    },
+  };
 }
 
 /**
  * Check if player can perform action
  */
-export function canPerformAction(player: PlayerState): boolean {
+export function canPerformAction(
+  player: PlayerState,
+  actionStaminaCost: number = 10,
+  actionKiCost: number = 0
+): boolean {
   return (
-    player.health > 0 &&
+    player.combatState !== "stunned" &&
+    player.stamina >= actionStaminaCost &&
+    player.ki >= actionKiCost &&
     player.consciousness > 0 &&
-    player.stamina > 10 &&
-    player.combatState !== "stunned"
+    Date.now() - player.lastActionTime > player.recoveryTime
   );
 }
 
 /**
- * Calculate combat effectiveness based on player state
+ * Apply status effect to player
  */
-export function calculateCombatEffectiveness(player: PlayerState): number {
-  const healthRatio = player.health / player.maxHealth;
-  const staminaRatio = player.stamina / player.maxStamina;
-  const consciousnessRatio = player.consciousness / 100;
-  const painPenalty = Math.max(0, 1 - player.pain / 100);
+export function applyStatusEffect(
+  player: PlayerState,
+  effect: {
+    type: string;
+    duration: number;
+    intensity: number;
+  }
+): PlayerState {
+  const newStatusEffect = {
+    ...effect,
+    startTime: Date.now(),
+    endTime: Date.now() + effect.duration,
+  };
 
-  return healthRatio * staminaRatio * consciousnessRatio * painPenalty;
+  return {
+    ...player,
+    statusEffects: [...player.statusEffects, newStatusEffect],
+  };
+}
+
+/**
+ * Remove expired status effects
+ */
+export function updateStatusEffects(player: PlayerState): PlayerState {
+  const currentTime = Date.now();
+  const activeEffects = player.statusEffects.filter(
+    (effect) => effect.endTime > currentTime
+  );
+
+  return {
+    ...player,
+    statusEffects: activeEffects,
+  };
 }

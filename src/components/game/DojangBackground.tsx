@@ -75,7 +75,7 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
     (g: PIXI.Graphics) => {
       g.clear();
       if (weather === "rain") {
-        g.lineStyle(1, KOREAN_COLORS.PRIMARY_BLUE_LIGHT, 0.5);
+        g.lineStyle(1, KOREAN_COLORS.SECONDARY_BLUE_LIGHT, 0.5); // Fix: use correct color name
         for (let i = 0; i < 50; i++) {
           const x = Math.random() * width;
           const y = Math.random() * height;

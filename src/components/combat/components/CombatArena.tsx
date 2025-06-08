@@ -6,6 +6,7 @@ import type {
   Position,
   VitalPoint,
 } from "../../../types";
+import { HitEffectType } from "../../../types/enums"; // Import HitEffectType
 import PlayerVisuals from "../../game/PlayerVisuals";
 import { HitEffectsLayer } from "../../game/HitEffectsLayer";
 import { KOREAN_COLORS, GAME_CONFIG } from "../../../types/constants";
@@ -83,13 +84,15 @@ export const CombatArena: React.FC<CombatArenaProps> = ({
         if (result && result.hit) {
           const newEffect: HitEffect = {
             id: `hit-effect-${Date.now()}`,
-            type: result.critical ? "critical" : "medium",
+            type: result.critical
+              ? HitEffectType.CRITICAL // Corrected
+              : HitEffectType.MEDIUM, // Corrected
             position: result.hitPosition || targetPlayer.position,
             damage: result.damage,
             timestamp: Date.now(),
             duration: 500,
             color: KOREAN_COLORS.ACCENT_RED,
-            playerId: targetPlayer.id,
+            targetPlayerId: targetPlayer.id, // Corrected property name
           };
           setInternalCombatEffects((prev) => [...prev, newEffect]);
         }
@@ -112,24 +115,24 @@ export const CombatArena: React.FC<CombatArenaProps> = ({
 
   return (
     <Container width={width} height={height} {...props}>
-      {/* Player 1 Visuals - Add missing position property */}
+      {/* Player 1 Visuals - Remove position prop */}
       <PlayerVisuals
         playerState={player1}
-        playerIndex={0}
-        position={player1Position} // Add missing position
         x={player1Position.x}
         y={player1Position.y}
+        width={100}
+        height={150}
         showVitalPoints={showVitalPoints}
         onClick={() => handlePlayerClick(0)}
       />
 
-      {/* Player 2 Visuals - Add missing position property */}
+      {/* Player 2 Visuals - Remove position prop */}
       <PlayerVisuals
         playerState={player2}
-        playerIndex={1}
-        position={player2Position} // Add missing position
         x={player2Position.x}
         y={player2Position.y}
+        width={100}
+        height={150}
         showVitalPoints={showVitalPoints}
         onClick={() => handlePlayerClick(1)}
       />

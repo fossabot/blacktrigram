@@ -9,58 +9,73 @@ export const DEFAULT_GAME_SPEED = 1.0;
 // Game configuration
 export const GAME_CONFIG = {
   // Canvas dimensions
-  CANVAS_WIDTH: 1200,
-  CANVAS_HEIGHT: 800,
-  TARGET_FPS: 60,
+  CANVAS_WIDTH: 1920,
+  CANVAS_HEIGHT: 1080,
+  FPS: 60, // Ensure FPS is present
 
-  // Player defaults
-  DEFAULT_HEALTH: 100,
-  DEFAULT_KI: 100,
-  DEFAULT_STAMINA: 100,
-  DEFAULT_BALANCE: 100,
-  DEFAULT_CONSCIOUSNESS: 100,
-
-  // Player starting positions
-  PLAYER_START_POS_X_1: 300,
-  PLAYER_START_POS_X_2: 900,
-  PLAYER_START_POS_Y: 600,
-
-  // Combat settings
+  // Game timing
+  ROUND_DURATION: 180, // 3 minutes in seconds
   MAX_ROUNDS: 3,
-  ROUND_DURATION: 120, // seconds
-  KO_DURATION: 10, // seconds for KO countdown
 
-  // Debug settings
-  SHOW_VITAL_POINTS_DEBUG: false,
-  SHOW_HITBOXES_DEBUG: false,
-  SHOW_PERFORMANCE_DEBUG: false,
+  // Player visuals
+  PLAYER_VISUAL_WIDTH: 100,
+  PLAYER_VISUAL_HEIGHT: 150,
+  HEALTH_BAR_WIDTH: 200,
+  HEALTH_BAR_HEIGHT: 20,
+  KI_BAR_WIDTH: 150,
+  KI_BAR_HEIGHT: 15,
+  STAMINA_BAR_WIDTH: 150,
+  STAMINA_BAR_HEIGHT: 15,
 
-  // Physics
-  GRAVITY: 9.8,
-  FRICTION: 0.8,
-  PAIN_DECAY_RATE: 0.2,
+  // HUD
+  HUD_PADDING: 20,
 
-  // Visual settings - Added missing BACKGROUND_COLOR
-  BACKGROUND_COLOR: 0x000000,
-  VITAL_POINT_INDICATOR_SIZE: 8,
-  HIT_EFFECT_DURATION: 800, // ms
-  UI_ANIMATION_DURATION: 300, // ms
+  // Combat mechanics
+  MAX_COMBO_COUNT: 10,
+  CRITICAL_HIT_CHANCE: 0.1,
+  VITAL_POINT_MULTIPLIER: 1.5,
 
-  // Audio settings
+  // Performance
+  TARGET_FPS: 60,
+  MAX_PARTICLES: 100,
+
+  // Audio
   MASTER_VOLUME: 0.7,
   SFX_VOLUME: 0.8,
   MUSIC_VOLUME: 0.5,
+} as const;
 
-  // Performance settings
-  MAX_PARTICLES: 50,
-  MAX_HIT_EFFECTS: 10,
-  PHYSICS_TICK_RATE: 60, // Hz
-
-  // Game title
-  GAME_TITLE: {
-    korean: "흑괘",
-    english: "Black Trigram",
+// Difficulty settings
+export const DIFFICULTY_SETTINGS = {
+  BEGINNER: {
+    AI_REACTION_TIME: 800,
+    DAMAGE_MULTIPLIER: 0.7,
+    TECHNIQUE_SUCCESS_RATE: 0.6,
   },
+  INTERMEDIATE: {
+    AI_REACTION_TIME: 600,
+    DAMAGE_MULTIPLIER: 1.0,
+    TECHNIQUE_SUCCESS_RATE: 0.8,
+  },
+  EXPERT: {
+    AI_REACTION_TIME: 400,
+    DAMAGE_MULTIPLIER: 1.3,
+    TECHNIQUE_SUCCESS_RATE: 0.9,
+  },
+  MASTER: {
+    AI_REACTION_TIME: 200,
+    DAMAGE_MULTIPLIER: 1.5,
+    TECHNIQUE_SUCCESS_RATE: 0.95,
+  },
+} as const;
+
+// Game phases
+export const GAME_PHASES = {
+  INTRO: "intro",
+  TRAINING: "training",
+  COMBAT: "combat",
+  VICTORY: "victory",
+  DEFEAT: "defeat",
 } as const;
 
 // Game version and metadata

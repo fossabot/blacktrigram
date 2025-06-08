@@ -1,200 +1,233 @@
-import React, { Suspense, useEffect, useState, useCallback } from "react";
-import { Application as PixiApplication } from "@pixi/react";
-import { AudioProvider } from "./audio/AudioProvider";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
+import { Application } from "@pixi/react";
 import { GameEngine } from "./components/game/GameEngine";
-import { GAME_CONFIG } from "./types/constants";
+import { IntroScreen } from "./components/intro/IntroScreen";
+import { TrainingScreen } from "./components/training/TrainingScreen";
+import { EndScreen } from "./components/ui/EndScreen";
+import { AudioProvider } from "./audio/AudioProvider";
 import { createPlayerState } from "./utils/playerUtils";
-import type { PlayerState, GamePhase, KoreanText, GameState } from "./types";
-import "./App.css";
+import type { PlayerState, KoreanText, Position } from "./types";
 import {
-  IntroScreen,
-  TrainingScreen,
-  CombatScreen,
-  EndScreen,
-} from "./components/ui/EndScreen";
-import { CombatSystem } from "./systems/CombatSystem";
+  GamePhase,
+  GameMode,
+  PlayerArchetype,
+  TrigramStance,
+} from "./types/enums";
+import { GAME_CONFIG } from "./types/constants";
 
-function App() {
-  const [gamePhase, setGamePhase] = React.useState<GamePhase>("intro");
+const App: React.FC = () => {
+  const player1Name: KoreanText = { korean: "선수1", english: "Player1" };
+  const player2Name: KoreanText = { korean: "선수2", english: "Player2" };
+  const player1Position: Position = { x: 100, y: 300 };
+  const player2Position: Position = { x: 700, y: 300 };
 
-  const initialPlayer1Name: KoreanText = {
-    korean: "선수1",
-    english: "Player 1",
-  };
-  const initialPlayer2Name: KoreanText = {
-    korean: "선수2",
-    english: "Player 2",
-  };
-
-  const [player1, setPlayer1] = React.useState<PlayerState>(() =>
-    createPlayerState("player1", "musa", initialPlayer1Name)
+  const [player1, setPlayer1] = useState<PlayerState>(() =>
+    createPlayerState(
+      "player1",
+      PlayerArchetype.MUSA,
+      player1Name,
+      player1Position
+    )
   );
-  const [player2, setPlayer2] = React.useState<PlayerState>(() =>
-    createPlayerState("player2", "amsalja", initialPlayer2Name)
-  );
-
-  const [winner, setWinner] = useState<PlayerState | null>(null); // For storing the winner or null for draw
-
-  const handlePlayerUpdate = (
-    playerIndex: number,
-    updates: Partial<PlayerState>
-  ) => {
-    if (playerIndex === 0) {
-      setPlayer1((prevPlayer) => ({ ...prevPlayer, ...updates }));
-    } else if (playerIndex === 1) {
-      setPlayer2((prevPlayer) => ({ ...prevPlayer, ...updates }));
-    }
-  };
-
-  const handleStartCombat = React.useCallback(() => {
-    setGamePhase("combat");
-  }, []);
-
-  const handleStartTraining = React.useCallback(() => {
-    setGamePhase("training");
-  }, []);
-
-  const handleReturnToMenu = React.useCallback(() => {
-    setGamePhase("intro");
-  }, []);
-
-  const handleGameEnd = useCallback(
-    (winningPlayer?: PlayerState) => {
-      setWinner(winningPlayer === undefined ? null : winningPlayer); // Set to null for a draw explicitly
-      setGamePhase("end");
-      audioManager.playSFX(winningPlayer ? "victory" : "defeat");
-    },
-    [audioManager, setGamePhase]
+  const [player2, setPlayer2] = useState<PlayerState>(() =>
+    createPlayerState(
+      "player2",
+      PlayerArchetype.AMSALJA,
+      player2Name,
+      player2Position
+    )
   );
 
-  const handleGameStateChange = (state: Partial<GameState>) => {
-    // Handle game state changes
-    console.log("Game state changed:", state);
+  const [gamePhase, setGamePhase] = useState<GamePhase>(GamePhase.INTRO);
+  const [selectedMode, setSelectedMode] = useState<GameMode>(GameMode.VERSUS);
+  const [timeRemaining, setTimeRemaining] = useState(60);
+  const [currentRound, setCurrentRound] = useState(1);
+  const [gameTime, setGameTime] = useState(0);
+  const [winner, setWinner] = useState<PlayerState | null>(null);
 
-    // Update any global state management here
-    if (state.phase) {
-      // Handle phase changes
-      console.log("Game phase changed to:", state.phase);
+  const handleGameStart = useCallback((mode: GameMode) => {
+    setSelectedMode(mode);
+    if (mode === GameMode.TRAINING) {
+      setGamePhase(GamePhase.TRAINING);
+    } else {
+      setGamePhase(GamePhase.PREPARATION); // Now exists in enum
     }
+  }, []);
 
-    if (state.isPaused !== undefined) {
-      // Handle pause state changes
-      console.log("Game pause state:", state.isPaused);
-    }
-
-    // Additional state handling logic as needed
-  };
-
-  // Main game loop and rendering logic
-  useEffect(() => {
-    // ...existing code...
-    if (gamePhase === "combat") {
-      const combatWinner = CombatSystem.checkWinCondition(players);
-      if (combatWinner) {
-        const winningPlayer = players.find((p) => p.id === combatWinner);
-        handleGameEnd(winningPlayer);
-      } else if (timeRemaining <= 0 && currentRound >= GAME_CONFIG.MAX_ROUNDS) {
-        // Check for draw condition (time up, max rounds reached, no winner)
-        const p1Health = players[0].health;
-        const p2Health = players[1].health;
-        if (p1Health === p2Health) {
-          handleGameEnd(undefined); // Explicitly pass undefined for a draw
-        } else {
-          handleGameEnd(p1Health > p2Health ? players[0] : players[1]);
-        }
+  const handlePlayerUpdate = useCallback(
+    (playerIndex: 0 | 1, updates: Partial<PlayerState>) => {
+      if (playerIndex === 0) {
+        setPlayer1((prev) => ({
+          ...prev,
+          ...updates,
+          ...(updates.currentStance && {
+            currentStance: updates.currentStance as TrigramStance,
+          }),
+        }));
+      } else {
+        setPlayer2((prev) => ({
+          ...prev,
+          ...updates,
+          ...(updates.currentStance && {
+            currentStance: updates.currentStance as TrigramStance,
+          }),
+        }));
       }
-    }
-  }, [gamePhase, players, handleGameEnd, timeRemaining, currentRound]);
+    },
+    []
+  );
 
-  // Render logic based on gamePhase
-  const renderGameContent = () => {
+  const handleGameStateChange = useCallback(() => {
+    // Game state change logic
+  }, []);
+
+  // Use all state variables in game logic
+  const gameState = useMemo(
+    () => ({
+      phase: gamePhase,
+      mode: selectedMode,
+      isTraining: selectedMode === GameMode.TRAINING,
+      player1,
+      player2,
+      currentRound,
+      maxRounds: 3,
+      timeRemaining,
+      gameTime,
+      isPaused: false,
+      winner,
+      combatEffects: [] as const,
+      matchHistory: [] as const,
+    }),
+    [
+      gamePhase,
+      selectedMode,
+      player1,
+      player2,
+      currentRound,
+      timeRemaining,
+      gameTime,
+      winner,
+    ]
+  );
+
+  // Game timer logic
+  useEffect(() => {
+    if (
+      gamePhase === GamePhase.COMBAT &&
+      !gameState.isPaused &&
+      timeRemaining > 0
+    ) {
+      const timer = setInterval(() => {
+        setTimeRemaining((prev) => {
+          const newTime = prev - 1;
+          if (newTime <= 0) {
+            // Round ended
+            setCurrentRound((prev) => prev + 1);
+            setGameTime((prev) => prev + (60 - newTime));
+            return 60; // Reset for next round
+          }
+          return newTime;
+        });
+        setGameTime((prev) => prev + 1);
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [gamePhase, gameState.isPaused, timeRemaining]);
+
+  // Win condition checking
+  useEffect(() => {
+    if (player1.health <= 0) {
+      setWinner(player2);
+      setGamePhase(GamePhase.VICTORY);
+    } else if (player2.health <= 0) {
+      setWinner(player1);
+      setGamePhase(GamePhase.VICTORY);
+    } else if (currentRound >= 3 && timeRemaining <= 0) {
+      // Determine winner by health
+      const healthDiff = player1.health - player2.health;
+      setWinner(healthDiff > 0 ? player1 : player2);
+      setGamePhase(GamePhase.VICTORY);
+    }
+  }, [player1.health, player2.health, currentRound, timeRemaining]);
+
+  const renderCurrentPhase = () => {
     switch (gamePhase) {
-      case "intro":
+      case GamePhase.INTRO:
+      case GamePhase.MENU:
         return (
           <IntroScreen
-            onGamePhaseChange={setGamePhase}
-            onStartCombat={() => {
-              resetGameState();
-              setGamePhase("combat");
-            }}
-            onStartTraining={() => {
-              resetGameState();
-              setGamePhase("training");
-            }}
-            onArchetypeSelect={handleArchetypeSelect}
+            onGameStart={handleGameStart} // Fix: now properly typed
+            onModeSelect={setSelectedMode}
+            width={GAME_CONFIG.CANVAS_WIDTH}
+            height={GAME_CONFIG.CANVAS_HEIGHT}
           />
         );
-      case "combat":
+
+      case GamePhase.PREPARATION:
+      case GamePhase.COMBAT:
         return (
-          <CombatScreen
-            players={players}
+          <GameEngine
+            player1={player1}
+            player2={player2}
+            gamePhase={gamePhase}
+            gameMode={selectedMode}
+            onGameStateChange={handleGameStateChange}
             onPlayerUpdate={handlePlayerUpdate}
             onGamePhaseChange={setGamePhase}
-            currentRound={currentRound}
             timeRemaining={timeRemaining}
-            isPaused={isPaused}
-            // onTechniqueExecute={handleTechniqueExecute} // This prop is not expected by CombatScreen
-            // combatLog={combatLog} // This prop is not expected by CombatScreen
+            currentRound={currentRound}
+            isPaused={false}
           />
         );
-      case "training":
+
+      case GamePhase.TRAINING:
         return (
           <TrainingScreen
-            player={players[0]} // Assuming player 1 is the training player
-            players={players}
+            players={[player1, player2]}
+            selectedStance={TrigramStance.GEON}
             onPlayerUpdate={handlePlayerUpdate}
-            onGamePhaseChange={setGamePhase}
-            onReturnToMenu={() => setGamePhase("intro")}
-            onStartCombat={() => setGamePhase("combat")} // Example action
           />
         );
-      case "end":
+
+      case GamePhase.VICTORY:
+      case GamePhase.DEFEAT:
         return (
           <EndScreen
-            winner={winner} // Changed from winnerId
-            onRestart={() => {
-              resetGameState();
-              setGamePhase("combat");
-            }}
-            onReturnToMenu={() => {
-              resetGameState(); // Also reset game state when returning to menu
-              setGamePhase("intro");
-            }}
+            winner={winner}
+            onRestart={() => setGamePhase(GamePhase.INTRO)}
+            onReturnToMenu={() => setGamePhase(GamePhase.INTRO)}
+            matchDuration={gameTime}
+            roundsPlayed={currentRound}
           />
         );
+
       default:
         return (
-          <Text
-            text="Loading..."
-            style={new PIXI.TextStyle({ fill: "white" })}
+          <IntroScreen
+            onGameStart={handleGameStart} // Fix: now properly typed
+            onModeSelect={setSelectedMode}
           />
         );
     }
   };
 
   return (
-    <div className="app-container" data-testid="app-container">
-      <AudioProvider>
-        <PixiApplication
-          width={GAME_CONFIG.CANVAS_WIDTH}
-          height={GAME_CONFIG.CANVAS_HEIGHT}
-          options={{ backgroundColor: GAME_CONFIG.BACKGROUND_COLOR }} // Now BACKGROUND_COLOR exists
-        >
-          <Suspense fallback={null}>
-            <GameEngine
-              player1={player1}
-              player2={player2}
-              gamePhase={gamePhase}
-              onGameStateChange={handleGameStateChange}
-              onPlayerUpdate={handlePlayerUpdate}
-              onGamePhaseChange={setGamePhase}
-              gameMode="versus"
-            />
-          </Suspense>
-        </PixiApplication>
-      </AudioProvider>
-    </div>
+    <AudioProvider>
+      <Application
+        width={GAME_CONFIG.CANVAS_WIDTH}
+        height={GAME_CONFIG.CANVAS_HEIGHT}
+        options={{
+          backgroundColor: 0x1a1a2e,
+          antialias: true,
+          resolution: window.devicePixelRatio || 1,
+          autoDensity: true,
+        }}
+      >
+        {renderCurrentPhase()}
+      </Application>
+    </AudioProvider>
   );
-}
+};
 
 export default App;

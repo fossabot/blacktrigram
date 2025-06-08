@@ -2,7 +2,6 @@
 
 // Game components (Player component from game)
 export { Player as GamePlayer } from "./game/Player";
-export { PlayerVisuals } from "./game/PlayerVisuals";
 export { GameEngine } from "./game/GameEngine";
 export { GameUI } from "./game/GameUI";
 export { DojangBackground } from "./game/DojangBackground";
@@ -24,3 +23,4 @@ export * from "./ui/base";
 export * from "./ui/ProgressTracker";
 export * from "./ui/TrigramWheel";
 export * from "./ui/EndScreen";
+export { default as PlayerVisuals } from "./game/PlayerVisuals"; // Fixed export

@@ -1,166 +1,168 @@
-import React, { useCallback, useState, useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import type {
-  TrainingScreenProps,
-  PlayerState,
-  TrigramStance,
-} from "../../types";
+import type { TrainingScreenProps, KoreanText } from "../../types";
 import {
   KOREAN_COLORS,
   FONT_FAMILY,
   FONT_SIZES,
   GAME_CONFIG,
-  PLAYER_ARCHETYPES_DATA,
-  TRIGRAM_STANCES_ORDER,
 } from "../../types/constants";
+import { ProgressTracker } from "../ui/ProgressTracker";
 
 export const TrainingScreen: React.FC<TrainingScreenProps> = ({
-  player: initialPlayer,
-  onGamePhaseChange,
-  onPlayerUpdate,
-  onReturnToMenu,
-  onStartCombat,
+  players,
+  selectedStance = "geon",
   width = GAME_CONFIG.CANVAS_WIDTH,
   height = GAME_CONFIG.CANVAS_HEIGHT,
-  ...props
 }) => {
-  const [player, setPlayer] = useState<PlayerState | undefined>(initialPlayer);
+  const player = players?.[0];
 
-  const archetypeData = player
-    ? PLAYER_ARCHETYPES_DATA[player.archetype]
-    : null;
+  const backgroundDraw = useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.9);
+      g.drawRect(0, 0, width, height);
+      g.endFill();
 
-  const handleStanceSelect = useCallback(
-    (stance: TrigramStance) => {
-      if (player && onPlayerUpdate) {
-        const playerIndex =
-          props.players?.findIndex((p: PlayerState) => p.id === player.id) ?? 0;
-        onPlayerUpdate(playerIndex as 0 | 1, { currentStance: stance });
-      } else if (player) {
-        setPlayer((prev) =>
-          prev ? { ...prev, currentStance: stance } : undefined
-        );
-      }
+      // Training dojo atmosphere
+      g.lineStyle(2, KOREAN_COLORS.ACCENT_GOLD, 0.3);
+      g.drawRect(50, 50, width - 100, height - 100);
     },
-    [player, onPlayerUpdate, props.players]
+    [width, height]
   );
 
-  const titleStyle = useMemo(
+  const headerStyle = useMemo(
     () =>
       new PIXI.TextStyle({
         fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.xlarge,
+        fontSize: FONT_SIZES.large,
         fill: KOREAN_COLORS.TEXT_PRIMARY,
         align: "center",
+        fontWeight: "bold",
       }),
     []
   );
 
-  const infoStyle = useMemo(
+  const instructionStyle = useMemo(
     () =>
       new PIXI.TextStyle({
         fontFamily: FONT_FAMILY.PRIMARY,
         fontSize: FONT_SIZES.medium,
         fill: KOREAN_COLORS.TEXT_SECONDARY,
+        align: "center",
         wordWrap: true,
-        wordWrapWidth: width * 0.4,
+        wordWrapWidth: width - 100,
       }),
     [width]
   );
 
-  if (!player || !archetypeData) {
+  const stanceStyle = useMemo(
+    () =>
+      new PIXI.TextStyle({
+        fontFamily: FONT_FAMILY.PRIMARY,
+        fontSize: FONT_SIZES.small,
+        fill: KOREAN_COLORS.PRIMARY_CYAN,
+        align: "center",
+      }),
+    []
+  );
+
+  if (!player) {
     return (
-      <Container x={0} y={0} width={width} height={height}>
+      <Container>
         <Text
-          text="Loading Training..."
-          anchor={0.5}
+          text="훈련 모드를 위한 플레이어가 필요합니다"
+          style={headerStyle}
           x={width / 2}
           y={height / 2}
-          style={titleStyle}
+          anchor={0.5}
         />
       </Container>
     );
   }
 
-  return (
-    <Container x={0} y={0} width={width} height={height}>
-      <Graphics
-        draw={(g: PIXI.Graphics) => {
-          g.clear();
-          g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.9);
-          g.drawRect(0, 0, width, height);
-          g.endFill();
-        }}
-      />
+  // Create proper KoreanText objects for labels
+  const healthLabel: KoreanText = { korean: "체력", english: "Health" };
+  const kiLabel: KoreanText = { korean: "기", english: "Ki" };
+  const staminaLabel: KoreanText = { korean: "체력", english: "Stamina" };
 
+  return (
+    <Container>
+      <Graphics draw={backgroundDraw} />
+
+      {/* Training Header */}
       <Text
         text="훈련 모드 (Training Mode)"
-        anchor={0.5}
+        style={headerStyle}
         x={width / 2}
-        y={50}
-        style={titleStyle}
+        y={80}
+        anchor={0.5}
       />
 
-      <Text
-        text={`선택된 무예가: ${player.name.korean} (${archetypeData.name.english})`}
-        x={50}
-        y={120}
-        style={infoStyle}
-      />
+      {/* Player Stats */}
+      {player && (
+        <Container x={50} y={150}>
+          <ProgressTracker
+            label={healthLabel}
+            current={player.health}
+            maximum={player.maxHealth}
+            x={0}
+            y={0}
+            width={300}
+            height={20}
+          />
 
-      {/* Stance Training Section */}
-      <Container x={50} y={200}>
-        <Text
-          text="자세 연습 (Stance Practice)"
-          x={0}
-          y={0}
-          style={infoStyle}
-        />
-        <Text
-          text="1-8 키를 눌러 자세를 변경하세요"
-          x={0}
-          y={30}
-          style={{
-            ...infoStyle,
-            fontSize: FONT_SIZES.small,
-            fill: KOREAN_COLORS.TEXT_TERTIARY,
-          }}
-        />
+          <ProgressTracker
+            label={kiLabel}
+            current={player.ki}
+            maximum={player.maxKi}
+            x={0}
+            y={40}
+            width={300}
+            height={20}
+          />
 
-        {/* Interactive stance buttons */}
-        <Container y={70}>
-          {TRIGRAM_STANCES_ORDER.map((stance, index) => (
-            <Container
-              key={stance}
-              x={(index % 4) * 150}
-              y={Math.floor(index / 4) * 60}
-              interactive={true}
-              buttonMode={true}
-              pointertap={() => handleStanceSelect(stance)}
-            >
-              <Graphics
-                draw={(g: PIXI.Graphics) => {
-                  g.clear();
-                  g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.8);
-                  g.lineStyle(2, KOREAN_COLORS.UI_BORDER);
-                  g.drawRoundedRect(0, 0, 140, 50, 5);
-                  g.endFill();
-                }}
-              />
-              <Text
-                text={`${index + 1}. ${stance}`}
-                x={10}
-                y={15}
-                style={{
-                  ...infoStyle,
-                  fontSize: FONT_SIZES.small,
-                }}
-              />
-            </Container>
-          ))}
+          <ProgressTracker
+            label={staminaLabel}
+            current={player.stamina}
+            maximum={player.maxStamina}
+            x={0}
+            y={80}
+            width={300}
+            height={20}
+          />
         </Container>
-      </Container>
+      )}
+
+      {/* Training Instructions */}
+      <Text
+        text="자세를 선택하고 기술을 연습하세요\nSelect stance and practice techniques"
+        style={instructionStyle}
+        x={width / 2}
+        y={height / 2}
+        anchor={0.5}
+      />
+
+      {/* Current Stance Display */}
+      <Text
+        text={`현재 자세: ${selectedStance} / Current Stance: ${selectedStance}`}
+        style={stanceStyle}
+        x={width / 2}
+        y={height - 100}
+        anchor={0.5}
+      />
+
+      {/* Training Controls */}
+      <Text
+        text="1-8: 팔괘 자세 변경 / Change Trigram Stance\nSPACE: 기술 연습 / Practice Technique"
+        style={instructionStyle}
+        x={width / 2}
+        y={height - 60}
+        anchor={0.5}
+      />
     </Container>
   );
 };
+
+export default TrainingScreen;

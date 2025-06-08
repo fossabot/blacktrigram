@@ -54,6 +54,50 @@ export const ENHANCED_DAMAGE_CONSTANTS = {
   PERFECT_TIMING_BONUS: 0.3,
 } as const;
 
+// Combat system constants for Korean martial arts
+
+export const COMBAT_CONSTANTS = {
+  // Damage calculation
+  BASE_DAMAGE: 10,
+  CRITICAL_MULTIPLIER: 2.0,
+  VITAL_POINT_MULTIPLIER: 1.5,
+
+  // Status thresholds
+  LOW_HEALTH_THRESHOLD: 30,
+  CRITICAL_HEALTH_THRESHOLD: 15,
+  EXHAUSTED_STAMINA_THRESHOLD: 20,
+
+  // Recovery rates (per second)
+  STAMINA_RECOVERY_RATE: 5,
+  KI_RECOVERY_RATE: 3,
+  CONSCIOUSNESS_RECOVERY_RATE: 2,
+
+  // Combat timing
+  ATTACK_COOLDOWN: 500, // milliseconds
+  STANCE_CHANGE_COOLDOWN: 300,
+  BLOCK_WINDOW: 200,
+
+  // Balance and momentum
+  BALANCE_RECOVERY_RATE: 10,
+  MOMENTUM_DECAY_RATE: 5,
+
+  // Pain and status effects
+  PAIN_DECAY_RATE: 3,
+  STATUS_EFFECT_DURATION: 3000,
+} as const;
+
+// Trigram stance order for UI
+export const TRIGRAM_STANCES_ORDER = [
+  "geon",
+  "tae",
+  "li",
+  "jin",
+  "son",
+  "gam",
+  "gan",
+  "gon",
+] as const;
+
 // Combat controls mapping
 export const COMBAT_CONTROLS = {
   // Trigram stance system (1-8 keys)

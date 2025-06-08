@@ -1,171 +1,189 @@
-// Core enums for Black Trigram Korean martial arts system
+// Player archetype enumeration for Korean martial arts characters
+export enum PlayerArchetype {
+  MUSA = "musa",
+  AMSALJA = "amsalja",
+  HACKER = "hacker",
+  JEONGBO_YOWON = "jeongbo_yowon",
+  JOJIK_POKRYEOKBAE = "jojik_pokryeokbae",
+}
 
-// Player archetypes for Korean martial arts specializations
-export type PlayerArchetype =
-  | "musa"
-  | "amsalja"
-  | "hacker"
-  | "jeongbo_yowon"
-  | "jojik_pokryeokbae";
+// Eight trigram stances for Korean martial arts combat system
+export enum TrigramStance {
+  GEON = "geon", // ☰ Heaven
+  TAE = "tae", // ☱ Lake
+  LI = "li", // ☲ Fire
+  JIN = "jin", // ☳ Thunder
+  SON = "son", // ☴ Wind
+  GAM = "gam", // ☵ Water
+  GAN = "gan", // ☶ Mountain
+  GON = "gon", // ☷ Earth
+}
 
-// Trigram stances from the I Ching
-export type TrigramStance =
-  | "geon" // ☰ Heaven
-  | "tae" // ☱ Lake
-  | "li" // ☲ Fire
-  | "jin" // ☳ Thunder
-  | "son" // ☴ Wind
-  | "gam" // ☵ Water
-  | "gan" // ☶ Mountain
-  | "gon"; // ☷ Earth
+// Game phases for different modes
+export enum GamePhase {
+  INTRO = "intro",
+  MENU = "menu",
+  PREPARATION = "preparation", // Added PREPARATION
+  COMBAT = "combat",
+  TRAINING = "training",
+  VICTORY = "victory",
+  DEFEAT = "defeat",
+  DRAW = "draw", // Added DRAW
+  END_SCREEN = "end_screen",
+  PAUSED = "paused",
+}
 
-// Game phases for state management
-export type GamePhase =
-  | "intro"
-  | "training"
-  | "combat"
-  | "victory"
-  | "defeat"
-  | "paused";
+// Game modes available
+export enum GameMode {
+  VERSUS = "versus",
+  TRAINING = "training",
+  STORY = "story",
+}
 
-// Body regions for vital point targeting - add missing regions
-export type BodyRegion =
-  | "head"
-  | "face_upper" // Added
-  | "chest" // Add missing chest region
-  | "abdomen" // Add missing abdomen region
-  | "neck"
-  | "torso"
-  | "left_arm"
-  | "right_arm"
-  | "left_leg"
-  | "right_leg";
+// Combat states for player characters
+export enum CombatState {
+  IDLE = "idle",
+  ATTACKING = "attacking",
+  DEFENDING = "defending",
+  STUNNED = "stunned",
+  RECOVERING = "recovering",
+}
 
-// Vital point severity levels
-export type VitalPointSeverity =
-  | "minor"
-  | "moderate"
-  | "severe"
-  | "critical"
-  | "lethal";
+// Hit effect types for visual feedback - include all needed cases
+export enum HitEffectType {
+  LIGHT = "light",
+  MEDIUM = "medium",
+  HEAVY = "heavy",
+  CRITICAL = "critical",
+  BLOCK = "block",
+  MISS = "miss",
+  PERFECT = "perfect",
+  COUNTER = "counter",
+  SPECIAL = "special", // Example of another type
+  DODGE = "dodge",
+  PARRY = "parry",
+  KI_BLAST = "ki_blast",
+  ENVIRONMENTAL = "environmental",
+  BUFF = "buff",
+  DEBUFF = "debuff",
+  HEAL = "heal",
+  NORMAL = "normal", // Added based on HitEffectsLayer usage
+}
 
-// Effect types for combat
-export type EffectType =
-  | "stun"
-  | "bleed"
-  | "pain"
-  | "vulnerable"
-  | "exhausted"
-  | "poisoned" // Added
-  | "burning" // Added
-  | "weakness" // Added
-  | "bleeding"
-  | "confusion" // Added
-  | "buff" // Added
-  | "debuff" // Added
-  | "winded" // Added
-  | "paralysis" // Added
-  | "stamina_drain" // Added
-  | "vital_weakness" // Added
-  | "vital_stunning" // Added
-  | "damage_vulnerability" // Added
-  | "vital_paralysis"; // Added
+// Animation states for character sprites
+export enum AnimationState {
+  IDLE = "idle",
+  WALK = "walk",
+  ATTACK = "attack",
+  BLOCK = "block",
+  HIT = "hit",
+  VICTORY = "victory",
+  DEFEAT = "defeat",
+}
 
-// Effect intensity levels
-export type EffectIntensity =
+// Damage types for different attack categories
+export enum DamageType {
+  PHYSICAL = "physical",
+  KI_ENERGY = "ki_energy",
+  VITAL_POINT = "vital_point",
+  COMBO = "combo",
+}
+
+// Status effects that can be applied to players
+export enum StatusEffect {
+  NONE = "none",
+  STUNNED = "stunned",
+  BLEEDING = "bleeding",
+  KI_CHARGED = "ki_charged",
+  WEAKENED = "weakened",
+  ENHANCED = "enhanced",
+}
+
+// Export type aliases for string union types - keep for backwards compatibility
+export type PlayerArchetypeString = `${PlayerArchetype}`;
+export type TrigramStanceString = `${TrigramStance}`;
+export type GamePhaseString = `${GamePhase}`;
+export type GameModeString = `${GameMode}`;
+export type CombatStateString = `${CombatState}`;
+export type AnimationStateString = `${AnimationState}`;
+export type DamageTypeString = `${DamageType}`;
+export type StatusEffectString = `${StatusEffect}`;
+
+// Also export as union types for flexibility
+export type HitEffectTypeUnion =
   | "light"
-  | "moderate"
-  | "severe"
+  | "medium"
+  | "heavy"
   | "critical"
-  | "weak" // Added
-  | "medium" // Added
-  | "strong" // Added
-  | "heavy";
-
-// Combat attack types
-export type EnumCombatAttackType =
-  | "strike"
-  | "thrust"
   | "block"
-  | "counter_attack"
-  | "throw"
-  | "grapple"
-  | "pressure_point"
-  | "nerve_strike"
-  | "punch"; // Add missing punch type
+  | "miss"
+  | "perfect"
+  | "counter";
 
-// Damage types for Korean martial arts
-export type DamageType =
-  | "blunt"
-  | "piercing"
-  | "slashing"
-  | "pressure"
-  | "nerve"
-  | "joint"
-  | "internal"
-  | "impact"
-  | "crushing"
-  | "sharp"
-  | "electric"
-  | "fire"
-  | "ice"
-  | "poison"
-  | "psychic"
-  | "blood";
+// Order arrays for UI and iteration
+export const PLAYER_ARCHETYPES_ORDER: PlayerArchetype[] = [
+  PlayerArchetype.MUSA,
+  PlayerArchetype.AMSALJA,
+  PlayerArchetype.HACKER,
+  PlayerArchetype.JEONGBO_YOWON,
+  PlayerArchetype.JOJIK_POKRYEOKBAE,
+];
 
-// Status effect types
-export type StatusEffectType =
-  | "stun"
-  | "bleed"
-  | "pain"
-  | "vulnerable"
-  | "exhausted"
-  | "poisoned"
-  | "burning";
+export const TRIGRAM_STANCES_ORDER: TrigramStance[] = [
+  TrigramStance.GEON,
+  TrigramStance.TAE,
+  TrigramStance.LI,
+  TrigramStance.JIN,
+  TrigramStance.SON,
+  TrigramStance.GAM,
+  TrigramStance.GAN,
+  TrigramStance.GON,
+];
 
-// Audio categories
-export type AudioCategory = "combat" | "ui" | "music" | "ambient";
+export const GAME_PHASES_ORDER: GamePhase[] = [
+  GamePhase.INTRO,
+  GamePhase.MENU,
+  GamePhase.COMBAT,
+  GamePhase.TRAINING,
+  GamePhase.VICTORY,
+  GamePhase.DEFEAT,
+  GamePhase.PAUSED,
+];
 
-// Priority levels
-export type Priority = "low" | "medium" | "high" | "critical";
+// Validation functions
+export function isValidPlayerArchetype(
+  value: string
+): value is PlayerArchetype {
+  return Object.values(PlayerArchetype).includes(value as PlayerArchetype);
+}
 
-// Add missing enums that systems reference
-export type CombatReadiness =
-  | "ready"
-  | "not_ready"
-  | "exhausted"
-  | "injured"
-  | "unconscious"
-  | "critical_damage" // Added
-  | "heavy_damage" // Added
-  | "moderate_damage" // Added
-  | "light_damage" // Added
-  | "incapacitated";
+export function isValidTrigramStance(value: string): value is TrigramStance {
+  return Object.values(TrigramStance).includes(value as TrigramStance);
+}
 
-export type CombatState =
-  | "idle"
-  | "ready" // Add ready state
-  | "attacking"
-  | "defending"
-  | "stunned"
-  | "recovering"
-  | "defeated"
-  | "incapacitated"; // Add incapacitated state
+export function isValidGamePhase(value: string): value is GamePhase {
+  return Object.values(GamePhase).includes(value as GamePhase);
+}
 
-export type InputAction =
-  | "stance_change"
-  | "attack"
-  | "defend"
-  | "move"
-  | "special"
-  | "pause";
+export function isValidGameMode(value: string): value is GameMode {
+  return Object.values(GameMode).includes(value as GameMode);
+}
 
-export type VitalPointCategory =
-  | "head"
-  | "neck"
-  | "torso"
-  | "limbs"
-  | "joints"
-  | "nerve"
-  | "vascular"
-  | "pressure_point";
+export function isValidCombatState(value: string): value is CombatState {
+  return Object.values(CombatState).includes(value as CombatState);
+}
+
+export function isValidHitEffectType(value: string): value is HitEffectType {
+  return Object.values(HitEffectType).includes(value as HitEffectType);
+}
+
+// Export all enum values as constants for backwards compatibility
+export const PLAYER_ARCHETYPES = PlayerArchetype;
+export const TRIGRAM_STANCES = TrigramStance;
+export const GAME_PHASES = GamePhase;
+export const GAME_MODES = GameMode;
+export const COMBAT_STATES = CombatState;
+export const ANIMATION_STATES = AnimationState;
+export const DAMAGE_TYPES = DamageType;
+export const STATUS_EFFECTS = StatusEffect;
+export const HIT_EFFECT_TYPES = HitEffectType;

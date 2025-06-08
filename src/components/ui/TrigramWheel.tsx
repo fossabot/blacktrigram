@@ -1,14 +1,10 @@
 import React, { useMemo, useCallback } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import type { TrigramWheelProps, TrigramStance } from "../../types";
-import {
-  KOREAN_COLORS,
-  TRIGRAM_DATA,
-  TRIGRAM_STANCES_ORDER,
-  FONT_FAMILY,
-  FONT_SIZES,
-} from "../../types/constants";
+import { TRIGRAM_STANCES_ORDER, TRIGRAM_DATA } from "../../types/constants";
+import type { TrigramStance } from "../../types/enums";
+import type { TrigramWheelProps } from "../../types";
+import { KOREAN_COLORS, FONT_FAMILY, FONT_SIZES } from "../../types/constants";
 
 export const TrigramWheel: React.FC<TrigramWheelProps> = ({
   selectedStance,
@@ -120,6 +116,32 @@ export const TrigramWheel: React.FC<TrigramWheelProps> = ({
     g.drawCircle(centerX, centerY, innerRadius);
     g.endFill();
   };
+
+  const drawSegments = useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+      TRIGRAM_STANCES_ORDER.forEach((stance: TrigramStance, index) => {
+        // Ensure drawSegment is called with TrigramStance
+        return drawSegment(g, stance, index);
+      });
+    },
+    [drawSegment]
+  );
+
+  const drawHighlight = useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+      if (hoveredStance !== null || selectedStance !== null) {
+        const stanceToHighlight = hoveredStance ?? selectedStance;
+        if (stanceToHighlight !== null) {
+          const index = TRIGRAM_STANCES_ORDER.indexOf(stanceToHighlight);
+          // Ensure drawSegment is called with TrigramStance
+          drawSegment(g, stanceToHighlight, index); // Highlight the segment
+        }
+      }
+    },
+    [hoveredStance, selectedStance, drawSegment]
+  );
 
   return (
     <Container x={x} y={y} {...props}>

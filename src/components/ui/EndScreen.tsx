@@ -1,145 +1,184 @@
 import React, { useMemo } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
+import { Container, Graphics, Text as PixiText } from "@pixi/react";
+import * as PIXI from "pixi.js";
 import type { EndScreenProps } from "../../types";
 import {
   KOREAN_COLORS,
   FONT_FAMILY,
   FONT_SIZES,
-  FONT_WEIGHTS,
+  PIXI_FONT_WEIGHTS, // Use this for PIXI.TextStyle fontWeight
   GAME_CONFIG,
+  FONT_WEIGHTS,
 } from "../../types/constants";
-import * as PIXI from "pixi.js";
 
 export const EndScreen: React.FC<EndScreenProps> = ({
-  winnerId,
+  winner,
+  draw, // Prop 'draw' should exist on EndScreenProps
   onRestart,
-  onReturnToMenu,
-  width = GAME_CONFIG.CANVAS_WIDTH,
-  height = GAME_CONFIG.CANVAS_HEIGHT,
-  ...props
+  onMenu,
+  playerStats, // Prop 'playerStats' should exist on EndScreenProps
 }) => {
-  const resultText = useMemo(() => {
-    if (winnerId) {
+  const titleContent = useMemo(() => {
+    if (draw) return { korean: "무승부", english: "Draw" };
+    if (winner)
       return {
-        korean: "승리!",
-        english: "Victory!",
+        korean: `${winner.name.korean} 승리!`,
+        english: `${winner.name.english} Wins!`,
       };
-    } else {
-      return {
-        korean: "무승부",
-        english: "Draw",
-      };
-    }
-  }, [winnerId]);
+    return { korean: "경기 종료", english: "Match Over" }; // Fallback
+  }, [winner, draw]);
 
   const titleStyle = useMemo(
     () =>
       new PIXI.TextStyle({
+        // Using PIXI.TextStyle directly
         fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.xlarge,
-        fill: winnerId
-          ? KOREAN_COLORS.POSITIVE_GREEN
-          : KOREAN_COLORS.SECONDARY_YELLOW_LIGHT,
-        fontWeight: FONT_WEIGHTS.bold.toString() as PIXI.TextStyleFontWeight,
+        fontSize: FONT_SIZES.title,
+        fill: winner ? KOREAN_COLORS.ACCENT_GOLD : KOREAN_COLORS.TEXT_PRIMARY,
+        fontWeight: PIXI_FONT_WEIGHTS.bold, // Use PIXI_FONT_WEIGHTS
         align: "center",
-        dropShadow: {
-          color: KOREAN_COLORS.BLACK_SOLID,
-          blur: 5,
-          distance: 3,
-        },
+        stroke: KOREAN_COLORS.BLACK_SOLID,
+        strokeThickness: 4, // Example: Added strokeThickness
       }),
-    [winnerId]
+    [winner]
   );
 
-  const buttonStyle = useMemo(
+  const statsStyle = useMemo(
     () =>
       new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY,
+        fontFamily: FONT_FAMILY.PRIMARY, // Fix: use PRIMARY instead of KOREAN_UI
         fontSize: FONT_SIZES.medium,
         fill: KOREAN_COLORS.TEXT_PRIMARY,
-        fontWeight: FONT_WEIGHTS.medium.toString() as PIXI.TextStyleFontWeight,
-        align: "center",
+        fontWeight: FONT_WEIGHTS.regular.toString() as PIXI.TextStyleFontWeight,
+        align: "left",
       }),
     []
   );
 
-  const drawBackground = (g: PIXI.Graphics) => {
-    g.clear();
-    g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DEEP_DARK, 0.9);
-    g.drawRect(0, 0, width, height);
-    g.endFill();
-  };
-
-  const drawButton = (g: PIXI.Graphics, isHover: boolean = false) => {
-    g.clear();
-    g.beginFill(
-      isHover
-        ? KOREAN_COLORS.ACCENT_PRIMARY
-        : KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
-      isHover ? 0.3 : 0.8
-    );
-    g.lineStyle(2, KOREAN_COLORS.UI_BORDER);
-    g.drawRoundedRect(0, 0, 200, 50, 10);
-    g.endFill();
-  };
-
   return (
-    <Container {...props} x={0} y={0} width={width} height={height}>
-      <Graphics draw={drawBackground} />
-
-      <Text
-        text={resultText.korean}
-        anchor={0.5}
-        x={width / 2}
-        y={height / 2 - 100}
-        style={titleStyle}
-      />
-      <Text
-        text={resultText.english}
-        anchor={0.5}
-        x={width / 2}
-        y={height / 2 - 50}
-        style={{
-          ...titleStyle,
-          fontSize: FONT_SIZES.large,
-          fill: KOREAN_COLORS.TEXT_SECONDARY,
+    <Container
+      width={GAME_CONFIG.CANVAS_WIDTH}
+      height={GAME_CONFIG.CANVAS_HEIGHT}
+    >
+      {/* Background */}
+      <Graphics
+        draw={(g: PIXI.Graphics) => {
+          g.clear();
+          g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.95);
+          g.drawRect(0, 0, GAME_CONFIG.CANVAS_WIDTH, GAME_CONFIG.CANVAS_HEIGHT);
+          g.endFill();
         }}
       />
 
-      {/* Restart Button */}
-      <Container
-        x={width / 2 - 100}
-        y={height / 2 + 50}
-        interactive={true}
-        buttonMode={true}
-        pointertap={onRestart}
-      >
-        <Graphics draw={(g: PIXI.Graphics) => drawButton(g, false)} />
-        <Text
-          text="다시 시작 (Restart)"
+      {/* Title */}
+      <PixiText
+        text={`${titleContent.korean} (${titleContent.english})`}
+        style={titleStyle}
+        x={GAME_CONFIG.CANVAS_WIDTH / 2}
+        y={100}
+        anchor={0.5}
+      />
+
+      {/* Winner Display */}
+      {winner && (
+        <PixiText
+          text={`${winner.name.korean} (${winner.name.english}) 승리!`}
+          style={statsStyle}
+          x={GAME_CONFIG.CANVAS_WIDTH / 2}
+          y={160}
           anchor={0.5}
-          x={100}
-          y={25}
-          style={buttonStyle}
         />
+      )}
+
+      {/* Match Stats */}
+      <Container x={GAME_CONFIG.CANVAS_WIDTH / 2 - 150} y={220}>
+        <PixiText
+          text="경기 통계 (Match Statistics)"
+          style={titleStyle}
+          x={150}
+          y={0}
+          anchor={0.5}
+        />
+
+        {playerStats?.matchDuration && (
+          <PixiText
+            text={`경기 시간: ${Math.floor(playerStats.matchDuration / 60)}:${(
+              playerStats.matchDuration % 60
+            )
+              .toString()
+              .padStart(2, "0")}`}
+            style={statsStyle}
+            x={0}
+            y={40}
+          />
+        )}
+
+        {playerStats?.roundsPlayed && (
+          <PixiText
+            text={`라운드: ${playerStats.roundsPlayed}`}
+            style={statsStyle}
+            x={0}
+            y={70}
+          />
+        )}
       </Container>
 
-      {/* Return to Menu Button */}
+      {/* Action Buttons */}
       <Container
-        x={width / 2 - 100}
-        y={height / 2 + 120}
-        interactive={true}
-        buttonMode={true}
-        pointertap={onReturnToMenu}
+        x={GAME_CONFIG.CANVAS_WIDTH / 2}
+        y={GAME_CONFIG.CANVAS_HEIGHT - 150}
       >
-        <Graphics draw={(g: PIXI.Graphics) => drawButton(g, false)} />
-        <Text
-          text="메뉴로 (Menu)"
-          anchor={0.5}
-          x={100}
-          y={25}
-          style={buttonStyle}
-        />
+        {/* Restart Button */}
+        <Container
+          x={-120}
+          y={0}
+          interactive={true}
+          buttonMode={true}
+          pointertap={onRestart}
+        >
+          <Graphics
+            draw={(g: PIXI.Graphics) => {
+              g.clear();
+              g.beginFill(KOREAN_COLORS.ACCENT_PRIMARY, 0.8);
+              g.lineStyle(2, KOREAN_COLORS.UI_BORDER);
+              g.drawRoundedRect(0, 0, 100, 40, 8);
+              g.endFill();
+            }}
+          />
+          <PixiText
+            text="다시 시작"
+            style={statsStyle}
+            x={50}
+            y={20}
+            anchor={0.5}
+          />
+        </Container>
+
+        {/* Menu Button */}
+        <Container
+          x={20}
+          y={0}
+          interactive={true}
+          buttonMode={true}
+          pointertap={onMenu}
+        >
+          <Graphics
+            draw={(g: PIXI.Graphics) => {
+              g.clear();
+              g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.8);
+              g.lineStyle(2, KOREAN_COLORS.UI_BORDER);
+              g.drawRoundedRect(0, 0, 100, 40, 8);
+              g.endFill();
+            }}
+          />
+          <PixiText
+            text="메뉴로"
+            style={statsStyle}
+            x={50}
+            y={20}
+            anchor={0.5}
+          />
+        </Container>
       </Container>
     </Container>
   );

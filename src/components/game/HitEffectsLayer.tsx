@@ -1,224 +1,200 @@
 // Hit effects layer for combat feedback
 
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
+import * as PIXI from "pixi.js";
+import type { HitEffect, HitEffectsLayerProps } from "../../types";
+import { HitEffectType } from "../../types/enums";
 import {
   KOREAN_COLORS,
   FONT_FAMILY,
-  KOREAN_TEXT_SIZES,
+  PIXI_FONT_WEIGHTS, // Use this for PIXI.TextStyle fontWeight
   GAME_CONFIG,
-  FONT_SIZES,
-} from "../../types/constants"; // FONT_SIZES changed to KOREAN_TEXT_SIZES
-import * as PIXI from "pixi.js";
-import type { HitEffect } from "../../types";
+} from "../../types/constants";
+import { blendColors } from "../../utils/colorUtils";
 
-interface HitEffectsLayerProps {
-  effects: readonly HitEffect[];
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
+export interface HitEffectsLayerProps {
+  readonly effects: readonly HitEffect[];
+  readonly width?: number;
+  readonly height?: number;
 }
+
+const getEffectIntensity = (effect: HitEffect): number => {
+  if (effect.isCritical) return 1.0;
+  if (
+    effect.type === HitEffectType.HEAVY ||
+    effect.type === HitEffectType.CRITICAL
+  )
+    return 0.8; // Corrected
+  if (effect.type === HitEffectType.MEDIUM) return 0.6; // Corrected
+  if (effect.type === HitEffectType.LIGHT) return 0.4; // Corrected
+  return 0.5; // Default intensity
+};
+
+const getEffectColor = (effectType: HitEffectType): number => {
+  switch (effectType) {
+    case HitEffectType.CRITICAL: // Corrected
+      return KOREAN_COLORS.ACCENT_RED;
+    case HitEffectType.HEAVY: // Corrected
+      return KOREAN_COLORS.WARNING_ORANGE;
+    case HitEffectType.MEDIUM: // Corrected
+      return KOREAN_COLORS.ACCENT_YELLOW;
+    case HitEffectType.LIGHT: // Corrected
+      return KOREAN_COLORS.TEXT_PRIMARY;
+    case HitEffectType.PERFECT:
+      return KOREAN_COLORS.ACCENT_GOLD;
+    case HitEffectType.COUNTER:
+      return KOREAN_COLORS.PRIMARY_BLUE;
+    case HitEffectType.BLOCK:
+      return KOREAN_COLORS.UI_BORDER;
+    case HitEffectType.MISS:
+      return KOREAN_COLORS.TEXT_SECONDARY;
+    case HitEffectType.NORMAL:
+    default:
+      return KOREAN_COLORS.TEXT_PRIMARY;
+  }
+};
 
 export const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({
   effects,
-  x = 0,
-  y = 0,
-  width = 800,
-  height = 600,
+  currentTime,
+  width = GAME_CONFIG.CANVAS_WIDTH,
+  height = GAME_CONFIG.CANVAS_HEIGHT,
 }) => {
-  const baseStyle = new PIXI.TextStyle({
-    fontFamily: FONT_FAMILY.PRIMARY,
-    fontSize: KOREAN_TEXT_SIZES.medium,
-    fill: KOREAN_COLORS.WHITE_SOLID,
-    fontWeight: "normal",
-    stroke: { color: KOREAN_COLORS.BLACK_SOLID, width: 2 },
-    dropShadow: {
-      color: KOREAN_COLORS.BLACK_SOLID,
-      blur: 4,
-      distance: 2,
+  const activeEffects = useMemo(
+    () =>
+      effects.filter(
+        (effect: HitEffect) => currentTime - effect.timestamp < effect.duration // Added HitEffect type
+      ),
+    [effects, currentTime]
+  );
+
+  const getEffectSize = useCallback((effect: HitEffect): number => {
+    if (
+      effect.type === HitEffectType.PERFECT ||
+      effect.type === HitEffectType.CRITICAL
+    ) {
+      return 30;
+    }
+    return effect.type === HitEffectType.HEAVY
+      ? 25
+      : effect.type === HitEffectType.MEDIUM
+      ? 20
+      : effect.type === HitEffectType.LIGHT
+      ? 15
+      : effect.type === HitEffectType.COUNTER
+      ? 22
+      : effect.type === HitEffectType.BLOCK
+      ? 18
+      : effect.type === HitEffectType.MISS
+      ? 12
+      : 15; // Default size
+  }, []);
+
+  const effectTextStyle = useMemo(
+    () => (effect: HitEffect) =>
+      new PIXI.TextStyle({
+        // Using PIXI.TextStyle directly
+        fontFamily: FONT_FAMILY.CYBER, // Ensure FONT_FAMILY.CYBER exists
+        fontSize: getEffectSize(effect) * 0.8,
+        fill: getEffectColor(effect.type),
+        fontWeight: PIXI_FONT_WEIGHTS.bold, // Use PIXI_FONT_WEIGHTS
+        stroke: KOREAN_COLORS.BLACK_SOLID,
+        strokeThickness: 3, // This is a valid PIXI.TextStyle property
+        dropShadow: true,
+        dropShadowColor: KOREAN_COLORS.BLACK_SOLID,
+        dropShadowBlur: 5,
+        dropShadowAngle: Math.PI / 4,
+        dropShadowDistance: 3,
+        align: "center",
+      }),
+    [getEffectSize]
+  );
+
+  const drawSparkEffect = useCallback(
+    (g: PIXI.Graphics, effect: HitEffect) => {
+      g.clear();
+      const intensity = getEffectIntensity(effect);
+      const color = getEffectColor(effect.type); // effect.type is HitEffectType
+      const size = getEffectSize(effect); // Use getEffectSize
+
+      const numSparks = Math.floor(intensity * 10 + 5);
+      for (let i = 0; i < numSparks; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const length = Math.random() * size * 1.5 * intensity + size * 0.5;
+        const sparkX = Math.cos(angle) * length;
+        const sparkY = Math.sin(angle) * length;
+        g.lineStyle(Math.random() * 2 + 1, color, Math.random() * 0.5 + 0.5)
+          .moveTo(0, 0)
+          .lineTo(sparkX, sparkY);
+      }
     },
-  });
+    [getEffectSize]
+  );
 
-  const getEffectStyle = (
-    effectType: HitEffectType
-  ): Partial<PIXI.TextStyleOptions> => {
-    switch (effectType) {
-      case "light":
-        return {
-          ...baseStyle,
-          fontSize: KOREAN_TEXT_SIZES.small, // Use KOREAN_TEXT_SIZES
-          fill: KOREAN_COLORS.TEXT_SECONDARY,
-        };
-      case "medium":
-        return {
-          ...baseStyle,
-          fontSize: KOREAN_TEXT_SIZES.medium, // Use KOREAN_TEXT_SIZES
-          fill: KOREAN_COLORS.SECONDARY_YELLOW, // Corrected Color
-          stroke: { color: KOREAN_COLORS.BLACK_SOLID, width: 1 },
-        };
-      case "heavy":
-        return {
-          ...baseStyle,
-          fontSize: KOREAN_TEXT_SIZES.large, // Use KOREAN_TEXT_SIZES
-          fill: KOREAN_COLORS.NEGATIVE_RED,
-          fontWeight: "bold",
-          stroke: { color: KOREAN_COLORS.BLACK_SOLID, width: 2 },
-          dropShadow: {
-            color: KOREAN_COLORS.BLACK_SOLID,
-            blur: 5,
-            distance: 3,
-          },
-        };
-      case "critical":
-        return {
-          ...baseStyle,
-          fontSize: KOREAN_TEXT_SIZES.xlarge, // Use KOREAN_TEXT_SIZES
-          fill: KOREAN_COLORS.ACCENT_RED,
-          fontWeight: "bold",
-          stroke: { color: KOREAN_COLORS.BLACK_SOLID, width: 2 },
-          dropShadow: {
-            color: KOREAN_COLORS.BLACK_SOLID,
-            blur: 5,
-            distance: 3,
-          },
-        };
-      case "block":
-        return {
-          ...baseStyle,
-          fontSize: KOREAN_TEXT_SIZES.medium, // Use KOREAN_TEXT_SIZES
-          fill: KOREAN_COLORS.PRIMARY_BLUE,
-        };
-      case "miss":
-        return {
-          ...baseStyle,
-          fontSize: KOREAN_TEXT_SIZES.small, // Use KOREAN_TEXT_SIZES
-          fill: KOREAN_COLORS.UI_GRAY,
-        };
-      default:
-        return baseStyle;
-    }
-  };
+  const drawImpactRing = useCallback(
+    (g: PIXI.Graphics, effect: HitEffect, progress: number) => {
+      g.clear();
+      if (effect.type === HitEffectType.MISS) {
+        // Use enum for comparison
+        return; // No ring for misses
+      }
+      const color = getEffectColor(effect.type); // effect.type is HitEffectType
+      const baseSize = getEffectSize(effect); // Use getEffectSize
+      const currentRadius = baseSize * (1 + progress * 2);
+      const alpha = 1 - progress;
+      const lineWidth = Math.max(1, baseSize * 0.2 * (1 - progress));
 
-  const drawEffectShape = (g: PIXI.Graphics, effect: HitEffect) => {
-    // Added PIXI.Graphics type
-    g.clear();
-    const size =
-      effect.type === "critical" ? 20 : effect.type === "heavy" ? 15 : 10;
-    const alpha = 1 - (Date.now() - effect.timestamp) / effect.duration;
+      g.lineStyle(lineWidth, color, alpha).drawCircle(0, 0, currentRadius);
 
-    if (alpha <= 0) return;
-
-    g.beginFill(effect.color || KOREAN_COLORS.ACCENT_RED, alpha * 0.5);
-    g.drawCircle(effect.position.x, effect.position.y, size);
-    g.endFill();
-  };
-
-  const drawEffect = (g: PIXI.Graphics, effect: HitEffect) => {
-    g.clear();
-
-    const age = Date.now() - effect.timestamp;
-    const progress = Math.min(1, age / effect.duration);
-    const alpha = Math.max(0, 1 - progress);
-
-    // Calculate floating animation
-    const floatOffset = progress * 40; // Float upward
-    const scale = 1 + progress * 0.5; // Scale up slightly
-
-    const effectX = effect.position.x;
-    const effectY = effect.position.y - floatOffset;
-
-    switch (effect.type) {
-      case "critical":
-        // Critical hit burst effect
-        g.beginFill(
-          effect.color || KOREAN_COLORS.SECONDARY_YELLOW_LIGHT,
-          alpha * 0.8
-        );
-        for (let i = 0; i < 8; i++) {
-          const angle = (i * Math.PI * 2) / 8;
-          const radius = 20 * scale;
-          const x = effectX + Math.cos(angle) * radius;
-          const y = effectY + Math.sin(angle) * radius;
-          g.drawCircle(x, y, 3 * scale);
-        }
-        g.endFill();
-
-        // Central glow
-        g.beginFill(KOREAN_COLORS.WHITE_SOLID, alpha * 0.6);
-        g.drawCircle(effectX, effectY, 8 * scale);
-        g.endFill();
-        break;
-
-      case "heavy":
-        // Heavy impact ripples
-        g.beginFill(effect.color || KOREAN_COLORS.NEGATIVE_RED, alpha * 0.6);
-        for (let i = 0; i < 3; i++) {
-          const rippleRadius = (10 + i * 5) * scale;
-          g.drawCircle(effectX, effectY, rippleRadius);
-        }
-        g.endFill();
-        break;
-
-      case "medium":
-        // Medium impact flash
-        g.beginFill(
-          effect.color || KOREAN_COLORS.SECONDARY_YELLOW,
-          alpha * 0.5
-        );
-        g.drawCircle(effectX, effectY, 15 * scale);
-        g.endFill();
-        break;
-
-      case "light":
-      default:
-        // Light impact sparkle
-        g.beginFill(effect.color || KOREAN_COLORS.PRIMARY_CYAN, alpha * 0.4);
-        g.drawCircle(effectX, effectY, 8 * scale);
-        g.endFill();
-        break;
-    }
-  };
-
-  const activeEffects = effects.filter(
-    (effect) => Date.now() - effect.timestamp < effect.duration
+      if (effect.type === HitEffectType.BLOCK) {
+        // Use enum for comparison
+        // Add a shield-like segment for blocks
+        g.lineStyle(
+          lineWidth + 2,
+          blendColors(color, KOREAN_COLORS.PRIMARY_CYAN, 0.5),
+          alpha * 0.7
+        ).arc(0, 0, currentRadius * 0.8, -Math.PI / 3, Math.PI / 3);
+      }
+    },
+    [getEffectSize]
   );
 
   return (
-    <Container x={x} y={y} width={width} height={height}>
-      {activeEffects.map((effect) => {
-        const age = Date.now() - effect.timestamp;
-        const progress = Math.min(1, age / effect.duration);
-        const alpha = Math.max(0, 1 - progress);
-        const floatOffset = progress * 40;
+    <Container width={width} height={height}>
+      {activeEffects.map((effect: HitEffect) => {
+        // Added HitEffect type
+        const progress = (Date.now() - effect.timestamp) / effect.duration;
+        const opacity = 1 - progress;
+        const scale = 1 + progress * 0.5;
+        const text = effect.text || (effect.damage ? `${effect.damage}` : "");
 
         return (
-          <Container key={effect.id} alpha={alpha}>
-            <Graphics draw={(g) => drawEffect(g, effect)} />
-
-            {/* Damage number text */}
-            <Text
-              text={`-${effect.damage}`}
-              x={effect.position.x}
-              y={effect.position.y - floatOffset - 10}
-              anchor={0.5}
-              style={
-                effect.type === "critical" ? criticalTextStyle : damageTextStyle
-              }
+          <Container
+            key={effect.id}
+            x={effect.position.x}
+            y={effect.position.y - progress * 30}
+            alpha={opacity}
+            scale={scale}
+          >
+            {/* Spark/Impact Visual */}
+            {effect.type !== HitEffectType.MISS &&
+              effect.type !== HitEffectType.BLOCK && (
+                <Graphics
+                  draw={(g: PIXI.Graphics) => drawSparkEffect(g, effect)}
+                />
+              )}
+            <Graphics
+              draw={(g: PIXI.Graphics) => drawImpactRing(g, effect, progress)}
             />
 
-            {/* Critical hit Korean text */}
-            {effect.type === "critical" && (
+            {/* Damage Text / Effect Text */}
+            {text && (
               <Text
-                text="급소!"
-                x={effect.position.x}
-                y={effect.position.y - floatOffset + 20}
+                text={text}
                 anchor={0.5}
-                style={{
-                  ...criticalTextStyle,
-                  fontSize: FONT_SIZES.medium,
-                  fill: KOREAN_COLORS.WHITE_SOLID,
-                }}
+                style={effectTextStyle(effect)}
+                y={-getEffectSize(effect) * 0.5} // Position text above impact
               />
             )}
           </Container>
@@ -227,5 +203,3 @@ export const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({
     </Container>
   );
 };
-
-export default HitEffectsLayer;

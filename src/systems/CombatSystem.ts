@@ -2,10 +2,9 @@ import type {
   PlayerState,
   KoreanTechnique,
   CombatResult,
-  PlayerArchetype,
-  TrigramStance,
-  CombatState, // Added CombatState
-  VitalPointHitResult,
+  VitalPoint,
+  Position,
+  WinConditionCheckResult,
 } from "../types";
 import { STANCE_EFFECTIVENESS_MATRIX } from "../types/constants";
 import {
@@ -101,12 +100,56 @@ export class CombatSystem {
    * Check win condition based on incapacitation, pain, or consciousness.
    */
   static checkWinCondition(
-    players: readonly [PlayerState, PlayerState]
-  ): string | null {
+    players: [PlayerState, PlayerState]
+  ): WinConditionCheckResult | null {
     const [player1, player2] = players;
-    if (!isPlayerCapacitated(player1)) return player2.id;
-    if (!isPlayerCapacitated(player2)) return player1.id;
-    return null;
+
+    if (player1.health <= 0 && player2.health <= 0) {
+      return { winner: null, draw: true, reason: "mutual_knockout" };
+    }
+    if (player1.health <= 0) {
+      return {
+        winner: player2,
+        draw: false,
+        reason: "player1_health_depleted",
+      };
+    }
+    if (player2.health <= 0) {
+      return {
+        winner: player1,
+        draw: false,
+        reason: "player2_health_depleted",
+      };
+    }
+
+    // Add time-based win/draw conditions if applicable
+    // e.g., if (timeRemaining <= 0) { ... }
+
+    return null; // No winner yet
+  }
+
+  static checkWinConditionOnTimeUp(
+    players: [PlayerState, PlayerState]
+  ): WinConditionCheckResult {
+    const [player1, player2] = players;
+
+    // Example: Winner is the one with more health. If equal, it's a draw.
+    if (player1.health > player2.health) {
+      return {
+        winner: player1,
+        draw: false,
+        reason: "time_up_health_advantage",
+      };
+    } else if (player2.health > player1.health) {
+      return {
+        winner: player2,
+        draw: false,
+        reason: "time_up_health_advantage",
+      };
+    } else {
+      // Could also check other stats like damage dealt if health is equal
+      return { winner: null, draw: true, reason: "time_up_equal_health" };
+    }
   }
 
   /**

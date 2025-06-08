@@ -11,6 +11,7 @@ import type { HitEffect } from "./effects";
  */
 export interface GameState {
   readonly phase: GamePhase;
+  readonly mode: GameMode;
   readonly isTraining: boolean;
   readonly player1: PlayerState;
   readonly player2: PlayerState;
@@ -19,10 +20,27 @@ export interface GameState {
   readonly timeRemaining: number;
   readonly gameTime: number;
   readonly isPaused: boolean;
+  readonly winner: PlayerState | null;
   readonly combatEffects: readonly HitEffect[];
-  readonly currentActivePlayer: 0 | 1;
-  readonly matchWinner?: string;
-  readonly roundWinner?: string;
+  readonly matchHistory: readonly MatchResult[];
+}
+
+export interface MatchResult {
+  readonly winner: PlayerState;
+  readonly loser: PlayerState;
+  readonly duration: number;
+  readonly totalDamageDealt: number;
+  readonly perfectStrikes: number;
+  readonly vitalPointHits: number;
+  readonly stanceChanges: number;
+}
+
+export interface GameConfig {
+  readonly roundDuration: number; // seconds
+  readonly maxRounds: number;
+  readonly healthRegen: boolean;
+  readonly kiRegen: boolean;
+  readonly difficultyLevel: "easy" | "normal" | "hard" | "expert";
 }
 
 /**

@@ -4,7 +4,6 @@ PRIO 1, complete functional game.
 PRIO 2, Use graphics for all componets pixiJs and pixi react , react 19 style, strict typing,
 PRIO 3, ui/ux cyberpunk style should be cool.
 
-
 ## Project Overview
 
 Black Trigram is a **realistic 2D precision combat simulator** deeply rooted in Korean martial arts and the I Ching trigram philosophy. The game emphasizes anatomical realism, precise targeting, authentic martial techniques, and cyberpunk aesthetics.
@@ -45,6 +44,20 @@ Black Trigram is a **realistic 2D precision combat simulator** deeply rooted in 
 
 ### System
 
+src/assets/visual
+src/assets/visual/bg
+src/assets/visual/bg/archetyples
+src/assets/visual/bg/archetyples/CyberpunkTeamDynamics.png
+src/assets/visual/bg/archetyples/PlayerArchetypesExplained.png
+src/assets/visual/bg/archetyples/PlayerArchetypesOverview.png
+src/assets/visual/bg/dojang
+src/assets/visual/bg/dojang/dojang_floor_tex.png
+src/assets/visual/bg/dojang/dojang_wall_tex.png
+src/assets/visual/bg/intro
+src/assets/visual/bg/intro/intro_bg_loop.png
+src/assets/visual/logo
+src/assets/visual/logo/black-trigram-256.png
+src/assets/visual/logo/black-trigram.png
 src/audio/AudioAssetRegistry.ts
 src/audio/AudioManager.ts
 src/audio/AudioManager.tsx
@@ -75,6 +88,7 @@ src/components/index.ts
 src/components/intro
 src/components/intro/components
 src/components/intro/components/ControlsSection.tsx
+src/components/intro/components/index.ts
 src/components/intro/components/MenuSection.tsx
 src/components/intro/components/PhilosophySection.tsx
 src/components/intro/index.ts
@@ -89,6 +103,7 @@ src/components/training
 src/components/training/index.ts
 src/components/training/TrainingScreen.tsx
 src/components/ui
+src/components/ui/ArchetypeDisplay.tsx
 src/components/ui/base
 src/components/ui/base/BackgroundGrid.tsx
 src/components/ui/base/BaseButton.tsx
@@ -113,9 +128,14 @@ src/components/ui/base/korean-text/types.ts
 src/components/ui/base/korean-text/utils.ts
 src/components/ui/base/PixiComponents.tsx
 src/components/ui/EndScreen.tsx
+src/components/ui/HealthBar.tsx
+src/components/ui/HitEffectsLayer.tsx
 src/components/ui/index.ts
 src/components/ui/KoreanHeader.tsx
+src/components/ui/Player.tsx
+src/components/ui/PlayerVisuals.tsx
 src/components/ui/ProgressTracker.tsx
+src/components/ui/StanceIndicator.tsx
 src/components/ui/TrigramWheel.tsx
 src/hooks/useTexture.ts
 src/main.tsx
@@ -169,6 +189,46 @@ src/vite-env.d.ts
 src/Game.css
 src/App.css
 src/index.css
+
+## ART Image assets
+
+src/assets/black-trigram-256.png
+src/assets/black-trigram.png
+src/assets/CyberpunkTeamDynamics.png
+src/assets/dojang_wall_neon_flicker.png
+src/assets/PlayerArchetypesExplained.png
+src/assets/PlayerArchetypesOverview.png
+src/assets/visual/bg/archetyples/CyberpunkTeamDynamics.png
+src/assets/visual/bg/archetyples/PlayerArchetypesExplained.png
+src/assets/visual/bg/archetyples/PlayerArchetypesOverview.png
+src/assets/visual/bg/dojang/dojang_floor_tex.png
+src/assets/visual/bg/dojang/dojang_wall_tex.png
+src/assets/visual/bg/intro/intro_bg_loop.png
+src/assets/visual/logo/black-trigram-256.png
+src/assets/visual/logo/black-trigram.png
+
+## AUDIO assets
+
+# Music
+
+src/assets/audio/music/underground_theme.mp3
+src/assets/audio/music/intro_theme.webm
+src/assets/audio/music/intro_theme.mp3
+src/assets/audio/music/archetype_themes/amsalja_shadow.mp3
+src/assets/audio/music/archetype_themes/musa_warrior.mp3
+src/assets/audio/music/archetype_themes/hacker_cyber.mp3
+src/assets/audio/music/archetype_themes/jojik_street.mp3
+src/assets/audio/music/archetype_themes/jeongbo_intel.mp3
+src/assets/audio/music/archetype_themes
+src/assets/audio/music/cyberpunk_fusion.webm
+src/assets/audio/music/cyberpunk_fusion.mp3
+src/assets/audio/music/combat_theme.webm
+src/assets/audio/music/underground_theme.webm
+src/assets/audio/music/combat_theme.mp3
+
+# Sound effects
+
+src/assets/audio/sfx/\*
 
 ## 🎯 Strict TypeScript Usage
 

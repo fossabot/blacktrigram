@@ -1,7 +1,13 @@
 import type { ReactNode } from "react";
 import type { ColorValue, Position } from "./common";
-import type { TrigramStance, GamePhase } from "./enums";
-import type { PlayerState } from "./player";
+import type {
+  PlayerState,
+  GameState,
+  TrigramStance,
+  PlayerAction,
+  MatchStats,
+  GamePhase,
+} from "./";
 import type { KoreanText } from "./korean-text";
 import type { PlayerArchetype } from "./player";
 
@@ -104,12 +110,25 @@ export interface GameUIProps extends BaseUIComponentProps {
     updates: Partial<PlayerState>
   ) => void;
   readonly isPaused?: boolean; // Added
+  gameState: GameState;
+  onPlayerAction: (action: PlayerAction) => void; // Assuming PlayerAction covers updates and phase changes
+  width?: number; // Added width for GameUI container
+  height?: number; // Added height for GameUI container
 }
 
 // Intro screen props
 export interface IntroScreenProps extends BaseUIComponentProps {
   readonly onGamePhaseChange: (phase: GamePhase | string) => void; // Ensure this matches string usage in App.tsx
   readonly currentSection?: string;
+}
+
+// End screen props
+export interface EndScreenProps {
+  winner: PlayerState | null;
+  draw: boolean; // Ensure draw prop is present
+  onRestart: () => void;
+  onMenu: () => void;
+  playerStats?: MatchStats; // Ensure playerStats prop is present
 }
 
 // UI Theme
@@ -185,4 +204,12 @@ export interface CombatUIState {
   readonly availableStances: readonly TrigramStance[]; // Added
   readonly combatLog: readonly KoreanText[];
   readonly vitalPointsVisible: boolean; // Added
+}
+
+export interface ControlsSectionProps {
+  onBack: () => void;
+  width?: number;
+  height?: number;
+  x?: number; // Added x
+  y?: number; // Added y
 }

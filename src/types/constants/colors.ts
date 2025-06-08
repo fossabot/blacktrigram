@@ -3,142 +3,107 @@
  * Cyberpunk aesthetic with traditional Korean elements
  */
 
-// Core Korean Colors - Traditional palette
+// Korean martial arts color palette with cyberpunk aesthetic
 export const KOREAN_COLORS = {
-  // Player Archetype Colors
+  // Player archetype colors
   MUSA_PRIMARY: 0xff8000, // Orange - Traditional warrior
   AMSALJA_PRIMARY: 0x440044, // Dark purple - Shadow assassin
   HACKER_PRIMARY: 0x00ff88, // Neon green - Cyber warrior
   JEONGBO_PRIMARY: 0x0088ff, // Blue - Intelligence operative
   JOJIK_PRIMARY: 0xdc143c, // Crimson - Organized crime
 
-  // Trigram Element Colors
-  TRIGRAM_GEON_PRIMARY: 0xffffff, // Heaven - White
-  TRIGRAM_TAE_PRIMARY: 0x87ceeb, // Lake - Sky Blue
-  TRIGRAM_LI_PRIMARY: 0xff4500, // Fire - Orange Red
-  TRIGRAM_JIN_PRIMARY: 0xffff00, // Thunder - Yellow
-  TRIGRAM_SON_PRIMARY: 0x90ee90, // Wind - Light Green
-  TRIGRAM_GAM_PRIMARY: 0x000080, // Water - Navy Blue
-  TRIGRAM_GAN_PRIMARY: 0x8b4513, // Mountain - Brown
+  // Trigram stance colors (based on traditional I Ching)
+  TRIGRAM_GEON_PRIMARY: 0xffffff, // White - Heaven
+  TRIGRAM_TAE_PRIMARY: 0x87ceeb, // Sky blue - Lake
+  TRIGRAM_LI_PRIMARY: 0xff4500, // Red-orange - Fire
+  TRIGRAM_JIN_PRIMARY: 0xffff00, // Yellow - Thunder
+  TRIGRAM_SON_PRIMARY: 0x90ee90, // Light green - Wind
+  TRIGRAM_GAM_PRIMARY: 0x000080, // Navy blue - Water
+  TRIGRAM_GAN_PRIMARY: 0x8b4513, // Brown - Mountain
   TRIGRAM_GON_PRIMARY: 0x228b22, // Forest green - Earth
 
-  // Text Colors
-  TEXT_PRIMARY: 0xffffff, // Primary white text
-  TEXT_SECONDARY: 0xcccccc, // Secondary gray text
-  TEXT_TERTIARY: 0x888888, // Tertiary gray text
-  TEXT_ACCENT: 0x00ffff, // Cyan accent text
-  TEXT_WARNING: 0xffaa00, // Warning orange
-  TEXT_ERROR: 0xff4444, // Error red
-  TEXT_SUCCESS: 0x00ff88, // Success green
+  // UI colors with cyberpunk theme
+  PRIMARY_CYAN: 0x00ffff, // Neon cyan
+  PRIMARY_BLUE: 0x0088ff,
+  SECONDARY_BLUE_DARK: 0x001144,
+  SECONDARY_BLUE_LIGHT: 0x88ccff,
+  SECONDARY_YELLOW: 0xffcc00,
+  SECONDARY_YELLOW_LIGHT: 0xffe066,
+  ACCENT_PRIMARY: 0xff00ff, // Magenta
+  ACCENT_RED: 0xff0000, // Red
+  ACCENT_SECONDARY: 0x00ff00, // Lime green
+  ACCENT_GOLD: 0xffd700,
+  ACCENT_PURPLE: 0x9933ff,
+  ACCENT_CYAN: 0x00ffff, // Add if missing
 
-  // Base Colors
-  WHITE_SOLID: 0xffffff,
-  BLACK_SOLID: 0x000000,
-  WHITE: 0xffffff, // Alias for compatibility
-  BLACK: 0x000000, // Alias for compatibility
+  // Add missing accent colors
+  ACCENT_ORANGE: 0xff8800, // Orange for warnings
+  ACCENT_YELLOW: 0xffdd00, // Yellow for medium effects
+  ACCENT_GREEN: 0x00ff00, // Green for positive effects
+  ACCENT_BLUE: 0x0088ff, // Blue for special effects
 
-  // UI Colors
+  // Background colors
   UI_BACKGROUND_DARK: 0x0a0a0a,
   UI_BACKGROUND_MEDIUM: 0x1a1a1a,
   UI_BACKGROUND_LIGHT: 0x2a2a2a,
-  UI_BORDER: 0x444444,
-  UI_DISABLED_TEXT: 0x6e7681,
-  UI_STEEL_GRAY: 0x656d76, // Added missing color
 
-  // Accent Colors
-  ACCENT_PRIMARY: 0xff00ff, // Magenta
-  ACCENT_RED: 0xff0000, // Red accent
-  ACCENT_GOLD: 0xffd700, // Gold accent
-  ACCENT_PURPLE: 0x9966cc, // Purple accent
-  ACCENT_PRIMARY_LIGHT: 0xffaacc, // Light pink
-  ACCENT_ORANGE: 0xff8844, // Orange accent
+  // Text colors
+  TEXT_PRIMARY: 0xffffff,
+  TEXT_SECONDARY: 0xcccccc,
+  TEXT_TERTIARY: 0x888888,
+  TEXT_ACCENT: 0x00ffff,
+  TEXT_BRIGHT: 0xffffff, // Added for bright text, e.g., titles on dark overlay
 
-  // Status Colors
-  POSITIVE_GREEN: 0x00ff00, // Positive status
-  POSITIVE_GREEN_LIGHT: 0x44ffaa, // Light positive
-  NEGATIVE_RED: 0xff0000, // Negative status
-  NEGATIVE_GREEN: 0x008844, // Poison/negative green
-  WARNING_YELLOW: 0xffff00, // Warning status
-  STATUS_STUNNED_YELLOW: 0xffdd44, // Stunned status
+  // Status colors
+  POSITIVE_GREEN: 0x00ff00,
+  WARNING_YELLOW: 0xffff00,
+  WARNING_ORANGE: 0xff9900,
+  NEGATIVE_RED: 0xff0000,
 
-  // Secondary Colors
-  SECONDARY_BLUE_LIGHT: 0x88ccff, // Light blue
-  SECONDARY_YELLOW_LIGHT: 0xffff88, // Light yellow
-  SECONDARY_BLUE_DARK: 0x003366, // Example, adjust as needed
-  PRIMARY_BLUE_LIGHT: 0x66ccff, // Example, adjust as needed
-  PRIMARY_CYAN: 0x00ffff, // Primary cyan
-  SECONDARY_YELLOW: 0xffcc00, // Added
-
-  // Combat State Colors
-  HEALTH_FULL: 0x00ff88,
-  HEALTH_HIGH: 0x88ff44,
-  HEALTH_MEDIUM: 0xffaa00,
-  HEALTH_LOW: 0xff4444,
-  HEALTH_CRITICAL: 0xff0000,
-
-  // Ki Energy Colors
-  KI_FULL: 0x00ffff,
-  KI_CHARGING: 0x44aaff,
-  KI_DEPLETED: 0x666666,
-
-  // Combat Effect Colors
-  DAMAGE_LIGHT: 0xffaa44,
-  DAMAGE_MEDIUM: 0xff6644,
-  DAMAGE_HEAVY: 0xff2244,
-  DAMAGE_CRITICAL: 0xff0000,
-  BLOCK_SUCCESS: 0x44aaff,
+  // Combat effect colors
+  CRITICAL_HIT: 0xff0080,
+  VITAL_POINT_HIT: 0xff4000,
+  BLOCKED_ATTACK: 0x808080,
   PERFECT_STRIKE: 0xff8000,
-  WARNING_ORANGE: 0xff9900, // Added
+
+  // Vital point colors
+  VITAL_POINT_NORMAL: 0x00ff00,
+  VITAL_POINT_WEAK: 0xffff00,
+  VITAL_POINT_CRITICAL: 0xff0000,
+
+  // Border and outline colors
+  UI_BORDER: 0x444444,
+  UI_BORDER_LIGHT: 0x666666,
+  UI_STEEL_GRAY: 0x708090,
+  UI_GRAY: 0x808080,
+  UI_GRAY_LIGHT: 0xc0c0c0,
+  UI_DISABLED_FILL: 0x333333,
+  UI_DISABLED_BORDER: 0x444444,
+  ACTIVE_BORDER: 0x00ffff,
+
+  // Basic colors
+  BLACK_SOLID: 0x000000,
+  WHITE_SOLID: 0xffffff,
+
+  // Player colors
+  PLAYER_1_COLOR: 0x00ffff, // Cyan for Player 1
+  PLAYER_2_COLOR: 0xff00ff, // Magenta for Player 2
+
+  // Overlay colors
+  OVERLAY_BACKGROUND: 0x000000, // Black for overlays
 } as const;
 
-// Cyberpunk Palette for modern UI elements
+// Cyberpunk palette alias for backward compatibility
 export const CYBERPUNK_PALETTE = {
-  // Neon Colors
-  NEON_CYAN: 0x00fffc,
-  NEON_PINK: 0xff00fd,
-  NEON_GREEN: 0x00ff88,
-  ELECTRIC_BLUE: 0x0099ff,
-
-  // Dark Backgrounds
-  DEEP_DARK: 0x000000,
-  BACKGROUND_DARK: 0x0a0f14, // Deep, dark blue/grey
-  BACKGROUND_MEDIUM: 0x1c232f,
-  BACKGROUND_LIGHT: 0x2f3b4a,
-
-  // Interface Elements
-  INTERFACE_PANEL: 0x1e1e1e,
-  INTERFACE_BORDER: 0x333333,
-  INTERFACE_GLOW: 0x00ffff,
-
-  // Text Colors
-  TEXT_MAIN: 0xffffff,
-  TEXT_SECONDARY: 0xaaaaaa,
-  TEXT_ACCENT: 0x00ffff,
-  TEXT_OUTLINE: 0x000000,
-
-  // Glow Effects
-  GLOW_CYAN: 0x00ffff,
-  GLOW_PINK: 0xff00ff,
-  GLOW_GREEN: 0x00ff00,
-
-  // Status Effects
-  TECH_WHITE: 0xf0f0f0,
-  BLACK_SOLID: 0x000000,
-  ACCENT_NEON_GREEN: 0x00ff88,
-
-  // Primary Colors (aliases for compatibility)
-  PRIMARY_CYAN: 0x00fffc,
-  ACCENT_PINK: 0xff00ff, // Bright magenta/pink
-  ACCENT_LIME: 0x32cd32, // Bright lime green
-  ACCENT_ORANGE: 0xffa500, // Bright orange
-  TEXT_PRIMARY: 0xe0e0e0, // Light grey for primary text
-  TEXT_SECONDARY: 0xa0a0a0, // Medium grey for secondary text
-  UI_BORDER: 0x4a5b70,
-  UI_HIGHLIGHT: 0x00ffff,
-  UI_DISABLED: 0x303030,
-  VITAL_POINT_WEAK: 0xffff00, // Yellow
-  VITAL_POINT_CRITICAL: 0xff0000, // Red
-  VITAL_POINT_NORMAL: 0x00ff00, // Green
+  PRIMARY_CYAN: KOREAN_COLORS.PRIMARY_CYAN,
+  ACCENT_MAGENTA: KOREAN_COLORS.ACCENT_PRIMARY,
+  ACCENT_GREEN: KOREAN_COLORS.ACCENT_SECONDARY,
+  BACKGROUND_DARK: KOREAN_COLORS.UI_BACKGROUND_DARK,
+  BACKGROUND_MEDIUM: KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
+  BACKGROUND_LIGHT: KOREAN_COLORS.UI_BACKGROUND_LIGHT,
+  TEXT_PRIMARY: KOREAN_COLORS.TEXT_PRIMARY,
+  TEXT_SECONDARY: KOREAN_COLORS.TEXT_SECONDARY,
+  TEXT_ACCENT: KOREAN_COLORS.TEXT_ACCENT,
 } as const;
 
 // Export combined color system

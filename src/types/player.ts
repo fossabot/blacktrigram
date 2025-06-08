@@ -9,6 +9,7 @@ import type {
 } from "./enums";
 import type { Position, KoreanText } from "./index"; // Imports from the main index file
 import type { StatusEffect } from "./effects";
+import type { KoreanTechnique } from "./combat"; // Ensure KoreanTechnique is imported
 
 // Define and export PlayerAttributes
 export interface PlayerAttributes {
@@ -62,6 +63,10 @@ export interface PlayerState {
   readonly knownTechniques: readonly string[];
   currentStance: TrigramStance; // Made mutable for updates
   combatReadiness?: CombatReadiness; // Added optional combatReadiness
+  readonly availableTechniques: readonly KoreanTechnique[]; // Added
+
+  // Vital points (simplified - in full game would have all 70)
+  vitalPoints?: Record<string, VitalPoint>; // Add missing property
 }
 
 export type PlayerArchetype = PlayerArchetypeEnum; // Export PlayerArchetype type alias
@@ -135,4 +140,18 @@ export interface PlayerProgression {
   readonly attributes: PlayerAttributes;
   readonly skills: PlayerSkills;
   readonly knownTechniques: readonly string[];
+}
+
+// Add VitalPoint interface if not exists
+export interface VitalPoint {
+  readonly id: string;
+  readonly status: "normal" | "damaged" | "critical";
+  readonly damage: number;
+  readonly painLevel: number;
+  readonly isBlocked: boolean;
+  readonly lastHit: number | null;
+  readonly location?: {
+    readonly x: number;
+    readonly y: number;
+  };
 }

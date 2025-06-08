@@ -1,70 +1,49 @@
 import { render } from "@testing-library/react";
 import "@testing-library/jest-dom";
+import { Stage } from "@pixi/react";
 import { Player } from "../Player";
 import { createPlayerState } from "../../../utils/playerUtils";
-import type { PlayerState, KoreanText, Position } from "../../../types";
-import { Application } from "@pixi/react";
+import { PlayerArchetype } from "../../../types/enums";
+import type { PlayerState } from "../../../types";
 
-const mockPlayerName: KoreanText = {
-  korean: "테스트 선수",
-  english: "Test Player",
-};
-const mockPosition: Position = { x: 0, y: 0 };
+const mockPlayer1InitialState: PlayerState = createPlayerState(
+  "Player 1",
+  PlayerArchetype.MUSA,
+  { korean: "플레이어 1", english: "Player 1" },
+  { x: 100, y: 300 }
+);
 
 describe("Player Component", () => {
-  const mockPlayerState: PlayerState = createPlayerState(
-    "player1",
-    "musa",
-    mockPlayerName,
-    mockPosition
-  );
-
-  const defaultProps = {
-    playerState: mockPlayerState,
-    playerIndex: 0 as 0 | 1,
-    onStateUpdate: vi.fn(),
-    archetype: "musa" as const,
-    stance: "geon" as const,
-    position: mockPosition,
-    facing: "right" as const,
-    health: 100,
-    maxHealth: 100,
-    ki: 100,
-    maxKi: 100,
-    stamina: 100,
-    maxStamina: 100,
-    showVitalPoints: false,
-    x: 0,
-    y: 0,
-    width: 200,
-    height: 150,
-  };
-
   it("renders without crashing", () => {
     const { container } = render(
-      <Application>
-        <Player {...defaultProps} />
-      </Application>
+      <Stage>
+        <Player playerState={mockPlayer1InitialState} />
+      </Stage>
     );
     expect(container).toBeInTheDocument();
   });
 
   it("displays player name", () => {
     const { getByText } = render(
-      <Application>
-        <Player {...defaultProps} />
-      </Application>
+      <Stage>
+        <Player playerState={mockPlayer1InitialState} />
+      </Stage>
     );
-    expect(getByText(mockPlayerName.korean)).toBeInTheDocument();
+    expect(
+      getByText(mockPlayer1InitialState.name.korean, { exact: false })
+    ).toBeInTheDocument();
   });
 
-  it("calls onStateUpdate when state changes", () => {
-    const onStateUpdate = vi.fn();
-    render(
-      <Application>
-        <Player {...defaultProps} onStateUpdate={onStateUpdate} />
-      </Application>
+  it("displays player health", () => {
+    const { getByText } = render(
+      <Stage>
+        <Player playerState={mockPlayer1InitialState} />
+      </Stage>
     );
-    // Test state update functionality if needed
+    expect(
+      getByText(
+        `체력: ${mockPlayer1InitialState.health}/${mockPlayer1InitialState.maxHealth}`
+      )
+    ).toBeInTheDocument();
   });
 });

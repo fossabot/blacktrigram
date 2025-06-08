@@ -3,9 +3,11 @@
  */
 
 import type { CombatControlsConfig } from "../controls";
+import { TrigramStance } from "../enums";
 
-// Define the combat controls configuration
+// Combat control mapping for Korean martial arts
 export const COMBAT_CONTROLS: CombatControlsConfig = {
+  // Trigram stance system (1-8 keys)
   stanceControls: {
     "1": { stance: "geon", korean: "건", technique: "천둥벽력" },
     "2": { stance: "tae", korean: "태", technique: "유수연타" },
@@ -16,55 +18,74 @@ export const COMBAT_CONTROLS: CombatControlsConfig = {
     "7": { stance: "gan", korean: "간", technique: "반석방어" },
     "8": { stance: "gon", korean: "곤", technique: "대지포옹" },
   },
+
+  // Movement and combat actions
   movement: {
-    KeyW: "전진 (Forward)",
-    KeyA: "좌측 이동 (Move Left)",
-    KeyS: "후진 (Backward)",
-    KeyD: "우측 이동 (Move Right)",
-    ArrowUp: "전진 (Forward)",
-    ArrowLeft: "좌측 이동 (Move Left)",
-    ArrowDown: "후진 (Backward)",
-    ArrowRight: "우측 이동 (Move Right)",
+    WASD: "Tactical positioning and footwork",
+    ArrowKeys: "Alternative movement system",
   },
+
   combat: {
-    Space: "기술 실행 (Execute Technique)",
-    ShiftLeft: "방어 자세 (Defensive Guard)",
-    ControlLeft: "급소 조준 모드 (Vital Point Targeting)",
-    Tab: "플레이어 전환 (Switch Player)",
-    Enter: "확인 (Confirm)",
+    SPACE: "Execute current stance technique",
+    SHIFT: "Defensive guard/block position",
+    CTRL: "Precision vital point targeting mode",
+    TAB: "Cycle through player archetypes",
   },
+
+  // System controls
   system: {
-    Escape: "일시정지 / 메뉴 (Pause / Menu)",
-    F1: "도움말 (Help)",
-    KeyM: "음소거 (Mute)",
-    F11: "전체화면 (Fullscreen)",
+    ESC: "Pause menu / Return to intro",
+    F1: "Help / Controls guide",
+    M: "Mute / Audio settings",
   },
-};
+} as const;
 
 // Key mapping for easier lookup
-export const KEY_MAPPINGS = {
-  STANCE_KEYS: ["1", "2", "3", "4", "5", "6", "7", "8"],
-  MOVEMENT_KEYS: [
-    "KeyW",
-    "KeyA",
-    "KeyS",
-    "KeyD",
-    "ArrowUp",
-    "ArrowLeft",
-    "ArrowDown",
-    "ArrowRight",
-  ],
-  COMBAT_KEYS: ["Space", "ShiftLeft", "ControlLeft"],
-  SYSTEM_KEYS: ["Escape", "F1", "KeyM", "F11"],
+export const KEYBOARD_MAPPING = {
+  // Stance keys
+  STANCE_1: "1",
+  STANCE_2: "2",
+  STANCE_3: "3",
+  STANCE_4: "4",
+  STANCE_5: "5",
+  STANCE_6: "6",
+  STANCE_7: "7",
+  STANCE_8: "8",
+
+  // Combat actions
+  EXECUTE_TECHNIQUE: " ", // Space
+  BLOCK: "Shift",
+  TARGET_MODE: "Control",
+  ARCHETYPE_CYCLE: "Tab",
+
+  // Movement
+  MOVE_UP: "w",
+  MOVE_DOWN: "s",
+  MOVE_LEFT: "a",
+  MOVE_RIGHT: "d",
+
+  // System
+  PAUSE: "Escape",
+  HELP: "F1",
+  MUTE: "m",
 } as const;
 
-// Input action types
-export const INPUT_ACTIONS = {
-  STANCE_CHANGE: "stance_change",
-  ATTACK: "attack",
-  DEFEND: "defend",
-  MOVE: "move",
-  SPECIAL: "special",
-  PAUSE: "pause",
-  TARGET: "target",
-} as const;
+/**
+ * Get the stance associated with a given key.
+ *
+ * @param key - The key to lookup.
+ * @returns The corresponding stance, or null if not found.
+ */
+export function getStanceFromKey(key: string): TrigramStance | null {
+  const stanceMap: Record<string, TrigramStance> = {
+    "1": "geon",
+    "2": "tae",
+    "3": "li",
+    "4": "jin",
+    "5": "son",
+    "6": "gam",
+    "7": "gan",
+    "8": "gon",
+  };
+  return stanceMap[key] || null;
+}

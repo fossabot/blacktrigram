@@ -1,11 +1,12 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react"; // Removed unused screen import
 import "@testing-library/jest-dom";
 import { Application } from "@pixi/react";
 import { GameEngine } from "./GameEngine";
 import { createPlayerState } from "../../utils/playerUtils";
-import { AudioProvider } from "../../audio/AudioProvider";
-import type { PlayerState, KoreanText, Position } from "../../types";
+import type { KoreanText, PlayerState, Position } from "../../types"; // GameState, HitEffect removed
+import { PlayerArchetype, GamePhase, GameMode } from "../../types/enums"; // Corrected path
+// import { GAME_CONFIG } from "../../types/constants"; // Removed GAME_CONFIG
 
 // Mock audio provider for tests
 const MockAudioProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -48,31 +49,31 @@ const MockAudioProvider: React.FC<{ children: React.ReactNode }> = ({
 
 const mockPlayer1Name: KoreanText = { korean: "무사", english: "Warrior" };
 const mockPlayer2Name: KoreanText = { korean: "암살자", english: "Assassin" };
-const mockPosition: Position = { x: 100, y: 300 };
+const mockPlayer1Position: Position = { x: 100, y: 300 };
+const mockPlayer2Position: Position = { x: 600, y: 300 };
 
 const mockPlayer1: PlayerState = createPlayerState(
   "player1",
-  "musa",
+  PlayerArchetype.MUSA, // Use enum
   mockPlayer1Name,
-  mockPosition
+  mockPlayer1Position
 );
-
 const mockPlayer2: PlayerState = createPlayerState(
   "player2",
-  "amsalja",
+  PlayerArchetype.AMSALJA, // Use enum
   mockPlayer2Name,
-  { x: 600, y: 300 }
+  mockPlayer2Position
 );
 
 describe("GameEngine", () => {
   const defaultProps = {
     player1: mockPlayer1,
     player2: mockPlayer2,
-    gamePhase: "combat" as const,
+    gamePhase: GamePhase.COMBAT, // Fix: use enum
     onGameStateChange: vi.fn(),
     onPlayerUpdate: vi.fn(),
     onGamePhaseChange: vi.fn(),
-    gameMode: "versus" as const,
+    gameMode: GameMode.VERSUS, // Fix: use enum
   };
 
   const renderGameEngine = (props = {}) => {

@@ -2,21 +2,33 @@
  * Trigram system constants for Black Trigram Korean martial arts
  */
 
-import type { TrigramStance, PlayerArchetype } from "../enums";
-import type { TrigramData, TrigramEffectivenessMatrix } from "../trigram";
-import type { KoreanTechnique } from "../combat";
-import type { CYBERPUNK_PALETTE } from "./colors";
+import { KoreanTechnique } from "../combat";
+import { PlayerArchetype, TrigramStance } from "../enums";
+import type {
+  TrigramData,
+  TrigramEffectivenessMatrix,
+  TrigramTheme,
+} from "../trigram";
+import { KOREAN_COLORS } from "./colors";
 
-// Trigram stances in traditional order
+export const DEFAULT_TRIGRAM_THEME: TrigramTheme = {
+  primary: KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
+  secondary: KOREAN_COLORS.UI_BORDER,
+  active: KOREAN_COLORS.PRIMARY_CYAN,
+  hover: KOREAN_COLORS.UI_BACKGROUND_LIGHT,
+  text: KOREAN_COLORS.TEXT_PRIMARY,
+};
+
+// Defines the order of trigrams for UI elements like selection wheels or bars
 export const TRIGRAM_STANCES_ORDER: readonly TrigramStance[] = [
-  "geon",
-  "tae",
-  "li",
-  "jin",
-  "son",
-  "gam",
-  "gan",
-  "gon",
+  TrigramStance.GEON,
+  TrigramStance.TAE,
+  TrigramStance.LI,
+  TrigramStance.JIN,
+  TrigramStance.SON,
+  TrigramStance.GAM,
+  TrigramStance.GAN,
+  TrigramStance.GON,
 ] as const;
 
 // Base techniques for each trigram stance
@@ -73,97 +85,154 @@ const createTrigram = (
 
 // Trigram data definitions
 export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
-  geon: createTrigram(
-    "geon",
-    "건",
-    "Heaven",
-    "☰",
-    { korean: "천", english: "Sky" },
-    {
-      korean: "창조와 힘의 원리",
-      english: "Principle of creation and strength",
+  [TrigramStance.GEON]: {
+    name: { korean: "건", english: "Geon (Heaven)" },
+    symbol: "☰",
+    description: {
+      korean: "하늘을 상징하며, 강력하고 직접적인 공격을 나타냅니다.",
+      english: "Symbolizes Heaven; represents powerful, direct attacks.",
     },
-    { korean: "직접 공격", english: "Direct assault" },
-    "천둥벽력",
-    "Thunder Strike"
-  ),
-  tae: createTrigram(
-    "tae",
-    "태",
-    "Lake",
-    "☱",
-    { korean: "택", english: "Marsh" },
-    { korean: "기쁨과 유연함", english: "Joy and flexibility" },
-    { korean: "유동적 공격", english: "Fluid attacks" },
-    "유수연타",
-    "Flowing Strikes"
-  ),
-  li: createTrigram(
-    "li",
-    "리",
-    "Fire",
-    "☲",
-    { korean: "화", english: "Flame" },
-    { korean: "밝음과 지혜", english: "Brightness and wisdom" },
-    { korean: "정밀 공격", english: "Precision strikes" },
-    "화염지창",
-    "Flame Spear"
-  ),
-  jin: createTrigram(
-    "jin",
-    "진",
-    "Thunder",
-    "☳",
-    { korean: "뇌", english: "Lightning" },
-    { korean: "움직임과 각성", english: "Movement and awakening" },
-    { korean: "돌격 공격", english: "Charging attacks" },
-    "벽력일섬",
-    "Lightning Flash"
-  ),
-  son: createTrigram(
-    "son",
-    "손",
-    "Wind",
-    "☴",
-    { korean: "풍", english: "Breeze" },
-    { korean: "침투와 순응", english: "Penetration and adaptation" },
-    { korean: "연속 공격", english: "Continuous attacks" },
-    "선풍연격",
-    "Whirlwind Barrage"
-  ),
-  gam: createTrigram(
-    "gam",
-    "감",
-    "Water",
-    "☵",
-    { korean: "수", english: "Stream" },
-    { korean: "위험과 깊이", english: "Danger and depth" },
-    { korean: "반격", english: "Counter-attacks" },
-    "수류반격",
-    "Water Counter"
-  ),
-  gan: createTrigram(
-    "gan",
-    "간",
-    "Mountain",
-    "☶",
-    { korean: "산", english: "Peak" },
-    { korean: "정지와 안정", english: "Stillness and stability" },
-    { korean: "방어", english: "Defense" },
-    "반석방어",
-    "Rock Defense"
-  ),
-  gon: createTrigram(
-    "gon",
-    "곤",
-    "Earth",
-    "☷",
-    { korean: "지", english: "Ground" },
-    { korean: "수용과 양육", english: "Receptivity and nurturing" },
-    { korean: "제압 기술", english: "Grappling techniques" },
-    "대지포옹",
-    "Earth Embrace"
-  ),
+    keywords: ["power", "creation", "sky", "masculine"],
+    techniques: [
+      "천둥벽력 (Thunderclap Strike)",
+      "하늘의 분노 (Wrath of Heaven)",
+    ],
+    theme: {
+      primary: KOREAN_COLORS.TRIGRAM_GEON_PRIMARY,
+      secondary: KOREAN_COLORS.TRIGRAM_GEON_SECONDARY,
+      active: KOREAN_COLORS.WHITE_SOLID,
+      hover: KOREAN_COLORS.TRIGRAM_GEON_LIGHT,
+      text: KOREAN_COLORS.BLACK_SOLID,
+    },
+  },
+  [TrigramStance.TAE]: {
+    name: { korean: "태", english: "Tae (Lake)" },
+    symbol: "☱",
+    description: {
+      korean: "호수를 상징하며, 유연하고 흐르는 듯한 움직임을 나타냅니다.",
+      english: "Symbolizes Lake; represents fluid, flowing movements.",
+    },
+    keywords: ["joy", "fluidity", "lake", "feminine"],
+    techniques: ["유수연타 (Flowing Water Combo)", "잔잔한 파문 (Calm Ripple)"],
+    theme: {
+      primary: KOREAN_COLORS.TRIGRAM_TAE_PRIMARY,
+      secondary: KOREAN_COLORS.TRIGRAM_TAE_SECONDARY,
+      active: KOREAN_COLORS.WHITE_SOLID,
+      hover: KOREAN_COLORS.TRIGRAM_TAE_LIGHT,
+      text: KOREAN_COLORS.BLACK_SOLID,
+    },
+  },
+  [TrigramStance.LI]: {
+    name: { korean: "리", english: "Li (Fire)" },
+    symbol: "☲",
+    description: {
+      korean: "불을 상징하며, 빠르고 정확한 신경 타격을 나타냅니다.",
+      english: "Symbolizes Fire; represents fast, precise nerve strikes.",
+    },
+    keywords: ["clarity", "adherence", "fire", "brilliance"],
+    techniques: ["화염지창 (Flame Spear)", "불새출현 (Phoenix Emergence)"],
+    theme: {
+      primary: KOREAN_COLORS.TRIGRAM_LI_PRIMARY,
+      secondary: KOREAN_COLORS.TRIGRAM_LI_SECONDARY,
+      active: KOREAN_COLORS.WHITE_SOLID,
+      hover: KOREAN_COLORS.TRIGRAM_LI_LIGHT,
+      text: KOREAN_COLORS.BLACK_SOLID,
+    },
+  },
+  [TrigramStance.JIN]: {
+    name: { korean: "진", english: "Jin (Thunder)" },
+    symbol: "☳",
+    description: {
+      korean: "천둥을 상징하며, 충격적이고 기절시키는 기술을 나타냅니다.",
+      english:
+        "Symbolizes Thunder; represents stunning, concussive techniques.",
+    },
+    keywords: ["action", "movement", "thunder", "shock"],
+    techniques: ["벽력일섬 (Lightning Flash)", "천둥의 포효 (Thunder's Roar)"],
+    theme: {
+      primary: KOREAN_COLORS.TRIGRAM_JIN_PRIMARY,
+      secondary: KOREAN_COLORS.TRIGRAM_JIN_SECONDARY,
+      active: KOREAN_COLORS.WHITE_SOLID,
+      hover: KOREAN_COLORS.TRIGRAM_JIN_LIGHT,
+      text: KOREAN_COLORS.BLACK_SOLID,
+    },
+  },
+  [TrigramStance.SON]: {
+    name: { korean: "손", english: "Son (Wind)" },
+    symbol: "☴",
+    description: {
+      korean: "바람을 상징하며, 지속적인 압박과 빠른 이동을 나타냅니다.",
+      english:
+        "Symbolizes Wind; represents continuous pressure and swift movement.",
+    },
+    keywords: ["gentleness", "penetration", "wind", "subtlety"],
+    techniques: ["선풍연격 (Whirlwind Combo)", "바람의 칼날 (Blade of Wind)"],
+    theme: {
+      primary: KOREAN_COLORS.TRIGRAM_SON_PRIMARY,
+      secondary: KOREAN_COLORS.TRIGRAM_SON_SECONDARY,
+      active: KOREAN_COLORS.WHITE_SOLID,
+      hover: KOREAN_COLORS.TRIGRAM_SON_LIGHT,
+      text: KOREAN_COLORS.BLACK_SOLID,
+    },
+  },
+  [TrigramStance.GAM]: {
+    name: { korean: "감", english: "Gam (Water)" },
+    symbol: "☵",
+    description: {
+      korean:
+        "물을 상징하며, 혈류를 차단하거나 흐름을 이용한 기술을 나타냅니다.",
+      english:
+        "Symbolizes Water; represents techniques involving blood flow restriction or using flow.",
+    },
+    keywords: ["danger", "depth", "water", "abyss"],
+    techniques: [
+      "수류반격 (Water Current Counter)",
+      "깊은 물의 포박 (Deep Water Bind)",
+    ],
+    theme: {
+      primary: KOREAN_COLORS.TRIGRAM_GAM_PRIMARY,
+      secondary: KOREAN_COLORS.TRIGRAM_GAM_SECONDARY,
+      active: KOREAN_COLORS.WHITE_SOLID,
+      hover: KOREAN_COLORS.TRIGRAM_GAM_LIGHT,
+      text: KOREAN_COLORS.BLACK_SOLID,
+    },
+  },
+  [TrigramStance.GAN]: {
+    name: { korean: "간", english: "Gan (Mountain)" },
+    symbol: "☶",
+    description: {
+      korean: "산을 상징하며, 견고한 방어와 강력한 반격을 나타냅니다.",
+      english:
+        "Symbolizes Mountain; represents solid defense and powerful counters.",
+    },
+    keywords: ["stillness", "immovability", "mountain", "stopping"],
+    techniques: ["반석방어 (Bedrock Defense)", "산의 울림 (Mountain's Echo)"],
+    theme: {
+      primary: KOREAN_COLORS.TRIGRAM_GAN_PRIMARY,
+      secondary: KOREAN_COLORS.TRIGRAM_GAN_SECONDARY,
+      active: KOREAN_COLORS.WHITE_SOLID,
+      hover: KOREAN_COLORS.TRIGRAM_GAN_LIGHT,
+      text: KOREAN_COLORS.BLACK_SOLID,
+    },
+  },
+  [TrigramStance.GON]: {
+    name: { korean: "곤", english: "Gon (Earth)" },
+    symbol: "☷",
+    description: {
+      korean: "땅을 상징하며, 안정적인 자세와 지면 기술을 나타냅니다.",
+      english:
+        "Symbolizes Earth; represents stable stances and ground techniques.",
+    },
+    keywords: ["receptivity", "submission", "earth", "yielding"],
+    techniques: ["대지포옹 (Earth Embrace)", "지각변동 (Earthquake Strike)"],
+    theme: {
+      primary: KOREAN_COLORS.TRIGRAM_GON_PRIMARY,
+      secondary: KOREAN_COLORS.TRIGRAM_GON_SECONDARY,
+      active: KOREAN_COLORS.WHITE_SOLID,
+      hover: KOREAN_COLORS.TRIGRAM_GON_LIGHT,
+      text: KOREAN_COLORS.BLACK_SOLID,
+    },
+  },
 };
 
 // Stance effectiveness matrix (how effective each stance is against others)

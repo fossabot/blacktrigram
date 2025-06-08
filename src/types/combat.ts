@@ -7,11 +7,12 @@ import type {
   CombatState, // Add CombatState import
   EnumCombatAttackType,
 } from "./enums";
-import type { PlayerState } from "./player";
+import type { PlayerState } from "./player"; // Ensure PlayerState is imported
 import type { DamageRange, Position } from "./common";
 import type { StatusEffect } from "./effects"; // Ensure this is the correct StatusEffect
 import type { KoreanText } from "./korean-text";
 import type { VitalPoint as AnatomyVitalPoint } from "./anatomy";
+import type { HitEffectType } from "./enums"; // Ensure HitEffectType is imported
 
 // Use the enum type directly
 export type CombatAttackType = EnumCombatAttackType;
@@ -55,38 +56,29 @@ export interface KoreanTechnique {
 
 // Combat result from technique execution
 export interface CombatResult {
-  readonly winner?: string; // Added
-  readonly damage: number;
-  readonly technique?: string; // Added
-  readonly newState: CombatState; // Now properly imported and used
-  readonly hitLocation?: string; // Added
-  readonly damageType: DamageType;
-  readonly isVitalPoint: boolean;
-  readonly effects: readonly StatusEffect[];
   readonly hit: boolean;
+  readonly damage: number;
   readonly critical: boolean;
-  readonly vitalPointsHit: readonly AnatomyVitalPoint[];
-  readonly attacker: PlayerArchetype;
-  readonly defender: PlayerArchetype;
-  readonly damagePrevented: number; // Added
-  readonly staminaUsed: number; // Added
-  readonly kiUsed: number; // Added
-  readonly defenderDamaged: boolean; // Added
-  readonly attackerStance: TrigramStance; // Added
-  readonly defenderStance: TrigramStance; // Added
-
-  // Enhanced pain and consciousness system
-  readonly painLevel: number; // Added
-  readonly consciousnessImpact: number; // Added
-  readonly balanceEffect: number; // Added
-  readonly bloodLoss: number; // Added
-  readonly stunDuration: number; // Added
-  readonly statusEffects: readonly StatusEffect[]; // Added
-  readonly hitType: "miss" | "normal" | "critical" | "vital"; // Added
-  readonly techniqueUsed: KoreanTechnique; // Added
-  readonly effectiveness: number; // Added
-  readonly hitPosition: Position; // Added
-  readonly vitalPoint?: AnatomyVitalPoint; // Added
+  readonly blocked: boolean;
+  readonly dodged: boolean;
+  readonly parried?: boolean;
+  readonly counterAttack?: KoreanTechnique | null;
+  readonly hitPosition?: Position;
+  readonly painLevel?: number;
+  readonly consciousnessImpact?: number;
+  readonly balanceImpact?: number;
+  readonly staminaCost?: number;
+  readonly kiCost?: number;
+  readonly updatedAttacker: PlayerState;
+  readonly updatedDefender: PlayerState;
+  readonly message?: string; // For combat log
+  readonly statusEffectsApplied?: readonly StatusEffect[]; // Optional status effects
+  vitalPointHit?: VitalPoint | null;
+  knockdown?: boolean;
+  stunDuration?: number;
+  attackerEffects?: string[]; // e.g., status effects applied to attacker
+  defenderEffects?: string[]; // e.g., status effects applied to defender
+  hitEffectType?: HitEffectType; // Optional: specific effect type
 }
 
 // Type alias for HitResult as requested by error messages
@@ -134,4 +126,10 @@ export interface AttackInput {
   readonly defender: PlayerState;
   readonly technique: KoreanTechnique;
   readonly targetPoint?: string | null; // Add missing property
+}
+
+export interface WinConditionCheckResult {
+  winner: PlayerState | null;
+  draw: boolean;
+  reason?: string; // e.g., "health_depleted", "time_up"
 }
