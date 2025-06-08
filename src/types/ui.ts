@@ -3,11 +3,13 @@ import type { ColorValue, Position } from "./common";
 import type {
   PlayerState,
   GameState,
+  // HitEffect, // Already present or managed by other types
+  // TrigramSymbol, // Already present or managed by other types
   TrigramStance,
+  // GamePhase, // Already present or managed by other types
   PlayerAction,
-  MatchStats,
-  GamePhase,
-} from "./";
+  MatchStats, // Ensure MatchStats is defined and imported
+} from "./"; // Assuming MatchStats is in the root types index
 import type { KoreanText } from "./korean-text";
 import type { PlayerArchetype } from "./player";
 
@@ -125,10 +127,10 @@ export interface IntroScreenProps extends BaseUIComponentProps {
 // End screen props
 export interface EndScreenProps {
   winner: PlayerState | null;
-  draw: boolean; // Ensure draw prop is present
+  draw?: boolean; // Added draw
   onRestart: () => void;
-  onMenu: () => void;
-  playerStats?: MatchStats; // Ensure playerStats prop is present
+  onMenu?: () => void; // Added onMenu
+  playerStats?: MatchStats; // Ensured playerStats is present
 }
 
 // UI Theme

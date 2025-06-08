@@ -9,7 +9,7 @@ export const FONT_FAMILY = {
   SECONDARY: '"Nanum Gothic", Arial, sans-serif',
   MONO: '"Nanum Gothic Coding", monospace',
   KOREAN_BATTLE: '"Noto Sans KR", Impact, sans-serif',
-  CYBER: '"Orbitron", "Noto Sans KR", monospace', // Ensure CYBER is present
+  CYBER: '"Orbitron", "Noto Sans KR", monospace', // Ensure this line is present
 
   // Add missing font families for backwards compatibility
   KOREAN: '"Noto Sans KR", "Malgun Gothic", Arial, sans-serif',
@@ -24,7 +24,7 @@ export const FONT_SIZES = {
   large: 20,
   xlarge: 24,
   xxlarge: 32,
-  extraLarge: 36, // Ensure extraLarge is present
+  extraLarge: 36, // Ensure this line is present
   title: 48,
 
   // Add missing font sizes

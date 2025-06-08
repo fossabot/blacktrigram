@@ -16,11 +16,12 @@ export const DEFAULT_TRIGRAM_THEME: TrigramTheme = {
   secondary: KOREAN_COLORS.UI_BORDER,
   active: KOREAN_COLORS.PRIMARY_CYAN,
   hover: KOREAN_COLORS.UI_BACKGROUND_LIGHT,
-  text: KOREAN_COLORS.TEXT_PRIMARY,
+  text: KOREAN_COLORS.TEXT_PRIMARY, // Added text property
+  glow: KOREAN_COLORS.ACCENT_GOLD,
 };
 
 // Defines the order of trigrams for UI elements like selection wheels or bars
-export const TRIGRAM_STANCES_ORDER: readonly TrigramStance[] = [
+export const TRIGRAM_STANCES_ORDER: readonly TrigramStance[] = [ // Ensured type is TrigramStance[]
   TrigramStance.GEON,
   TrigramStance.TAE,
   TrigramStance.LI,
@@ -29,7 +30,7 @@ export const TRIGRAM_STANCES_ORDER: readonly TrigramStance[] = [
   TrigramStance.GAM,
   TrigramStance.GAN,
   TrigramStance.GON,
-] as const;
+];
 
 // Base techniques for each trigram stance
 const createTrigram = (
@@ -89,148 +90,147 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramData> = {
     name: { korean: "건", english: "Geon (Heaven)" },
     symbol: "☰",
     description: {
-      korean: "하늘을 상징하며, 강력하고 직접적인 공격을 나타냅니다.",
-      english: "Symbolizes Heaven; represents powerful, direct attacks.",
+      korean: "하늘을 상징하며, 창조적이고 강력한 힘을 나타냅니다.",
+      english: "Symbolizes Heaven, representing creative and powerful force.",
     },
-    keywords: ["power", "creation", "sky", "masculine"],
-    techniques: [
-      "천둥벽력 (Thunderclap Strike)",
-      "하늘의 분노 (Wrath of Heaven)",
-    ],
+    keywords: ["creative", "strong", "active", "heaven"],
+    archetypeAffinity: [PlayerArchetype.MUSA],
     theme: {
       primary: KOREAN_COLORS.TRIGRAM_GEON_PRIMARY,
       secondary: KOREAN_COLORS.TRIGRAM_GEON_SECONDARY,
       active: KOREAN_COLORS.WHITE_SOLID,
       hover: KOREAN_COLORS.TRIGRAM_GEON_LIGHT,
-      text: KOREAN_COLORS.BLACK_SOLID,
+      text: KOREAN_COLORS.BLACK_SOLID, // Added text color
+      glow: KOREAN_COLORS.ACCENT_GOLD,
     },
   },
   [TrigramStance.TAE]: {
     name: { korean: "태", english: "Tae (Lake)" },
     symbol: "☱",
     description: {
-      korean: "호수를 상징하며, 유연하고 흐르는 듯한 움직임을 나타냅니다.",
-      english: "Symbolizes Lake; represents fluid, flowing movements.",
+      korean: "호수를 상징하며, 기쁨과 평온함을 나타냅니다.",
+      english: "Symbolizes Lake, representing joy and serenity.",
     },
-    keywords: ["joy", "fluidity", "lake", "feminine"],
-    techniques: ["유수연타 (Flowing Water Combo)", "잔잔한 파문 (Calm Ripple)"],
+    keywords: ["joyful", "serene", "calm", "lake"],
+    archetypeAffinity: [PlayerArchetype.JEONGBO_YOWON],
     theme: {
       primary: KOREAN_COLORS.TRIGRAM_TAE_PRIMARY,
       secondary: KOREAN_COLORS.TRIGRAM_TAE_SECONDARY,
       active: KOREAN_COLORS.WHITE_SOLID,
       hover: KOREAN_COLORS.TRIGRAM_TAE_LIGHT,
-      text: KOREAN_COLORS.BLACK_SOLID,
+      text: KOREAN_COLORS.BLACK_SOLID, // Added text color
+      glow: KOREAN_COLORS.PRIMARY_CYAN_LIGHT,
     },
   },
   [TrigramStance.LI]: {
     name: { korean: "리", english: "Li (Fire)" },
     symbol: "☲",
     description: {
-      korean: "불을 상징하며, 빠르고 정확한 신경 타격을 나타냅니다.",
-      english: "Symbolizes Fire; represents fast, precise nerve strikes.",
+      korean: "불을 상징하며, 열정과 명료함을 나타냅니다.",
+      english: "Symbolizes Fire, representing passion and clarity.",
     },
-    keywords: ["clarity", "adherence", "fire", "brilliance"],
-    techniques: ["화염지창 (Flame Spear)", "불새출현 (Phoenix Emergence)"],
+    keywords: ["passionate", "clear", "bright", "fire"],
+    archetypeAffinity: [PlayerArchetype.HACKER],
     theme: {
       primary: KOREAN_COLORS.TRIGRAM_LI_PRIMARY,
       secondary: KOREAN_COLORS.TRIGRAM_LI_SECONDARY,
       active: KOREAN_COLORS.WHITE_SOLID,
       hover: KOREAN_COLORS.TRIGRAM_LI_LIGHT,
-      text: KOREAN_COLORS.BLACK_SOLID,
+      text: KOREAN_COLORS.BLACK_SOLID, // Added text color
+      glow: KOREAN_COLORS.ACCENT_ORANGE,
     },
   },
   [TrigramStance.JIN]: {
     name: { korean: "진", english: "Jin (Thunder)" },
     symbol: "☳",
     description: {
-      korean: "천둥을 상징하며, 충격적이고 기절시키는 기술을 나타냅니다.",
-      english:
-        "Symbolizes Thunder; represents stunning, concussive techniques.",
+      korean: "천둥을 상징하며, 움직임과 활동성을 나타냅니다.",
+      english: "Symbolizes Thunder, representing movement and activity.",
     },
-    keywords: ["action", "movement", "thunder", "shock"],
-    techniques: ["벽력일섬 (Lightning Flash)", "천둥의 포효 (Thunder's Roar)"],
+    keywords: ["arousing", "active", "moving", "thunder"],
+    archetypeAffinity: [PlayerArchetype.JOJIK_POKRYEOKBAE],
     theme: {
       primary: KOREAN_COLORS.TRIGRAM_JIN_PRIMARY,
       secondary: KOREAN_COLORS.TRIGRAM_JIN_SECONDARY,
       active: KOREAN_COLORS.WHITE_SOLID,
       hover: KOREAN_COLORS.TRIGRAM_JIN_LIGHT,
-      text: KOREAN_COLORS.BLACK_SOLID,
+      text: KOREAN_COLORS.BLACK_SOLID, // Added text color
+      glow: KOREAN_COLORS.PRIMARY_YELLOW,
     },
   },
   [TrigramStance.SON]: {
     name: { korean: "손", english: "Son (Wind)" },
     symbol: "☴",
     description: {
-      korean: "바람을 상징하며, 지속적인 압박과 빠른 이동을 나타냅니다.",
-      english:
-        "Symbolizes Wind; represents continuous pressure and swift movement.",
+      korean: "바람을 상징하며, 부드러움과 순응을 나타냅니다.",
+      english: "Symbolizes Wind, representing gentleness and penetration.",
     },
-    keywords: ["gentleness", "penetration", "wind", "subtlety"],
-    techniques: ["선풍연격 (Whirlwind Combo)", "바람의 칼날 (Blade of Wind)"],
+    keywords: ["gentle", "penetrating", "following", "wind"],
+    archetypeAffinity: [PlayerArchetype.AMSALJA],
     theme: {
       primary: KOREAN_COLORS.TRIGRAM_SON_PRIMARY,
       secondary: KOREAN_COLORS.TRIGRAM_SON_SECONDARY,
       active: KOREAN_COLORS.WHITE_SOLID,
       hover: KOREAN_COLORS.TRIGRAM_SON_LIGHT,
-      text: KOREAN_COLORS.BLACK_SOLID,
+      text: KOREAN_COLORS.BLACK_SOLID, // Added text color
+      glow: KOREAN_COLORS.PRIMARY_GREEN_LIGHT,
     },
   },
   [TrigramStance.GAM]: {
     name: { korean: "감", english: "Gam (Water)" },
     symbol: "☵",
     description: {
-      korean:
-        "물을 상징하며, 혈류를 차단하거나 흐름을 이용한 기술을 나타냅니다.",
-      english:
-        "Symbolizes Water; represents techniques involving blood flow restriction or using flow.",
+      korean: "물을 상징하며, 위험과 어려움을 나타냅니다.",
+      english: "Symbolizes Water, representing danger and abyss.",
     },
-    keywords: ["danger", "depth", "water", "abyss"],
-    techniques: [
-      "수류반격 (Water Current Counter)",
-      "깊은 물의 포박 (Deep Water Bind)",
-    ],
+    keywords: ["dangerous", "abysmal", "deep", "water"],
+    archetypeAffinity: [PlayerArchetype.AMSALJA, PlayerArchetype.HACKER],
     theme: {
       primary: KOREAN_COLORS.TRIGRAM_GAM_PRIMARY,
       secondary: KOREAN_COLORS.TRIGRAM_GAM_SECONDARY,
       active: KOREAN_COLORS.WHITE_SOLID,
       hover: KOREAN_COLORS.TRIGRAM_GAM_LIGHT,
-      text: KOREAN_COLORS.BLACK_SOLID,
+      text: KOREAN_COLORS.BLACK_SOLID, // Added text color
+      glow: KOREAN_COLORS.PRIMARY_BLUE_DARK,
     },
   },
   [TrigramStance.GAN]: {
     name: { korean: "간", english: "Gan (Mountain)" },
     symbol: "☶",
     description: {
-      korean: "산을 상징하며, 견고한 방어와 강력한 반격을 나타냅니다.",
-      english:
-        "Symbolizes Mountain; represents solid defense and powerful counters.",
+      korean: "산을 상징하며, 정지와 견고함을 나타냅니다.",
+      english: "Symbolizes Mountain, representing stillness and solidity.",
     },
-    keywords: ["stillness", "immovability", "mountain", "stopping"],
-    techniques: ["반석방어 (Bedrock Defense)", "산의 울림 (Mountain's Echo)"],
+    keywords: ["still", "solid", "immovable", "mountain"],
+    archetypeAffinity: [PlayerArchetype.MUSA, PlayerArchetype.JEONGBO_YOWON],
     theme: {
       primary: KOREAN_COLORS.TRIGRAM_GAN_PRIMARY,
       secondary: KOREAN_COLORS.TRIGRAM_GAN_SECONDARY,
       active: KOREAN_COLORS.WHITE_SOLID,
       hover: KOREAN_COLORS.TRIGRAM_GAN_LIGHT,
-      text: KOREAN_COLORS.BLACK_SOLID,
+      text: KOREAN_COLORS.BLACK_SOLID, // Added text color
+      glow: KOREAN_COLORS.ACCENT_SILVER,
     },
   },
   [TrigramStance.GON]: {
     name: { korean: "곤", english: "Gon (Earth)" },
     symbol: "☷",
     description: {
-      korean: "땅을 상징하며, 안정적인 자세와 지면 기술을 나타냅니다.",
-      english:
-        "Symbolizes Earth; represents stable stances and ground techniques.",
+      korean: "땅을 상징하며, 수용적이고 양육하는 힘을 나타냅니다.",
+      english: "Symbolizes Earth, representing receptive and nurturing power.",
     },
-    keywords: ["receptivity", "submission", "earth", "yielding"],
-    techniques: ["대지포옹 (Earth Embrace)", "지각변동 (Earthquake Strike)"],
+    keywords: ["receptive", "nurturing", "devoted", "earth"],
+    archetypeAffinity: [
+      PlayerArchetype.JOJIK_POKRYEOKBAE,
+      PlayerArchetype.MUSA,
+    ],
     theme: {
       primary: KOREAN_COLORS.TRIGRAM_GON_PRIMARY,
       secondary: KOREAN_COLORS.TRIGRAM_GON_SECONDARY,
       active: KOREAN_COLORS.WHITE_SOLID,
       hover: KOREAN_COLORS.TRIGRAM_GON_LIGHT,
-      text: KOREAN_COLORS.BLACK_SOLID,
+      text: KOREAN_COLORS.BLACK_SOLID, // Added text color
+      glow: KOREAN_COLORS.ACCENT_BRONZE,
     },
   },
 };

@@ -2,12 +2,11 @@ import React, { useMemo, useCallback } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import type { StanceIndicatorProps } from "../../types";
-import { TrigramStance } from "../../types/enums";
 import {
   TRIGRAM_DATA,
   KOREAN_COLORS,
-  FONT_FAMILY, // Added import
-  FONT_SIZES, // Added import
+  FONT_FAMILY,
+  PIXI_FONT_WEIGHTS,
 } from "../../types/constants";
 
 export const StanceIndicator: React.FC<StanceIndicatorProps> = ({
@@ -15,6 +14,7 @@ export const StanceIndicator: React.FC<StanceIndicatorProps> = ({
   x = 0,
   y = 0,
   size = 50,
+  showLabel = false,
 }) => {
   const stanceData = TRIGRAM_DATA[stance];
 
@@ -40,20 +40,21 @@ export const StanceIndicator: React.FC<StanceIndicatorProps> = ({
   const symbolTextStyle = useMemo(
     () =>
       new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY, // Ensure FONT_FAMILY is imported
-        fontSize: FONT_SIZES.large, // Ensure FONT_SIZES is imported
-        fill: stanceData?.theme?.text || KOREAN_COLORS.TEXT_PRIMARY, // Ensure theme.text exists or use a fallback
+        fontFamily: FONT_FAMILY.PRIMARY, // Or a specific symbol font
+        fontSize: size * 0.6,
+        fill: stanceData?.theme?.text || KOREAN_COLORS.TEXT_PRIMARY, // Ensure theme.text exists
         align: "center",
+        fontWeight: PIXI_FONT_WEIGHTS.bold,
       }),
     [size, stanceData]
   );
 
-  const nameTextStyle = useMemo(
+  const labelTextStyle = useMemo(
     () =>
       new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY, // Ensure FONT_FAMILY is imported
-        fontSize: FONT_SIZES.small, // Ensure FONT_SIZES is imported
-        fill: stanceData?.theme?.text || KOREAN_COLORS.TEXT_SECONDARY, // Ensure theme.text exists or use a fallback
+        fontFamily: FONT_FAMILY.SECONDARY,
+        fontSize: size * 0.25,
+        fill: stanceData?.theme?.text || KOREAN_COLORS.TEXT_SECONDARY, // Ensure theme.text exists
         align: "center",
       }),
     [size, stanceData]
@@ -62,22 +63,20 @@ export const StanceIndicator: React.FC<StanceIndicatorProps> = ({
   return (
     <Container x={x} y={y}>
       <Graphics draw={drawIndicator} />
-
       <Text
-        text={stanceData?.symbol || "☰"}
-        style={symbolTextStyle}
+        text={stanceData?.symbol || "?"}
+        anchor={0.5}
         x={size / 2}
         y={size / 2}
-        anchor={0.5}
+        style={symbolTextStyle}
       />
-
       {showLabel && (
         <Text
-          text={stanceData?.name.korean || currentStance}
-          style={nameTextStyle}
-          x={size / 2}
-          y={size + 10}
+          text={stanceData?.name.korean || stance.toString()} // Using stance prop for label
           anchor={0.5}
+          x={size / 2}
+          y={size + size * 0.15} // Position label below the indicator
+          style={labelTextStyle}
         />
       )}
     </Container>

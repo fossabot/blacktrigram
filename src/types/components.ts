@@ -9,11 +9,8 @@ import type {
   TrigramStance,
   PlayerArchetype,
   CombatResult,
-  HitEffect,
   KoreanTechnique,
-  GameMode,
-  GamePhase,
-  GameState,
+  HitEffect,
 } from "./";
 
 // Core UI component props
@@ -191,16 +188,18 @@ export interface HealthBarProps {
   height: number;
   x?: number;
   y?: number;
-  color?: number; // Ensure color prop is present
+  color?: number; // Ensured color prop exists
   backgroundColor?: number;
   borderColor?: number;
 }
 
 export interface StanceIndicatorProps {
-  stance: TrigramStance; // Ensure stance prop is present
+  stance: TrigramStance;
+  currentStance?: TrigramStance; // Added currentStance as optional
   x?: number;
   y?: number;
   size?: number;
+  showLabel?: boolean; // Added showLabel
 }
 
 // Export all interfaces

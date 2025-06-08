@@ -25,12 +25,12 @@ export const GameUI: React.FC<GameUIProps> = ({
 
   const commonTextStyle = useMemo(
     () =>
-      new PIXI.TextStyle({
+      new PIXI.TextStyle({ // Using PIXI.TextStyle directly
         fontFamily: FONT_FAMILY.PRIMARY,
         fontSize: FONT_SIZES.medium,
         fill: KOREAN_COLORS.TEXT_PRIMARY,
         stroke: KOREAN_COLORS.BLACK_SOLID,
-        strokeThickness: 2, // Valid PIXI.TextStyle property
+        strokeThickness: 2, // This is valid for PIXI.TextStyle
       }),
     []
   );
@@ -51,10 +51,11 @@ export const GameUI: React.FC<GameUIProps> = ({
           text={`${player.name.korean} (${player.name.english})`}
           style={
             new PIXI.TextStyle({
-              // Using PIXI.TextStyle directly
+              // Use new PIXI.TextStyle
               ...commonTextStyle,
               fill: playerColor,
               fontSize: FONT_SIZES.large,
+              // strokeThickness will be inherited if not overridden
             })
           }
           y={-30}
@@ -66,7 +67,7 @@ export const GameUI: React.FC<GameUIProps> = ({
           height={barHeight}
           x={0}
           y={0}
-          color={playerColor} // Prop 'color' should exist on HealthBarProps
+          color={playerColor} // Ensure HealthBarProps has 'color'
           backgroundColor={KOREAN_COLORS.UI_BACKGROUND_MEDIUM}
         />
         <PixiText
@@ -96,13 +97,12 @@ export const GameUI: React.FC<GameUIProps> = ({
 
   const timerStyle = useMemo(
     () =>
-      new PIXI.TextStyle({
-        // Using PIXI.TextStyle directly
-        fontFamily: FONT_FAMILY.CYBER, // Ensure FONT_FAMILY.CYBER exists
-        fontSize: FONT_SIZES.extraLarge, // Ensure FONT_SIZES.extraLarge exists
+      new PIXI.TextStyle({ // Using PIXI.TextStyle directly
+        fontFamily: FONT_FAMILY.CYBER,
+        fontSize: FONT_SIZES.extraLarge,
         fill: KOREAN_COLORS.ACCENT_GOLD,
         stroke: KOREAN_COLORS.BLACK_SOLID,
-        strokeThickness: 3, // Valid PIXI.TextStyle property
+        strokeThickness: 3, // This is valid for PIXI.TextStyle
         align: "center",
       }),
     []
@@ -119,19 +119,19 @@ export const GameUI: React.FC<GameUIProps> = ({
           anchor={0.5}
           x={width / 2}
           y={50}
-          style={timerStyle} // Use the PIXI.TextStyle instance
+          style={timerStyle}
         />
         <PixiText
           text={`Round ${currentRound}/${maxRounds}`}
           anchor={0.5}
           x={width / 2}
-          y={50 + FONT_SIZES.extraLarge + 5} // Ensure FONT_SIZES.extraLarge exists
+          y={50 + FONT_SIZES.extraLarge + 5}
           style={
-            new PIXI.TextStyle({
-              // Using PIXI.TextStyle directly
+            new PIXI.TextStyle({ // Using PIXI.TextStyle directly
               ...commonTextStyle,
               fontSize: FONT_SIZES.large,
               fill: KOREAN_COLORS.TEXT_SECONDARY,
+              // strokeThickness will be inherited
             })
           }
         />

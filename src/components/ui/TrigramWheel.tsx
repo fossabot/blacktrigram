@@ -1,210 +1,186 @@
-import React, { useMemo, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import { TRIGRAM_STANCES_ORDER, TRIGRAM_DATA } from "../../types/constants";
-import type { TrigramStance } from "../../types/enums";
 import type { TrigramWheelProps } from "../../types";
-import { KOREAN_COLORS, FONT_FAMILY, FONT_SIZES } from "../../types/constants";
+import { TrigramStance } from "../../types/enums";
+import {
+  TRIGRAM_STANCES_ORDER,
+  TRIGRAM_DATA,
+  KOREAN_COLORS,
+  FONT_FAMILY,
+  FONT_SIZES,
+  DEFAULT_TRIGRAM_THEME,
+} from "../../types/constants";
+
+const RADIUS = 150;
+const SEGMENT_ARC = (2 * Math.PI) / TRIGRAM_STANCES_ORDER.length;
 
 export const TrigramWheel: React.FC<TrigramWheelProps> = ({
-  selectedStance,
-  onStanceSelect,
   x = 0,
   y = 0,
-  radius = 100,
-  showLabels = true,
+  selectedStance,
+  onStanceSelect,
   interactive = true,
-  ...props
 }) => {
-  const centerX = radius;
-  const centerY = radius;
-  const innerRadius = radius * 0.3;
-  const outerRadius = radius * 0.9;
-
-  const textStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.small,
-        fill: KOREAN_COLORS.TEXT_PRIMARY,
-        align: "center",
-        fontWeight: "bold",
-      }),
-    []
+  const [hoveredStance, setHoveredStance] = useState<TrigramStance | null>(
+    null
   );
-
-  const drawSegment = useCallback(
-    (g: PIXI.Graphics, stance: TrigramStance, index: number) => {
-      const angleStep = (2 * Math.PI) / TRIGRAM_STANCES_ORDER.length;
-      const startAngle = index * angleStep - Math.PI / 2;
-      const endAngle = (index + 1) * angleStep - Math.PI / 2;
-
-      const isSelected = selectedStance === stance;
-      const stanceData = TRIGRAM_DATA[stance];
-
-      // Determine colors - fix type issues
-      let fillColor: number;
-      let lineColor: number;
-
-      if (isSelected) {
-        fillColor = KOREAN_COLORS.ACCENT_PRIMARY;
-        lineColor = KOREAN_COLORS.PRIMARY_CYAN;
-      } else {
-        fillColor = KOREAN_COLORS.UI_BACKGROUND_LIGHT;
-        lineColor = KOREAN_COLORS.TEXT_SECONDARY; // Fixed: use existing color
-      }
-
-      // Draw the segment
-      g.beginFill(fillColor, 0.8);
-      g.lineStyle(2, lineColor);
-      g.moveTo(centerX, centerY);
-      g.arc(centerX, centerY, outerRadius, startAngle, endAngle);
-      g.lineTo(centerX, centerY);
-      g.endFill();
-
-      // Calculate text position
-      const midAngle = (startAngle + endAngle) / 2;
-      const textRadius = (innerRadius + outerRadius) / 2;
-      const textX = centerX + Math.cos(midAngle) * textRadius;
-      const textY = centerY + Math.sin(midAngle) * textRadius;
-
-      // Draw stance symbol
-      g.beginFill(KOREAN_COLORS.TEXT_PRIMARY);
-      g.drawCircle(textX, textY, 2);
-      g.endFill();
-
-      // Store positions for text rendering
-      return {
-        stance,
-        symbol: stanceData?.symbol || "?",
-        korean: stanceData?.name.korean || stance,
-        x: textX,
-        y: textY,
-        isSelected,
-      };
-    },
-    [selectedStance, centerX, centerY, innerRadius, outerRadius]
-  );
-
-  const handleSegmentClick = useCallback(
-    (stance: TrigramStance) => {
-      if (interactive && onStanceSelect) {
-        onStanceSelect(stance);
-      }
-    },
-    [interactive, onStanceSelect]
-  );
-
-  const segmentData = useMemo(() => {
-    return TRIGRAM_STANCES_ORDER.map((stance, index) => {
-      const g = new PIXI.Graphics();
-      return drawSegment(g, stance, index);
-    });
-  }, [drawSegment]);
-
-  const drawWheel = (g: PIXI.Graphics) => {
-    g.clear();
-
-    // Draw all segments
-    TRIGRAM_STANCES_ORDER.forEach((stance, index) => {
-      drawSegment(g, stance, index);
-    });
-
-    // Draw center circle
-    g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.9);
-    g.lineStyle(3, KOREAN_COLORS.PRIMARY_CYAN);
-    g.drawCircle(centerX, centerY, innerRadius);
-    g.endFill();
-  };
 
   const drawSegments = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
       TRIGRAM_STANCES_ORDER.forEach((stance: TrigramStance, index) => {
-        // Ensure drawSegment is called with TrigramStance
-        return drawSegment(g, stance, index);
+        const stanceData = TRIGRAM_DATA[stance];
+        const theme = stanceData?.theme || DEFAULT_TRIGRAM_THEME;
+        const startAngle = index * SEGMENT_ARC - Math.PI / 2 - SEGMENT_ARC / 2;
+        const endAngle = startAngle + SEGMENT_ARC;
+
+        const isHovered = hoveredStance === stance;
+        const isSelected = selectedStance === stance;
+
+        let fillColor = theme.primary;
+        let lineColor = theme.secondary;
+        let alpha = 0.8;
+
+        if (isSelected) {
+          fillColor = theme.active;
+          lineColor = theme.secondary; // Or theme.active for more highlight
+          alpha = 1;
+        } else if (isHovered) {
+          fillColor = theme.hover;
+          lineColor = theme.active; // Or theme.hover for softer highlight
+          alpha = 0.9;
+        }
+
+        g.lineStyle(2, lineColor, alpha);
+        g.beginFill(fillColor, alpha);
+        g.moveTo(x, y);
+        g.arc(x, y, RADIUS, startAngle, endAngle);
+        g.lineTo(x, y);
+        g.endFill();
       });
     },
-    [drawSegment]
+    [hoveredStance, selectedStance, x, y]
   );
 
-  const drawHighlight = useCallback(
-    (g: PIXI.Graphics) => {
-      g.clear();
-      if (hoveredStance !== null || selectedStance !== null) {
-        const stanceToHighlight = hoveredStance ?? selectedStance;
-        if (stanceToHighlight !== null) {
-          const index = TRIGRAM_STANCES_ORDER.indexOf(stanceToHighlight);
-          // Ensure drawSegment is called with TrigramStance
-          drawSegment(g, stanceToHighlight, index); // Highlight the segment
+  const handlePointerMove = useCallback(
+    (event: PIXI.FederatedPointerEvent) => {
+      if (!interactive) return;
+      const point = event.global;
+      const dx = point.x - x;
+      const dy = point.y - y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist > 0 && dist <= RADIUS) {
+        let angle = Math.atan2(dy, dx) + Math.PI / 2 + SEGMENT_ARC / 2;
+        if (angle < 0) angle += 2 * Math.PI;
+        const segmentIndex =
+          Math.floor(angle / SEGMENT_ARC) % TRIGRAM_STANCES_ORDER.length;
+        const currentHoveredStance = TRIGRAM_STANCES_ORDER[segmentIndex];
+        if (hoveredStance !== currentHoveredStance) {
+          setHoveredStance(currentHoveredStance as TrigramStance);
+        }
+      } else {
+        if (hoveredStance !== null) {
+          setHoveredStance(null);
         }
       }
     },
-    [hoveredStance, selectedStance, drawSegment]
+    [x, y, interactive, hoveredStance]
+  );
+
+  const handlePointerTap = useCallback(
+    (_event: PIXI.FederatedPointerEvent) => {
+      if (!interactive || !hoveredStance) return;
+      onStanceSelect(hoveredStance);
+    },
+    [interactive, hoveredStance, onStanceSelect]
+  );
+
+  const symbolTextStyle = useMemo(
+    () =>
+      (stance: TrigramStance): PIXI.TextStyle => {
+        const stanceData = TRIGRAM_DATA[stance];
+        const theme = stanceData?.theme || DEFAULT_TRIGRAM_THEME;
+        return new PIXI.TextStyle({
+          fontFamily: FONT_FAMILY.PRIMARY,
+          fontSize: FONT_SIZES.large,
+          fill:
+            selectedStance === stance
+              ? theme.active
+              : hoveredStance === stance
+              ? theme.hover
+              : theme.text,
+          fontWeight: "bold", // Corrected: Use string literal 'bold'
+        });
+      },
+    [selectedStance, hoveredStance]
+  );
+
+  const labelTextStyle = useMemo(
+    () =>
+      (stance: TrigramStance): PIXI.TextStyle => {
+        const stanceData = TRIGRAM_DATA[stance];
+        const theme = stanceData?.theme || DEFAULT_TRIGRAM_THEME;
+        return new PIXI.TextStyle({
+          fontFamily: FONT_FAMILY.SECONDARY,
+          fontSize: FONT_SIZES.small,
+          fill: theme.text,
+        });
+      },
+    [] // No direct dependencies on selectedStance/hoveredStance for this style
   );
 
   return (
-    <Container x={x} y={y} {...props}>
-      <Graphics draw={drawWheel} />
+    <Container
+      interactive={interactive}
+      pointermove={handlePointerMove}
+      pointertap={handlePointerTap}
+      pointerout={() => interactive && setHoveredStance(null)}
+    >
+      <Graphics draw={drawSegments} />
+      {TRIGRAM_STANCES_ORDER.map((stance: TrigramStance, index) => {
+        const stanceData = TRIGRAM_DATA[stance];
+        const angle = index * SEGMENT_ARC - Math.PI / 2;
+        const textX = x + (RADIUS - 30) * Math.cos(angle);
+        const textY = y + (RADIUS - 30) * Math.sin(angle);
 
-      {/* Render text labels */}
-      {showLabels &&
-        segmentData.map(
-          (
-            data // Removed unused index parameter
-          ) => (
-            <Container
-              key={data.stance}
-              x={data.x}
-              y={data.y}
-              interactive={interactive}
-              buttonMode={interactive}
-              pointertap={() => handleSegmentClick(data.stance)}
-            >
-              <Text
-                text={data.symbol}
-                anchor={0.5}
-                x={0}
-                y={-8}
-                style={{
-                  ...textStyle,
-                  fontSize: FONT_SIZES.medium,
-                  fill: data.isSelected
-                    ? KOREAN_COLORS.TEXT_PRIMARY
-                    : KOREAN_COLORS.TEXT_SECONDARY,
-                }}
-              />
-              <Text
-                text={data.korean}
-                anchor={0.5}
-                x={0}
-                y={8}
-                style={{
-                  ...textStyle,
-                  fontSize: FONT_SIZES.small,
-                  fill: data.isSelected
-                    ? KOREAN_COLORS.TEXT_PRIMARY
-                    : KOREAN_COLORS.TEXT_SECONDARY,
-                }}
-              />
-            </Container>
-          )
-        )}
-
-      {/* Center text */}
-      <Text
-        text="팔괘"
-        anchor={0.5}
-        x={centerX}
-        y={centerY}
-        style={{
-          ...textStyle,
-          fontSize: FONT_SIZES.large,
-          fill: KOREAN_COLORS.PRIMARY_CYAN,
-        }}
-      />
+        return (
+          <Container key={stance} x={textX} y={textY}>
+            <Text
+              text={stanceData?.symbol || ""}
+              anchor={0.5}
+              style={symbolTextStyle(stance)}
+            />
+            <Text
+              text={stanceData?.name.korean || ""}
+              anchor={[0.5, -0.5]} // Position below the symbol
+              style={labelTextStyle(stance)}
+            />
+          </Container>
+        );
+      })}
     </Container>
   );
 };
 
-export default TrigramWheel;
+export const TrigramWheelWithBackground: React.FC<TrigramWheelProps> = (
+  props
+) => {
+  const drawBackground = useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.7);
+      g.drawCircle(props.x ?? 0, props.y ?? 0, RADIUS + 20);
+      g.endFill();
+    },
+    [props.x, props.y]
+  );
+
+  return (
+    <Container x={props.x} y={props.y}>
+      <Graphics draw={drawBackground} />
+      <TrigramWheel {...props} />
+    </Container>
+  );
+};

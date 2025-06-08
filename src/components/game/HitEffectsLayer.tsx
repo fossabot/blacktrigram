@@ -93,14 +93,13 @@ export const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({
 
   const effectTextStyle = useMemo(
     () => (effect: HitEffect) =>
-      new PIXI.TextStyle({
-        // Using PIXI.TextStyle directly
-        fontFamily: FONT_FAMILY.CYBER, // Ensure FONT_FAMILY.CYBER exists
+      new PIXI.TextStyle({ // Using PIXI.TextStyle directly
+        fontFamily: FONT_FAMILY.CYBER,
         fontSize: getEffectSize(effect) * 0.8,
         fill: getEffectColor(effect.type),
-        fontWeight: PIXI_FONT_WEIGHTS.bold, // Use PIXI_FONT_WEIGHTS
+        fontWeight: PIXI_FONT_WEIGHTS.bold,
         stroke: KOREAN_COLORS.BLACK_SOLID,
-        strokeThickness: 3, // This is a valid PIXI.TextStyle property
+        strokeThickness: 3, // This is valid for PIXI.TextStyle
         dropShadow: true,
         dropShadowColor: KOREAN_COLORS.BLACK_SOLID,
         dropShadowBlur: 5,

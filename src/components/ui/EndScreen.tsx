@@ -13,10 +13,10 @@ import {
 
 export const EndScreen: React.FC<EndScreenProps> = ({
   winner,
-  draw, // Prop 'draw' should exist on EndScreenProps
+  draw,
   onRestart,
   onMenu,
-  playerStats, // Prop 'playerStats' should exist on EndScreenProps
+  playerStats,
 }) => {
   const titleContent = useMemo(() => {
     if (draw) return { korean: "무승부", english: "Draw" };
@@ -30,17 +30,20 @@ export const EndScreen: React.FC<EndScreenProps> = ({
 
   const titleStyle = useMemo(
     () =>
-      new PIXI.TextStyle({
-        // Using PIXI.TextStyle directly
+      new PIXI.TextStyle({ // Using PIXI.TextStyle directly
         fontFamily: FONT_FAMILY.PRIMARY,
         fontSize: FONT_SIZES.title,
-        fill: winner ? KOREAN_COLORS.ACCENT_GOLD : KOREAN_COLORS.TEXT_PRIMARY,
-        fontWeight: PIXI_FONT_WEIGHTS.bold, // Use PIXI_FONT_WEIGHTS
+        fill: winner
+          ? KOREAN_COLORS.ACCENT_GOLD
+          : draw
+          ? KOREAN_COLORS.TEXT_SECONDARY
+          : KOREAN_COLORS.TEXT_PRIMARY,
+        fontWeight: PIXI_FONT_WEIGHTS.bold,
         align: "center",
         stroke: KOREAN_COLORS.BLACK_SOLID,
-        strokeThickness: 4, // Example: Added strokeThickness
+        strokeThickness: 4, // This is valid for PIXI.TextStyle
       }),
-    [winner]
+    [winner, draw]
   );
 
   const statsStyle = useMemo(
