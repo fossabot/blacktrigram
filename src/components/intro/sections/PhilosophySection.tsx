@@ -1,124 +1,140 @@
-import React, { useCallback, useMemo } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
+import React from "react";
+import { Container, Text, Graphics } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import type { PhilosophySectionProps } from "../../../types/components";
 import {
   KOREAN_COLORS,
   FONT_FAMILY,
   FONT_SIZES,
-  FONT_WEIGHTS,
-  GAME_CONFIG,
-  PLAYER_ARCHETYPES_DATA,
+  TRIGRAM_DATA,
 } from "../../../types/constants";
-import { PlayerArchetype } from "../../../types/enums";
+import { BaseButton } from "../../ui/base/BaseButton";
+
+export interface PhilosophySectionProps {
+  onBack?: () => void;
+  width?: number;
+  height?: number;
+}
 
 export const PhilosophySection: React.FC<PhilosophySectionProps> = ({
-  width = GAME_CONFIG.CANVAS_WIDTH,
-  height = GAME_CONFIG.CANVAS_HEIGHT,
   onBack,
-  onGamePhaseChange,
+  width = 800,
+  height = 600,
 }) => {
-  const headerStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.title,
-        fill: KOREAN_COLORS.ACCENT_GOLD,
-        fontWeight: FONT_WEIGHTS.bold.toString() as PIXI.TextStyleFontWeight,
-        align: "center",
-        stroke: KOREAN_COLORS.BLACK_SOLID,
-        // strokeThickness: 2, // Remove: deprecated in PixiJS v7+
-      }),
-    []
-  );
-
-  const bodyStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.medium,
-        fill: KOREAN_COLORS.TEXT_PRIMARY,
-        fontWeight: FONT_WEIGHTS.regular.toString() as PIXI.TextStyleFontWeight,
-        align: "left",
-        wordWrap: true,
-        wordWrapWidth: width - 100,
-      }),
-    [width]
-  );
-
-  const archetypeStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.large,
-        fill: KOREAN_COLORS.PRIMARY_CYAN,
-        fontWeight:
-          FONT_WEIGHTS.semibold.toString() as PIXI.TextStyleFontWeight,
-        align: "left",
-      }),
-    []
-  );
-
-  const PLAYER_ARCHETYPES_ORDER: PlayerArchetype[] = [
-    PlayerArchetype.MUSA,
-    PlayerArchetype.AMSALJA,
-    PlayerArchetype.HACKER,
-    PlayerArchetype.JEONGBO_YOWON,
-    PlayerArchetype.JOJIK_POKRYEOKBAE,
-  ];
-
-  // Use onGamePhaseChange in a meaningful way or remove if not needed
-  const handleBackClick = useCallback(() => {
-    onBack?.();
-    onGamePhaseChange?.("intro" as any); // Use both props to avoid warnings
-  }, [onBack, onGamePhaseChange]);
+  const philosophyStyle = new PIXI.TextStyle({
+    fontFamily: FONT_FAMILY.PRIMARY,
+    fontSize: FONT_SIZES.large,
+    fill: KOREAN_COLORS.TEXT_PRIMARY,
+    align: "center",
+    wordWrap: true,
+    wordWrapWidth: width - 100,
+  });
 
   return (
     <Container width={width} height={height}>
-      {/* Philosophy Content */}
-      <Container x={50} y={200}>
-        {PLAYER_ARCHETYPES_ORDER.map((archetype, index) => {
-          const archetypeData = PLAYER_ARCHETYPES_DATA[archetype];
-          return (
-            <Container key={archetype} y={index * 60}>
-              <Text
-                text={`${archetypeData.name.korean} (${archetypeData.name.english})`}
-                style={archetypeStyle}
-                y={0}
-              />
-              <Text
-                text={archetypeData.description.korean} // Fix: use description instead of philosophy
-                style={bodyStyle}
-                y={25}
-              />
-            </Container>
-          );
-        })}
-      </Container>
+      {/* Background */}
+      <Graphics
+        draw={(g: PIXI.Graphics) => {
+          g.clear();
+          g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.95);
+          g.drawRect(0, 0, width, height);
+          g.endFill();
+        }}
+      />
 
       {/* Back Button */}
       {onBack && (
-        <Container x={50} y={height - 80}>
-          <Graphics
-            draw={(g: PIXI.Graphics) => {
-              g.clear()
-                .lineStyle(2, KOREAN_COLORS.PRIMARY_CYAN)
-                .beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.8)
-                .drawRoundedRect(0, 0, 120, 40, 5)
-                .endFill();
-            }}
-            interactive={true}
-            pointerdown={handleBackClick} // Use the combined handler
-          />
-          <Text
-            text="뒤로 (Back)"
-            x={60}
-            y={20}
-            anchor={0.5}
-            style={archetypeStyle}
-          />
-        </Container>
+        <BaseButton
+          text="뒤로 (Back)"
+          onClick={onBack}
+          x={20}
+          y={20}
+          width={120}
+          height={40}
+          variant="secondary"
+        />
       )}
+
+      {/* Philosophy Content */}
+      <Text
+        text="팔괘의 지혜 (Wisdom of Eight Trigrams)"
+        style={{
+          ...philosophyStyle,
+          fontSize: FONT_SIZES.title,
+          fill: KOREAN_COLORS.ACCENT_GOLD,
+        }}
+        anchor={0.5}
+        x={width / 2}
+        y={100}
+      />
+
+      <Text
+        text="흑괘는 전통 한국 무술의 정신과 현대 기술의 융합입니다.\n팔괘의 원리로 몸과 마음을 단련하고 70개 급소를 통한 정밀한 격투를 익힙니다."
+        style={philosophyStyle}
+        anchor={0.5}
+        x={width / 2}
+        y={200}
+      />
+
+      {/* Trigram Symbols */}
+      <Container x={width / 2 - 200} y={300}>
+        {Object.entries(TRIGRAM_DATA)
+          .slice(0, 4)
+          .map(([key, data], index) => (
+            <Container key={key} x={index * 100} y={0}>
+              <Text
+                text={data.symbol}
+                style={{
+                  ...philosophyStyle,
+                  fontSize: FONT_SIZES.xxlarge,
+                  fill: data.theme?.primary || KOREAN_COLORS.ACCENT_PRIMARY,
+                }}
+                anchor={0.5}
+                x={50}
+                y={0}
+              />
+              <Text
+                text={data.name.korean}
+                style={{
+                  ...philosophyStyle,
+                  fontSize: FONT_SIZES.small,
+                }}
+                anchor={0.5}
+                x={50}
+                y={50}
+              />
+            </Container>
+          ))}
+      </Container>
+
+      <Container x={width / 2 - 200} y={400}>
+        {Object.entries(TRIGRAM_DATA)
+          .slice(4, 8)
+          .map(([key, data], index) => (
+            <Container key={key} x={index * 100} y={0}>
+              <Text
+                text={data.symbol}
+                style={{
+                  ...philosophyStyle,
+                  fontSize: FONT_SIZES.xxlarge,
+                  fill: data.theme?.primary || KOREAN_COLORS.ACCENT_PRIMARY,
+                }}
+                anchor={0.5}
+                x={50}
+                y={0}
+              />
+              <Text
+                text={data.name.korean}
+                style={{
+                  ...philosophyStyle,
+                  fontSize: FONT_SIZES.small,
+                }}
+                anchor={0.5}
+                x={50}
+                y={50}
+              />
+            </Container>
+          ))}
+      </Container>
     </Container>
   );
 };

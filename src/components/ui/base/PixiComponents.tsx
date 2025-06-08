@@ -131,7 +131,7 @@ export const CyberpunkButton: React.FC<{
   height?: number;
 }> = ({
   label,
-  onClick, // Remove default value to fix unused warning
+  onClick,
   variant = "primary",
   disabled = false,
   x = 0,
@@ -154,9 +154,17 @@ export const CyberpunkButton: React.FC<{
     });
   }, [variant, disabled, height]);
 
+  const handleClick = useCallback(() => {
+    if (!disabled && onClick) {
+      onClick();
+    }
+  }, [disabled, onClick]);
+
   return (
     <Container x={finalX} y={finalY}>
       <Graphics
+        interactive={!disabled}
+        pointerdown={handleClick}
         draw={(g: PIXI.Graphics) => {
           g.clear();
           const color = disabled
@@ -343,6 +351,7 @@ export const PixiProgressBar: React.FC<ProgressTrackerProps> = ({
 
 export const PixiButton: React.FC<BaseButtonProps> = ({
   label,
+  onClick,
   x = 0,
   y = 0,
   width = 150,
@@ -400,6 +409,12 @@ export const PixiButton: React.FC<BaseButtonProps> = ({
     [width, height, getButtonColor, isHovered, disabled]
   );
 
+  const handleClick = useCallback(() => {
+    if (!disabled && onClick) {
+      onClick();
+    }
+  }, [disabled, onClick]);
+
   return (
     <Container x={x} y={y}>
       <Graphics
@@ -407,11 +422,7 @@ export const PixiButton: React.FC<BaseButtonProps> = ({
         interactive={!disabled}
         pointerover={() => setIsHovered(true)}
         pointerout={() => setIsHovered(false)}
-        pointerdown={() => {
-          if (!disabled && onClick) {
-            onClick(); // Use onClick directly
-          }
-        }}
+        pointerdown={handleClick}
       />
       <Text
         text={label}
@@ -424,6 +435,7 @@ export const PixiButton: React.FC<BaseButtonProps> = ({
   );
 };
 
+// PixiTrigramWheel
 export const PixiTrigramWheel: React.FC<TrigramWheelProps> = ({
   currentStance,
   onStanceChange,

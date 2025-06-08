@@ -10,10 +10,13 @@ import {
   FONT_WEIGHTS,
   GAME_CONFIG,
 } from "../../../types/constants";
+import { BaseButton } from "../../ui/base/BaseButton";
 
 export const MenuSection: React.FC<MenuSectionProps> = ({
   onModeSelect,
   onStartGame,
+  onShowPhilosophy,
+  onShowControls,
   selectedMode,
   width = GAME_CONFIG.CANVAS_WIDTH,
   height = GAME_CONFIG.CANVAS_HEIGHT,
@@ -22,19 +25,20 @@ export const MenuSection: React.FC<MenuSectionProps> = ({
     () =>
       new PIXI.TextStyle({
         fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.xlarge,
-        fill: KOREAN_COLORS.TEXT_PRIMARY,
+        fontSize: FONT_SIZES.title,
+        fill: KOREAN_COLORS.ACCENT_GOLD,
         fontWeight: FONT_WEIGHTS.bold.toString() as PIXI.TextStyleFontWeight,
         align: "center",
+        stroke: KOREAN_COLORS.BLACK_SOLID,
       }),
     []
   );
 
-  const buttonStyle = useMemo(
+  const subtitleStyle = useMemo(
     () =>
       new PIXI.TextStyle({
         fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.medium,
+        fontSize: FONT_SIZES.large,
         fill: KOREAN_COLORS.TEXT_PRIMARY,
         fontWeight: FONT_WEIGHTS.medium.toString() as PIXI.TextStyleFontWeight,
         align: "center",
@@ -42,7 +46,7 @@ export const MenuSection: React.FC<MenuSectionProps> = ({
     []
   );
 
-  const handleModeClick = useCallback(
+  const handleModeSelect = useCallback(
     (mode: GameMode) => {
       onModeSelect?.(mode);
     },
@@ -50,8 +54,16 @@ export const MenuSection: React.FC<MenuSectionProps> = ({
   );
 
   const handleStartClick = useCallback(() => {
-    onStartGame?.(); // Fix: remove parameter
+    onStartGame?.();
   }, [onStartGame]);
+
+  const handlePhilosophyClick = useCallback(() => {
+    onShowPhilosophy?.();
+  }, [onShowPhilosophy]);
+
+  const handleControlsClick = useCallback(() => {
+    onShowControls?.();
+  }, [onShowControls]);
 
   const backgroundDraw = useCallback(
     (g: PIXI.Graphics) => {
@@ -60,10 +72,17 @@ export const MenuSection: React.FC<MenuSectionProps> = ({
       g.drawRect(0, 0, width, height);
       g.endFill();
 
-      // Title background
-      g.beginFill(KOREAN_COLORS.ACCENT_PRIMARY, 0.1);
-      g.drawRoundedRect(50, 20, width - 100, 80, 10);
-      g.endFill();
+      // Cyberpunk grid effect
+      g.lineStyle(1, KOREAN_COLORS.PRIMARY_CYAN, 0.2);
+      const gridSize = 50;
+      for (let i = 0; i <= width; i += gridSize) {
+        g.moveTo(i, 0);
+        g.lineTo(i, height);
+      }
+      for (let j = 0; j <= height; j += gridSize) {
+        g.moveTo(0, j);
+        g.lineTo(width, j);
+      }
     },
     [width, height]
   );
@@ -72,55 +91,90 @@ export const MenuSection: React.FC<MenuSectionProps> = ({
     <Container width={width} height={height}>
       <Graphics draw={backgroundDraw} />
 
-      {/* Title */}
+      {/* Main Title */}
       <Text
         text="흑괘 (Black Trigram)"
         style={titleStyle}
         x={width / 2}
-        y={60}
+        y={100}
         anchor={0.5}
       />
 
-      {/* Game Mode Selection - Implement actual mode buttons */}
-      <Container x={(width - 640) / 2} y={140}>
+      <Text
+        text="Korean Martial Arts Combat Simulator"
+        style={subtitleStyle}
+        x={width / 2}
+        y={160}
+        anchor={0.5}
+      />
+
+      {/* Game Mode Selection */}
+      <Container x={width / 2} y={240}>
         <Text
           text="게임 모드 선택 (Select Game Mode)"
-          style={buttonStyle}
-          x={320}
-          y={0}
+          style={{
+            ...subtitleStyle,
+            fontSize: FONT_SIZES.medium,
+          }}
           anchor={0.5}
+          y={0}
         />
 
-        {/* Add actual mode selection buttons here if needed */}
+        {/* Mode Buttons */}
+        <Container y={40}>
+          {Object.values(GameMode).map((mode, index) => (
+            <BaseButton
+              key={mode}
+              text={
+                mode === GameMode.VERSUS
+                  ? "대련 (Versus)"
+                  : mode === GameMode.TRAINING
+                  ? "수련 (Training)"
+                  : mode === GameMode.STORY
+                  ? "이야기 (Story)"
+                  : mode
+              }
+              onClick={() => handleModeSelect(mode)}
+              x={-300 + index * 200}
+              y={0}
+              width={180}
+              height={50}
+              variant={selectedMode === mode ? "accent" : "secondary"}
+            />
+          ))}
+        </Container>
       </Container>
 
-      {/* Start Button */}
-      <Container
-        x={width / 2 - 100}
-        y={height - 100}
-        interactive={true}
-        pointerdown={handleStartClick}
-      >
-        <Graphics
-          draw={(g: PIXI.Graphics) => {
-            g.clear()
-              .lineStyle(2, KOREAN_COLORS.ACCENT_GOLD)
-              .beginFill(KOREAN_COLORS.ACCENT_PRIMARY, 0.8)
-              .drawRoundedRect(0, 0, 200, 60, 10)
-              .endFill();
-          }}
+      {/* Menu Buttons */}
+      <Container x={width / 2} y={height - 200}>
+        <BaseButton
+          text="게임 시작 (Start Game)"
+          onClick={handleStartClick}
+          x={-100}
+          y={0}
+          width={200}
+          height={60}
+          variant="primary"
         />
 
-        <Text
-          text="시작 (Start)"
-          style={{
-            ...buttonStyle,
-            fontSize: FONT_SIZES.large,
-            fill: KOREAN_COLORS.BLACK_SOLID,
-          }}
-          x={100}
-          y={30}
-          anchor={0.5}
+        <BaseButton
+          text="철학 (Philosophy)"
+          onClick={handlePhilosophyClick}
+          x={-100}
+          y={80}
+          width={200}
+          height={50}
+          variant="secondary"
+        />
+
+        <BaseButton
+          text="조작법 (Controls)"
+          onClick={handleControlsClick}
+          x={-100}
+          y={140}
+          width={200}
+          height={50}
+          variant="secondary"
         />
       </Container>
     </Container>

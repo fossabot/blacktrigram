@@ -499,30 +499,26 @@ export interface PlayerArchetypeData {
 }
 
 export interface MenuSectionProps {
-  width?: number;
-  height?: number;
-  x?: number;
-  y?: number;
-  selectedMode?: GameMode;
-  onModeSelect: (mode: GameMode) => void;
-  onStartGame: () => void;
+  selectedMode: GameMode;
+  onModeSelect?: (mode: GameMode) => void;
+  onStartGame?: () => void;
   onShowPhilosophy?: () => void;
   onShowControls?: () => void;
+  width?: number;
+  height?: number;
 }
 
 export interface PhilosophySectionProps {
+  onBack?: () => void;
+  onGamePhaseChange?: (phase: string) => void;
   width?: number;
   height?: number;
-  onBack?: () => void; // Add missing onBack prop
-  onGamePhaseChange?: (phase: GamePhase) => void;
 }
 
 export interface ControlsSectionProps {
+  onBack?: () => void;
   width?: number;
   height?: number;
-  x?: number;
-  y?: number;
-  onBack?: () => void;
 }
 
 export interface ScoreDisplayProps {
