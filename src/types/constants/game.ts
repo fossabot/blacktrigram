@@ -50,6 +50,15 @@ export const GAME_CONFIG = {
   MUSIC_VOLUME: 0.5,
 } as const;
 
+// Add missing player colors
+export const PLAYER_COLORS = {
+  PLAYER_1_COLOR: 0x0099ff, // Blue
+  PLAYER_2_COLOR: 0xff9900, // Orange
+} as const;
+
+// Fix: Re-export KOREAN_COLORS for convenience
+export { KOREAN_COLORS } from "./colors";
+
 // Difficulty settings
 export const DIFFICULTY_SETTINGS = {
   BEGINNER: {

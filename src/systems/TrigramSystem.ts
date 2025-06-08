@@ -1,17 +1,33 @@
-import {
-  type PlayerState,
-  type TrigramStance,
-  type TrigramTransitionCost,
-  type TransitionPath,
-  STANCE_EFFECTIVENESS_MATRIX,
-  TRIGRAM_DATA,
-  TRIGRAM_STANCES_ORDER,
+import type {
+  PlayerState,
   KoreanTechnique,
+  TrigramStance,
+  StatusEffect,
+  TransitionPath,
+  TrigramTransitionCost,
 } from "../types";
+// Fix: Import enum properly, not as type
+import { TrigramStance as TrigramStanceEnum } from "../types/enums";
+import {
+  TRIGRAM_STANCES_ORDER,
+  TRIGRAM_DATA,
+  STANCE_EFFECTIVENESS_MATRIX,
+} from "../types/constants";
 import { TrigramCalculator } from "./trigram/TrigramCalculator";
 
 export class TrigramSystem {
   private trigramCalculator: TrigramCalculator; // Add missing property
+
+  private readonly availableStances: readonly TrigramStance[] = [
+    "geon" as TrigramStance,
+    "tae" as TrigramStance,
+    "li" as TrigramStance,
+    "jin" as TrigramStance,
+    "son" as TrigramStance,
+    "gam" as TrigramStance,
+    "gan" as TrigramStance,
+    "gon" as TrigramStance,
+  ];
 
   constructor() {
     this.trigramCalculator = new TrigramCalculator();
@@ -329,19 +345,50 @@ export class TrigramSystem {
     };
   }
 
-  // Add missing methods that GameEngine expects
-  public getTechniqueForStance(
-    stance: TrigramStance
-  ): KoreanTechnique | undefined {
+  /**
+   * Get technique for a specific stance - Fix: Add missing method
+   */
+  static getTechniqueForStance(stance: TrigramStance): KoreanTechnique | null {
     const stanceData = TRIGRAM_DATA[stance];
-    return stanceData?.technique;
+    if (!stanceData?.techniques?.primary) {
+      return null;
+    }
+
+    return {
+      id: `${stance}_primary`,
+      korean: stanceData.techniques.primary.korean,
+      english: stanceData.techniques.primary.english,
+      stance,
+      damage: stanceData.techniques.primary.damage || 10,
+      kiCost: stanceData.techniques.primary.kiCost || 5,
+      staminaCost: stanceData.techniques.primary.staminaCost || 10,
+      hitChance: stanceData.techniques.primary.hitChance || 0.8,
+      criticalChance: stanceData.techniques.primary.criticalChance || 0.1,
+      description: stanceData.techniques.primary.description || {
+        korean: "기본 기술",
+        english: "Basic technique",
+      },
+      targetAreas: stanceData.techniques.primary.targetAreas || [],
+      effects: stanceData.techniques.primary.effects || [],
+    };
   }
 
-  public getKiRecoveryRate(player: PlayerState): number {
-    const baseRate = 1.0;
-    const stanceModifier =
-      TRIGRAM_DATA[player.currentStance as TrigramStance]?.kiFlowModifier || // Ensure currentStance is used
-      1.0;
-    return baseRate * stanceModifier;
+  /**
+   * Calculate stance effects for combat
+   */
+  calculateStanceEffects(
+    attackerStance: TrigramStance,
+    defenderStance: TrigramStance,
+    technique: KoreanTechnique
+  ): StatusEffect[] {
+    const effects: StatusEffect[] = [];
+
+    // Add stance-specific effects based on trigram philosophy
+    const attackerData = TRIGRAM_DATA[attackerStance];
+    if (attackerData?.philosophy?.effects) {
+      effects.push(...attackerData.philosophy.effects);
+    }
+
+    return effects;
   }
 }

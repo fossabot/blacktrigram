@@ -59,26 +59,11 @@ export interface CombatResult {
   readonly hit: boolean;
   readonly damage: number;
   readonly critical: boolean;
-  readonly blocked: boolean;
-  readonly dodged: boolean;
-  readonly parried?: boolean;
-  readonly counterAttack?: KoreanTechnique | null;
-  readonly hitPosition?: Position;
-  readonly painLevel?: number;
-  readonly consciousnessImpact?: number;
-  readonly balanceImpact?: number;
-  readonly staminaCost?: number;
-  readonly kiCost?: number;
-  readonly updatedAttacker: PlayerState;
-  readonly updatedDefender: PlayerState;
-  readonly message?: string; // For combat log
-  readonly statusEffectsApplied?: readonly StatusEffect[]; // Optional status effects
-  vitalPointHit?: VitalPoint | null;
-  knockdown?: boolean;
-  stunDuration?: number;
-  attackerEffects?: string[]; // e.g., status effects applied to attacker
-  defenderEffects?: string[]; // e.g., status effects applied to defender
-  hitEffectType?: HitEffectType; // Optional: specific effect type
+  readonly updatedAttacker?: Partial<PlayerState>;
+  readonly updatedDefender?: Partial<PlayerState>;
+  readonly effects: readonly HitEffect[];
+  readonly message: string;
+  // Fix: Ensure no nested hitResult structure
 }
 
 // Type alias for HitResult as requested by error messages
@@ -132,4 +117,23 @@ export interface WinConditionCheckResult {
   winner: PlayerState | null;
   draw: boolean;
   reason?: string; // e.g., "health_depleted", "time_up"
+}
+
+export interface MatchStatistics {
+  readonly roundsWon: {
+    readonly player1: number;
+    readonly player2: number;
+  };
+  readonly totalDamageDealt: {
+    readonly player1: number;
+    readonly player2: number;
+  };
+  readonly techniquesUsed: {
+    readonly player1: number;
+    readonly player2: number;
+  };
+  readonly vitalPointsHit: {
+    readonly player1: number;
+    readonly player2: number;
+  };
 }

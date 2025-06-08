@@ -2,6 +2,7 @@ import { render, type RenderOptions } from "@testing-library/react";
 import { Stage } from "@pixi/react";
 import type { ReactElement } from "react";
 import React from "react"; // Add React import for JSX
+import type { AudioContextType } from "../types/audio";
 
 // Custom render function for testing Korean martial arts components
 export function renderKoreanMartialArtsComponent(
@@ -37,3 +38,28 @@ export function createMockPlayerState(overrides?: Partial<any>) {
     ...overrides,
   };
 }
+
+// Mock Audio Provider for testing
+export const MockAudioProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const mockAudioContext: AudioContextType = {
+    playSFX: jest.fn(),
+    playMusic: jest.fn(),
+    stopMusic: jest.fn(),
+    setMasterVolume: jest.fn(),
+    setSFXVolume: jest.fn(),
+    setMusicVolume: jest.fn(),
+    isMuted: false,
+    toggleMute: jest.fn(),
+    currentTrack: null,
+    isPlaying: false,
+  };
+
+  // Mock audio context provider
+  return React.createElement(
+    "div",
+    { "data-testid": "mock-audio-provider" },
+    children
+  );
+};

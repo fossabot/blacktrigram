@@ -19,10 +19,10 @@ const mockMatchStatistics: MatchStatistics = {
 describe("UI Components", () => {
   it("renders EndScreen", () => {
     const player1 = createPlayerState(
-      "Player 1",
+      { korean: "Player 1", english: "Player 1" }, // Fix: Use KoreanText object
       PlayerArchetype.MUSA,
-      { korean: "건", english: "Heaven" },
-      { x: 0, y: 0 } // Fix: Use Position object instead of string
+      { korean: "건", english: "geon" }, // Fix: Use KoreanText object
+      "player1"
     );
 
     render(

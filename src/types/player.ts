@@ -64,6 +64,7 @@ export interface PlayerState {
   currentStance: TrigramStance; // Made mutable for updates
   combatReadiness?: CombatReadiness; // Added optional combatReadiness
   readonly availableTechniques: readonly KoreanTechnique[]; // Added
+  isGuarding: boolean; // Fix: Add missing isGuarding property
 
   // Vital points (simplified - in full game would have all 70)
   vitalPoints?: Record<string, VitalPoint>; // Add missing property

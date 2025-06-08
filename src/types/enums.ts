@@ -22,21 +22,23 @@ export enum TrigramStance {
 // Game phases for different modes
 export enum GamePhase {
   INTRO = "intro",
+  MENU = "menu",
   TRAINING = "training",
   COMBAT = "combat",
-  STORY = "story", // Add missing STORY phase
   VICTORY = "victory",
   DEFEAT = "defeat",
   DRAW = "draw",
+  STORY = "story",
   PAUSE = "pause",
 }
 
+// Game modes for different play styles
 export enum GameMode {
   VERSUS = "versus",
   TRAINING = "training",
   STORY = "story",
   ARCADE = "arcade",
-  ONLINE = "online",
+  SURVIVAL = "survival",
 }
 
 // Combat states for player characters
@@ -95,7 +97,6 @@ export enum StatusEffect {
 export type PlayerArchetypeString = `${PlayerArchetype}`;
 export type TrigramStanceString = `${TrigramStance}`;
 export type GamePhaseString = `${GamePhase}`;
-export type GameModeString = `${GameMode}`;
 export type CombatStateString = `${CombatState}`;
 export type AnimationStateString = `${AnimationState}`;
 export type DamageTypeString = `${DamageType}`;
@@ -157,10 +158,6 @@ export function isValidGamePhase(value: string): value is GamePhase {
   return Object.values(GamePhase).includes(value as GamePhase);
 }
 
-export function isValidGameMode(value: string): value is GameMode {
-  return Object.values(GameMode).includes(value as GameMode);
-}
-
 export function isValidCombatState(value: string): value is CombatState {
   return Object.values(CombatState).includes(value as CombatState);
 }
@@ -173,9 +170,9 @@ export function isValidHitEffectType(value: string): value is HitEffectType {
 export const PLAYER_ARCHETYPES = PlayerArchetype;
 export const TRIGRAM_STANCES = TrigramStance;
 export const GAME_PHASES = GamePhase;
-export const GAME_MODES = GameMode;
 export const COMBAT_STATES = CombatState;
 export const ANIMATION_STATES = AnimationState;
 export const DAMAGE_TYPES = DamageType;
 export const STATUS_EFFECTS = StatusEffect;
 export const HIT_EFFECT_TYPES = HitEffectType;
+export const GAME_MODES = GameMode;

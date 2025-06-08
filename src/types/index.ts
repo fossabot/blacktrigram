@@ -291,3 +291,11 @@ export interface MatchStatistics {
     readonly player2: number;
   };
 }
+
+// Fix: Export missing types
+export type { KoreanTechnique, CombatResult } from "./combat";
+export type { TrigramStance } from "./enums";
+
+// Fix: Import GameMode from the correct location
+export { GameMode } from "./game";
+export { GamePhase, PlayerArchetype, TrigramStance } from "./enums";

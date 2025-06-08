@@ -10,19 +10,20 @@ import type { HitEffect } from "./effects";
  * Core game state interface for Black Trigram
  */
 export interface GameState {
-  readonly phase: GamePhase;
   readonly mode: GameMode;
+  readonly phase: GamePhase;
   readonly isTraining: boolean;
   readonly player1: PlayerState;
   readonly player2: PlayerState;
   readonly currentRound: number;
   readonly maxRounds: number;
   readonly timeRemaining: number;
-  readonly gameTime: number;
   readonly isPaused: boolean;
-  readonly winner: PlayerState | null;
   readonly combatEffects: readonly HitEffect[];
   readonly matchHistory: readonly MatchResult[];
+  // Fix: Add missing properties
+  readonly gameTime: number;
+  readonly winner: PlayerState | null;
 }
 
 export interface MatchResult {
@@ -68,7 +69,11 @@ export interface MatchState {
 /**
  * Game mode types
  */
-export type GameMode = "training" | "versus" | "tournament" | "story";
+export enum GameMode {
+  VERSUS = "versus",
+  TRAINING = "training",
+  STORY = "story",
+}
 
 /**
  * Game difficulty levels
@@ -159,8 +164,8 @@ export interface TrainingScreenProps {
   onStartCombat: () => void;
 }
 
-// Re-export GameMode from enums to ensure consistency
-export { GameMode, GamePhase } from "./enums";
+// Re-export GamePhase from enums to ensure consistency
+export { GamePhase } from "./enums";
 
 // Re-export from player types for convenience
 export type { PlayerArchetype } from "./enums"; // Export PlayerArchetype from enums

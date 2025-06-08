@@ -134,12 +134,16 @@ export interface CombatControlsProps extends BasePixiProps {
 }
 
 // Combat screen props
-export interface CombatScreenProps extends BasePixiProps {
-  players: readonly [PlayerState, PlayerState];
-  onPlayerUpdate: (playerIndex: 0 | 1, updates: Partial<PlayerState>) => void;
-  currentRound: number;
-  timeRemaining: number;
-  isPaused: boolean;
+export interface CombatScreenProps {
+  readonly players: readonly [PlayerState, PlayerState];
+  readonly onPlayerUpdate?: (
+    playerIndex: number,
+    updates: Partial<PlayerState>
+  ) => void;
+  readonly onReturnToMenu?: () => void;
+  readonly gamePhase?: GamePhase; // Fix: Now properly typed
+  readonly onGamePhaseChange?: (phase: GamePhase) => void; // Fix: Now properly typed
+  readonly timeRemaining?: number;
 }
 
 // Game engine props
@@ -161,6 +165,9 @@ export interface GameEngineProps {
   readonly height?: number;
   readonly x?: number;
   readonly y?: number;
+  readonly onPlayer1Update?: (updates: Partial<PlayerState>) => void;
+  readonly onPlayer2Update?: (updates: Partial<PlayerState>) => void;
+  readonly onCombatResult?: (result: CombatResult) => void; // Fix: Add missing prop
 }
 
 // Game UI props
@@ -186,11 +193,11 @@ export interface GameUIProps {
 }
 
 // Dojang background props
-export interface DojangBackgroundProps extends BaseComponentProps {
-  readonly timeOfDay?: "day" | "night";
-  readonly weather?: "clear" | "rain" | "snow";
-  readonly lighting?: "bright" | "dim" | "atmospheric";
-  readonly textureName?: string;
+export interface DojangBackgroundProps {
+  readonly width?: number;
+  readonly height?: number;
+  readonly animate?: boolean; // Fix: Add missing animate property
+  readonly lighting?: "normal" | "dramatic" | "cyberpunk";
 }
 
 // Hit effects layer props
@@ -247,16 +254,24 @@ export interface IntroScreenProps extends BaseComponentProps {
 
 // Training screen props
 export interface TrainingScreenProps {
-  readonly players: readonly PlayerState[];
+  readonly selectedArchetype: PlayerArchetype;
+  readonly onBack?: () => void;
+  readonly onTrainingComplete?: (result: any) => void;
+}
+
+// Combat screen props
+export interface CombatScreenProps {
+  readonly players: readonly [PlayerState, PlayerState];
   readonly onPlayerUpdate: (
     playerIndex: number,
     updates: Partial<PlayerState>
   ) => void;
-  readonly onReturnToMenu: () => void;
-  readonly width?: number;
-  readonly height?: number;
-  readonly x?: number;
-  readonly y?: number;
+  readonly onReturnToMenu?: () => void;
+  readonly gamePhase?: GamePhase;
+  readonly onGamePhaseChange?: (phase: GamePhase) => void;
+  readonly matchStatistics?: MatchStatistics;
+  readonly timeRemaining?: number;
+  // Fix: Remove onMatchStatisticsUpdate - not needed
 }
 
 // Base button component props for Korean martial arts UI

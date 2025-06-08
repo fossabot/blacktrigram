@@ -8,17 +8,17 @@ import { createPlayerState } from "../../utils/playerUtils";
 
 describe("GameUI Component", () => {
   const mockPlayer1 = createPlayerState(
-    "Player 1",
+    { korean: "Player 1", english: "Player 1" }, // Fix: Use KoreanText object
     PlayerArchetype.MUSA,
-    { korean: "플레이어 1", english: "Player 1" },
-    { x: 100, y: 300 }
+    { korean: "건", english: "geon" }, // Fix: Use KoreanText object
+    "player1"
   );
 
   const mockPlayer2 = createPlayerState(
-    "Player 2",
+    { korean: "Player 2", english: "Player 2" }, // Fix: Use KoreanText object
     PlayerArchetype.AMSALJA,
-    { korean: "플레이어 2", english: "Player 2" },
-    { x: 500, y: 300 }
+    { korean: "태", english: "tae" }, // Fix: Use KoreanText object
+    "player2"
   );
 
   const defaultProps: GameUIProps = {

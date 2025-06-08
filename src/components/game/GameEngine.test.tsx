@@ -1,79 +1,36 @@
-import React from "react";
-import { render } from "@testing-library/react"; // Removed unused screen import
-import "@testing-library/jest-dom";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render } from "@testing-library/react";
 import { Application } from "@pixi/react";
 import { GameEngine } from "./GameEngine";
+import { MockAudioProvider } from "../../test/test-utils";
+import { GamePhase, PlayerArchetype } from "../../types/enums";
+import { GameMode } from "../../types/game"; // Fix: Import from correct location
 import { createPlayerState } from "../../utils/playerUtils";
-import type { KoreanText, PlayerState, Position } from "../../types"; // GameState, HitEffect removed
-import { PlayerArchetype, GamePhase, GameMode } from "../../types/enums"; // Corrected path
-// import { GAME_CONFIG } from "../../types/constants"; // Removed GAME_CONFIG
 
-// Mock audio provider for tests
-const MockAudioProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const mockAudioManager = {
-    playSFX: vi.fn(),
-    playMusic: vi.fn(),
-    stopMusic: vi.fn(),
-    setMasterVolume: vi.fn(),
-    setSFXVolume: vi.fn(),
-    setMusicVolume: vi.fn(),
-    setMuted: vi.fn(),
-    getState: vi.fn(() => ({
-      masterVolume: 0.7,
-      sfxVolume: 0.8,
-      musicVolume: 0.5,
-      muted: false,
-      currentMusicTrack: null,
-      isInitialized: true,
-      fallbackMode: false,
-    })),
-    playAttackSound: vi.fn(),
-    playHitSound: vi.fn(),
-    playTechniqueSound: vi.fn(),
-    playStanceChangeSound: vi.fn(),
-    playBlockSound: vi.fn(),
-    stopAllSounds: vi.fn(),
-    init: vi.fn(),
-    isInitialized: true,
-    loadAudioAsset: vi.fn(),
-    isMusicPlaying: vi.fn(() => false),
-  };
-
-  return (
-    // @ts-ignore - Mock provider
-    <AudioProvider manager={mockAudioManager}>{children}</AudioProvider>
-  );
-};
-
-const mockPlayer1Name: KoreanText = { korean: "무사", english: "Warrior" };
-const mockPlayer2Name: KoreanText = { korean: "암살자", english: "Assassin" };
-const mockPlayer1Position: Position = { x: 100, y: 300 };
-const mockPlayer2Position: Position = { x: 600, y: 300 };
-
-const mockPlayer1: PlayerState = createPlayerState(
-  "player1",
-  PlayerArchetype.MUSA, // Use enum
-  mockPlayer1Name,
-  mockPlayer1Position
+// Fix: Add missing mock data
+const mockPlayer1 = createPlayerState(
+  { korean: "Player 1", english: "Player 1" },
+  PlayerArchetype.MUSA,
+  { korean: "건", english: "geon" },
+  "player1"
 );
-const mockPlayer2: PlayerState = createPlayerState(
-  "player2",
-  PlayerArchetype.AMSALJA, // Use enum
-  mockPlayer2Name,
-  mockPlayer2Position
+
+const mockPlayer2 = createPlayerState(
+  { korean: "Player 2", english: "Player 2" },
+  PlayerArchetype.AMSALJA,
+  { korean: "태", english: "tae" },
+  "player2"
 );
 
 describe("GameEngine", () => {
   const defaultProps = {
     player1: mockPlayer1,
     player2: mockPlayer2,
-    gamePhase: GamePhase.COMBAT, // Fix: use enum
+    gamePhase: GamePhase.COMBAT,
     onGameStateChange: vi.fn(),
     onPlayerUpdate: vi.fn(),
     onGamePhaseChange: vi.fn(),
-    gameMode: GameMode.VERSUS, // Fix: use enum
+    gameMode: GameMode.VERSUS, // Fix: Use correct import
   };
 
   const renderGameEngine = (props = {}) => {

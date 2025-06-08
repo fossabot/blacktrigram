@@ -7,16 +7,19 @@
 
 // Re-export all constants from individual files
 export * from "./colors";
-export * from "./typography";
 export * from "./game";
-export * from "./player";
 export * from "./combat";
-export * from "./trigram";
-export * from "./techniques";
-export * from "./vital-points";
 export * from "./controls";
+export * from "./typography";
 export * from "./ui";
 export * from "./animations";
+export * from "./techniques";
+export * from "./trigram";
+export * from "./vital-points";
+export * from "./player";
+
+// Fix: Ensure KOREAN_COLORS is available from main exports
+export { KOREAN_COLORS } from "./colors";
 
 // Additional exports that might be needed
 export const TRIGRAM_STANCES_ORDER = [

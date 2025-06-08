@@ -34,22 +34,18 @@ export interface VitalPointEffect extends StatusEffect {
 // Hit effect for visual combat feedback
 export interface HitEffect {
   readonly id: string;
-  readonly type: HitEffectType; // Use the enum here
   readonly position: Position;
-  readonly duration: number; // milliseconds
-  readonly timestamp: number; // Date.now() when created
-  readonly sourcePlayerId?: string; // Added
-  readonly targetPlayerId?: string; // Added (used as playerId in CombatArena)
   readonly damage?: number;
-  readonly damageType?: DamageType;
-  readonly text?: string; // e.g., "CRITICAL!", "MISS!"
-  readonly rotation?: number; // For angled effects
-  readonly scale?: number; // For size variation
-  readonly opacity?: number; // For fading effects
-  readonly color?: number; // For colored effects (e.g., based on damage type)
-  readonly soundId?: string; // Sound to play with the effect
-  readonly isCritical?: boolean;
-  readonly targetId?: string; // Added targetId
+  readonly color?: number;
+  readonly lifespan: number; // Fix: Add missing lifespan property
+  readonly velocity?: {
+    // Fix: Add missing velocity property
+    readonly x: number;
+    readonly y: number;
+  };
+  readonly effectType?: HitEffectType;
+  readonly duration?: number;
+  readonly intensity?: number;
 }
 
 // Combat effect types

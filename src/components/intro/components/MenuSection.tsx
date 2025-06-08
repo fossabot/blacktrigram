@@ -1,7 +1,7 @@
 import React, { useMemo, useCallback } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import { GameMode } from "../../../types/enums";
+import { GameMode } from "../../../types/game"; // Fix: Import from correct location
 import { MenuSectionProps } from "../../../types";
 import {
   KOREAN_COLORS,
@@ -122,26 +122,31 @@ export const MenuSection: React.FC<MenuSectionProps> = ({
 
         {/* Mode Buttons */}
         <Container y={40}>
-          {Object.values(GameMode).map((mode, index) => (
-            <BaseButton
-              key={mode}
-              text={
-                mode === GameMode.VERSUS
-                  ? "대련 (Versus)"
-                  : mode === GameMode.TRAINING
-                  ? "수련 (Training)"
-                  : mode === GameMode.STORY
-                  ? "이야기 (Story)"
-                  : mode
-              }
-              onClick={() => handleModeSelect(mode)}
-              x={-300 + index * 200}
-              y={0}
-              width={180}
-              height={50}
-              variant={selectedMode === mode ? "accent" : "secondary"}
-            />
-          ))}
+          {Object.values(GameMode).map((mode, index) => {
+            // Fix: Proper type handling for key and text
+            const modeKey = `mode-${mode}-${index}`;
+            const modeText =
+              mode === GameMode.VERSUS
+                ? "대련 (Versus)"
+                : mode === GameMode.TRAINING
+                ? "수련 (Training)"
+                : mode === GameMode.STORY
+                ? "이야기 (Story)"
+                : String(mode);
+
+            return (
+              <BaseButton
+                key={modeKey} // Fix: Use string key
+                text={modeText} // Fix: Ensure string type
+                onClick={() => handleModeSelect(mode)}
+                x={-300 + index * 200}
+                y={0}
+                width={180}
+                height={50}
+                variant={selectedMode === mode ? "accent" : "secondary"}
+              />
+            );
+          })}
         </Container>
       </Container>
 

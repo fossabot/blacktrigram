@@ -7,10 +7,10 @@ import { PlayerArchetype } from "../../../types/enums";
 import type { PlayerState } from "../../../types";
 
 const mockPlayer1InitialState: PlayerState = createPlayerState(
-  "Player 1",
+  { korean: "Player 1", english: "Player 1" }, // Fix: Use KoreanText object
   PlayerArchetype.MUSA,
-  { korean: "플레이어 1", english: "Player 1" },
-  { x: 100, y: 300 }
+  { korean: "건", english: "geon" }, // Fix: Use KoreanText object
+  "player1"
 );
 
 describe("Player Component", () => {

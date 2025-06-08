@@ -20,17 +20,17 @@ export type PlayerUpdateFunction = (
 ) => void;
 
 export function createPlayerState(
-  id: string,
-  archetype: PlayerArchetype,
   name: KoreanText,
-  position: Position
+  archetype: PlayerArchetype,
+  stance: KoreanText,
+  id: string
 ): PlayerState {
   const archetypeData = PLAYER_ARCHETYPES_DATA[archetype];
 
   return {
     id,
-    archetype,
     name,
+    archetype,
     health: archetypeData.baseHealth,
     maxHealth: archetypeData.baseHealth,
     ki: archetypeData.baseKi,
@@ -40,8 +40,8 @@ export function createPlayerState(
     pain: 0,
     consciousness: 100,
     balance: 100,
-    currentStance: archetypeData.coreStance,
-    position,
+    currentStance: stance.english.toLowerCase() as TrigramStance, // Convert to stance enum
+    position: position,
     combatState: "ready" as CombatState,
     isBlocking: false,
     isCountering: false,
@@ -69,78 +69,14 @@ export function createPlayerState(
   };
 }
 
-// Fix: Proper implementation with correct return types
-export function executeTechnique(
-  attacker: PlayerState,
-  defender: PlayerState,
-  technique: KoreanTechnique,
-  targetVitalPoint?: string | null
-): {
-  hitResult: import("../types").CombatResult;
-  updatedAttacker: PlayerState;
-  updatedDefender: PlayerState;
-} {
-  // Calculate hit chance and damage
-  const hitRoll = Math.random();
-  const hit = hitRoll < (technique.accuracy || 0.8);
-
-  const baseDamage = technique.damage || 10;
-  const actualDamage = hit ? baseDamage : 0;
-
-  const isCritical = hit && Math.random() < (technique.critChance || 0.1);
-  const finalDamage = isCritical
-    ? Math.floor(actualDamage * (technique.critMultiplier || 1.5))
-    : actualDamage;
-
-  // Update attacker (reduce ki/stamina)
-  const updatedAttacker: PlayerState = {
-    ...attacker,
-    ki: Math.max(0, attacker.ki - (technique.kiCost || 0)),
-    stamina: Math.max(0, attacker.stamina - (technique.staminaCost || 0)),
-    lastActionTime: Date.now(),
-  };
-
-  // Update defender (apply damage)
-  const updatedDefender: PlayerState = {
-    ...defender,
-    health: Math.max(0, defender.health - finalDamage),
-    pain: Math.min(100, defender.pain + finalDamage * 0.5),
-    consciousness: Math.max(0, defender.consciousness - finalDamage * 0.1),
-  };
-
-  const hitResult: import("../types").CombatResult = {
-    attacker: attacker.archetype,
-    defender: defender.archetype,
-    damage: finalDamage,
-    hit,
-    critical: isCritical,
-    techniqueUsed: technique,
-    effects: technique.effects || [],
-    vitalPointsHit: targetVitalPoint ? [targetVitalPoint] : [],
-    defenderDamaged: hit && finalDamage > 0,
-    damageType: technique.damageType || "blunt",
-    isVitalPoint: !!targetVitalPoint,
-    newState: "ready" as CombatState,
-    damagePrevented: 0,
-    staminaUsed: technique.staminaCost || 0,
-    kiUsed: technique.kiCost || 0,
-    attackerStance: attacker.currentStance,
-    defenderStance: defender.currentStance,
-    painLevel: finalDamage * 0.5,
-    consciousnessImpact: finalDamage * 0.1,
-    balanceEffect: 0,
-    bloodLoss: 0,
-    stunDuration: isCritical ? 1000 : 0,
-    statusEffects: technique.effects || [],
-    hitType: hit ? (isCritical ? "critical" : "normal") : "miss",
-    effectiveness: hit ? 1.0 : 0.0,
-    hitPosition: defender.position,
-    updatedAttacker,
-    updatedDefender,
-  };
-
-  return { hitResult, updatedAttacker, updatedDefender };
-}
+// Fix: Remove or correct executeTechnique if it exists
+// export function executeTechnique(
+//   attacker: PlayerState,
+//   defender: PlayerState
+// ): Promise<CombatResult> {
+//   // Implementation using CombatSystem
+//   return CombatSystem.executeAttack(attacker, defender, attacker.availableTechniques[0]);
+// }
 
 export function calculateArchetypeDamage(
   archetype: PlayerArchetype,

@@ -5,90 +5,60 @@
 
 // Korean martial arts color palette with cyberpunk aesthetic
 export const KOREAN_COLORS = {
-  // Player archetype colors
-  MUSA_PRIMARY: 0xff8000, // Orange - Traditional warrior
-  AMSALJA_PRIMARY: 0x440044, // Dark purple - Shadow assassin
-  HACKER_PRIMARY: 0x00ff88, // Neon green - Cyber warrior
-  JEONGBO_PRIMARY: 0x0088ff, // Blue - Intelligence operative
-  JOJIK_PRIMARY: 0xdc143c, // Crimson - Organized crime
-
-  // Trigram stance colors (based on traditional I Ching)
-  TRIGRAM_GEON_PRIMARY: 0xffffff, // White - Heaven
-  TRIGRAM_TAE_PRIMARY: 0x87ceeb, // Sky blue - Lake
-  TRIGRAM_LI_PRIMARY: 0xff4500, // Red-orange - Fire
-  TRIGRAM_JIN_PRIMARY: 0xffff00, // Yellow - Thunder
-  TRIGRAM_SON_PRIMARY: 0x90ee90, // Light green - Wind
-  TRIGRAM_GAM_PRIMARY: 0x000080, // Navy blue - Water
-  TRIGRAM_GAN_PRIMARY: 0x8b4513, // Brown - Mountain
-  TRIGRAM_GON_PRIMARY: 0x228b22, // Forest green - Earth
-
-  // UI colors with cyberpunk theme
-  PRIMARY_CYAN: 0x00ffff, // Neon cyan
-  PRIMARY_BLUE: 0x0088ff,
-  SECONDARY_BLUE: 0x0066cc, // Add missing color
-  SECONDARY_BLUE_DARK: 0x001144,
-  SECONDARY_BLUE_LIGHT: 0x88ccff,
-  SECONDARY_YELLOW: 0xffcc00,
-  SECONDARY_YELLOW_LIGHT: 0xffe066,
-  ACCENT_PRIMARY: 0xff00ff, // Magenta
-  ACCENT_RED: 0xff0000, // Red
-  ACCENT_SECONDARY: 0x00ff00, // Lime green
-  ACCENT_GOLD: 0xffd700,
-  ACCENT_PURPLE: 0x9933ff,
-  ACCENT_CYAN: 0x00ffff, // Add if missing
-
-  // Add missing accent colors
-  ACCENT_ORANGE: 0xff8800, // Orange for warnings
-  ACCENT_YELLOW: 0xffdd00, // Yellow for medium effects
-  ACCENT_GREEN: 0x00ff00, // Green for positive effects
-  ACCENT_BLUE: 0x0088ff, // Blue for special effects
-
-  // Background colors
+  // Core UI Colors
   UI_BACKGROUND_DARK: 0x0a0a0a,
   UI_BACKGROUND_MEDIUM: 0x1a1a1a,
   UI_BACKGROUND_LIGHT: 0x2a2a2a,
+  UI_BORDER: 0x333333,
+  UI_BORDER_LIGHT: 0x555555,
+  UI_DISABLED_BG: 0x222222,
+  UI_DISABLED_TEXT: 0x666666,
+  UI_DISABLED_FILL: 0x444444,
+  UI_GRAY: 0x808080,
 
-  // Text colors
+  // Text Colors
   TEXT_PRIMARY: 0xffffff,
   TEXT_SECONDARY: 0xcccccc,
-  TEXT_TERTIARY: 0x888888,
+  TEXT_TERTIARY: 0x999999,
   TEXT_ACCENT: 0x00ffff,
-  TEXT_BRIGHT: 0xffffff, // Added for bright text, e.g., titles on dark overlay
+  TEXT_BRIGHT: 0xffffff,
 
-  // Status colors
-  POSITIVE_GREEN: 0x00ff00,
-  WARNING_YELLOW: 0xffff00,
-  WARNING_ORANGE: 0xff9900,
-  NEGATIVE_RED: 0xff0000,
+  // Primary Color Palette
+  PRIMARY_CYAN: 0x00ffff,
+  PRIMARY_BLUE: 0x0074d9,
+  ACCENT_CYAN: 0x00d4ff, // Light cyan for cyberpunk effects
+  ACCENT_BLUE: 0x39cccc,
 
-  // Combat effect colors
-  CRITICAL_HIT: 0xff0080,
-  VITAL_POINT_HIT: 0xff4000,
-  BLOCKED_ATTACK: 0x808080,
-  PERFECT_STRIKE: 0xff8000,
+  // Secondary Colors
+  SECONDARY_BLUE: 0x001f3f,
+  SECONDARY_BLUE_LIGHT: 0x0074d9,
+  SECONDARY_BLUE_DARK: 0x001122,
+  SECONDARY_YELLOW: 0xffdc00,
+  SECONDARY_YELLOW_LIGHT: 0xffe55c, // Add missing color
 
-  // Vital point colors
-  VITAL_POINT_NORMAL: 0x00ff00,
-  VITAL_POINT_WEAK: 0xffff00,
-  VITAL_POINT_CRITICAL: 0xff0000,
+  // Accent Colors
+  ACCENT_GOLD: 0xffd700,
+  ACCENT_PRIMARY: 0x00ffff,
+  ACCENT_PURPLE: 0x8a2be2,
+  ACCENT_RED: 0xff4136,
+  ACCENT_YELLOW: 0xffdc00,
+  ACCENT_ORANGE: 0xff851b,
 
-  // Border and outline colors
-  UI_BORDER: 0x444444,
-  UI_BORDER_LIGHT: 0x666666,
-  UI_STEEL_GRAY: 0x708090,
-  UI_GRAY: 0x808080, // Add missing color
-  UI_GRAY_LIGHT: 0xc0c0c0,
-  UI_DISABLED_FILL: 0x333333,
-  UI_DISABLED_BORDER: 0x444444,
-  ACTIVE_BORDER: 0x00ffff,
+  // Status Colors
+  POSITIVE_GREEN: 0x2ecc40,
+  NEGATIVE_RED: 0xff4136,
+  NEGATIVE_RED_LIGHT: 0xff6b5b,
+  NEGATIVE_RED_DARK: 0xcc0000,
+  WARNING_YELLOW: 0xffdc00, // Already exists as SECONDARY_YELLOW
+  WARNING_ORANGE: 0xff851b,
 
-  // Basic colors
+  // Base Colors
   BLACK_SOLID: 0x000000,
   WHITE_SOLID: 0xffffff,
 
   // Player colors
-  PLAYER_1_COLOR: 0x00ffff, // Cyan for Player 1
-  PLAYER_2_COLOR: 0xff00ff, // Magenta for Player 2
+  PLAYER_1_COLOR: 0x0099ff, // Cyan for Player 1
+  PLAYER_2_COLOR: 0xff9900, // Magenta for Player 2
 
   // Overlay colors
   OVERLAY_BACKGROUND: 0x000000, // Black for overlays
@@ -116,9 +86,22 @@ export const KOREAN_COLORS = {
   NEGATIVE_GREEN: 0x008800,
   POSITIVE_GREEN_DARK: 0x006600,
   POSITIVE_GREEN_LIGHT: 0x88ff88,
-  DEBUG_TEXT: 0xff00ff,
 
-  // ...existing code...
+  // Add missing player colors
+  PLAYER_1_COLOR: 0x0099ff,
+  PLAYER_2_COLOR: 0xff9900,
+
+  // Add missing vital point colors
+  VITAL_POINT_NORMAL: 0x00ff00,
+  VITAL_POINT_CRITICAL: 0xff0000,
+  VITAL_POINT_WEAK: 0xffff00,
+
+  // Debug colors
+  DEBUG_HIT_SUCCESS: 0x00ff00,
+  DEBUG_HIT_MISS: 0xff0000,
+  DEBUG_COLLISION: 0xff00ff,
+  DEBUG_GRID: 0x666666,
+  DEBUG_TEXT: 0xff00ff,
 } as const;
 
 // Cyberpunk palette alias for backward compatibility
