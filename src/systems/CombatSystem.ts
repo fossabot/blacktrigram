@@ -1,434 +1,181 @@
-import {
-  PlayerState,
-  KoreanTechnique,
-  CombatResult,
-  StatusEffect,
-  HitEffect,
-  HitEffectType,
-  EffectModifier,
-  VitalPoint,
-  EffectType,
-  VitalPointHitResult,
-} from "../types";
-import {
-  ARCHETYPE_TECHNIQUE_BONUSES,
-  ENHANCED_DAMAGE_CONSTANTS,
-} from "../types/constants";
+import type { PlayerState, KoreanTechnique, CombatResult } from "../types";
 import { VitalPointSystem } from "./VitalPointSystem";
 import { TrigramSystem } from "./TrigramSystem";
-import { createHitEffect } from "../utils/effectUtils";
+import { ENHANCED_DAMAGE_CONSTANTS } from "../types/constants";
 
 export class CombatSystem {
-  private static vitalPointSystem = new VitalPointSystem(); // Simplified constructor call
-  private static trigramSystem = new TrigramSystem();
+  private vitalPointSystem: VitalPointSystem;
+  private trigramSystem: TrigramSystem;
 
-  private static calculateHitChance(
+  constructor() {
+    this.vitalPointSystem = new VitalPointSystem();
+    this.trigramSystem = new TrigramSystem();
+  }
+
+  /**
+   * Execute an attack between two players
+   */
+  executeAttack(
     attacker: PlayerState,
     defender: PlayerState,
     technique: KoreanTechnique
-  ): number {
-    // Base hit chance (e.g., 80%)
-    let hitChance = 80;
-
-    // Attacker's accuracy bonus (from archetype or stats)
-    const attackerArchetypeBonuses =
-      ARCHETYPE_TECHNIQUE_BONUSES[attacker.archetype]?.bonuses;
-    if (attackerArchetypeBonuses?.accuracyBonus) {
-      hitChance += (attackerArchetypeBonuses.accuracyBonus - 1) * 100;
-    }
-    // Add technique's specific accuracy
-    if (technique.accuracy) {
-      hitChance += (technique.accuracy - 0.8) * 100;
-    }
-
-    // Defender's evasion (can be derived from stats like speed or a specific evasion stat)
-    const defenderStanceData = CombatSystem.trigramSystem.getCurrentStanceData(
-      defender.currentStance
-    );
-    if (defenderStanceData?.defensiveBonus) {
-      hitChance -= defenderStanceData.defensiveBonus * 10; // Example: defensive bonus reduces hit chance
-    }
-
-    // Clamp hit chance between 5% and 95%
-    return Math.max(5, Math.min(95, hitChance));
-  }
-
-  public static calculateBaseDamage(
-    technique: KoreanTechnique,
-    attacker: PlayerState
-  ): number {
-    let damage =
-      technique.damage ?? ENHANCED_DAMAGE_CONSTANTS.BASE_DAMAGE ?? 10;
-    const archetypeBonuses =
-      ARCHETYPE_TECHNIQUE_BONUSES[attacker.archetype]?.bonuses;
-
-    if (archetypeBonuses?.damageBonus) {
-      damage *= archetypeBonuses.damageBonus;
-    }
-    return damage;
-  }
-
-  public static applyCombatResult(
-    result: CombatResult,
-    attacker: PlayerState,
-    defender: PlayerState
-  ): { updatedAttacker: PlayerState; updatedDefender: PlayerState } {
-    const updatedDefender = { ...defender };
-    const updatedAttacker = { ...attacker };
-
-    updatedDefender.health = Math.max(
-      0,
-      updatedDefender.health - result.damage
-    );
-
-    const newActiveEffectIds: string[] = [];
-    result.effects.forEach((eff: HitEffect) => {
-      // Typed eff as HitEffect
-      if (eff.statusEffect) {
-        // Access statusEffect from HitEffect
-        newActiveEffectIds.push(eff.statusEffect.id);
-        if (
-          eff.statusEffect.type === EffectType.STUN &&
-          eff.statusEffect.duration
-        ) {
-          updatedDefender.stunDuration = Math.max(
-            updatedDefender.stunDuration || 0,
-            eff.statusEffect.duration
-          );
-        }
-      }
-    });
-
-    updatedDefender.activeEffects = [
-      ...(updatedDefender.activeEffects || []),
-      ...newActiveEffectIds,
-    ].filter((id, index, self) => self.indexOf(id) === index);
-
-    // Apply other direct changes from result if any
-    if (result.updatedDefender) {
-      Object.assign(updatedDefender, result.updatedDefender);
-    }
-    if (result.updatedAttacker) {
-      Object.assign(updatedAttacker, result.updatedAttacker);
-    }
-
-    return { updatedAttacker, updatedDefender };
-  }
-
-  public static resolveAttack(
-    attacker: PlayerState,
-    defender: PlayerState,
-    technique: KoreanTechnique,
-    targetedVitalPointId?: string | null
   ): CombatResult {
-    const hitChance = this.calculateHitChance(attacker, defender, technique);
-    const roll = Math.random() * 100;
-    const isHit = roll <= hitChance;
+    // Calculate base damage using attacker and technique data
+    const baseDamage = this.calculateBaseDamage(attacker, technique);
 
-    let actualDamage = 0;
-    let isCritical = false;
-    const hitEffects: HitEffect[] = [];
-    let vitalPointHitResult: VitalPointHitResult | null = null;
-
-    if (isHit) {
-      let baseDamage = this.calculateBaseDamage(technique, attacker);
-
-      // Stance effectiveness
-      const stanceEffectiveness =
-        this.trigramSystem.calculateStanceEffectiveness(
-          attacker.currentStance,
-          defender.currentStance
-        );
-      baseDamage *= stanceEffectiveness;
-
-      // Critical hit check
-      if (
-        Math.random() <
-        (technique.critChance ??
-          ENHANCED_DAMAGE_CONSTANTS.BASE_CRIT_CHANCE ??
-          0.1)
-      ) {
-        isCritical = true;
-        baseDamage *=
-          technique.critMultiplier ??
-          ENHANCED_DAMAGE_CONSTANTS.CRITICAL_MULTIPLIER ??
-          2;
-        hitEffects.push(
-          createHitEffect(HitEffectType.CriticalHit, attacker.id, defender.id)
-        );
-      }
-
-      // Vital point processing
-      const targetDimensions = { width: 50, height: 180 };
-      vitalPointHitResult = this.vitalPointSystem.processHit(
-        defender.position,
-        technique,
-        baseDamage,
-        attacker.archetype,
-        targetDimensions,
-        targetedVitalPointId
-      );
-
-      actualDamage = vitalPointHitResult.damage; // Use .damage instead of .totalDamage
-
-      vitalPointHitResult.statusEffectsApplied.forEach(
-        (vpEffect: StatusEffect) => {
-          // Use .statusEffectsApplied
-          hitEffects.push(
-            createHitEffect(
-              HitEffectType.StatusEffect,
-              attacker.id,
-              defender.id,
-              { statusEffect: vpEffect, duration: vpEffect.duration }
-            )
-          );
-        }
-      );
-      if (vitalPointHitResult.vitalPointsHit.length > 0) {
-        vitalPointHitResult.vitalPointsHit.forEach((vp: VitalPoint) => {
-          hitEffects.push(
-            createHitEffect(
-              HitEffectType.VitalPointStrike,
-              attacker.id,
-              defender.id,
-              { vitalPointId: vp.id }
-            )
-          );
-        });
-      }
-
-      hitEffects.push(
-        createHitEffect(HitEffectType.GeneralDamage, attacker.id, defender.id, {
-          damageAmount: actualDamage,
-        })
-      );
-    } else {
-      hitEffects.push(
-        createHitEffect(HitEffectType.Miss, attacker.id, defender.id)
-      );
-    }
-
-    let messageKorean = isHit // Changed to let
-      ? `${technique.koreanName}(이)가 ${actualDamage}의 피해를 입혔습니다.`
-      : `${technique.koreanName}(이)가 빗나갔습니다.`;
-    let messageEnglish = isHit // Changed to let
-      ? `${technique.englishName} hit for ${actualDamage} damage.`
-      : `${technique.englishName} missed.`;
-
-    if (isCritical) {
-      messageKorean += " 치명타!";
-      messageEnglish += " Critical Hit!";
-    }
-    if (vitalPointHitResult && vitalPointHitResult.vitalPointsHit.length > 0) {
-      messageKorean += ` 급소 (${vitalPointHitResult.vitalPointsHit
-        .map((vp: VitalPoint) => vp.name.korean)
-        .join(", ")}) 공격!`; // Typed vp
-      messageEnglish += ` Vital Point (${vitalPointHitResult.vitalPointsHit
-        .map((vp: VitalPoint) => vp.name.english)
-        .join(", ")}) Strike!`; // Typed vp
-    }
-
-    const updatedAttackerState: Partial<PlayerState> = {
-      ki: Math.max(0, attacker.ki - (technique.kiCost ?? 0)),
-      stamina: Math.max(0, attacker.stamina - (technique.staminaCost ?? 0)),
-      lastActionTime: Date.now(),
-    };
-
-    const updatedDefenderState: Partial<PlayerState> = {
-      health: Math.max(0, defender.health - actualDamage),
-      // Other effects like pain, balance will be handled by applying status effects
-    };
-
-    return {
-      hit: isHit,
-      damage: actualDamage,
-      critical: isCritical,
-      effects: hitEffects,
-      message: { korean: messageKorean, english: messageEnglish }, // Assign KoreanText object
-      updatedAttacker: updatedAttackerState,
-      updatedDefender: updatedDefenderState,
-    };
-  }
-
-  public static getAvailableTechniques(
-    player: PlayerState
-  ): readonly KoreanTechnique[] {
-    const stanceData = this.trigramSystem.getCurrentStanceData(
-      player.currentStance
-    );
-    if (stanceData && stanceData.technique) {
-      // This is just the signature technique. A real system would have a list.
-      // And filter by player's known techniques.
-      return [stanceData.technique];
-    }
-    return [];
-  }
-
-  // Helper to apply status effects to a player
-  public static applyStatusEffectsToPlayer(
-    player: PlayerState,
-    effects: readonly StatusEffect[]
-  ): PlayerState {
-    if (!effects || effects.length === 0) return player;
-
-    const newActiveEffectIds = effects.map((effect) => effect.id); // Store effect IDs
-
-    // Create a mutable copy of player state
-    const updatedPlayer = {
-      ...player,
-      activeEffects: [
-        ...(player.activeEffects || []),
-        ...newActiveEffectIds,
-      ].filter((id, index, self) => self.indexOf(id) === index), // Ensure unique IDs
-    };
-
-    // Modify player stats based on effects
-    effects.forEach((effect) => {
-      // Example: Apply stun
-      if (effect.type === EffectType.STUN && effect.duration) {
-        // Use effect.type
-        updatedPlayer.stunDuration = Math.max(
-          updatedPlayer.stunDuration,
-          effect.duration
-        );
-      }
-      // Example: Apply damage over time (would need a system to tick this)
-      if (effect.type === EffectType.BLEED && effect.magnitude) {
-        // Use effect.type and effect.magnitude
-        // For immediate application or if effects are processed here
-        // updatedPlayer.health -= effect.magnitude;
-      }
-      // ... other effects like pain, consciousness reduction, stat modifiers
-      if (effect.modifiers) {
-        effect.modifiers.forEach((mod: EffectModifier) => {
-          // Explicitly type mod
-          if (mod.stat === "health" && typeof mod.value === "number")
-            updatedPlayer.health += mod.value;
-          if (mod.stat === "ki" && typeof mod.value === "number")
-            updatedPlayer.ki += mod.value;
-          if (mod.stat === "stamina" && typeof mod.value === "number")
-            updatedPlayer.stamina += mod.value;
-          // ... etc.
-        });
-      }
-    });
-    updatedPlayer.health = Math.max(0, updatedPlayer.health);
-    updatedPlayer.ki = Math.max(0, updatedPlayer.ki);
-    updatedPlayer.stamina = Math.max(0, updatedPlayer.stamina);
-
-    return updatedPlayer;
-  }
-
-  // Added missing method
-  public static async executeAttack(
-    attacker: PlayerState,
-    defender: PlayerState,
-    technique: KoreanTechnique,
-    targetedVitalPointId?: string
-  ): Promise<CombatResult> {
-    // This can be a simple wrapper or include more logic like pre-attack checks
-    return this.resolveAttack(
+    // Check for vital point hits
+    const vitalPointHit = this.vitalPointSystem.checkVitalPointHit(
       attacker,
       defender,
-      technique,
-      targetedVitalPointId
+      technique
     );
-  }
 
-  // Added missing method
-  public static checkWinCondition(
-    players: readonly [PlayerState, PlayerState] // Use readonly tuple
-  ): PlayerState | null | undefined {
-    const [player1, player2] = players;
-    if (player1.health <= 0 && player2.health <= 0) {
-      return undefined; // Draw or mutual knockout
+    // Apply stance effectiveness
+    const stanceMultiplier = this.trigramSystem.getStanceEffectiveness(
+      attacker.currentStance,
+      defender.currentStance
+    );
+
+    // Calculate final damage
+    let finalDamage = baseDamage * stanceMultiplier;
+
+    if (vitalPointHit.hit) {
+      finalDamage *= ENHANCED_DAMAGE_CONSTANTS.VITAL_POINT_MULTIPLIER;
     }
-    if (player1.health <= 0) {
-      return player2; // Player 2 wins
+
+    const isCritical = Math.random() < (technique.critChance || 0.1);
+    if (isCritical) {
+      finalDamage *= ENHANCED_DAMAGE_CONSTANTS.CRITICAL_MULTIPLIER;
     }
-    if (player2.health <= 0) {
-      return player1; // Player 1 wins
-    }
-    // Add other win conditions like round timer, score, etc.
-    return null; // No winner yet
-  }
 
-  public static applyEffectsToPlayer(
-    player: PlayerState,
-    effects: readonly StatusEffect[]
-  ): PlayerState {
-    if (!effects || effects.length === 0) return player;
-
-    const newActiveEffectIds = effects.map((effect) => effect.id); // Store effect IDs
-
-    // Create a mutable copy of player state
-    const updatedPlayer = {
-      ...player,
-      activeEffects: [
-        ...(player.activeEffects || []),
-        ...newActiveEffectIds,
-      ].filter((id, index, self) => self.indexOf(id) === index), // Ensure unique IDs
+    // Apply damage to defender
+    const updatedDefender: PlayerState = {
+      ...defender,
+      health: Math.max(0, defender.health - finalDamage),
+      consciousness: vitalPointHit.hit
+        ? Math.max(0, defender.consciousness - 20)
+        : defender.consciousness,
     };
 
-    // Modify player stats based on effects
-    effects.forEach((effect) => {
-      // Example: Apply stun
-      if (effect.type === EffectType.STUN && effect.duration) {
-        // Use effect.type
-        updatedPlayer.stunDuration = Math.max(
-          updatedPlayer.stunDuration,
-          effect.duration
-        );
-      }
-      // Example: Apply damage over time (would need a system to tick this)
-      if (effect.type === EffectType.BLEED && effect.magnitude) {
-        // Use effect.type and effect.magnitude
-        // For immediate application or if effects are processed here
-        // updatedPlayer.health -= effect.magnitude;
-      }
-      // ... other effects like pain, consciousness reduction, stat modifiers
-      if (effect.modifiers) {
-        effect.modifiers.forEach((mod: EffectModifier) => {
-          // Explicitly type mod
-          if (mod.stat === "health" && typeof mod.value === "number")
-            updatedPlayer.health += mod.value;
-          if (mod.stat === "ki" && typeof mod.value === "number")
-            updatedPlayer.ki += mod.value;
-          if (mod.stat === "stamina" && typeof mod.value === "number")
-            updatedPlayer.stamina += mod.value;
-          // ... etc.
-        });
-      }
-    });
-    updatedPlayer.health = Math.max(0, updatedPlayer.health);
-    updatedPlayer.ki = Math.max(0, updatedPlayer.ki);
-    updatedPlayer.stamina = Math.max(0, updatedPlayer.stamina);
-
-    return updatedPlayer;
-  }
-
-  // Fix: Add missing update method
-  public update(
-    players: readonly [PlayerState, PlayerState],
-    deltaTime: number
-  ) {
-    // Basic update logic
-    const events: Array<{ type: string; data: any }> = [];
-    let combatResult: any = null;
-
-    // Check for win conditions
-    if (players[0].health <= 0) {
-      combatResult = { winner: players[1], loser: players[0] };
-      events.push({ type: "player_defeated", data: { winner: players[1] } });
-    } else if (players[1].health <= 0) {
-      combatResult = { winner: players[0], loser: players[1] };
-      events.push({ type: "player_defeated", data: { winner: players[0] } });
-    }
+    // Apply ki/stamina costs to attacker
+    const updatedAttacker: PlayerState = {
+      ...attacker,
+      ki: Math.max(0, attacker.ki - technique.kiCost),
+      stamina: Math.max(0, attacker.stamina - technique.staminaCost),
+    };
 
     return {
-      events,
-      combatResult,
-      playerUpdates: [] as Array<{ index: 0 | 1; updates: any }>,
+      success: true,
+      damage: finalDamage,
+      effects: vitalPointHit.effects.map((e) => e.id || e.type),
+      criticalHit: isCritical,
+      vitalPointHit: vitalPointHit.hit,
+      hit: true,
+      updatedAttacker,
+      updatedDefender,
+      updatedPlayers: [
+        updatedAttacker,
+        updatedDefender,
+      ] as readonly PlayerState[],
+      message: {
+        korean: `${technique.koreanName} 성공!`,
+        english: `${technique.englishName} successful!`,
+      },
+    };
+  }
+
+  /**
+   * Calculate base damage using attacker stats and technique
+   */
+  private calculateBaseDamage(
+    attacker: PlayerState,
+    technique: KoreanTechnique
+  ): number {
+    const baseDamage = technique.damage || technique.damageRange?.min || 10;
+
+    // Factor in attacker's ki and stamina
+    const attackerBonus =
+      (attacker.ki / attacker.maxKi) * 0.2 +
+      (attacker.stamina / attacker.maxStamina) * 0.1;
+
+    return baseDamage * (1 + attackerBonus);
+  }
+
+  /**
+   * Static methods for backwards compatibility
+   */
+  static resolveAttack(
+    attacker: PlayerState,
+    defender: PlayerState,
+    technique: KoreanTechnique
+  ): CombatResult {
+    const instance = new CombatSystem();
+    return instance.executeAttack(attacker, defender, technique);
+  }
+
+  static applyCombatResult(
+    result: CombatResult,
+    defender: PlayerState
+  ): { updatedDefender: PlayerState } {
+    const updatedDefender: PlayerState = {
+      ...defender,
+      health: Math.max(0, defender.health - result.damage),
+    };
+
+    return { updatedDefender };
+  }
+
+  static getAvailableTechniques(player: PlayerState): KoreanTechnique[] {
+    const basicTechnique: KoreanTechnique = {
+      id: `${player.currentStance}_basic`,
+      name: {
+        korean: `${player.currentStance} 기본 기법`,
+        english: `${player.currentStance} Basic Technique`,
+      },
+      koreanName: `${player.currentStance} 기본 기법`,
+      englishName: `${player.currentStance} Basic Technique`,
+      romanized: `${player.currentStance} gibon_gibeop`,
+      description: {
+        korean: "기본 공격 기법",
+        english: "Basic attack technique",
+      },
+      stance: player.currentStance,
+      type: "strike" as any,
+      damageType: "blunt" as any,
+      damage: 20,
+      damageRange: { min: 15, max: 25 },
+      range: 1.0,
+      kiCost: 10,
+      staminaCost: 15,
+      accuracy: 0.8,
+      executionTime: 500,
+      recoveryTime: 800,
+      critChance: 0.1,
+      critMultiplier: 1.5,
+      effects: [],
+    };
+
+    return [basicTechnique];
+  }
+
+  /**
+   * Check if a player is defeated
+   */
+  isPlayerDefeated(player: PlayerState): boolean {
+    return player.health <= 0 || player.consciousness <= 0;
+  }
+
+  /**
+   * Update player state over time
+   */
+  updatePlayerState(player: PlayerState, deltaTime: number): PlayerState {
+    return {
+      ...player,
+      stamina: Math.min(
+        player.maxStamina,
+        player.stamina + (10 * deltaTime) / 1000
+      ),
+      ki: Math.min(player.maxKi, player.ki + (5 * deltaTime) / 1000),
     };
   }
 }

@@ -3,16 +3,42 @@ import {
   TECHNIQUES,
   getTechniqueById,
   getTechniquesByStance,
+  KoreanTechniques,
 } from "./KoreanTechniques";
-import type {
-  KoreanTechnique,
-  TrigramStance,
-  StatusEffect, // For technique.effects
-} from "../../types";
+import { TrigramStance, PlayerArchetype } from "../../types/enums";
+import type { PlayerState, KoreanTechnique, StatusEffect } from "../../types";
 
 // Sample data for one technique to verify structure, using actual data from TECHNIQUES
 const sampleTechniqueGeonFromSource: KoreanTechnique =
   TECHNIQUES["geon_heavenly_thunder"];
+
+const mockPlayer: PlayerState = {
+  id: "test-player",
+  name: { korean: "테스트", english: "Test" },
+  archetype: PlayerArchetype.MUSA,
+  currentStance: TrigramStance.GEON,
+  health: 100,
+  maxHealth: 100,
+  ki: 100,
+  maxKi: 100,
+  stamina: 100,
+  maxStamina: 100,
+  consciousness: 100,
+  balance: 100,
+  pain: 0,
+  position: { x: 0, y: 0 },
+  statusEffects: [],
+  vitalPoints: [],
+  isBlocking: false,
+  activeEffects: [],
+  combatModifiers: {},
+  momentum: { x: 0, y: 0 },
+  lastStanceChangeTime: Date.now(),
+  actionCooldowns: {},
+  technique: null,
+  combatState: "idle",
+  orientation: "right",
+};
 
 describe("KoreanTechniques", () => {
   it("should contain all 8 trigram techniques by default in TECHNIQUES map", () => {
@@ -113,6 +139,69 @@ describe("KoreanTechniques", () => {
         "invalid_stance" as TrigramStance
       );
       expect(noTechniques).toEqual([]);
+    });
+  });
+
+  describe("getAvailableTechniques", () => {
+    it("should return techniques for valid stance", () => {
+      const techniques = KoreanTechniques.getAvailableTechniques(
+        TrigramStance.GEON
+      );
+
+      expect(techniques).toHaveLength(1);
+      expect(techniques[0].stance).toBe(TrigramStance.GEON);
+      expect(techniques[0].koreanName).toBe("천둥벽력");
+    });
+
+    it("should return empty array for invalid stance", () => {
+      const techniques = KoreanTechniques.getAvailableTechniques(
+        "invalid" as TrigramStance
+      );
+
+      expect(techniques).toHaveLength(0);
+    });
+  });
+
+  describe("canExecuteTechnique", () => {
+    it("should return true when player has sufficient resources", () => {
+      const techniques = KoreanTechniques.getAvailableTechniques(
+        TrigramStance.GEON
+      );
+      const canExecute = KoreanTechniques.canExecuteTechnique(
+        techniques[0],
+        mockPlayer
+      );
+
+      expect(canExecute).toBe(true);
+    });
+
+    it("should return false when player lacks resources", () => {
+      const lowResourcePlayer = {
+        ...mockPlayer,
+        ki: 1,
+        stamina: 1,
+      };
+
+      const techniques = KoreanTechniques.getAvailableTechniques(
+        TrigramStance.GEON
+      );
+      const canExecute = KoreanTechniques.canExecuteTechnique(
+        techniques[0],
+        lowResourcePlayer
+      );
+
+      expect(canExecute).toBe(false);
+    });
+  });
+
+  describe("getArchetypeBonuses", () => {
+    it("should return bonuses for valid archetype", () => {
+      const bonuses = KoreanTechniques.getArchetypeBonuses(
+        PlayerArchetype.MUSA
+      );
+
+      expect(bonuses).toBeDefined();
+      expect(bonuses.damageBonus).toBeGreaterThan(1.0);
     });
   });
 });

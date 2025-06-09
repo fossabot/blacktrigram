@@ -2,6 +2,10 @@
  * Main types export for Black Trigram Korean martial arts system
  */
 
+import { Position } from "./common";
+import { StatusEffect } from "./effects";
+import { EffectIntensity } from "./enums";
+
 // Core data types
 export type { Position, Dimensions, KoreanText } from "./common";
 
@@ -124,3 +128,57 @@ export type {
 
 // Constants
 export * from "./constants";
+
+// Add missing type exports
+export type HitEffect = {
+  readonly id: string;
+  readonly type: HitEffectType;
+  readonly position?: Position;
+  readonly intensity: EffectIntensity;
+  readonly timestamp: number;
+  readonly playerId?: string;
+  readonly vitalPointId?: string;
+  readonly statusEffect?: StatusEffect;
+};
+
+export enum HitEffectType {
+  DAMAGE = "damage",
+  CRITICAL_HIT = "critical_hit",
+  VITAL_POINT_STRIKE = "vital_point_strike",
+  STATUS_EFFECT = "status_effect",
+  MISS = "miss",
+  BLOCK = "block",
+}
+
+export enum VitalPointLocation {
+  HEAD = "head",
+  NECK = "neck",
+  TORSO = "torso",
+  LEFT_ARM = "left_arm",
+  RIGHT_ARM = "right_arm",
+  LEFT_LEG = "left_leg",
+  RIGHT_LEG = "right_leg",
+}
+
+// Re-export everything that's missing
+export type {
+  AnatomicalRegion,
+  DamageResult,
+  TransitionPath,
+  TrigramTransitionCost,
+  TrigramTransitionRule,
+  CombatReadiness,
+  TRIGRAM_EFFECTIVENESS,
+  ARCHETYPE_TRIGRAM_AFFINITY,
+  TRIGRAM_TRANSITIONS,
+  VitalPointSystemConfig,
+} from "./anatomy";
+
+export {
+  ARCHETYPE_TECHNIQUE_BONUSES,
+  ENHANCED_DAMAGE_CONSTANTS,
+  STANCE_EFFECTIVENESS_MATRIX,
+  MAX_TRANSITION_COST_KI,
+  MAX_TRANSITION_COST_STAMINA,
+  MAX_TRANSITION_TIME_MILLISECONDS,
+} from "./constants";

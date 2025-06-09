@@ -1,410 +1,284 @@
 import type {
   PlayerState,
   KoreanTechnique,
-  TrigramStance,
-  StatusEffect,
-  TransitionPath,
-  TrigramTransitionCost,
-} from "../types";
-// Fix: Import enum properly, not as type
-import { TrigramStance as TrigramStanceEnum } from "../types/enums";
-import {
-  TRIGRAM_STANCES_ORDER,
-  TRIGRAM_DATA,
-  STANCE_EFFECTIVENESS_MATRIX,
-} from "../types/constants";
-import { TrigramCalculator } from "./trigram/TrigramCalculator";
-import {
-  PlayerArchetype,
   TrigramData,
-  TrigramEffectivenessMatrix,
-  TRIGRAM_EFFECTIVENESS,
-  ARCHETYPE_TRIGRAM_AFFINITY,
-  TRIGRAM_TRANSITIONS,
-} from "../types"; // Assuming types are exported from root types
+  TrigramTransitionCost,
+  TransitionPath,
+} from "../types";
+import { TrigramStance } from "../types/enums";
+import { TRIGRAM_DATA } from "../types/constants";
 
+/**
+ * Trigram system for Korean martial arts stance management
+ */
 export class TrigramSystem {
-  private trigramCalculator: TrigramCalculator; // Add missing property
+  private readonly maxTransitionCostKi = 50;
+  private readonly maxTransitionCostStamina = 30;
+  private readonly maxTransitionTimeMs = 1000;
 
-  private readonly availableStances: readonly TrigramStance[] = [
-    "geon" as TrigramStance,
-    "tae" as TrigramStance,
-    "li" as TrigramStance,
-    "jin" as TrigramStance,
-    "son" as TrigramStance,
-    "gam" as TrigramStance,
-    "gan" as TrigramStance,
-    "gon" as TrigramStance,
-  ];
-
-  constructor() {
-    this.trigramCalculator = new TrigramCalculator();
-  }
-
-  // Alternative: Return object with transition details
+  /**
+   * Check if a stance transition is valid
+   */
   public canTransitionTo(
-    from: TrigramStance,
-    to: TrigramStance,
-    playerState?: PlayerState
-  ): { canTransition: boolean; reason?: string } {
-    if (from === to) return { canTransition: true };
+    fromStance: TrigramStance,
+    toStance: TrigramStance,
+    playerState: PlayerState
+  ): boolean {
+    if (fromStance === toStance) return true;
 
-    if (!playerState) {
-      return { canTransition: true };
-    }
-
-    // Fix: Add null checks for playerState
-    const healthRatio = playerState?.health / playerState?.maxHealth || 0;
-    const kiRatio = playerState?.ki / playerState?.maxKi || 0;
-    const staminaRatio = playerState?.stamina / playerState?.maxStamina || 0;
-
-    // Check ki requirement
-    if (kiRatio <= 0.2) {
-      return { canTransition: false, reason: "insufficient_ki" };
-    }
-
-    // Check stamina requirement
-    if (staminaRatio <= 0.2) {
-      return { canTransition: false, reason: "insufficient_stamina" };
-    }
-
-    // Check health requirement
-    if (healthRatio <= 0.1) {
-      return { canTransition: false, reason: "insufficient_health" };
-    }
-
-    return { canTransition: true };
+    const cost = this.calculateTransitionCost(fromStance, toStance);
+    return playerState.ki >= cost.ki && playerState.stamina >= cost.stamina;
   }
 
-  // Keep only one calculateTransitionCost implementation
+  /**
+   * Calculate the cost of transitioning between stances
+   */
   public calculateTransitionCost(
-    from: TrigramStance,
-    to: TrigramStance,
-    playerState?: PlayerState
+    fromStance: TrigramStance,
+    toStance: TrigramStance
   ): TrigramTransitionCost {
-    if (from === to) {
-      return { ki: 0, stamina: 0, timeMilliseconds: 0 };
+    if (fromStance === toStance) {
+      return { ki: 0, stamina: 0, time: 0 };
     }
 
-    const baseKiCost = 10;
-    const baseStaminaCost = 8;
-    const baseTimeMs = 500;
+    // Base costs for stance transitions
+    const baseCost = {
+      ki: 15,
+      stamina: 10,
+      time: 500,
+    };
 
-    // Fix: Add safety check for playerState
-    const healthRatio = playerState
-      ? playerState.health / playerState.maxHealth
-      : 1.0;
-    const modifier = healthRatio < 0.5 ? 1.5 : 1.0; // Ensure healthRatio is used correctly
+    // Adjacency modifier (some stances flow more naturally)
+    const modifier = this.getStanceAdjacencyModifier(fromStance, toStance);
 
     return {
-      ki: Math.floor(baseKiCost * modifier),
-      stamina: Math.floor(baseStaminaCost * modifier),
-      timeMilliseconds: Math.floor(baseTimeMs * modifier),
+      ki: Math.floor(baseCost.ki * modifier),
+      stamina: Math.floor(baseCost.stamina * modifier),
+      time: Math.floor(baseCost.time * modifier),
     };
   }
 
-  public calculateOptimalPath(
-    fromStance: TrigramStance,
-    toStance: TrigramStance,
-    playerState: PlayerState,
-    _opponentStance?: TrigramStance
-  ): TransitionPath | null {
-    const cost = this.trigramCalculator.calculateTransitionCost(
-      fromStance,
-      toStance,
-      playerState
-    );
-
-    if (playerState.ki < cost.ki || playerState.stamina < cost.stamina) {
-      return null;
-    }
-
-    // Fix: Use correct method name and variable
-    const effectiveness = this.getStanceEffectiveness(fromStance, toStance); // Changed from calculateStanceEffectiveness
-    const risk = this.calculateRisk(cost, playerState);
-
-    return {
-      path: [fromStance, toStance],
-      totalCost: cost,
-      overallEffectiveness: effectiveness,
-      cumulativeRisk: risk,
-      name: `${TRIGRAM_DATA[fromStance].name.english} → ${TRIGRAM_DATA[toStance].name.english}`,
-      description: {
-        korean: `${TRIGRAM_DATA[fromStance].name.korean}에서 ${TRIGRAM_DATA[toStance].name.korean}로 전환`,
-        english: `Transition from ${TRIGRAM_DATA[fromStance].name.english} to ${TRIGRAM_DATA[toStance].name.english}`,
-      },
-    };
-  }
-
-  public findOptimalPath(
+  /**
+   * Execute a stance transition
+   */
+  public executeStanceTransition(
     fromStance: TrigramStance,
     toStance: TrigramStance,
     playerState: PlayerState
-  ): TransitionPath | null {
-    // Calculate the transition cost first
-    const directCost = this.calculateTransitionCost(
-      fromStance,
-      toStance,
-      playerState
-    );
-
-    // Fix: Use correct method name
-    const effectiveness = this.getStanceEffectiveness(fromStance, toStance); // Changed from calculateStanceEffectiveness
-
-    // Calculate risk based on the cost and player state
-    const risk = this.calculateRisk(directCost, playerState);
-
-    return {
-      path: [fromStance, toStance],
-      totalCost: directCost,
-      overallEffectiveness: effectiveness,
-      cumulativeRisk: risk,
-      name: `${TRIGRAM_DATA[fromStance].name.english} → ${TRIGRAM_DATA[toStance].name.english}`,
-      // Add required description property
-      description: {
-        korean: `${TRIGRAM_DATA[fromStance].name.korean}에서 ${TRIGRAM_DATA[toStance].name.korean}로 전환`,
-        english: `Transition from ${TRIGRAM_DATA[fromStance].name.english} to ${TRIGRAM_DATA[toStance].name.english}`,
-      },
-    };
-  }
-
-  // Add missing calculateRisk method
-  private calculateRisk(
-    cost: TrigramTransitionCost,
-    playerState: PlayerState
-  ): number {
-    let baseRisk = 0.1; // Base 10% risk
-
-    // Higher risk if low on resources
-    if (playerState.ki < playerState.maxKi * 0.3) baseRisk += 0.2;
-    if (playerState.stamina < playerState.maxStamina * 0.3) baseRisk += 0.2;
-    if (playerState.health < playerState.maxHealth * 0.5) baseRisk += 0.3;
-
-    // Time-based risk
-    const timeRisk = (cost.timeMilliseconds / 1000) * 0.05; // 5% per second
-
-    return Math.min(1.0, baseRisk + timeRisk);
-  }
-
-  public findSafestPathToStance(
-    currentStance: TrigramStance,
-    targetStance: TrigramStance,
-    playerState: PlayerState
-    // opponentStance?: TrigramStance // Remove unused parameter
-  ): TransitionPath | null {
-    // Simplified: direct path, consider "safest" as lowest cost or highest defensive gain
-    const cost = this.trigramCalculator.calculateTransitionCost(
-      // Use this.trigramCalculator
-      currentStance,
-      targetStance,
-      playerState
-    );
-    if (playerState.ki >= cost.ki && playerState.stamina >= cost.stamina) {
-      return {
-        path: [currentStance, targetStance], // Use path
-        totalCost: cost,
-        cumulativeRisk: (cost.timeMilliseconds / 1000) * 0.05, // Lower risk for "safe" path
-        name: `안전: ${currentStance} → ${targetStance}`,
-        description: {
-          korean: `안전하게 ${currentStance}에서 ${targetStance}로`,
-          english: `Safely from ${currentStance} to ${targetStance}`,
-        },
-        overallEffectiveness: TRIGRAM_DATA[targetStance]?.defensiveBonus || 1.0, // Example safety metric
-      };
-    }
-    return null;
-  }
-
-  public findQuickestPathToStance(
-    currentStance: TrigramStance,
-    targetStance: TrigramStance,
-    playerState: PlayerState
-    // opponentStance?: TrigramStance // Remove unused parameter
-  ): TransitionPath | null {
-    // Simplified: direct path, "quickest" means lowest timeMilliseconds
-    const cost = this.trigramCalculator.calculateTransitionCost(
-      // Use this.trigramCalculator
-      currentStance,
-      targetStance,
-      playerState
-    );
-    if (playerState.ki >= cost.ki && playerState.stamina >= cost.stamina) {
-      return {
-        path: [currentStance, targetStance], // Use path
-        totalCost: cost,
-        cumulativeRisk: (cost.timeMilliseconds / 1000) * 0.15, // Higher risk for "quick" path if it's aggressive
-        name: `신속: ${currentStance} → ${targetStance}`,
-        description: {
-          korean: `신속하게 ${currentStance}에서 ${targetStance}로`,
-          english: `Quickly from ${currentStance} to ${targetStance}`,
-        },
-        overallEffectiveness:
-          STANCE_EFFECTIVENESS_MATRIX[currentStance]?.[targetStance] || 1.0,
-      };
-    }
-    return null;
-  }
-
-  public getStanceEffectiveness(
-    attackerStance: TrigramStance,
-    defenderStance: TrigramStance
-  ): number {
-    return this.trigramCalculator.getStanceEffectiveness(
-      // Use this.trigramCalculator
-      attackerStance,
-      defenderStance
-    );
-  }
-
-  public getCurrentStanceData(stance: TrigramStance): TrigramData | undefined {
-    return TRIGRAM_DATA[stance];
-  }
-
-  public getTechniqueForStance(
-    stance: TrigramStance,
-    _archetype?: PlayerArchetype
-  ): KoreanTechnique | undefined {
-    const stanceData = TRIGRAM_DATA[stance];
-    return stanceData?.technique;
-  }
-
-  public calculateStanceEffectiveness(
-    attackerStance: TrigramStance,
-    defenderStance: TrigramStance,
-    _technique?: KoreanTechnique // Added technique parameter
-  ): number {
-    // Basic effectiveness from matrix
-    let effectiveness =
-      TRIGRAM_EFFECTIVENESS[attackerStance]?.[defenderStance] ?? 1.0;
-
-    // TODO: Consider archetype affinity and technique properties if available
-    // For example, if a technique has a bonus against certain stances or elements
-
-    return effectiveness;
-  }
-
-  public isValidTransition(from: TrigramStance, to: TrigramStance): boolean {
-    return TRIGRAM_TRANSITIONS.some(
-      (rule) => rule.from === from && rule.to === to
-    );
-  }
-
-  public getTransitionCost(
-    from: TrigramStance,
-    to: TrigramStance,
-    _player?: PlayerState
-  ): { ki: number; stamina: number; timeMs: number } {
-    const rule = TRIGRAM_TRANSITIONS.find(
-      (r) => r.from === from && r.to === to
-    );
-    if (rule) {
-      return {
-        ki: rule.cost.ki,
-        stamina: rule.cost.stamina,
-        timeMs: rule.cost.timeMilliseconds,
-      };
-    }
-    return { ki: 999, stamina: 999, timeMs: 5000 }; // Default high cost if no rule
-  }
-
-  public recommendStance(
-    player: PlayerState,
-    opponent?: PlayerState
-  ): TrigramStance {
-    // Simple recommendation: counter opponent's stance or pick a high affinity stance
-    if (opponent) {
-      const opponentStance = opponent.currentStance;
-      let bestStance = player.currentStance;
-      let maxEffectiveness = -Infinity;
-
-      for (const stance in TRIGRAM_EFFECTIVENESS) {
-        const effectiveness = this.calculateStanceEffectiveness(
-          stance as TrigramStance,
-          opponentStance
-        );
-        if (effectiveness > maxEffectiveness) {
-          maxEffectiveness = effectiveness;
-          bestStance = stance as TrigramStance;
-        }
-      }
-      return bestStance;
+  ): { success: boolean; updatedPlayer: PlayerState; path?: TransitionPath } {
+    if (!this.canTransitionTo(fromStance, toStance, playerState)) {
+      return { success: false, updatedPlayer: playerState };
     }
 
-    // If no opponent, pick a stance with high affinity for the player's archetype
-    const archetypeAffinities = ARCHETYPE_TRIGRAM_AFFINITY[player.archetype];
-    if (archetypeAffinities) {
-      let bestStance = player.currentStance;
-      let maxAffinity = -Infinity;
-      for (const stance in archetypeAffinities) {
-        if (archetypeAffinities[stance as TrigramStance] > maxAffinity) {
-          maxAffinity = archetypeAffinities[stance as TrigramStance];
-          bestStance = stance as TrigramStance;
-        }
-      }
-      return bestStance;
-    }
+    const cost = this.calculateTransitionCost(fromStance, toStance);
 
-    return player.currentStance; // Default
-  }
-
-  // Placeholder for calculateStanceEffects if it was intended to be different
-  public calculateStanceEffects(
-    _attackerStance: TrigramStance,
-    _defenderStance: TrigramStance,
-    _technique?: KoreanTechnique
-  ): any {
-    // Replace 'any' with a proper return type
-    // This method was suggested by a previous error message.
-    // If it's distinct from calculateStanceEffectiveness, implement its logic here.
-    // Otherwise, it might be redundant.
-    return { effectivenessFactor: 1.0 }; // Placeholder
-  }
-
-  public executeStanceChange(
-    playerState: PlayerState,
-    newStance: TrigramStance
-  ): {
-    success: boolean;
-    cost: { ki: number; stamina: number; timeMilliseconds: number }; // Ensure this matches TrigramTransitionCost
-    newState?: PlayerState;
-    reason?: string;
-  } {
-    // Check if player can afford the stance change
-    const transitionCost = this.trigramCalculator.calculateTransitionCost(
-      playerState.currentStance as TrigramStance, // Ensure currentStance is used
-      newStance,
-      playerState
-    );
-
-    if (playerState.ki < transitionCost.ki) {
-      return {
-        success: false,
-        cost: transitionCost,
-        reason: "insufficient_ki",
-      };
-    }
-
-    if (playerState.stamina < transitionCost.stamina) {
-      return {
-        success: false,
-        cost: transitionCost,
-        reason: "insufficient_stamina",
-      };
-    }
-
-    // Execute stance change
-    const newState: PlayerState = {
+    const updatedPlayer: PlayerState = {
       ...playerState,
-      currentStance: newStance, // Use currentStance, not stance
-      ki: playerState.ki - transitionCost.ki,
-      stamina: playerState.stamina - transitionCost.stamina,
-      lastStanceChangeTime: Date.now(), // Ensure this field exists and is updated
+      currentStance: toStance,
+      ki: Math.max(0, playerState.ki - cost.ki),
+      stamina: Math.max(0, playerState.stamina - cost.stamina),
+      lastStanceChangeTime: Date.now(),
+    };
+
+    const transitionPath: TransitionPath = {
+      from: fromStance,
+      to: toStance,
+      cost,
     };
 
     return {
       success: true,
-      cost: transitionCost,
-      newState,
+      updatedPlayer,
+      path: transitionPath,
+    };
+  }
+
+  /**
+   * Get the effectiveness multiplier between stances
+   */
+  public getStanceEffectiveness(
+    attackerStance: TrigramStance,
+    defenderStance: TrigramStance
+  ): number {
+    // Simple effectiveness matrix - can be expanded
+    const effectiveness: Record<
+      TrigramStance,
+      Partial<Record<TrigramStance, number>>
+    > = {
+      [TrigramStance.GEON]: {
+        [TrigramStance.GON]: 1.2,
+        [TrigramStance.SON]: 0.8,
+      },
+      [TrigramStance.TAE]: {
+        [TrigramStance.JIN]: 1.2,
+        [TrigramStance.GAN]: 0.8,
+      },
+      [TrigramStance.LI]: {
+        [TrigramStance.GAM]: 1.2,
+        [TrigramStance.TAE]: 0.8,
+      },
+      [TrigramStance.JIN]: {
+        [TrigramStance.SON]: 1.2,
+        [TrigramStance.GEON]: 0.8,
+      },
+      [TrigramStance.SON]: {
+        [TrigramStance.GON]: 1.2,
+        [TrigramStance.LI]: 0.8,
+      },
+      [TrigramStance.GAM]: {
+        [TrigramStance.LI]: 1.2,
+        [TrigramStance.JIN]: 0.8,
+      },
+      [TrigramStance.GAN]: {
+        [TrigramStance.TAE]: 1.2,
+        [TrigramStance.GAM]: 0.8,
+      },
+      [TrigramStance.GON]: {
+        [TrigramStance.GEON]: 1.2,
+        [TrigramStance.SON]: 0.8,
+      },
+    };
+
+    return effectiveness[attackerStance]?.[defenderStance] ?? 1.0;
+  }
+
+  /**
+   * Get stance data - Fix: Remove duplicate method and fix return type
+   */
+  public getStanceData(stance: TrigramStance): TrigramData {
+    const stanceData = TRIGRAM_DATA[stance];
+
+    // Fix: Return proper TrigramData structure
+    return {
+      id: stance,
+      korean: stanceData.name.korean,
+      english: stanceData.name.english,
+      symbol: stanceData.symbol,
+      element: stanceData.element,
+      nature: stanceData.nature,
+      philosophy: stanceData.philosophy,
+      combat: stanceData.combat,
+      // Fix: Create proper TrigramTheme from theme data
+      theme: {
+        primary: stanceData.theme.primary,
+        secondary: stanceData.theme.secondary,
+        active: stanceData.theme.primary,
+        hover: stanceData.theme.secondary,
+        text: 0xffffff,
+      },
+      defensiveBonus: stanceData.defensiveBonus,
+      kiFlowModifier: stanceData.kiFlowModifier,
+      techniques: stanceData.techniques,
+    };
+  }
+
+  /**
+   * Get available techniques for a stance
+   */
+  public getStanceTechniques(stance: TrigramStance): KoreanTechnique[] {
+    const stanceData = TRIGRAM_DATA[stance];
+
+    if (!stanceData?.techniques?.primary) {
+      return [];
+    }
+
+    const primary = stanceData.techniques.primary;
+    return [
+      {
+        id: `${stance}_primary`,
+        name: {
+          korean: primary.korean,
+          english: primary.english,
+          romanized: primary.korean,
+        },
+        koreanName: primary.korean,
+        englishName: primary.english,
+        romanized: primary.korean,
+        description: primary.description,
+        stance,
+        type: "strike" as any,
+        damageType: "blunt" as any,
+        damage: primary.damage,
+        damageRange: {
+          min: primary.damage - 5,
+          max: primary.damage + 5,
+        },
+        range: 1.0,
+        kiCost: primary.kiCost,
+        staminaCost: primary.staminaCost,
+        accuracy: primary.hitChance,
+        executionTime: 500,
+        recoveryTime: 800,
+        critChance: primary.criticalChance || 0.1,
+        critMultiplier: 1.5,
+        effects: [],
+      },
+    ];
+  }
+
+  /**
+   * Get the primary technique for a stance
+   */
+  public getStancePrimaryTechnique(
+    stance: TrigramStance
+  ): KoreanTechnique | null {
+    const techniques = this.getStanceTechniques(stance);
+    return techniques[0] || null;
+  }
+
+  /**
+   * Get optimal stance for a player's archetype
+   */
+  public getOptimalStanceForArchetype(player: PlayerState): TrigramStance {
+    // Simple archetype-stance mapping
+    const archetypeStances: Record<string, TrigramStance> = {
+      musa: TrigramStance.GEON,
+      amsalja: TrigramStance.SON,
+      hacker: TrigramStance.LI,
+      jeongbo_yowon: TrigramStance.GAN,
+      jojik_pokryeokbae: TrigramStance.JIN,
+    };
+
+    return archetypeStances[player.archetype] || TrigramStance.GEON;
+  }
+
+  /**
+   * Calculate stance adjacency modifier for transition costs
+   */
+  private getStanceAdjacencyModifier(
+    from: TrigramStance,
+    to: TrigramStance
+  ): number {
+    // Adjacent stances have lower transition costs
+    const adjacencyMap: Record<TrigramStance, TrigramStance[]> = {
+      [TrigramStance.GEON]: [TrigramStance.TAE, TrigramStance.GON],
+      [TrigramStance.TAE]: [TrigramStance.GEON, TrigramStance.LI],
+      [TrigramStance.LI]: [TrigramStance.TAE, TrigramStance.JIN],
+      [TrigramStance.JIN]: [TrigramStance.LI, TrigramStance.SON],
+      [TrigramStance.SON]: [TrigramStance.JIN, TrigramStance.GAM],
+      [TrigramStance.GAM]: [TrigramStance.SON, TrigramStance.GAN],
+      [TrigramStance.GAN]: [TrigramStance.GAM, TrigramStance.GON],
+      [TrigramStance.GON]: [TrigramStance.GAN, TrigramStance.GEON],
+    };
+
+    return adjacencyMap[from]?.includes(to) ? 0.7 : 1.0;
+  }
+
+  /**
+   * Update player stance state over time
+   */
+  public updatePlayerStanceState(
+    player: PlayerState,
+    deltaTime: number
+  ): PlayerState {
+    return {
+      ...player,
+      // Add any stance-specific updates here
+      ki: Math.min(player.maxKi, player.ki + (2 * deltaTime) / 1000),
+      stamina: Math.min(
+        player.maxStamina,
+        player.stamina + (5 * deltaTime) / 1000
+      ),
     };
   }
 }

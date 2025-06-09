@@ -11,7 +11,13 @@ import {
   TrigramStance,
 } from "./enums";
 
-import type { KoreanText, Position } from "./index";
+import type {
+  KoreanText,
+  Position,
+  StatusEffect,
+  PlayerArchetype,
+  TrigramStance,
+} from "./index";
 
 // Fix: Define DamageRange locally to avoid circular dependency
 export interface DamageRange {
@@ -24,21 +30,22 @@ export interface DamageRange {
 export interface VitalPoint {
   readonly id: string;
   readonly korean: KoreanText;
-  readonly anatomicalName: string;
+  readonly english: string;
   readonly category: VitalPointCategory;
   readonly severity: VitalPointSeverity;
-  readonly position: Position;
-  readonly radius: number;
-  readonly effects: readonly VitalPointEffect[];
+  readonly position?: Position;
   readonly damage?: DamageRange;
-  readonly description: KoreanText;
-  readonly difficulty: number;
-  readonly requiredForce: number;
-  readonly safetyWarning: string;
+  readonly effects: readonly VitalPointEffect[];
+  readonly name?: KoreanText; // Add missing name property
+  readonly baseDamage?: number;
+  readonly damageMultiplier?: number;
+  readonly location?: Position;
+  readonly region?: string;
+  readonly type?: string;
+  readonly precision?: boolean;
+  readonly techniques?: readonly string[];
+  readonly stunDuration?: number;
 }
-
-// Fix: Remove duplicate enum declarations - use imports instead
-export type { VitalPointCategory, VitalPointSeverity } from "./enums";
 
 // Effects of striking vital points
 export interface VitalPointEffect {
@@ -46,77 +53,100 @@ export interface VitalPointEffect {
   readonly intensity: EffectIntensity;
   readonly duration: number;
   readonly description: KoreanText;
-}
-
-// Fix: Remove conflicting enum declarations
-// Use imported enums instead of redeclaring
-
-// Body region data
-export interface RegionData {
-  readonly name: KoreanText;
-  readonly boundaries: Position[];
-  readonly vitalPoints: readonly VitalPoint[];
-  readonly vulnerabilities: readonly DamageType[];
-}
-
-// Anatomical hit for combat system
-export interface AnatomicalHit {
-  readonly vitalPoint: VitalPoint;
-  readonly force: number;
-  readonly accuracy: number;
-  readonly damage: number;
-  readonly effects: readonly VitalPointEffect[];
+  readonly id?: string;
+  readonly stackable?: boolean;
+  readonly source?: string;
+  readonly chance?: number;
+  readonly modifiers?: any[];
 }
 
 // Vital point hit result
 export interface VitalPointHitResult {
   readonly hit: boolean;
-  readonly vitalPoint?: VitalPoint;
   readonly damage: number;
+  readonly vitalPoint?: VitalPoint;
   readonly effects: readonly VitalPointEffect[];
-  readonly criticalHit: boolean;
+  readonly statusEffectsApplied?: readonly StatusEffect[];
+  readonly effectiveness?: number;
+  readonly severity: VitalPointSeverity;
 }
 
-// Fix: Use proper type alias instead of conflicting enum
-export type AnatomicalRegionType =
-  | "head"
-  | "neck"
-  | "torso_front"
-  | "torso_back"
-  | "left_arm_upper"
-  | "left_arm_lower"
-  | "left_hand"
-  | "right_arm_upper"
-  | "right_arm_lower"
-  | "right_hand"
-  | "left_leg_upper"
-  | "left_leg_lower"
-  | "left_foot"
-  | "right_leg_upper"
-  | "right_leg_lower"
-  | "right_foot"
-  | "joints"
-  | "internal_organs";
+// Fix: Remove duplicate enum declarations - use imports instead
+export type { VitalPointCategory, VitalPointSeverity } from "./enums";
 
-export interface AnatomicalLocation {
-  readonly region: AnatomicalRegionType;
-  readonly subRegion?: string;
-  readonly coordinates: Position;
-}
-
-export interface BodyPart {
+// Add missing types
+export type AnatomicalRegion = {
   readonly id: string;
   readonly name: KoreanText;
-  readonly region: AnatomicalRegionType;
   readonly vitalPoints: readonly VitalPoint[];
-  readonly connections: readonly string[];
-}
+};
 
-export interface AnatomyModel {
-  readonly bodyParts: readonly BodyPart[];
-  readonly vitalPointsByRegion: Record<
-    AnatomicalRegionType,
-    readonly VitalPoint[]
-  >;
-  readonly totalVitalPoints: number;
-}
+export type DamageResult = {
+  readonly totalDamage: number;
+  readonly vitalPointDamage: number;
+  readonly effects: readonly StatusEffect[];
+};
+
+export type TransitionPath = {
+  readonly from: TrigramStance;
+  readonly to: TrigramStance;
+  readonly cost: TrigramTransitionCost;
+};
+
+export type TrigramTransitionCost = {
+  readonly ki: number;
+  readonly stamina: number;
+  readonly time: number;
+};
+
+export type TrigramTransitionRule = {
+  readonly from: TrigramStance;
+  readonly to: TrigramStance;
+  readonly allowed: boolean;
+  readonly cost?: TrigramTransitionCost;
+};
+
+export type CombatReadiness = {
+  readonly stance: TrigramStance;
+  readonly ki: number;
+  readonly stamina: number;
+  readonly canTransition: boolean;
+};
+
+export const TRIGRAM_EFFECTIVENESS: Record<
+  TrigramStance,
+  Record<TrigramStance, number>
+> = {
+  [TrigramStance.GEON]: {
+    [TrigramStance.GEON]: 1.0,
+    [TrigramStance.TAE]: 1.2,
+    [TrigramStance.LI]: 0.8,
+    [TrigramStance.JIN]: 1.1,
+    [TrigramStance.SON]: 0.9,
+    [TrigramStance.GAM]: 1.3,
+    [TrigramStance.GAN]: 0.7,
+    [TrigramStance.GON]: 1.0,
+  },
+  // ...complete the matrix for all stances
+};
+
+export const ARCHETYPE_TRIGRAM_AFFINITY: Record<
+  PlayerArchetype,
+  readonly TrigramStance[]
+> = {
+  [PlayerArchetype.MUSA]: [TrigramStance.GEON, TrigramStance.GAN],
+  [PlayerArchetype.AMSALJA]: [TrigramStance.SON, TrigramStance.GAM],
+  [PlayerArchetype.HACKER]: [TrigramStance.LI, TrigramStance.JIN],
+  [PlayerArchetype.JEONGBO_YOWON]: [TrigramStance.TAE, TrigramStance.GAN],
+  [PlayerArchetype.JOJIK_POKRYEOKBAE]: [TrigramStance.JIN, TrigramStance.GON],
+};
+
+export const TRIGRAM_TRANSITIONS: readonly TrigramTransitionRule[] = [
+  // Define all allowed transitions with costs
+];
+
+export type VitalPointSystemConfig = {
+  readonly damageMultipliers: Record<VitalPointSeverity, number>;
+  readonly effectDurations: Record<VitalPointEffectType, number>;
+  readonly criticalThresholds: Record<VitalPointCategory, number>;
+};

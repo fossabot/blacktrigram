@@ -6,8 +6,7 @@ import type {
   TrigramStance,
   KoreanTechnique,
 } from "../../../types";
-// Fix: Import EnumCombatAttackType instead of CombatAttackType
-import { EnumCombatAttackType, DamageType } from "../../../types/enums";
+import { DamageType } from "../../../types/enums";
 import {
   KOREAN_COLORS,
   FONT_FAMILY,
@@ -21,7 +20,7 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
   onAttack,
   onDefend,
   onSwitchStance,
-  onPauseToggle, // Fix: This is required, not optional
+  onPauseToggle,
   isPaused,
   player,
   onTechniqueExecute,
@@ -47,19 +46,27 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
     const stanceTechnique = currentStanceData.techniques.primary;
     const koreanTechnique: KoreanTechnique = {
       id: `${player.currentStance}_primary`,
-      name: stanceTechnique.korean,
+      name: {
+        korean: stanceTechnique.korean,
+        english: stanceTechnique.english,
+        romanized: stanceTechnique.korean,
+      },
       koreanName: stanceTechnique.korean,
       englishName: stanceTechnique.english,
       romanized: stanceTechnique.korean,
       description: stanceTechnique.description,
       stance: player.currentStance,
-      type: EnumCombatAttackType.STRIKE, // Fix: Use EnumCombatAttackType
+      type: "strike" as any,
       damageType: DamageType.BLUNT,
       damage: stanceTechnique.damage,
+      damageRange: {
+        min: stanceTechnique.damage - 5,
+        max: stanceTechnique.damage + 5,
+      },
+      range: 1.0,
       kiCost: stanceTechnique.kiCost,
       staminaCost: stanceTechnique.staminaCost,
       accuracy: stanceTechnique.hitChance,
-      range: 1.0,
       executionTime: 500,
       recoveryTime: 800,
       critChance: stanceTechnique.criticalChance,
@@ -85,14 +92,16 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
     [onTechniqueExecute]
   );
 
-  // Get current stance technique for the player
   const getCurrentTechnique = useCallback((): KoreanTechnique | null => {
     if (!player?.currentStance) return null;
 
-    // Create a basic technique based on current stance
     return {
       id: `${player.currentStance}_basic`,
-      name: `${player.currentStance} 기법`,
+      name: {
+        korean: `${player.currentStance} 기법`,
+        english: `${player.currentStance} Technique`,
+        romanized: `${player.currentStance} gihbeop`,
+      },
       koreanName: `${player.currentStance} 기법`,
       englishName: `${player.currentStance} Technique`,
       romanized: `${player.currentStance} gihbeop`,
@@ -101,13 +110,14 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
         english: `Basic technique for ${player.currentStance} stance`,
       },
       stance: player.currentStance,
-      type: EnumCombatAttackType.STRIKE, // Fix: Use EnumCombatAttackType
+      type: "strike" as any,
       damageType: DamageType.BLUNT,
       damage: 20,
+      damageRange: { min: 15, max: 25 },
+      range: 1.0,
       kiCost: 10,
       staminaCost: 15,
       accuracy: 0.8,
-      range: 1.0,
       executionTime: 500,
       recoveryTime: 800,
       critChance: 0.1,
@@ -161,14 +171,14 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
               variant={
                 isCurrentStance ? "primary" : isSelected ? "secondary" : "ghost"
               }
-              onClick={() => handleStanceSelect(stance as TrigramStance)} // Fix: Use onClick instead of onPointerTap
+              onClick={() => handleStanceSelect(stance as TrigramStance)}
               interactive={!isExecutingTechnique}
             />
           );
         })}
       </Container>
 
-      {/* Available techniques */}
+      {/* Available techniques display - Fix: Use availableTechniques */}
       <Container x={20} y={80}>
         <Text
           text="기술 (Techniques)"
@@ -190,77 +200,13 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
             height={35}
             text={tech.koreanName}
             variant={!isExecutingTechnique ? "primary" : "ghost"}
-            onClick={() => handleTechniqueExecute(tech)} // Fix: Use onClick instead of onPointerTap
+            onClick={() => handleTechniqueExecute(tech)}
             disabled={isExecutingTechnique}
           />
         ))}
       </Container>
 
-      {/* Status indicators */}
-      <Container x={width - 200} y={20}>
-        <Graphics
-          draw={(g: PIXI.Graphics) => {
-            g.clear();
-            if (player) {
-              // Ki indicator
-              g.beginFill(KOREAN_COLORS.PRIMARY_CYAN, 0.7);
-              g.drawRect(0, 0, (player.ki / player.maxKi) * 180, 15);
-              g.endFill();
-
-              // Stamina indicator
-              g.beginFill(KOREAN_COLORS.SECONDARY_YELLOW, 0.7);
-              g.drawRect(0, 20, (player.stamina / player.maxStamina) * 180, 15);
-              g.endFill();
-            }
-          }}
-        />
-
-        <Text
-          text={`기 (Ki): ${player?.ki || 0}/${player?.maxKi || 100}`}
-          style={
-            new PIXI.TextStyle({
-              fontSize: FONT_SIZES.small,
-              fill: KOREAN_COLORS.TEXT_PRIMARY,
-              fontFamily: FONT_FAMILY.PRIMARY,
-            })
-          }
-          y={40}
-        />
-
-        <Text
-          text={`체력 (Stamina): ${player?.stamina || 0}/${
-            player?.maxStamina || 100
-          }`}
-          style={
-            new PIXI.TextStyle({
-              fontSize: FONT_SIZES.small,
-              fill: KOREAN_COLORS.TEXT_PRIMARY,
-              fontFamily: FONT_FAMILY.PRIMARY,
-            })
-          }
-          y={55}
-        />
-      </Container>
-
-      {/* Technique Execution Button - Fix: Pass actual technique */}
-      <BaseButton
-        text="기술 (Technique)"
-        onClick={() => {
-          const technique = getCurrentTechnique();
-          if (technique) {
-            handleTechniqueExecute(technique);
-          }
-        }}
-        x={10}
-        y={50}
-        width={80}
-        height={30}
-        interactive={!isExecutingTechnique}
-        variant="accent"
-        disabled={!getCurrentTechnique() || isExecutingTechnique}
-      />
-
-      {/* Attack Button */}
+      {/* Combat Control Buttons */}
       <BaseButton
         text="공격 (Attack)"
         onClick={onAttack}
@@ -268,67 +214,57 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
         y={10}
         width={80}
         height={30}
-        variant={!isExecutingTechnique ? "primary" : "ghost"} // Fix: Use destructured prop
+        variant={!isExecutingTechnique ? "primary" : "ghost"}
         interactive={true}
-        disabled={isExecutingTechnique} // Fix: Use destructured prop
+        disabled={isExecutingTechnique}
       />
 
-      {/* Guard Button */}
-      <Container
+      <BaseButton
+        text="방어 (Defend)"
+        onClick={onDefend}
+        x={100}
+        y={10}
+        width={80}
+        height={30}
+        variant="secondary"
+      />
+
+      <BaseButton
+        text="방어 (Guard)"
+        onClick={() => onGuard?.()}
         x={10}
-        y={90}
-        interactive={true}
-        buttonMode={true}
-        pointertap={() => onGuard?.()} // Fix: Use destructured prop
-      >
-        <BaseButton
-          text="방어 (Guard)"
-          onClick={() => onGuard?.()} // Fix: Use destructured prop
-          width={80}
-          height={30}
-          variant="secondary"
-        />
-      </Container>
+        y={50}
+        width={80}
+        height={30}
+        variant="secondary"
+      />
 
-      {/* Combat Control Buttons */}
-      <Container x={width - 300} y={height - 100}>
-        {/* Defend Button */}
-        <BaseButton
-          text="방어 (Defend)"
-          onClick={onDefend}
-          x={100}
-          y={10}
-          width={80}
-          height={30}
-          variant="secondary"
-        />
+      {/* Technique execution button - Fix: Use getCurrentTechnique */}
+      <BaseButton
+        text="기법 실행"
+        onClick={() => {
+          const technique = getCurrentTechnique();
+          if (technique) {
+            handleTechniqueExecute(technique);
+          }
+        }}
+        x={190}
+        y={50}
+        width={80}
+        height={30}
+        variant="accent"
+        disabled={!getCurrentTechnique() || isExecutingTechnique}
+      />
 
-        {/* Pause Button */}
-        <BaseButton
-          text={isPaused ? "재개" : "일시정지"}
-          onClick={onPauseToggle} // Fix: Remove undefined check
-          x={190}
-          y={10}
-          width={80}
-          height={30}
-          variant="ghost"
-        />
-
-        {/* Stance Info */}
-        {player && (
-          <Text
-            text={`현재 자세: ${player.currentStance}`}
-            style={
-              new PIXI.TextStyle({
-                fontSize: FONT_SIZES.small,
-                fill: KOREAN_COLORS.TEXT_PRIMARY,
-              })
-            }
-            x={10}
-            y={50}
-          />
-        )}
-      </Container>
+      <BaseButton
+        text={isPaused ? "재개" : "일시정지"}
+        onClick={onPauseToggle}
+        x={190}
+        y={10}
+        width={80}
+        height={30}
+        variant="ghost"
+      />
     </Container>
   );
 };

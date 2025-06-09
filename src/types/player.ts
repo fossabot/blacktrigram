@@ -17,54 +17,35 @@ export interface PlayerState {
   readonly id: string;
   readonly name: KoreanText;
   readonly archetype: PlayerArchetype;
-  readonly position: Position;
-
-  // Combat stats
-  health: number;
-  readonly maxHealth: number;
-  ki: number;
-  readonly maxKi: number;
-  stamina: number;
-  readonly maxStamina: number;
-
-  // Combat state
   readonly currentStance: TrigramStance;
-  pain: number;
-  consciousness: number;
-  balance: number;
-  readonly isBlocking: boolean;
+  readonly health: number;
+  readonly maxHealth: number;
+  readonly ki: number;
+  readonly maxKi: number;
+  readonly stamina: number;
+  readonly maxStamina: number;
+  readonly consciousness: number;
+  readonly balance: number;
+  readonly pain: number;
+  readonly position: Position;
   readonly statusEffects: readonly StatusEffect[];
+  readonly vitalPoints: readonly VitalPoint[];
 
   // Fix: Add missing properties for complete PlayerState
-  readonly activeEffects: readonly StatusEffect[];
-  readonly vitalPoints: readonly any[]; // Vital points hit tracking
-  readonly combatModifiers: {
-    readonly damageMultiplier: number;
-    readonly accuracyModifier: number;
-    readonly speedModifier: number;
-    readonly defenseMultiplier: number;
-  };
-  readonly momentum: number;
-  readonly lastActionTime: number;
-  readonly combo: number;
-  readonly direction: "left" | "right";
-  readonly grounded: boolean;
-  readonly invulnerable: boolean;
-  readonly combatState?: CombatState;
-  readonly technique?: any; // Current technique being executed
-}
-
-// Fix: Add CombatState interface
-export interface CombatState {
-  readonly state: "idle" | "attacking" | "defending" | "stunned" | "recovering";
-  readonly frameData: {
-    readonly startup: number;
-    readonly active: number;
-    readonly recovery: number;
-    readonly currentFrame: number;
-  };
-  readonly hitboxActive: boolean;
-  readonly invulnerabilityFrames: number;
+  readonly isBlocking: boolean;
+  readonly activeEffects: readonly any[];
+  readonly combatModifiers: Record<string, number>;
+  readonly momentum: Position;
+  readonly lastStanceChangeTime: number;
+  readonly actionCooldowns: Record<string, number>;
+  readonly technique: KoreanTechnique | null;
+  readonly combatState:
+    | "idle"
+    | "attacking"
+    | "defending"
+    | "stunned"
+    | "recovering";
+  readonly orientation: "left" | "right";
 }
 
 // Player archetype configuration

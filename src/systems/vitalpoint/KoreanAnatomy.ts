@@ -8,6 +8,8 @@ import type {
   EffectIntensity,
   BodyRegion,
 } from "../../types/enums";
+import type { AnatomicalRegion } from "../../types/anatomy";
+import { KOREAN_VITAL_POINTS } from "./KoreanVitalPoints";
 
 /**
  * Korean Martial Arts Anatomy System
@@ -784,3 +786,39 @@ export const VITAL_POINTS_DATA: readonly VitalPoint[] = [
     damage: 18, // Added required property
   },
 ];
+
+export const ANATOMICAL_REGIONS: Record<string, AnatomicalRegion> = {
+  head: {
+    id: "head",
+    name: { korean: "머리", english: "Head" },
+    vitalPoints: KOREAN_VITAL_POINTS.filter((vp) => vp.region === "head"),
+  },
+  neck: {
+    id: "neck",
+    name: { korean: "목", english: "Neck" },
+    vitalPoints: KOREAN_VITAL_POINTS.filter((vp) => vp.region === "neck"),
+  },
+  torso: {
+    id: "torso",
+    name: { korean: "몸통", english: "Torso" },
+    vitalPoints: KOREAN_VITAL_POINTS.filter((vp) => vp.region === "torso"),
+  },
+  arms: {
+    id: "arms",
+    name: { korean: "팔", english: "Arms" },
+    vitalPoints: KOREAN_VITAL_POINTS.filter((vp) => vp.region === "arms"),
+  },
+  legs: {
+    id: "legs",
+    name: { korean: "다리", english: "Legs" },
+    vitalPoints: KOREAN_VITAL_POINTS.filter((vp) => vp.region === "legs"),
+  },
+} as const;
+
+export const getRegionByName = (name: string): AnatomicalRegion | undefined => {
+  return ANATOMICAL_REGIONS[name];
+};
+
+export const getAllRegions = (): AnatomicalRegion[] => {
+  return Object.values(ANATOMICAL_REGIONS);
+};

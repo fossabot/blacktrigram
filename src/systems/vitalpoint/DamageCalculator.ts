@@ -8,12 +8,70 @@ import type {
   VitalPointCategory, // Import VitalPointCategory
   VitalPointEffect, // Import VitalPointEffect
 } from "../../types";
+import type { DamageResult } from "../../types/anatomy";
+import type { PlayerState } from "../../types";
+import { VitalPointSeverity } from "../../types/enums";
+
+/**
+ * Calculate damage based on vital point targeting
+ */
 
 export class DamageCalculator {
   private readonly config: VitalPointSystemConfig;
 
   constructor(config: VitalPointSystemConfig) {
     this.config = config;
+  }
+
+  public static calculateVitalPointDamage(
+    vitalPoint: VitalPoint,
+    technique: KoreanTechnique,
+    attacker: PlayerState
+  ): number {
+    const baseDamage =
+      vitalPoint.baseDamage || vitalPoint.damage?.average || 10;
+    const techniqueModifier = technique.damage / 20; // Normalize to base 20 damage
+    const severityMultiplier = this.getSeverityMultiplier(vitalPoint.severity);
+
+    return Math.floor(baseDamage * techniqueModifier * severityMultiplier);
+  }
+
+  public static calculateTotalDamage(
+    baseDamage: number,
+    vitalPointHit: boolean,
+    vitalPoint?: VitalPoint
+  ): DamageResult {
+    let totalDamage = baseDamage;
+    let vitalPointDamage = 0;
+    const effects: any[] = [];
+
+    if (vitalPointHit && vitalPoint) {
+      vitalPointDamage =
+        vitalPoint.baseDamage || vitalPoint.damage?.average || 0;
+      totalDamage += vitalPointDamage;
+      effects.push(...vitalPoint.effects);
+    }
+
+    return {
+      totalDamage,
+      vitalPointDamage,
+      effects,
+    };
+  }
+
+  private static getSeverityMultiplier(severity: VitalPointSeverity): number {
+    switch (severity) {
+      case VitalPointSeverity.MINOR:
+        return 1.0;
+      case VitalPointSeverity.MODERATE:
+        return 1.3;
+      case VitalPointSeverity.MAJOR:
+        return 1.6;
+      case VitalPointSeverity.CRITICAL:
+        return 2.0;
+      default:
+        return 1.0;
+    }
   }
 
   public calculateDamage(

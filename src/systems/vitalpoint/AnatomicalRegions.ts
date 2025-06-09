@@ -1,6 +1,8 @@
 // Anatomical regions mapping for Korean martial arts vital point system
 import type { BodyRegion } from "../../types";
 import type { RegionData } from "../../types/anatomy";
+import type { AnatomicalRegion } from "../../types/anatomy";
+import { KOREAN_VITAL_POINTS } from "./KoreanVitalPoints";
 
 // All vital points referenced by string ID, matching VITAL_POINTS_DATA
 export const ANATOMICAL_REGIONS_DATA: Readonly<Record<BodyRegion, RegionData>> =
@@ -223,3 +225,43 @@ export const ANATOMICAL_REGIONS_DATA: Readonly<Record<BodyRegion, RegionData>> =
       pressure_points: ["ankle_achilles_right", "instep_top"],
     },
   };
+
+export const HEAD_REGION: AnatomicalRegion = {
+  id: "head",
+  name: { korean: "머리", english: "Head" },
+  vitalPoints: KOREAN_VITAL_POINTS.filter((vp) => vp.region === "head"),
+};
+
+export const TORSO_REGION: AnatomicalRegion = {
+  id: "torso",
+  name: { korean: "몸통", english: "Torso" },
+  vitalPoints: KOREAN_VITAL_POINTS.filter((vp) => vp.region === "torso"),
+};
+
+export const ARMS_REGION: AnatomicalRegion = {
+  id: "arms",
+  name: { korean: "팔", english: "Arms" },
+  vitalPoints: KOREAN_VITAL_POINTS.filter((vp) => vp.region === "arms"),
+};
+
+export const LEGS_REGION: AnatomicalRegion = {
+  id: "legs",
+  name: { korean: "다리", english: "Legs" },
+  vitalPoints: KOREAN_VITAL_POINTS.filter((vp) => vp.region === "legs"),
+};
+
+export const ALL_REGIONS: readonly AnatomicalRegion[] = [
+  HEAD_REGION,
+  TORSO_REGION,
+  ARMS_REGION,
+  LEGS_REGION,
+] as const;
+
+export function getRegionById(id: string): AnatomicalRegion | undefined {
+  return ALL_REGIONS.find((region) => region.id === id);
+}
+
+export function getVitalPointsByRegion(regionId: string) {
+  const region = getRegionById(regionId);
+  return region ? region.vitalPoints : [];
+}

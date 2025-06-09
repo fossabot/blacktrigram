@@ -65,15 +65,31 @@ export interface KiFlowFactors {
 // Trigram data structure
 export interface TrigramData {
   readonly id: TrigramStance;
-  readonly name: KoreanText;
+  readonly korean: string;
+  readonly english: string;
   readonly symbol: string;
   readonly element: string;
   readonly nature: "yin" | "yang";
   readonly philosophy: KoreanText;
   readonly combat: KoreanText;
   readonly theme: TrigramTheme;
+  readonly name: KoreanText;
   readonly defensiveBonus: number;
   readonly kiFlowModifier: number;
+  readonly techniques: {
+    readonly primary: {
+      readonly korean: string;
+      readonly english: string;
+      readonly damage: number;
+      readonly kiCost: number;
+      readonly staminaCost: number;
+      readonly hitChance: number;
+      readonly criticalChance: number;
+      readonly description: KoreanText;
+      readonly targetAreas: readonly string[];
+      readonly effects: readonly string[];
+    };
+  };
 }
 
 // Trigram effectiveness matrix
@@ -129,56 +145,11 @@ export interface ArchetypeTrigramAffinity {
   readonly penaltyTrigrams: readonly TrigramStance[];
 }
 
-// Ensure TrigramTheme has a text property
+// Fix: Update TrigramTheme to include missing properties
 export interface TrigramTheme {
-  primary: number;
-  secondary: number;
-  active: number;
-  hover: number;
-  text: number; // Ensure text property is present
-  glow?: number; // Optional glow color
+  readonly primary: number;
+  readonly secondary: number;
+  readonly active: number;
+  readonly hover: number;
+  readonly text: number;
 }
-
-// Korean trigram system types for martial arts
-
-import type { KoreanText, KoreanTechnique, PlayerArchetype } from "./index";
-
-// Trigram stance enumeration from I Ching
-export enum TrigramStance {
-  GEON = "geon", // ☰ Heaven - 건
-  TAE = "tae", // ☱ Lake - 태
-  LI = "li", // ☲ Fire - 리
-  JIN = "jin", // ☳ Thunder - 진
-  SON = "son", // ☴ Wind - 손
-  GAM = "gam", // ☵ Water - 감
-  GAN = "gan", // ☶ Mountain - 간
-  GON = "gon", // ☷ Earth - 곤
-}
-
-// Trigram stance data structure
-export interface TrigramStanceData {
-  readonly id: TrigramStance;
-  readonly symbol: string; // Unicode trigram symbol
-  readonly korean: string; // Korean name
-  readonly english: string; // English name
-  readonly element: string; // Associated element
-  readonly philosophy: KoreanText; // Philosophical meaning
-  readonly technique: KoreanTechnique; // Primary technique
-  readonly colors: {
-    readonly primary: number;
-    readonly secondary: number;
-  };
-  readonly theme: {
-    readonly primary: number;
-    readonly secondary: number;
-  };
-  readonly combatStyle: "offensive" | "defensive" | "balanced";
-  readonly preferredArchetypes: readonly PlayerArchetype[];
-  readonly movementPattern: "linear" | "circular" | "angular";
-  readonly kiCost: number;
-  readonly staminaCost: number;
-  readonly transitionSpeed: number;
-}
-
-// Export types
-export type { TrigramStanceData };
