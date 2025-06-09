@@ -5,5 +5,4 @@ export { MenuSection } from "./MenuSection";
 export { PhilosophySection } from "./PhilosophySection";
 
 export type { ControlsSectionProps } from "./ControlsSection";
-export type { MenuSectionProps } from "./MenuSection";
-export type { PhilosophySectionProps } from "./PhilosophySection";
+// Fix: Remove duplicate interface exports - components should define their own props

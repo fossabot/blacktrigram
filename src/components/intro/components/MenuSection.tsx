@@ -7,8 +7,8 @@ import { KOREAN_COLORS, GAME_CONFIG } from "../../../types/constants";
 import { GameMode } from "../../../types/enums";
 
 export interface MenuSectionProps {
-  readonly selectedMode: GameMode;
-  readonly onModeSelect: (mode: GameMode) => void;
+  readonly selectedMode: any;
+  readonly onModeSelect: (mode: any) => void;
   readonly onStartGame: () => void;
   readonly onShowPhilosophy: () => void;
   readonly onShowControls: () => void;
@@ -43,20 +43,20 @@ export const MenuSection: React.FC<MenuSectionProps> = ({
     <Container x={x} y={y}>
       <Graphics draw={backgroundDraw} />
 
-      {/* Main Title */}
+      {/* Header */}
       <KoreanHeader
         title={{
-          korean: "흑괘",
-          english: "Black Trigram",
+          korean: "흑괘 무술 도장",
+          english: "Black Trigram Martial Arts",
         }}
         subtitle={{
-          korean: "한국 무술 시뮬레이터",
-          english: "Korean Martial Arts Simulator",
+          korean: "전통 한국 무술의 정수",
+          english: "The Essence of Traditional Korean Martial Arts",
         }}
         x={width / 2}
-        y={100}
-        fontSize={36}
-        align="center" // Fix: Use 'align' instead of 'alignment'
+        y={60}
+        fontSize={24}
+        align="center" // Fix: Use align instead of alignment
       />
 
       {/* Game Mode Selection */}

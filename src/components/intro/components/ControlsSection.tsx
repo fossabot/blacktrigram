@@ -26,6 +26,10 @@ export const ControlsSection: React.FC<ControlsSectionProps> = ({
       g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.9);
       g.drawRect(0, 0, width, height);
       g.endFill();
+
+      // Add cyberpunk border
+      g.lineStyle(2, KOREAN_COLORS.PRIMARY_CYAN, 0.8);
+      g.drawRect(10, 10, width - 20, height - 20);
     },
     [width, height]
   );
@@ -53,6 +57,17 @@ export const ControlsSection: React.FC<ControlsSectionProps> = ({
     []
   );
 
+  const keyStyle = useMemo(
+    () =>
+      new PIXI.TextStyle({
+        fontFamily: "monospace",
+        fontSize: 14,
+        fill: KOREAN_COLORS.PRIMARY_CYAN,
+        fontWeight: "bold",
+      }),
+    []
+  );
+
   return (
     <Container x={x} y={y}>
       <Graphics draw={backgroundDraw} />
@@ -73,16 +88,18 @@ export const ControlsSection: React.FC<ControlsSectionProps> = ({
         align="center"
       />
 
-      {/* Stance Controls */}
+      {/* Stance Controls Section */}
       <Container x={50} y={140}>
         <Text text="팔괘 자세 (Trigram Stances)" style={headerStyle} />
         <Container y={40}>
           {Object.entries(COMBAT_CONTROLS.stanceControls).map(
             ([key, data], index) => (
-              <Container key={key} y={index * 25}>
+              <Container key={key} y={index * 30}>
+                <Text text={`[${key}]`} style={keyStyle} x={0} />
                 <Text
-                  text={`${key}: ${data.korean} (${data.stance}) - ${data.technique}`}
+                  text={`${data.korean} (${data.stance}) - ${data.technique}`}
                   style={textStyle}
+                  x={40}
                 />
               </Container>
             )
@@ -90,28 +107,30 @@ export const ControlsSection: React.FC<ControlsSectionProps> = ({
         </Container>
       </Container>
 
-      {/* Combat Controls */}
-      <Container x={50} y={360}>
+      {/* Combat Controls Section */}
+      <Container x={50} y={380}>
         <Text text="전투 조작 (Combat Controls)" style={headerStyle} />
         <Container y={40}>
           {Object.entries(COMBAT_CONTROLS.combat).map(
             ([key, description], index) => (
-              <Container key={key} y={index * 25}>
-                <Text text={`${key}: ${description}`} style={textStyle} />
+              <Container key={key} y={index * 30}>
+                <Text text={`[${key}]`} style={keyStyle} x={0} />
+                <Text text={description} style={textStyle} x={80} />
               </Container>
             )
           )}
         </Container>
       </Container>
 
-      {/* Movement Controls */}
-      <Container x={400} y={360}>
+      {/* Movement Controls Section */}
+      <Container x={400} y={380}>
         <Text text="이동 조작 (Movement)" style={headerStyle} />
         <Container y={40}>
           {Object.entries(COMBAT_CONTROLS.movement).map(
             ([key, description], index) => (
-              <Container key={key} y={index * 25}>
-                <Text text={`${key}: ${description}`} style={textStyle} />
+              <Container key={key} y={index * 30}>
+                <Text text={`[${key}]`} style={keyStyle} x={0} />
+                <Text text={description} style={textStyle} x={80} />
               </Container>
             )
           )}

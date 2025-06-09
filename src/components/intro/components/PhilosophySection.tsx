@@ -54,13 +54,13 @@ export const PhilosophySection: React.FC<PhilosophySectionProps> = ({
           english: "Philosophy",
         }}
         subtitle={{
-          korean: "흑괘 무술의 철학적 기반",
-          english: "Philosophical Foundation of Black Trigram",
+          korean: "흑괘 무술의 정신적 기반",
+          english: "Spiritual Foundation of Black Trigram Martial Arts",
         }}
         x={width / 2}
         y={60}
         fontSize={24}
-        align="center" // Fix: Use 'align' instead of 'alignment'
+        align="center" // Fix: Use align instead of alignment
       />
 
       {/* Philosophy Content */}

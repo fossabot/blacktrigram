@@ -10,6 +10,9 @@ export const KOREAN_COLORS = {
   PRIMARY_BLUE: 0x0066ff,
   PRIMARY_BLUE_DARK: 0x003399,
 
+  // Fix: Add missing PRIMARY_RED color
+  PRIMARY_RED: 0xff3333,
+
   // Secondary colors
   SECONDARY_MAGENTA: 0xff00ff,
   SECONDARY_PURPLE: 0x9900ff,
@@ -25,6 +28,8 @@ export const KOREAN_COLORS = {
   ACCENT_YELLOW: 0xffff00, // Fix: Add missing ACCENT_YELLOW
   ACCENT_PURPLE: 0x9900ff, // Fix: Add missing ACCENT_PURPLE
   ACCENT_CYAN: 0x00ffff, // Fix: Add missing ACCENT_CYAN
+  ACCENT_ORANGE: 0xff8833, // Fix: Add missing ACCENT_ORANGE
+  ACCENT_BLUE: 0x3399ff, // Fix: Add missing ACCENT_BLUE
 
   // Korean traditional colors
   KOREAN_RED: 0xc8102e,
@@ -39,6 +44,7 @@ export const KOREAN_COLORS = {
   TEXT_ACCENT: 0x00ffff,
   TEXT_WARNING: 0xffaa00,
   TEXT_ERROR: 0xff3333,
+  TEXT_BRIGHT: 0xffffff, // Fix: Add missing TEXT_BRIGHT
 
   // UI background colors
   UI_BACKGROUND_DARK: 0x1a1a2e,
@@ -47,9 +53,12 @@ export const KOREAN_COLORS = {
   UI_STEEL_GRAY: 0x4a5568,
   UI_STEEL_GRAY_DARK: 0x2d3748,
   UI_BORDER: 0x4a5568, // Fix: Add missing UI_BORDER
+  UI_BORDER_LIGHT: 0x4a4a6a, // Fix: Add missing UI_BORDER_LIGHT
   UI_GRAY: 0x808080, // Fix: Add missing UI_GRAY
   UI_DISABLED_FILL: 0x2d3748, // Fix: Add missing UI_DISABLED_FILL
   UI_DISABLED_BORDER: 0x1a1a2e, // Fix: Add missing UI_DISABLED_BORDER
+  UI_DISABLED_BG: 0x333333, // Fix: Add missing UI_DISABLED_BG
+  UI_DISABLED_TEXT: 0x666666, // Fix: Add missing UI_DISABLED_TEXT
 
   // Combat effect colors
   CRITICAL_HIT: 0xff0000, // Fix: Add missing CRITICAL_HIT
@@ -79,11 +88,13 @@ export const KOREAN_COLORS = {
   POSITIVE_GREEN_DARK: 0x006600,
   NEGATIVE_RED: 0xff0000,
   NEGATIVE_RED_DARK: 0x990000,
+  NEGATIVE_RED_LIGHT: 0xff4444, // Fix: Add missing NEGATIVE_RED_LIGHT
   NEUTRAL_GRAY: 0x808080,
 
   // Solid colors
   WHITE_SOLID: 0xffffff,
   BLACK_SOLID: 0x000000,
+  BLACK: 0x000000, // Fix: Add missing BLACK
   TRANSPARENT: 0x000000, // With alpha 0
 
   // Health bar colors
@@ -103,6 +114,14 @@ export const KOREAN_COLORS = {
   STAMINA_MEDIUM: 0xffcc00,
   STAMINA_LOW: 0xff9900,
   STAMINA_EMPTY: 0xff6600,
+
+  // Fix: Add missing color constants for game components
+  ARENA_BACKGROUND: 0x1a1a2e,
+  PLAYER_1_COLOR: 0x00ccff, // Cyan for player 1
+  PLAYER_2_COLOR: 0xff6b35, // Orange for player 2
+  SECONDARY_BLUE: 0x3366cc,
+  SECONDARY_BLUE_LIGHT: 0x5588ee,
+  SECONDARY_BLUE_DARK: 0x1144aa,
 } as const;
 
 // Color utility functions

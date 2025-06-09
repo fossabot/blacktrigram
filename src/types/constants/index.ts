@@ -6,7 +6,7 @@
 export { KOREAN_COLORS } from "./colors";
 export { GAME_CONFIG, COMBAT_TIMING, DAMAGE_CONSTANTS } from "./game";
 export { COMBAT_CONFIG, COMBAT_CONSTANTS } from "./combat";
-export { PLAYER_ARCHETYPES_DATA, DEFAULT_PLAYER_NAME } from "./player";
+export { PLAYER_ARCHETYPES_DATA } from "./player";
 export { TRIGRAM_TECHNIQUES, TECHNIQUE_PROPERTIES } from "./techniques";
 export { TRIGRAM_DATA, TRIGRAM_STANCES_ORDER } from "./trigram";
 export {
@@ -18,8 +18,7 @@ export {
   KOREAN_FONT_WEIGHTS,
   PIXI_TEXT_STYLES,
 } from "./typography";
-export { UI_LAYOUT, UI_CONSTANTS, HEALTH_COLORS } from "./ui";
-export { ANIMATION_TIMINGS, TECHNIQUE_ANIMATIONS } from "./animations";
+export { UI_CONSTANTS, HEALTH_COLORS } from "./ui";
 
 // Fix: Provide default export
 export { KOREAN_COLORS as default } from "./colors";
