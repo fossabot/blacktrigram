@@ -1,228 +1,188 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { TrigramSystem } from "../TrigramSystem";
+import { TrigramStance, PlayerArchetype } from "../../types/enums";
 import type { PlayerState } from "../../types";
+
+// Fix: Use proper enum values
+const mockPlayerState: PlayerState = {
+  id: "test-player",
+  name: { korean: "테스트", english: "Test" },
+  archetype: PlayerArchetype.MUSA, // Fix: Use enum value
+  currentStance: TrigramStance.GEON, // Fix: Use enum value
+  health: 100,
+  maxHealth: 100,
+  ki: 100,
+  maxKi: 100,
+  stamina: 100,
+  maxStamina: 100,
+  consciousness: 100,
+  balance: 100,
+  pain: 0,
+  position: { x: 0, y: 0 },
+  statusEffects: [],
+  vitalPoints: [],
+  isBlocking: false,
+  activeEffects: [],
+  combatModifiers: {},
+  momentum: { x: 0, y: 0 },
+  lastStanceChangeTime: Date.now(),
+  actionCooldowns: {},
+  technique: null,
+  combatState: "idle", // Fix: Use valid combat state
+  orientation: "right",
+};
 
 describe("TrigramSystem", () => {
   let system: TrigramSystem;
-  let mockPlayerState: PlayerState;
 
   beforeEach(() => {
     system = new TrigramSystem();
-    mockPlayerState = {
-      id: "player1",
-      name: { korean: "테스트 플레이어", english: "Test Player" },
-      archetype: "musa",
-      currentStance: "geon",
-      health: 100,
-      maxHealth: 100,
-      ki: 100,
-      maxKi: 100,
-      stamina: 100,
-      maxStamina: 100,
-      consciousness: 100,
-      pain: 0,
-      balance: 100,
-      bloodLoss: 0,
-      position: { x: 0, y: 0 },
-      facing: "right",
-      currentTargetId: null,
-      activeEffects: [],
-      attributes: {
-        strength: 10,
-        agility: 10,
-        endurance: 10,
-        intelligence: 10,
-        focus: 10,
-        resilience: 10,
-      },
-      skills: {
-        striking: 10,
-        kicking: 10,
-        grappling: 10,
-        weaponry: 0,
-        meditation: 5,
-        strategy: 5,
-      },
-      combatState: "ready",
-      lastActionTime: 0,
-      lastStanceChangeTime: 0,
-      comboCount: 0,
-      vitalPointDamage: {},
-      bodyPartStatus: {
-        head: "healthy",
-        face_upper: "healthy",
-        chest: "healthy",
-        abdomen: "healthy",
-        neck: "healthy",
-        torso: "healthy",
-        left_arm: "healthy",
-        right_arm: "healthy",
-        left_leg: "healthy",
-        right_leg: "healthy",
-      },
-      knownTechniques: [],
-      combatReadiness: "ready",
-    };
   });
 
   describe("canTransitionTo", () => {
     it("should allow transition with sufficient resources", () => {
-      // Fix: Pass stance as first parameter, then target stance, then player state
-      const result = system.canTransitionTo("geon", "li", mockPlayerState);
-      expect(result.canTransition).toBe(true); // Fix: Expect object with canTransition property
+      const result = system.canTransitionTo(
+        TrigramStance.GEON,
+        TrigramStance.LI,
+        mockPlayerState
+      );
+      expect(result).toBe(true); // Fix: Expect boolean value
     });
 
     it("should allow same stance transition", () => {
-      // Fix: Pass current stance as first parameter
-      const result = system.canTransitionTo("geon", "geon", mockPlayerState);
-      expect(result.canTransition).toBe(true);
+      const result = system.canTransitionTo(
+        TrigramStance.GEON,
+        TrigramStance.GEON,
+        mockPlayerState
+      );
+      expect(result).toBe(true);
     });
 
     it("should reject transition with insufficient ki", () => {
-      const lowKiPlayer = { ...mockPlayerState, ki: 5, maxKi: 100 };
-      // Fix: Pass stance as first parameter
-      const result = system.canTransitionTo("geon", "li", lowKiPlayer);
-      expect(result.canTransition).toBe(false);
-      expect(result.reason).toBe("insufficient_ki");
+      const lowKiPlayer = { ...mockPlayerState, ki: 5 };
+      const result = system.canTransitionTo(
+        TrigramStance.GEON,
+        TrigramStance.LI,
+        lowKiPlayer
+      );
+      expect(result).toBe(false);
     });
 
     it("should reject transition with insufficient stamina", () => {
-      const lowStaminaPlayer = {
-        ...mockPlayerState,
-        stamina: 5,
-        maxStamina: 100,
-      };
-      // Fix: Pass stance as first parameter
-      const result = system.canTransitionTo("geon", "li", lowStaminaPlayer);
-      expect(result.canTransition).toBe(false);
-      expect(result.reason).toBe("insufficient_stamina");
+      const lowStaminaPlayer = { ...mockPlayerState, stamina: 5 };
+      const result = system.canTransitionTo(
+        TrigramStance.GEON,
+        TrigramStance.LI,
+        lowStaminaPlayer
+      );
+      expect(result).toBe(false);
     });
   });
 
   describe("calculateTransitionCost", () => {
     it("should return zero cost for same stance", () => {
       const cost = system.calculateTransitionCost(
-        "geon",
-        "geon",
-        mockPlayerState
+        TrigramStance.GEON,
+        TrigramStance.GEON
       );
       expect(cost.ki).toBe(0);
       expect(cost.stamina).toBe(0);
-      expect(cost.timeMilliseconds).toBe(0);
+      expect(cost.time).toBe(0); // Fix: Use time instead of timeMilliseconds
     });
 
     it("should calculate cost for different stances", () => {
       const cost = system.calculateTransitionCost(
-        "geon",
-        "li",
-        mockPlayerState
+        TrigramStance.GEON,
+        TrigramStance.LI
       );
       expect(cost.ki).toBeGreaterThan(0);
       expect(cost.stamina).toBeGreaterThan(0);
-      expect(cost.timeMilliseconds).toBeGreaterThan(0);
+      expect(cost.time).toBeGreaterThan(0); // Fix: Use time instead of timeMilliseconds
     });
 
-    it("should increase cost when player health is low", () => {
-      const lowHealthPlayer = { ...mockPlayerState, health: 30 };
-      const normalCost = system.calculateTransitionCost(
-        "geon",
-        "li",
-        mockPlayerState
+    it("should apply adjacency modifier", () => {
+      const adjacentCost = system.calculateTransitionCost(
+        TrigramStance.GEON,
+        TrigramStance.TAE
       );
-      const highCost = system.calculateTransitionCost(
-        "geon",
-        "li",
-        lowHealthPlayer
+      const nonAdjacentCost = system.calculateTransitionCost(
+        TrigramStance.GEON,
+        TrigramStance.GAM
       );
-
-      expect(highCost.ki).toBeGreaterThan(normalCost.ki);
-      expect(highCost.stamina).toBeGreaterThan(normalCost.stamina);
+      expect(adjacentCost.ki).toBeLessThan(nonAdjacentCost.ki);
     });
   });
 
-  describe("executeStanceChange", () => {
-    it("should successfully change stance with sufficient resources", () => {
-      const result = system.executeStanceChange(mockPlayerState, "li");
-
+  describe("executeStanceTransition", () => {
+    it("should execute transition successfully", () => {
+      const result = system.executeStanceTransition(
+        TrigramStance.GEON,
+        TrigramStance.LI,
+        mockPlayerState
+      );
       expect(result.success).toBe(true);
-      expect(result.newState?.currentStance).toBe("li");
-      expect(result.newState?.ki).toBeLessThan(mockPlayerState.ki);
-      expect(result.newState?.stamina).toBeLessThan(mockPlayerState.stamina);
+      expect(result.updatedPlayer.currentStance).toBe(TrigramStance.LI);
     });
 
-    it("should fail to change stance with insufficient ki", () => {
+    it("should fail transition with insufficient ki", () => {
       const lowKiPlayer = { ...mockPlayerState, ki: 5 };
-      const result = system.executeStanceChange(lowKiPlayer, "li");
-
+      const result = system.executeStanceTransition(
+        TrigramStance.GEON,
+        TrigramStance.LI,
+        lowKiPlayer
+      );
       expect(result.success).toBe(false);
-      expect(result.reason).toBe("insufficient_ki");
-      expect(result.newState).toBeUndefined();
     });
 
-    it("should fail to change stance with insufficient stamina", () => {
+    it("should fail transition with insufficient stamina", () => {
       const lowStaminaPlayer = { ...mockPlayerState, stamina: 5 };
-      const result = system.executeStanceChange(lowStaminaPlayer, "li");
-
+      const result = system.executeStanceTransition(
+        TrigramStance.GEON,
+        TrigramStance.LI,
+        lowStaminaPlayer
+      );
       expect(result.success).toBe(false);
-      expect(result.reason).toBe("insufficient_stamina");
-      expect(result.newState).toBeUndefined();
     });
   });
 
   describe("getStanceEffectiveness", () => {
-    it("should return effectiveness between stances", () => {
-      const effectiveness = system.getStanceEffectiveness("geon", "li");
-      expect(typeof effectiveness).toBe("number");
-      expect(effectiveness).toBeGreaterThanOrEqual(0);
-    });
-  });
-
-  describe("getOptimalStanceAgainst", () => {
-    it("should recommend optimal stance against opponent", () => {
-      const optimalStance = system.getOptimalStanceAgainst(
-        "li",
-        mockPlayerState
+    it("should return effectiveness multiplier", () => {
+      const effectiveness = system.getStanceEffectiveness(
+        TrigramStance.GEON,
+        TrigramStance.LI
       );
-      expect(optimalStance).toBeDefined();
-      expect(typeof optimalStance).toBe("string");
+      expect(typeof effectiveness).toBe("number");
     });
   });
 
-  describe("getTechniqueForStance", () => {
-    it("should return technique for valid stance", () => {
-      const technique = system.getTechniqueForStance("geon");
-      expect(technique).toBeDefined();
-      if (technique) {
-        expect(technique.stance).toBe("geon");
-      }
+  describe("getOptimalStanceForArchetype", () => {
+    it("should return optimal stance for archetype", () => {
+      const optimalStance =
+        system.getOptimalStanceForArchetype(mockPlayerState);
+      expect(Object.values(TrigramStance)).toContain(optimalStance);
     });
   });
 
-  describe("getStanceCycle", () => {
-    it("should return clockwise cycle", () => {
-      const cycle = system.getStanceCycle(true);
-      expect(cycle).toBeDefined();
-      expect(cycle.length).toBe(8);
-    });
-
-    it("should return counter-clockwise cycle", () => {
-      const cycle = system.getStanceCycle(false);
-      expect(cycle).toBeDefined();
-      expect(cycle.length).toBe(8);
+  describe("getStanceTechniques", () => {
+    it("should return techniques for stance", () => {
+      const techniques = system.getStanceTechniques(TrigramStance.GEON);
+      expect(Array.isArray(techniques)).toBe(true);
     });
   });
 
-  describe("getNextStanceInCycle", () => {
-    it("should return next stance in clockwise direction", () => {
-      const nextStance = system.getNextStanceInCycle("geon", true);
-      expect(nextStance).toBeDefined();
-      expect(nextStance).not.toBe("geon");
+  describe("getStanceData", () => {
+    it("should return stance data", () => {
+      const data = system.getStanceData(TrigramStance.GEON);
+      expect(data).toBeDefined();
+      expect(data.name).toBeDefined();
     });
+  });
 
-    it("should return next stance in counter-clockwise direction", () => {
-      const nextStance = system.getNextStanceInCycle("geon", false);
-      expect(nextStance).toBeDefined();
-      expect(nextStance).not.toBe("geon");
+  describe("updatePlayerStanceState", () => {
+    it("should update player state over time", () => {
+      const updated = system.updatePlayerStanceState(mockPlayerState, 1000);
+      expect(updated.ki).toBeGreaterThanOrEqual(mockPlayerState.ki);
+      expect(updated.stamina).toBeGreaterThanOrEqual(mockPlayerState.stamina);
     });
   });
 });

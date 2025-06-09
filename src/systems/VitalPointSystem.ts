@@ -1,41 +1,44 @@
 // Korean martial arts vital point system
 
 import type {
+  VitalPoint,
+  VitalPointHitResult,
   PlayerState,
   KoreanTechnique,
-  VitalPointHitResult,
-  VitalPoint,
-  VitalPointEffect,
+  Position,
 } from "../types";
 import {
+  VitalPointCategory,
   VitalPointSeverity,
-  VitalPointEffectType,
-  EffectIntensity,
+  DamageType,
 } from "../types/enums";
 import { KOREAN_VITAL_POINTS } from "../types/constants/vital-points";
 
+/**
+ * Korean vital point system for precise anatomical targeting
+ */
 export class VitalPointSystem {
-  private vitalPoints: readonly VitalPoint[];
+  private vitalPoints: readonly VitalPoint[] = KOREAN_VITAL_POINTS;
 
-  constructor() {
-    this.vitalPoints = KOREAN_VITAL_POINTS;
+  /**
+   * Get all vital points
+   */
+  public getVitalPoints(): readonly VitalPoint[] {
+    return this.vitalPoints;
   }
 
   /**
-   * Check if an attack hits a vital point
+   * Check for vital point hit
    */
-  checkVitalPointHit(
+  public checkVitalPointHit(
     attacker: PlayerState,
-    defender: PlayerState,
+    targetPosition: Position,
     technique: KoreanTechnique
   ): VitalPointHitResult {
-    const baseHitChance = technique.accuracy * 0.3;
-    const precisionBonus = this.calculatePrecisionBonus(attacker, technique);
-    const finalHitChance = baseHitChance * precisionBonus;
+    // Find the closest vital point to the target position
+    const hitVitalPoint = this.findNearestVitalPoint(targetPosition);
 
-    const isHit = Math.random() < finalHitChance;
-
-    if (!isHit) {
+    if (!hitVitalPoint) {
       return {
         hit: false,
         damage: 0,
@@ -44,97 +47,154 @@ export class VitalPointSystem {
       };
     }
 
-    const targetVitalPoint = this.selectVitalPoint(technique);
-
-    if (!targetVitalPoint) {
-      return {
-        hit: false,
-        damage: 0,
-        effects: [],
-        severity: VitalPointSeverity.MINOR,
-      };
-    }
-
-    const vitalPointDamage = this.calculateVitalPointDamage(
-      targetVitalPoint,
-      technique
+    // Calculate damage based on vital point and technique
+    const damage = this.calculateVitalPointDamage(
+      hitVitalPoint,
+      technique,
+      attacker
     );
 
     return {
       hit: true,
-      damage: vitalPointDamage,
-      vitalPoint: targetVitalPoint,
-      effects: targetVitalPoint.effects,
-      severity: targetVitalPoint.severity,
+      damage,
+      vitalPoint: hitVitalPoint,
+      effects: hitVitalPoint.effects,
+      severity: hitVitalPoint.severity,
     };
   }
 
   /**
-   * Calculate precision bonus based on attacker stats and technique
+   * Find the nearest vital point to a position
    */
-  private calculatePrecisionBonus(
-    attacker: PlayerState,
-    technique: KoreanTechnique
-  ): number {
-    // Base precision from technique
-    let precision = 1.0;
+  private findNearestVitalPoint(position: Position): VitalPoint | null {
+    let nearestPoint: VitalPoint | null = null;
+    let minDistance = Infinity;
 
-    // Ki affects precision
-    if (attacker.ki > 50) {
-      precision *= 1.2;
-    } else if (attacker.ki < 20) {
-      precision *= 0.8;
+    for (const vitalPoint of this.vitalPoints) {
+      if (!vitalPoint.position) continue;
+
+      const distance = Math.sqrt(
+        Math.pow(position.x - vitalPoint.position.x, 2) +
+          Math.pow(position.y - vitalPoint.position.y, 2)
+      );
+
+      // Check if hit is within vital point radius (default 20 pixels)
+      const hitRadius = 20;
+      if (distance <= hitRadius && distance < minDistance) {
+        minDistance = distance;
+        nearestPoint = vitalPoint;
+      }
     }
 
-    // Consciousness affects precision
-    if (attacker.consciousness < 50) {
-      precision *= 0.7;
-    }
-
-    return precision;
+    return nearestPoint;
   }
 
   /**
-   * Select which vital point is targeted based on technique
-   */
-  private selectVitalPoint(technique: KoreanTechnique): VitalPoint | null {
-    const availablePoints = this.vitalPoints.filter(
-      (vp) => technique.targetAreas?.includes(vp.region || "torso") ?? true
-    );
-
-    if (availablePoints.length === 0) {
-      return null;
-    }
-
-    const randomIndex = Math.floor(Math.random() * availablePoints.length);
-    return availablePoints[randomIndex];
-  }
-
-  /**
-   * Calculate damage from hitting a vital point
+   * Calculate damage for vital point hit
    */
   private calculateVitalPointDamage(
     vitalPoint: VitalPoint,
-    technique: KoreanTechnique
+    technique: KoreanTechnique,
+    attacker: PlayerState
   ): number {
-    const baseDamage =
-      vitalPoint.baseDamage || vitalPoint.damage?.average || 15;
-    const techniqueMultiplier = (technique.damage || 20) / 20; // Normalize to base technique
+    const baseDamage = technique.damage || 0;
 
-    return baseDamage * techniqueMultiplier;
+    // Vital point damage multiplier
+    const vitalPointMultiplier = this.getVitalPointMultiplier(vitalPoint);
+
+    // Technique precision bonus
+    const precisionBonus = technique.accuracy || 1.0;
+
+    return Math.floor(baseDamage * vitalPointMultiplier * precisionBonus);
   }
 
   /**
-   * Get all vital points in a specific region
+   * Get damage multiplier for vital point severity
    */
-  getVitalPointsByRegion(region: string): VitalPoint[] {
-    return this.vitalPoints.filter((vp) => vp.region === region);
+  private getVitalPointMultiplier(vitalPoint: VitalPoint): number {
+    switch (vitalPoint.severity) {
+      case VitalPointSeverity.CRITICAL:
+        return 2.5;
+      case VitalPointSeverity.MAJOR:
+        return 2.0;
+      case VitalPointSeverity.MODERATE:
+        return 1.5;
+      case VitalPointSeverity.MINOR:
+        return 1.2;
+      default:
+        return 1.0;
+    }
   }
 
   /**
-   * Get vital point by ID
+   * Get vital points by category
    */
-  getVitalPointById(id: string): VitalPoint | undefined {
-    return this.vitalPoints.find((vp) => vp.id === id);
+  public getVitalPointsByCategory(
+    category: VitalPointCategory
+  ): readonly VitalPoint[] {
+    return this.vitalPoints.filter((vp) => vp.category === category);
+  }
+
+  /**
+   * Get vital points by severity
+   */
+  public getVitalPointsBySeverity(
+    severity: VitalPointSeverity
+  ): readonly VitalPoint[] {
+    return this.vitalPoints.filter((vp) => vp.severity === severity);
+  }
+
+  /**
+   * Check if a technique is effective against target region
+   */
+  public isTechniqueEffective(
+    technique: KoreanTechnique,
+    targetVitalPoint: VitalPoint
+  ): boolean {
+    // Check damage type compatibility
+    const damageType = technique.damageType;
+    const vitalPointCategory = targetVitalPoint.category;
+
+    // Simple effectiveness mapping
+    const effectiveness: Record<DamageType, VitalPointCategory[]> = {
+      [DamageType.BLUNT]: [
+        VitalPointCategory.MUSCULAR,
+        VitalPointCategory.SKELETAL,
+      ],
+      [DamageType.PIERCING]: [
+        VitalPointCategory.NEUROLOGICAL,
+        VitalPointCategory.VASCULAR,
+      ],
+      [DamageType.PRESSURE]: [
+        VitalPointCategory.NEUROLOGICAL,
+        VitalPointCategory.RESPIRATORY,
+      ],
+      [DamageType.NERVE]: [VitalPointCategory.NEUROLOGICAL],
+      [DamageType.JOINT]: [VitalPointCategory.SKELETAL],
+      [DamageType.INTERNAL]: [VitalPointCategory.ORGAN],
+      [DamageType.SLASHING]: [VitalPointCategory.VASCULAR],
+      [DamageType.IMPACT]: [VitalPointCategory.MUSCULAR],
+      [DamageType.CRUSHING]: [VitalPointCategory.SKELETAL],
+      [DamageType.SHARP]: [VitalPointCategory.VASCULAR],
+      [DamageType.ELECTRIC]: [VitalPointCategory.NEUROLOGICAL],
+      [DamageType.FIRE]: [VitalPointCategory.ORGAN],
+      [DamageType.ICE]: [VitalPointCategory.VASCULAR],
+      [DamageType.POISON]: [VitalPointCategory.ORGAN],
+      [DamageType.PSYCHIC]: [VitalPointCategory.NEUROLOGICAL],
+      [DamageType.BLOOD]: [VitalPointCategory.VASCULAR],
+    };
+
+    return effectiveness[damageType]?.includes(vitalPointCategory) ?? false;
+  }
+
+  /**
+   * Get recommended vital points for a technique
+   */
+  public getRecommendedVitalPoints(
+    technique: KoreanTechnique
+  ): readonly VitalPoint[] {
+    return this.vitalPoints.filter((vp) =>
+      this.isTechniqueEffective(technique, vp)
+    );
   }
 }

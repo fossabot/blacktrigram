@@ -33,21 +33,27 @@ export class TrainingCombatSystem extends CombatSystem {
         execution: technique.executionTime,
         recovery: technique.recoveryTime,
       },
-      effectiveness: baseResult.damage / technique.damage,
+      effectiveness: technique.damage
+        ? baseResult.damage / technique.damage
+        : 0, // Fix: Add null check
       tips: this.generateTrainingTips(technique, baseResult),
     };
 
-    // Apply infinite resources if enabled
+    // Apply infinite resources if enabled - Fix: Create new result instead of mutating
+    let updatedResult = baseResult;
     if (this.infiniteResources && baseResult.updatedAttacker) {
-      baseResult.updatedAttacker = {
-        ...baseResult.updatedAttacker,
-        ki: attacker.maxKi,
-        stamina: attacker.maxStamina,
+      updatedResult = {
+        ...baseResult,
+        updatedAttacker: {
+          ...baseResult.updatedAttacker,
+          ki: attacker.maxKi,
+          stamina: attacker.maxStamina,
+        },
       };
     }
 
     return {
-      ...baseResult,
+      ...updatedResult,
       trainingData,
     };
   }
@@ -71,7 +77,7 @@ export class TrainingCombatSystem extends CombatSystem {
       );
     }
 
-    if (result.damage < technique.damage * 0.8) {
+    if (technique.damage && result.damage < technique.damage * 0.8) {
       tips.push("Try to improve your stance for better damage output.");
     }
 
@@ -142,7 +148,9 @@ export class TrainingCombatSystem extends CombatSystem {
       averageDamage: totalDamage / results.length,
       hitRate: hits / results.length,
       criticalRate: criticals / results.length,
-      effectiveness: totalDamage / (technique.damage * results.length),
+      effectiveness: technique.damage
+        ? totalDamage / (technique.damage * results.length)
+        : 0,
     };
   }
 }

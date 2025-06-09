@@ -12,10 +12,6 @@ import { TRIGRAM_DATA } from "../types/constants";
  * Trigram system for Korean martial arts stance management
  */
 export class TrigramSystem {
-  private readonly maxTransitionCostKi = 50;
-  private readonly maxTransitionCostStamina = 30;
-  private readonly maxTransitionTimeMs = 1000;
-
   /**
    * Check if a stance transition is valid
    */
@@ -143,14 +139,15 @@ export class TrigramSystem {
   }
 
   /**
-   * Get stance data - Fix: Remove duplicate method and fix return type
+   * Get stance data - Fix: Include required name property
    */
   public getStanceData(stance: TrigramStance): TrigramData {
     const stanceData = TRIGRAM_DATA[stance];
 
-    // Fix: Return proper TrigramData structure
+    // Fix: Return proper TrigramData structure with required name property
     return {
       id: stance,
+      name: stanceData.name, // Fix: Add required name property
       korean: stanceData.name.korean,
       english: stanceData.name.english,
       symbol: stanceData.symbol,
