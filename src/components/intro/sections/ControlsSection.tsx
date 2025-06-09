@@ -174,4 +174,9 @@ export const ControlsSection: React.FC<ControlsSectionProps> = ({
   );
 };
 
+// Re-export from the components directory to maintain compatibility
+export {
+  ControlsSection,
+  type ControlsSectionProps,
+} from "../components/ControlsSection";
 export default ControlsSection;

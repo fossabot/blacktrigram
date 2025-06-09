@@ -6,26 +6,30 @@
 export * from "./combat";
 
 // Game components
-export * from "./game";
+export { GameEngine } from "./game/GameEngine";
+export { DojangBackground } from "./game/DojangBackground";
+export { Player } from "./game/Player";
+export { PlayerVisuals } from "./game/PlayerVisuals";
 
-// Intro components
-export * from "./intro";
+// Create a simple GameUI component export
+export const GameUI: React.FC<any> = () => null; // Placeholder - implement as needed
 
-// Training components
-export * from "./training";
+// UI components
+export { BaseButton } from "./ui/base/BaseButton";
+export { KoreanHeader } from "./ui/base/KoreanHeader";
+export { HealthBar } from "./ui/HealthBar";
+export { StanceIndicator } from "./ui/StanceIndicator";
+export { TrigramWheel } from "./ui/TrigramWheel";
+export { EndScreen } from "./ui/EndScreen";
 
-// UI components - specific exports to avoid conflicts
-export {
-  ArchetypeDisplay,
-  EndScreen,
-  HealthBar,
-  StanceIndicator,
-  ProgressTracker,
-  RoundTimer,
-  ScoreDisplay,
-  TrigramWheel,
-  KoreanHeader,
-} from "./ui";
+// Screen components
+export { IntroScreen } from "./intro/IntroScreen";
+export { CombatScreen } from "./combat/CombatScreen";
+export { TrainingScreen } from "./training/TrainingScreen";
 
-// Base UI components
-export * from "./ui/base";
+// Combat components
+export { CombatArena } from "./combat/components/CombatArena";
+export { CombatHUD } from "./combat/components/CombatHUD";
+export { CombatControls } from "./combat/components/CombatControls";
+
+import React from "react";

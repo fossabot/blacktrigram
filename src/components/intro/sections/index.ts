@@ -3,9 +3,9 @@
  */
 
 // Section components
-export { MenuSection } from "./MenuSection";
-export { PhilosophySection } from "./PhilosophySection";
-export { ControlsSection } from "./ControlsSection";
+export { MenuSection } from "../components/MenuSection";
+export { PhilosophySection } from "../components/PhilosophySection";
+export { ControlsSection } from "../components/ControlsSection";
 
 // Default exports
 export { default as MenuSectionDefault } from "./MenuSection";
