@@ -3,13 +3,26 @@
 import React, { useMemo } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import type { PlayerProps } from "../../types";
+import type { PlayerState } from "../../types"; // Fix: Remove PlayerProps import conflict
 import {
   KOREAN_COLORS,
   FONT_FAMILY,
   FONT_SIZES,
   FONT_WEIGHTS,
 } from "../../types/constants";
+
+// Fix: Define local PlayerProps interface
+interface UIPlayerProps {
+  readonly playerState: PlayerState;
+  readonly playerIndex: number;
+  readonly x?: number;
+  readonly y?: number;
+  readonly width?: number;
+  readonly height?: number;
+  readonly showVitalPoints?: boolean;
+  readonly interactive?: boolean;
+  readonly onClick?: (playerIndex: number) => void;
+}
 
 // Utility function to get archetype color
 const getArchetypeColor = (archetype: string): number => {
@@ -31,17 +44,16 @@ const BAR_COLORS = {
   focus: KOREAN_COLORS.ACCENT_PURPLE, // Corrected Color
 };
 
-export function Player({
+export const Player: React.FC<UIPlayerProps> = ({
   playerState,
   playerIndex,
-  onStateUpdate,
   x = 0,
   y = 0,
   width = 200,
   height = 150,
-  showVitalPoints = false,
-  ...containerProps
-}: PlayerProps): React.JSX.Element {
+  interactive = false,
+  onClick,
+}) => {
   const {
     name,
     archetype: playerArchetype,
@@ -116,8 +128,20 @@ export function Player({
     g.endFill();
   };
 
+  const handleClick = () => {
+    onClick?.(playerIndex);
+  };
+
   return (
-    <Container x={x} y={y} width={width} height={height} {...containerProps}>
+    <Container
+      x={x}
+      y={y}
+      width={width}
+      height={height}
+      interactive={interactive}
+      buttonMode={interactive}
+      pointertap={handleClick}
+    >
       <Graphics draw={drawBackground} />
       <Graphics draw={drawHealthBars} />
 
@@ -177,28 +201,6 @@ export function Player({
       </Container>
     </Container>
   );
-}
+};
 
 export default Player;
-
-export interface PlayerProps {
-  readonly playerState: PlayerState;
-  readonly x?: number;
-  readonly y?: number;
-  readonly showStats?: boolean;
-  readonly showVitalPoints?: boolean; // Add missing prop
-  readonly interactive?: boolean;
-  readonly onClick?: () => void;
-}
-
-export const Player: React.FC<PlayerProps> = ({
-  playerState,
-  x = 0,
-  y = 0,
-  showStats = true,
-  showVitalPoints = false, // Add missing prop
-  interactive = false,
-  onClick,
-}) => {
-  // ...existing code...
-};

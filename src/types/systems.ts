@@ -366,4 +366,39 @@ export interface SystemPerformance {
   readonly updateTime: number;
 }
 
+// Fix: Add missing CombatSystem export
+export interface CombatSystem {
+  readonly update: (
+    players: readonly [PlayerState, PlayerState],
+    deltaTime: number
+  ) => any;
+  readonly processTechnique: (
+    technique: KoreanTechnique,
+    attacker: PlayerState,
+    defender: PlayerState
+  ) => any;
+  readonly calculateDamage: (
+    technique: KoreanTechnique,
+    attacker: PlayerState,
+    defender: PlayerState
+  ) => number;
+}
+
+// Fix: Add missing TrigramSystem export
+export interface TrigramSystem {
+  readonly getCurrentStance: (playerId: string) => TrigramStance;
+  readonly changeStance: (playerId: string, stance: TrigramStance) => boolean;
+  readonly getStanceEffectiveness: (
+    attacker: TrigramStance,
+    defender: TrigramStance
+  ) => number;
+}
+
+// Fix: Add missing VitalPointSystem export
+export interface VitalPointSystem {
+  readonly getVitalPoints: () => readonly VitalPoint[];
+  readonly checkHit: (position: Position, force: number) => VitalPointHitResult;
+  readonly calculateDamage: (vitalPoint: VitalPoint, force: number) => number;
+}
+
 export default GameSystemState;

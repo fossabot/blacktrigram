@@ -7,17 +7,16 @@ import {
   FONT_FAMILY,
   FONT_SIZES,
   FONT_WEIGHTS,
-  GAME_CONFIG,
 } from "../../types/constants";
 import { BaseButton } from "./base/BaseButton";
 
 export const EndScreen: React.FC<EndScreenProps> = ({
   winner,
   matchStatistics,
-  onRestart,
   onReturnToMenu,
-  width = GAME_CONFIG.CANVAS_WIDTH,
-  height = GAME_CONFIG.CANVAS_HEIGHT,
+  onPlayAgain, // Fix: Add optional onPlayAgain prop
+  width = 800,
+  height = 600,
   x = 0,
   y = 0,
 }) => {
@@ -112,25 +111,26 @@ export const EndScreen: React.FC<EndScreenProps> = ({
         </Container>
       )}
 
-      {/* Action Buttons */}
-      <Container x={width / 2} y={height * 0.75}>
+      {/* Buttons */}
+      <Container x={width / 2 - 100} y={height - 100}>
         <BaseButton
-          text="다시 시작 (Restart)"
-          onClick={onRestart}
-          x={-120}
-          y={0}
+          text="메뉴로 돌아가기"
+          onClick={onReturnToMenu}
           width={200}
           height={50}
+          variant="primary"
         />
 
-        <BaseButton
-          text="메뉴로 (Menu)"
-          onClick={onReturnToMenu}
-          x={120}
-          y={0}
-          width={200}
-          height={50}
-        />
+        {onPlayAgain && (
+          <BaseButton
+            text="다시 플레이"
+            onClick={onPlayAgain}
+            width={200}
+            height={50}
+            variant="secondary"
+            y={60}
+          />
+        )}
       </Container>
     </Container>
   );

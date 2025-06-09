@@ -1,6 +1,6 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { Container } from "@pixi/react";
-import type { CombatScreenProps } from "../../types/components";
+import type { CombatScreenProps } from "../../types";
 import { CombatArena } from "./components/CombatArena";
 import { CombatHUD } from "./components/CombatHUD";
 import { CombatControls } from "./components/CombatControls";
@@ -17,27 +17,68 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
   isPaused,
   onPlayerUpdate,
   onReturnToMenu,
-  onGameEnd, // Use this parameter
+  onGameEnd,
   gameMode = GameMode.VERSUS,
   width = GAME_CONFIG.CANVAS_WIDTH,
   height = GAME_CONFIG.CANVAS_HEIGHT,
 }) => {
-  const handleCombatResult = useCallback((result: any) => {
-    console.log("Combat result:", result);
-    // Handle combat result processing
-  }, []);
+  const [isExecutingTechnique, setIsExecutingTechnique] = useState(false);
 
-  const handleGameEvent = useCallback((event: string, data?: any) => {
-    console.log("Game event:", event, data);
-    // Handle game events like win conditions, round changes, etc.
-  }, []);
-
-  const handleGameEnd = useCallback(
-    (winner?: PlayerState | null) => {
-      console.log("Game ended. Winner:", winner?.name.english);
-      onGameEnd(winner); // Use the onGameEnd prop
+  const handleCombatResult = useCallback(
+    (result: any) => {
+      console.log("Combat result:", result);
+      // Check for win conditions
+      if (result.winner) {
+        onGameEnd(result.winner);
+      }
     },
     [onGameEnd]
+  );
+
+  const handleGameEvent = useCallback(
+    (event: string, data?: any) => {
+      console.log("Game event:", event, data);
+      // Handle game events like win conditions, round changes, etc.
+      if (event === "player_defeated") {
+        onGameEnd(data.winner);
+      }
+    },
+    [onGameEnd]
+  );
+
+  const handlePlayerAction = useCallback(
+    (playerIndex: 0 | 1, action: string) => {
+      console.log(`Player ${playerIndex + 1} performed: ${action}`);
+      setIsExecutingTechnique(true);
+
+      // Reset technique execution after animation
+      setTimeout(() => {
+        setIsExecutingTechnique(false);
+      }, 500);
+    },
+    []
+  );
+
+  const handlePauseToggle = useCallback(() => {
+    // Pause logic would be handled by parent component (App.tsx)
+    console.log("Pause toggle requested");
+  }, []);
+
+  const handleStanceSwitch = useCallback(
+    (stance: any) => {
+      if (players[0]) {
+        onPlayerUpdate(0, { currentStance: stance });
+      }
+    },
+    [onPlayerUpdate, players]
+  );
+
+  const handleTechniqueExecute = useCallback(
+    (technique: any) => {
+      console.log("Executing technique:", technique);
+      handlePlayerAction(0, `technique_${technique.id}`);
+    },
+    [handlePlayerAction]
   );
 
   return (
@@ -66,6 +107,9 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         onPlayerClick={(playerIndex) => {
           console.log(`Player ${playerIndex + 1} clicked`);
         }}
+        width={width}
+        height={height - 200} // Leave space for HUD and controls
+        y={100}
       />
 
       {/* Combat HUD */}
@@ -77,25 +121,32 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         currentRound={currentRound}
         maxRounds={3}
         isPaused={isPaused}
-        onPauseToggle={() => {
-          console.log("Pause toggle requested");
-        }}
+        onPauseToggle={handlePauseToggle}
+        width={width}
+        height={100}
+        y={0}
       />
 
       {/* Combat Controls */}
       <CombatControls
-        onAttack={() => console.log("Attack")}
-        onDefend={() => console.log("Defend")}
-        onSwitchStance={() => console.log("Switch stance")}
-        onPauseToggle={() => console.log("Pause toggle")}
+        onAttack={() => handlePlayerAction(0, "attack")}
+        onDefend={() => handlePlayerAction(0, "defend")}
+        onSwitchStance={handleStanceSwitch}
+        onPauseToggle={handlePauseToggle}
         isPaused={isPaused}
         player={players[0]}
+        onTechniqueExecute={handleTechniqueExecute}
+        onGuard={() => handlePlayerAction(0, "guard")}
+        isExecutingTechnique={isExecutingTechnique}
+        width={width}
+        height={120}
+        y={height - 120}
       />
 
       {/* Return to menu button */}
       <Container x={width - 150} y={20}>
         <BaseButton
-          text="Menu"
+          text="메뉴 (Menu)"
           onClick={onReturnToMenu}
           variant="secondary"
           width={120}

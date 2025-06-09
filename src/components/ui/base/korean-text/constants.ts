@@ -1,5 +1,19 @@
 import { KOREAN_COLORS, FONT_FAMILY } from "../../../../types/constants";
-import type { KoreanTextVariant, KoreanTextConfig } from "./types";
+import { KoreanTextVariant, KoreanTextConfig } from "./types";
+
+// Fix: Re-export for local use
+export { KOREAN_COLORS, FONT_FAMILY };
+
+// Fix: Add FONT_SIZES export
+export const FONT_SIZES = {
+  tiny: 10,
+  small: 12,
+  medium: 16,
+  large: 20,
+  xlarge: 24,
+  huge: 32,
+  title: 36,
+} as const;
 
 // Fix: Remove invalid 'warning' variant
 export const KOREAN_TEXT_COLORS: Record<KoreanTextVariant, number> = {

@@ -1,130 +1,99 @@
 // Hit effects layer for combat feedback
 
-import React, { useState /*, useMemo // Unused */ } from "react";
+import React, { useEffect, useMemo } from "react";
+import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import {
-  Container,
-  Graphics,
-  Text,
-  useTick /*, useApp // Unused */,
-} from "@pixi/react";
-import type { HitEffect, HitEffectsLayerProps, KoreanText } from "../../types"; // Add KoreanText import
-import { HitEffectType } from "../../types/effects";
-import { KOREAN_COLORS } from "../../types/constants";
+import type { HitEffectsLayerProps } from "../../types/components";
+import type { DisplayHitEffect } from "../../types/effects"; // Fix: Remove unused HitEffect import
+import { KOREAN_COLORS, FONT_SIZES } from "../../types/constants";
 
-const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({ effects }) => {
-  const [currentTime, setCurrentTime] = useState(Date.now());
+export const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({
+  effects,
+  onEffectComplete,
+  width = 800, // Use width for container bounds
+  height = 600, // Use height for container bounds
+  x = 0,
+  y = 0,
+}) => {
+  const displayEffects = useMemo(() => {
+    return effects.map((effect: any) => ({
+      id: effect.id || `effect_${Date.now()}`,
+      position: effect.position || { x: 0, y: 0 },
+      color: effect.color || KOREAN_COLORS.ACCENT_RED,
+      damageAmount: effect.damageAmount,
+      text: effect.text,
+      type: effect.type || "damage",
+      duration: effect.duration || 1000,
+      intensity: effect.intensity || 1.0,
+      opacity: effect.opacity || 1.0,
+      scale: effect.scale || 1.0,
+      startTime: effect.startTime || Date.now(),
+      // Add missing display properties
+      displayAlpha: effect.displayAlpha || 1.0,
+      displayY: effect.displayY || effect.position?.y || 0,
+      displaySize: effect.displaySize || 20,
+    })) as DisplayHitEffect[];
+  }, [effects]);
 
-  useTick(() => {
-    setCurrentTime(Date.now());
-  });
+  // Use width and height for bounds checking
+  const boundedEffects = useMemo(() => {
+    return displayEffects.filter((effect) => {
+      const pos = effect.position;
+      return (
+        pos && pos.x >= 0 && pos.x <= width && pos.y >= 0 && pos.y <= height
+      );
+    });
+  }, [displayEffects, width, height]);
 
-  const activeEffects = effects.filter(
-    (effect: HitEffect) =>
-      currentTime - effect.timestamp < (effect.duration ?? 1000)
-  );
+  // Use onEffectComplete callback
+  useEffect(() => {
+    const completedEffects = displayEffects.filter(
+      (effect) => Date.now() - effect.startTime >= effect.duration
+    );
 
-  const getEffectColor = (effect: HitEffect): number => {
-    if (effect.color) return effect.color;
-    switch (effect.type) {
-      case HitEffectType.CRITICAL_HIT:
-        return KOREAN_COLORS.CRITICAL_HIT || KOREAN_COLORS.ACCENT_RED;
-      case HitEffectType.VITAL_POINT_STRIKE:
-        return KOREAN_COLORS.VITAL_POINT_HIT || KOREAN_COLORS.ACCENT_ORANGE;
-      case HitEffectType.GENERAL_DAMAGE:
-        return KOREAN_COLORS.ACCENT_RED;
-      default:
-        return effect.color || KOREAN_COLORS.ACCENT_RED;
-    }
-  };
-
-  const getEffectSize = (effect: HitEffect): number => {
-    let baseSize = effect.damageAmount || 10;
-    switch (effect.type) {
-      case HitEffectType.CRITICAL_HIT:
-        return baseSize * 0.7 + 10;
-      case HitEffectType.VITAL_POINT_STRIKE:
-        return baseSize * 0.6 + 7;
-      default:
-        return baseSize * 0.5 + 5;
-    }
-  };
-
-  const getEffectTextAndStyle = (
-    effect: HitEffect,
-    progress: number
-  ): { textStr: string; style: PIXI.TextStyle } => {
-    const text =
-      typeof effect.text === "object"
-        ? (effect.text as any).korean
-        : effect.text || (effect.damageAmount ? `${effect.damageAmount}` : "");
-    let fontSize = 16;
-    let fill: number = KOREAN_COLORS.TEXT_PRIMARY;
-
-    switch (effect.type) {
-      case HitEffectType.CRITICAL_HIT:
-        fontSize = 24;
-        fill = KOREAN_COLORS.CRITICAL_HIT || KOREAN_COLORS.ACCENT_RED;
-        break;
-      case HitEffectType.VITAL_POINT_STRIKE:
-        fontSize = 20;
-        fill = KOREAN_COLORS.VITAL_POINT_HIT || KOREAN_COLORS.ACCENT_ORANGE;
-        break;
-      default:
-        fill = getEffectColor(effect);
-        break;
-    }
-
-    return {
-      textStr: text,
-      style: new PIXI.TextStyle({
-        fill: fill,
-        fontSize: fontSize * (1 - progress * 0.5),
-        fontWeight: "bold",
-        stroke: KOREAN_COLORS.BLACK,
-        strokeThickness: 2,
-        align: "center",
-      }),
-    };
-  };
+    completedEffects.forEach((effect) => {
+      onEffectComplete?.(effect.id);
+    });
+  }, [displayEffects, onEffectComplete]);
 
   return (
-    <Container>
-      {activeEffects.map((effect) => {
-        const progress =
-          (currentTime - effect.timestamp) / (effect.duration ?? 1000);
-        const alpha = effect.alpha ?? 1 - progress; // Use effect.alpha if provided
-        const { textStr, style } = getEffectTextAndStyle(effect, progress);
-        const yOffset = (effect.yOffset ?? 0) - 30 * progress; // Use effect.yOffset
-
-        return (
-          <Container
-            key={effect.id}
-            x={effect.position?.x || 0}
-            y={(effect.position?.y || 0) + yOffset}
-            alpha={alpha}
-          >
-            <Graphics
-              draw={(g: PIXI.Graphics) => {
-                // Add type for g
-                g.clear();
-                g.beginFill(getEffectColor(effect), 0.8 * alpha);
-                g.drawCircle(
-                  0,
-                  0,
-                  getEffectSize(effect) * (1 + progress * 0.2)
-                ); // Slightly different expansion
-                g.endFill();
-              }}
+    <Container x={x} y={y}>
+      {boundedEffects.map((effect) => (
+        <Container
+          key={effect.id}
+          x={effect.position?.x || 0}
+          y={effect.position?.y || 0}
+        >
+          <Graphics
+            draw={(g: PIXI.Graphics) => {
+              g.clear();
+              g.beginFill(effect.color || KOREAN_COLORS.ACCENT_RED, 0.8);
+              g.drawCircle(0, 0, 20);
+              g.endFill();
+            }}
+          />
+          {(effect.damageAmount || effect.text) && (
+            <Text
+              text={
+                typeof effect.text === "string"
+                  ? effect.text
+                  : effect.text?.korean || ""
+              }
+              style={
+                new PIXI.TextStyle({
+                  fontSize: FONT_SIZES.large,
+                  fill: KOREAN_COLORS.TEXT_PRIMARY,
+                  fontWeight: "bold",
+                })
+              }
+              anchor={0.5}
+              y={-30}
             />
-            {textStr && (
-              <Text text={textStr} anchor={{ x: 0.5, y: 0.5 }} style={style} />
-            )}
-          </Container>
-        );
-      })}
+          )}
+        </Container>
+      ))}
     </Container>
   );
 };
 
-export default HitEffectsLayer; // Assuming default export
+export default HitEffectsLayer;

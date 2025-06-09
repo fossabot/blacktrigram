@@ -67,32 +67,31 @@ const BUTTON_SIZES = {
 
 export const BaseButton: React.FC<BaseButtonProps> = ({
   text,
+  onClick,
+  variant = "primary",
+  disabled = false,
   koreanText,
   icon,
-  variant = "primary",
   size = "medium",
-  disabled = false,
-  loading = false,
-  width: customWidth,
-  height: customHeight,
-  x = 0,
-  y = 0,
-  onClick,
   onPointerDown,
   onPointerUp,
   onPointerOver,
   onPointerOut,
   testId,
-  interactive = true,
   buttonMode = true,
+  loading = false,
+  width = 120,
+  height = 40,
+  x = 0,
+  y = 0,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
 
   const variantConfig = BUTTON_VARIANTS[variant];
   const sizeConfig = BUTTON_SIZES[size];
-  const buttonWidth = customWidth || sizeConfig.width;
-  const buttonHeight = customHeight || sizeConfig.height;
+  const buttonWidth = width;
+  const buttonHeight = height;
 
   const buttonTextContent = useMemo(() => {
     if (loading) return "Loading...";
@@ -191,8 +190,8 @@ export const BaseButton: React.FC<BaseButtonProps> = ({
     <Container
       x={x}
       y={y}
-      interactive={interactive && !disabled && !loading}
-      buttonMode={buttonMode && !disabled && !loading}
+      interactive={buttonMode && !disabled && !loading} // Fix: Use props instead of undefined variable
+      buttonMode={buttonMode}
       pointerdown={handlePointerDown}
       pointerup={handlePointerUp}
       pointerupoutside={handlePointerUp}

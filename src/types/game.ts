@@ -6,6 +6,7 @@ import type {
   KoreanText,
   CombatResult,
   MatchStatistics,
+  TrigramStance,
 } from "./index";
 
 // Main game state interface
@@ -141,4 +142,115 @@ export interface SaveData {
   readonly timestamp: number;
 }
 
-export default GameState;
+// Game session interface
+export interface GameSession {
+  readonly id: string;
+  readonly gameMode: GameMode;
+  readonly players: readonly [PlayerState, PlayerState];
+  readonly currentRound: number;
+  readonly maxRounds: number;
+  readonly roundTimeLimit: number;
+  readonly timeRemaining: number;
+  readonly isPaused: boolean;
+  readonly isGameOver: boolean;
+  readonly winner: PlayerState | null;
+}
+
+// Game configuration
+export interface GameConfig {
+  readonly maxHealth: number;
+  readonly maxKi: number;
+  readonly maxStamina: number;
+  readonly roundDuration: number;
+  readonly maxRounds: number;
+  readonly difficulty: "beginner" | "intermediate" | "expert" | "master";
+  readonly enableVitalPoints: boolean;
+  readonly enableStatusEffects: boolean;
+  readonly allowArchetypeSwitching: boolean;
+}
+
+// Match statistics
+export interface MatchStatistics {
+  readonly player1: PlayerMatchStatistics;
+  readonly player2: PlayerMatchStatistics;
+  readonly totalMatches: number;
+  readonly currentRound: number;
+  readonly maxRounds: number;
+  readonly roundsWon?: {
+    // Fix: Add missing roundsWon property
+    readonly player1: number;
+    readonly player2: number;
+  };
+}
+
+// Game event interface
+export interface GameEvent {
+  readonly type: string;
+  readonly timestamp: number;
+  readonly data?: any;
+  readonly playerId?: string;
+}
+
+// Round result
+export interface RoundResult {
+  readonly roundNumber: number;
+  readonly winner: PlayerState | null;
+  readonly method: "knockout" | "time" | "surrender";
+  readonly duration: number;
+  readonly finalHealth: readonly [number, number];
+}
+
+// Tournament bracket (for future expansion)
+export interface TournamentBracket {
+  readonly id: string;
+  readonly name: string;
+  readonly participants: readonly PlayerState[];
+  readonly matches: readonly Match[];
+  readonly currentRound: number;
+  readonly winner: PlayerState | null;
+}
+
+// Individual match in tournament
+export interface Match {
+  readonly id: string;
+  readonly player1: PlayerState;
+  readonly player2: PlayerState;
+  readonly result: RoundResult | null;
+  readonly scheduledTime?: number;
+}
+
+// Training session data
+export interface TrainingSession {
+  readonly playerId: string;
+  readonly archetype: string;
+  readonly practiceStance: TrigramStance;
+  readonly exercisesCompleted: readonly string[];
+  readonly duration: number;
+  readonly improvementMetrics: {
+    readonly accuracy: number;
+    readonly timing: number;
+    readonly technique: number;
+  };
+}
+
+// Game save data
+export interface GameSaveData {
+  readonly version: string;
+  readonly playerId: string;
+  readonly playerProgress: {
+    readonly archetypeExperience: Record<string, number>;
+    readonly unlockedTechniques: readonly string[];
+    readonly achievements: readonly string[];
+  };
+  readonly settings: {
+    readonly volume: number;
+    readonly difficulty: string;
+    readonly controls: Record<string, string>;
+  };
+  readonly statistics: {
+    readonly totalMatches: number;
+    readonly wins: number;
+    readonly losses: number;
+    readonly favoriteArchetype: string;
+  };
+}

@@ -2,8 +2,19 @@
  * Combat control configuration for Korean martial arts
  */
 
-import type { CombatControlsConfig } from "../controls";
+// Fix: Import TrigramStance as value
 import { TrigramStance } from "../enums";
+
+// Fix: Define CombatControlsConfig locally to avoid circular dependency
+export interface CombatControlsConfig {
+  readonly stanceControls: Record<
+    string,
+    { stance: string; korean: string; technique: string }
+  >;
+  readonly movement: Record<string, string>;
+  readonly combat: Record<string, string>;
+  readonly system: Record<string, string>;
+}
 
 // Combat control mapping for Korean martial arts
 export const COMBAT_CONTROLS: CombatControlsConfig = {
@@ -78,14 +89,20 @@ export const KEYBOARD_MAPPING = {
  */
 export function getStanceFromKey(key: string): TrigramStance | null {
   const stanceMap: Record<string, TrigramStance> = {
-    "1": "geon",
-    "2": "tae",
-    "3": "li",
-    "4": "jin",
-    "5": "son",
-    "6": "gam",
-    "7": "gan",
-    "8": "gon",
+    "1": TrigramStance.GEON,
+    "2": TrigramStance.TAE,
+    "3": TrigramStance.LI,
+    "4": TrigramStance.JIN,
+    "5": TrigramStance.SON,
+    "6": TrigramStance.GAM,
+    "7": TrigramStance.GAN,
+    "8": TrigramStance.GON,
   };
   return stanceMap[key] || null;
 }
+
+// Export COMBAT_CONTROLS for compatibility
+export { COMBAT_CONTROLS } from "./combat";
+
+// Also create an alias
+export const CONTROLS_CONFIG = COMBAT_CONTROLS;

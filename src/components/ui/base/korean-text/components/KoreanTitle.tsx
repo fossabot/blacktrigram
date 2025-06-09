@@ -1,57 +1,38 @@
 import React from "react";
-import type { KoreanTitleProps } from "../types";
-import {
-  KOREAN_COLORS,
-  KOREAN_FONT_FAMILY,
-} from "../../../../../types/constants";
+import { Text } from "@pixi/react";
+import * as PIXI from "pixi.js";
+import type { KoreanText } from "../types"; // Fix: Now properly exported
+import { KOREAN_COLORS, FONT_SIZES, FONT_FAMILY } from "../constants"; // Fix: Now properly exported
+
+interface KoreanTitleProps {
+  readonly text: KoreanText;
+  readonly level?: 1 | 2 | 3 | 4 | 5 | 6;
+  readonly color?: number;
+  readonly x?: number;
+  readonly y?: number;
+}
 
 export const KoreanTitle: React.FC<KoreanTitleProps> = ({
-  korean,
-  english,
+  text,
   level = 1,
-  variant = "primary",
-  cyberpunk = false,
-  glow = false,
-  className,
-  style,
-  display = "both",
-  order = "korean_first",
-  centerAlign = false,
-  ...rest
+  color = KOREAN_COLORS.TEXT_PRIMARY,
+  x = 0,
+  y = 0,
 }) => {
-  const TagName = `h${level}` as keyof JSX.IntrinsicElements;
+  const fontSize = FONT_SIZES.title - (level - 1) * 4;
 
-  const titleStyle: React.CSSProperties = {
-    fontFamily: KOREAN_FONT_FAMILY,
-    fontSize: level === 1 ? "2.5rem" : level === 2 ? "2rem" : "1.5rem",
+  const titleStyle = new PIXI.TextStyle({
+    fontFamily: FONT_FAMILY.KOREAN,
+    fontSize,
+    fill: color,
     fontWeight: "bold",
-    color:
-      variant === "primary"
-        ? `#${KOREAN_COLORS.TEXT_PRIMARY.toString(16)}`
-        : `#${KOREAN_COLORS.TEXT_ACCENT.toString(16)}`,
-    textAlign: centerAlign ? "center" : "left",
-    margin: "0.5rem 0",
-    textShadow: glow ? "0 0 10px currentColor" : "none",
-    ...style,
-  };
+    align: "center",
+  });
 
-  const displayText =
-    display === "korean"
-      ? korean
-      : display === "english"
-      ? english
-      : order === "korean_first"
-      ? `${korean} / ${english}`
-      : `${english} / ${korean}`;
+  const displayText = typeof text === "string" ? text : text.korean;
 
-  return React.createElement(
-    TagName,
-    {
-      className,
-      style: titleStyle,
-      ...rest,
-    },
-    displayText
+  return (
+    <Text text={displayText} style={titleStyle} x={x} y={y} anchor={0.5} />
   );
 };
 

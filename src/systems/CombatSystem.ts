@@ -406,4 +406,29 @@ export class CombatSystem {
 
     return updatedPlayer;
   }
+
+  // Fix: Add missing update method
+  public update(
+    players: readonly [PlayerState, PlayerState],
+    deltaTime: number
+  ) {
+    // Basic update logic
+    const events: Array<{ type: string; data: any }> = [];
+    let combatResult: any = null;
+
+    // Check for win conditions
+    if (players[0].health <= 0) {
+      combatResult = { winner: players[1], loser: players[0] };
+      events.push({ type: "player_defeated", data: { winner: players[1] } });
+    } else if (players[1].health <= 0) {
+      combatResult = { winner: players[0], loser: players[1] };
+      events.push({ type: "player_defeated", data: { winner: players[0] } });
+    }
+
+    return {
+      events,
+      combatResult,
+      playerUpdates: [] as Array<{ index: 0 | 1; updates: any }>,
+    };
+  }
 }

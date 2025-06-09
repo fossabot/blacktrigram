@@ -1,29 +1,30 @@
-// Korean text system exports
+/**
+ * Korean text components and utilities export
+ */
 
-// Component exports
-export { KoreanText } from "./KoreanText";
-export * from "./components";
+// Components
+export { KoreanText } from "./components/KoreanText";
+export { KoreanTitle } from "./components/KoreanTitle";
+export { KoreanMartialText } from "./components/KoreanMartialText";
+export { KoreanStatusText } from "./components/KoreanStatusText";
+export { KoreanTechniqueText } from "./components/KoreanTechniqueText";
 
-// Type exports
+// Utils - Fix: Use 'export type' for TypeScript isolatedModules
+export type { KoreanPixiTextStyle } from "./components/KoreanPixiTextUtils";
+export { createKoreanTextStyle } from "./components/KoreanPixiTextUtils";
+
+// Types
 export type * from "./types";
 
-// Utility exports
+// Constants - Fix: Use correct export names
 export {
-  isKoreanCharacter,
-  hasKoreanText,
-  validateKoreanText,
-  formatKoreanText,
-  getTextConfigForVariant,
-  sizeToPixels,
-  weightToCSSValue,
-} from "./utils";
-
-// Hook exports
-export * from "./hooks/useKoreanTextStyle";
-
-// Constant exports
-export {
-  KOREAN_TEXT_COLORS,
-  KOREAN_TEXT_VARIANT_SIZES,
-  KOREAN_TEXT_VARIANT_CONFIGS,
+  KOREAN_TEXT_SIZES,
+  KOREAN_FONT_FAMILY,
+  // Remove incorrect exports
 } from "./constants";
+
+// Hooks
+export { useKoreanTextStyle } from "./hooks/useKoreanTextStyle";
+
+// Utils
+export * from "./utils";

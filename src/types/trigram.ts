@@ -67,65 +67,66 @@ export interface TrigramData {
   readonly id: TrigramStance;
   readonly name: KoreanText;
   readonly symbol: string;
-  readonly element: KoreanText; // Changed from string to KoreanText
-  readonly direction?: string; // Made optional
-  readonly philosophy: KoreanText; // Added philosophy property
-  readonly combatRole: KoreanText; // Added combat role property
-  readonly technique: KoreanTechnique; // Associated signature technique
-  readonly strengths?: readonly string[]; // Added strengths property
-  readonly weaknesses?: readonly string[]; // Add missing weaknesses property
-  readonly offensiveBonus?: number; // Added
-  readonly defensiveBonus?: number; // Added
-  readonly kiFlowModifier?: number; // How this stance affects Ki recovery or usage
-  readonly staminaModifier?: number; // How this stance affects Stamina recovery or usage
-  readonly theme?: {
-    // Added theme for visual styling
-    readonly primary: number;
-    readonly secondary: number;
-    readonly active: number;
-    readonly hover: number;
-    readonly glow: number;
+  readonly element: string;
+  readonly nature: "yin" | "yang";
+  readonly philosophy: KoreanText;
+  readonly combat: KoreanText;
+  readonly theme: TrigramTheme;
+  readonly defensiveBonus: number;
+  readonly kiFlowModifier: number;
+}
+
+// Trigram effectiveness matrix
+export interface TrigramEffectivenessMatrix {
+  readonly [attacker: string]: {
+    readonly [defender: string]: number;
   };
 }
 
-// Effectiveness matrix for stance combinations
-export type TrigramEffectivenessMatrix = {
-  readonly [K in TrigramStance]: {
-    readonly [J in TrigramStance]: number;
-  };
-};
-
-// Stance system interface
-export interface TrigramSystemInterface {
-  getCurrentStance(): TrigramStance;
-  setStance(stance: TrigramStance): Promise<boolean>; // Returns true if successful
-  getAvailableTechniques(stance: TrigramStance): readonly KoreanTechnique[]; // Changed parameter
-  getTrigramData(stance: TrigramStance): TrigramData;
-  calculateTransition(
-    from: TrigramStance,
-    to: TrigramStance,
-    playerKi: number, // Added
-    playerStamina: number // Added
-  ): TrigramTransitionCost | null; // null if not possible
-  getEffectiveness(
-    attackerStance: TrigramStance,
-    defenderStance: TrigramStance
-  ): number;
+// Trigram stance transition
+export interface TrigramTransition {
+  readonly from: TrigramStance;
+  readonly to: TrigramStance;
+  readonly difficulty: number;
+  readonly kiCost: number;
+  readonly staminaCost: number;
+  readonly transitionTime: number;
 }
 
-// Archetype stance affinity
-export interface ArchetypeStanceAffinity {
-  readonly archetype: PlayerArchetype;
-  readonly affinities: Record<TrigramStance, number>;
-}
-
-// Add missing StanceTransition interface
+// Fix: Add missing StanceTransition export
 export interface StanceTransition {
   readonly from: TrigramStance;
   readonly to: TrigramStance;
-  readonly cost: TrigramTransitionCost;
-  readonly duration: number; // Added
-  readonly difficulty: number; // Added
+  readonly difficulty: number;
+  readonly time: number;
+  readonly kiCost: number;
+  readonly requirements?: string[];
+}
+
+// Trigram philosophy system
+export interface TrigramPhilosophy {
+  readonly trigram: TrigramStance;
+  readonly principle: KoreanText;
+  readonly application: KoreanText;
+  readonly strengthsAgainst: readonly TrigramStance[];
+  readonly weaknessesAgainst: readonly TrigramStance[];
+}
+
+// Trigram combat style
+export interface TrigramCombatStyle {
+  readonly trigram: TrigramStance;
+  readonly combatApproach: string;
+  readonly preferredRange: "close" | "medium" | "long";
+  readonly focusArea: "offense" | "defense" | "balance";
+  readonly keyCharacteristics: readonly string[];
+}
+
+// Archetype-trigram affinity
+export interface ArchetypeTrigramAffinity {
+  readonly archetype: PlayerArchetype;
+  readonly preferredTrigrams: readonly TrigramStance[];
+  readonly bonusEffectiveness: Record<TrigramStance, number>;
+  readonly penaltyTrigrams: readonly TrigramStance[];
 }
 
 // Ensure TrigramTheme has a text property

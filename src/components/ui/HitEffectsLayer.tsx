@@ -1,23 +1,17 @@
-import React, { useEffect, useState } from "react";
-import { Container, Graphics, Text, useApp } from "@pixi/react";
+import React, { useEffect, useState } from "react"; // Fix: Remove unused useMemo import
+import { Container, Graphics, Text } from "@pixi/react";
+import type { HitEffect, DisplayHitEffect } from "../../types/effects";
+import { KOREAN_COLORS } from "../../types/constants"; // Fix: Remove unused FONT_SIZES import
 import * as PIXI from "pixi.js";
-import type { HitEffect } from "../../types"; // Remove unused KoreanText import
-import { KOREAN_COLORS } from "../../types/constants";
-
-// Define local DisplayHitEffect type
-interface DisplayHitEffect extends HitEffect {
-  displayAlpha: number;
-  displaySize: number;
-  displayY: number;
-}
 
 interface HitEffectsLayerProps {
   effects: readonly HitEffect[];
   // ... other props
 }
 
-const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({ effects }) => {
-  const app = useApp();
+export const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({
+  effects,
+}) => {
   const [displayEffects, setDisplayEffects] = useState<DisplayHitEffect[]>([]);
 
   useEffect(() => {
@@ -46,7 +40,7 @@ const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({ effects }) => {
         })
         .filter((effect): effect is DisplayHitEffect => effect !== null)
     );
-  }, [effects, app.ticker.lastTime]); // Update based on ticker for smoother animations
+  }, [effects]); // Removed app.ticker.lastTime for simplicity
 
   return (
     <Container>
@@ -54,14 +48,14 @@ const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({ effects }) => {
         <Container
           key={effect.id}
           x={effect.position?.x || 0}
-          y={effect.displayY}
-          alpha={effect.displayAlpha}
+          y={effect.displayY} // Fix: Use correct property
+          alpha={effect.displayAlpha} // Fix: Use correct property
         >
           <Graphics
             draw={(g: PIXI.Graphics) => {
               g.clear();
-              g.beginFill(effect.color || KOREAN_COLORS.ACCENT_RED, 0.8); // Use effect.color
-              g.drawCircle(0, 0, effect.displaySize);
+              g.beginFill(effect.color || KOREAN_COLORS.ACCENT_RED, 0.8);
+              g.drawCircle(0, 0, effect.displaySize); // Fix: Use correct property
               g.endFill();
             }}
           />
@@ -78,8 +72,7 @@ const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({ effects }) => {
                   fill: KOREAN_COLORS.TEXT_PRIMARY,
                   fontSize: 16,
                   fontWeight: "bold",
-                  stroke: KOREAN_COLORS.BLACK_SOLID,
-                  strokeThickness: 2,
+                  stroke: { color: KOREAN_COLORS.BLACK_SOLID, width: 2 },
                 })
               }
             />

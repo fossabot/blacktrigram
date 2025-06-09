@@ -1,4 +1,6 @@
-// Common shared types for Black Trigram Korean martial arts game
+/**
+ * Common utility types for Korean martial arts game
+ */
 
 // Basic geometric types
 export interface Position {
@@ -11,188 +13,137 @@ export interface Dimensions {
   readonly height: number;
 }
 
-export interface Rectangle extends Position, Dimensions {}
-
-export interface Circle extends Position {
-  readonly radius: number;
-}
+export interface Bounds extends Position, Dimensions {}
 
 export interface Vector2D {
   readonly x: number;
   readonly y: number;
 }
 
-// Time and duration
+export interface Velocity extends Vector2D {}
+
+// Entity system types
+export type EntityId = string;
+
+export interface Entity {
+  readonly id: EntityId;
+  readonly position: Position;
+  readonly velocity?: Velocity;
+  readonly bounds?: Bounds;
+}
+
+// Time and duration types
+export type Timestamp = number;
+export type Duration = number;
+
 export interface TimeRange {
-  readonly start: number;
-  readonly end: number;
-  readonly duration: number;
+  readonly start: Timestamp;
+  readonly end: Timestamp;
+  readonly duration: Duration;
 }
 
-export interface Timestamp {
-  readonly created: number;
-  readonly updated: number;
+// Color types
+export type ColorValue = number; // Hex color value
+export type ColorAlpha = number; // 0-1 alpha value
+
+export interface ColorRGBA {
+  readonly r: number; // 0-255
+  readonly g: number; // 0-255
+  readonly b: number; // 0-255
+  readonly a: number; // 0-1
 }
 
-// Numeric ranges and values
-export interface NumberRange {
-  readonly min: number;
-  readonly max: number;
+// Event system types
+export interface GameEvent<T = any> {
+  readonly type: string;
+  readonly timestamp: Timestamp;
+  readonly data: T;
 }
 
-export interface DamageRange extends NumberRange {
-  readonly critical?: number;
-  readonly type?: string;
-}
+// Result types
+export type Result<T, E = Error> =
+  | { success: true; data: T }
+  | { success: false; error: E };
 
-export interface StatRange extends NumberRange {
-  readonly current: number;
-}
+// Optional and nullable types
+export type Optional<T> = T | undefined;
+export type Nullable<T> = T | null;
 
-// Generic data structures
-export interface KeyValue<T = any> {
-  readonly [key: string]: T;
-}
-
-export interface NamedEntity {
-  readonly id: string;
-  readonly name: string;
-}
-
-export interface KoreanNamedEntity extends NamedEntity {
-  readonly koreanName: string;
-  readonly englishName: string;
+// Korean text support
+export interface KoreanText {
+  readonly korean: string;
+  readonly english: string;
   readonly romanized?: string;
 }
 
-// Validation and constraints
-export interface Constraint<T> {
-  readonly validate: (value: T) => boolean;
-  readonly message: string;
+// Range types for combat calculations
+export interface Range<T = number> {
+  readonly min: T;
+  readonly max: T;
 }
 
-export interface ValidationResult {
-  readonly isValid: boolean;
-  readonly errors: readonly string[];
-  readonly warnings?: readonly string[];
+export interface WeightedRange extends Range {
+  readonly weight: number;
 }
 
-// Event system
-export interface GameEvent<T = any> {
-  readonly type: string;
-  readonly timestamp: number;
-  readonly source: string;
-  readonly data: T;
-  readonly id?: string;
+// Configuration types
+export interface ConfigOption<T = any> {
+  readonly key: string;
+  readonly value: T;
+  readonly default: T;
+  readonly description?: string;
 }
 
-export interface EventHandler<T = any> {
-  (event: GameEvent<T>): void | Promise<void>;
+// Korean martial arts specific types
+export interface MaritalArtsMetadata {
+  readonly origin: string;
+  readonly philosophy: KoreanText;
+  readonly practitioner: string;
+  readonly difficulty: number; // 1-10 scale
 }
 
-// Resource management
-export interface Resource {
-  readonly id: string;
-  readonly type: string;
-  readonly url?: string;
-  readonly data?: any;
-  readonly loaded: boolean;
-  readonly error?: string;
-}
+// Utility functions as types
+export type Predicate<T> = (value: T) => boolean;
+export type Transformer<T, U> = (value: T) => U;
+export type Comparator<T> = (a: T, b: T) => number;
 
-export interface ResourceCollection {
-  readonly [id: string]: Resource;
-}
-
-// Configuration objects
-export interface Config {
-  readonly version: string;
-  readonly environment: "development" | "production" | "test";
-  readonly debug: boolean;
-  readonly performance: {
-    readonly targetFPS: number;
-    readonly enableProfiling: boolean;
-  };
-}
-
-// Error handling
-export interface GameError extends Error {
+// Error types
+export interface GameError {
   readonly code: string;
-  readonly category: "system" | "user" | "network" | "validation";
-  readonly severity: "low" | "medium" | "high" | "critical";
-  readonly timestamp: number;
-  readonly context?: KeyValue;
+  readonly message: string;
+  readonly timestamp: Timestamp;
+  readonly context?: Record<string, any>;
 }
 
-export interface ErrorHandler {
-  (error: GameError): void;
-}
-
-// Animation and transitions
-export interface AnimationFrame {
-  readonly time: number;
-  readonly value: any;
-  readonly easing?: string;
-}
-
-export interface Animation {
+// Asset loading types
+export interface AssetReference {
   readonly id: string;
-  readonly duration: number;
-  readonly frames: readonly AnimationFrame[];
-  readonly loop?: boolean;
-  readonly autoStart?: boolean;
+  readonly url: string;
+  readonly type: string;
+  readonly loaded: boolean;
 }
 
-// UI base types
-export interface BaseUIProps {
-  readonly x?: number;
-  readonly y?: number;
-  readonly width?: number;
-  readonly height?: number;
-  readonly visible?: boolean;
-  readonly interactive?: boolean;
-  readonly alpha?: number;
-  readonly rotation?: number;
-  readonly scale?: number | { x: number; y: number };
-}
-
-// Theme and styling
-export interface ColorTheme {
-  readonly primary: number;
-  readonly secondary: number;
-  readonly accent: number;
-  readonly background: number;
-  readonly text: number;
-  readonly border: number;
-  readonly success: number;
-  readonly warning: number;
-  readonly error: number;
-}
-
-export interface FontStyle {
-  readonly family: string;
-  readonly size: number;
-  readonly weight: string | number;
-  readonly style?: "normal" | "italic" | "oblique";
-  readonly color?: number;
-}
+export type AssetLoadingState = "pending" | "loading" | "loaded" | "error";
 
 // Performance monitoring
 export interface PerformanceMetrics {
   readonly fps: number;
   readonly frameTime: number;
   readonly memoryUsage: number;
-  readonly drawCalls: number;
-  readonly activeObjects: number;
+  readonly renderTime: number;
 }
 
-// Utility types
-export type DeepReadonly<T> = {
-  readonly [P in keyof T]: DeepReadonly<T[P]>;
+// Export utility type guards
+export const isPosition = (obj: any): obj is Position => {
+  return obj && typeof obj.x === "number" && typeof obj.y === "number";
 };
 
-export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+export const isKoreanText = (obj: any): obj is KoreanText => {
+  return (
+    obj && typeof obj.korean === "string" && typeof obj.english === "string"
+  );
+};
 
-export type RequiredFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
-
-export default Position;
+export const isColorValue = (value: any): value is ColorValue => {
+  return typeof value === "number" && value >= 0 && value <= 0xffffff;
+};

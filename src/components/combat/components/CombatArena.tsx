@@ -39,18 +39,20 @@ export const CombatArena: React.FC<CombatArenaProps> = ({
       {/* Players */}
       <Player
         playerState={players[0]}
+        playerIndex={0} // Fix: Add missing playerIndex prop
         x={players[0].position.x}
         y={players[0].position.y}
         onClick={() => onPlayerClick?.(0)}
-        interactive={!!onPlayerClick}
+        interactive={true}
       />
 
       <Player
         playerState={players[1]}
+        playerIndex={1} // Fix: Add missing playerIndex prop
         x={players[1].position.x}
         y={players[1].position.y}
         onClick={() => onPlayerClick?.(1)}
-        interactive={!!onPlayerClick}
+        interactive={true}
       />
     </Container>
   );

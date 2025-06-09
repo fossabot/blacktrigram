@@ -1,24 +1,47 @@
-// Combat mechanics types for Korean martial arts game
+// Korean martial arts combat system types
 
 import type {
   PlayerArchetype,
   TrigramStance,
-  DamageType,
-  CombatState, // Add CombatState import
   EnumCombatAttackType,
+  DamageType,
+  CombatState,
 } from "./enums";
 import type {
+  HitEffect,
+  KoreanText,
   PlayerState,
-  KoreanTechnique,
+  Position,
   StatusEffect,
   VitalPoint,
-  HitEffect,
-  KoreanText, // Added KoreanText
 } from "./index";
-import type { DamageRange } from ".";
 
-// Use the enum type directly
+// Fix: Remove circular import and define DamageRange locally
+export interface DamageRange {
+  readonly min: number;
+  readonly max: number;
+  readonly average: number;
+}
+
+// Export the enum types for proper usage
 export type CombatAttackType = EnumCombatAttackType;
+export type DamageType =
+  | "blunt"
+  | "piercing"
+  | "slashing"
+  | "pressure"
+  | "nerve"
+  | "joint"
+  | "internal"
+  | "impact"
+  | "crushing"
+  | "sharp"
+  | "electric"
+  | "fire"
+  | "ice"
+  | "poison"
+  | "psychic"
+  | "blood";
 
 // Add missing TechniqueType export
 export type TechniqueType =
@@ -59,20 +82,13 @@ export interface KoreanTechnique {
 
 // Combat result from technique execution
 export interface CombatResult {
-  readonly attacker: PlayerState;
-  readonly defender: PlayerState;
+  readonly success: boolean;
   readonly damage: number;
-  readonly hit: boolean; // Add missing property
-  readonly critical: boolean;
-  readonly blocked: boolean;
-  readonly parried: boolean;
-  readonly dodged: boolean;
-  readonly effects: readonly HitEffect[]; // Add missing property
-  readonly vitalPointsHit?: readonly VitalPoint[];
-  readonly hitEffect?: HitEffect;
-  readonly message?: KoreanText;
-  readonly updatedAttacker?: Partial<PlayerState>; // Add missing property
-  readonly updatedDefender?: Partial<PlayerState>; // Add missing property
+  readonly effects: readonly string[];
+  readonly criticalHit: boolean;
+  readonly vitalPointHit: boolean;
+  readonly winner?: 0 | 1;
+  readonly updatedPlayers?: readonly [PlayerState, PlayerState]; // Fix: Ensure tuple type
 }
 
 // Type alias for HitResult as requested by error messages
@@ -111,9 +127,6 @@ export interface CombatEvent {
   readonly winnerId?: string; // Added
 }
 
-// Fix exports - remove CombatState
-export type { DamageType } from "./enums";
-
 // Attack input for combat system
 export interface AttackInput {
   readonly attacker: PlayerState;
@@ -145,4 +158,38 @@ export interface MatchStatistics {
     readonly player1: number;
     readonly player2: number;
   };
+}
+
+// Fix: Add missing CombatAction export
+export interface CombatAction {
+  readonly type: string;
+  readonly playerId: string;
+  readonly timestamp: number;
+  readonly data?: any;
+}
+
+// Fix: Add missing DamageCalculation export
+export interface DamageCalculation {
+  readonly baseDamage: number;
+  readonly modifiedDamage: number;
+  readonly criticalHit: boolean;
+  readonly vitalPointHit: boolean;
+  readonly blocked: boolean;
+  readonly effectiveness: number;
+}
+
+// Fix: Add missing CombatPhase export
+export interface CombatPhase {
+  readonly name: string;
+  readonly duration: number;
+  readonly allowedActions: readonly string[];
+}
+
+// Fix: Export CombatState instead of keeping it local
+export interface CombatState {
+  readonly phase: string;
+  readonly timeRemaining: number;
+  readonly roundNumber: number;
+  readonly players: readonly [PlayerState, PlayerState];
+  readonly isPaused: boolean;
 }

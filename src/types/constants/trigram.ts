@@ -298,6 +298,35 @@ export const TRIGRAM_DATA: Record<TrigramStance, TrigramStanceData> = {
   },
 } as const;
 
+export interface TrigramStanceData {
+  readonly name: { korean: string; english: string };
+  readonly symbol: string;
+  readonly element: string;
+  readonly nature: "yin" | "yang";
+  readonly philosophy: { korean: string; english: string };
+  readonly combat: { korean: string; english: string };
+  readonly theme: {
+    primary: number;
+    secondary: number;
+  };
+  readonly defensiveBonus: number;
+  readonly kiFlowModifier: number;
+  readonly techniques: {
+    primary: {
+      korean: string;
+      english: string;
+      damage: number;
+      kiCost: number;
+      staminaCost: number;
+      hitChance: number;
+      criticalChance: number;
+      description: { korean: string; english: string };
+      targetAreas: string[];
+      effects: string[];
+    };
+  };
+}
+
 // Stance Effectiveness Matrix (Example: Rock-Paper-Scissors style)
 // Attacker Stance (row) vs Defender Stance (column)
 // Value > 1.0: Attacker has advantage

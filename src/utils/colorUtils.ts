@@ -52,10 +52,11 @@ export interface HSL {
   l: number; // Lightness: 0-100
 }
 
+// RGB interface
 export interface RGB {
-  r: number; // Red: 0-255
-  g: number; // Green: 0-255
-  b: number; // Blue: 0-255
+  r: number;
+  g: number;
+  b: number;
 }
 
 /**
@@ -224,24 +225,6 @@ export function blendColors(
 }
 
 /**
- * Convert hex color to RGB components
- */
-export function hexToRgb(hex: number): { r: number; g: number; b: number } {
-  return {
-    r: (hex >> 16) & 0xff,
-    g: (hex >> 8) & 0xff,
-    b: hex & 0xff,
-  };
-}
-
-/**
- * Convert RGB components to hex color
- */
-export function rgbToHex(r: number, g: number, b: number): number {
-  return (r << 16) | (g << 8) | b;
-}
-
-/**
  * Darken a color by a percentage
  */
 export function darkenColor(color: number, amount: number = 0.1): number {
@@ -272,7 +255,7 @@ export function lightenColor(color: number, amount: number = 0.1): number {
  */
 export function getHealthColor(healthPercent: number): number {
   if (healthPercent > 0.75) return KOREAN_COLORS.POSITIVE_GREEN;
-  if (healthPercent > 0.5) return KOREAN_COLORS.ACCENT_YELLOW;
+  if (healthPercent > 0.5) return KOREAN_COLORS.SECONDARY_YELLOW;
   if (healthPercent > 0.25) return KOREAN_COLORS.WARNING_ORANGE;
   return KOREAN_COLORS.NEGATIVE_RED;
 }

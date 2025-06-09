@@ -1,5 +1,13 @@
-// Training is now handled by CombatScreen with training mode
-export { default as TrainingScreen } from "./TrainingScreen";
+/**
+ * Training mode components for Korean martial arts practice
+ */
 
-// Re-export CombatScreen as the main training interface
-export { default as CombatScreen } from "../combat/CombatScreen";
+// Main training screen
+export { TrainingScreen } from "./TrainingScreen";
+export { default as TrainingScreenDefault } from "./TrainingScreen";
+
+// Re-export training screen
+export * from "./TrainingScreen";
+
+// Training-specific utilities and types
+export type { TrainingScreenProps } from "../../types/components";

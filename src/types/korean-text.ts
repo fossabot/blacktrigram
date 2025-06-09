@@ -1,25 +1,15 @@
-// Korean text handling for authentic martial arts terminology
+/**
+ * Korean text system types for bilingual martial arts content
+ */
 
-// Korean text with English translation
+// Core Korean text interface
 export interface KoreanText {
   readonly korean: string;
   readonly english: string;
-  readonly romanized?: string; // For pronunciation guide
-  readonly pronunciation?: string; // IPA or simplified pronunciation
+  readonly romanized?: string;
 }
 
-// Text styling options for Korean martial arts UI
-export interface KoreanTextStyle {
-  readonly size: KoreanTextSize;
-  readonly weight: KoreanTextWeight;
-  readonly emphasis: KoreanTextEmphasis;
-  readonly color?: string | number;
-  readonly showBoth?: boolean;
-  readonly koreanFirst?: boolean;
-  readonly separator?: string;
-}
-
-// Text size categories
+// Korean text size enum
 export enum KoreanTextSize {
   TINY = "tiny",
   SMALL = "small",
@@ -29,44 +19,53 @@ export enum KoreanTextSize {
   HUGE = "huge",
 }
 
-// Text weight for emphasis
+// Fix: Korean text weight enum with proper values
 export enum KoreanTextWeight {
   LIGHT = "light",
-  NORMAL = "normal",
+  NORMAL = "normal", // Fix: Use NORMAL instead of REGULAR
   MEDIUM = "medium",
   SEMIBOLD = "semibold",
   BOLD = "bold",
   HEAVY = "heavy",
 }
 
-// Text emphasis types
-export enum KoreanTextEmphasis {
-  NONE = "none",
-  TECHNIQUE = "technique",
-  STANCE = "stance",
-  DAMAGE = "damage",
-  CRITICAL = "critical",
-  STATUS = "status",
-  PHILOSOPHY = "philosophy",
+// Korean text styles for different contexts
+export interface KoreanTextStyle {
+  readonly size: KoreanTextSize;
+  readonly weight: KoreanTextWeight;
+  readonly color: number;
+  readonly alignment: "left" | "center" | "right";
 }
 
-// Korean martial arts terminology categories
-export interface KoreanTerminology {
-  readonly techniques: Record<string, KoreanText>;
-  readonly stances: Record<string, KoreanText>;
-  readonly bodyParts: Record<string, KoreanText>;
-  readonly vitalPoints: Record<string, KoreanText>;
-  readonly philosophy: Record<string, KoreanText>;
-  readonly combat: Record<string, KoreanText>;
-  readonly ui: Record<string, KoreanText>;
+// Korean martial arts text variants
+export type KoreanMartialTextVariant =
+  | "technique"
+  | "stance"
+  | "philosophy"
+  | "archetype"
+  | "status"
+  | "combat";
+
+// Status text configuration
+export interface KoreanStatusTextConfig {
+  readonly variant: KoreanMartialTextVariant;
+  readonly honorLevel: "formal" | "casual" | "traditional";
+  readonly showRomanization: boolean;
 }
 
-// Text formatting utilities
-export interface KoreanTextFormatter {
-  format(text: KoreanText, style: KoreanTextStyle): string;
-  formatList(texts: readonly KoreanText[], style: KoreanTextStyle): string;
-  formatWithRomanization(text: KoreanText): string;
-  formatForUI(text: KoreanText, showBoth?: boolean): string;
+// Fix: Add missing KoreanTextProps export
+export interface KoreanTextProps {
+  readonly text: KoreanText;
+  readonly size?: KoreanTextSize;
+  readonly weight?: KoreanTextWeight;
+  readonly alignment?: KoreanTextAlignment;
+  readonly color?: number;
+}
+
+// Fix: Add missing KoreanTextAlignment export
+export interface KoreanTextAlignment {
+  readonly horizontal: "left" | "center" | "right";
+  readonly vertical: "top" | "middle" | "bottom";
 }
 
 export default KoreanText;

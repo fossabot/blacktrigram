@@ -1,82 +1,60 @@
 import React, { useCallback } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import type { TrigramStance } from "../../types/enums";
-import {
-  KOREAN_COLORS,
-  FONT_FAMILY,
-  FONT_SIZES,
-  TRIGRAM_DATA,
-} from "../../types/constants";
+import type { TrigramStance } from "../../types";
+import { KOREAN_COLORS, FONT_SIZES, TRIGRAM_DATA } from "../../types/constants";
 
 export interface StanceIndicatorProps {
   readonly stance: TrigramStance;
   readonly size?: number;
+  readonly showText?: boolean;
+  readonly color?: number;
+  readonly onClick?: (stance: TrigramStance) => void;
   readonly x?: number;
   readonly y?: number;
+  readonly width?: number;
+  readonly height?: number;
   readonly isActive?: boolean;
-  readonly showText?: boolean;
-  readonly showLabel?: boolean;
-  readonly onClick?: (stance: TrigramStance) => void;
 }
 
 export const StanceIndicator: React.FC<StanceIndicatorProps> = ({
   stance,
-  size = 50,
-  isActive = false,
+  size = 60,
   showText = true,
-  showLabel = false,
+  color,
+  onClick, // Fix: Use onClick prop
+  isActive = true,
   x = 0,
   y = 0,
-  onClick,
 }) => {
   const stanceData = TRIGRAM_DATA[stance];
-  const labelText = stanceData?.name.korean || "";
 
-  const indicatorDraw = useCallback(
+  const drawStanceIndicator = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
 
-      // Background circle
-      const bgColor = isActive
-        ? stanceData?.theme?.active || KOREAN_COLORS.ACCENT_GOLD
-        : stanceData?.theme?.primary || KOREAN_COLORS.UI_BORDER;
+      if (stanceData) {
+        g.beginFill(
+          isActive ? stanceData.theme.primary : stanceData.theme.secondary,
+          isActive ? 1.0 : 0.6
+        );
+      } else {
+        g.beginFill(KOREAN_COLORS.UI_GRAY, 0.5);
+      }
 
-      g.beginFill(bgColor, isActive ? 0.8 : 0.6);
-      g.drawCircle(0, 0, size / 2);
+      // Draw hexagon or circle for stance indicator
+      const radius = size / 2;
+      g.drawCircle(radius, radius, radius - 2);
       g.endFill();
 
       // Border
-      const borderColor = isActive
-        ? KOREAN_COLORS.ACCENT_GOLD
-        : stanceData?.theme?.secondary || KOREAN_COLORS.UI_BORDER_LIGHT;
-
-      g.lineStyle(2, borderColor, 1.0);
-      g.drawCircle(0, 0, size / 2);
-
-      // Trigram symbol (simplified representation)
-      g.lineStyle(3, KOREAN_COLORS.TEXT_PRIMARY, 1.0);
-      const symbolSize = size * 0.3;
-      for (let i = 0; i < 3; i++) {
-        const y = (i - 1) * (symbolSize / 3);
-        g.moveTo(-symbolSize / 2, y);
-        g.lineTo(symbolSize / 2, y);
-      }
+      g.lineStyle(2, KOREAN_COLORS.PRIMARY_CYAN, isActive ? 1.0 : 0.5);
+      g.drawCircle(radius, radius, radius - 2);
     },
-    [stance, size, isActive, stanceData]
+    [stance, size, color, isActive]
   );
 
-  const textColor = isActive
-    ? KOREAN_COLORS.ACCENT_GOLD
-    : KOREAN_COLORS.TEXT_PRIMARY;
-
-  const textStyle = new PIXI.TextStyle({
-    fontFamily: FONT_FAMILY.PRIMARY,
-    fontSize: FONT_SIZES.small,
-    fill: textColor,
-    align: "center",
-  });
-
+  // Fix: Add click handler
   const handleClick = useCallback(() => {
     onClick?.(stance);
   }, [onClick, stance]);
@@ -85,33 +63,40 @@ export const StanceIndicator: React.FC<StanceIndicatorProps> = ({
     <Container
       x={x}
       y={y}
-      interactive={!!onClick}
+      interactive={!!onClick} // Make interactive if onClick is provided
       buttonMode={!!onClick}
-      pointerdown={handleClick}
+      pointertap={handleClick} // Fix: Use onClick functionality
     >
-      <Graphics draw={indicatorDraw} />
+      <Graphics draw={drawStanceIndicator} />
 
+      {/* Stance Symbol */}
+      <Text
+        text={stanceData?.symbol || stance}
+        anchor={0.5}
+        x={size / 2}
+        y={size / 2}
+        style={
+          new PIXI.TextStyle({
+            fontSize: size * 0.4,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
+            fontWeight: "bold",
+          })
+        }
+      />
+
+      {/* Stance Name */}
       {showText && (
         <Text
-          text={stanceData?.symbol || stance}
-          style={textStyle}
+          text={stanceData?.name.korean || stance}
           anchor={0.5}
-        />
-      )}
-
-      {showLabel && (
-        <Text
-          text={labelText}
+          x={size / 2}
+          y={size + 10}
           style={
             new PIXI.TextStyle({
-              fontFamily: FONT_FAMILY.PRIMARY,
-              fontSize: FONT_SIZES.xsmall,
-              fill: textColor,
-              align: "center",
+              fontSize: FONT_SIZES.small,
+              fill: KOREAN_COLORS.TEXT_SECONDARY,
             })
           }
-          anchor={0.5}
-          y={size / 2 + 10}
         />
       )}
     </Container>

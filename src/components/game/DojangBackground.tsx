@@ -1,93 +1,70 @@
 // Underground dojang background for Korean martial arts
 
-import React, { useState, useCallback, useEffect } from "react";
-import { Container, Graphics } from "@pixi/react"; // Fix: Remove unused Text and useTick imports
+import React, { useCallback } from "react";
+import { Container, Graphics } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import type { DojangBackgroundProps } from "../../types/components";
-import {
-  KOREAN_COLORS,
-  // Fix: Remove unused FONT_FAMILY, FONT_SIZES, FONT_WEIGHTS imports
-  GAME_CONFIG,
-} from "../../types/constants";
+import { KOREAN_COLORS } from "../../types/constants";
 
-const DojangBackground: React.FC<DojangBackgroundProps> = ({
-  width = GAME_CONFIG.CANVAS_WIDTH,
-  height = GAME_CONFIG.CANVAS_HEIGHT,
+export interface DojangBackgroundProps {
+  readonly width?: number;
+  readonly height?: number;
+  readonly x?: number;
+  readonly y?: number;
+  readonly animate?: boolean;
+  readonly lighting?: "normal" | "cyberpunk" | "traditional";
+}
+
+export const DojangBackground: React.FC<DojangBackgroundProps> = ({
+  width = 800,
+  height = 600,
+  x = 0,
+  y = 0,
   animate = true,
-  lighting = "cyberpunk",
+  lighting = "normal",
 }) => {
-  const [time, setTime] = useState(0);
-
-  const drawDojang = useCallback(
+  const backgroundDraw = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
 
-      // Floor
-      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK);
+      // Base dojang floor
+      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.8);
       g.drawRect(0, 0, width, height);
       g.endFill();
 
-      // Wall panels with lighting effects
-      const panelWidth = width / 8;
-      for (let i = 0; i < 8; i++) {
-        const lightColor =
-          i % 2 === 0
-            ? KOREAN_COLORS.SECONDARY_YELLOW
-            : KOREAN_COLORS.WARNING_YELLOW;
+      // Traditional Korean pattern overlay
+      if (lighting === "cyberpunk") {
+        g.lineStyle(1, KOREAN_COLORS.PRIMARY_CYAN, 0.3);
+      } else {
+        g.lineStyle(1, KOREAN_COLORS.ACCENT_GOLD, 0.2);
+      }
 
-        // Apply lighting based on mode - Fix: Use proper color constants
-        let finalColor: number = lightColor;
-        if (lighting === "dramatic") {
-          finalColor = KOREAN_COLORS.WARNING_YELLOW; // Fix: Use existing color
-        } else if (lighting === "cyberpunk") {
-          finalColor = KOREAN_COLORS.ACCENT_CYAN; // Fix: Use existing color
+      // Draw traditional pattern
+      const patternSize = 100;
+      for (let i = 0; i < width; i += patternSize) {
+        for (let j = 0; j < height; j += patternSize) {
+          g.drawCircle(i + patternSize / 2, j + patternSize / 2, 30);
         }
-
-        g.beginFill(finalColor, 0.3);
-        g.drawRect(i * panelWidth, 0, panelWidth, height * 0.3);
-        g.endFill();
-      }
-
-      // Cyberpunk grid overlay
-      g.lineStyle(1, KOREAN_COLORS.PRIMARY_CYAN, 0.2);
-      const gridSize = 50;
-      for (let x = 0; x <= width; x += gridSize) {
-        g.moveTo(x, 0);
-        g.lineTo(x, height);
-      }
-      for (let y = 0; y <= height; y += gridSize) {
-        g.moveTo(0, y);
-        g.lineTo(width, y);
-      }
-
-      // Add pulsing effect if animate is true
-      if (animate) {
-        const pulse = Math.sin(time * 0.1) * 0.1 + 0.9;
-        g.alpha = pulse;
       }
     },
-    [width, height, animate, lighting, time]
+    [width, height, lighting]
   );
 
-  // Animation loop
-  useEffect(() => {
-    if (!animate) return;
-
-    const interval = setInterval(() => {
-      setTime((prevTime) => prevTime + 0.1);
-    }, 16); // ~60fps
-
-    return () => clearInterval(interval);
-  }, [animate]);
-
   return (
-    <Container>
-      <Graphics draw={drawDojang} />
+    <Container x={x} y={y}>
+      <Graphics draw={backgroundDraw} />
+
+      {animate && (
+        <Graphics
+          draw={(g: PIXI.Graphics) => {
+            g.clear();
+            g.beginFill(KOREAN_COLORS.PRIMARY_CYAN, 0.1);
+            g.drawRect(0, height * 0.8, width, height * 0.2);
+            g.endFill();
+          }}
+        />
+      )}
     </Container>
   );
 };
 
 export default DojangBackground;
-
-// Keep named export
-export { DojangBackground };

@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Container, Text } from "@pixi/react";
+import { Container, Text } from "@pixi/react"; // Fix: Remove unused Graphics import
 import * as PIXI from "pixi.js";
 import type { KoreanHeaderProps } from "../../types/components";
 import { KOREAN_COLORS, FONT_FAMILY, FONT_SIZES } from "../../types/constants";
@@ -7,14 +7,15 @@ import { KOREAN_COLORS, FONT_FAMILY, FONT_SIZES } from "../../types/constants";
 export const KoreanHeader: React.FC<KoreanHeaderProps> = ({
   title,
   subtitle,
-  x = 0,
-  y = 0,
-  width = 400,
+  // Note: size, alignment, height can be used for future styling
   fontSize = FONT_SIZES.xlarge,
   textColor = KOREAN_COLORS.TEXT_PRIMARY,
   accentColor = KOREAN_COLORS.PRIMARY_CYAN,
   showUnderline = true,
   align = "center",
+  width = 400,
+  x = 0,
+  y = 0,
 }) => {
   const titleStyle = useMemo(
     () =>

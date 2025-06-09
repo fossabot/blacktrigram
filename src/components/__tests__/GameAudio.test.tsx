@@ -126,7 +126,8 @@ describe("Game Audio Integration", () => {
     it("should validate Korean technique names are displayed", () => {
       const trigrams = TRIGRAM_STANCES_ORDER.map((stance) => ({
         name: TRIGRAM_DATA[stance].name.korean,
-        technique: TRIGRAM_DATA[stance].technique?.koreanName || "기본기술",
+        technique:
+          TRIGRAM_DATA[stance].techniques?.primary?.korean || "기본기술",
       }));
 
       const TrigramStanceComponent = (): ReactElement => {

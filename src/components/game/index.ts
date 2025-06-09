@@ -1,15 +1,12 @@
-// Export all game components
-export { DojangBackground } from "./DojangBackground";
+/**
+ * Game components export
+ */
+
 export { GameEngine } from "./GameEngine";
-export { GameUI } from "./GameUI";
-export { HitEffectsLayer } from "./HitEffectsLayer";
+export { DojangBackground } from "./DojangBackground";
 export { Player } from "./Player";
 export { PlayerVisuals } from "./PlayerVisuals";
-
-// Default exports for compatibility
-export { default as DojangBackgroundDefault } from "./DojangBackground";
-export { default as GameEngineDefault } from "./GameEngine";
-export { default as GameUIDefault } from "./GameUI";
-export { default as HitEffectsLayerDefault } from "./HitEffectsLayer";
-export { default as PlayerDefault } from "./Player";
-export { default as PlayerVisualsDefault } from "./PlayerVisuals";
+// Fix: Export as default import since HitEffectsLayer doesn't have named export
+export { default as HitEffectsLayer } from "./HitEffectsLayer";
+// Create GameUI component if it doesn't exist
+export { GameUI } from "./GameUI";

@@ -39,78 +39,38 @@ export enum HitEffectType {
 export interface StatusEffect {
   readonly id: string;
   readonly type: EffectType;
-  readonly name: string;
-  readonly description: string;
+  readonly intensity: EffectIntensity;
   readonly duration: number;
   readonly startTime: number;
   readonly endTime: number;
-  readonly intensity: EffectIntensity;
+  readonly description: KoreanText;
   readonly stackable: boolean;
-  readonly source: string;
-  readonly modifiers?: readonly EffectModifier[];
-  readonly magnitude?: number;
+  readonly effects?: {
+    readonly health?: number;
+    readonly ki?: number;
+    readonly stamina?: number;
+    readonly accuracy?: number;
+    readonly damage?: number;
+    readonly speed?: number;
+    readonly defense?: number;
+  };
 }
 
 // Effect types
-export enum EffectType {
-  STUN = "stun",
-  BLEED = "bleed",
-  POISON = "poison",
-  PARALYSIS = "paralysis",
-  WEAKNESS = "weakness",
-  STRENGTH = "strength",
-  SPEED = "speed",
-  REGENERATION = "regeneration",
-  VULNERABILITY = "vulnerability",
-  IMMUNITY = "immunity",
-  CONFUSION = "confusion",
-  FEAR = "fear",
-  RAGE = "rage",
-  FOCUS = "focus",
-}
+export type EffectType =
+  | "stun"
+  | "poison"
+  | "burn"
+  | "bleed"
+  | "exhausted"
+  | "focused"
+  | "rage"
+  | "defensive"
+  | "weakened"
+  | "strengthened";
 
 // Effect intensity levels
-export enum EffectIntensity {
-  WEAK = "weak",
-  MILD = "mild",
-  MODERATE = "moderate",
-  STRONG = "strong",
-  SEVERE = "severe",
-  EXTREME = "extreme",
-}
-
-// Effect modifiers for stat changes
-export interface EffectModifier {
-  readonly stat: PlayerStatType;
-  readonly value: number | string;
-  readonly type: "add" | "multiply" | "set";
-  readonly permanent?: boolean;
-}
-
-// Player stat types that can be modified
-export type PlayerStatType =
-  | "health"
-  | "ki"
-  | "stamina"
-  | "attackPower"
-  | "defense"
-  | "speed"
-  | "accuracy"
-  | "criticalChance"
-  | "balance"
-  | "consciousness"
-  | "pain"
-  | "focusLevel";
-
-// Vital point effect when hit
-export interface VitalPointEffect {
-  readonly id: string;
-  readonly type: string;
-  readonly description: string;
-  readonly duration: number;
-  readonly intensity: number;
-  readonly stackable: boolean;
-}
+export type EffectIntensity = "minor" | "moderate" | "severe" | "critical";
 
 // Particle effect for visual feedback
 export interface ParticleEffect {
@@ -142,14 +102,19 @@ export enum ParticleType {
 export interface EnvironmentalEffect {
   readonly id: string;
   readonly type: EnvironmentalEffectType;
-  readonly area: {
-    readonly center: Position;
-    readonly radius: number;
+  readonly affectedArea: {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+  };
+  readonly effects: {
+    readonly visibilityModifier?: number;
+    readonly accuracyModifier?: number;
+    readonly movementModifier?: number;
+    readonly damageModifier?: number;
   };
   readonly duration: number;
-  readonly intensity: number;
-  readonly affectedPlayers: readonly string[];
-  readonly statusEffect?: StatusEffect;
 }
 
 // Environmental effect types
@@ -162,6 +127,47 @@ export enum EnvironmentalEffectType {
   DARKNESS = "darkness",
   LIGHT = "light",
   PRESSURE = "pressure",
+}
+
+// Fix: Add missing VisualEffect export
+export interface VisualEffect {
+  readonly id: string;
+  readonly type: string;
+  readonly duration: number;
+  readonly intensity: number;
+  readonly position?: Position;
+  readonly color?: number;
+}
+
+// Fix: Add missing EffectSystem export
+export interface EffectSystem {
+  readonly effects: readonly VisualEffect[];
+  readonly addEffect: (effect: VisualEffect) => void;
+  readonly removeEffect: (id: string) => void;
+  readonly updateEffects: (deltaTime: number) => void;
+}
+
+// Fix: Add missing HitEffect interface
+export interface HitEffect {
+  readonly id: string;
+  readonly type: "damage" | "critical" | "block" | "miss";
+  readonly position: Position;
+  readonly text?: string | KoreanText;
+  readonly damageAmount?: number;
+  readonly color?: number;
+  readonly duration: number;
+  readonly intensity: number;
+}
+
+// Fix: Update DisplayHitEffect interface to include missing properties
+export interface DisplayHitEffect extends HitEffect {
+  readonly opacity: number;
+  readonly scale: number;
+  readonly startTime: number;
+  // Add missing display properties
+  readonly displayAlpha: number;
+  readonly displayY: number;
+  readonly displaySize: number;
 }
 
 export default HitEffect;

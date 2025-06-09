@@ -212,3 +212,108 @@ export interface GameUIProps extends BaseUIProps {
   maxRounds: number;
   combatEffects: readonly HitEffect[];
 }
+
+// UI component interfaces
+export interface UIComponentProps {
+  readonly width?: number;
+  readonly height?: number;
+  readonly x?: number;
+  readonly y?: number;
+  readonly visible?: boolean;
+  readonly interactive?: boolean;
+}
+
+// Health bar interface
+export interface HealthBarProps extends UIComponentProps {
+  readonly currentHealth: number;
+  readonly maxHealth: number;
+  readonly showText?: boolean;
+  readonly variant?: "default" | "compact" | "detailed";
+}
+
+// Stance indicator interface
+export interface StanceIndicatorProps extends UIComponentProps {
+  readonly stance: TrigramStance;
+  readonly size?: number;
+  readonly showText?: boolean;
+  readonly isActive?: boolean;
+}
+
+// Progress tracker interface
+export interface ProgressTrackerProps extends UIComponentProps {
+  readonly progress: number;
+  readonly maxProgress: number;
+  readonly label?: string;
+  readonly showPercentage?: boolean;
+}
+
+// Score display interface
+export interface ScoreDisplayProps extends UIComponentProps {
+  readonly player1Score: number;
+  readonly player2Score: number;
+  readonly player1Name: string;
+  readonly player2Name: string;
+}
+
+// Round timer interface
+export interface RoundTimerProps extends UIComponentProps {
+  readonly timeRemaining: number;
+  readonly totalTime: number;
+  readonly isRunning: boolean;
+}
+
+// End screen interface
+export interface EndScreenProps extends UIComponentProps {
+  readonly winner: PlayerState | null;
+  readonly matchStats: {
+    readonly duration: number;
+    readonly totalRounds: number;
+    readonly player1Wins: number;
+    readonly player2Wins: number;
+  };
+  readonly onRestart: () => void;
+  readonly onReturnToMenu: () => void;
+}
+
+// Korean text display interface
+export interface KoreanTextProps extends UIComponentProps {
+  readonly text: {
+    readonly korean: string;
+    readonly english: string;
+    readonly romanized?: string;
+  };
+  readonly fontSize?: number;
+  readonly textAlign?: "left" | "center" | "right";
+  readonly showBoth?: boolean;
+}
+
+// Trigram wheel interface
+export interface TrigramWheelProps extends UIComponentProps {
+  readonly selectedStance: TrigramStance;
+  readonly onStanceSelect: (stance: TrigramStance) => void;
+  readonly size?: number;
+  readonly interactive?: boolean;
+}
+
+// Archetype display interface
+export interface ArchetypeDisplayProps extends UIComponentProps {
+  readonly player: PlayerState;
+  readonly showDetails?: boolean;
+  readonly compact?: boolean;
+}
+
+// Fix: Add missing ComponentState export
+export interface ComponentState {
+  readonly visible: boolean;
+  readonly interactive: boolean;
+  readonly loading: boolean;
+  readonly error?: string;
+}
+
+// Fix: Add missing InteractionEvent export
+export interface InteractionEvent {
+  readonly type: string;
+  readonly target: string;
+  readonly timestamp: number;
+  readonly data?: any;
+}

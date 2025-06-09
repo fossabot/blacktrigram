@@ -2,7 +2,11 @@ import React, { useMemo } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import type { CombatHUDProps } from "../../../types/components";
-import { KOREAN_COLORS, FONT_SIZES } from "../../../types/constants";
+import {
+  KOREAN_COLORS,
+  FONT_SIZES,
+  FONT_FAMILY,
+} from "../../../types/constants";
 import { HealthBar } from "../../ui/HealthBar";
 import { StanceIndicator } from "../../ui/StanceIndicator";
 
@@ -51,8 +55,7 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
             : KOREAN_COLORS.TEXT_PRIMARY,
         fontWeight: "bold",
         align: "center",
-        stroke: KOREAN_COLORS.BLACK_SOLID,
-        strokeThickness: 2,
+        stroke: { color: KOREAN_COLORS.BLACK, width: 2 },
       }),
     [timeRemaining]
   );
@@ -60,12 +63,11 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
   const gameStatusStyle = useMemo(
     () =>
       new PIXI.TextStyle({
+        fontFamily: FONT_FAMILY.PRIMARY,
         fontSize: FONT_SIZES.large,
-        fill: KOREAN_COLORS.ACCENT_GOLD,
+        fill: KOREAN_COLORS.TEXT_PRIMARY,
         fontWeight: "bold",
-        align: "center",
-        stroke: KOREAN_COLORS.BLACK_SOLID,
-        strokeThickness: 1,
+        stroke: { color: KOREAN_COLORS.BLACK, width: 2 },
       }),
     []
   );

@@ -2,9 +2,11 @@
 // or define very local, component-specific sub-types if absolutely necessary.
 
 import type { TextStyle as PixiTextStyle } from "pixi.js";
-import type { KoreanText } from "../../../../types/korean-text";
-import type { TrigramStance } from "../../../../types";
+import type { KoreanText, TrigramStance } from "../../../../types";
 import type { ReactNode } from "react";
+
+// Fix: Re-export KoreanText from main types
+export type { KoreanText } from "../../../../types/korean-text";
 
 // Add xsmall to KoreanTextSize
 export type KoreanTextSize =

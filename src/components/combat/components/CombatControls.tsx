@@ -6,6 +6,8 @@ import type {
   TrigramStance,
   KoreanTechnique,
 } from "../../../types";
+// Fix: Import EnumCombatAttackType instead of CombatAttackType
+import { EnumCombatAttackType, DamageType } from "../../../types/enums";
 import {
   KOREAN_COLORS,
   FONT_FAMILY,
@@ -19,7 +21,7 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
   onAttack,
   onDefend,
   onSwitchStance,
-  onPauseToggle,
+  onPauseToggle, // Fix: This is required, not optional
   isPaused,
   player,
   onTechniqueExecute,
@@ -40,9 +42,33 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
     : undefined;
 
   const availableTechniques: KoreanTechnique[] = useMemo(() => {
-    if (!currentStanceData?.technique) return [];
-    return [currentStanceData.technique];
-  }, [currentStanceData]);
+    if (!currentStanceData?.techniques?.primary) return [];
+
+    const stanceTechnique = currentStanceData.techniques.primary;
+    const koreanTechnique: KoreanTechnique = {
+      id: `${player.currentStance}_primary`,
+      name: stanceTechnique.korean,
+      koreanName: stanceTechnique.korean,
+      englishName: stanceTechnique.english,
+      romanized: stanceTechnique.korean,
+      description: stanceTechnique.description,
+      stance: player.currentStance,
+      type: EnumCombatAttackType.STRIKE, // Fix: Use EnumCombatAttackType
+      damageType: DamageType.BLUNT,
+      damage: stanceTechnique.damage,
+      kiCost: stanceTechnique.kiCost,
+      staminaCost: stanceTechnique.staminaCost,
+      accuracy: stanceTechnique.hitChance,
+      range: 1.0,
+      executionTime: 500,
+      recoveryTime: 800,
+      critChance: stanceTechnique.criticalChance,
+      critMultiplier: 1.5,
+      effects: [],
+    };
+
+    return [koreanTechnique];
+  }, [currentStanceData, player.currentStance]);
 
   const handleStanceSelect = useCallback(
     (stance: TrigramStance) => {
@@ -75,11 +101,18 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
         english: `Basic technique for ${player.currentStance} stance`,
       },
       stance: player.currentStance,
-      type: "strike" as any, // Use appropriate type
+      type: EnumCombatAttackType.STRIKE, // Fix: Use EnumCombatAttackType
+      damageType: DamageType.BLUNT,
       damage: 20,
       kiCost: 10,
       staminaCost: 15,
       accuracy: 0.8,
+      range: 1.0,
+      executionTime: 500,
+      recoveryTime: 800,
+      critChance: 0.1,
+      critMultiplier: 1.5,
+      effects: [],
     };
   }, [player?.currentStance]);
 
@@ -273,7 +306,7 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
         {/* Pause Button */}
         <BaseButton
           text={isPaused ? "재개" : "일시정지"}
-          onClick={onPauseToggle}
+          onClick={onPauseToggle} // Fix: Remove undefined check
           x={190}
           y={10}
           width={80}
