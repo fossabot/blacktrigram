@@ -10,36 +10,34 @@ import { TrigramStance as TrigramStanceEnum } from "../../types/enums";
  * Calculator for trigram stance transition costs and validation
  */
 export class TransitionCalculator {
-  private transitionRulesInternal: readonly TrigramTransitionRule[];
+  private calculateBaseCost(
+    from: TrigramStance,
+    to: TrigramStance
+  ): TrigramTransitionCost {
+    if (from === to) {
+      return { ki: 0, stamina: 0, timeMilliseconds: 0 };
+    }
 
-  constructor(transitionRules?: readonly TrigramTransitionRule[]) {
-    this.transitionRulesInternal =
-      transitionRules || this.generateDefaultRules();
+    return { ki: 10, stamina: 15, timeMilliseconds: 500 };
   }
 
-  private generateDefaultRules(): readonly TrigramTransitionRule[] {
-    const rules: TrigramTransitionRule[] = [];
-    const stances = Object.values(TrigramStanceEnum) as TrigramStance[];
+  generateTransitionRule(
+    from: TrigramStance,
+    to: TrigramStance
+  ): TrigramTransitionRule {
+    const cost = this.calculateBaseCost(from, to);
 
-    for (const from of stances) {
-      for (const to of stances) {
-        if (from === to) continue;
-
-        const cost = TransitionCalculator.calculateCost(from, to);
-
-        rules.push({
-          from,
-          to,
-          cost,
-          conditions: [],
-          description: {
-            korean: `${from}에서 ${to}로`,
-            english: `From ${from} to ${to}`,
-          },
-        });
-      }
-    }
-    return rules;
+    return {
+      from,
+      to,
+      cost,
+      effectiveness: 1.0, // Fix: Add missing effectiveness property
+      conditions: [],
+      description: {
+        korean: `${from}에서 ${to}로 전환`,
+        english: `Transition from ${from} to ${to}`,
+      },
+    };
   }
 
   /**

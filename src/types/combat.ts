@@ -33,20 +33,20 @@ export interface KoreanTechnique {
   readonly effects: readonly StatusEffect[];
 }
 
-// Combat result - Fix: Add all missing properties used by GameEngine
+// Combat result - Fix: Ensure all properties are properly defined
 export interface CombatResult {
   readonly hit: boolean;
   readonly damage: number;
-  readonly criticalHit: boolean; // Add missing property
-  readonly vitalPointHit: boolean; // Use consistent naming
-  readonly updatedAttacker?: PlayerState; // Add missing property
-  readonly updatedDefender?: PlayerState; // Add missing property
+  readonly criticalHit: boolean; // Required property
+  readonly vitalPointHit: boolean; // Required property
+  readonly updatedAttacker?: PlayerState;
+  readonly updatedDefender?: PlayerState;
   readonly attacker?: PlayerState;
   readonly defender?: PlayerState;
   readonly technique?: KoreanTechnique;
   readonly effects: readonly StatusEffect[];
-  readonly isCritical?: boolean; // Alternative naming
-  readonly isVitalPoint?: boolean; // Alternative naming
+  readonly isCritical?: boolean; // Alternative naming for compatibility
+  readonly isVitalPoint?: boolean; // Alternative naming for compatibility
   readonly isBlocked?: boolean;
   readonly isCountered?: boolean;
   readonly timestamp: number;
@@ -54,6 +54,16 @@ export interface CombatResult {
   readonly winner?: number;
   readonly updatedPlayers?: readonly PlayerState[];
   readonly hitLocation?: Position;
+}
+
+// Training-specific combat result extension
+export interface TrainingCombatResult extends CombatResult {
+  readonly trainingData?: {
+    readonly accuracy: number;
+    readonly damageCalculation: number;
+    readonly stanceEffectiveness: number;
+    readonly techniqueTiming: number;
+  };
 }
 
 // Fix: Define CombatEventData interface that's used in MatchStatistics

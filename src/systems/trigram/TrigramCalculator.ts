@@ -1,87 +1,122 @@
 import { TrigramStance } from "../../types/enums";
-import type { TrigramTransitionCost, PlayerState } from "../../types";
 
 /**
- * Calculator for trigram stance transitions and effectiveness
+ * Trigram calculator for Korean martial arts stance relationships
  */
 export class TrigramCalculator {
   /**
-   * Calculate transition cost between two stances
+   * Fix: Define STANCE_EFFECTIVENESS_MATRIX locally to avoid import conflict
    */
-  static calculateTransitionCost(
-    from: TrigramStance,
-    to: TrigramStance
-  ): TrigramTransitionCost {
-    if (from === to) {
-      return { ki: 0, stamina: 0, timeMilliseconds: 0 }; // Fix property name
-    }
-
-    return {
-      ki: 10,
-      stamina: 15,
-      timeMilliseconds: 1000, // Fix property name
-    };
-  }
-
-  /**
-   * Calculate stance effectiveness multiplier
-   */
-  static calculateStanceEffectiveness(
-    attacker: TrigramStance,
-    defender: TrigramStance
-  ): number {
-    // Trigram effectiveness matrix based on I Ching philosophy
-    const matrix: Record<
-      TrigramStance,
-      Partial<Record<TrigramStance, number>>
-    > = {
-      geon: { gon: 1.2, son: 0.8 },
-      tae: { jin: 1.2, gan: 0.8 },
-      li: { gam: 1.2, tae: 0.8 },
-      jin: { son: 1.2, geon: 0.8 },
-      son: { gon: 1.2, li: 0.8 },
-      gam: { li: 1.2, jin: 0.8 },
-      gan: { tae: 1.2, gam: 0.8 },
-      gon: { geon: 1.2, son: 0.8 },
-    };
-
-    return matrix[attacker]?.[defender] ?? 1.0;
-  }
-
-  /**
-   * Calculate adjacency modifier for smooth transitions
-   */
-  private static getAdjacencyModifier(
-    from: TrigramStance,
-    to: TrigramStance
-  ): number {
-    const adjacentStances: Record<TrigramStance, TrigramStance[]> = {
-      geon: ["tae", "gon"],
-      tae: ["geon", "li"],
-      li: ["tae", "jin"],
-      jin: ["li", "son"],
-      son: ["jin", "gam"],
-      gam: ["son", "gan"],
-      gan: ["gam", "gon"],
-      gon: ["gan", "geon"],
-    };
-
-    return adjacentStances[from]?.includes(to) ? 0.7 : 1.0;
-  }
-
-  // Fix: Use proper enum values throughout
-  private static adjacencyMap: Record<TrigramStance, TrigramStance[]> = {
-    [TrigramStance.GEON]: [TrigramStance.TAE, TrigramStance.GON],
-    [TrigramStance.TAE]: [TrigramStance.GEON, TrigramStance.LI],
-    [TrigramStance.LI]: [TrigramStance.TAE, TrigramStance.JIN],
-    [TrigramStance.JIN]: [TrigramStance.LI, TrigramStance.SON],
-    [TrigramStance.SON]: [TrigramStance.JIN, TrigramStance.GAM],
-    [TrigramStance.GAM]: [TrigramStance.SON, TrigramStance.GAN],
-    [TrigramStance.GAN]: [TrigramStance.GAM, TrigramStance.GON],
-    [TrigramStance.GON]: [TrigramStance.GAN, TrigramStance.GEON],
+  private static readonly STANCE_EFFECTIVENESS_MATRIX: Record<
+    TrigramStance,
+    Partial<Record<TrigramStance, number>>
+  > = {
+    [TrigramStance.GEON]: {
+      [TrigramStance.GON]: 1.2,
+      [TrigramStance.SON]: 0.8,
+    },
+    [TrigramStance.TAE]: {
+      [TrigramStance.JIN]: 1.2,
+      [TrigramStance.GAN]: 0.8,
+    },
+    [TrigramStance.LI]: {
+      [TrigramStance.GAM]: 1.2,
+      [TrigramStance.TAE]: 0.8,
+    },
+    [TrigramStance.JIN]: {
+      [TrigramStance.SON]: 1.2,
+      [TrigramStance.GEON]: 0.8,
+    },
+    [TrigramStance.SON]: {
+      [TrigramStance.GON]: 1.2,
+      [TrigramStance.LI]: 0.8,
+    },
+    [TrigramStance.GAM]: {
+      [TrigramStance.LI]: 1.2,
+      [TrigramStance.JIN]: 0.8,
+    },
+    [TrigramStance.GAN]: {
+      [TrigramStance.TAE]: 1.2,
+      [TrigramStance.GAM]: 0.8,
+    },
+    [TrigramStance.GON]: {
+      [TrigramStance.GEON]: 1.2,
+      [TrigramStance.SON]: 0.8,
+    },
   };
 
-  public static getStanceAdjacency(stance: TrigramStance): TrigramStance[] {
-    return this.adjacencyMap[stance] || [];
+  /**
+   * Calculate effectiveness between two stances
+   */
+  static calculateStanceEffectiveness(
+    attackerStance: TrigramStance,
+    defenderStance: TrigramStance
+  ): number {
+    // Use the effectiveness matrix to determine advantage/disadvantage
+    const effectiveness =
+      this.STANCE_EFFECTIVENESS_MATRIX[attackerStance]?.[defenderStance];
+    return effectiveness ?? 1.0; // Default to neutral if not specified
+  }
+
+  /**
+   * Get the optimal counter stance for a given opponent stance
+   */
+  static getCounterStance(opponentStance: TrigramStance): TrigramStance {
+    // Find the stance that has the highest effectiveness against the opponent
+    let bestStance = TrigramStance.GEON;
+    let bestEffectiveness = 0;
+
+    for (const stance of Object.values(TrigramStance)) {
+      const effectiveness = this.calculateStanceEffectiveness(
+        stance,
+        opponentStance
+      );
+      if (effectiveness > bestEffectiveness) {
+        bestEffectiveness = effectiveness;
+        bestStance = stance;
+      }
+    }
+
+    return bestStance;
+  }
+
+  /**
+   * Calculate transition difficulty between stances
+   */
+  static calculateTransitionDifficulty(
+    from: TrigramStance,
+    to: TrigramStance
+  ): number {
+    if (from === to) {
+      return 0;
+    }
+
+    const stanceOrder = Object.values(TrigramStance); // Fix: Use enum values
+    const fromIndex = stanceOrder.indexOf(from);
+    const toIndex = stanceOrder.indexOf(to);
+
+    if (fromIndex === -1 || toIndex === -1) {
+      return 1.0;
+    }
+
+    const distance = Math.abs(fromIndex - toIndex);
+    const minDistance = Math.min(distance, stanceOrder.length - distance);
+
+    return Math.max(0.2, minDistance / (stanceOrder.length / 2));
+  }
+
+  /**
+   * Get adjacency modifier based on trigram relationships
+   */
+  public static getAdjacencyModifier(
+    from: TrigramStance,
+    to: TrigramStance
+  ): number {
+    const difficulty = this.calculateTransitionDifficulty(from, to);
+    return 1.0 - difficulty * 0.3;
   }
 }
+
+// Fix: Export the matrix for external use
+export const STANCE_EFFECTIVENESS_MATRIX =
+  TrigramCalculator["STANCE_EFFECTIVENESS_MATRIX"];

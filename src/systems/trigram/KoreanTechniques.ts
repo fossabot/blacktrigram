@@ -1,6 +1,12 @@
-import type { TrigramStance, KoreanTechnique, PlayerState } from "../../types";
+import type {
+  TrigramStance,
+  KoreanTechnique,
+  PlayerState,
+  PlayerArchetype,
+} from "../../types";
 import { TrigramStance as TrigramStanceEnum } from "../../types/enums";
 import { TRIGRAM_TECHNIQUES } from "../../types/constants/techniques";
+import { PLAYER_ARCHETYPES_DATA } from "@/types/constants";
 
 /**
  * Korean martial arts techniques system
@@ -48,13 +54,41 @@ export class KoreanTechniquesSystem {
       TECHNIQUE_EFFECTIVENESS_MATRIX[attackerStance]?.[defenderStance] || 1.0
     );
   }
+
+  /**
+   * Get all techniques
+   */
+  static getAllTechniques(): KoreanTechnique[] {
+    // Fix: Convert readonly array to mutable array using spread operator
+    return [...Object.values(TRIGRAM_TECHNIQUES).flat()];
+  }
+
+  static getTechniquesByArchetype(
+    archetype: PlayerArchetype
+  ): readonly KoreanTechnique[] {
+    const allTechniques = this.getAllTechniques();
+
+    // Filter techniques based on archetype preferences
+    const archetypeData = PLAYER_ARCHETYPES_DATA[archetype];
+    const favoredStances = archetypeData.favoredStances || [];
+
+    return allTechniques.filter((technique) =>
+      favoredStances.includes(technique.stance)
+    );
+  }
+
+  static getTechniqueById(id: string): KoreanTechnique | undefined {
+    const allTechniques = this.getAllTechniques();
+    return allTechniques.find((technique) => technique.id === id);
+  }
 }
 
 // Export functions for backwards compatibility
 export function getTechniquesByStance(
   stance: TrigramStance
 ): KoreanTechnique[] {
-  return KoreanTechniquesSystem.getAvailableTechniques(stance);
+  // Fix: Convert readonly array to mutable array
+  return [...(TRIGRAM_TECHNIQUES[stance] || [])];
 }
 
 // Export TRIGRAM_TECHNIQUES for tests

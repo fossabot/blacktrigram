@@ -332,31 +332,92 @@ export function createGradient(
 }
 
 /**
- * Color utility functions for Korean martial arts UI
+ * Color utilities for Korean martial arts theming
  */
 
+/**
+ * Convert hex color to PIXI color number
+ */
 export function hexToPixi(hex: string): number {
   return parseInt(hex.replace("#", ""), 16);
 }
 
-export function pixiToHex(color: number): string {
-  return `#${color.toString(16).padStart(6, "0")}`;
+/**
+ * Convert RGB values to PIXI color number
+ */
+export function rgbToPixi(r: number, g: number, b: number): number {
+  return (r << 16) | (g << 8) | b;
 }
 
-export function getArchetypeColor(archetype: string): number {
+/**
+ * Get color with alpha
+ */
+export function colorWithAlpha(color: number, alpha: number): number {
+  return (Math.floor(alpha * 255) << 24) | color;
+}
+
+/**
+ * Interpolate between two colors
+ */
+export function interpolateColor(
+  color1: number,
+  color2: number,
+  factor: number
+): number {
+  const r1 = (color1 >> 16) & 0xff;
+  const g1 = (color1 >> 8) & 0xff;
+  const b1 = color1 & 0xff;
+
+  const r2 = (color2 >> 16) & 0xff;
+  const g2 = (color2 >> 8) & 0xff;
+  const b2 = color2 & 0xff;
+
+  const r = Math.round(r1 + (r2 - r1) * factor);
+  const g = Math.round(g1 + (g2 - g1) * factor);
+  const b = Math.round(b1 + (b2 - b1) * factor);
+
+  return rgbToPixi(r, g, b);
+}
+
+/**
+ * Get Korean martial arts themed colors
+ */
+export const KOREAN_THEME_COLORS = {
+  CRIMSON: 0xdc143c,
+  GOLD: 0xffd700,
+  JADE: 0x00a86b,
+  MIDNIGHT: 0x191970,
+  SILVER: 0xc0c0c0,
+  BRONZE: 0xcd7f32,
+} as const;
+
+/**
+ * Get archetype color scheme
+ */
+export function getArchetypeColors(archetype: string): {
+  primary: number;
+  secondary: number;
+  accent: number;
+} {
   switch (archetype) {
     case "musa":
-      return KOREAN_COLORS.ACCENT_GOLD;
+      return {
+        primary: KOREAN_THEME_COLORS.CRIMSON,
+        secondary: KOREAN_THEME_COLORS.GOLD,
+        accent: KOREAN_THEME_COLORS.SILVER,
+      };
     case "amsalja":
-      return KOREAN_COLORS.ACCENT_PURPLE;
-    case "hacker":
-      return KOREAN_COLORS.PRIMARY_CYAN;
-    case "jeongbo_yowon":
-      return KOREAN_COLORS.ACCENT_BLUE;
-    case "jojik_pokryeokbae":
-      return KOREAN_COLORS.ACCENT_RED;
+      return {
+        primary: KOREAN_THEME_COLORS.MIDNIGHT,
+        secondary: KOREAN_THEME_COLORS.SILVER,
+        accent: KOREAN_THEME_COLORS.JADE,
+      };
     default:
-      return KOREAN_COLORS.UI_GRAY;
+      return {
+        primary: KOREAN_THEME_COLORS.GOLD,
+        secondary: KOREAN_THEME_COLORS.CRIMSON,
+        accent: KOREAN_THEME_COLORS.SILVER,
+      };
   }
 }
 

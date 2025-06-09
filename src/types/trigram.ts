@@ -6,11 +6,11 @@ import type { KoreanText } from "./korean-text";
 // Export TrigramStance for external modules
 export type { TrigramStance } from "./enums";
 
-// Trigram transition cost - FIXED: Add missing timeMilliseconds
+// Trigram transition cost - FIXED: Ensure consistent naming
 export interface TrigramTransitionCost {
   readonly ki: number;
   readonly stamina: number;
-  readonly timeMilliseconds: number; // Use consistent naming
+  readonly timeMilliseconds: number; // Use this consistently throughout
 }
 
 // Enhanced transition metrics with all required properties
@@ -24,11 +24,12 @@ export interface TransitionMetrics {
 
 // Enhanced transition path interface
 export interface TransitionPath {
-  readonly path: readonly TrigramStance[];
+  readonly path: readonly TrigramStance[]; // Main path property
   readonly totalCost: TrigramTransitionCost;
   readonly effectiveness: number;
   readonly name: string;
   readonly description: KoreanText;
+  // Remove 'from' property - it's covered by path[0]
 }
 
 // Trigram transition rule - FIXED: Add missing properties
@@ -139,11 +140,11 @@ export interface ArchetypeTrigramAffinity {
   readonly penaltyTrigrams: readonly TrigramStance[];
 }
 
-// Fix: Update TrigramTheme to include missing properties
+// Fix: Update TrigramTheme to include all required properties
 export interface TrigramTheme {
   readonly primary: number;
   readonly secondary: number;
-  readonly active: number;
-  readonly hover: number;
-  readonly text: number;
+  readonly active: number; // Fix: Add missing active property
+  readonly hover: number; // Fix: Add missing hover property
+  readonly text: number; // Fix: Add missing text property
 }

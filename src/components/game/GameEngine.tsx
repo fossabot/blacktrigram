@@ -1,25 +1,27 @@
 // Complete game engine for Black Trigram Korean martial arts
 
 import React, { useCallback, useEffect, useRef } from "react";
-import type {
-  GameEngineProps, // Fix: Import from components
-  PlayerState,
-  CombatResult,
+import {
+  type GameEngineProps, // Fix: Import from components
+  type PlayerState,
+  type CombatResult,
+  GameMode,
 } from "../../types";
 
 // Fix: Add missing combat functions
-const executeBasicAttack = (
+const executeAttack = (
   attacker: PlayerState,
   defender: PlayerState
 ): CombatResult => {
-  const damage = Math.floor(Math.random() * 20) + 10;
   return {
     attacker,
     defender,
-    damage,
+    damage: 20,
     effects: [],
-    isCritical: Math.random() < 0.1,
-    isVitalPoint: Math.random() < 0.05,
+    criticalHit: false, // Fix: Add missing property
+    vitalPointHit: false, // Fix: Add missing property
+    isCritical: false,
+    isVitalPoint: false,
     isBlocked: false,
     isCountered: false,
     timestamp: Date.now(),
@@ -27,20 +29,21 @@ const executeBasicAttack = (
   };
 };
 
-const executeAdvancedTechnique = (
+const executeTechnique = (
   attacker: PlayerState,
   defender: PlayerState,
   technique: any
 ): CombatResult => {
-  const damage = Math.floor(Math.random() * 30) + 15;
   return {
     attacker,
     defender,
     technique,
-    damage,
+    damage: technique.damage || 25,
     effects: [],
-    isCritical: Math.random() < 0.15,
-    isVitalPoint: Math.random() < 0.1,
+    criticalHit: Math.random() < 0.1, // Fix: Add missing property
+    vitalPointHit: Math.random() < 0.05, // Fix: Add missing property
+    isCritical: Math.random() < 0.1,
+    isVitalPoint: Math.random() < 0.05,
     isBlocked: false,
     isCountered: false,
     timestamp: Date.now(),
@@ -51,8 +54,10 @@ const executeAdvancedTechnique = (
 const createMockCombatResult = (): CombatResult => ({
   attacker: {} as PlayerState,
   defender: {} as PlayerState,
-  damage: 15,
+  damage: 0,
   effects: [],
+  criticalHit: false, // Fix: Add missing property
+  vitalPointHit: false, // Fix: Add missing property
   isCritical: false,
   isVitalPoint: false,
   isBlocked: false,
@@ -67,41 +72,36 @@ export const GameEngine: React.FC<GameEngineProps> = ({
   onCombatResult,
   onGameEvent,
   isPaused = false,
+  gameMode = GameMode.VERSUS, // Fix: Use gameMode in logic
 }) => {
   const lastUpdateRef = useRef<number>(0);
 
-  // Fix: Use simulateCombat in useEffect
+  // Fix: Use gameMode in combat simulation
   const simulateCombat = useCallback(() => {
     if (isPaused || players.length < 2) return;
 
-    const updatedPlayers = players.map((player: PlayerState, index: number) => {
-      if (index === 0) {
-        return {
-          ...player,
-          health: Math.max(0, player.health - 1),
-          stamina: Math.min(player.maxStamina, player.stamina + 0.5),
-        };
-      }
-      return player;
-    });
+    // Use gameMode to determine combat behavior
+    const combatIntensity = gameMode === GameMode.TRAINING ? 0.5 : 1.0;
 
     const combatResult: CombatResult = {
       attacker: players[0],
       defender: players[1],
-      damage: 1,
+      damage: Math.floor((Math.random() * 30 + 10) * combatIntensity), // Use gameMode
       effects: [],
-      isCritical: false,
-      isVitalPoint: false,
+      criticalHit: Math.random() < 0.1,
+      vitalPointHit: Math.random() < 0.05,
+      isCritical: Math.random() < 0.1,
+      isVitalPoint: Math.random() < 0.05,
       isBlocked: false,
       isCountered: false,
       timestamp: Date.now(),
       hit: true,
-      updatedPlayers,
-      winner: updatedPlayers[1].health <= 0 ? 0 : undefined,
+      updatedPlayers: players,
+      winner: players[1].health <= 0 ? 0 : undefined,
     };
 
     onCombatResult(combatResult);
-  }, [isPaused, players, onCombatResult]);
+  }, [players, isPaused, onCombatResult, gameMode]); // Fix: Add gameMode to dependencies
 
   // Fix: Use handleCombatResult
   const handleCombatResult = useCallback(
@@ -120,11 +120,19 @@ export const GameEngine: React.FC<GameEngineProps> = ({
   );
 
   const updateGameState = useCallback(() => {
-    // Fix: Add proper type annotation
+    // Use gameMode to determine regeneration rates
+    const regenMultiplier = gameMode === GameMode.TRAINING ? 2.0 : 1.0;
+
     const updatedPlayers = players.map((player: PlayerState) => {
-      const newHealth = Math.min(player.maxHealth, player.health + 0.1);
-      const newStamina = Math.min(player.maxStamina, player.stamina + 0.2);
-      const newKi = Math.min(player.maxKi, player.ki + 0.1);
+      const newHealth = Math.min(
+        player.maxHealth,
+        player.health + 0.1 * regenMultiplier
+      );
+      const newStamina = Math.min(
+        player.maxStamina,
+        player.stamina + 0.2 * regenMultiplier
+      );
+      const newKi = Math.min(player.maxKi, player.ki + 0.1 * regenMultiplier);
 
       return {
         ...player,
@@ -135,10 +143,9 @@ export const GameEngine: React.FC<GameEngineProps> = ({
     });
 
     updatedPlayers.forEach((player: PlayerState, index: number) => {
-      // Fix: Add type annotations
       onPlayerUpdate(index, player);
     });
-  }, [players, onPlayerUpdate]);
+  }, [players, onPlayerUpdate, gameMode]); // Fix: Add gameMode to dependencies
 
   useEffect(() => {
     const gameLoop = () => {
@@ -148,8 +155,8 @@ export const GameEngine: React.FC<GameEngineProps> = ({
         updateGameState();
 
         // Fix: Use mock functions but don't assign to unused variables
-        executeBasicAttack(players[0], players[1]);
-        executeAdvancedTechnique(players[0], players[1], {
+        executeAttack(players[0], players[1]);
+        executeTechnique(players[0], players[1], {
           id: "test",
           name: "Test Technique",
         });

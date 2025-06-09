@@ -81,11 +81,14 @@ export enum TrigramStance {
 // Vital point categories
 export enum VitalPointCategory {
   NEUROLOGICAL = "neurological",
-  MUSCULAR = "muscular",
-  SKELETAL = "skeletal",
   VASCULAR = "vascular",
   RESPIRATORY = "respiratory",
+  MUSCULAR = "muscular",
+  SKELETAL = "skeletal",
   ORGAN = "organ",
+  CIRCULATORY = "circulatory",
+  LYMPHATIC = "lymphatic",
+  ENDOCRINE = "endocrine",
 }
 
 // Vital point severity

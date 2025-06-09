@@ -1,20 +1,48 @@
-import type {
+import {
   PlayerState,
   KoreanTechnique,
   CombatResult,
-  VitalPointSystemConfig,
+  VitalPointHitResult,
+  VitalPoint,
 } from "../types";
+
 import { VitalPointSystem } from "./VitalPointSystem";
 import { TrigramSystem } from "./TrigramSystem";
-import { DamageCalculator } from "./vitalpoint/DamageCalculator";
-import { VitalPointSeverity } from "../types/enums";
+
+/**
+ * Fix: Create DamageCalculator class
+ */
+class DamageCalculator {
+  static calculateVitalPointDamage(
+    baseDamage: number,
+    vitalPoint: VitalPoint,
+    technique: KoreanTechnique
+  ): number {
+    let multiplier = 1.0;
+
+    // Apply vital point severity multiplier
+    switch (vitalPoint.severity) {
+      case "major":
+        multiplier = 2.0;
+        break;
+      case "moderate":
+        multiplier = 1.5;
+        break;
+      case "minor":
+        multiplier = 1.2;
+        break;
+    }
+
+    return Math.floor(baseDamage * multiplier);
+  }
+}
 
 export class CombatSystem {
   private vitalPointSystem: VitalPointSystem;
   private trigramSystem: TrigramSystem;
 
-  constructor(config?: VitalPointSystemConfig) {
-    this.vitalPointSystem = new VitalPointSystem(config);
+  constructor() {
+    this.vitalPointSystem = new VitalPointSystem();
     this.trigramSystem = new TrigramSystem();
   }
 
@@ -323,6 +351,81 @@ export class CombatSystem {
       kiPercent: (player.ki / player.maxKi) * 100,
       staminaPercent: (player.stamina / player.maxStamina) * 100,
       balancePercent: player.balance,
+    };
+  }
+
+  /**
+   * Calculate damage based on technique, attacker, defender, and vital point result
+   */
+  calculateDamage(
+    technique: KoreanTechnique,
+    attacker: PlayerState,
+    defender: PlayerState,
+    vitalPointResult: VitalPointHitResult
+  ): number {
+    let baseDamage = technique.damage || 20;
+
+    // Apply vital point multiplier using DamageCalculator
+    if (vitalPointResult.hit && vitalPointResult.vitalPoint) {
+      const vpDamage = DamageCalculator.calculateVitalPointDamage(
+        baseDamage,
+        vitalPointResult.vitalPoint,
+        technique
+      );
+      baseDamage = vpDamage;
+    }
+
+    // Apply stance effectiveness
+    const stanceMultiplier = this.trigramSystem.getStanceEffectiveness(
+      attacker.currentStance,
+      defender.currentStance
+    );
+
+    baseDamage *= stanceMultiplier;
+
+    // Apply attacker/defender stats
+    const attackPowerRatio = attacker.attackPower / (defender.defense + 1);
+    baseDamage *= attackPowerRatio;
+
+    // Fix: Convert readonly array to mutable array
+    const effectsArray = Array.from(vitalPointResult.effects);
+    console.log("Applied effects:", effectsArray);
+
+    return Math.floor(baseDamage);
+  }
+
+  /**
+   * Resolve attack and calculate damage
+   */
+  resolveAttack(
+    attacker: PlayerState,
+    defender: PlayerState,
+    technique: KoreanTechnique
+  ): CombatResult {
+    // Fix: Use correct method signature (3 parameters, not 5)
+    const vitalPointResult = this.vitalPointSystem.processHit(
+      defender.position,
+      technique,
+      technique.damage || 20
+    );
+
+    const damage = this.calculateDamage(
+      technique,
+      attacker,
+      defender,
+      vitalPointResult
+    );
+
+    return {
+      hit: vitalPointResult.hit,
+      damage,
+      criticalHit: Math.random() < technique.critChance,
+      vitalPointHit: !!vitalPointResult.vitalPoint,
+      attacker,
+      defender,
+      technique,
+      effects: Array.from(vitalPointResult.effects),
+      timestamp: Date.now(),
     };
   }
 }

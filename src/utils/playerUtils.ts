@@ -328,3 +328,56 @@ export function createPlayerFromArchetype(
     },
   };
 }
+
+/**
+ * Safely update player state with new values
+ */
+export function updatePlayerState(
+  player: PlayerState,
+  updates: Partial<PlayerState>
+): PlayerState {
+  return {
+    ...player,
+    ...updates,
+  };
+}
+
+/**
+ * Restore player resources (for training mode)
+ */
+export function restorePlayerResources(player: PlayerState): PlayerState {
+  return updatePlayerState(player, {
+    ki: player.maxKi,
+    stamina: player.maxStamina,
+    health: player.maxHealth,
+    pain: 0,
+    consciousness: 100,
+    balance: 100,
+  });
+}
+
+/**
+ * Apply damage to player
+ */
+export function applyDamageToPlayer(
+  player: PlayerState,
+  damage: number
+): PlayerState {
+  const newHealth = Math.max(0, player.health - damage);
+  return updatePlayerState(player, {
+    health: newHealth,
+  });
+}
+
+/**
+ * Change player stance
+ */
+export function changePlayerStance(
+  player: PlayerState,
+  newStance: TrigramStance
+): PlayerState {
+  return updatePlayerState(player, {
+    currentStance: newStance,
+    lastStanceChangeTime: Date.now(),
+  });
+}

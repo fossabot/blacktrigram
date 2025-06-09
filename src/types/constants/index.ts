@@ -40,11 +40,43 @@ export const ENHANCED_DAMAGE_CONSTANTS = {
   COMBO_MULTIPLIER: 1.2,
 } as const;
 
+// Fix: Add missing STANCE_EFFECTIVENESS_MATRIX
 export const STANCE_EFFECTIVENESS_MATRIX: Record<
   string,
   Record<string, number>
 > = {
-  // Define effectiveness matrix
+  geon: {
+    gon: 1.2,
+    son: 0.8,
+  },
+  tae: {
+    jin: 1.2,
+    gan: 0.8,
+  },
+  li: {
+    gam: 1.2,
+    tae: 0.8,
+  },
+  jin: {
+    son: 1.2,
+    geon: 0.8,
+  },
+  son: {
+    gon: 1.2,
+    li: 0.8,
+  },
+  gam: {
+    li: 1.2,
+    jin: 0.8,
+  },
+  gan: {
+    tae: 1.2,
+    gam: 0.8,
+  },
+  gon: {
+    geon: 1.2,
+    son: 0.8,
+  },
 };
 
 export const MAX_TRANSITION_COST_KI = 50;

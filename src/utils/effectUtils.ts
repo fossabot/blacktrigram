@@ -1,94 +1,100 @@
-import type { StatusEffect, HitEffect, PlayerState } from "../types";
-import { EffectType } from "../types/enums"; // Fix: Use EffectType instead of HitEffectType
+import type {
+  StatusEffect,
+  HitEffect,
+  PlayerState,
+  VisualEffect,
+} from "../types";
+import { HitEffectType, EffectType } from "../types/enums";
 import { KOREAN_COLORS } from "../types/constants";
 
 export function createHitEffect(
-  type: EffectType,
-  attackerId: string,
-  defenderId: string,
-  options: Partial<HitEffect> = {}
+  type: HitEffectType,
+  position: { x: number; y: number },
+  damage?: number
 ): HitEffect {
-  const defaultEffect: HitEffect = {
-    id: `effect_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+  return {
+    id: `hit_${Date.now()}_${Math.random()}`,
     type,
-    attackerId,
-    defenderId,
+    attackerId: "player1",
+    defenderId: "player2",
     timestamp: Date.now(),
     duration: 1000,
-    position: { x: 0, y: 0 },
-    velocity: { x: 0, y: -50 },
-    color: getDefaultColorForType(type),
-    size: 10,
+    position,
+    intensity: damage ? Math.min(damage / 50, 1) : 0.5,
+    damageAmount: damage,
+    color: getEffectColor(type),
+    size: 1.0,
     alpha: 1.0,
     lifespan: 1000,
-    text: getDefaultTextForType(type),
-    ...options,
   };
-
-  return defaultEffect;
 }
 
-export function getHitEffectColor(type: EffectType): number {
+export function getEffectColor(type: HitEffectType): number {
   switch (type) {
-    case EffectType.CRITICAL_HIT: // Fix: Use proper enum values
-      return KOREAN_COLORS.CRITICAL_HIT;
-    case EffectType.VITAL_POINT_STRIKE:
-      return KOREAN_COLORS.VITAL_POINT_HIT;
-    case EffectType.STATUS_EFFECT:
-      return KOREAN_COLORS.WARNING_ORANGE;
-    case EffectType.MISS:
-      return KOREAN_COLORS.UI_GRAY;
+    case HitEffectType.CRITICAL_HIT:
+      return 0xff6b00; // Orange
+    case HitEffectType.VITAL_POINT_STRIKE:
+      return 0xff0040; // Red
+    case HitEffectType.BLOCK:
+      return 0x00bfff; // Blue
+    case HitEffectType.MISS:
+      return 0x808080; // Gray
     default:
-    case EffectType.GENERAL_DAMAGE:
-      return KOREAN_COLORS.TEXT_PRIMARY;
+      return 0xffffff; // White
   }
 }
 
-export function getHitEffectSize(type: EffectType): number {
+/**
+ * Create a status effect
+ */
+export function createStatusEffect(
+  type: EffectType,
+  duration: number,
+  intensity: "minor" | "moderate" | "severe" = "minor"
+): StatusEffect {
+  return {
+    id: `effect_${Date.now()}_${Math.random()}`,
+    type,
+    intensity,
+    duration,
+    description: {
+      korean: getEffectKoreanName(type),
+      english: getEffectEnglishName(type),
+    },
+    stackable: false,
+    source: "combat",
+    startTime: Date.now(),
+    endTime: Date.now() + duration,
+  };
+}
+
+function getEffectKoreanName(type: EffectType): string {
   switch (type) {
-    case EffectType.CRITICAL_HIT:
-      return 32;
-    case EffectType.VITAL_POINT_STRIKE:
-      return 28;
-    case EffectType.MISS:
-      return 20;
-    case EffectType.STATUS_EFFECT:
-      return 24;
+    case "stun":
+      return "기절";
+    case "poison":
+      return "중독";
+    case "burn":
+      return "화상";
+    case "bleed":
+      return "출혈";
     default:
-    case EffectType.GENERAL_DAMAGE:
-      return 22;
+      return "효과";
   }
 }
 
-function getDefaultColorForType(type: EffectType): number {
+function getEffectEnglishName(type: EffectType): string {
   switch (type) {
-    case EffectType.CriticalHit:
-      return KOREAN_COLORS.CRITICAL_HIT || KOREAN_COLORS.ACCENT_RED;
-    case EffectType.VitalPointStrike:
-      return KOREAN_COLORS.VITAL_POINT_HIT || KOREAN_COLORS.ACCENT_ORANGE;
-    case EffectType.StatusEffect:
-      return KOREAN_COLORS.ACCENT_PURPLE;
-    case EffectType.Miss:
-      return KOREAN_COLORS.UI_GRAY;
-    case EffectType.GeneralDamage:
+    case "stun":
+      return "Stunned";
+    case "poison":
+      return "Poisoned";
+    case "burn":
+      return "Burning";
+    case "bleed":
+      return "Bleeding";
     default:
-      return KOREAN_COLORS.ACCENT_RED;
-  }
-}
-
-function getDefaultTextForType(type: EffectType): string {
-  switch (type) {
-    case EffectType.CriticalHit:
-      return "치명타!";
-    case EffectType.VitalPointStrike:
-      return "급소!";
-    case EffectType.Miss:
-      return "빗나감";
-    case EffectType.StatusEffect:
-      return "상태이상";
-    case EffectType.GeneralDamage:
-    default:
-      return "";
+      return "Effect";
   }
 }
 

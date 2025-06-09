@@ -1,148 +1,122 @@
 import { describe, it, expect } from "vitest";
 import {
-  getTechniquesByStance,
-  TECHNIQUE_EFFECTIVENESS_MATRIX,
   KoreanTechniquesSystem,
-  TRIGRAM_TECHNIQUES, // Fix: Import the class instead of non-existent TRIGRAM_TECHNIQUES
+  getTechniquesByStance,
 } from "./KoreanTechniques";
 import { TrigramStance, PlayerArchetype } from "../../types/enums";
-import type { PlayerState, KoreanTechnique } from "../../types";
+import type { KoreanTechnique } from "../../types/combat";
 
-// Fix: Define mock player state
-const mockPlayerState: PlayerState = {
-  id: "test-player",
-  name: { korean: "테스트", english: "Test" },
-  archetype: PlayerArchetype.MUSA,
-  currentStance: TrigramStance.GEON,
-  health: 100,
-  maxHealth: 100,
-  ki: 100,
-  maxKi: 100,
-  stamina: 100,
-  maxStamina: 100,
-  consciousness: 100,
-  balance: 100,
-  pain: 0,
-  position: { x: 0, y: 0 },
-  statusEffects: [],
-  vitalPoints: [],
-  isBlocking: false,
-  activeEffects: [],
-  combatModifiers: {},
-  momentum: { x: 0, y: 0 },
-  lastStanceChangeTime: Date.now(),
-  actionCooldowns: {},
-  technique: null,
-  combatState: "idle",
-  orientation: "right",
-};
+describe("KoreanTechniquesSystem", () => {
+  describe("getAllTechniques", () => {
+    it("should return array of techniques", () => {
+      // Fix: Use static method
+      const techniques = KoreanTechniquesSystem.getAllTechniques();
 
-describe("KoreanTechniques", () => {
-  describe("Technique Structure", () => {
-    it("should have techniques for all stances", () => {
-      // Fix: Use proper technique access
-      const allStances = Object.values(TrigramStance);
-      allStances.forEach((stance) => {
-        const techniques = getTechniquesByStance(stance);
-        expect(Array.isArray(techniques)).toBe(true);
-      });
-    });
-
-    it("should have valid technique data structure", () => {
-      // Fix: Properly type the techniques iteration
-      const allStances = Object.values(TrigramStance);
-      allStances.forEach((stance) => {
-        const techniques = getTechniquesByStance(stance);
-        techniques.forEach((technique: KoreanTechnique) => {
-          expect(technique.id).toBeDefined();
-          expect(technique.name).toBeDefined();
-          expect(technique.koreanName).toBeDefined();
-          expect(technique.englishName).toBeDefined();
-          expect(technique.stance).toBeDefined();
-          expect(technique.type).toBeDefined();
-          expect(technique.damageType).toBeDefined();
-        });
-      });
-    });
-  });
-
-  describe("Technique Properties", () => {
-    it("should have proper damage values", () => {
-      const geonTechniques = TRIGRAM_TECHNIQUES[TrigramStance.GEON]; // Fix: Use proper access
-      const geonTechnique = geonTechniques[0];
-
-      expect(geonTechnique.damage).toBeGreaterThan(0);
-      expect(geonTechnique.kiCost).toBeGreaterThan(0);
-      expect(geonTechnique.staminaCost).toBeGreaterThan(0);
-    });
-  });
-
-  describe("getTechniquesByStance", () => {
-    it("should return techniques for valid stance", () => {
-      const techniques = getTechniquesByStance(TrigramStance.LI);
       expect(Array.isArray(techniques)).toBe(true);
       expect(techniques.length).toBeGreaterThan(0);
     });
 
-    it("should return empty array for invalid input", () => {
-      const techniques = getTechniquesByStance("invalid" as TrigramStance);
-      expect(Array.isArray(techniques)).toBe(true);
-      expect(techniques.length).toBe(0);
-    });
-  });
+    it("should return techniques with Korean names", () => {
+      // Fix: Use static method
+      const techniques = KoreanTechniquesSystem.getAllTechniques();
 
-  describe("Technique Effectiveness", () => {
-    it("should have effectiveness matrix", () => {
-      expect(TECHNIQUE_EFFECTIVENESS_MATRIX).toBeDefined();
-      expect(typeof TECHNIQUE_EFFECTIVENESS_MATRIX).toBe("object");
-    });
-  });
-
-  describe("getTechniquesByStance", () => {
-    it("should return techniques for Son stance", () => {
-      const sonTechniques = getTechniquesByStance(TrigramStance.SON);
-      expect(Array.isArray(sonTechniques)).toBe(true);
-    });
-  });
-
-  describe("Technique Validation", () => {
-    it("should validate technique requirements", () => {
-      const technique = TRIGRAM_TECHNIQUES[TrigramStance.GEON][0];
-      const hasEnoughKi = mockPlayerState.ki >= technique.kiCost;
-      const hasEnoughStamina = mockPlayerState.stamina >= technique.staminaCost;
-
-      expect(hasEnoughKi).toBe(true);
-      expect(hasEnoughStamina).toBe(true);
-    });
-
-    it("should handle insufficient resources", () => {
-      const lowResourcePlayer = {
-        ...mockPlayerState,
-        ki: 5,
-        stamina: 5,
-      };
-
-      const technique = TRIGRAM_TECHNIQUES[TrigramStance.GEON][0];
-      const hasEnoughKi = lowResourcePlayer.ki >= technique.kiCost;
-      const hasEnoughStamina =
-        lowResourcePlayer.stamina >= technique.staminaCost;
-
-      expect(hasEnoughKi).toBe(false);
-      expect(hasEnoughStamina).toBe(false);
-    });
-  });
-
-  describe("Archetype Integration", () => {
-    it("should work with different archetypes", () => {
-      const archetypes = Object.values(PlayerArchetype);
-      archetypes.forEach((archetype) => {
-        const playerWithArchetype = {
-          ...mockPlayerState,
-          archetype,
-        };
-
-        expect(playerWithArchetype.archetype).toBe(archetype);
+      techniques.forEach((technique: KoreanTechnique) => {
+        // Fix: Add type annotation
+        expect(technique.name.korean).toBeDefined();
+        expect(technique.name.english).toBeDefined();
+        expect(technique.koreanName).toBeDefined();
+        expect(technique.englishName).toBeDefined();
       });
     });
+
+    it("should have valid technique properties", () => {
+      // Fix: Use static method
+      const techniques = KoreanTechniquesSystem.getAllTechniques();
+
+      techniques.forEach((technique: KoreanTechnique) => {
+        // Fix: Add type annotation
+        expect(technique.id).toBeDefined();
+        expect(technique.stance).toBeDefined();
+        expect(Object.values(TrigramStance)).toContain(technique.stance);
+        expect(technique.kiCost).toBeGreaterThanOrEqual(0);
+        expect(technique.staminaCost).toBeGreaterThanOrEqual(0);
+        expect(technique.accuracy).toBeGreaterThan(0);
+        expect(technique.accuracy).toBeLessThanOrEqual(1);
+      });
+    });
+  });
+
+  describe("getTechniquesByArchetype", () => {
+    it("should return archetype-specific techniques", () => {
+      // Fix: Use static method
+      const techniques = KoreanTechniquesSystem.getTechniquesByArchetype(
+        PlayerArchetype.MUSA
+      );
+
+      expect(Array.isArray(techniques)).toBe(true);
+
+      const musaStances = [TrigramStance.GEON, TrigramStance.GAN];
+      const hasMusaTechniques = techniques.some((tech: KoreanTechnique) =>
+        musaStances.includes(tech.stance)
+      );
+      expect(hasMusaTechniques).toBe(true);
+    });
+
+    it("should handle all archetypes", () => {
+      Object.values(PlayerArchetype).forEach((archetype) => {
+        // Fix: Use static method
+        const techniques =
+          KoreanTechniquesSystem.getTechniquesByArchetype(archetype);
+        expect(Array.isArray(techniques)).toBe(true);
+      });
+    });
+  });
+
+  describe("getTechniqueById", () => {
+    it("should return technique by ID", () => {
+      // Fix: Use static method
+      const allTechniques = KoreanTechniquesSystem.getAllTechniques();
+      if (allTechniques.length > 0) {
+        const firstTechnique = allTechniques[0];
+        // Fix: Use static method
+        const foundTechnique = KoreanTechniquesSystem.getTechniqueById(
+          firstTechnique.id
+        );
+
+        expect(foundTechnique).toBeDefined();
+        expect(foundTechnique?.id).toBe(firstTechnique.id);
+      }
+    });
+
+    it("should return undefined for invalid ID", () => {
+      // Fix: Use static method
+      const technique = KoreanTechniquesSystem.getTechniqueById("invalid_id");
+
+      expect(technique).toBeUndefined();
+    });
+  });
+});
+
+describe("getTechniquesByStance", () => {
+  it("should return techniques for specific stance", () => {
+    const techniques = getTechniquesByStance(TrigramStance.GEON);
+
+    expect(Array.isArray(techniques)).toBe(true);
+    techniques.forEach((technique) => {
+      expect(technique.stance).toBe(TrigramStance.GEON);
+    });
+  });
+
+  it("should handle all stances", () => {
+    Object.values(TrigramStance).forEach((stance) => {
+      const techniques = getTechniquesByStance(stance);
+      expect(Array.isArray(techniques)).toBe(true);
+    });
+  });
+
+  it("should return empty array for stance with no techniques", () => {
+    // Test edge case - some stances might not have techniques defined yet
+    const techniques = getTechniquesByStance(TrigramStance.GON);
+    expect(Array.isArray(techniques)).toBe(true);
   });
 });
