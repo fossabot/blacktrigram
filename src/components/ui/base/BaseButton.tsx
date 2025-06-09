@@ -1,7 +1,8 @@
 // Base button component with Korean martial arts styling
 
 import React, { useCallback, useMemo, useState } from "react";
-import { Container, Graphics, Text, Sprite } from "@pixi/react";
+// Fix: Remove Container from import
+import { Graphics, Text, Sprite } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import type { BaseButtonProps } from "../../../types/components";
 import {
@@ -187,9 +188,8 @@ export const BaseButton: React.FC<BaseButtonProps> = ({
   const iconSize = buttonHeight * 0.6;
 
   return (
-    <Container
-      x={x}
-      y={y}
+    <Graphics
+      draw={buttonBackgroundDraw}
       interactive={buttonMode && !disabled && !loading} // Fix: Use props instead of undefined variable
       buttonMode={buttonMode}
       pointerdown={handlePointerDown}
@@ -197,10 +197,12 @@ export const BaseButton: React.FC<BaseButtonProps> = ({
       pointerupoutside={handlePointerUp}
       pointerover={handlePointerOver}
       pointerout={handlePointerOut}
+      x={x}
+      y={y}
+      width={buttonWidth}
+      height={buttonHeight}
       data-testid={testId}
     >
-      <Graphics draw={buttonBackgroundDraw} />
-
       {/* Icon */}
       {icon && typeof icon === "string" && (
         <Sprite
@@ -238,7 +240,7 @@ export const BaseButton: React.FC<BaseButtonProps> = ({
           }}
         />
       )}
-    </Container>
+    </Graphics>
   );
 };
 
