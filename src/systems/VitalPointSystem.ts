@@ -6,12 +6,16 @@ import {
   PlayerState,
   KoreanTechnique,
   Position,
+  StatusEffect,
 } from "../types";
 import {
   VitalPointSeverity,
   VitalPointCategory, // Fix: Add missing import
-  DamageType, // Fix: Add missing import
+  DamageType,
+  PlayerArchetype,
+  TrigramStance, // Fix: Add missing import
 } from "../types/enums";
+import HitDetection from "./vitalpoint/HitDetection";
 
 /**
  * Damage calculation and effect determination
@@ -333,9 +337,100 @@ export class VitalPointSystem {
    */
   processHit(
     targetPosition: Position,
-    technique: KoreanTechnique,
-    baseDamage: number
+    // Fix: Remove unused technique parameter
+    baseDamage: number,
+    attackerArchetype: PlayerArchetype,
+    // Fix: Remove unused targetDimensions parameter
+    targetedVitalPointId?: string | null
   ): VitalPointHitResult {
+    // Find the closest vital point or use specified one
+    let targetVitalPoint: VitalPoint | undefined;
+
+    if (targetedVitalPointId) {
+      targetVitalPoint = this.getVitalPointById(targetedVitalPointId);
+    } else {
+      // Find closest vital point
+      let minDistance = Infinity;
+      for (const vitalPoint of this.vitalPoints) {
+        const distance = Math.sqrt(
+          Math.pow(targetPosition.x - vitalPoint.position.x, 2) +
+            Math.pow(targetPosition.y - vitalPoint.position.y, 2)
+        );
+        if (distance < minDistance && distance <= vitalPoint.radius) {
+          minDistance = distance;
+          targetVitalPoint = vitalPoint;
+        }
+      }
+    }
+
+    if (!targetVitalPoint) {
+      return {
+        hit: false,
+        damage: 0,
+        effects: [],
+        severity: VitalPointSeverity.MINOR,
+      };
+    }
+
+    // Fix: Calculate damage using proper method call
+    const finalDamage = this.calculateDamage(
+      targetVitalPoint,
+      baseDamage,
+      attackerArchetype
+    );
+
+    // Convert VitalPointEffect to StatusEffect
+    const effects = targetVitalPoint.effects.map((effect) =>
+      HitDetection.convertVitalPointEffectToStatusEffect(
+        effect,
+        targetVitalPoint!.id
+      )
+    );
+
+    return {
+      hit: true,
+      vitalPoint: targetVitalPoint,
+      damage: finalDamage,
+      effects,
+      severity: targetVitalPoint.severity,
+    };
+  }
+
+  // Fix: Add missing calculateDamage method
+  private calculateDamage(
+    vitalPoint: VitalPoint,
+    baseDamage: number,
+    archetype: PlayerArchetype
+  ): number {
+    const archetypeModifier =
+      this.config.archetypeModifiers?.[archetype]?.[vitalPoint.id] || 1.0;
+    const severityMultiplier =
+      this.config.vitalPointSeverityMultiplier?.[vitalPoint.severity] || 1.0;
+
+    return Math.floor(baseDamage * archetypeModifier * severityMultiplier);
+  }
+
+  // Fix: Remove unused parameters from calculateHit
+  calculateHit(
+    technique: KoreanTechnique,
+    targetVitalPointId: string | null,
+    // Fix: Remove unused parameters to match interface
+    defenderPosition: Position
+  ): VitalPointHitResult {
+    const targetVitalPoint = targetVitalPointId
+      ? this.getVitalPointById(targetVitalPointId)
+      : null;
+
+    if (!targetVitalPoint) {
+      return {
+        hit: false,
+        damage: 0,
+        effects: [],
+        severity: VitalPointSeverity.MINOR,
+      };
+    }
+
+    // Simple hit calculation
     const hit = Math.random() < technique.accuracy;
 
     if (!hit) {
@@ -347,65 +442,38 @@ export class VitalPointSystem {
       };
     }
 
-    const vitalPoint = this.findVitalPointAtPosition(targetPosition);
-
-    let damage = baseDamage;
-    if (vitalPoint) {
-      // Fix: Use DamageCalculator
-      damage = DamageCalculator.calculateVitalPointDamage(
-        baseDamage,
-        vitalPoint,
-        technique
-      );
-    }
-
-    // Fix: Use damageCalculator property
-    const effects = this.damageCalculator.determineEffects(vitalPoint, damage);
+    const damage = technique.damage || 0;
+    const effects = targetVitalPoint.effects.map((effect) =>
+      HitDetection.convertVitalPointEffectToStatusEffect(
+        effect,
+        targetVitalPoint.id
+      )
+    );
 
     return {
       hit: true,
-      vitalPoint,
-      damage: Math.floor(damage),
+      vitalPoint: targetVitalPoint,
+      damage,
       effects,
-      severity: vitalPoint?.severity || VitalPointSeverity.MINOR,
+      severity: targetVitalPoint.severity,
     };
   }
 
-  /**
-   * Find a vital point at a specific position
-   */
-  private findVitalPointAtPosition(
-    position: Position,
-    targetedVitalPointId?: string | null
-  ): VitalPoint | undefined {
-    if (targetedVitalPointId) {
-      return this.vitalPoints.find((vp) => vp.id === targetedVitalPointId);
-    }
-
-    return this.vitalPoints.find((vp) => {
-      const distance = Math.sqrt(
-        Math.pow(position.x - vp.position.x, 2) +
-          Math.pow(position.y - vp.position.y, 2)
-      );
-      return distance <= vp.radius;
-    });
-  }
-
-  /**
-   * Calculate the accuracy of a vital point attack
-   */
-  calculateVitalPointAccuracy(
-    targetPosition: Position,
-    attackAccuracy: number,
+  // Fix: Remove unused parameters from applyVitalPointEffects
+  applyVitalPointEffects(
+    player: PlayerState,
     vitalPoint: VitalPoint
-  ): number {
-    const distance = Math.sqrt(
-      Math.pow(targetPosition.x - vitalPoint.position.x, 2) +
-        Math.pow(targetPosition.y - vitalPoint.position.y, 2)
+    // Fix: Remove unused intensityMultiplier parameter
+  ): PlayerState {
+    // Apply effects to player state
+    const newEffects = vitalPoint.effects.map((effect) =>
+      HitDetection.convertVitalPointEffectToStatusEffect(effect, vitalPoint.id)
     );
 
-    const accuracyModifier = Math.max(0, 1 - distance / vitalPoint.radius);
-    return attackAccuracy * accuracyModifier;
+    return {
+      ...player,
+      statusEffects: [...player.statusEffects, ...newEffects],
+    };
   }
 
   /**

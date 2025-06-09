@@ -1,85 +1,105 @@
+import type { Position } from "../../types/common";
 import type { VitalPoint, VitalPointHitResult } from "../../types/anatomy";
-import type { KoreanTechnique, Position } from "../../types";
-import { VitalPointSeverity } from "../../types/enums";
-
-/**
- * Detect vital point hits based on technique and positioning
- */
+import type { KoreanTechnique } from "../../types/combat";
+// Fix: Remove unused PlayerState import
+// Fix: Import enums as values, not types
+import {
+  VitalPointSeverity,
+  VitalPointEffectType,
+  EffectIntensity as VitalPointEffectIntensity,
+  EffectType,
+} from "../../types/enums";
+import type { VitalPointEffect } from "../../types/anatomy";
+import { StatusEffect } from "@/types";
 
 export class HitDetection {
-  static checkVitalPointHit(
-    technique: KoreanTechnique,
-    targetPosition: Position,
-    vitalPoints: readonly VitalPoint[]
-  ): VitalPointHitResult {
-    const hitChance = this.calculateHitChance(technique);
+  /**
+   * Convert VitalPointEffect to StatusEffect with required properties
+   */
+  private static convertVitalPointEffectToStatusEffect(
+    vitalPointEffect: VitalPointEffect,
+    vitalPointId: string
+  ): StatusEffect {
+    const currentTime = Date.now();
 
-    if (Math.random() > hitChance) {
-      return {
-        hit: false,
-        damage: 0,
-        effects: [],
-        severity: VitalPointSeverity.MINOR,
-      };
-    }
+    // Convert VitalPointEffectType to EffectType using string literals
+    const typeMapping: Record<VitalPointEffectType, EffectType> = {
+      [VitalPointEffectType.UNCONSCIOUSNESS]: "stun",
+      [VitalPointEffectType.BREATHLESSNESS]: "stamina_drain",
+      [VitalPointEffectType.PAIN]: "weakened",
+      [VitalPointEffectType.PARALYSIS]: "paralysis",
+      [VitalPointEffectType.STUN]: "stun",
+      [VitalPointEffectType.WEAKNESS]: "weakened",
+      [VitalPointEffectType.DISORIENTATION]: "confusion",
+      [VitalPointEffectType.BLOOD_FLOW_RESTRICTION]: "bleed",
+      [VitalPointEffectType.NERVE_DISRUPTION]: "paralysis",
+      [VitalPointEffectType.ORGAN_DISRUPTION]: "vulnerability",
+    };
 
-    const targetVitalPoint = this.findNearestVitalPoint(
-      targetPosition,
-      vitalPoints
-    );
-
-    if (!targetVitalPoint) {
-      return {
-        hit: false,
-        damage: 0,
-        effects: [],
-        severity: VitalPointSeverity.MINOR,
-      };
-    }
+    // Convert VitalPointEffectIntensity to string literals
+    const intensityMapping: Record<
+      VitalPointEffectIntensity,
+      "minor" | "moderate" | "severe" | "critical"
+    > = {
+      [VitalPointEffectIntensity.WEAK]: "minor",
+      [VitalPointEffectIntensity.MEDIUM]: "moderate",
+      [VitalPointEffectIntensity.HIGH]: "severe",
+      [VitalPointEffectIntensity.EXTREME]: "critical",
+    };
 
     return {
-      hit: true,
-      damage:
-        targetVitalPoint.baseDamage || targetVitalPoint.damage?.average || 0,
-      vitalPoint: targetVitalPoint,
-      effects: targetVitalPoint.effects,
-      severity: targetVitalPoint.severity,
+      id: `${vitalPointEffect.id}_${currentTime}`,
+      type: typeMapping[vitalPointEffect.type] || "weakened",
+      intensity: intensityMapping[vitalPointEffect.intensity] || "moderate",
+      duration: vitalPointEffect.duration,
+      description: vitalPointEffect.description,
+      stackable: vitalPointEffect.stackable,
+      source: vitalPointId,
+      startTime: currentTime,
+      endTime: currentTime + vitalPointEffect.duration,
     };
   }
 
-  private static calculateHitChance(technique: KoreanTechnique): number {
-    return technique.accuracy * 0.3; // 30% of technique accuracy for vital points
-  }
-
-  private static findNearestVitalPoint(
-    position: Position,
-    vitalPoints: readonly VitalPoint[]
-  ): VitalPoint | null {
-    if (vitalPoints.length === 0) return null;
-
-    let nearest = vitalPoints[0];
-    let minDistance = this.calculateDistance(
-      position,
-      nearest.position || { x: 0, y: 0 }
+  processVitalPointHit(
+    vitalPoint: VitalPoint,
+    hitPosition: Position,
+    force: number
+  ): VitalPointHitResult {
+    // Calculate hit accuracy
+    const distance = Math.sqrt(
+      Math.pow(hitPosition.x - vitalPoint.position.x, 2) +
+        Math.pow(hitPosition.y - vitalPoint.position.y, 2)
     );
 
-    for (const vp of vitalPoints) {
-      const distance = this.calculateDistance(
-        position,
-        vp.position || { x: 0, y: 0 }
-      );
-      if (distance < minDistance) {
-        minDistance = distance;
-        nearest = vp;
-      }
+    const isHit = distance <= vitalPoint.radius;
+
+    if (!isHit) {
+      return {
+        hit: false,
+        damage: 0,
+        effects: [],
+        severity: VitalPointSeverity.MINOR,
+      };
     }
 
-    return nearest;
-  }
+    // Calculate damage
+    const baseDamage = vitalPoint.baseDamage || 15;
+    const forceMultiplier = Math.min(force / vitalPoint.requiredForce, 2.0);
+    const damage = Math.floor(baseDamage * forceMultiplier);
 
-  private static calculateDistance(pos1: Position, pos2: Position): number {
-    const dx = pos1.x - pos2.x;
-    const dy = pos1.y - pos2.y;
-    return Math.sqrt(dx * dx + dy * dy);
+    // Fix: Convert VitalPointEffect array to StatusEffect array
+    const effects = vitalPoint.effects.map((effect) =>
+      HitDetection.convertVitalPointEffectToStatusEffect(effect, vitalPoint.id)
+    );
+
+    return {
+      hit: true,
+      vitalPoint,
+      damage,
+      effects,
+      severity: vitalPoint.severity,
+    };
   }
 }
+
+export default HitDetection;

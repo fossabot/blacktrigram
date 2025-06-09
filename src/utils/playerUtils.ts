@@ -10,11 +10,13 @@ import type {
   Position,
   KoreanText,
 } from "../types";
-import { TrigramStance, PlayerArchetype, CombatState } from "../types/enums"; // Import as values
 import {
-  PLAYER_ARCHETYPES_DATA,
-  DEFAULT_PLAYER_STATS,
-} from "../types/constants";
+  PlayerArchetype,
+  TrigramStance,
+  CombatState,
+  DamageType,
+} from "../types/enums";
+import { PLAYER_ARCHETYPES_DATA } from "../types/constants";
 
 /**
  * Creates a new player state from creation data
@@ -239,7 +241,27 @@ export function createDefaultPlayerState(playerIndex: number = 0): PlayerState {
     archetype: PlayerArchetype.MUSA,
     currentStance: TrigramStance.GEON,
 
-    ...DEFAULT_PLAYER_STATS,
+    // Core stats
+    health: 100,
+    maxHealth: 100,
+    ki: 100,
+    maxKi: 100,
+    stamina: 100,
+    maxStamina: 100,
+    energy: 100,
+    maxEnergy: 100,
+
+    // Combat stats
+    attackPower: 10,
+    defense: 10,
+    speed: 10,
+    technique: 10,
+
+    // Physical state
+    pain: 0,
+    consciousness: 100,
+    balance: 100,
+    momentum: 0,
 
     // Combat state
     combatState: CombatState.IDLE,
@@ -297,40 +319,68 @@ export function createPlayerStateSimple(
 }
 
 /**
- * Create player from archetype - standardized to 2 parameters
+ * Create a player from archetype with proper initialization
  */
-// Fix: Simplify function signature to only accept archetype and optional playerIndex
 export function createPlayerFromArchetype(
   archetype: PlayerArchetype,
-  playerIndex: number = 0
+  playerIndex: number,
+  stance: TrigramStance = TrigramStance.GEON
 ): PlayerState {
   const archetypeData = PLAYER_ARCHETYPES_DATA[archetype];
 
   const playerName: KoreanText = {
     korean: `플레이어 ${playerIndex + 1}`,
     english: `Player ${playerIndex + 1}`,
-    romanized: `Player ${playerIndex + 1}`,
   };
 
-  const player = createPlayerState(
-    {
-      name: playerName,
-      archetype,
-    },
-    playerIndex
-  );
+  const position: Position = {
+    x: playerIndex === 0 ? 200 : 600,
+    y: 400,
+  };
 
   return {
-    ...player,
-    position: {
-      x: playerIndex === 0 ? 100 : 700,
-      y: 400,
-    },
+    id: `player_${playerIndex}`,
+    name: playerName,
+    archetype,
+    health: archetypeData.baseHealth,
+    maxHealth: archetypeData.baseHealth,
+    ki: archetypeData.baseKi,
+    maxKi: archetypeData.baseKi,
+    stamina: archetypeData.baseStamina,
+    maxStamina: archetypeData.baseStamina,
+    energy: 100,
+    maxEnergy: 100,
+    attackPower: archetypeData.stats.attackPower,
+    defense: archetypeData.stats.defense,
+    speed: archetypeData.stats.speed,
+    technique: archetypeData.stats.technique,
+    pain: 0,
+    consciousness: 100,
+    balance: 100,
+    momentum: 0,
+    currentStance: stance,
+    combatState: CombatState.IDLE,
+    position,
+    isBlocking: false,
+    isStunned: false,
+    isCountering: false,
+    lastActionTime: 0,
+    recoveryTime: 0,
+    lastStanceChangeTime: 0,
+    statusEffects: [],
+    activeEffects: [],
+    vitalPoints: [],
+    totalDamageReceived: 0,
+    totalDamageDealt: 0,
+    hitsTaken: 0,
+    hitsLanded: 0,
+    perfectStrikes: 0,
+    vitalPointHits: 0,
   };
 }
 
 /**
- * Safely update player state with new values
+ * Update player state with new values
  */
 export function updatePlayerState(
   player: PlayerState,
@@ -343,41 +393,103 @@ export function updatePlayerState(
 }
 
 /**
- * Restore player resources (for training mode)
- */
-export function restorePlayerResources(player: PlayerState): PlayerState {
-  return updatePlayerState(player, {
-    ki: player.maxKi,
-    stamina: player.maxStamina,
-    health: player.maxHealth,
-    pain: 0,
-    consciousness: 100,
-    balance: 100,
-  });
-}
-
-/**
- * Apply damage to player
+ * Apply damage to player with proper calculations
  */
 export function applyDamageToPlayer(
   player: PlayerState,
-  damage: number
+  damage: number,
+  damageType: DamageType
 ): PlayerState {
-  const newHealth = Math.max(0, player.health - damage);
+  const actualDamage = Math.max(0, damage - player.defense);
+  const newHealth = Math.max(0, player.health - actualDamage);
+
   return updatePlayerState(player, {
     health: newHealth,
+    totalDamageReceived: player.totalDamageReceived + actualDamage,
+    hitsTaken: player.hitsTaken + 1,
+    isStunned: newHealth <= 0,
   });
 }
 
 /**
- * Change player stance
+ * Check if player can execute action
  */
-export function changePlayerStance(
+export function canPlayerAct(player: PlayerState): boolean {
+  return (
+    !player.isStunned &&
+    player.health > 0 &&
+    player.combatState !== CombatState.RECOVERING &&
+    player.consciousness > 0
+  );
+}
+
+/**
+ * Get player archetype data
+ */
+export function getPlayerArchetypeData(archetype: PlayerArchetype) {
+  return PLAYER_ARCHETYPES_DATA[archetype];
+}
+
+/**
+ * Calculate player effectiveness against opponent stance
+ */
+export function calculatePlayerEffectiveness(
   player: PlayerState,
-  newStance: TrigramStance
+  opponentStance: TrigramStance
+): number {
+  const archetypeData = getPlayerArchetypeData(player.archetype);
+  const favoredStances = archetypeData.favoredStances || [];
+
+  // Base effectiveness
+  let effectiveness = 1.0;
+
+  // Archetype bonus if current stance is favored
+  if (favoredStances.includes(player.currentStance)) {
+    effectiveness += 0.1;
+  }
+
+  // Health factor
+  const healthFactor = player.health / player.maxHealth;
+  effectiveness *= 0.5 + healthFactor * 0.5;
+
+  // Ki factor
+  const kiFactor = player.ki / player.maxKi;
+  effectiveness *= 0.8 + kiFactor * 0.2;
+
+  return effectiveness;
+}
+
+/**
+ * Reset player to initial state
+ */
+export function resetPlayerToInitialState(
+  player: PlayerState,
+  archetype?: PlayerArchetype
 ): PlayerState {
-  return updatePlayerState(player, {
-    currentStance: newStance,
-    lastStanceChangeTime: Date.now(),
-  });
+  const newArchetype = archetype || player.archetype;
+  const archetypeData = getPlayerArchetypeData(newArchetype);
+
+  return {
+    ...player,
+    archetype: newArchetype,
+    health: archetypeData.baseHealth,
+    maxHealth: archetypeData.baseHealth,
+    ki: archetypeData.baseKi,
+    maxKi: archetypeData.baseKi,
+    stamina: archetypeData.baseStamina,
+    maxStamina: archetypeData.baseStamina,
+    energy: 100,
+    combatState: CombatState.IDLE,
+    isBlocking: false,
+    isStunned: false,
+    isCountering: false,
+    pain: 0,
+    consciousness: 100,
+    balance: 100,
+    momentum: 0,
+    statusEffects: [],
+    activeEffects: [],
+    lastActionTime: 0,
+    recoveryTime: 0,
+  };
 }

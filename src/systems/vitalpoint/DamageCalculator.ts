@@ -1,243 +1,264 @@
-import type {
-  VitalPoint,
-  KoreanTechnique,
-  VitalPointSystemConfig,
-  StatusEffect,
-  DamageResult,
-  PlayerState,
-  VitalPointEffect,
-} from "../../types";
 import {
   VitalPointSeverity,
-  DamageType,
   EffectIntensity,
+  VitalPointEffectType,
+  PlayerArchetype,
 } from "../../types/enums";
+import type { VitalPoint, DamageResult } from "../../types/anatomy";
+import type { StatusEffect, EffectType } from "../../types/effects"; // Fix: Import EffectType from effects.ts
+import type { PlayerState } from "../../types/player";
+import type { KoreanTechnique } from "../../types/combat";
 
-/**
- * Calculate damage based on vital point targeting
- */
 export class DamageCalculator {
-  private readonly config: VitalPointSystemConfig;
-
-  constructor(config: VitalPointSystemConfig) {
-    this.config = config;
-  }
-
   /**
-   * Calculate vital point damage
+   * Calculate damage with proper attacker integration
    */
-  public static calculateVitalPointDamage(
+  static calculateVitalPointDamage(
     vitalPoint: VitalPoint,
-    technique: KoreanTechnique,
-    attacker: PlayerState
-  ): number {
-    const baseDamage =
-      vitalPoint.baseDamage || vitalPoint.damage?.average || 10;
-    const techniqueModifier = (technique.damage || 20) / 20;
-    const severityMultiplier = this.getSeverityMultiplier(vitalPoint.severity);
-
-    return Math.floor(baseDamage * techniqueModifier * severityMultiplier);
-  }
-
-  /**
-   * Calculate total damage including vital point effects
-   */
-  public static calculateTotalDamage(
     baseDamage: number,
-    vitalPointHit: boolean,
-    vitalPoint?: VitalPoint
+    attacker: PlayerState, // Fix: Use attacker parameter
+    defender?: PlayerState
   ): DamageResult {
-    let totalDamage = baseDamage;
-    let vitalPointDamage = 0;
-    const effects: StatusEffect[] = [];
+    // Base damage from vital point
+    let damage = baseDamage;
 
-    if (vitalPointHit && vitalPoint) {
-      vitalPointDamage =
-        vitalPoint.baseDamage || vitalPoint.damage?.average || 0;
-      totalDamage += vitalPointDamage;
+    // Apply attacker's technique and archetype bonuses
+    const attackerBonus = attacker.technique * 0.1;
+    damage += attackerBonus;
 
-      // Convert VitalPointEffect to StatusEffect
-      if (vitalPoint.effects) {
-        for (const vpEffect of vitalPoint.effects) {
-          effects.push(this.convertVitalPointEffectToStatusEffect(vpEffect));
-        }
-      }
+    // Apply archetype-specific modifiers
+    const archetypeModifier = this.getArchetypeVitalPointModifier(
+      attacker.archetype,
+      vitalPoint
+    );
+    damage *= archetypeModifier;
+
+    // Apply vital point severity multiplier
+    const severityMultiplier = this.getSeverityMultiplier(vitalPoint.severity);
+    damage *= severityMultiplier;
+
+    // Apply defender's defense if available
+    if (defender) {
+      const defenseReduction = defender.defense * 0.05;
+      damage = Math.max(1, damage - defenseReduction);
     }
 
+    // Generate status effects
+    const effects = this.generateVitalPointEffects(vitalPoint, damage);
+
+    // Determine critical hit
+    const isCritical = damage > baseDamage * 1.5;
+    const isVitalPoint = true; // Always true for vital point hits
+
+    // Fix: Return proper DamageResult without totalDamage property
     return {
-      totalDamage,
-      vitalPointDamage,
+      damage: Math.floor(damage),
       effects,
+      isCritical,
+      isVitalPoint,
     };
   }
 
   /**
-   * Convert VitalPointEffect to StatusEffect
+   * Get archetype-specific vital point damage modifier
    */
-  private static convertVitalPointEffectToStatusEffect(
-    vpEffect: VitalPointEffect
-  ): StatusEffect {
-    return {
-      id: vpEffect.id || `vp_effect_${Date.now()}`,
-      type: vpEffect.type as any,
-      intensity: vpEffect.intensity as any,
-      duration: vpEffect.duration,
-      description: vpEffect.description,
-      stackable: vpEffect.stackable || false,
-      source: vpEffect.source || "vital_point",
-      startTime: Date.now(),
-      endTime: Date.now() + vpEffect.duration,
+  private static getArchetypeVitalPointModifier(
+    archetype: PlayerArchetype,
+    vitalPoint: VitalPoint
+  ): number {
+    // Archetype specializations for different vital point categories
+    const modifiers: Record<PlayerArchetype, Record<string, number>> = {
+      [PlayerArchetype.AMSALJA]: {
+        neurological: 1.3, // Shadow assassins excel at nerve strikes
+        vascular: 1.2,
+      },
+      [PlayerArchetype.MUSA]: {
+        skeletal: 1.2, // Traditional warriors focus on bone strikes
+        muscular: 1.1,
+      },
+      [PlayerArchetype.HACKER]: {
+        neurological: 1.1, // Cyber warriors understand nervous system
+        endocrine: 1.1,
+      },
+      [PlayerArchetype.JEONGBO_YOWON]: {
+        pressure: 1.2, // Intelligence operatives know pressure points
+        circulatory: 1.1,
+      },
+      [PlayerArchetype.JOJIK_POKRYEOKBAE]: {
+        organ: 1.2, // Street fighters aim for organs
+        respiratory: 1.1,
+      },
     };
+
+    const archetypeModifiers = modifiers[archetype];
+    return archetypeModifiers?.[vitalPoint.category] || 1.0;
   }
 
   /**
-   * Get severity multiplier
+   * Get damage multiplier based on vital point severity
    */
   private static getSeverityMultiplier(severity: VitalPointSeverity): number {
-    switch (severity) {
-      case VitalPointSeverity.MINOR:
-        return 1.0;
-      case VitalPointSeverity.MODERATE:
-        return 1.3;
-      case VitalPointSeverity.MAJOR:
-        return 1.6;
-      case VitalPointSeverity.CRITICAL:
-        return 2.0;
-      default:
-        return 1.0;
-    }
-  }
-
-  /**
-   * Calculate damage with type effectiveness
-   */
-  private calculateDamage(
-    vitalPoint: VitalPoint,
-    technique: KoreanTechnique,
-    damageType: DamageType,
-    isCritical: boolean = false
-  ): number {
-    const techniqueModifier = (technique.damage || 20) / 20;
-    let totalDamage = vitalPoint.baseDamage || 0;
-
-    // Apply severity multiplier
-    const severityMultiplier =
-      this.config.damageMultipliers?.[vitalPoint.severity] ?? 1.0;
-    totalDamage *= severityMultiplier;
-
-    // Apply damage type effectiveness
-    const effectivenessMultiplier = this.calculateTypeEffectiveness(
-      vitalPoint,
-      damageType
-    );
-    totalDamage *= effectivenessMultiplier;
-
-    // Apply technique modifier
-    totalDamage *= techniqueModifier;
-
-    // Apply critical hit multiplier
-    if (isCritical) {
-      totalDamage *= 1.5;
-    }
-
-    return Math.max(0, Math.round(totalDamage));
-  }
-
-  /**
-   * Calculate type effectiveness
-   */
-  private calculateTypeEffectiveness(
-    vitalPoint: VitalPoint,
-    damageType: DamageType
-  ): number {
-    // Type effectiveness mapping
-    const effectiveness: Record<string, Record<string, number>> = {
-      [DamageType.BLUNT]: {
-        skeletal: 1.3,
-        muscular: 1.2,
-      },
-      [DamageType.PIERCING]: {
-        neurological: 1.4,
-        vascular: 1.3,
-      },
-      [DamageType.PRESSURE]: {
-        neurological: 1.5,
-        respiratory: 1.4,
-        vascular: 1.3,
-      },
-      [DamageType.NERVE]: {
-        neurological: 1.6,
-      },
-      [DamageType.JOINT]: {
-        skeletal: 1.8,
-      },
+    const multipliers: Record<VitalPointSeverity, number> = {
+      [VitalPointSeverity.MINOR]: 1.0,
+      [VitalPointSeverity.MODERATE]: 1.2,
+      [VitalPointSeverity.MAJOR]: 1.5,
+      [VitalPointSeverity.CRITICAL]: 2.0,
+      [VitalPointSeverity.LETHAL]: 3.0,
     };
 
-    const categoryStr = vitalPoint.category.toString();
-    return effectiveness[damageType]?.[categoryStr] || 1.0;
+    return multipliers[severity] || 1.0;
   }
 
   /**
-   * Determine status effects from vital point hit
+   * Convert vital point effect type to status effect type
    */
-  public determineEffects(
-    vitalPoint: VitalPoint | null,
-    technique: KoreanTechnique,
-    isCritical: boolean
+  private static convertVitalPointEffectToStatusEffect(
+    effectType: VitalPointEffectType
+  ): EffectType {
+    // Fix: Use EffectType from effects.ts (string literals)
+    const conversions: Record<VitalPointEffectType, EffectType> = {
+      [VitalPointEffectType.UNCONSCIOUSNESS]: "stun",
+      [VitalPointEffectType.BREATHLESSNESS]: "stamina_drain",
+      [VitalPointEffectType.PAIN]: "weakened",
+      [VitalPointEffectType.PARALYSIS]: "paralysis",
+      [VitalPointEffectType.STUN]: "stun",
+      [VitalPointEffectType.WEAKNESS]: "weakened",
+      [VitalPointEffectType.DISORIENTATION]: "confusion",
+      [VitalPointEffectType.BLOOD_FLOW_RESTRICTION]: "bleed",
+      [VitalPointEffectType.NERVE_DISRUPTION]: "paralysis",
+      [VitalPointEffectType.ORGAN_DISRUPTION]: "vulnerability",
+    };
+
+    return conversions[effectType] || "weakened";
+  }
+
+  /**
+   * Generate status effects from vital point hit
+   */
+  private static generateVitalPointEffects(
+    vitalPoint: VitalPoint,
+    damage: number
   ): StatusEffect[] {
     const effects: StatusEffect[] = [];
+    const currentTime = Date.now();
 
-    // Add technique effects
-    if (technique.effects) {
-      effects.push(...technique.effects);
-    }
-
-    // Add vital point effects
-    if (vitalPoint?.effects) {
-      for (const vpEffect of vitalPoint.effects) {
-        effects.push(
-          DamageCalculator.convertVitalPointEffectToStatusEffect(vpEffect)
-        );
+    vitalPoint.effects.forEach((effect) => {
+      // Determine effect intensity based on damage
+      let intensity: EffectIntensity;
+      if (damage >= 50) {
+        intensity = EffectIntensity.EXTREME;
+      } else if (damage >= 30) {
+        intensity = EffectIntensity.HIGH;
+      } else if (damage >= 15) {
+        intensity = EffectIntensity.MEDIUM;
+      } else {
+        intensity = EffectIntensity.WEAK;
       }
-    }
 
-    // Add critical hit effect
-    if (isCritical) {
-      effects.push({
-        id: `critical_hit_effect_${Date.now()}`,
-        type: "stun" as any,
-        intensity: EffectIntensity.MODERATE as any,
-        duration: 2000,
-        description: {
-          korean: "치명타 효과",
-          english: "Critical hit effect",
-        },
-        stackable: false,
-        source: "critical_hit",
-        startTime: Date.now(),
-        endTime: Date.now() + 2000,
-      });
-    }
+      // Create status effect with proper type conversion
+      const statusEffect: StatusEffect = {
+        id: `${effect.id}_${Date.now()}`,
+        type: this.convertVitalPointEffectToStatusEffect(effect.type), // Fix: Use enum conversion
+        intensity: intensity as any, // Convert EffectIntensity enum to effects.ts intensity type
+        duration: effect.duration,
+        description: effect.description,
+        stackable: effect.stackable,
+        source: vitalPoint.id,
+        startTime: currentTime,
+        endTime: currentTime + effect.duration,
+      };
+
+      effects.push(statusEffect);
+    });
 
     return effects;
   }
 
   /**
-   * Calculate damage reduction from armor/defense
+   * Calculate base damage multiplier
    */
-  public calculateDamageReduction(
-    rawDamage: number,
+  static calculateBaseDamage(
+    technique: KoreanTechnique,
+    attackerState: PlayerState
+  ): number {
+    const baseDamage = technique.damage || 15;
+    const attackerBonus = attackerState.attackPower * 0.1;
+    return baseDamage + attackerBonus;
+  }
+
+  /**
+   * Calculate critical hit chance
+   */
+  static calculateCriticalChance(
+    technique: KoreanTechnique,
+    attackerState: PlayerState,
+    vitalPoint?: VitalPoint
+  ): number {
+    let critChance = technique.critChance;
+
+    // Attacker technique bonus
+    critChance += attackerState.technique * 0.01;
+
+    // Vital point bonus
+    if (vitalPoint) {
+      critChance += 0.1; // 10% bonus for vital point targeting
+    }
+
+    return Math.min(1.0, critChance);
+  }
+
+  /**
+   * Apply damage reduction from defense
+   */
+  static applyDefenseReduction(
+    damage: number,
     defenderState: PlayerState
   ): number {
-    // Base damage reduction from stance
-    const stanceReduction = 0.1; // 10% base reduction
+    const defenseReduction = defenderState.defense * 0.05;
+    return Math.max(1, damage - defenseReduction);
+  }
 
-    // Additional reduction from blocking
-    const blockReduction = defenderState.isBlocking ? 0.5 : 0;
+  /**
+   * Calculate final damage result
+   */
+  static calculateFinalDamage(
+    technique: KoreanTechnique,
+    attacker: PlayerState,
+    defender: PlayerState,
+    vitalPoint?: VitalPoint
+  ): DamageResult {
+    // Calculate base damage
+    let damage = this.calculateBaseDamage(technique, attacker);
 
-    // Calculate total reduction (max 80%)
-    const totalReduction = Math.min(0.8, stanceReduction + blockReduction);
+    // Apply vital point modifiers if hit
+    if (vitalPoint) {
+      const vitalPointResult = this.calculateVitalPointDamage(
+        vitalPoint,
+        damage,
+        attacker,
+        defender
+      );
+      return vitalPointResult;
+    }
 
-    return Math.floor(rawDamage * (1 - totalReduction));
+    // Apply defense reduction
+    damage = this.applyDefenseReduction(damage, defender);
+
+    // Check for critical hit
+    const critChance = this.calculateCriticalChance(technique, attacker);
+    const isCritical = Math.random() < critChance;
+
+    if (isCritical) {
+      damage *= technique.critMultiplier;
+    }
+
+    return {
+      damage: Math.floor(damage),
+      effects: [...technique.effects],
+      isCritical,
+      isVitalPoint: false,
+    };
   }
 }
+
+export default DamageCalculator;

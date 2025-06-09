@@ -8,7 +8,8 @@ export enum GameMode {
   TRAINING = "training",
   TUTORIAL = "tutorial",
   PRACTICE = "practice",
-  STORY = "story", // Fix: Add missing STORY mode
+  STORY = "story",
+  ARCADE = "arcade",
 }
 
 // Game phases
@@ -22,18 +23,31 @@ export enum GamePhase {
   DEFEAT = "defeat",
   PAUSED = "paused",
   GAME_OVER = "game_over",
+  LOADING = "loading",
 }
 
-// Player archetypes
+// Player archetypes (Korean martial arts specialists)
 export enum PlayerArchetype {
-  MUSA = "musa",
-  AMSALJA = "amsalja",
-  HACKER = "hacker",
-  JEONGBO_YOWON = "jeongbo_yowon",
-  JOJIK_POKRYEOKBAE = "jojik_pokryeokbae",
+  MUSA = "musa", // 무사 - Traditional Warrior
+  AMSALJA = "amsalja", // 암살자 - Shadow Assassin
+  HACKER = "hacker", // 해커 - Cyber Warrior
+  JEONGBO_YOWON = "jeongbo_yowon", // 정보요원 - Intelligence Operative
+  JOJIK_POKRYEOKBAE = "jojik_pokryeokbae", // 조직폭력배 - Organized Crime
 }
 
-// Combat attack types - Fix: Use single enum name
+// Eight Trigram stances (팔괘)
+export enum TrigramStance {
+  GEON = "geon", // ☰ 건 - Heaven
+  TAE = "tae", // ☱ 태 - Lake
+  LI = "li", // ☲ 리 - Fire
+  JIN = "jin", // ☳ 진 - Thunder
+  SON = "son", // ☴ 손 - Wind
+  GAM = "gam", // ☵ 감 - Water
+  GAN = "gan", // ☶ 간 - Mountain
+  GON = "gon", // ☷ 곤 - Earth
+}
+
+// Combat attack types
 export enum CombatAttackType {
   STRIKE = "strike",
   THRUST = "thrust",
@@ -44,6 +58,9 @@ export enum CombatAttackType {
   PRESSURE_POINT = "pressure_point",
   NERVE_STRIKE = "nerve_strike",
   PUNCH = "punch",
+  KICK = "kick",
+  ELBOW = "elbow",
+  KNEE = "knee",
 }
 
 // Damage types
@@ -66,19 +83,7 @@ export enum DamageType {
   BLOOD = "blood",
 }
 
-// Trigram stances
-export enum TrigramStance {
-  GEON = "geon",
-  TAE = "tae",
-  LI = "li",
-  JIN = "jin",
-  SON = "son",
-  GAM = "gam",
-  GAN = "gan",
-  GON = "gon",
-}
-
-// Vital point categories
+// Vital point categories (70 Korean vital points)
 export enum VitalPointCategory {
   NEUROLOGICAL = "neurological",
   VASCULAR = "vascular",
@@ -89,14 +94,18 @@ export enum VitalPointCategory {
   CIRCULATORY = "circulatory",
   LYMPHATIC = "lymphatic",
   ENDOCRINE = "endocrine",
+  JOINT = "joint",
+  NERVE = "nerve",
+  PRESSURE = "pressure",
 }
 
-// Vital point severity
+// Vital point severity levels
 export enum VitalPointSeverity {
   MINOR = "minor",
   MODERATE = "moderate",
   MAJOR = "major",
   CRITICAL = "critical",
+  LETHAL = "lethal",
 }
 
 // Vital point effect types
@@ -106,9 +115,14 @@ export enum VitalPointEffectType {
   PAIN = "pain",
   PARALYSIS = "paralysis",
   STUN = "stun",
+  WEAKNESS = "weakness",
+  DISORIENTATION = "disorientation",
+  BLOOD_FLOW_RESTRICTION = "blood_flow_restriction",
+  NERVE_DISRUPTION = "nerve_disruption",
+  ORGAN_DISRUPTION = "organ_disruption",
 }
 
-// Effect types
+// Effect types for status effects
 export enum EffectType {
   STUN = "stun",
   WEAKNESS = "weakness",
@@ -117,25 +131,33 @@ export enum EffectType {
   BLEEDING = "bleeding",
   BUFF = "buff",
   DEBUFF = "debuff",
+  PARALYSIS = "paralysis",
+  POISON = "poison",
+  BURN = "burn",
+  FREEZE = "freeze",
+  CONFUSION = "confusion",
 }
 
-// Effect intensity
+// Effect intensity levels
 export enum EffectIntensity {
   WEAK = "weak",
-  MEDIUM = "medium", // Fix: Use MEDIUM instead of MODERATE
+  MEDIUM = "medium",
   HIGH = "high",
-  STRONG = "strong",
+  EXTREME = "extreme",
 }
 
-// Hit effect types
+// Hit effect types for visual feedback
 export enum HitEffectType {
   DAMAGE = "damage",
   CRITICAL = "critical",
   BLOCK = "block",
   MISS = "miss",
+  VITAL_POINT = "vital_point",
+  COUNTER = "counter",
+  PARRY = "parry",
 }
 
-// Korean text sizes
+// Korean text sizing
 export enum KoreanTextSize {
   TINY = "tiny",
   SMALL = "small",
@@ -153,4 +175,27 @@ export enum KoreanTextWeight {
   SEMIBOLD = "semibold",
   BOLD = "bold",
   HEAVY = "heavy",
+}
+
+// Combat states
+export enum CombatState {
+  IDLE = "idle",
+  ATTACKING = "attacking",
+  DEFENDING = "defending",
+  STUNNED = "stunned",
+  RECOVERING = "recovering",
+  COUNTERING = "countering",
+  TRANSITIONING = "transitioning",
+}
+
+// Body regions for anatomical targeting
+export enum BodyRegion {
+  HEAD = "head",
+  NECK = "neck",
+  TORSO = "torso",
+  LEFT_ARM = "left_arm",
+  RIGHT_ARM = "right_arm",
+  LEFT_LEG = "left_leg",
+  RIGHT_LEG = "right_leg",
+  CORE = "core",
 }

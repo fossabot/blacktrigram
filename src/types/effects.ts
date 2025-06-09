@@ -60,7 +60,11 @@ export type EffectType =
   | "rage"
   | "defensive"
   | "weakened"
-  | "strengthened";
+  | "strengthened"
+  | "paralysis" // Add missing paralysis
+  | "confusion" // Add missing confusion
+  | "vulnerability" // Add missing vulnerability
+  | "stamina_drain"; // Add missing stamina_drain
 
 // Effect intensity levels
 export type EffectIntensity = "minor" | "moderate" | "severe" | "critical";

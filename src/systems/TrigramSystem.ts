@@ -1,13 +1,14 @@
-import type { PlayerState, TrigramTransitionCost } from "../types";
+import type { KoreanTechnique, PlayerState } from "../types";
 import { TrigramStance, CombatAttackType, DamageType } from "../types/enums";
 import { TrigramCalculator } from "./trigram/TrigramCalculator";
 import { TransitionCalculator } from "./trigram/TransitionCalculator";
 import { PLAYER_ARCHETYPES_DATA, TRIGRAM_DATA } from "../types/constants";
 import type { TrigramSystemInterface } from "../types/systems";
-import type { TrigramData, TrigramTheme } from "../types/trigram";
-import type { KoreanTechnique } from "../types/combat";
-import type { TransitionPath } from "../types/trigram";
-
+import type { TransitionPath, TrigramTheme } from "../types/trigram";
+import type {
+  TrigramTransitionCost,
+  TrigramData,
+} from "../types/trigram";
 
 /**
  * Trigram system for Korean martial arts stance management
@@ -18,8 +19,7 @@ export class TrigramSystem implements TrigramSystemInterface {
   constructor() {
     this.transitionCalculator = new TransitionCalculator();
     // Fix: Use the transitionCalculator to avoid unused warning
-    console.debug("TrigramSystem initialized with transition calculator");
-  }
+    console.debug("TrigramSystem initialized with
 
   /**
    * Check if a stance transition is valid

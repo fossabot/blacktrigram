@@ -1,11 +1,5 @@
-import type {
-  StatusEffect,
-  HitEffect,
-  PlayerState,
-  VisualEffect,
-} from "../types";
+import type { StatusEffect, HitEffect, PlayerState } from "../types";
 import { HitEffectType, EffectType } from "../types/enums";
-import { KOREAN_COLORS } from "../types/constants";
 
 export function createHitEffect(
   type: HitEffectType,

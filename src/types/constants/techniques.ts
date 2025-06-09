@@ -330,10 +330,32 @@ export const TECHNIQUE_PROPERTIES: Record<
   },
   [CombatAttackType.PUNCH]: {
     baseDamage: 18,
-    range: 0.9,
+    range: 1.2,
     accuracy: 0.88,
     kiCost: 12,
     staminaCost: 8,
+  },
+  // Fix: Add missing CombatAttackType properties
+  [CombatAttackType.KICK]: {
+    baseDamage: 22,
+    range: 1.8,
+    accuracy: 0.82,
+    kiCost: 16,
+    staminaCost: 14,
+  },
+  [CombatAttackType.ELBOW]: {
+    baseDamage: 26,
+    range: 0.9,
+    accuracy: 0.86,
+    kiCost: 18,
+    staminaCost: 12,
+  },
+  [CombatAttackType.KNEE]: {
+    baseDamage: 28,
+    range: 0.7,
+    accuracy: 0.84,
+    kiCost: 20,
+    staminaCost: 16,
   },
 } as const;
 

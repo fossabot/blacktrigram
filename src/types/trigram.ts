@@ -25,7 +25,7 @@ export interface TransitionMetrics {
 // Enhanced transition path interface
 export interface TransitionPath {
   readonly path: readonly TrigramStance[]; // Main path property
-  readonly totalCost: TrigramTransitionCost;
+  readonly totalCost: TrigramTransitionCost; // Fix: Add proper type
   readonly effectiveness: number;
   readonly name: string;
   readonly description: KoreanText;

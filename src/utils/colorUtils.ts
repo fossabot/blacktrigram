@@ -1,4 +1,3 @@
-import * as PIXI from "pixi.js";
 
 /**
  * Utility functions for converting between different color formats
@@ -43,8 +42,6 @@ export function ensurePixiColor(color: number | string): number {
  * Color utility functions for Korean cyberpunk martial arts aesthetic
  */
 
-import { KOREAN_COLORS } from "../types/constants";
-import type { TrigramStance } from "../types";
 
 export interface HSL {
   h: number; // Hue: 0-360

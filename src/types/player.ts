@@ -1,12 +1,12 @@
 /**
- * Player state and related types
+ * Player state and related types for Korean martial arts
  */
 
 import type { KoreanText, Position } from "./common";
 import type { StatusEffect } from "./effects";
-import { TrigramStance, PlayerArchetype } from "./enums";
+import { TrigramStance, PlayerArchetype, CombatState } from "./enums";
 
-// Core player state
+// Core player state interface
 export interface PlayerState {
   readonly id: string;
   readonly name: KoreanText;
@@ -34,17 +34,34 @@ export interface PlayerState {
 
   // Combat state
   readonly currentStance: TrigramStance;
+  readonly combatState: CombatState;
   readonly position: Position;
   readonly isBlocking: boolean;
   readonly isStunned: boolean;
   readonly isCountering: boolean;
   readonly lastActionTime: number;
   readonly recoveryTime: number;
-  readonly lastStanceChangeTime?: number; // Add missing property
+  readonly lastStanceChangeTime: number;
 
   // Status and effects
   readonly statusEffects: readonly StatusEffect[];
   readonly activeEffects: readonly string[];
+
+  // Vital points state
+  readonly vitalPoints: readonly {
+    readonly id: string;
+    readonly isHit: boolean;
+    readonly damage: number;
+    readonly lastHitTime: number;
+  }[];
+
+  // Match statistics
+  readonly totalDamageReceived: number;
+  readonly totalDamageDealt: number;
+  readonly hitsTaken: number;
+  readonly hitsLanded: number;
+  readonly perfectStrikes: number;
+  readonly vitalPointHits: number;
 }
 
 // Player creation data
@@ -52,14 +69,13 @@ export interface PlayerCreationData {
   readonly name: KoreanText;
   readonly archetype: PlayerArchetype;
   readonly preferredStance?: TrigramStance;
+  readonly customizations?: {
+    readonly colors?: { primary: number; secondary: number };
+    readonly techniques?: string[];
+  };
 }
 
-// Player update data (for partial updates)
-export interface PlayerUpdateData extends Partial<PlayerState> {
-  // Allow partial updates of any player state property
-}
-
-// Player statistics for match tracking
+// Player match statistics
 export interface PlayerMatchStats {
   readonly wins: number;
   readonly losses: number;
@@ -67,12 +83,12 @@ export interface PlayerMatchStats {
   readonly hitsLanded: number;
   readonly totalDamageDealt: number;
   readonly totalDamageReceived: number;
-  readonly techniques: string[];
+  readonly techniques: readonly string[];
   readonly perfectStrikes: number;
   readonly vitalPointHits: number;
   readonly consecutiveWins: number;
   readonly matchDuration: number;
 }
 
-// Player archetype data (moved to anatomy.ts to avoid circular import)
-export type { PlayerArchetypeData } from "./anatomy";
+// Player update type for partial updates
+export type PlayerUpdateData = Partial<PlayerState>;

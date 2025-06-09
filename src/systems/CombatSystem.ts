@@ -4,6 +4,7 @@ import {
   CombatResult,
   VitalPointHitResult,
   VitalPoint,
+  StatusEffect,
 } from "../types";
 
 import { VitalPointSystem } from "./VitalPointSystem";
@@ -361,37 +362,65 @@ export class CombatSystem {
     technique: KoreanTechnique,
     attacker: PlayerState,
     defender: PlayerState,
-    vitalPointResult: VitalPointHitResult
-  ): number {
-    let baseDamage = technique.damage || 20;
+    hitResult: VitalPointHitResult
+  ): {
+    baseDamage: number;
+    modifierDamage: number;
+    totalDamage: number;
+    effectsApplied: readonly StatusEffect[];
+    finalDefenderState?: Partial<PlayerState>;
+  } {
+    // Base damage calculation
+    const baseDamage = technique.damage || 15;
 
-    // Apply vital point multiplier using DamageCalculator
-    if (vitalPointResult.hit && vitalPointResult.vitalPoint) {
-      const vpDamage = DamageCalculator.calculateVitalPointDamage(
-        baseDamage,
-        vitalPointResult.vitalPoint,
-        technique
-      );
-      baseDamage = vpDamage;
-    }
+    // Apply attacker bonuses
+    const attackerBonus = attacker.attackPower * 0.1;
+
+    // Apply defender defense
+    const defenseReduction = defender.defense * 0.05;
 
     // Apply stance effectiveness
-    const stanceMultiplier = this.trigramSystem.getStanceEffectiveness(
+    const stanceEffectiveness = this.trigramSystem.calculateStanceEffectiveness(
       attacker.currentStance,
-      defender.currentStance
+      defender.currentStance,
+      technique
     );
 
-    baseDamage *= stanceMultiplier;
+    // Calculate modified damage
+    let modifierDamage = baseDamage + attackerBonus - defenseReduction;
+    modifierDamage *= stanceEffectiveness;
 
-    // Apply attacker/defender stats
-    const attackPowerRatio = attacker.attackPower / (defender.defense + 1);
-    baseDamage *= attackPowerRatio;
+    // Apply vital point damage if hit
+    if (hitResult.hit && hitResult.vitalPoint) {
+      modifierDamage *= 1.5; // Vital point damage multiplier
+    }
 
-    // Fix: Convert readonly array to mutable array
-    const effectsArray = Array.from(vitalPointResult.effects);
-    console.log("Applied effects:", effectsArray);
+    // Apply critical hit
+    const isCritical = Math.random() < technique.critChance;
+    if (isCritical) {
+      modifierDamage *= technique.critMultiplier;
+    }
 
-    return Math.floor(baseDamage);
+    const totalDamage = Math.max(1, Math.floor(modifierDamage));
+
+    // Combine all effects
+    const effectsApplied = [...technique.effects, ...(hitResult.effects || [])];
+
+    // Calculate final defender state
+    const finalDefenderState: Partial<PlayerState> = {
+      health: Math.max(0, defender.health - totalDamage),
+      totalDamageReceived: defender.totalDamageReceived + totalDamage,
+      hitsTaken: defender.hitsTaken + 1,
+      statusEffects: [...defender.statusEffects, ...effectsApplied],
+    };
+
+    return {
+      baseDamage,
+      modifierDamage,
+      totalDamage,
+      effectsApplied,
+      finalDefenderState,
+    };
   }
 
   /**
@@ -400,32 +429,176 @@ export class CombatSystem {
   resolveAttack(
     attacker: PlayerState,
     defender: PlayerState,
-    technique: KoreanTechnique
+    technique: KoreanTechnique,
+    targetedVitalPointId?: string
   ): CombatResult {
-    // Fix: Use correct method signature (3 parameters, not 5)
-    const vitalPointResult = this.vitalPointSystem.processHit(
+    // Process vital point hit
+    const hitResult = this.vitalPointSystem.processHit(
       defender.position,
       technique,
-      technique.damage || 20
+      technique.damage || 15,
+      attacker.archetype,
+      { width: 100, height: 200 },
+      targetedVitalPointId
     );
 
-    const damage = this.calculateDamage(
+    // Calculate damage
+    const damageResult = this.calculateDamage(
       technique,
       attacker,
       defender,
-      vitalPointResult
+      hitResult
     );
+
+    // Check for critical hit
+    const criticalHit = Math.random() < technique.critChance;
+
+    // Update attacker stats
+    const updatedAttacker: PlayerState = {
+      ...attacker,
+      ki: Math.max(0, attacker.ki - technique.kiCost),
+      stamina: Math.max(0, attacker.stamina - technique.staminaCost),
+      totalDamageDealt: attacker.totalDamageDealt + damageResult.totalDamage,
+      hitsLanded: attacker.hitsLanded + (hitResult.hit ? 1 : 0),
+      lastActionTime: Date.now(),
+    };
+
+    // Update defender
+    const updatedDefender: PlayerState = {
+      ...defender,
+      ...damageResult.finalDefenderState,
+    };
 
     return {
-      hit: vitalPointResult.hit,
-      damage,
-      criticalHit: Math.random() < technique.critChance,
-      vitalPointHit: !!vitalPointResult.vitalPoint,
-      attacker,
-      defender,
-      technique,
-      effects: Array.from(vitalPointResult.effects),
+      hit: hitResult.hit,
+      damage: damageResult.totalDamage,
+      criticalHit,
+      vitalPointHit: hitResult.hit && !!hitResult.vitalPoint,
+      updatedAttacker,
+      updatedDefender,
+      effects: damageResult.effectsApplied,
       timestamp: Date.now(),
+      technique,
+      hitLocation: defender.position,
+    };
+  }
+
+  static applyCombatResult(
+    result: CombatResult,
+    attacker: PlayerState,
+    defender: PlayerState
+  ): { updatedAttacker: PlayerState; updatedDefender: PlayerState } {
+    return {
+      updatedAttacker: result.updatedAttacker || attacker,
+      updatedDefender: result.updatedDefender || defender,
+    };
+  }
+
+  static getAvailableTechniques(
+    player: PlayerState
+  ): readonly KoreanTechnique[] {
+    // Get techniques based on current stance and archetype
+    const trigramSystem = new TrigramSystem();
+    const baseTechnique = trigramSystem.getTechniqueForStance(
+      player.currentStance
+    );
+
+    return baseTechnique ? [baseTechnique] : [];
+  }
+
+  /**
+   * Static methods for backwards compatibility
+   */
+  static resolveAttack(
+    attacker: PlayerState,
+    defender: PlayerState,
+    technique: KoreanTechnique
+  ): CombatResult {
+    const instance = new CombatSystem();
+    return instance.executeAttack(attacker, defender, technique);
+  }
+
+  static applyCombatResult(
+    result: CombatResult,
+    defender: PlayerState
+  ): { updatedDefender: PlayerState } {
+    const updatedDefender: PlayerState = {
+      ...defender,
+      health: Math.max(0, defender.health - result.damage),
+    };
+
+    return { updatedDefender };
+  }
+
+  static getAvailableTechniques(player: PlayerState): KoreanTechnique[] {
+    const basicTechnique: KoreanTechnique = {
+      id: `${player.currentStance}_basic`,
+      name: {
+        korean: `${player.currentStance} 기본 기법`,
+        english: `${player.currentStance} Basic Technique`,
+      },
+      koreanName: `${player.currentStance} 기본 기법`,
+      englishName: `${player.currentStance} Basic Technique`,
+      romanized: `${player.currentStance}_gibon_gibeop`,
+      description: {
+        korean: "기본 공격 기법",
+        english: "Basic attack technique",
+      },
+      stance: player.currentStance,
+      type: "strike" as any,
+      damageType: "blunt" as any,
+      damage: 20,
+      damageRange: { min: 15, max: 25 },
+      range: 1.0,
+      kiCost: 10,
+      staminaCost: 15,
+      accuracy: 0.8,
+      executionTime: 500,
+      recoveryTime: 800,
+      critChance: 0.1,
+      critMultiplier: 1.5,
+      effects: [],
+    };
+
+    return [basicTechnique];
+  }
+
+  /**
+   * Check if a player is defeated
+   */
+  isPlayerDefeated(player: PlayerState): boolean {
+    return player.health <= 0 || player.consciousness <= 0;
+  }
+
+  /**
+   * Update player state over time
+   */
+  updatePlayerState(player: PlayerState, deltaTime: number): PlayerState {
+    return {
+      ...player,
+      stamina: Math.min(
+        player.maxStamina,
+        player.stamina + (10 * deltaTime) / 1000
+      ),
+      ki: Math.min(player.maxKi, player.ki + (5 * deltaTime) / 1000),
+      balance: Math.min(100, player.balance + (15 * deltaTime) / 1000),
+    };
+  }
+
+  /**
+   * Get combat statistics
+   */
+  getCombatStatistics(player: PlayerState): {
+    healthPercent: number;
+    kiPercent: number;
+    staminaPercent: number;
+    balancePercent: number;
+  } {
+    return {
+      healthPercent: (player.health / player.maxHealth) * 100,
+      kiPercent: (player.ki / player.maxKi) * 100,
+      staminaPercent: (player.stamina / player.maxStamina) * 100,
+      balancePercent: player.balance,
     };
   }
 }
