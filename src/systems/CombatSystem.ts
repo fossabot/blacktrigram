@@ -1,104 +1,89 @@
 import type { PlayerState, KoreanTechnique, CombatResult } from "../types";
 import { VitalPointSystem } from "./VitalPointSystem";
-import { TrigramSystem } from "./TrigramSystem";
-import { ENHANCED_DAMAGE_CONSTANTS } from "../types/constants";
+// Remove unused import
+// import { ENHANCED_DAMAGE_CONSTANTS } from "../types/constants";
 
 export class CombatSystem {
   private vitalPointSystem: VitalPointSystem;
-  private trigramSystem: TrigramSystem;
+  // Remove unused field
+  // private trigramSystem: TrigramSystem;
 
   constructor() {
     this.vitalPointSystem = new VitalPointSystem();
-    this.trigramSystem = new TrigramSystem();
+    // Remove unused initialization
+    // this.trigramSystem = new TrigramSystem();
   }
 
   /**
    * Execute an attack between two players
    */
-  executeAttack(
+  public executeAttack(
     attacker: PlayerState,
     defender: PlayerState,
     technique: KoreanTechnique
   ): CombatResult {
-    // Calculate base damage using attacker and technique data
-    const baseDamage = this.calculateBaseDamage(attacker, technique);
-
-    // Check for vital point hits
-    const vitalPointHit = this.vitalPointSystem.checkVitalPointHit(
+    const vitalPointResult = this.vitalPointSystem.checkVitalPointHit(
       attacker,
-      defender,
+      defender.position,
       technique
     );
 
-    // Apply stance effectiveness
-    const stanceMultiplier = this.trigramSystem.getStanceEffectiveness(
-      attacker.currentStance,
-      defender.currentStance
-    );
+    // Calculate base damage
+    let damage = technique.damage || 0;
+    let hit = true;
+    let criticalHit = false;
+    let vitalPointHit = vitalPointResult.hit;
 
-    // Calculate final damage
-    let finalDamage = baseDamage * stanceMultiplier;
-
-    if (vitalPointHit.hit) {
-      finalDamage *= ENHANCED_DAMAGE_CONSTANTS.VITAL_POINT_MULTIPLIER;
+    // Apply accuracy check
+    if (Math.random() > (technique.accuracy || 1.0)) {
+      hit = false;
+      damage = 0;
     }
 
-    const isCritical = Math.random() < (technique.critChance || 0.1);
-    if (isCritical) {
-      finalDamage *= ENHANCED_DAMAGE_CONSTANTS.CRITICAL_MULTIPLIER;
+    // Apply critical hit
+    if (hit && Math.random() < (technique.critChance || 0.1)) {
+      criticalHit = true;
+      damage *= technique.critMultiplier || 1.5;
     }
 
-    // Apply damage to defender
+    // Apply vital point damage
+    if (vitalPointHit) {
+      damage += vitalPointResult.damage;
+    }
+
+    // Update defender
     const updatedDefender: PlayerState = {
       ...defender,
-      health: Math.max(0, defender.health - finalDamage),
-      consciousness: vitalPointHit.hit
-        ? Math.max(0, defender.consciousness - 20)
-        : defender.consciousness,
+      health: Math.max(0, defender.health - damage),
     };
 
-    // Apply ki/stamina costs to attacker
+    // Update attacker (ki/stamina costs)
     const updatedAttacker: PlayerState = {
       ...attacker,
-      ki: Math.max(0, attacker.ki - technique.kiCost),
-      stamina: Math.max(0, attacker.stamina - technique.staminaCost),
+      ki: Math.max(0, attacker.ki - (technique.kiCost || 0)),
+      stamina: Math.max(0, attacker.stamina - (technique.staminaCost || 0)),
     };
 
     return {
-      success: true,
-      damage: finalDamage,
-      effects: vitalPointHit.effects.map((e) => e.id || e.type),
-      criticalHit: isCritical,
-      vitalPointHit: vitalPointHit.hit,
-      hit: true,
+      hit,
+      damage,
+      criticalHit,
+      vitalPointHit,
       updatedAttacker,
       updatedDefender,
-      updatedPlayers: [
-        updatedAttacker,
-        updatedDefender,
-      ] as readonly PlayerState[],
-      message: {
-        korean: `${technique.koreanName} 성공!`,
-        english: `${technique.englishName} successful!`,
-      },
+      // Fix: Keep effects as StatusEffect[] instead of converting to string[]
+      effects: vitalPointResult.effects.map((effect) => ({
+        id: effect.id || "unknown",
+        type: effect.type,
+        intensity: effect.intensity,
+        duration: effect.duration,
+        description: effect.description,
+        stackable: effect.stackable || false,
+        source: effect.source || "vital_point",
+        startTime: Date.now(),
+        endTime: Date.now() + effect.duration,
+      })),
     };
-  }
-
-  /**
-   * Calculate base damage using attacker stats and technique
-   */
-  private calculateBaseDamage(
-    attacker: PlayerState,
-    technique: KoreanTechnique
-  ): number {
-    const baseDamage = technique.damage || technique.damageRange?.min || 10;
-
-    // Factor in attacker's ki and stamina
-    const attackerBonus =
-      (attacker.ki / attacker.maxKi) * 0.2 +
-      (attacker.stamina / attacker.maxStamina) * 0.1;
-
-    return baseDamage * (1 + attackerBonus);
   }
 
   /**

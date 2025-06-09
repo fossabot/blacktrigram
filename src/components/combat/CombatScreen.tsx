@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { Container } from "@pixi/react";
-import type { CombatScreenProps } from "../../types";
+import type { CombatScreenProps, PlayerState } from "../../types";
 import { CombatArena } from "./components/CombatArena";
 import { CombatHUD } from "./components/CombatHUD";
 import { CombatControls } from "./components/CombatControls";
@@ -81,6 +81,17 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
     [handlePlayerAction]
   );
 
+  // Fix: Create a wrapper function that matches GameEngineProps signature
+  const handlePlayerUpdateForEngine = useCallback(
+    (playerIndex: number, updates: Partial<PlayerState>) => {
+      // Convert number to 0 | 1 for CombatScreenProps
+      if (playerIndex === 0 || playerIndex === 1) {
+        onPlayerUpdate(playerIndex as 0 | 1, updates as PlayerState);
+      }
+    },
+    [onPlayerUpdate]
+  );
+
   return (
     <Container width={width} height={height}>
       {/* Background */}
@@ -94,7 +105,7 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
       {/* Game Engine */}
       <GameEngine
         players={players}
-        onPlayerUpdate={onPlayerUpdate}
+        onPlayerUpdate={handlePlayerUpdateForEngine} // Fix: Use wrapper function
         onCombatResult={handleCombatResult}
         onGameEvent={handleGameEvent}
         isPaused={isPaused}

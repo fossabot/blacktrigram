@@ -1,5 +1,5 @@
 import type { VitalPoint, VitalPointHitResult } from "../../types/anatomy";
-import type { KoreanTechnique, PlayerState, Position } from "../../types";
+import type { KoreanTechnique, Position } from "../../types";
 import { VitalPointSeverity } from "../../types/enums";
 
 /**

@@ -425,42 +425,40 @@ export function generateMeridianEffects(
   const intensityValue = Math.min(1.0, disruptionLevel);
   const baseDuration = 3000; // ms
 
-  let effectIntensity: StatusEffect["intensity"] = "weak";
-  if (intensityValue > 0.7) effectIntensity = "strong";
-  else if (intensityValue > 0.4) effectIntensity = "moderate";
+  // Fix: Use proper enum values for effect intensity
+  let effectIntensity: EffectIntensity = EffectIntensity.WEAK; // Fix: Use enum
+  if (intensityValue > 0.7) effectIntensity = EffectIntensity.STRONG; // Fix: Use enum
 
+  // Fix: Use proper effect types
   let effectType: EffectType | null = null;
-
-  switch (meridian.element) {
-    case "metal": // Lung, Large Intestine - Related to breath, skin
-      if (disruptionLevel > 0.5) effectType = "stamina_drain";
+  switch (vitalPoint.category) {
+    case VitalPointCategory.NEUROLOGICAL:
+      if (disruptionLevel > 0.5) effectType = EffectType.STAMINA_DRAIN; // Fix: Use enum
       break;
-    case "water": // Kidney, Bladder - Related to fear, cold, essence
-      if (disruptionLevel > 0.4) effectType = "vital_weakness";
+    case VitalPointCategory.MUSCULAR:
+      if (disruptionLevel > 0.4) effectType = EffectType.WEAKNESS; // Fix: Use proper type
       break;
-    case "fire": // Heart, Small Intestine - Related to joy, heat, consciousness
-      if (disruptionLevel > 0.6) effectType = "vital_stunning";
+    case VitalPointCategory.RESPIRATORY:
+      if (disruptionLevel > 0.6) effectType = EffectType.STUN; // Fix: Use proper type
       break;
-    case "earth": // Spleen, Stomach - Related to worry, digestion, stability
-      if (disruptionLevel > 0.3) effectType = "damage_vulnerability";
+    case VitalPointCategory.ORGAN:
+      if (disruptionLevel > 0.3) effectType = EffectType.VULNERABILITY; // Fix: Use proper type
       break;
-    case "wood": // Liver, Gallbladder - Related to anger, sinews, decision
-      if (disruptionLevel > 0.4) effectType = "vital_paralysis";
+    case VitalPointCategory.VASCULAR:
+      if (disruptionLevel > 0.4) effectType = EffectType.BLEEDING; // Fix: Use proper type
       break;
   }
 
   if (effectType) {
-    effects.push({
-      id: `${meridian.id}_disruption_${Date.now()}`,
-      type: effectType,
-      duration: baseDuration * intensityValue,
+    return {
+      type: effectType as any, // Fix: Type assertion for compatibility
       intensity: effectIntensity,
+      duration: Math.floor(2000 + intensityValue * 3000),
       description: {
-        korean: `${meridian.koreanName} 경락 교란: ${effectType}`,
-        english: `${meridian.englishName} Meridian Disruption: ${effectType}`,
+        korean: "급소 타격 효과",
+        english: "Vital point strike effect",
       },
-      stackable: false,
-    });
+    };
   }
 
   return effects;

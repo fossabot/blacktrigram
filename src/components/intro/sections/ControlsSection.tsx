@@ -5,9 +5,9 @@ import {
   KOREAN_COLORS,
   FONT_FAMILY,
   FONT_SIZES,
-  FONT_WEIGHTS,
-  GAME_CONFIG,
   COMBAT_CONTROLS,
+  FONT_WEIGHTS,
+  GAME_CONFIG, // Fix: Now properly exported
 } from "../../../types/constants";
 
 interface ControlsSectionProps {
@@ -93,9 +93,11 @@ export const ControlsSection: React.FC<ControlsSectionProps> = ({
             ([key, control], index) => (
               <Container key={key} y={index * 30}>
                 <Text
-                  text={`${key}: ${
-                    control.korean
-                  } (${control.stance.toUpperCase()}) - ${control.technique}`}
+                  text={`${key}: ${(control as { korean: string }).korean} (${(
+                    control as { stance: string }
+                  ).stance.toUpperCase()}) - ${
+                    (control as { technique: string }).technique
+                  }`}
                   style={controlStyle}
                 />
               </Container>

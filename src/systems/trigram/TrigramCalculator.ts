@@ -1,4 +1,5 @@
-import type { TrigramStance, TrigramTransitionCost } from "../../types";
+import { TrigramStance } from "../../types/enums";
+import type { TrigramTransitionCost, PlayerState } from "../../types";
 
 /**
  * Calculator for trigram stance transitions and effectiveness
@@ -72,5 +73,21 @@ export class TrigramCalculator {
     };
 
     return adjacentStances[from]?.includes(to) ? 0.7 : 1.0;
+  }
+
+  // Fix: Use proper enum values throughout
+  private static adjacencyMap: Record<TrigramStance, TrigramStance[]> = {
+    [TrigramStance.GEON]: [TrigramStance.TAE, TrigramStance.GON],
+    [TrigramStance.TAE]: [TrigramStance.GEON, TrigramStance.LI],
+    [TrigramStance.LI]: [TrigramStance.TAE, TrigramStance.JIN],
+    [TrigramStance.JIN]: [TrigramStance.LI, TrigramStance.SON],
+    [TrigramStance.SON]: [TrigramStance.JIN, TrigramStance.GAM],
+    [TrigramStance.GAM]: [TrigramStance.SON, TrigramStance.GAN],
+    [TrigramStance.GAN]: [TrigramStance.GAM, TrigramStance.GON],
+    [TrigramStance.GON]: [TrigramStance.GAN, TrigramStance.GEON],
+  };
+
+  public static getStanceAdjacency(stance: TrigramStance): TrigramStance[] {
+    return this.adjacencyMap[stance] || [];
   }
 }

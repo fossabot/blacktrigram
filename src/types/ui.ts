@@ -7,9 +7,7 @@ import type {
   MatchStatistics,
   TrigramStance,
   HitEffect,
-  GamePhase,
 } from "./index";
-import type { PlayerArchetype, GameMode } from "./enums";
 
 // Base UI component props
 export interface BaseUIProps {
@@ -273,26 +271,6 @@ export interface EndScreenProps extends UIComponentProps {
   };
   readonly onRestart: () => void;
   readonly onReturnToMenu: () => void;
-}
-
-// Korean text display interface
-export interface KoreanTextProps extends UIComponentProps {
-  readonly text: {
-    readonly korean: string;
-    readonly english: string;
-    readonly romanized?: string;
-  };
-  readonly fontSize?: number;
-  readonly textAlign?: "left" | "center" | "right";
-  readonly showBoth?: boolean;
-}
-
-// Trigram wheel interface
-export interface TrigramWheelProps extends UIComponentProps {
-  readonly selectedStance: TrigramStance;
-  readonly onStanceSelect: (stance: TrigramStance) => void;
-  readonly size?: number;
-  readonly interactive?: boolean;
 }
 
 // Archetype display interface

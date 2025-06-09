@@ -6,15 +6,17 @@ import {
   KOREAN_COLORS,
   FONT_FAMILY,
   FONT_SIZES,
-  FONT_WEIGHTS,
-  GAME_CONFIG,
   COMBAT_CONTROLS,
+  FONT_WEIGHTS, // Fix: Now properly exported
 } from "../../../types/constants";
+import { BaseButton } from "@/components/ui";
 
 export const ControlsSection: React.FC<ControlsSectionProps> = ({
-  width = GAME_CONFIG.CANVAS_WIDTH,
-  height = GAME_CONFIG.CANVAS_HEIGHT * 0.5,
-  ...props
+  onBack,
+  width = 800,
+  height = 600,
+  x = 0,
+  y = 0,
 }) => {
   const titleStyle = useMemo(
     () =>
@@ -24,18 +26,6 @@ export const ControlsSection: React.FC<ControlsSectionProps> = ({
         fill: KOREAN_COLORS.ACCENT_GOLD,
         fontWeight: FONT_WEIGHTS.bold.toString() as PIXI.TextStyleFontWeight, // Fix: use number value
         align: "center",
-      }),
-    []
-  );
-
-  const controlStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.medium,
-        fill: KOREAN_COLORS.TEXT_PRIMARY,
-        fontWeight: FONT_WEIGHTS.regular.toString() as PIXI.TextStyleFontWeight, // Fix: use number value
-        align: "left",
       }),
     []
   );
@@ -54,7 +44,7 @@ export const ControlsSection: React.FC<ControlsSectionProps> = ({
   );
 
   return (
-    <Container {...props} width={width} height={height}>
+    <Container x={x} y={y}>
       <Container x={20} y={20}>
         <Graphics draw={controlsDraw} />
 
@@ -63,18 +53,39 @@ export const ControlsSection: React.FC<ControlsSectionProps> = ({
 
           <Container y={60}>
             {Object.entries(COMBAT_CONTROLS.stanceControls).map(
-              ([key, control], index) => (
-                <Container key={key} y={index * 25}>
-                  <Text
-                    text={`${key}: ${control.korean} (${control.technique})`}
-                    style={controlStyle}
+              ([key, control], index) => {
+                // Fix: Add index parameter
+                const stanceControl = control as {
+                  korean: string;
+                  technique: string;
+                };
+                return (
+                  <BaseButton
+                    key={key}
+                    text={`${key}: ${stanceControl.korean} (${stanceControl.technique})`}
+                    onClick={() => console.log(`Stance ${key} selected`)}
+                    variant="ghost"
+                    width={280}
+                    height={30}
+                    y={index * 35} // Fix: Now index is defined
                   />
-                </Container>
-              )
+                );
+              }
             )}
           </Container>
         </Container>
       </Container>
+
+      {/* Back button */}
+      <BaseButton
+        text="돌아가기 (Back)"
+        onClick={onBack} // Fix: Use onBack directly
+        x={50}
+        y={height - 100}
+        width={200}
+        height={50}
+        variant="secondary"
+      />
     </Container>
   );
 };

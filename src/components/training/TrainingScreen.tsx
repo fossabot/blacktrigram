@@ -1,101 +1,149 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { Container, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import type { TrainingScreenProps, PlayerState } from "../../types";
+import type { TrainingScreenProps } from "../../types/components";
 import { PlayerArchetype, TrigramStance } from "../../types/enums";
-import { GAME_CONFIG, KOREAN_COLORS, FONT_SIZES } from "../../types/constants";
 import { createPlayerFromArchetype } from "../../utils/playerUtils";
 import { BaseButton } from "../ui/base/BaseButton";
-import { Player } from "../game/Player";
 import { DojangBackground } from "../game/DojangBackground";
-import { StanceIndicator } from "../ui/StanceIndicator";
+import { Player } from "../game/Player";
+import {
+  KOREAN_COLORS,
+  GAME_CONFIG,
+  PLAYER_ARCHETYPES_DATA,
+  TRIGRAM_DATA,
+  TRIGRAM_STANCES_ORDER,
+} from "../../types/constants";
 
 export const TrainingScreen: React.FC<TrainingScreenProps> = ({
   onReturnToMenu,
-  selectedArchetype: selectedArchetypeProp,
+  player,
+  selectedArchetype,
+  onPlayerUpdate,
   width = GAME_CONFIG.CANVAS_WIDTH,
   height = GAME_CONFIG.CANVAS_HEIGHT,
+  x = 0,
+  y = 0,
 }) => {
-  const [selectedArchetype] = useState<PlayerArchetype | null>(
-    selectedArchetypeProp || null
+  const [currentArchetype, setCurrentArchetype] = useState<PlayerArchetype>(
+    selectedArchetype || PlayerArchetype.MUSA
   );
-  const [stance, setStance] = useState<TrigramStance>(TrigramStance.GEON);
+  const [currentStance, setCurrentStance] = useState<TrigramStance>(
+    TrigramStance.GEON
+  );
 
-  const player: PlayerState = useMemo(() => {
-    const archetype = selectedArchetype || PlayerArchetype.MUSA;
-    return createPlayerFromArchetype(archetype, "훈련생", { x: 400, y: 300 });
-  }, [selectedArchetype]);
+  const trainingPlayer = useMemo(() => {
+    if (player) {
+      return player;
+    }
+    return createPlayerFromArchetype(currentArchetype, 0);
+  }, [player, currentArchetype]);
 
-  const handleStanceChange = useCallback((newStance: TrigramStance) => {
-    setStance(newStance);
+  const trainingDummy = useMemo(() => {
+    return createPlayerFromArchetype(PlayerArchetype.MUSA, 1);
   }, []);
 
+  const handleArchetypeChange = useCallback(
+    (archetype: PlayerArchetype) => {
+      setCurrentArchetype(archetype);
+      if (onPlayerUpdate) {
+        const newPlayer = createPlayerFromArchetype(archetype, 0);
+        onPlayerUpdate(newPlayer);
+      }
+    },
+    [onPlayerUpdate]
+  );
+
+  const handleStanceChange = useCallback(
+    (stance: TrigramStance) => {
+      setCurrentStance(stance);
+      if (onPlayerUpdate) {
+        onPlayerUpdate({ currentStance: stance });
+      }
+    },
+    [onPlayerUpdate]
+  );
+
   return (
-    <Container>
-      <DojangBackground
-        width={width}
-        height={height}
-        animate={true}
-        lighting="cyberpunk"
-      />
+    <Container x={x} y={y}>
+      {/* Background */}
+      <DojangBackground width={width} height={height} />
 
-      {/* Player */}
+      {/* Training Player */}
       <Player
-        playerState={player}
+        playerState={trainingPlayer}
         playerIndex={0}
-        showStats={true}
-        x={player.position.x}
-        y={player.position.y}
+        x={300}
+        y={400}
+        interactive={true}
       />
 
-      {/* Use StanceIndicator component properly */}
-      <StanceIndicator
-        stance={stance}
-        size={80}
-        showText={true}
-        x={100}
-        y={100}
-        onClick={handleStanceChange}
-        isActive={true}
+      {/* Training Dummy */}
+      <Player
+        playerState={trainingDummy}
+        playerIndex={1}
+        x={600}
+        y={400}
+        interactive={false}
       />
 
-      {/* Current stance display */}
-      <Text
-        text={`현재 자세: ${stance}`}
-        style={
-          new PIXI.TextStyle({
-            fontSize: FONT_SIZES.medium,
-            fill: KOREAN_COLORS.TEXT_PRIMARY,
-          })
-        }
-        x={50}
-        y={height - 200}
-      />
+      {/* Stance information display - Fix: Use @pixi/react Text component */}
+      <Container x={50} y={height - 200}>
+        <Text
+          text={`현재 자세: ${currentStance}`}
+          style={
+            new PIXI.TextStyle({
+              fontSize: 24,
+              fill: KOREAN_COLORS.TEXT_PRIMARY,
+              fontFamily: "Arial",
+            })
+          }
+        />
+      </Container>
 
-      {/* Stance selection buttons */}
+      {/* Archetype selection buttons */}
       <Container x={50} y={height - 150}>
-        {Object.values(TrigramStance).map((stanceOption, index) => (
+        {Object.values(PlayerArchetype).map((archetype, index) => (
           <BaseButton
-            key={stanceOption}
-            text={stanceOption}
-            onClick={() => handleStanceChange(stanceOption)}
-            x={index * 100}
+            key={archetype}
+            text={PLAYER_ARCHETYPES_DATA[archetype].name.korean}
+            onClick={() => handleArchetypeChange(archetype)}
+            x={index * 120}
             y={0}
-            width={90}
+            width={110}
             height={40}
-            variant={stance === stanceOption ? "primary" : "secondary"}
+            variant={currentArchetype === archetype ? "primary" : "secondary"}
           />
         ))}
       </Container>
 
-      {/* Return to menu button */}
+      {/* Stance selection buttons */}
+      <Container x={50} y={height - 100}>
+        {TRIGRAM_STANCES_ORDER.map((stance, index) => {
+          const stanceData = TRIGRAM_DATA[stance];
+          return (
+            <BaseButton
+              key={stance}
+              text={stanceData?.symbol || stance}
+              onClick={() => handleStanceChange(stance as TrigramStance)}
+              x={index * 60}
+              y={0}
+              width={50}
+              height={40}
+              variant={currentStance === stance ? "primary" : "ghost"}
+            />
+          );
+        })}
+      </Container>
+
+      {/* Return button */}
       <BaseButton
         text="메뉴로 돌아가기"
         onClick={onReturnToMenu}
-        x={width - 200}
-        y={50}
-        width={150}
-        height={40}
+        x={50}
+        y={height - 50}
+        width={200}
+        height={50}
         variant="secondary"
       />
     </Container>

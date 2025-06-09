@@ -2,15 +2,8 @@
  * Trigram system constants for Black Trigram Korean martial arts
  */
 
-import { KoreanTechnique } from "../combat";
-import { PlayerArchetype, TrigramStance } from "../enums";
-import type {
-  TrigramData,
-  TrigramEffectivenessMatrix,
-  TrigramTheme,
-} from "../trigram";
 import { KOREAN_COLORS } from "./colors";
-import { TrigramStance as TrigramStanceEnum } from "../enums"; // Assuming enum definition
+import { TrigramStance, TrigramStance as TrigramStanceEnum } from "../enums"; // Assuming enum definition
 
 // Helper function (optional, if you prefer this pattern)
 // const createTrigram = (

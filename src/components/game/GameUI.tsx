@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import type { GameUIProps } from "../../types/components";
 import { KOREAN_COLORS, FONT_SIZES } from "../../types/constants";
@@ -7,10 +7,10 @@ import * as PIXI from "pixi.js";
 export const GameUI: React.FC<GameUIProps> = ({
   gameState,
   onStateChange,
-  width = 800,
-  height = 600,
   x = 0,
   y = 0,
+  width = 800,
+  height = 600,
 }) => {
   const backgroundDraw = (g: PIXI.Graphics) => {
     g.clear();
@@ -20,9 +20,9 @@ export const GameUI: React.FC<GameUIProps> = ({
   };
 
   // Use onStateChange for future state management
-  React.useEffect(() => {
+  useEffect(() => {
     if (onStateChange && gameState) {
-      console.log("Game state changed:", gameState);
+      onStateChange(gameState);
     }
   }, [gameState, onStateChange]);
 

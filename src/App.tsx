@@ -1,5 +1,5 @@
-import React, { useState, useCallback, useMemo } from "react"; // Fix: Add useMemo import
-import { Stage } from "@pixi/react"; // Fix: Remove unused Application import
+import React, { useState, useCallback, useMemo } from "react";
+import { Stage } from "@pixi/react";
 
 // Import screens
 import { IntroScreen } from "./components/intro/IntroScreen";
@@ -8,207 +8,208 @@ import { TrainingScreen } from "./components/training/TrainingScreen";
 import { EndScreen } from "./components/ui/EndScreen";
 
 // Import types and utilities
-import type { PlayerState, MatchStatistics, GameMode } from "./types";
-import { PlayerArchetype, TrigramStance } from "./types/enums";
-import { GAME_CONFIG, KOREAN_COLORS } from "./types/constants";
-import { createPlayerStateSimple } from "./utils/playerUtils";
+import type { GameState, PlayerState, MatchStatistics } from "./types";
+import { GameMode, PlayerArchetype, GamePhase } from "./types/enums";
+import { GAME_CONFIG } from "./types/constants/game";
+import { createPlayerFromArchetype } from "./utils/playerUtils";
 import { AudioProvider } from "./audio/AudioProvider";
-
-// Game screen types
-type GameScreen = "intro" | "training" | "combat" | "endscreen";
+import { GameUI } from "./components";
 
 const App: React.FC = () => {
-  // Fix: Add missing state variables
-  const [currentScreen, setCurrentScreen] = useState<GameScreen>("intro");
-  const [winner, setWinner] = useState<PlayerState | null>(null);
-  const [gameMode, setGameMode] = useState<GameMode>("versus" as GameMode);
-  const [selectedArchetype, setSelectedArchetype] = useState<PlayerArchetype>(
-    "musa" as PlayerArchetype
-  );
+  // Create default players with proper stance parameter
+  const mockPlayers = useMemo(() => {
+    const player1 = createPlayerFromArchetype(PlayerArchetype.MUSA, 0);
+    const player2 = createPlayerFromArchetype(PlayerArchetype.AMSALJA, 1);
+    return [player1, player2] as const;
+  }, []);
 
-  // Combat state
-  const [currentRound, setCurrentRound] = useState(1);
-  const [timeRemaining, setTimeRemaining] = useState(180);
-  const [isPaused, setIsPaused] = useState(false);
+  // Complete MatchStatistics structure with ALL required properties
+  const mockMatchStats = useMemo(
+    (): MatchStatistics => ({
+      // Top-level properties
+      totalDamageDealt: 270,
+      totalDamageTaken: 270,
+      criticalHits: 8,
+      vitalPointHits: 5,
+      techniquesUsed: 50,
+      perfectStrikes: 3,
+      consecutiveWins: 1,
+      matchDuration: 180,
+      totalMatches: 1,
+      maxRounds: 3,
+      winner: 0,
+      totalRounds: 3,
+      currentRound: 1,
+      timeRemaining: 120,
+      combatEvents: [],
+      finalScore: { player1: 2, player2: 1 },
+      roundsWon: { player1: 2, player2: 1 },
 
-  // Fix: Create default players with proper stance parameter
-  const players = useMemo<[PlayerState, PlayerState]>(
-    () => [
-      createPlayerStateSimple(
-        "1",
-        "Player 1",
-        "musa" as PlayerArchetype,
-        TrigramStance.GEON
-      ),
-      createPlayerStateSimple(
-        "2",
-        "Player 2",
-        "amsalja" as PlayerArchetype,
-        TrigramStance.TAE
-      ),
-    ],
+      // Individual player statistics
+      player1: {
+        wins: 2,
+        losses: 1,
+        hitsTaken: 15,
+        hitsLanded: 20,
+        totalDamageDealt: 150,
+        totalDamageReceived: 120,
+        techniques: [],
+        perfectStrikes: 2,
+        vitalPointHits: 3,
+        consecutiveWins: 1,
+        matchDuration: 180,
+      },
+      player2: {
+        wins: 1,
+        losses: 2,
+        hitsTaken: 20,
+        hitsLanded: 15,
+        totalDamageDealt: 120,
+        totalDamageReceived: 150,
+        techniques: [],
+        perfectStrikes: 1,
+        vitalPointHits: 2,
+        consecutiveWins: 0,
+        matchDuration: 180,
+      },
+    }),
     []
   );
 
-  // Match statistics for EndScreen
-  const matchStatistics = useMemo<MatchStatistics>(
-    () => ({
-      player1: {
-        wins: winner === players[0] ? 1 : 0,
-        losses: winner === players[1] ? 1 : 0,
-        hitsTaken: 0,
-        hitsLanded: 0,
-        totalDamageDealt: 0,
-        totalDamageReceived: 0,
-        techniques: [],
-        perfectStrikes: 0,
-        vitalPointHits: 0,
-        consecutiveWins: 0,
-        matchDuration: 180 - timeRemaining,
-      },
-      player2: {
-        wins: winner === players[1] ? 1 : 0,
-        losses: winner === players[0] ? 1 : 0,
-        hitsTaken: 0,
-        hitsLanded: 0,
-        totalDamageDealt: 0,
-        totalDamageReceived: 0,
-        techniques: [],
-        perfectStrikes: 0,
-        vitalPointHits: 0,
-        consecutiveWins: 0,
-        matchDuration: 180 - timeRemaining,
-      },
-      totalMatches: 1,
-      currentRound,
-      maxRounds: 3,
-      roundsWon: {
-        player1: winner === players[0] ? 1 : 0,
-        player2: winner === players[1] ? 1 : 0,
-      },
-    }),
-    [winner, players, timeRemaining, currentRound]
-  );
+  const [gameState, setGameState] = useState<GameState>(() => ({
+    mode: GameMode.VERSUS,
+    phase: GamePhase.INTRO,
+    players: mockPlayers as readonly [PlayerState, PlayerState],
+    currentRound: 1,
+    maxRounds: 3,
+    timeRemaining: 120,
+    isPaused: false,
+    matchStatistics: mockMatchStats,
+    winner: undefined,
+  }));
+
+  // Use setGameState properly
+  const handleStateChange = useCallback((newState: GameState) => {
+    setGameState(newState);
+  }, []);
 
   // Screen navigation handlers
   const handleMenuSelect = useCallback((mode: GameMode) => {
-    setGameMode(mode);
-    switch (mode) {
-      case "training":
-        setCurrentScreen("training");
-        break;
-      case "versus":
-        setCurrentScreen("combat");
-        break;
-      // Fix: Remove "arcade" case as it's not in GameMode enum
-      default:
-        setCurrentScreen("combat");
-    }
+    setGameState((prev) => ({
+      ...prev,
+      mode,
+      phase: mode === GameMode.TRAINING ? GamePhase.TRAINING : GamePhase.COMBAT,
+    }));
   }, []);
 
   const handleReturnToMenu = useCallback(() => {
-    setCurrentScreen("intro");
-    setWinner(null);
-    setCurrentRound(1);
-    setTimeRemaining(180);
-    setIsPaused(false);
+    setGameState((prev) => ({
+      ...prev,
+      phase: GamePhase.INTRO,
+      currentRound: 1,
+      timeRemaining: 180,
+      isPaused: false,
+      winner: undefined,
+    }));
   }, []);
 
   const handleGameEnd = useCallback(
-    (winner?: PlayerState | "draw" | undefined) => {
+    (winner: number) => {
       console.log("Game ended", winner);
 
-      // Determine the actual winner
+      // Determine the actual winner from player index
       let finalWinner: PlayerState | null = null;
-      if (winner && typeof winner === "object") {
-        finalWinner = winner;
+      if (winner === 0) {
+        finalWinner = gameState.players[0];
+      } else if (winner === 1) {
+        finalWinner = gameState.players[1];
       }
 
-      setWinner(finalWinner);
-      setCurrentScreen("endscreen");
+      setGameState((prev) => ({
+        ...prev,
+        phase: GamePhase.GAME_OVER,
+        winner: finalWinner,
+      }));
     },
-    []
+    [gameState.players] // Fix: Add dependency
   );
 
+  // Fix: Use correct function signature - match CombatScreenProps
   const handlePlayerUpdate = useCallback(
-    (index: 0 | 1, updates: Partial<PlayerState>) => {
-      // This would update the player state in a real implementation
-      console.log(`Updating player ${index + 1}:`, updates);
+    (playerIndex: number, updates: Partial<PlayerState>) => {
+      if (playerIndex !== 0 && playerIndex !== 1) return;
+
+      setGameState((prev) => ({
+        ...prev,
+        players: [
+          playerIndex === 0
+            ? { ...prev.players[0], ...updates }
+            : prev.players[0],
+          playerIndex === 1
+            ? { ...prev.players[1], ...updates }
+            : prev.players[1],
+        ] as readonly [PlayerState, PlayerState],
+      }));
     },
     []
   );
-
-  // Fix: Use selectedArchetype for training screen
-  const handleArchetypeSelect = useCallback((archetype: PlayerArchetype) => {
-    setSelectedArchetype(archetype);
-  }, []);
-
-  // Remove unused pixiApp variable
-  // const pixiApp = useMemo(() => { ... }, []);
 
   return (
-    <AudioProvider>
-      <div
-        className="app"
-        style={{ width: "100vw", height: "100vh", overflow: "hidden" }}
-      >
-        <Stage
-          width={GAME_CONFIG.CANVAS_WIDTH}
-          height={GAME_CONFIG.CANVAS_HEIGHT}
-          options={{
-            backgroundColor: KOREAN_COLORS.UI_BACKGROUND_DARK,
-            antialias: true,
-            resolution: window.devicePixelRatio || 1,
-            autoDensity: true,
+    <Stage width={GAME_CONFIG.CANVAS_WIDTH} height={GAME_CONFIG.CANVAS_HEIGHT}>
+      <AudioProvider>
+        {gameState.phase === GamePhase.INTRO && (
+          <IntroScreen onMenuSelect={handleMenuSelect} />
+        )}
+
+        {gameState.phase === GamePhase.TRAINING && (
+          <TrainingScreen
+            onReturnToMenu={handleReturnToMenu}
+            player={gameState.players[0]}
+            onPlayerUpdate={(updates: Partial<PlayerState>) => {
+              handlePlayerUpdate(0, updates);
+            }}
+            selectedArchetype={gameState.players[0].archetype}
+            width={GAME_CONFIG.CANVAS_WIDTH}
+            height={GAME_CONFIG.CANVAS_HEIGHT}
+          />
+        )}
+
+        {gameState.phase === GamePhase.COMBAT && (
+          <CombatScreen
+            players={gameState.players}
+            currentRound={gameState.currentRound}
+            timeRemaining={gameState.timeRemaining}
+            isPaused={gameState.isPaused}
+            onPlayerUpdate={handlePlayerUpdate}
+            onReturnToMenu={handleReturnToMenu}
+            onGameEnd={handleGameEnd}
+            gameMode={gameState.mode}
+            matchStatistics={mockMatchStats}
+          />
+        )}
+
+        {gameState.phase === GamePhase.GAME_OVER && (
+          <EndScreen
+            winner={gameState.winner}
+            matchStatistics={mockMatchStats}
+            onReturnToMenu={handleReturnToMenu}
+            onRestart={() =>
+              setGameState((prev) => ({ ...prev, phase: GamePhase.INTRO }))
+            }
+          />
+        )}
+
+        {/* Game UI overlays */}
+        <GameUI
+          gameState={gameState}
+          onStateChange={handleStateChange}
+          onReturnToMenu={handleReturnToMenu}
+          onPlayerUpdate={(updates: Partial<PlayerState>) => {
+            handlePlayerUpdate(0, updates);
           }}
-        >
-          {currentScreen === "intro" && (
-            <IntroScreen
-              onMenuSelect={handleMenuSelect}
-              onArchetypeSelect={handleArchetypeSelect}
-              selectedArchetype={selectedArchetype}
-              width={GAME_CONFIG.CANVAS_WIDTH}
-              height={GAME_CONFIG.CANVAS_HEIGHT}
-            />
-          )}
-
-          {currentScreen === "training" && (
-            <TrainingScreen
-              onReturnToMenu={handleReturnToMenu}
-              selectedArchetype={selectedArchetype}
-              width={GAME_CONFIG.CANVAS_WIDTH}
-              height={GAME_CONFIG.CANVAS_HEIGHT}
-            />
-          )}
-
-          {currentScreen === "combat" && (
-            <CombatScreen
-              players={players}
-              currentRound={currentRound}
-              timeRemaining={timeRemaining}
-              isPaused={isPaused}
-              onPlayerUpdate={handlePlayerUpdate}
-              onReturnToMenu={handleReturnToMenu}
-              onGameEnd={handleGameEnd}
-              gameMode={gameMode}
-              width={GAME_CONFIG.CANVAS_WIDTH}
-              height={GAME_CONFIG.CANVAS_HEIGHT}
-            />
-          )}
-
-          {currentScreen === "endscreen" && (
-            <EndScreen
-              winner={winner}
-              matchStatistics={matchStatistics}
-              onReturnToMenu={handleReturnToMenu}
-              // Fix: Remove onPlayAgain - use onReturnToMenu for now
-              width={GAME_CONFIG.CANVAS_WIDTH}
-              height={GAME_CONFIG.CANVAS_HEIGHT}
-            />
-          )}
-        </Stage>
-      </div>
-    </AudioProvider>
+        />
+      </AudioProvider>
+    </Stage>
   );
 };
 

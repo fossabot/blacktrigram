@@ -4,6 +4,7 @@ import type {
   TrigramTransitionRule,
   TrigramTransitionCost,
 } from "../../types";
+import { TrigramStance as TrigramStanceEnum } from "../../types/enums";
 
 /**
  * Calculator for trigram stance transition costs and validation
@@ -32,8 +33,9 @@ export class TransitionCalculator {
         rules.push({
           from,
           to,
-          cost: { ki: kiCost, stamina: staminaCost, timeMilliseconds: timeMs },
-          effectiveness: effectiveness,
+          cost: { ki: kiCost, stamina: staminaCost, time: timeMs },
+          // Remove invalid 'effectiveness' property
+          // effectiveness: effectiveness,
           conditions: [],
           description: {
             korean: `${from} 에서 ${to} 로`,
@@ -86,14 +88,14 @@ export class TransitionCalculator {
     to: TrigramStance
   ): number {
     const adjacencyMap: Record<TrigramStance, TrigramStance[]> = {
-      geon: ["tae", "gon"],
-      tae: ["geon", "li"],
-      li: ["tae", "jin"],
-      jin: ["li", "son"],
-      son: ["jin", "gam"],
-      gam: ["son", "gan"],
-      gan: ["gam", "gon"],
-      gon: ["gan", "geon"],
+      [TrigramStanceEnum.GEON]: [TrigramStanceEnum.TAE, TrigramStanceEnum.GON], // Fix: Use enum values
+      [TrigramStanceEnum.TAE]: [TrigramStanceEnum.GEON, TrigramStanceEnum.LI],
+      [TrigramStanceEnum.LI]: [TrigramStanceEnum.TAE, TrigramStanceEnum.JIN],
+      [TrigramStanceEnum.JIN]: [TrigramStanceEnum.LI, TrigramStanceEnum.SON],
+      [TrigramStanceEnum.SON]: [TrigramStanceEnum.JIN, TrigramStanceEnum.GAM],
+      [TrigramStanceEnum.GAM]: [TrigramStanceEnum.SON, TrigramStanceEnum.GAN],
+      [TrigramStanceEnum.GAN]: [TrigramStanceEnum.GAM, TrigramStanceEnum.GON],
+      [TrigramStanceEnum.GON]: [TrigramStanceEnum.GAN, TrigramStanceEnum.GEON],
     };
 
     return adjacencyMap[from]?.includes(to) ? 0.7 : 1.0;
@@ -130,5 +132,45 @@ export class TransitionCalculator {
     }
 
     return totalCost;
+  }
+
+  private static calculateTransitionCost(
+    from: TrigramStance,
+    to: TrigramStance,
+    player: PlayerState
+  ): TrigramTransitionCost {
+    const kiCost = this.getKiCost(from, to, player);
+    const staminaCost = this.getStaminaCost(from, to, player);
+    const timeMs = this.getTransitionTime(from, to, player);
+
+    return { ki: kiCost, stamina: staminaCost, time: timeMs };
+  }
+
+  public static getValidTransitions(
+    from: TrigramStance,
+    player: PlayerState
+  ): TrigramTransitionRule[] {
+    const transitions: TrigramTransitionRule[] = [];
+
+    for (const to of Object.values(TrigramStance)) {
+      const valid = this.isTransitionValid(from, to, player);
+      const cost = this.calculateTransitionCost(from, to, player);
+
+      // Remove unused effectiveness calculation
+      // const effectiveness = 1.0;
+
+      if (valid) {
+        transitions.push({
+          from,
+          to,
+          valid: true,
+          cost,
+          // Remove invalid properties
+          // conditions: [],
+        });
+      }
+    }
+
+    return transitions;
   }
 }

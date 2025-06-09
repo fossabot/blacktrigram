@@ -2,7 +2,6 @@
 
 import type { TrigramStance, PlayerArchetype, EffectType } from "./enums";
 import type { KoreanText } from "./korean-text";
-import type { KoreanTechnique } from "./index"; // Assuming StatusEffect is in index or effects
 
 // Export TrigramStance for external modules
 export type { TrigramStance } from "./enums";
@@ -11,7 +10,7 @@ export type { TrigramStance } from "./enums";
 export interface TrigramTransitionCost {
   readonly ki: number;
   readonly stamina: number;
-  readonly timeMilliseconds: number; // Added missing time component
+  readonly timeMilliseconds: number;
 }
 
 // Enhanced transition metrics with all required properties

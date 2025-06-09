@@ -5,16 +5,16 @@
 import type * as PIXI from "pixi.js";
 import type {
   PlayerState,
+  GameState,
   GameMode,
   MatchStatistics,
   KoreanText,
   KoreanTechnique,
   TrigramStance,
   PlayerArchetype,
-  CombatResult,
-  GameEvent,
+  Position,
 } from "./index";
-import type { EnumCombatAttackType } from "./enums";
+import type { CombatResult as CombatResultType } from "./combat";
 
 // Base component props interface
 export interface BaseComponentProps {
@@ -32,7 +32,7 @@ export interface BaseComponentProps {
   readonly tint?: number;
   readonly blendMode?: PIXI.BLEND_MODES;
   readonly filters?: PIXI.Filter[];
-  readonly mask?: PIXI.DisplayObject;
+  readonly mask?: PIXI.Container; // Fix: Use Container instead of DisplayObject
   readonly renderable?: boolean;
   readonly zIndex?: number;
   readonly name?: string;
@@ -50,7 +50,13 @@ export interface IntroScreenProps extends BaseComponentProps {
 
 export interface TrainingScreenProps extends BaseComponentProps {
   readonly onReturnToMenu: () => void;
-  readonly selectedArchetype?: PlayerArchetype | null;
+  readonly player?: PlayerState; // Fix: Add optional player prop
+  readonly selectedArchetype?: PlayerArchetype; // Fix: Add optional selectedArchetype prop
+  readonly onPlayerUpdate?: (updates: Partial<PlayerState>) => void; // Fix: Add optional onPlayerUpdate prop
+  readonly width?: number;
+  readonly height?: number;
+  readonly x?: number;
+  readonly y?: number;
 }
 
 export interface CombatScreenProps extends BaseComponentProps {
@@ -59,19 +65,25 @@ export interface CombatScreenProps extends BaseComponentProps {
   readonly timeRemaining: number;
   readonly isPaused: boolean;
   readonly onPlayerUpdate: (
-    index: 0 | 1,
-    updates: Partial<PlayerState>
+    playerIndex: number, // Fix: Use number instead of 0|1
+    updates: Partial<PlayerState> // Fix: Use Partial<PlayerState> instead of PlayerState
   ) => void;
   readonly onReturnToMenu: () => void;
-  readonly onGameEnd: (winner?: PlayerState | "draw") => void;
-  readonly gameMode: GameMode;
+  readonly onGameEnd: (winner: number) => void;
+  readonly gameMode?: GameMode;
+  readonly matchStatistics?: MatchStatistics; // Fix: Add missing prop
+  readonly width?: number;
+  readonly height?: number;
 }
 
 export interface EndScreenProps extends BaseComponentProps {
-  readonly winner: PlayerState | null;
+  readonly winner?: PlayerState | null; // Fix: Use PlayerState instead of number
   readonly matchStatistics: MatchStatistics;
   readonly onReturnToMenu: () => void;
-  readonly onPlayAgain?: () => void;
+  readonly onRestart?: () => void; // Fix: Make optional
+  readonly onPlayAgain?: () => void; // Fix: Add onPlayAgain prop
+  readonly width?: number;
+  readonly height?: number;
 }
 
 // Combat component props
@@ -80,15 +92,19 @@ export interface CombatArenaProps extends BaseComponentProps {
   readonly onPlayerClick?: (playerIndex: number) => void;
 }
 
-export interface CombatHUDProps extends BaseComponentProps {
+export interface CombatHUDProps {
   readonly player1: PlayerState;
   readonly player2: PlayerState;
-  readonly players?: readonly [PlayerState, PlayerState];
+  readonly players?: readonly PlayerState[]; // Optional for backward compatibility
   readonly timeRemaining: number;
   readonly currentRound: number;
   readonly maxRounds: number;
-  readonly isPaused?: boolean;
+  readonly isPaused: boolean;
   readonly onPauseToggle?: () => void;
+  readonly width?: number;
+  readonly height?: number;
+  readonly x?: number;
+  readonly y?: number;
 }
 
 export interface CombatControlsProps extends BaseComponentProps {
@@ -201,45 +217,45 @@ export interface DojangBackgroundProps extends BaseComponentProps {
   readonly lighting?: "normal" | "cyberpunk" | "traditional";
 }
 
-// Fix: Update GameEngineProps to use proper player index type
-export interface GameEngineProps extends BaseComponentProps {
-  readonly players: readonly [PlayerState, PlayerState];
+// Fix: Add missing GameEngineProps
+export interface GameEngineProps {
+  readonly players: readonly PlayerState[];
   readonly onPlayerUpdate: (
-    playerIndex: 0 | 1,
+    playerIndex: number,
     updates: Partial<PlayerState>
-  ) => void; // Fix: Use 0 | 1
-  readonly onCombatResult: (result: CombatResult) => void;
+  ) => void;
+  readonly onCombatResult: (result: CombatResultType) => void; // Fix: Use imported type
   readonly onGameEvent: (event: string, data?: any) => void;
-  readonly isPaused: boolean;
-  readonly gameMode?: string;
+  readonly isPaused?: boolean;
+  readonly gameMode?: GameMode;
+  readonly width?: number;
+  readonly height?: number;
 }
 
-export interface HitEffectsLayerProps extends BaseComponentProps {
-  readonly effects: readonly any[];
-  readonly onEffectComplete?: (effectId: string) => void;
-}
-
-// Menu section props
-export interface MenuSectionProps extends BaseComponentProps {
+// Fix: Add missing MenuSectionProps
+export interface MenuSectionProps {
   readonly selectedMode: GameMode;
   readonly onModeSelect: (mode: GameMode) => void;
   readonly onStartGame: () => void;
   readonly onShowPhilosophy: () => void;
   readonly onShowControls: () => void;
+  readonly width?: number;
+  readonly height?: number;
+  readonly x?: number;
+  readonly y?: number;
 }
 
-export interface PhilosophySectionProps extends BaseComponentProps {
-  readonly onBack: () => void;
+// Fix: Update GameUIProps to include position and size props
+export interface GameUIProps {
+  readonly gameState: GameState;
+  readonly onStateChange: (newState: GameState) => void;
+  readonly onReturnToMenu: () => void;
+  readonly onPlayerUpdate: (updates: Partial<PlayerState>) => void;
+  readonly x?: number;
+  readonly y?: number;
+  readonly width?: number;
+  readonly height?: number;
 }
-
-// Fix: Add missing GameUIProps interface
-export interface GameUIProps extends BaseComponentProps {
-  readonly gameState?: any;
-  readonly onStateChange?: (newState: any) => void;
-}
-
-// Type aliases for compatibility
-export type CombatAttackType = EnumCombatAttackType;
 
 // Export common PIXI components for convenience
 export type PixiContainer = PIXI.Container;
@@ -257,6 +273,21 @@ export type {
   KoreanTechnique,
   TrigramStance,
   PlayerArchetype,
-  CombatResult,
-  GameEvent,
 } from "./index";
+
+// Fix: Remove duplicate CombatResult interface - use the one from combat.ts
+export type CombatResult = CombatResultType;
+
+export interface HitEffectsLayerProps extends BaseComponentProps {
+  readonly effects: readonly HitEffect[];
+  readonly onEffectComplete: (effectId: string) => void;
+}
+
+export interface HitEffect {
+  readonly id: string;
+  readonly type: "hit" | "critical" | "block" | "miss";
+  readonly position: Position;
+  readonly intensity: number;
+  readonly duration: number;
+  readonly startTime: number;
+}

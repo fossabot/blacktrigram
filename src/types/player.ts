@@ -1,160 +1,77 @@
-// Player state and archetype definitions for Korean martial arts
+/**
+ * Player state and related types
+ */
 
-import type {
-  PlayerArchetype,
-  TrigramStance,
-  KoreanText,
-  Position,
-  StatusEffect,
-  VitalPointState,
-  KoreanTechnique,
-  PlayerStats,
-  VitalPoint,
-} from "./index";
+import type { KoreanText, Position } from "./common";
+import type { StatusEffect } from "./effects";
+import { TrigramStance, PlayerArchetype } from "./enums";
 
-// Main player state interface
+// Core player state
 export interface PlayerState {
   readonly id: string;
   readonly name: KoreanText;
   readonly archetype: PlayerArchetype;
-  readonly currentStance: TrigramStance;
+
+  // Combat stats
   readonly health: number;
   readonly maxHealth: number;
   readonly ki: number;
   readonly maxKi: number;
   readonly stamina: number;
   readonly maxStamina: number;
-  readonly consciousness: number;
-  readonly balance: number;
-  readonly pain: number;
-  readonly position: Position;
-  readonly statusEffects: readonly StatusEffect[];
-  readonly vitalPoints: readonly VitalPoint[];
+  readonly energy: number; // Added missing property
+  readonly maxEnergy: number;
 
-  // Fix: Add missing properties for complete PlayerState
-  readonly isBlocking: boolean;
-  readonly activeEffects: readonly any[];
-  readonly combatModifiers: Record<string, number>;
-  readonly momentum: Position;
-  readonly lastStanceChangeTime: number;
-  readonly actionCooldowns: Record<string, number>;
-  readonly technique: KoreanTechnique | null;
-  readonly combatState:
-    | "idle"
-    | "attacking"
-    | "defending"
-    | "stunned"
-    | "recovering";
-  readonly orientation: "left" | "right";
-}
-
-// Player archetype configuration
-export interface PlayerArchetypeConfig {
-  readonly id: PlayerArchetype;
-  readonly name: KoreanText;
-  readonly description: KoreanText;
-  readonly philosophy: KoreanText;
-
-  // Base stats
-  readonly baseHealth: number;
-  readonly baseKi: number;
-  readonly baseStamina: number;
-  readonly coreStance: TrigramStance;
-
-  // Visual theme
-  readonly colors: {
-    readonly primary: number;
-    readonly secondary: number;
-    readonly accent: number;
-  };
-
-  // Combat preferences
-  readonly favoredStances: readonly TrigramStance[];
-  readonly specialTechniques: readonly string[];
-  readonly combatStyle: "aggressive" | "defensive" | "balanced" | "technical";
-
-  // Archetype bonuses
-  readonly statModifiers: {
-    readonly attackPower: number;
-    readonly defense: number;
-    readonly speed: number;
-    readonly precision: number;
-    readonly ki: number;
-    readonly stamina: number;
-  };
-}
-
-// Player input state for controls
-export interface PlayerInputState {
-  readonly playerId: string;
-  readonly currentInput: {
-    readonly movement: { x: number; y: number };
-    readonly attack: boolean;
-    readonly defend: boolean;
-    readonly stanceChange: TrigramStance | null;
-    readonly targetVitalPoint: string | null;
-  };
-  readonly inputHistory: readonly string[];
-  readonly lastInputTime: number;
-}
-
-// Player performance tracking
-export interface PlayerPerformance {
-  readonly playerId: string;
-  readonly accuracy: number;
-  readonly damageDealt: number;
-  readonly damageReceived: number;
-  readonly techniquesUsed: number;
-  readonly stanceChanges: number;
-  readonly perfectTimings: number;
-  readonly vitalPointsHit: number;
-  readonly combosCompleted: number;
-}
-
-// Fix: Add missing PlayerArchetypeData export
-export interface PlayerArchetypeData {
-  readonly id: string;
-  readonly name: KoreanText;
-  readonly description: KoreanText;
-  readonly baseHealth: number;
-  readonly baseKi: number;
-  readonly baseStamina: number;
-  readonly coreStance: TrigramStance;
-  readonly theme: {
-    readonly primary: number;
-    readonly secondary: number;
-  };
-  readonly colors: {
-    readonly primary: number;
-    readonly secondary: number;
-  };
-  readonly stats: PlayerStats;
-  readonly favoredStances: readonly TrigramStance[];
-  readonly specialAbilities: readonly string[];
-  readonly philosophy: KoreanText;
-}
-
-// Fix: Add missing PlayerStats export
-export interface PlayerStats {
-  readonly attackPower: number;
-  readonly defense: number;
+  // Combat attributes
+  readonly attackPower: number; // Added missing property
+  readonly defense: number; // Added missing property
   readonly speed: number;
   readonly technique: number;
+  readonly pain: number;
+  readonly consciousness: number;
+  readonly balance: number;
+  readonly momentum: number; // Fixed: should be number, not Position
+
+  // Combat state
+  readonly currentStance: TrigramStance;
+  readonly position: Position;
+  readonly isBlocking: boolean;
+  readonly isStunned: boolean;
+  readonly isCountering: boolean;
+  readonly lastActionTime: number; // Added missing property
+  readonly recoveryTime: number; // Added missing property
+
+  // Status and effects
+  readonly statusEffects: readonly StatusEffect[];
+  readonly activeEffects: readonly string[];
 }
 
-// Fix: Add missing PlayerMatchStatistics export
-export interface PlayerMatchStatistics {
+// Player creation data
+export interface PlayerCreationData {
+  readonly name: KoreanText;
+  readonly archetype: PlayerArchetype;
+  readonly preferredStance?: TrigramStance;
+}
+
+// Player update data (for partial updates)
+export interface PlayerUpdateData extends Partial<PlayerState> {
+  // Allow partial updates of any player state property
+}
+
+// Player statistics for match tracking
+export interface PlayerMatchStats {
   readonly wins: number;
   readonly losses: number;
   readonly hitsTaken: number;
   readonly hitsLanded: number;
   readonly totalDamageDealt: number;
   readonly totalDamageReceived: number;
-  readonly techniques: readonly string[];
+  readonly techniques: string[];
   readonly perfectStrikes: number;
   readonly vitalPointHits: number;
   readonly consecutiveWins: number;
   readonly matchDuration: number;
 }
 
-export default PlayerState;
+// Player archetype data (moved to anatomy.ts to avoid circular import)
+export type { PlayerArchetypeData } from "./anatomy";

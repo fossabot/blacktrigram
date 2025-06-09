@@ -1,152 +1,169 @@
-// Korean martial arts anatomy system for precise vital point targeting
+/**
+ * Anatomical and vital point system types
+ */
 
-// Fix: Import enums as values to avoid conflicts
+import type { KoreanText, Position, DamageRange } from "./common";
+import { StatusEffect } from "./effects";
 import {
+  TrigramStance,
+  PlayerArchetype,
   VitalPointCategory,
   VitalPointSeverity,
   VitalPointEffectType,
   EffectIntensity,
-  BodyRegion,
-  DamageType,
-  TrigramStance,
 } from "./enums";
 
-import type {
-  KoreanText,
-  Position,
-  StatusEffect,
-  PlayerArchetype,
-  TrigramStance,
-} from "./index";
-
-// Fix: Define DamageRange locally to avoid circular dependency
-export interface DamageRange {
-  readonly min: number;
-  readonly max: number;
-  readonly average: number;
-}
-
-// Vital point definition with Korean martial arts terminology
+// Vital point definition
 export interface VitalPoint {
   readonly id: string;
   readonly korean: KoreanText;
   readonly english: string;
   readonly category: VitalPointCategory;
   readonly severity: VitalPointSeverity;
-  readonly position?: Position;
-  readonly damage?: DamageRange;
+  readonly position: Position;
+  readonly radius: number;
   readonly effects: readonly VitalPointEffect[];
-  readonly name?: KoreanText; // Add missing name property
-  readonly baseDamage?: number;
-  readonly damageMultiplier?: number;
+  readonly damage?: DamageRange;
+  readonly description: KoreanText;
+  readonly difficulty: number;
+  readonly requiredForce: number;
+  readonly safetyWarning?: string;
+  readonly anatomicalName?: string;
   readonly location?: Position;
-  readonly region?: string;
-  readonly type?: string;
-  readonly precision?: boolean;
-  readonly techniques?: readonly string[];
-  readonly stunDuration?: number;
 }
 
-// Effects of striking vital points
+// Vital point effect
 export interface VitalPointEffect {
+  readonly id: string;
   readonly type: VitalPointEffectType;
   readonly intensity: EffectIntensity;
   readonly duration: number;
   readonly description: KoreanText;
-  readonly id?: string;
-  readonly stackable?: boolean;
-  readonly source?: string;
-  readonly chance?: number;
-  readonly modifiers?: any[];
+  readonly stackable: boolean;
+}
+
+// Player archetype data
+export interface PlayerArchetypeData {
+  readonly id: string;
+  readonly name: KoreanText;
+  readonly description: KoreanText;
+  readonly baseHealth: number;
+  readonly baseKi: number;
+  readonly baseStamina: number;
+  readonly coreStance: TrigramStance;
+  readonly theme: {
+    primary: number;
+    secondary: number;
+  };
+  readonly colors: {
+    primary: number;
+    secondary: number;
+  };
+  readonly stats: {
+    attackPower: number;
+    defense: number;
+    speed: number;
+    technique: number;
+  };
+  readonly favoredStances: TrigramStance[];
+  readonly specialAbilities: string[];
+  readonly philosophy: KoreanText;
+}
+
+// Trigram transition cost
+export interface TrigramTransitionCost {
+  readonly ki: number;
+  readonly stamina: number;
+  readonly timeMs: number;
+}
+
+// Trigram transition rule
+export interface TrigramTransitionRule {
+  readonly from: TrigramStance;
+  readonly to: TrigramStance;
+  readonly allowed: boolean;
+  readonly cost: TrigramTransitionCost;
+  readonly difficulty: number;
+  readonly conditions?: string[];
+}
+
+// Region data
+export interface RegionData {
+  readonly name: KoreanText;
+  readonly boundaries: readonly Position[];
+  readonly vitalPoints: readonly VitalPoint[];
+  readonly vulnerabilities: readonly string[];
 }
 
 // Vital point hit result
 export interface VitalPointHitResult {
   readonly hit: boolean;
-  readonly damage: number;
   readonly vitalPoint?: VitalPoint;
-  readonly effects: readonly VitalPointEffect[];
-  readonly statusEffectsApplied?: readonly StatusEffect[];
-  readonly effectiveness?: number;
+  readonly damage: number;
+  readonly effects: readonly StatusEffect[];
   readonly severity: VitalPointSeverity;
 }
 
-// Fix: Remove duplicate enum declarations - use imports instead
-export type { VitalPointCategory, VitalPointSeverity } from "./enums";
+// Damage result
+export interface DamageResult {
+  readonly damage: number;
+  readonly effects: readonly StatusEffect[];
+  readonly isCritical: boolean;
+  readonly isVitalPoint: boolean;
+}
 
-// Add missing types
-export type AnatomicalRegion = {
+// Anatomical region
+export interface AnatomicalRegion {
   readonly id: string;
   readonly name: KoreanText;
+  readonly boundaries: readonly Position[];
   readonly vitalPoints: readonly VitalPoint[];
-};
+}
 
-export type DamageResult = {
-  readonly totalDamage: number;
-  readonly vitalPointDamage: number;
-  readonly effects: readonly StatusEffect[];
-};
-
-export type TransitionPath = {
-  readonly from: TrigramStance;
-  readonly to: TrigramStance;
-  readonly cost: TrigramTransitionCost;
-};
-
-export type TrigramTransitionCost = {
-  readonly ki: number;
-  readonly stamina: number;
-  readonly time: number;
-};
-
-export type TrigramTransitionRule = {
-  readonly from: TrigramStance;
-  readonly to: TrigramStance;
-  readonly allowed: boolean;
-  readonly cost?: TrigramTransitionCost;
-};
-
-export type CombatReadiness = {
-  readonly stance: TrigramStance;
-  readonly ki: number;
-  readonly stamina: number;
-  readonly canTransition: boolean;
-};
-
+// Stance effectiveness matrix
 export const TRIGRAM_EFFECTIVENESS: Record<
   TrigramStance,
-  Record<TrigramStance, number>
+  Partial<Record<TrigramStance, number>>
 > = {
   [TrigramStance.GEON]: {
-    [TrigramStance.GEON]: 1.0,
-    [TrigramStance.TAE]: 1.2,
-    [TrigramStance.LI]: 0.8,
-    [TrigramStance.JIN]: 1.1,
-    [TrigramStance.SON]: 0.9,
-    [TrigramStance.GAM]: 1.3,
-    [TrigramStance.GAN]: 0.7,
-    [TrigramStance.GON]: 1.0,
+    [TrigramStance.GON]: 1.2,
+    [TrigramStance.SON]: 0.8,
   },
-  // ...complete the matrix for all stances
+  [TrigramStance.TAE]: {
+    [TrigramStance.JIN]: 1.2,
+    [TrigramStance.GAN]: 0.8,
+  },
+  [TrigramStance.LI]: {
+    [TrigramStance.GAM]: 1.2,
+    [TrigramStance.TAE]: 0.8,
+  },
+  [TrigramStance.JIN]: {
+    [TrigramStance.SON]: 1.2,
+    [TrigramStance.GEON]: 0.8,
+  },
+  [TrigramStance.SON]: {
+    [TrigramStance.GON]: 1.2,
+    [TrigramStance.LI]: 0.8,
+  },
+  [TrigramStance.GAM]: {
+    [TrigramStance.LI]: 1.2,
+    [TrigramStance.JIN]: 0.8,
+  },
+  [TrigramStance.GAN]: {
+    [TrigramStance.TAE]: 1.2,
+    [TrigramStance.GAM]: 0.8,
+  },
+  [TrigramStance.GON]: {
+    [TrigramStance.GEON]: 1.2,
+    [TrigramStance.SON]: 0.8,
+  },
 };
 
-export const ARCHETYPE_TRIGRAM_AFFINITY: Record<
-  PlayerArchetype,
-  readonly TrigramStance[]
-> = {
+// Archetype preferred stances
+export const ARCHETYPE_STANCES: Record<PlayerArchetype, TrigramStance[]> = {
   [PlayerArchetype.MUSA]: [TrigramStance.GEON, TrigramStance.GAN],
   [PlayerArchetype.AMSALJA]: [TrigramStance.SON, TrigramStance.GAM],
   [PlayerArchetype.HACKER]: [TrigramStance.LI, TrigramStance.JIN],
   [PlayerArchetype.JEONGBO_YOWON]: [TrigramStance.TAE, TrigramStance.GAN],
   [PlayerArchetype.JOJIK_POKRYEOKBAE]: [TrigramStance.JIN, TrigramStance.GON],
-};
-
-export const TRIGRAM_TRANSITIONS: readonly TrigramTransitionRule[] = [
-  // Define all allowed transitions with costs
-];
-
-export type VitalPointSystemConfig = {
-  readonly damageMultipliers: Record<VitalPointSeverity, number>;
-  readonly effectDurations: Record<VitalPointEffectType, number>;
-  readonly criticalThresholds: Record<VitalPointCategory, number>;
 };

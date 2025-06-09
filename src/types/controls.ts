@@ -2,8 +2,6 @@
  * Combat controls and input types for Korean martial arts
  */
 
-import type { TrigramStance } from "./enums";
-
 // Fix: Add proper interface export
 export interface CombatControlsConfig {
   readonly stanceControls: Record<

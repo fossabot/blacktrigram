@@ -1,184 +1,71 @@
 /**
- * Main types export for Black Trigram Korean martial arts system
+ * Central type exports for Black Trigram Korean martial arts game
+ * This file should be the single source of truth for all type exports
  */
 
-import { Position } from "./common";
-import { StatusEffect } from "./effects";
-import { EffectIntensity } from "./enums";
-
-// Core data types
-export type { Position, Dimensions, KoreanText } from "./common";
-
-// Enums (import as values to avoid conflicts)
+// Export all enums
 export {
+  GameMode,
+  GamePhase,
   PlayerArchetype,
   TrigramStance,
-  GameMode,
-  DamageType,
-  EnumCombatAttackType,
   VitalPointCategory,
   VitalPointSeverity,
-  BodyRegion,
-  EffectIntensity,
-  AudioCategory,
-  // Fix: Add missing enum exports
   VitalPointEffectType,
-  GameEventType,
-} from "./enums";
-
-// Player types - Fix: Use correct exports
-export type {
-  PlayerState,
-  PlayerStats, // Fix: Now exported
-  PlayerMatchStatistics, // Fix: Now exported
-  PlayerArchetypeData,
-} from "./player";
-
-// Combat types - Fix: Use correct exports
-export type {
-  CombatResult,
-  CombatEvent,
-  KoreanTechnique,
-  CombatAction, // Fix: Now exported
-  DamageCalculation, // Fix: Now exported
-  CombatPhase, // Fix: Now exported
-  CombatState, // Fix: Now exported
-  HitResult,
-} from "./combat";
-
-// Game types
-export type {
-  GameState,
-  MatchStatistics,
-  GameEvent,
-  RoundResult,
-} from "./game";
-
-// Anatomy types
-export type {
-  VitalPoint,
-  VitalPointEffect,
-  AnatomicalHit,
-  VitalPointHitResult,
-  AnatomicalLocation,
-  BodyPart,
-  AnatomyModel,
-} from "./anatomy";
-
-// Trigram types - Fix: Use correct exports
-export type {
-  TrigramData,
-  TrigramTheme,
-  TrigramEffectivenessMatrix,
-  StanceTransition, // Fix: Now exported
-} from "./trigram";
-
-// Audio types
-export type {
-  AudioAsset,
-  MusicTrack,
-  SoundEffect,
-  VoiceLine,
-  AudioConfig,
-  AudioEvent,
-  AudioState,
-  AudioManager,
-} from "./audio";
-
-// Effects types - Fix: Use correct exports
-export type {
-  VisualEffect, // Fix: Now exported as interface
-  ParticleEffect,
-  StatusEffect,
-  EffectSystem, // Fix: Now exported as interface
-} from "./effects";
-
-// UI types - Fix: Use correct exports
-export type {
-  UITheme,
-  ComponentState, // Fix: Now exported
-  InteractionEvent, // Fix: Now exported
-} from "./ui";
-
-// Korean text types - Fix: Use correct exports
-export type {
-  KoreanTextStyle,
-  KoreanTextProps, // Fix: Now exported
+  EffectIntensity,
+  DamageType,
+  CombatAttackType, // Fix: Use correct enum name
   KoreanTextSize,
   KoreanTextWeight,
-  KoreanTextAlignment, // Fix: Now exported
-} from "./korean-text";
+} from "./enums";
 
-// Component types
-export type * from "./components";
-
-// System types - Fix: Use correct exports
+// Export core types
+export type { KoreanText } from "./korean-text";
+export type { Position, DamageRange } from "./common";
+export type { StatusEffect, HitEffect } from "./effects";
 export type {
-  CombatSystem, // Fix: Now exported as interface
-  TrigramSystem, // Fix: Now exported as interface
-  VitalPointSystem, // Fix: Now exported as interface
-  SystemEvent,
-} from "./systems";
-
-// Controls types - Fix: Import correct exports
-export type {
-  COMBAT_CONTROLS as CombatControlsConfig,
-  // Remove StanceControl export as it doesn't exist
-} from "./controls";
-
-// Constants
-export * from "./constants";
-
-// Add missing type exports
-export type HitEffect = {
-  readonly id: string;
-  readonly type: HitEffectType;
-  readonly position?: Position;
-  readonly intensity: EffectIntensity;
-  readonly timestamp: number;
-  readonly playerId?: string;
-  readonly vitalPointId?: string;
-  readonly statusEffect?: StatusEffect;
-};
-
-export enum HitEffectType {
-  DAMAGE = "damage",
-  CRITICAL_HIT = "critical_hit",
-  VITAL_POINT_STRIKE = "vital_point_strike",
-  STATUS_EFFECT = "status_effect",
-  MISS = "miss",
-  BLOCK = "block",
-}
-
-export enum VitalPointLocation {
-  HEAD = "head",
-  NECK = "neck",
-  TORSO = "torso",
-  LEFT_ARM = "left_arm",
-  RIGHT_ARM = "right_arm",
-  LEFT_LEG = "left_leg",
-  RIGHT_LEG = "right_leg",
-}
-
-// Re-export everything that's missing
-export type {
-  AnatomicalRegion,
-  DamageResult,
-  TransitionPath,
+  TrigramData,
   TrigramTransitionCost,
   TrigramTransitionRule,
-  CombatReadiness,
-  TRIGRAM_EFFECTIVENESS,
-  ARCHETYPE_TRIGRAM_AFFINITY,
-  TRIGRAM_TRANSITIONS,
-  VitalPointSystemConfig,
+} from "./trigram";
+export type {
+  PlayerArchetypeData,
+  VitalPoint,
+  VitalPointEffect,
 } from "./anatomy";
 
-export {
-  ARCHETYPE_TECHNIQUE_BONUSES,
-  ENHANCED_DAMAGE_CONSTANTS,
-  STANCE_EFFECTIVENESS_MATRIX,
-  MAX_TRANSITION_COST_KI,
-  MAX_TRANSITION_COST_STAMINA,
-  MAX_TRANSITION_TIME_MILLISECONDS,
-} from "./constants";
+// Fix: Export PlayerState from player.ts, not anatomy.ts
+export type { PlayerState } from "./player";
+
+// Export combat types
+export type {
+  KoreanTechnique,
+  CombatResult,
+  CombatEventData,
+  CombatStats,
+} from "./combat";
+
+// Fix: Export game types without duplicates
+export type { GameState, MatchStatistics, PlayerMatchStats } from "./game";
+
+// Export component types
+export type {
+  GameUIProps,
+  GameEngineProps,
+  TrainingScreenProps,
+  CombatScreenProps,
+  CombatHUDProps,
+  CombatControlsProps,
+  CombatArenaProps,
+  IntroScreenProps,
+} from "./components";
+
+// Fix: Export UI types with correct names
+export type {
+  UIComponentProps, // Fix: Use correct name
+  StanceIndicatorProps,
+  HealthBarProps,
+} from "./ui";
+
+// Export system types
+export type { CombatSystem, VitalPointSystem, TrigramSystem } from "./systems";

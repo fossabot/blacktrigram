@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi as vitestVi } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest"; // Fix: Remove unused vi import
 import { StanceManager } from "./StanceManager";
 import { TrigramStance, PlayerArchetype } from "../../types/enums";
 import type { PlayerState } from "../../types";

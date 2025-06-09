@@ -100,9 +100,3 @@ export function getStanceFromKey(key: string): TrigramStance | null {
   };
   return stanceMap[key] || null;
 }
-
-// Export COMBAT_CONTROLS for compatibility
-export { COMBAT_CONTROLS } from "./combat";
-
-// Also create an alias
-export const CONTROLS_CONFIG = COMBAT_CONTROLS;

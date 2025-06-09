@@ -1,29 +1,13 @@
-// Korean martial arts combat system types
+/**
+ * Combat system types
+ */
 
-import type {
-  TrigramStance,
-  PlayerArchetype,
-  DamageType,
-  CombatState as CombatStateEnum,
-  StatusEffect,
-  Position,
-  VitalPoint,
-  KoreanText,
-  EffectIntensity,
-} from "./index";
+import type { DamageRange, KoreanText, Position } from "./common";
+import type { StatusEffect } from "./effects";
+import type { PlayerState } from "./player";
+import { TrigramStance, CombatAttackType, DamageType } from "./enums";
 
-// Fix CombatAttackType to use enum
-export type CombatAttackType = EnumCombatAttackType;
-export enum EnumCombatAttackType {
-  STRIKE = "strike",
-  KICK = "kick",
-  GRAPPLE = "grapple",
-  THROW = "throw",
-  PRESSURE_POINT = "pressure_point",
-  JOINT_LOCK = "joint_lock",
-  THRUST = "thrust", // Fix: Add missing THRUST
-}
-
+// Korean martial arts technique
 export interface KoreanTechnique {
   readonly id: string;
   readonly name: KoreanText;
@@ -31,45 +15,68 @@ export interface KoreanTechnique {
   readonly englishName: string;
   readonly romanized: string;
   readonly description: KoreanText;
+
+  // Combat properties
   readonly stance: TrigramStance;
-  readonly type: CombatAttackType;
+  readonly type: CombatAttackType; // Fix: Use correct enum
   readonly damageType: DamageType;
-  readonly damageRange: DamageRange;
+  readonly damage?: number; // Made optional to fix null issues
+  readonly damageRange?: DamageRange;
   readonly range: number;
   readonly kiCost: number;
   readonly staminaCost: number;
   readonly accuracy: number;
   readonly executionTime: number;
   readonly recoveryTime: number;
-  readonly critChance?: number;
-  readonly critMultiplier?: number;
-  readonly effects?: readonly StatusEffect[];
-  readonly properties?: readonly string[];
-  readonly targetAreas?: readonly string[];
-  // Fix: Add compatibility properties
-  readonly damage?: number;
+  readonly critChance: number;
+  readonly critMultiplier: number;
+  readonly effects: readonly StatusEffect[];
 }
 
-export interface DamageRange {
-  readonly min: number;
-  readonly max: number;
-  readonly type?: DamageType;
-}
-
+// Combat result - Fix: Add all missing properties used by GameEngine
 export interface CombatResult {
-  readonly success: boolean;
+  readonly attacker: PlayerState;
+  readonly defender: PlayerState;
+  readonly technique?: KoreanTechnique;
   readonly damage: number;
-  readonly effects: readonly string[];
-  readonly criticalHit: boolean;
-  readonly vitalPointHit: boolean;
-  readonly hit?: boolean;
-  readonly updatedAttacker?: PlayerState;
-  readonly updatedDefender?: PlayerState;
-  readonly message?: KoreanText;
-  // Fix: Add missing properties
-  readonly updatedPlayers?: readonly PlayerState[];
-  readonly winner?: number;
+  readonly effects: readonly StatusEffect[];
+  readonly isCritical: boolean;
+  readonly isVitalPoint: boolean; // Fix: Use consistent property name
+  readonly isBlocked: boolean;
+  readonly isCountered: boolean;
+  readonly timestamp: number;
+  readonly hit: boolean;
+  readonly success?: boolean;
+  readonly winner?: number; // Fix: Add winner property
+  readonly updatedPlayers?: readonly PlayerState[]; // Fix: Add updatedPlayers
+  readonly hitLocation?: Position;
+  // Fix: Remove criticalHit - use isCritical instead
 }
 
-// Add missing PlayerState import and properties
-import type { PlayerState } from "./player";
+// Fix: Define CombatEventData interface that's used in MatchStatistics
+export interface CombatEventData {
+  readonly id: string;
+  readonly timestamp: number;
+  readonly type:
+    | "attack"
+    | "block"
+    | "critical"
+    | "vital_point"
+    | "stance_change";
+  readonly attacker: number; // Player index
+  readonly defender: number; // Player index
+  readonly damage: number;
+  readonly technique?: string;
+  readonly result: "hit" | "miss" | "blocked" | "critical";
+  readonly effects?: readonly string[];
+}
+
+// Combat statistics
+export interface CombatStats {
+  readonly totalDamage: number;
+  readonly criticalHits: number;
+  readonly vitalPointHits: number;
+  readonly techniquesUsed: number;
+  readonly stamina: number;
+  readonly ki: number;
+}

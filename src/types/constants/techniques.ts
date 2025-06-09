@@ -3,7 +3,7 @@
  */
 
 import type { KoreanTechnique } from "../combat";
-import { TrigramStance, EnumCombatAttackType, DamageType } from "../enums";
+import { TrigramStance, CombatAttackType, DamageType } from "../enums"; // Fix: Use CombatAttackType
 
 // Base techniques for each trigram stance
 export const TRIGRAM_TECHNIQUES: Record<
@@ -13,7 +13,11 @@ export const TRIGRAM_TECHNIQUES: Record<
   [TrigramStance.GEON]: [
     {
       id: "geon_heaven_strike",
-      name: "천둥벽력",
+      name: {
+        korean: "천둥벽력",
+        english: "Thunder Strike",
+        romanized: "cheondung_byeokryeok",
+      }, // Fix: Use KoreanText structure
       koreanName: "천둥벽력",
       englishName: "Thunder Strike",
       romanized: "cheondung_byeokryeok",
@@ -22,7 +26,7 @@ export const TRIGRAM_TECHNIQUES: Record<
         english: "Direct strike imbued with heavenly power",
       },
       stance: TrigramStance.GEON,
-      type: EnumCombatAttackType.STRIKE,
+      type: CombatAttackType.STRIKE, // Fix: Use CombatAttackType
       damageType: DamageType.BLUNT,
       damage: 30,
       kiCost: 15,
@@ -39,7 +43,11 @@ export const TRIGRAM_TECHNIQUES: Record<
   [TrigramStance.TAE]: [
     {
       id: "tae_flowing_strikes",
-      name: "유수연타",
+      name: {
+        korean: "유수연타",
+        english: "Flowing Strikes",
+        romanized: "yusu_yeonta",
+      }, // Fix: Use KoreanText structure
       koreanName: "유수연타",
       englishName: "Flowing Strikes",
       romanized: "yusu_yeonta",
@@ -48,7 +56,7 @@ export const TRIGRAM_TECHNIQUES: Record<
         english: "Continuous strikes like flowing water",
       },
       stance: TrigramStance.TAE,
-      type: EnumCombatAttackType.STRIKE,
+      type: CombatAttackType.STRIKE,
       damageType: DamageType.BLUNT,
       damage: 25,
       kiCost: 12,
@@ -65,7 +73,11 @@ export const TRIGRAM_TECHNIQUES: Record<
   [TrigramStance.LI]: [
     {
       id: "li_flame_spear",
-      name: "화염지창",
+      name: {
+        korean: "화염지창",
+        english: "Flame Spear",
+        romanized: "hwayeom_jichang",
+      }, // Fix: Use KoreanText structure
       koreanName: "화염지창",
       englishName: "Flame Spear",
       romanized: "hwayeom_jichang",
@@ -74,7 +86,7 @@ export const TRIGRAM_TECHNIQUES: Record<
         english: "Precise and sharp attack like flame",
       },
       stance: TrigramStance.LI,
-      type: EnumCombatAttackType.THRUST,
+      type: CombatAttackType.THRUST,
       damageType: DamageType.PIERCING,
       damage: 35,
       kiCost: 18,
@@ -91,7 +103,11 @@ export const TRIGRAM_TECHNIQUES: Record<
   [TrigramStance.JIN]: [
     {
       id: "jin_lightning_flash",
-      name: "벽력일섬",
+      name: {
+        korean: "벽력일섬",
+        english: "Lightning Flash",
+        romanized: "byeokryeok_ilseom",
+      }, // Fix: Use KoreanText structure
       koreanName: "벽력일섬",
       englishName: "Lightning Flash",
       romanized: "byeokryeok_ilseom",
@@ -100,7 +116,7 @@ export const TRIGRAM_TECHNIQUES: Record<
         english: "Swift strike like lightning",
       },
       stance: TrigramStance.JIN,
-      type: EnumCombatAttackType.STRIKE,
+      type: CombatAttackType.STRIKE,
       damageType: DamageType.BLUNT,
       damage: 28,
       kiCost: 10,
@@ -117,7 +133,11 @@ export const TRIGRAM_TECHNIQUES: Record<
   [TrigramStance.SON]: [
     {
       id: "son_whirlwind_barrage",
-      name: "선풍연격",
+      name: {
+        korean: "선풍연격",
+        english: "Whirlwind Barrage",
+        romanized: "seonpung_yeongyeok",
+      }, // Fix: Use KoreanText structure
       koreanName: "선풍연격",
       englishName: "Whirlwind Barrage",
       romanized: "seonpung_yeongyeok",
@@ -126,7 +146,7 @@ export const TRIGRAM_TECHNIQUES: Record<
         english: "Continuous attacks like wind",
       },
       stance: TrigramStance.SON,
-      type: EnumCombatAttackType.STRIKE,
+      type: CombatAttackType.STRIKE,
       damageType: DamageType.BLUNT,
       damage: 22,
       kiCost: 8,
@@ -143,7 +163,11 @@ export const TRIGRAM_TECHNIQUES: Record<
   [TrigramStance.GAM]: [
     {
       id: "gam_water_counter",
-      name: "수류반격",
+      name: {
+        korean: "수류반격",
+        english: "Water Counter",
+        romanized: "suryu_bangyeok",
+      }, // Fix: Use KoreanText structure
       koreanName: "수류반격",
       englishName: "Water Counter",
       romanized: "suryu_bangyeok",
@@ -152,7 +176,7 @@ export const TRIGRAM_TECHNIQUES: Record<
         english: "Counter-attack that flows like water",
       },
       stance: TrigramStance.GAM,
-      type: EnumCombatAttackType.COUNTER_ATTACK,
+      type: CombatAttackType.COUNTER_ATTACK,
       damageType: DamageType.BLUNT,
       damage: 32,
       kiCost: 20,
@@ -169,7 +193,11 @@ export const TRIGRAM_TECHNIQUES: Record<
   [TrigramStance.GAN]: [
     {
       id: "gan_rock_defense",
-      name: "반석방어",
+      name: {
+        korean: "반석방어",
+        english: "Rock Defense",
+        romanized: "banseok_bangeo",
+      }, // Fix: Use KoreanText structure
       koreanName: "반석방어",
       englishName: "Rock Defense",
       romanized: "banseok_bangeo",
@@ -178,7 +206,7 @@ export const TRIGRAM_TECHNIQUES: Record<
         english: "Solid defense like a rock",
       },
       stance: TrigramStance.GAN,
-      type: EnumCombatAttackType.BLOCK,
+      type: CombatAttackType.BLOCK,
       damageType: DamageType.BLUNT,
       damage: 15,
       kiCost: 5,
@@ -195,7 +223,11 @@ export const TRIGRAM_TECHNIQUES: Record<
   [TrigramStance.GON]: [
     {
       id: "gon_earth_embrace",
-      name: "대지포옹",
+      name: {
+        korean: "대지포옹",
+        english: "Earth Embrace",
+        romanized: "daeji_pooong",
+      }, // Fix: Use KoreanText structure
       koreanName: "대지포옹",
       englishName: "Earth Embrace",
       romanized: "daeji_pooong",
@@ -204,7 +236,7 @@ export const TRIGRAM_TECHNIQUES: Record<
         english: "Grappling technique using earth's power",
       },
       stance: TrigramStance.GON,
-      type: EnumCombatAttackType.GRAPPLE,
+      type: CombatAttackType.GRAPPLE,
       damageType: DamageType.BLUNT,
       damage: 26,
       kiCost: 16,
@@ -229,24 +261,9 @@ export const TECHNIQUE_MODIFIERS = {
   COMBO_MULTIPLIER: 1.1,
 } as const;
 
-// Korean martial arts techniques for Black Trigram
-
-import type { DamageType, EnumCombatAttackType } from "../index"; // Use EnumCombatAttackType
-
 // Complete TECHNIQUE_PROPERTIES with proper enum usage
 export const TECHNIQUE_PROPERTIES: Record<
-  Extract<
-    EnumCombatAttackType,
-    | "strike"
-    | "thrust"
-    | "block"
-    | "counter_attack"
-    | "throw"
-    | "grapple"
-    | "pressure_point"
-    | "nerve_strike"
-    | "punch"
-  >,
+  CombatAttackType, // Fix: Use CombatAttackType instead of string literals
   {
     baseDamage: number;
     range: number;
@@ -255,64 +272,63 @@ export const TECHNIQUE_PROPERTIES: Record<
     staminaCost: number;
   }
 > = {
-  [EnumCombatAttackType.STRIKE]: {
+  [CombatAttackType.STRIKE]: {
     baseDamage: 20,
     range: 1.0,
     accuracy: 0.85,
     kiCost: 15,
     staminaCost: 10,
   },
-  [EnumCombatAttackType.THRUST]: {
+  [CombatAttackType.THRUST]: {
     baseDamage: 25,
     range: 1.5,
     accuracy: 0.9,
     kiCost: 18,
     staminaCost: 12,
   },
-  block: {
+  [CombatAttackType.BLOCK]: {
     baseDamage: 5,
     range: 0.5,
     accuracy: 0.95,
     kiCost: 8,
     staminaCost: 15,
   },
-  counter_attack: {
+  [CombatAttackType.COUNTER_ATTACK]: {
     baseDamage: 22,
     range: 1.0,
     accuracy: 0.88,
     kiCost: 20,
     staminaCost: 15,
   },
-  throw: {
+  [CombatAttackType.THROW]: {
     baseDamage: 30,
     range: 0.8,
     accuracy: 0.75,
     kiCost: 25,
     staminaCost: 20,
   },
-  grapple: {
+  [CombatAttackType.GRAPPLE]: {
     baseDamage: 15,
     range: 0.6,
     accuracy: 0.8,
     kiCost: 20,
     staminaCost: 25,
   },
-  pressure_point: {
+  [CombatAttackType.PRESSURE_POINT]: {
     baseDamage: 12,
     range: 0.8,
     accuracy: 0.95,
     kiCost: 25,
     staminaCost: 8,
   },
-  nerve_strike: {
+  [CombatAttackType.NERVE_STRIKE]: {
     baseDamage: 18,
     range: 1.0,
     accuracy: 0.9,
     kiCost: 22,
     staminaCost: 12,
   },
-  punch: {
-    // Added punch properties
+  [CombatAttackType.PUNCH]: {
     baseDamage: 18,
     range: 0.9,
     accuracy: 0.88,

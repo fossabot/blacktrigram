@@ -23,21 +23,18 @@ export { default as HitEffectsLayer } from "../game/HitEffectsLayer";
 // Base components
 export * from "./base";
 
-// Type exports - remove duplicates and fix imports
+// Fix: Export only the types that exist in components.ts and ui.ts
 export type {
-  BaseComponentProps,
-  HealthBarProps,
+  UIComponentProps,
   StanceIndicatorProps,
-  // Fix: Remove MatchStats - it should be MatchStatistics
-  // MatchStats,
-} from "../../types";
+  HealthBarProps,
+} from "../../types/ui";
 
-// Re-export component types that exist
 export type {
   EndScreenProps,
   ProgressTrackerProps,
   RoundTimerProps,
   ScoreDisplayProps,
-  // Fix: Remove TrigramWheelProps if it doesn't exist in components
-  // TrigramWheelProps,
+  TrigramWheelProps,
+  KoreanHeaderProps,
 } from "../../types/components";

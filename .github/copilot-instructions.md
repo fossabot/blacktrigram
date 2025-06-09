@@ -65,6 +65,7 @@ src/components/combat/index.ts
 src/components/game
 src/components/game/DojangBackground.tsx
 src/components/game/GameEngine.tsx
+src/components/game/GameUI.tsx
 src/components/game/HitEffectsLayer.tsx
 src/components/game/index.ts
 src/components/game/Player.tsx
@@ -128,6 +129,7 @@ src/components/ui/TrigramWheel.tsx
 src/hooks/useTexture.ts
 src/main.tsx
 src/systems/CombatSystem.ts
+src/systems/combat/TrainingCombatSystem.ts
 src/systems/trigram/KoreanCulture.ts
 src/systems/trigram/KoreanTechniques.ts
 src/systems/trigram/StanceManager.ts

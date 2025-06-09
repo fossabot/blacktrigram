@@ -2,8 +2,7 @@
  * Korean vital points (급소) for martial arts targeting
  */
 
-import type { VitalPoint, RegionData } from "../anatomy";
-import type { KoreanText, Position } from "../index";
+import type { VitalPoint, RegionData, VitalPointEffect } from "../anatomy";
 import {
   VitalPointCategory,
   VitalPointSeverity,
@@ -20,6 +19,7 @@ export const KOREAN_VITAL_POINTS: readonly VitalPoint[] = [
       english: "Crown Point",
       romanized: "baekhoehoel",
     },
+    english: "Crown Point", // Fix: Add required english property
     anatomicalName: "Anterior Fontanelle",
     category: VitalPointCategory.NEUROLOGICAL,
     severity: VitalPointSeverity.CRITICAL,
@@ -27,14 +27,16 @@ export const KOREAN_VITAL_POINTS: readonly VitalPoint[] = [
     radius: 15,
     effects: [
       {
+        id: "unconsciousness_effect",
         type: VitalPointEffectType.UNCONSCIOUSNESS,
-        intensity: EffectIntensity.HIGH, // Fix: Use proper enum value
+        intensity: EffectIntensity.HIGH,
         duration: 5000,
         description: {
           korean: "의식 잃음",
           english: "Loss of consciousness",
         },
-      },
+        stackable: false,
+      } as VitalPointEffect,
     ],
     damage: { min: 40, max: 60, average: 50 },
     description: {

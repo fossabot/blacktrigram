@@ -1,29 +1,27 @@
-// Player archetype constants for Korean martial arts game
+/**
+ * Player archetype constants for Korean martial arts game
+ */
 
-import type {
-  PlayerArchetype,
-  PlayerArchetypeData,
-  TrigramStance,
-  KoreanText,
-} from "../../types"; // Ensure PlayerArchetypeData is imported correctly
+import type { PlayerArchetypeData, KoreanText } from "../../types";
+import { PlayerArchetype, TrigramStance } from "../enums"; // Import as values
 import { KOREAN_COLORS } from "./colors";
 
-// Define PLAYER_ARCHETYPES_DATA with explicit Record type
+// Define PLAYER_ARCHETYPES_DATA with proper enum usage
 export const PLAYER_ARCHETYPES_DATA: Record<
   PlayerArchetype,
   PlayerArchetypeData
 > = {
-  musa: {
+  [PlayerArchetype.MUSA]: {
     id: "musa",
     name: { korean: "무사", english: "Warrior" },
     description: {
       korean: "전통적인 무예의 길을 걷는 명예로운 전사입니다.",
       english: "An honorable warrior following the traditional martial path.",
     },
-    baseHealth: 120, // Add missing properties
+    baseHealth: 120,
     baseKi: 100,
     baseStamina: 100,
-    coreStance: "geon",
+    coreStance: TrigramStance.GEON, // Use enum value
     theme: {
       primary: KOREAN_COLORS.MUSA_PRIMARY,
       secondary: KOREAN_COLORS.WHITE_SOLID,
@@ -38,14 +36,14 @@ export const PLAYER_ARCHETYPES_DATA: Record<
       speed: 70,
       technique: 80,
     },
-    favoredStances: ["geon", "gan"],
+    favoredStances: [TrigramStance.GEON, TrigramStance.GAN], // Use enum values
     specialAbilities: ["honorable_strike", "iron_defense"],
     philosophy: {
       korean: "명예와 정의를 추구하는 전통 무사의 길",
       english: "The path of traditional warriors pursuing honor and justice",
     },
   },
-  amsalja: {
+  [PlayerArchetype.AMSALJA]: {
     id: "amsalja",
     name: { korean: "암살자", english: "Assassin" },
     description: {
@@ -55,7 +53,7 @@ export const PLAYER_ARCHETYPES_DATA: Record<
     baseHealth: 90,
     baseKi: 120,
     baseStamina: 90,
-    coreStance: "son",
+    coreStance: TrigramStance.SON, // Use enum value
     theme: {
       primary: KOREAN_COLORS.AMSALJA_PRIMARY,
       secondary: KOREAN_COLORS.UI_STEEL_GRAY,
@@ -70,7 +68,7 @@ export const PLAYER_ARCHETYPES_DATA: Record<
       speed: 100,
       technique: 95,
     },
-    favoredStances: ["son", "gam"],
+    favoredStances: [TrigramStance.SON, TrigramStance.GAM], // Use enum values
     specialAbilities: ["shadow_strike", "vital_point_mastery"],
     philosophy: {
       korean: "그림자에서 나타나 정확한 일격으로 적을 제거하는 길",
@@ -78,7 +76,7 @@ export const PLAYER_ARCHETYPES_DATA: Record<
         "The path of emerging from shadows to eliminate enemies with precise strikes",
     },
   },
-  hacker: {
+  [PlayerArchetype.HACKER]: {
     id: "hacker",
     name: { korean: "해커", english: "Hacker" },
     description: {
@@ -88,7 +86,7 @@ export const PLAYER_ARCHETYPES_DATA: Record<
     baseHealth: 100,
     baseKi: 110,
     baseStamina: 80,
-    coreStance: "gam",
+    coreStance: TrigramStance.GAM, // Use enum value
     theme: {
       primary: KOREAN_COLORS.HACKER_PRIMARY,
       secondary: KOREAN_COLORS.PRIMARY_CYAN,
@@ -103,7 +101,7 @@ export const PLAYER_ARCHETYPES_DATA: Record<
       speed: 90,
       technique: 100,
     },
-    favoredStances: ["li", "jin"],
+    favoredStances: [TrigramStance.LI, TrigramStance.JIN], // Use enum values
     specialAbilities: ["system_hack", "digital_strike"],
     philosophy: {
       korean: "디지털 세계와 현실을 연결하여 상대를 압도하는 길",
@@ -111,7 +109,7 @@ export const PLAYER_ARCHETYPES_DATA: Record<
         "The path of overwhelming opponents by connecting digital and physical worlds",
     },
   },
-  jeongbo_yowon: {
+  [PlayerArchetype.JEONGBO_YOWON]: {
     id: "jeongbo_yowon",
     name: { korean: "정보요원", english: "Intelligence Operative" },
     description: {
@@ -121,7 +119,7 @@ export const PLAYER_ARCHETYPES_DATA: Record<
     baseHealth: 95,
     baseKi: 130,
     baseStamina: 75,
-    coreStance: "li",
+    coreStance: TrigramStance.LI, // Use enum value
     theme: {
       primary: KOREAN_COLORS.JEONGBO_PRIMARY,
       secondary: KOREAN_COLORS.SECONDARY_BLUE_LIGHT,
@@ -136,7 +134,7 @@ export const PLAYER_ARCHETYPES_DATA: Record<
       speed: 85,
       technique: 90,
     },
-    favoredStances: ["tae", "gan"],
+    favoredStances: [TrigramStance.TAE, TrigramStance.GAN], // Use enum values
     specialAbilities: ["tactical_analysis", "counter_strike"],
     philosophy: {
       korean: "상대를 관찰하고 분석하여 최적의 전략으로 승리하는 길",
@@ -144,7 +142,7 @@ export const PLAYER_ARCHETYPES_DATA: Record<
         "The path of victory through observing and analyzing opponents for optimal strategy",
     },
   },
-  jojik_pokryeokbae: {
+  [PlayerArchetype.JOJIK_POKRYEOKBAE]: {
     id: "jojik_pokryeokbae",
     name: { korean: "조직폭력배", english: "Organized Crime" },
     description: {
@@ -154,7 +152,7 @@ export const PLAYER_ARCHETYPES_DATA: Record<
     baseHealth: 130,
     baseKi: 80,
     baseStamina: 120,
-    coreStance: "jin",
+    coreStance: TrigramStance.JIN, // Use enum value
     theme: {
       primary: KOREAN_COLORS.JOJIK_PRIMARY,
       secondary: KOREAN_COLORS.NEGATIVE_RED,
@@ -169,7 +167,7 @@ export const PLAYER_ARCHETYPES_DATA: Record<
       speed: 75,
       technique: 70,
     },
-    favoredStances: ["geon", "gon"],
+    favoredStances: [TrigramStance.GEON, TrigramStance.GON], // Use enum values
     specialAbilities: ["brutal_assault", "intimidation"],
     philosophy: {
       korean: "생존을 위해 수단과 방법을 가리지 않는 거친 전투의 길",
@@ -197,9 +195,18 @@ export const DEFAULT_PLAYER_STATS = {
   maxKi: 100,
   stamina: 100,
   maxStamina: 100,
+  energy: 100, // Added missing property
+  maxEnergy: 100, // Added missing property
+  attackPower: 50, // Added missing property
+  defense: 50, // Added missing property
+  speed: 50,
+  technique: 50,
   pain: 0,
   consciousness: 100,
   balance: 100,
+  momentum: 0, // Fixed: number not Position
+  lastActionTime: 0, // Added missing property
+  recoveryTime: 500, // Added missing property
 } as const;
 
 export const PLAYER_LIMITS = {
@@ -209,6 +216,8 @@ export const PLAYER_LIMITS = {
   MAX_KI: 200,
   MIN_STAMINA: 0,
   MAX_STAMINA: 200,
+  MIN_ENERGY: 0,
+  MAX_ENERGY: 200,
   MIN_PAIN: 0,
   MAX_PAIN: 100,
   MIN_CONSCIOUSNESS: 0,

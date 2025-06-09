@@ -95,7 +95,7 @@ export class VitalPointSystem {
   private calculateVitalPointDamage(
     vitalPoint: VitalPoint,
     technique: KoreanTechnique,
-    attacker: PlayerState
+    _attacker: PlayerState // Fix: Prefix with underscore to indicate unused
   ): number {
     const baseDamage = technique.damage || 0;
 

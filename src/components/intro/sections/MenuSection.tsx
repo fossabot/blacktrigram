@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
+import type { MenuSectionProps } from "../../../types/components"; // Fix: Now properly exported
 import { GameMode } from "../../../types/enums";
-import type { MenuSectionProps } from "../../../types/components"; // Fix: Import MenuSectionProps
 import {
   KOREAN_COLORS,
   FONT_FAMILY,

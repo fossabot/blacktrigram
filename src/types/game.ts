@@ -1,13 +1,14 @@
 // Core game state and flow management
 
+import type { CombatEventData } from "./combat";
 import type {
   PlayerState,
-  GameMode,
   KoreanText,
   CombatResult,
-  MatchStatistics,
   TrigramStance,
 } from "./index";
+import type { PlayerMatchStats } from "./player"; // Fix: Use correct import name
+import { GameMode, GamePhase } from "./enums"; // Fix: Import enums only
 
 // Main game state interface
 export interface GameState {
@@ -18,19 +19,8 @@ export interface GameState {
   readonly maxRounds: number;
   readonly timeRemaining: number;
   readonly isPaused: boolean;
-  readonly winner: PlayerState | null | undefined;
   readonly matchStatistics: MatchStatistics;
-}
-
-// Game phases during combat
-export enum GamePhase {
-  MENU = "menu",
-  CHARACTER_SELECT = "character_select",
-  PRE_ROUND = "pre_round",
-  COMBAT = "combat",
-  POST_ROUND = "post_round",
-  MATCH_END = "match_end",
-  PAUSE = "pause",
+  readonly winner?: PlayerState | null;
 }
 
 // Round result information
@@ -61,7 +51,7 @@ export interface GameEvent {
   readonly type: GameEventType;
   readonly timestamp: number;
   readonly playerId?: string;
-  readonly data: Record<string, any>;
+  readonly data: Record<string, any>; // Fix: Keep consistent type
   readonly message?: KoreanText;
 }
 
@@ -169,54 +159,30 @@ export interface GameConfig {
   readonly allowArchetypeSwitching: boolean;
 }
 
-// Match statistics
+// Match statistics - Fix: Remove duplicate and use single definition
 export interface MatchStatistics {
-  readonly player1: PlayerMatchStatistics;
-  readonly player2: PlayerMatchStatistics;
+  // Top-level match statistics
+  readonly totalDamageDealt: number;
+  readonly totalDamageTaken: number;
+  readonly criticalHits: number;
+  readonly vitalPointHits: number;
+  readonly techniquesUsed: number;
+  readonly perfectStrikes: number;
+  readonly consecutiveWins: number;
+  readonly matchDuration: number;
   readonly totalMatches: number;
-  readonly currentRound: number;
   readonly maxRounds: number;
-  readonly roundsWon?: {
-    // Fix: Add missing roundsWon property
-    readonly player1: number;
-    readonly player2: number;
-  };
-}
-
-// Game event interface
-export interface GameEvent {
-  readonly type: string;
-  readonly timestamp: number;
-  readonly data?: any;
-  readonly playerId?: string;
-}
-
-// Round result
-export interface RoundResult {
-  readonly roundNumber: number;
-  readonly winner: PlayerState | null;
-  readonly method: "knockout" | "time" | "surrender";
-  readonly duration: number;
-  readonly finalHealth: readonly [number, number];
-}
-
-// Tournament bracket (for future expansion)
-export interface TournamentBracket {
-  readonly id: string;
-  readonly name: string;
-  readonly participants: readonly PlayerState[];
-  readonly matches: readonly Match[];
+  readonly winner: number;
+  readonly totalRounds: number;
   readonly currentRound: number;
-  readonly winner: PlayerState | null;
-}
+  readonly timeRemaining: number;
+  readonly combatEvents: readonly CombatEventData[];
+  readonly finalScore: { player1: number; player2: number };
+  readonly roundsWon: { player1: number; player2: number };
 
-// Individual match in tournament
-export interface Match {
-  readonly id: string;
-  readonly player1: PlayerState;
-  readonly player2: PlayerState;
-  readonly result: RoundResult | null;
-  readonly scheduledTime?: number;
+  // Individual player statistics
+  readonly player1: PlayerMatchStats;
+  readonly player2: PlayerMatchStats;
 }
 
 // Training session data
@@ -254,3 +220,6 @@ export interface GameSaveData {
     readonly favoriteArchetype: string;
   };
 }
+
+// Re-export PlayerMatchStats for compatibility
+export type { PlayerMatchStats } from "./player";

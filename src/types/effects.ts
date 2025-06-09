@@ -1,6 +1,6 @@
 // Combat effects and status system for Korean martial arts
 
-import type { PlayerState, KoreanText, Position, VitalPoint } from "./index";
+import type { KoreanText, Position } from "./index";
 
 // Hit effect for visual feedback
 export interface HitEffect {
@@ -21,6 +21,7 @@ export interface HitEffect {
   readonly vitalPointId?: string;
   readonly statusEffect?: StatusEffect;
   readonly yOffset?: number;
+  readonly intensity: number; // Added missing property for consistency
 }
 
 // Hit effect types
@@ -41,19 +42,11 @@ export interface StatusEffect {
   readonly type: EffectType;
   readonly intensity: EffectIntensity;
   readonly duration: number;
-  readonly startTime: number;
-  readonly endTime: number;
   readonly description: KoreanText;
   readonly stackable: boolean;
-  readonly effects?: {
-    readonly health?: number;
-    readonly ki?: number;
-    readonly stamina?: number;
-    readonly accuracy?: number;
-    readonly damage?: number;
-    readonly speed?: number;
-    readonly defense?: number;
-  };
+  readonly source: string;
+  readonly startTime: number;
+  readonly endTime: number;
 }
 
 // Effect types
@@ -147,24 +140,13 @@ export interface EffectSystem {
   readonly updateEffects: (deltaTime: number) => void;
 }
 
-// Fix: Add missing HitEffect interface
-export interface HitEffect {
-  readonly id: string;
-  readonly type: "damage" | "critical" | "block" | "miss";
-  readonly position: Position;
-  readonly text?: string | KoreanText;
-  readonly damageAmount?: number;
-  readonly color?: number;
-  readonly duration: number;
-  readonly intensity: number;
-}
+// Fix: Remove duplicate HitEffect interface - use the complete one above
 
-// Fix: Update DisplayHitEffect interface to include missing properties
+// Fix: Update DisplayHitEffect interface to extend the main HitEffect
 export interface DisplayHitEffect extends HitEffect {
   readonly opacity: number;
   readonly scale: number;
   readonly startTime: number;
-  // Add missing display properties
   readonly displayAlpha: number;
   readonly displayY: number;
   readonly displaySize: number;
