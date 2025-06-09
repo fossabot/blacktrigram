@@ -1,174 +1,139 @@
 /**
- * Korean Martial Arts Color System
- * Cyberpunk aesthetic with traditional Korean elements
+ * Color palette for Black Trigram Korean martial arts game
+ * Cyberpunk aesthetic with Korean traditional influences
  */
 
-// Korean martial arts color palette with cyberpunk aesthetic
+// Primary color palette
 export const KOREAN_COLORS = {
-  // Core UI Colors
-  UI_BACKGROUND_DARK: 0x0a0a0a,
-  UI_BACKGROUND_MEDIUM: 0x1a1a1e,
-  UI_BACKGROUND_LIGHT: 0x2a2a3e,
-  UI_BORDER: 0x333333,
-  UI_BORDER_LIGHT: 0x555555,
-  UI_DISABLED_BG: 0x222222,
-  UI_DISABLED_FILL: 0x444444,
-  UI_DISABLED_TEXT: 0x666666,
-  UI_DISABLED_BORDER: 0x444444,
-  UI_GRAY: 0x808080,
-  UI_GRAY_DARK: 0x404040,
-  UI_GRAY_MEDIUM: 0x606060,
-  UI_LIGHT_GRAY: 0xa0a0a0,
-  UI_STEEL_GRAY: 0x708090,
-  UI_STEEL_GRAY_DARK: 0x404040,
+  // Primary colors (Cyberpunk neon)
+  PRIMARY_CYAN: 0x00ffff,
+  PRIMARY_BLUE: 0x0066ff,
+  PRIMARY_BLUE_DARK: 0x003399,
 
-  // Text Colors
+  // Secondary colors
+  SECONDARY_MAGENTA: 0xff00ff,
+  SECONDARY_PURPLE: 0x9900ff,
+  SECONDARY_YELLOW: 0xffff00,
+  SECONDARY_ORANGE: 0xff6600,
+  SECONDARY_BROWN_DARK: 0x8b4513,
+
+  // Accent colors
+  ACCENT_GOLD: 0xffd700,
+  ACCENT_RED: 0xff3333,
+  ACCENT_GREEN: 0x00ff33,
+  ACCENT_PRIMARY: 0x00d4ff,
+  ACCENT_YELLOW: 0xffff00, // Fix: Add missing ACCENT_YELLOW
+  ACCENT_PURPLE: 0x9900ff, // Fix: Add missing ACCENT_PURPLE
+  ACCENT_CYAN: 0x00ffff, // Fix: Add missing ACCENT_CYAN
+
+  // Korean traditional colors
+  KOREAN_RED: 0xc8102e,
+  KOREAN_BLUE: 0x003478,
+  KOREAN_WHITE: 0xffffff,
+  KOREAN_BLACK: 0x000000,
+
+  // Text colors
   TEXT_PRIMARY: 0xffffff,
   TEXT_SECONDARY: 0xcccccc,
-  TEXT_TERTIARY: 0x999999,
+  TEXT_TERTIARY: 0x999999, // Fix: Add missing TEXT_TERTIARY
   TEXT_ACCENT: 0x00ffff,
-  TEXT_BRIGHT: 0xffffff,
-  TEXT_DISABLED: 0x777777,
-  TEXT_ERROR: 0xff3366,
-  TEXT_SUCCESS: 0x00ff88,
-  TEXT_WARNING: 0xffb700,
-  TEXT_INFO: 0x4a90e2,
-  TEXT_DARK: 0x333333,
-  TEXT_LIGHT: 0xf0f0f0,
+  TEXT_WARNING: 0xffaa00,
+  TEXT_ERROR: 0xff3333,
 
-  // Primary Colors
-  PRIMARY_CYAN: 0x00ffff,
-  PRIMARY_CYAN_DARK: 0x008888,
-  PRIMARY_CYAN_LIGHT: 0x66ffff,
-  PRIMARY_BLUE: 0x0074d9,
-  PRIMARY_BLUE_DARK: 0x004488,
-  PRIMARY_RED: 0xcc0000,
-  PRIMARY_YELLOW: 0xffcc00,
-  PRIMARY_GREEN: 0x28a745,
-  PRIMARY_BLACK: 0x000000,
-  PRIMARY_WHITE: 0xffffff,
+  // UI background colors
+  UI_BACKGROUND_DARK: 0x1a1a2e,
+  UI_BACKGROUND_MEDIUM: 0x16213e,
+  UI_BACKGROUND_LIGHT: 0x0f0f23,
+  UI_STEEL_GRAY: 0x4a5568,
+  UI_STEEL_GRAY_DARK: 0x2d3748,
+  UI_BORDER: 0x4a5568, // Fix: Add missing UI_BORDER
+  UI_GRAY: 0x808080, // Fix: Add missing UI_GRAY
+  UI_DISABLED_FILL: 0x2d3748, // Fix: Add missing UI_DISABLED_FILL
+  UI_DISABLED_BORDER: 0x1a1a2e, // Fix: Add missing UI_DISABLED_BORDER
 
-  // Secondary Colors
-  SECONDARY_BLUE: 0x001f3f,
-  SECONDARY_BLUE_LIGHT: 0x0074d9,
-  SECONDARY_BLUE_DARK: 0x001122,
-  SECONDARY_YELLOW: 0xffdc00,
-  SECONDARY_YELLOW_LIGHT: 0xffe55c,
-  SECONDARY_CYAN: 0x00ffff,
-  SECONDARY_MAGENTA: 0xff00ff,
-  SECONDARY_BROWN_DARK: 0x3d2914,
-  SECONDARY_BROWN_LIGHT: 0x8b4513,
+  // Combat effect colors
+  CRITICAL_HIT: 0xff0000, // Fix: Add missing CRITICAL_HIT
+  BLOCKED_ATTACK: 0x808080, // Fix: Add missing BLOCKED_ATTACK
+  PERFECT_STRIKE: 0xffd700, // Fix: Add missing PERFECT_STRIKE
+  VITAL_POINT_HIT: 0xff00ff, // Fix: Add missing VITAL_POINT_HIT
 
-  // Accent Colors
-  ACCENT_GOLD: 0xffd700,
-  ACCENT_PRIMARY: 0x00ffff,
-  ACCENT_PRIMARY_DARK: 0x008888,
-  ACCENT_PRIMARY_LIGHT: 0x66ffff,
-  ACCENT_SECONDARY: 0x00aabb,
-  ACCENT_TERTIARY: 0xcc00dd,
-  ACCENT_PURPLE: 0x8a2be2,
-  ACCENT_RED: 0xff4136,
-  ACCENT_YELLOW: 0xffdc00,
-  ACCENT_ORANGE: 0xff851b,
-  ACCENT_CYAN: 0x00d4ff,
-  ACCENT_BLUE: 0x39cccc,
-  ACCENT_GREEN: 0x2ecc40,
-  ACCENT_MAGENTA: 0xff00ff,
-  ACTIVE_BORDER: 0x00ffff,
+  // Warning colors
+  WARNING_ORANGE: 0xff6600, // Fix: Add missing WARNING_ORANGE
+  WARNING_YELLOW: 0xffff00, // Fix: Add missing WARNING_YELLOW
 
-  // Status Colors
-  POSITIVE_GREEN: 0x2ecc40,
+  // Additional UI colors
+  ACTIVE_BORDER: 0x00ffff, // Fix: Add missing ACTIVE_BORDER
+
+  // Stance-specific colors (Trigram colors)
+  TRIGRAM_GEON_PRIMARY: 0xffffff, // Heaven - White
+  TRIGRAM_TAE_PRIMARY: 0x87ceeb, // Lake - Sky Blue
+  TRIGRAM_LI_PRIMARY: 0xff4500, // Fire - Orange Red
+  TRIGRAM_JIN_PRIMARY: 0xffff00, // Thunder - Yellow
+  TRIGRAM_SON_PRIMARY: 0x90ee90, // Wind - Light Green
+  TRIGRAM_GAM_PRIMARY: 0x0000ff, // Water - Blue
+  TRIGRAM_GAN_PRIMARY: 0x8b4513, // Mountain - Brown
+  TRIGRAM_GON_PRIMARY: 0x8b8000, // Earth - Dark Khaki
+
+  // Status colors
+  POSITIVE_GREEN: 0x00ff00,
   POSITIVE_GREEN_DARK: 0x006600,
-  POSITIVE_GREEN_LIGHT: 0x88ff88,
-  NEGATIVE_RED: 0xff4136,
-  NEGATIVE_RED_LIGHT: 0xff6b5b,
-  NEGATIVE_RED_DARK: 0xcc0000,
-  WARNING_YELLOW: 0xffdc00,
-  WARNING_ORANGE: 0xff851b,
+  NEGATIVE_RED: 0xff0000,
+  NEGATIVE_RED_DARK: 0x990000,
+  NEUTRAL_GRAY: 0x808080,
 
-  // Base Colors
-  BLACK: 0x000000,
-  BLACK_SOLID: 0x000000,
+  // Solid colors
   WHITE_SOLID: 0xffffff,
+  BLACK_SOLID: 0x000000,
+  TRANSPARENT: 0x000000, // With alpha 0
 
-  // Player Colors
-  PLAYER_1_COLOR: 0x0099ff,
-  PLAYER_2_COLOR: 0xff9900,
-  PLAYER_1_PRIMARY: 0x00d4ff,
-  PLAYER_1_SECONDARY: 0x0077aa,
-  PLAYER_2_PRIMARY: 0xff6b35,
-  PLAYER_2_SECONDARY: 0xcc5022,
+  // Health bar colors
+  HEALTH_FULL: 0x00ff00,
+  HEALTH_MEDIUM: 0xffff00,
+  HEALTH_LOW: 0xff6600,
+  HEALTH_CRITICAL: 0xff0000,
 
-  // Combat Effect Colors
-  CRITICAL_HIT: 0xff4500,
-  VITAL_POINT_HIT: 0xda70d6,
-  BLOCKED_ATTACK: 0x808080,
-  PERFECT_STRIKE: 0xffd700,
+  // Ki/Energy colors
+  KI_FULL: 0x00ffff,
+  KI_MEDIUM: 0x0099cc,
+  KI_LOW: 0x006699,
+  KI_EMPTY: 0x003366,
 
-  // Vital Point Colors
-  VITAL_POINT_NORMAL: 0x00ff00,
-  VITAL_POINT_CRITICAL: 0xff0000,
-  VITAL_POINT_WEAK: 0xffff00,
-
-  // Arena Colors
-  ARENA_BACKGROUND: 0x0a0a0a,
-
-  // Trigram Colors
-  TRIGRAM_GEON_PRIMARY: 0xffd700,
-  TRIGRAM_TAE_PRIMARY: 0x87ceeb,
-  TRIGRAM_LI_PRIMARY: 0xff4500,
-  TRIGRAM_JIN_PRIMARY: 0xffff00,
-  TRIGRAM_SON_PRIMARY: 0x00ff7f,
-  TRIGRAM_GAM_PRIMARY: 0x0000ff,
-  TRIGRAM_GAN_PRIMARY: 0x8b4513,
-  TRIGRAM_GON_PRIMARY: 0x654321,
-
-  // Archetype Colors
-  MUSA_PRIMARY: 0xffd700,
-  AMSALJA_PRIMARY: 0x9400d3,
-  HACKER_PRIMARY: 0x00ffff,
-  JEONGBO_PRIMARY: 0x4169e1,
-  JOJIK_PRIMARY: 0xdc143c,
-
-  // Debug Colors
-  DEBUG_HIT_SUCCESS: 0x00ff00,
-  DEBUG_HIT_MISS: 0xff0000,
-  DEBUG_COLLISION: 0xff00ff,
-  DEBUG_GRID: 0x666666,
-  DEBUG_TEXT: 0xff00ff,
-
-  // Additional Colors
-  BACKGROUND_DARK: 0x121212,
-  BACKGROUND_LIGHT: 0xe0e0e0,
-  NEON_PINK: 0xff007f,
-  NEON_GREEN: 0x39ff14,
-  NEON_BLUE: 0x00ccff,
-  OVERLAY_BACKGROUND: 0x000000,
+  // Stamina colors
+  STAMINA_FULL: 0xffff00,
+  STAMINA_MEDIUM: 0xffcc00,
+  STAMINA_LOW: 0xff9900,
+  STAMINA_EMPTY: 0xff6600,
 } as const;
 
-// Cyberpunk palette alias for backward compatibility
-export const CYBERPUNK_PALETTE = {
-  PRIMARY_CYAN: KOREAN_COLORS.PRIMARY_CYAN,
-  ACCENT_MAGENTA: KOREAN_COLORS.ACCENT_PRIMARY,
-  ACCENT_GREEN: KOREAN_COLORS.ACCENT_SECONDARY,
-  BACKGROUND_DARK: KOREAN_COLORS.UI_BACKGROUND_DARK,
-  BACKGROUND_MEDIUM: KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
-  BACKGROUND_LIGHT: KOREAN_COLORS.UI_BACKGROUND_LIGHT,
-  TEXT_PRIMARY: KOREAN_COLORS.TEXT_PRIMARY,
-  TEXT_SECONDARY: KOREAN_COLORS.TEXT_SECONDARY,
-  TEXT_ACCENT: KOREAN_COLORS.TEXT_ACCENT,
-} as const;
+// Color utility functions
+export const colorUtils = {
+  /**
+   * Convert hex color to RGB components
+   */
+  hexToRgb: (hex: number) => ({
+    r: (hex >> 16) & 255,
+    g: (hex >> 8) & 255,
+    b: hex & 255,
+  }),
 
-// Export combined color system
-export const ALL_COLORS = {
-  ...KOREAN_COLORS,
-  ...CYBERPUNK_PALETTE,
-} as const;
+  /**
+   * Convert RGB to hex color
+   */
+  rgbToHex: (r: number, g: number, b: number) => {
+    return (r << 16) | (g << 8) | b;
+  },
 
-// Color utility type
-export type ColorValue = (typeof KOREAN_COLORS)[keyof typeof KOREAN_COLORS];
-export type CyberpunkColor =
-  (typeof CYBERPUNK_PALETTE)[keyof typeof CYBERPUNK_PALETTE];
+  /**
+   * Blend two colors
+   */
+  blend: (color1: number, color2: number, factor: number) => {
+    const rgb1 = colorUtils.hexToRgb(color1);
+    const rgb2 = colorUtils.hexToRgb(color2);
 
-// Default export for convenience
-export default KOREAN_COLORS;
+    const r = Math.round(rgb1.r + (rgb2.r - rgb1.r) * factor);
+    const g = Math.round(rgb1.g + (rgb2.g - rgb1.g) * factor);
+    const b = Math.round(rgb1.b + (rgb2.b - rgb1.b) * factor);
+
+    return colorUtils.rgbToHex(r, g, b);
+  },
+};

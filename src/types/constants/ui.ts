@@ -1,81 +1,74 @@
 /**
- * UI constants for Korean martial arts interface
+ * UI constants for Black Trigram Korean martial arts interface
  */
 
 import { KOREAN_COLORS } from "./colors";
 
-// Layout constants
-export const UI_LAYOUT = {
-  // Header
+// Layout dimensions
+export const UI_DIMENSIONS = {
   HEADER_HEIGHT: 80,
-  HEADER_PADDING: 20,
+  FOOTER_HEIGHT: 60,
+  SIDEBAR_WIDTH: 250,
+  CONTENT_PADDING: 20,
 
-  // Sidebar
-  SIDEBAR_WIDTH: 300,
-  SIDEBAR_PADDING: 15,
+  // Button sizes
+  BUTTON_SMALL: { width: 80, height: 32 },
+  BUTTON_MEDIUM: { width: 120, height: 40 },
+  BUTTON_LARGE: { width: 200, height: 50 },
 
-  // Footer/Controls
-  FOOTER_HEIGHT: 120,
-  FOOTER_PADDING: 20,
-
-  // Content area
-  CONTENT_MARGIN: 20,
-  CONTENT_PADDING: 15,
-
-  // Buttons
-  BUTTON_HEIGHT: 50,
-  BUTTON_WIDTH: 150,
-  BUTTON_PADDING: 10,
-  BUTTON_BORDER_RADIUS: 8,
-
-  // Cards
-  CARD_PADDING: 20,
-  CARD_MARGIN: 15,
-  CARD_BORDER_RADIUS: 12,
-
-  // Health bars
-  HEALTH_BAR_HEIGHT: 20,
-  HEALTH_BAR_WIDTH: 200,
-  HEALTH_BAR_BORDER: 2,
-
-  // Stance indicators
-  STANCE_INDICATOR_SIZE: 60,
-  STANCE_ICON_SIZE: 40,
-
-  // Combat UI
-  COMBAT_HUD_HEIGHT: 100,
-  TECHNIQUE_BUTTON_SIZE: 80,
-  VITAL_POINT_INDICATOR_SIZE: 8,
+  // Modal sizes
+  MODAL_SMALL: { width: 400, height: 300 },
+  MODAL_MEDIUM: { width: 600, height: 450 },
+  MODAL_LARGE: { width: 800, height: 600 },
 } as const;
 
 // Z-index layers
-export const UI_LAYERS = {
+export const Z_INDEX = {
   BACKGROUND: 0,
   GAME_WORLD: 100,
-  EFFECTS: 200,
-  UI_BACKGROUND: 300,
-  UI_ELEMENTS: 400,
-  MODAL_BACKGROUND: 500,
-  MODAL_CONTENT: 600,
-  TOOLTIP: 700,
-  OVERLAY: 800,
-  DEBUG: 900,
+  UI_BACKGROUND: 200,
+  UI_ELEMENTS: 300,
+  MODALS: 400,
+  TOOLTIPS: 500,
+  DEBUG_OVERLAY: 1000,
 } as const;
 
-// Responsive breakpoints
-export const BREAKPOINTS = {
-  MOBILE: 768,
-  TABLET: 1024,
-  DESKTOP: 1440,
-  ULTRAWIDE: 1920,
+// UI spacing
+export const SPACING = {
+  XS: 4,
+  SM: 8,
+  MD: 16,
+  LG: 24,
+  XL: 32,
+  XXL: 48,
 } as const;
 
-// Animation speeds
+// Border radius values
+export const BORDER_RADIUS = {
+  NONE: 0,
+  SM: 4,
+  MD: 8,
+  LG: 12,
+  XL: 16,
+  ROUND: 9999,
+} as const;
+
+// Shadow definitions
+export const SHADOWS = {
+  SM: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+  MD: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+  LG: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+  XL: "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
+  CYBER: "0 0 20px rgba(0, 255, 255, 0.3)",
+  KOREAN_GLOW: "0 0 15px rgba(255, 215, 0, 0.4)",
+} as const;
+
+// Animation curves for UI
 export const UI_ANIMATIONS = {
-  FAST: 150,
-  NORMAL: 300,
-  SLOW: 500,
-  VERY_SLOW: 800,
+  FAST: "150ms ease-out",
+  NORMAL: "250ms ease-in-out",
+  SLOW: "400ms ease-in-out",
+  BOUNCE: "300ms cubic-bezier(0.68, -0.55, 0.265, 1.55)",
 } as const;
 
 // Button states
@@ -134,47 +127,6 @@ export const COMBAT_FEEDBACK_COLORS = {
   PERFECT: KOREAN_COLORS.PERFECT_STRIKE,
   COUNTER: KOREAN_COLORS.ACCENT_CYAN,
   VITAL_POINT: KOREAN_COLORS.VITAL_POINT_HIT,
-} as const;
-
-// UI spacing
-export const SPACING = {
-  XS: 4,
-  SM: 8,
-  MD: 16,
-  LG: 24,
-  XL: 32,
-  XXL: 48,
-} as const;
-
-// Border radius
-export const BORDER_RADIUS = {
-  SM: 4,
-  MD: 8,
-  LG: 12,
-  XL: 16,
-  CIRCLE: 50,
-} as const;
-
-// Shadow definitions
-export const SHADOWS = {
-  SMALL: {
-    color: KOREAN_COLORS.BLACK_SOLID,
-    blur: 4,
-    distance: 2,
-    alpha: 0.3,
-  },
-  MEDIUM: {
-    color: KOREAN_COLORS.BLACK_SOLID,
-    blur: 8,
-    distance: 4,
-    alpha: 0.4,
-  },
-  LARGE: {
-    color: KOREAN_COLORS.BLACK_SOLID,
-    blur: 16,
-    distance: 8,
-    alpha: 0.5,
-  },
 } as const;
 
 /**

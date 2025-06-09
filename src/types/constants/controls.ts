@@ -17,7 +17,7 @@ export interface CombatControlsConfig {
 }
 
 // Combat control mapping for Korean martial arts
-export const COMBAT_CONTROLS: CombatControlsConfig = {
+export const COMBAT_CONTROLS = {
   // Trigram stance system (1-8 keys)
   stanceControls: {
     "1": { stance: "geon", korean: "건", technique: "천둥벽력" },

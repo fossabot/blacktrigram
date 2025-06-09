@@ -260,4 +260,71 @@ export const EFFECTIVENESS_MODIFIERS = {
   focused: 1.1,
 } as const;
 
+// Combat timing constants
+export const COMBAT_TIMING = {
+  ATTACK_WINDOW: 500, // milliseconds
+  COUNTER_WINDOW: 300,
+  BLOCK_WINDOW: 200,
+  DODGE_WINDOW: 250,
+
+  // Recovery times
+  LIGHT_ATTACK_RECOVERY: 300,
+  HEAVY_ATTACK_RECOVERY: 600,
+  BLOCK_RECOVERY: 200,
+  STANCE_CHANGE_RECOVERY: 400,
+} as const;
+
+// Damage calculation constants
+export const DAMAGE_CONSTANTS = {
+  BASE_DAMAGE: 10,
+  CRITICAL_MULTIPLIER: 1.5,
+  VITAL_POINT_MULTIPLIER: 2.0,
+  COUNTER_MULTIPLIER: 1.3,
+
+  // Damage reduction
+  BLOCK_REDUCTION: 0.7,
+  GLANCING_REDUCTION: 0.5,
+  ARMOR_REDUCTION_MAX: 0.9,
+} as const;
+
+// Combat resource costs
+export const RESOURCE_COSTS = {
+  KI: {
+    BASIC_TECHNIQUE: 5,
+    ADVANCED_TECHNIQUE: 10,
+    SPECIAL_TECHNIQUE: 15,
+    ULTIMATE_TECHNIQUE: 25,
+  },
+  STAMINA: {
+    BASIC_ATTACK: 8,
+    HEAVY_ATTACK: 15,
+    BLOCK: 5,
+    DODGE: 10,
+    STANCE_CHANGE: 12,
+  },
+} as const;
+
+// Hit detection constants
+export const HIT_DETECTION = {
+  PRECISION_THRESHOLD: 0.8,
+  VITAL_POINT_THRESHOLD: 0.9,
+  BASE_ACCURACY: 0.7,
+  MAX_ACCURACY: 0.95,
+
+  // Hit boxes
+  PLAYER_HITBOX_WIDTH: 60,
+  PLAYER_HITBOX_HEIGHT: 180,
+  VITAL_POINT_RADIUS: 15,
+} as const;
+
+// Status effect durations
+export const STATUS_DURATIONS = {
+  STUN: 1500,
+  POISON: 5000,
+  BURN: 3000,
+  BLEED: 4000,
+  WEAKNESS: 6000,
+  STRENGTH_BUFF: 8000,
+} as const;
+
 export default COMBAT_CONFIG;

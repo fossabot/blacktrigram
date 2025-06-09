@@ -2,11 +2,11 @@ import React, { useState, useCallback } from "react";
 import { Container, Graphics } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import type { IntroScreenProps } from "../../types/components";
-import { GameMode } from "../../types/enums"; // Fix: Import as value
+import { GameMode } from "../../types/enums";
 import { KOREAN_COLORS, GAME_CONFIG } from "../../types/constants";
 import { MenuSection } from "./components/MenuSection";
 import { PhilosophySection } from "./components/PhilosophySection";
-import { ControlsSection } from "./components/ControlsSection";
+import { ControlsSection } from "./components/ControlsSection"; // Fix: Use components directory
 import "./IntroScreen.css";
 
 export const IntroScreen: React.FC<IntroScreenProps> = ({

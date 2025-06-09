@@ -9,68 +9,43 @@ export const DEFAULT_GAME_SPEED = 1.0;
 // Game configuration
 export const GAME_CONFIG = {
   // Canvas dimensions
-  CANVAS_WIDTH: 1920,
-  CANVAS_HEIGHT: 1080,
-  FPS: 60, // Ensure FPS is present
-
-  // Game timing
-  ROUND_DURATION_SECONDS: 180, // Renamed from ROUND_DURATION
-  MAX_ROUNDS: 3,
-
-  // Player positioning
-  PLAYER_START_POS_X_1: 480,
-  PLAYER_START_POS_X_2: 1440,
-  PLAYER_START_POS_Y: 800, // Example starting Y for both players
-  GROUND_LEVEL_Y: 900, // Y-coordinate for the ground
-  GRAVITY: 0.5, // Basic gravity for jumps/falls
-
-  // Player visuals
-  PLAYER_VISUAL_WIDTH: 100,
-  PLAYER_VISUAL_HEIGHT: 150,
-  HEALTH_BAR_WIDTH: 200,
-  HEALTH_BAR_HEIGHT: 20,
-  KI_BAR_WIDTH: 150,
-  KI_BAR_HEIGHT: 15,
-  STAMINA_BAR_WIDTH: 150,
-  STAMINA_BAR_HEIGHT: 15,
-
-  // HUD
-  HUD_PADDING: 20,
-
-  // Combat mechanics
-  MAX_COMBO_COUNT: 10,
-  CRITICAL_HIT_CHANCE: 0.1,
-  VITAL_POINT_MULTIPLIER: 1.5,
-
-  // Performance
+  CANVAS_WIDTH: 1200,
+  CANVAS_HEIGHT: 800,
   TARGET_FPS: 60,
-  MAX_PARTICLES: 100,
+  MIN_FPS: 30,
 
-  // Audio
-  MASTER_VOLUME: 0.7,
-  SFX_VOLUME: 0.8,
-  MUSIC_VOLUME: 0.5,
+  // Combat settings
+  ROUND_DURATION: 180, // seconds
+  MAX_ROUNDS: 3,
+  KO_THRESHOLD: 0,
 
-  // Player movement and action
-  PLAYER_MOVE_SPEED: 5,
-  PLAYER_JUMP_FORCE: 15,
-  MAX_KI: 100,
-  MAX_STAMINA: 100,
-  KI_REGEN_RATE: 0.5, // Ki points per second
-  STAMINA_REGEN_RATE: 2, // Stamina points per second - Added
-  STAMINA_COST_MOVE: 0.1,
-  STAMINA_COST_JUMP: 10,
-  STAMINA_COST_ATTACK: 15,
-  STAMINA_COST_BLOCK: 5,
+  // Player settings
+  BASE_HEALTH: 100,
+  BASE_KI: 100,
+  BASE_STAMINA: 100,
 
-  // Hit effects
-  HIT_EFFECT_DURATION: 500, // milliseconds
+  // Player positions
+  PLAYER_START_POS_X_1: 300,
+  PLAYER_START_POS_X_2: 900,
+  PLAYER_START_POS_Y: 400,
 
-  // Default font
-  DEFAULT_FONT_FAMILY: "Noto Sans KR, Arial, sans-serif", // Added
+  // Physics
+  GRAVITY: 9.8,
+  FRICTION: 0.85,
+
+  // UI settings
+  UI_PADDING: 20,
+  BUTTON_HEIGHT: 50,
 
   // Audio settings
-  AUDIO_ENABLED: true,
+  MASTER_VOLUME: 1.0,
+  MUSIC_VOLUME: 0.7,
+  SFX_VOLUME: 0.8,
+
+  // Debug settings
+  DEBUG_MODE: false,
+  SHOW_HITBOXES: false,
+  SHOW_VITAL_POINTS: false,
 } as const;
 
 // Add missing player colors
@@ -136,12 +111,10 @@ export const PERFORMANCE_THRESHOLDS = {
 
 // Combat timing constants
 export const COMBAT_TIMING = {
-  TECHNIQUE_EXECUTION_TIME: 500, // ms
-  STANCE_CHANGE_TIME: 200, // ms
-  RECOVERY_TIME: 300, // ms
-  BLOCK_WINDOW: 150, // ms
-  COUNTER_WINDOW: 200, // ms
-  CRITICAL_TIMING_WINDOW: 50, // ms
+  ATTACK_WINDOW: 500, // ms
+  DEFENSE_WINDOW: 300, // ms
+  RECOVERY_TIME: 200, // ms
+  COUNTER_WINDOW: 150, // ms
 } as const;
 
 // Damage calculation constants
@@ -248,6 +221,60 @@ export const TRAINING_CONFIG = {
   SHOW_HITBOXES: true,
   INFINITE_KI: true,
   INFINITE_STAMINA: true,
+} as const;
+
+// Game mode configurations
+export const GAME_MODE_CONFIG = {
+  VERSUS: {
+    allowPause: true,
+    timeLimit: 180,
+    rounds: 3,
+    enableAI: false,
+  },
+  TRAINING: {
+    allowPause: true,
+    timeLimit: null,
+    rounds: 1,
+    enableAI: true,
+    infiniteResources: true,
+  },
+  PRACTICE: {
+    allowPause: true,
+    timeLimit: null,
+    rounds: 1,
+    enableAI: false,
+    infiniteResources: true,
+  },
+} as const;
+
+// Performance settings
+export const PERFORMANCE_CONFIG = {
+  MAX_PARTICLES: 100,
+  MAX_SOUND_SOURCES: 16,
+  TEXTURE_QUALITY: "high",
+  ENABLE_SHADOWS: true,
+  ENABLE_POST_PROCESSING: true,
+} as const;
+
+// Korean martial arts specific settings
+export const MARTIAL_ARTS_CONFIG = {
+  VITAL_POINTS_COUNT: 70,
+  TRIGRAM_STANCES_COUNT: 8,
+  PLAYER_ARCHETYPES_COUNT: 5,
+
+  // Combat timing
+  ATTACK_WINDOW: 500, // milliseconds
+  COUNTER_WINDOW: 300,
+  BLOCK_WINDOW: 200,
+
+  // Stance transition
+  MIN_STANCE_CHANGE_INTERVAL: 500,
+  STANCE_CHANGE_COST_BASE: 10,
+
+  // Damage calculations
+  BASE_DAMAGE_MULTIPLIER: 1.0,
+  CRITICAL_HIT_MULTIPLIER: 1.5,
+  VITAL_POINT_MULTIPLIER: 2.0,
 } as const;
 
 export default GAME_CONFIG;

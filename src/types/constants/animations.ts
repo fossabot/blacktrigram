@@ -1,131 +1,89 @@
 /**
- * Animation timing and effect constants for Korean martial arts
+ * Animation constants for Black Trigram Korean martial arts
  */
 
-// Animation timing constants (milliseconds)
-export const ANIMATION_TIMINGS = {
-  // Combat animations
-  STANCE_TRANSITION: 300,
-  TECHNIQUE_STARTUP: 150,
-  TECHNIQUE_ACTIVE: 100,
-  TECHNIQUE_RECOVERY: 250,
-  HIT_STUN: 200,
-  BLOCK_STUN: 100,
-  KNOCKDOWN_RECOVERY: 1000,
-
+// Animation durations (in milliseconds)
+export const ANIMATION_DURATIONS = {
   // UI animations
-  MENU_FADE: 200,
-  BUTTON_HOVER: 100,
-  MODAL_OPEN: 300,
-  TOOLTIP_SHOW: 150,
+  BUTTON_HOVER: 150,
+  BUTTON_PRESS: 100,
+  MODAL_FADE: 300,
+  SCREEN_TRANSITION: 500,
 
-  // Visual effects
+  // Combat animations
+  BASIC_ATTACK: 400,
+  HEAVY_ATTACK: 600,
+  BLOCK: 200,
+  DODGE: 300,
+  STANCE_CHANGE: 500,
+
+  // Effect animations
   HIT_FLASH: 100,
-  SCREEN_SHAKE: 200,
-  PARTICLE_LIFETIME: 1000,
-  GLOW_PULSE: 2000,
+  DAMAGE_NUMBER: 1000,
+  STATUS_EFFECT: 2000,
+  PARTICLE_LIFE: 800,
+
+  // Korean martial arts specific
+  TRIGRAM_TRANSITION: 600,
+  VITAL_POINT_HIGHLIGHT: 300,
+  KI_FLOW_PULSE: 1200,
 } as const;
 
 // Animation easing curves
-export const EASING_FUNCTIONS = {
-  // Standard easing
+export const ANIMATION_EASING = {
   LINEAR: "linear",
   EASE_IN: "ease-in",
   EASE_OUT: "ease-out",
   EASE_IN_OUT: "ease-in-out",
-
-  // Cyberpunk-style easing
-  CYBER_SNAP: "cubic-bezier(0.25, 0.46, 0.45, 0.94)",
-  CYBER_ELASTIC: "cubic-bezier(0.68, -0.55, 0.265, 1.55)",
-  CYBER_BOUNCE: "cubic-bezier(0.68, -0.6, 0.32, 1.6)",
+  BOUNCE: "cubic-bezier(0.68, -0.55, 0.265, 1.55)",
+  ELASTIC: "cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+  BACK: "cubic-bezier(0.6, -0.28, 0.735, 0.045)",
 } as const;
 
-// Technique animation sequences
-export const TECHNIQUE_ANIMATIONS = {
-  // Basic strikes
-  PUNCH: {
-    startup: 100,
-    active: 50,
-    recovery: 200,
-    totalFrames: 21, // At 60fps
+// Animation frame configurations
+export const FRAME_CONFIGS = {
+  IDLE: {
+    frames: 4,
+    duration: 1000,
+    loop: true,
   },
-  KICK: {
-    startup: 150,
-    active: 100,
-    recovery: 300,
-    totalFrames: 33,
+  WALK: {
+    frames: 6,
+    duration: 600,
+    loop: true,
   },
-
-  // Korean martial arts techniques
-  TAEKWONDO_KICK: {
-    startup: 120,
-    active: 80,
-    recovery: 250,
-    totalFrames: 27,
+  ATTACK: {
+    frames: 8,
+    duration: 400,
+    loop: false,
   },
-  HAPKIDO_THROW: {
-    startup: 200,
-    active: 150,
-    recovery: 400,
-    totalFrames: 45,
+  BLOCK: {
+    frames: 3,
+    duration: 200,
+    loop: false,
   },
-  SSIREUM_GRAPPLE: {
-    startup: 180,
-    active: 200,
-    recovery: 350,
-    totalFrames: 44,
+  HIT: {
+    frames: 4,
+    duration: 300,
+    loop: false,
   },
 } as const;
 
-// Particle effect animations
-export const PARTICLE_ANIMATIONS = {
-  SPARK_COUNT: 8,
-  SPARK_SPEED: 200,
-  SPARK_LIFETIME: 300,
-
-  BLOOD_DROPLET_COUNT: 5,
-  BLOOD_GRAVITY: 500,
-  BLOOD_LIFETIME: 2000,
-
-  ENERGY_PULSE_SIZE: 50,
-  ENERGY_PULSE_SPEED: 100,
-  ENERGY_PULSE_LIFETIME: 800,
-} as const;
-
-// Combat state animation durations
-export const COMBAT_STATE_DURATIONS = {
-  IDLE: 0, // Infinite
-  ATTACKING: 500,
-  DEFENDING: 300,
-  STUNNED: 1000,
-  RECOVERING: 400,
-  KNOCKED_DOWN: 2000,
-  UNCONSCIOUS: 5000,
-} as const;
-
-// Combat animation data
-export const COMBAT_ANIMATION_DATA = {
-  // Trigram stance animations
-  STANCE_EFFECTS: {
-    geon: { duration: 400, intensity: 1.2 },
-    tae: { duration: 350, intensity: 0.8 },
-    li: { duration: 300, intensity: 1.5 },
-    jin: { duration: 250, intensity: 1.8 },
-    son: { duration: 200, intensity: 1.0 },
-    gam: { duration: 450, intensity: 0.9 },
-    gan: { duration: 500, intensity: 0.7 },
-    gon: { duration: 400, intensity: 1.1 },
+// Korean martial arts animation sequences
+export const KOREAN_MARTIAL_ANIMATIONS = {
+  STANCE_TRANSITIONS: {
+    GEON_TO_TAE: { frames: 12, duration: 500 },
+    TAE_TO_LI: { frames: 10, duration: 450 },
+    LI_TO_JIN: { frames: 14, duration: 550 },
+    // ... other transitions
   },
 
-  // Technique animation multipliers
-  TECHNIQUE_SPEED_MODIFIERS: {
-    strike: 1.0,
-    thrust: 1.2,
-    block: 0.8,
-    counter_attack: 1.5,
-    throw: 0.6,
-    grapple: 0.5,
+  TECHNIQUE_ANIMATIONS: {
+    PALM_STRIKE: { frames: 8, duration: 400 },
+    FLYING_KICK: { frames: 12, duration: 600 },
+    PRESSURE_POINT: { frames: 6, duration: 300 },
+    VITAL_POINT_STRIKE: { frames: 10, duration: 500 },
   },
 } as const;
 
-export default ANIMATION_TIMINGS;
+export default ANIMATION_DURATIONS;
