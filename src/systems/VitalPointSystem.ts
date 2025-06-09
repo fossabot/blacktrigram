@@ -6,6 +6,7 @@ import type {
   PlayerState,
   KoreanTechnique,
   Position,
+  VitalPointSystemConfig,
 } from "../types";
 import {
   VitalPointCategory,
@@ -13,12 +14,35 @@ import {
   DamageType,
 } from "../types/enums";
 import { KOREAN_VITAL_POINTS } from "../types/constants/vital-points";
+import { DamageCalculator } from "./vitalpoint/DamageCalculator";
 
 /**
  * Korean vital point system for precise anatomical targeting
  */
 export class VitalPointSystem {
   private vitalPoints: readonly VitalPoint[] = KOREAN_VITAL_POINTS;
+  private damageCalculator: DamageCalculator;
+
+  constructor(config?: VitalPointSystemConfig) {
+    const defaultConfig: VitalPointSystemConfig = {
+      damageMultipliers: {
+        [VitalPointSeverity.MINOR]: 1.0,
+        [VitalPointSeverity.MODERATE]: 1.3,
+        [VitalPointSeverity.MAJOR]: 1.6,
+        [VitalPointSeverity.CRITICAL]: 2.0,
+      },
+      effectDurations: {
+        stun: 2000,
+        pain: 3000,
+        unconsciousness: 5000,
+        disorientation: 4000,
+      },
+      hitRadiusModifier: 1.0,
+      accuracyThreshold: 0.7,
+    };
+
+    this.damageCalculator = new DamageCalculator(config || defaultConfig);
+  }
 
   /**
    * Get all vital points
@@ -35,7 +59,6 @@ export class VitalPointSystem {
     targetPosition: Position,
     technique: KoreanTechnique
   ): VitalPointHitResult {
-    // Find the closest vital point to the target position
     const hitVitalPoint = this.findNearestVitalPoint(targetPosition);
 
     if (!hitVitalPoint) {
@@ -47,20 +70,56 @@ export class VitalPointSystem {
       };
     }
 
-    // Calculate damage based on vital point and technique
-    const damage = this.calculateVitalPointDamage(
+    // Check accuracy for vital point hit
+    const hitChance = this.calculateVitalPointHitChance(
+      technique,
+      hitVitalPoint
+    );
+    if (Math.random() > hitChance) {
+      return {
+        hit: false,
+        damage: 0,
+        effects: [],
+        severity: VitalPointSeverity.MINOR,
+      };
+    }
+
+    // Calculate damage
+    const damage = DamageCalculator.calculateVitalPointDamage(
       hitVitalPoint,
       technique,
       attacker
+    );
+
+    // Determine effects
+    const isCritical = Math.random() < (technique.critChance || 0.1);
+    const effects = this.damageCalculator.determineEffects(
+      hitVitalPoint,
+      technique,
+      isCritical
     );
 
     return {
       hit: true,
       damage,
       vitalPoint: hitVitalPoint,
-      effects: hitVitalPoint.effects,
+      effects,
       severity: hitVitalPoint.severity,
     };
+  }
+
+  /**
+   * Calculate vital point hit chance
+   */
+  private calculateVitalPointHitChance(
+    technique: KoreanTechnique,
+    vitalPoint: VitalPoint
+  ): number {
+    const baseChance = technique.accuracy * 0.3; // 30% of technique accuracy
+    const difficultyModifier = vitalPoint.difficulty
+      ? 1 - vitalPoint.difficulty
+      : 1.0;
+    return baseChance * difficultyModifier;
   }
 
   /**
@@ -78,8 +137,7 @@ export class VitalPointSystem {
           Math.pow(position.y - vitalPoint.position.y, 2)
       );
 
-      // Check if hit is within vital point radius (default 20 pixels)
-      const hitRadius = 20;
+      const hitRadius = vitalPoint.radius || 20;
       if (distance <= hitRadius && distance < minDistance) {
         minDistance = distance;
         nearestPoint = vitalPoint;
@@ -87,43 +145,6 @@ export class VitalPointSystem {
     }
 
     return nearestPoint;
-  }
-
-  /**
-   * Calculate damage for vital point hit
-   */
-  private calculateVitalPointDamage(
-    vitalPoint: VitalPoint,
-    technique: KoreanTechnique,
-    _attacker: PlayerState // Fix: Prefix with underscore to indicate unused
-  ): number {
-    const baseDamage = technique.damage || 0;
-
-    // Vital point damage multiplier
-    const vitalPointMultiplier = this.getVitalPointMultiplier(vitalPoint);
-
-    // Technique precision bonus
-    const precisionBonus = technique.accuracy || 1.0;
-
-    return Math.floor(baseDamage * vitalPointMultiplier * precisionBonus);
-  }
-
-  /**
-   * Get damage multiplier for vital point severity
-   */
-  private getVitalPointMultiplier(vitalPoint: VitalPoint): number {
-    switch (vitalPoint.severity) {
-      case VitalPointSeverity.CRITICAL:
-        return 2.5;
-      case VitalPointSeverity.MAJOR:
-        return 2.0;
-      case VitalPointSeverity.MODERATE:
-        return 1.5;
-      case VitalPointSeverity.MINOR:
-        return 1.2;
-      default:
-        return 1.0;
-    }
   }
 
   /**
@@ -145,17 +166,22 @@ export class VitalPointSystem {
   }
 
   /**
+   * Get vital points by region
+   */
+  public getVitalPointsByRegion(region: string): readonly VitalPoint[] {
+    return this.vitalPoints.filter((vp) => vp.region === region);
+  }
+
+  /**
    * Check if a technique is effective against target region
    */
   public isTechniqueEffective(
     technique: KoreanTechnique,
     targetVitalPoint: VitalPoint
   ): boolean {
-    // Check damage type compatibility
     const damageType = technique.damageType;
     const vitalPointCategory = targetVitalPoint.category;
 
-    // Simple effectiveness mapping
     const effectiveness: Record<DamageType, VitalPointCategory[]> = {
       [DamageType.BLUNT]: [
         VitalPointCategory.MUSCULAR,
@@ -196,5 +222,51 @@ export class VitalPointSystem {
     return this.vitalPoints.filter((vp) =>
       this.isTechniqueEffective(technique, vp)
     );
+  }
+
+  /**
+   * Calculate vital point vulnerability based on player state
+   */
+  public calculateVulnerability(
+    vitalPoint: VitalPoint,
+    targetPlayer: PlayerState
+  ): number {
+    let vulnerability = 1.0;
+
+    // Stance affects vulnerability
+    const stanceModifier = this.getStanceVulnerabilityModifier(
+      targetPlayer.currentStance,
+      vitalPoint
+    );
+    vulnerability *= stanceModifier;
+
+    // Health affects vulnerability
+    const healthRatio = targetPlayer.health / targetPlayer.maxHealth;
+    const healthModifier = 1 + (1 - healthRatio) * 0.3; // Up to 30% more vulnerable when injured
+    vulnerability *= healthModifier;
+
+    // Balance affects vulnerability
+    const balanceModifier = targetPlayer.balance / 100;
+    vulnerability *= 1 + (1 - balanceModifier) * 0.2; // Up to 20% more vulnerable when off-balance
+
+    return vulnerability;
+  }
+
+  /**
+   * Get stance vulnerability modifier
+   */
+  private getStanceVulnerabilityModifier(
+    stance: string,
+    vitalPoint: VitalPoint
+  ): number {
+    // Different stances protect different regions
+    const stanceProtection: Record<string, Record<string, number>> = {
+      geon: { head: 0.8, torso: 1.0, arms: 1.1, legs: 1.2 },
+      gan: { head: 1.2, torso: 0.7, arms: 1.0, legs: 1.1 },
+      gon: { head: 1.1, torso: 0.8, arms: 1.2, legs: 0.9 },
+    };
+
+    const region = vitalPoint.region || "torso";
+    return stanceProtection[stance]?.[region] || 1.0;
   }
 }

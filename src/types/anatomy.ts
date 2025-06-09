@@ -18,18 +18,20 @@ export interface VitalPoint {
   readonly id: string;
   readonly korean: KoreanText;
   readonly english: string;
+  readonly anatomicalName?: string;
   readonly category: VitalPointCategory;
   readonly severity: VitalPointSeverity;
   readonly position: Position;
   readonly radius: number;
   readonly effects: readonly VitalPointEffect[];
   readonly damage?: DamageRange;
+  readonly baseDamage?: number; // Add missing property
   readonly description: KoreanText;
   readonly difficulty: number;
   readonly requiredForce: number;
   readonly safetyWarning?: string;
-  readonly anatomicalName?: string;
   readonly location?: Position;
+  readonly region?: string; // Add missing region property
 }
 
 // Vital point effect
@@ -40,6 +42,7 @@ export interface VitalPointEffect {
   readonly duration: number;
   readonly description: KoreanText;
   readonly stackable: boolean;
+  readonly source?: string; // Add missing source property
 }
 
 // Player archetype data
@@ -118,6 +121,22 @@ export interface AnatomicalRegion {
   readonly name: KoreanText;
   readonly boundaries: readonly Position[];
   readonly vitalPoints: readonly VitalPoint[];
+}
+
+// Body region
+export interface BodyRegion {
+  readonly id: string;
+  readonly name: KoreanText;
+  readonly boundaries: readonly Position[];
+  readonly vitalPoints: readonly VitalPoint[];
+}
+
+// Vital point system config
+export interface VitalPointSystemConfig {
+  readonly damageMultipliers?: Record<VitalPointSeverity, number>;
+  readonly effectDurations?: Record<string, number>;
+  readonly hitRadiusModifier?: number;
+  readonly accuracyThreshold?: number;
 }
 
 // Stance effectiveness matrix

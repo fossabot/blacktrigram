@@ -35,22 +35,25 @@ export interface KoreanTechnique {
 
 // Combat result - Fix: Add all missing properties used by GameEngine
 export interface CombatResult {
-  readonly attacker: PlayerState;
-  readonly defender: PlayerState;
-  readonly technique?: KoreanTechnique;
-  readonly damage: number;
-  readonly effects: readonly StatusEffect[];
-  readonly isCritical: boolean;
-  readonly isVitalPoint: boolean; // Fix: Use consistent property name
-  readonly isBlocked: boolean;
-  readonly isCountered: boolean;
-  readonly timestamp: number;
   readonly hit: boolean;
+  readonly damage: number;
+  readonly criticalHit: boolean; // Add missing property
+  readonly vitalPointHit: boolean; // Use consistent naming
+  readonly updatedAttacker?: PlayerState; // Add missing property
+  readonly updatedDefender?: PlayerState; // Add missing property
+  readonly attacker?: PlayerState;
+  readonly defender?: PlayerState;
+  readonly technique?: KoreanTechnique;
+  readonly effects: readonly StatusEffect[];
+  readonly isCritical?: boolean; // Alternative naming
+  readonly isVitalPoint?: boolean; // Alternative naming
+  readonly isBlocked?: boolean;
+  readonly isCountered?: boolean;
+  readonly timestamp: number;
   readonly success?: boolean;
-  readonly winner?: number; // Fix: Add winner property
-  readonly updatedPlayers?: readonly PlayerState[]; // Fix: Add updatedPlayers
+  readonly winner?: number;
+  readonly updatedPlayers?: readonly PlayerState[];
   readonly hitLocation?: Position;
-  // Fix: Remove criticalHit - use isCritical instead
 }
 
 // Fix: Define CombatEventData interface that's used in MatchStatistics

@@ -19,18 +19,18 @@ export interface PlayerState {
   readonly maxKi: number;
   readonly stamina: number;
   readonly maxStamina: number;
-  readonly energy: number; // Added missing property
+  readonly energy: number;
   readonly maxEnergy: number;
 
   // Combat attributes
-  readonly attackPower: number; // Added missing property
-  readonly defense: number; // Added missing property
+  readonly attackPower: number;
+  readonly defense: number;
   readonly speed: number;
   readonly technique: number;
   readonly pain: number;
   readonly consciousness: number;
   readonly balance: number;
-  readonly momentum: number; // Fixed: should be number, not Position
+  readonly momentum: number;
 
   // Combat state
   readonly currentStance: TrigramStance;
@@ -38,8 +38,9 @@ export interface PlayerState {
   readonly isBlocking: boolean;
   readonly isStunned: boolean;
   readonly isCountering: boolean;
-  readonly lastActionTime: number; // Added missing property
-  readonly recoveryTime: number; // Added missing property
+  readonly lastActionTime: number;
+  readonly recoveryTime: number;
+  readonly lastStanceChangeTime?: number; // Add missing property
 
   // Status and effects
   readonly statusEffects: readonly StatusEffect[];

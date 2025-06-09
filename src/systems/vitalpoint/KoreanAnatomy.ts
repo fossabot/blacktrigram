@@ -1,13 +1,13 @@
 import { StatusEffect, TrigramStance } from "@/types";
-import type { VitalPoint } from "../../types/anatomy"; // AnatomicalLocation and VitalPointEffect were removed as they are unused locally
+import type { BodyRegion, VitalPoint } from "../../types/anatomy"; // AnatomicalLocation and VitalPointEffect were removed as they are unused locally
 import type { KoreanText } from "../../types/korean-text"; // Import KoreanText
 import type {
   VitalPointCategory,
   VitalPointSeverity,
-  EffectType,
+  VitalPointEffectType,
   EffectIntensity,
-  BodyRegion,
-} from "../../types/enums";
+  EffectType,
+} from "../../types/enums"; // Import as values, not types
 import type { AnatomicalRegion } from "../../types/anatomy";
 import { KOREAN_VITAL_POINTS } from "./KoreanVitalPoints";
 
@@ -820,3 +820,71 @@ export const getRegionByName = (name: string): AnatomicalRegion | undefined => {
 export const getAllRegions = (): AnatomicalRegion[] => {
   return Object.values(ANATOMICAL_REGIONS);
 };
+
+// Fix the calculateEffectDuration function
+export function calculateEffectDuration(
+  baseIntensity: EffectIntensity,
+  effectType: EffectType,
+  vitalPoint: VitalPoint
+): number {
+  const baseDuration = 2000;
+
+  let intensityMultiplier = 1.0;
+  switch (baseIntensity) {
+    case EffectIntensity.WEAK:
+      intensityMultiplier = 0.5;
+      break;
+    case EffectIntensity.MEDIUM:
+      intensityMultiplier = 1.0;
+      break;
+    case EffectIntensity.HIGH:
+      intensityMultiplier = 1.5;
+      break;
+    case EffectIntensity.STRONG:
+      intensityMultiplier = 2.0;
+      break;
+  }
+
+  let categoryMultiplier = 1.0;
+  switch (vitalPoint.category) {
+    case VitalPointCategory.NEUROLOGICAL:
+      categoryMultiplier = effectType === EffectType.STUN ? 1.5 : 1.0;
+      break;
+    case VitalPointCategory.MUSCULAR:
+      categoryMultiplier = effectType === EffectType.WEAKNESS ? 1.3 : 1.0;
+      break;
+    case VitalPointCategory.SKELETAL:
+      categoryMultiplier = effectType === EffectType.DEBUFF ? 1.2 : 1.0;
+      break;
+    case VitalPointCategory.VASCULAR:
+      categoryMultiplier = effectType === EffectType.BLEEDING ? 1.4 : 1.0;
+      break;
+    case VitalPointCategory.RESPIRATORY:
+      categoryMultiplier = effectType === EffectType.STAMINA_DRAIN ? 1.3 : 1.0;
+      break;
+    case VitalPointCategory.ORGAN:
+      categoryMultiplier = effectType === EffectType.VULNERABILITY ? 1.2 : 1.0;
+      break;
+  }
+
+  return Math.floor(baseDuration * intensityMultiplier * categoryMultiplier);
+}
+
+// Fix the createVitalPointEffect function to return proper StatusEffect array
+export function createVitalPointEffect(
+  vitalPoint: VitalPoint,
+  intensity: EffectIntensity = EffectIntensity.MEDIUM
+): readonly StatusEffect[] {
+  // Convert VitalPointEffect to StatusEffect
+  return vitalPoint.effects.map((effect) => ({
+    id: effect.id || `${vitalPoint.id}_${effect.type}_${Date.now()}`,
+    type: effect.type as any, // Type conversion needed
+    intensity: effect.intensity as any,
+    duration: effect.duration,
+    description: effect.description,
+    stackable: effect.stackable,
+    source: vitalPoint.id,
+    startTime: Date.now(),
+    endTime: Date.now() + effect.duration,
+  }));
+}

@@ -119,7 +119,7 @@ export enum EffectType {
 // Effect intensity
 export enum EffectIntensity {
   WEAK = "weak",
-  MEDIUM = "medium",
+  MEDIUM = "medium", // Fix: Use MEDIUM instead of MODERATE
   HIGH = "high",
   STRONG = "strong",
 }

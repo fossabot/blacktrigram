@@ -1,6 +1,5 @@
 /**
  * Central type exports for Black Trigram Korean martial arts game
- * This file should be the single source of truth for all type exports
  */
 
 // Export all enums
@@ -14,7 +13,7 @@ export {
   VitalPointEffectType,
   EffectIntensity,
   DamageType,
-  CombatAttackType, // Fix: Use correct enum name
+  CombatAttackType,
   KoreanTextSize,
   KoreanTextWeight,
 } from "./enums";
@@ -27,15 +26,21 @@ export type {
   TrigramData,
   TrigramTransitionCost,
   TrigramTransitionRule,
+  TransitionPath,
 } from "./trigram";
 export type {
   PlayerArchetypeData,
   VitalPoint,
   VitalPointEffect,
+  VitalPointHitResult,
+  VitalPointSystemConfig,
+  DamageResult,
+  AnatomicalRegion,
+  BodyRegion,
 } from "./anatomy";
 
-// Fix: Export PlayerState from player.ts, not anatomy.ts
-export type { PlayerState } from "./player";
+// Export PlayerState from player.ts
+export type { PlayerState, PlayerMatchStats } from "./player";
 
 // Export combat types
 export type {
@@ -45,8 +50,8 @@ export type {
   CombatStats,
 } from "./combat";
 
-// Fix: Export game types without duplicates
-export type { GameState, MatchStatistics, PlayerMatchStats } from "./game";
+// Export game types
+export type { GameState, MatchStatistics } from "./game";
 
 // Export component types
 export type {
@@ -58,14 +63,22 @@ export type {
   CombatControlsProps,
   CombatArenaProps,
   IntroScreenProps,
+  EndScreenProps,
 } from "./components";
 
-// Fix: Export UI types with correct names
+// Export UI types
 export type {
-  UIComponentProps, // Fix: Use correct name
+  UIComponentProps,
   StanceIndicatorProps,
   HealthBarProps,
 } from "./ui";
 
 // Export system types
-export type { CombatSystem, VitalPointSystem, TrigramSystem } from "./systems";
+export type {
+  CombatSystem,
+  VitalPointSystem,
+  TrigramSystem,
+  CombatSystemInterface,
+  VitalPointSystemInterface,
+  TrigramSystemInterface,
+} from "./systems";

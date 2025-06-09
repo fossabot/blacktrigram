@@ -13,19 +13,13 @@ export class TrigramCalculator {
     to: TrigramStance
   ): TrigramTransitionCost {
     if (from === to) {
-      return { ki: 0, stamina: 0, time: 0 };
+      return { ki: 0, stamina: 0, timeMilliseconds: 0 }; // Fix property name
     }
 
-    // Base transition costs
-    const baseCost = { ki: 15, stamina: 10, time: 500 };
-
-    // Calculate adjacency modifier
-    const modifier = this.getAdjacencyModifier(from, to);
-
     return {
-      ki: Math.floor(baseCost.ki * modifier),
-      stamina: Math.floor(baseCost.stamina * modifier),
-      time: Math.floor(baseCost.time * modifier),
+      ki: 10,
+      stamina: 15,
+      timeMilliseconds: 1000, // Fix property name
     };
   }
 

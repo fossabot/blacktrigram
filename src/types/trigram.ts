@@ -10,7 +10,7 @@ export type { TrigramStance } from "./enums";
 export interface TrigramTransitionCost {
   readonly ki: number;
   readonly stamina: number;
-  readonly timeMilliseconds: number;
+  readonly timeMilliseconds: number; // Use consistent naming
 }
 
 // Enhanced transition metrics with all required properties
@@ -26,14 +26,9 @@ export interface TransitionMetrics {
 export interface TransitionPath {
   readonly path: readonly TrigramStance[];
   readonly totalCost: TrigramTransitionCost;
-  readonly overallEffectiveness: number;
-  readonly cumulativeRisk: number;
-  readonly name: string; // Added
-  readonly description: {
-    // Added
-    readonly korean: string;
-    readonly english: string;
-  };
+  readonly effectiveness: number;
+  readonly name: string;
+  readonly description: KoreanText;
 }
 
 // Trigram transition rule - FIXED: Add missing properties
@@ -41,16 +36,16 @@ export interface TrigramTransitionRule {
   readonly from: TrigramStance;
   readonly to: TrigramStance;
   readonly cost: TrigramTransitionCost;
-  readonly effectiveness: number; // Added
+  readonly effectiveness: number; // Add missing property
   readonly conditions?: ReadonlyArray<{
     type: "player_stat" | "archetype" | "active_effect";
     stat?: "health" | "ki" | "stamina";
     archetype?: PlayerArchetype;
-    effectType?: EffectType; // Use EffectType from enums
+    effectType?: EffectType;
     threshold?: number;
     value?: boolean | string;
   }>;
-  readonly description: KoreanText; // Added
+  readonly description: KoreanText;
 }
 
 // Ki flow factors with all required properties
