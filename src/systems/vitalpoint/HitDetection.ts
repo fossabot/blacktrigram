@@ -1,16 +1,14 @@
 import type { Position } from "../../types/common";
 import type { VitalPoint, VitalPointHitResult } from "../../types/anatomy";
-import type { KoreanTechnique } from "../../types/combat";
-// Fix: Remove unused PlayerState import
-// Fix: Import enums as values, not types
+// Fix: Remove unused KoreanTechnique import
+// Fix: Import EffectType from effects.ts, not enums.ts
 import {
   VitalPointSeverity,
   VitalPointEffectType,
   EffectIntensity as VitalPointEffectIntensity,
-  EffectType,
 } from "../../types/enums";
 import type { VitalPointEffect } from "../../types/anatomy";
-import { StatusEffect } from "@/types";
+import type { StatusEffect, EffectType } from "../../types/effects"; // Fix: Import from effects.ts
 
 export class HitDetection {
   /**
@@ -22,7 +20,7 @@ export class HitDetection {
   ): StatusEffect {
     const currentTime = Date.now();
 
-    // Convert VitalPointEffectType to EffectType using string literals
+    // Fix: Use EffectType from effects.ts (string literals)
     const typeMapping: Record<VitalPointEffectType, EffectType> = {
       [VitalPointEffectType.UNCONSCIOUSNESS]: "stun",
       [VitalPointEffectType.BREATHLESSNESS]: "stamina_drain",
@@ -36,7 +34,7 @@ export class HitDetection {
       [VitalPointEffectType.ORGAN_DISRUPTION]: "vulnerability",
     };
 
-    // Convert VitalPointEffectIntensity to string literals
+    // Convert VitalPointEffectIntensity to effects.ts intensity type
     const intensityMapping: Record<
       VitalPointEffectIntensity,
       "minor" | "moderate" | "severe" | "critical"
@@ -49,7 +47,7 @@ export class HitDetection {
 
     return {
       id: `${vitalPointEffect.id}_${currentTime}`,
-      type: typeMapping[vitalPointEffect.type] || "weakened",
+      type: typeMapping[vitalPointEffect.type] || "weakened", // Fix: Use correct type
       intensity: intensityMapping[vitalPointEffect.intensity] || "moderate",
       duration: vitalPointEffect.duration,
       description: vitalPointEffect.description,

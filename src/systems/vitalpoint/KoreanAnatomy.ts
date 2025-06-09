@@ -9,7 +9,6 @@ import {
   VitalPointSeverity,
   VitalPointEffectType,
   EffectIntensity,
-  EffectType,
 } from "../../types/enums";
 import { StatusEffect } from "@/types";
 
@@ -418,49 +417,37 @@ function isPositionInZone(
  */
 export function generateMeridianEffects(
   meridianId: string,
-  disruptionLevel: number // 0-1, how much it's disrupted
+  disruptionLevel: number
 ): readonly StatusEffect[] {
   const meridian = ENERGY_MERIDIANS[meridianId];
   if (!meridian) return [];
 
   const effects: StatusEffect[] = [];
   const intensityValue = Math.min(1.0, disruptionLevel);
-  const baseDuration = 3000; // ms
 
   // Fix: Use proper enum values for effect intensity
-  let effectIntensity: EffectIntensity = EffectIntensity.WEAK; // Fix: Use enum
-  if (intensityValue > 0.7) effectIntensity = EffectIntensity.HIGH; // Fix: Use enum
+  let effectIntensity: "minor" | "moderate" | "severe" | "critical" = "minor";
+  if (intensityValue > 0.7) effectIntensity = "severe";
+  else if (intensityValue > 0.4) effectIntensity = "moderate";
 
-  // Fix: Use proper effect types
-  let effectType: EffectType | null = null;
-  switch (vitalPoint.category) {
-    case VitalPointCategory.NEUROLOGICAL:
-      if (disruptionLevel > 0.5) effectType = EffectType.STAMINA_DRAIN; // Fix: Use enum
-      break;
-    case VitalPointCategory.MUSCULAR:
-      if (disruptionLevel > 0.4) effectType = EffectType.WEAKNESS; // Fix: Use proper type
-      break;
-    case VitalPointCategory.RESPIRATORY:
-      if (disruptionLevel > 0.6) effectType = EffectType.STUN; // Fix: Use proper type
-      break;
-    case VitalPointCategory.ORGAN:
-      if (disruptionLevel > 0.3) effectType = EffectType.VULNERABILITY; // Fix: Use proper type
-      break;
-    case VitalPointCategory.VASCULAR:
-      if (disruptionLevel > 0.4) effectType = EffectType.BLEEDING; // Fix: Use proper type
-      break;
-  }
-
-  if (effectType) {
-    return {
-      type: effectType as any, // Fix: Type assertion for compatibility
+  // Fix: Generate effects based on meridian type and disruption level
+  if (disruptionLevel > 0.3) {
+    const effect: StatusEffect = {
+      id: `meridian_disruption_${meridianId}_${Date.now()}`,
+      type: "weakened", // Use effects.ts EffectType
       intensity: effectIntensity,
       duration: Math.floor(2000 + intensityValue * 3000),
       description: {
-        korean: "급소 타격 효과",
-        english: "Vital point strike effect",
+        korean: "경락 차단 효과",
+        english: "Meridian disruption effect",
       },
+      stackable: false,
+      source: meridianId,
+      startTime: Date.now(),
+      endTime: Date.now() + Math.floor(2000 + intensityValue * 3000),
     };
+
+    effects.push(effect);
   }
 
   return effects;

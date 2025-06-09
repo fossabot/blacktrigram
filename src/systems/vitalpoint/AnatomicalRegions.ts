@@ -127,13 +127,13 @@ export function getRegionBoundaries(region: BodyRegion): readonly Position[] {
 
 export function isPositionInRegion(
   position: Position,
-  regionId: string
+  region: BodyRegion // Fix: Use BodyRegion type instead of string
 ): boolean {
-  const boundaries = getRegionBoundaries(regionId);
+  const boundaries = getRegionBoundaries(region);
   if (boundaries.length < 4) return false;
 
   // Simple point-in-polygon test for rectangular regions
-  const [topLeft, topRight, , bottomLeft] = boundaries; // Fix: Remove unused bottomRight
+  const [topLeft, topRight, , bottomLeft] = boundaries;
   return (
     position.x >= topLeft.x &&
     position.x <= topRight.x &&
