@@ -1,13 +1,14 @@
 // Complete game engine for Black Trigram Korean martial arts
 
-import React, { useCallback } from "react";
+import React, { useEffect, useCallback, useMemo } from "react";
 import { Container } from "@pixi/react";
-import { useTick } from "@pixi/react";
-import type { GameEngineProps, PlayerState } from "../../types/components";
+import type { GameEngineProps } from "../../types/components";
+import type { KoreanTechnique } from "../../types"; // Fix: Remove unused imports
+import { GameMode, TrigramStance } from "../../types/enums";
 import { CombatSystem } from "../../systems/CombatSystem";
-import { TrigramSystem } from "../../systems/TrigramSystem";
 import { VitalPointSystem } from "../../systems/VitalPointSystem";
-import { CombatState } from "@/types/enums";
+import { TrigramSystem } from "../../systems/TrigramSystem";
+import { GAME_CONFIG } from "../../types/constants";
 
 export const GameEngine: React.FC<GameEngineProps> = ({
   players,
@@ -15,115 +16,176 @@ export const GameEngine: React.FC<GameEngineProps> = ({
   onCombatResult,
   onGameEvent,
   isPaused = false,
+  gameMode = GameMode.VERSUS, // Fix: Use gameMode parameter
+  width = GAME_CONFIG.CANVAS_WIDTH,
+  height = GAME_CONFIG.CANVAS_HEIGHT,
 }) => {
-  // Initialize game systems
-  const combatSystem = React.useMemo(() => new CombatSystem(), []);
-  const vitalPointSystem = React.useMemo(() => new VitalPointSystem(), []);
-  const trigramSystem = React.useMemo(() => new TrigramSystem(), []);
+  // Initialize systems
+  const combatSystem = useMemo(() => new CombatSystem(), []);
+  const vitalPointSystem = useMemo(() => new VitalPointSystem(), []);
+  const trigramSystem = useMemo(() => new TrigramSystem(), []);
 
   // Game loop
-  useTick(() => {
+  useEffect(() => {
     if (isPaused) return;
 
-    // Update player states
-    const updatedPlayers = players.map((player, index) => {
-      if (player.health <= 0) return player;
+    const gameLoop = setInterval(() => {
+      // Update player states based on game mode
+      if (gameMode === GameMode.TRAINING) {
+        // Training mode updates
+        players.forEach((player, index) => {
+          // Simple training updates - regenerate resources
+          const updatedPlayer = {
+            ...player,
+            ki: Math.min(player.maxKi, player.ki + 1),
+            stamina: Math.min(player.maxStamina, player.stamina + 1),
+          };
+          if (updatedPlayer !== player) {
+            onPlayerUpdate(index, updatedPlayer);
+          }
+        });
+      } else {
+        // Combat mode updates
+        players.forEach((player, index) => {
+          // Apply natural regeneration and status effects
+          const updatedPlayer = combatSystem.updatePlayerState(player, 16);
+          if (updatedPlayer !== player) {
+            onPlayerUpdate(index, updatedPlayer);
+          }
+        });
+      }
 
-      const updatedPlayer = trigramSystem.updatePlayerKiFlow(player);
-      onPlayerUpdate(index, updatedPlayer);
-      return updatedPlayer;
-    });
+      // Check win conditions
+      players.forEach((player, index) => {
+        if (player.health <= 0 || player.consciousness <= 0) {
+          const winner = index === 0 ? 1 : 0;
+          onGameEvent("player_defeated", { winner });
+        }
+      });
+    }, 16); // 60fps
 
-    // Check win conditions
-    if (updatedPlayers[0] && updatedPlayers[0].health <= 0) {
-      onGameEvent("player_defeated", { winner: 1 });
-    } else if (updatedPlayers[1] && updatedPlayers[1].health <= 0) {
-      onGameEvent("player_defeated", { winner: 0 });
-    }
-  });
+    return () => clearInterval(gameLoop);
+  }, [isPaused, players, combatSystem, onPlayerUpdate, onGameEvent, gameMode]);
 
-  useTick(() => {
-    if (isPaused) return;
-    // Additional game logic here if needed
-  });
-
-  // Handle combat techniques
+  // Handle technique execution
   const handleTechniqueExecution = useCallback(
-    (attackerIndex: number, targetVitalPoint?: string) => {
-      const attacker = players[attackerIndex];
-      const defenderIndex = attackerIndex === 0 ? 1 : 0;
-      const defender = players[defenderIndex];
+    (playerIndex: number, technique: KoreanTechnique) => {
+      if (playerIndex < 0 || playerIndex >= players.length) return;
 
-      if (!attacker || !defender || attacker.health <= 0) return;
+      const attacker = players[playerIndex];
+      const defender = players[playerIndex === 0 ? 1 : 0];
 
-      // Check if attacker can act
-      if (!canPlayerAct(attacker)) return;
+      if (!attacker || !defender) return;
 
-      // Fix: Use correct parameter signature (3 arguments)
+      // Fix: Execute technique through combat system with proper signature
       const result = combatSystem.resolveAttack(
         attacker,
         defender,
-        targetVitalPoint
+        technique, // Fix: Pass technique object, not technique.id
+        undefined // No specific vital point targeting for now
       );
 
-      // Apply results
+      // Apply combat result
       const { updatedAttacker, updatedDefender } =
         combatSystem.applyCombatResult(result, attacker, defender);
 
-      // Update players
-      onPlayerUpdate(attackerIndex, updatedAttacker);
-      onPlayerUpdate(defenderIndex, updatedDefender);
+      // Update player states
+      onPlayerUpdate(playerIndex, updatedAttacker);
+      onPlayerUpdate(playerIndex === 0 ? 1 : 0, updatedDefender);
 
-      // Notify combat result
+      // Send combat result
       onCombatResult(result);
 
-      // Fire game events
+      // Trigger game events based on result
       if (result.hit) {
-        onGameEvent("player_hit", {
-          attacker: attackerIndex,
-          defender: defenderIndex,
+        onGameEvent("technique_hit", {
+          attacker: playerIndex,
+          technique: technique.id, // Fix: Use technique.id for event data
           damage: result.damage,
-          critical: result.criticalHit,
-          vitalPoint: result.vitalPointHit,
+        });
+      }
+
+      if (result.criticalHit) {
+        onGameEvent("critical_hit", {
+          attacker: playerIndex,
+          damage: result.damage,
+        });
+      }
+
+      if (result.vitalPointHit) {
+        onGameEvent("vital_point_hit", {
+          attacker: playerIndex,
+          damage: result.damage,
         });
       }
     },
     [players, combatSystem, onPlayerUpdate, onCombatResult, onGameEvent]
   );
 
-  // Helper function to check if player can act
-  const canPlayerAct = (player: PlayerState): boolean => {
-    return (
-      !player.isStunned &&
-      player.health > 0 &&
-      player.combatState !== CombatState.RECOVERING &&
-      player.ki >= 5 && // Minimum Ki required
-      player.stamina >= 5 // Minimum stamina required
-    );
-  };
+  // Handle stance changes
+  const handleStanceChange = useCallback(
+    (playerIndex: number, newStance: TrigramStance) => {
+      if (playerIndex < 0 || playerIndex >= players.length) return;
 
-  // Expose engine methods for external use
-  React.useEffect(() => {
-    // Add engine methods to global scope for debugging
-    (window as any).gameEngine = {
+      const player = players[playerIndex];
+      if (!player) return;
+
+      // Fix: Check if stance change is valid using basic conditions
+      const canChange =
+        player.ki >= 10 &&
+        player.stamina >= 5 &&
+        !player.isStunned &&
+        player.currentStance !== newStance;
+
+      if (canChange) {
+        const updatedPlayer = {
+          ...player,
+          currentStance: newStance,
+          ki: player.ki - 10,
+          stamina: player.stamina - 5,
+          lastStanceChangeTime: Date.now(),
+        };
+
+        onPlayerUpdate(playerIndex, updatedPlayer);
+        onGameEvent("stance_changed", {
+          player: playerIndex,
+          newStance,
+          previousStance: player.currentStance,
+        });
+      }
+    },
+    [players, onPlayerUpdate, onGameEvent]
+  );
+
+  // Expose engine methods through container props (for external control)
+  const engineRef = useCallback(
+    (container: any) => {
+      if (container) {
+        // Attach engine methods to container for external access
+        container.executeTechnique = handleTechniqueExecution;
+        container.changeStance = handleStanceChange;
+        container.getCombatSystem = () => combatSystem;
+        container.getVitalPointSystem = () => vitalPointSystem;
+        container.getTrigramSystem = () => trigramSystem;
+      }
+    },
+    [
       handleTechniqueExecution,
+      handleStanceChange,
       combatSystem,
       vitalPointSystem,
       trigramSystem,
-      players,
-    };
-  }, [
-    handleTechniqueExecution,
-    combatSystem,
-    vitalPointSystem,
-    trigramSystem,
-    players,
-  ]);
+    ]
+  );
 
   return (
-    <Container name="GameEngine">
-      {/* Game engine is invisible - it only manages game logic */}
-    </Container>
+    <Container
+      ref={engineRef}
+      width={width}
+      height={height}
+      interactive={false}
+      visible={false} // Engine is invisible, only handles logic
+    />
   );
 };
 
