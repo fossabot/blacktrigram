@@ -1,14 +1,24 @@
 // Korean martial arts vital point system
 
-import type {
-  VitalPoint,
-  AnatomicalRegion,
-  PlayerState,
-  DamageResult,
-  KoreanTechnique,
-  PlayerArchetype,
+import {
+  type VitalPoint,
+  type AnatomicalRegion,
+  type PlayerState,
+  type DamageResult,
+  type KoreanTechnique,
+  type PlayerArchetype,
+  EffectIntensity,
+  EffectType,
+  Position,
+  StatusEffect,
+  TrigramStance,
+  VitalPointEffect,
+  VitalPointHitResult,
+  VitalPointSeverity,
 } from "../types";
 import { KOREAN_VITAL_POINTS } from "../types/constants/vital-points";
+import { calculateDamage } from "./vitalpoint/DamageCalculator"; // Assuming this exists
+import { getTargetedVitalPoints } from "./vitalpoint/HitDetection"; // Assuming this exists
 
 export class VitalPointSystem {
   private static vitalPoints: Map<string, VitalPoint> = new Map();
@@ -18,6 +28,12 @@ export class VitalPointSystem {
     KOREAN_VITAL_POINTS.forEach((point) => {
       this.vitalPoints.set(point.id, point);
     });
+  }
+
+  constructor(
+    _archetypes?: PlayerArchetype[] // private archetypes: PlayerArchetype[] // If needed
+  ) {
+    // this.config = config || {}; // Initialize with default or provided config
   }
 
   /**
@@ -159,4 +175,130 @@ export class VitalPointSystem {
 
     return updatedState;
   }
+
+  public processHit(
+    targetPosition: Position,
+    technique: KoreanTechnique,
+    baseDamage: number,
+    attackerArchetype: PlayerArchetype,
+    targetDimensions: { width: number; height: number },
+    targetedVitalPointId?: string | null
+  ): VitalPointHitResult {
+    const hitVitalPoints = getTargetedVitalPoints(
+      targetPosition, // This should be the actual impact point
+      targetDimensions,
+      technique.range ?? 1, // Example range
+      targetedVitalPointId
+    );
+
+    let totalDamage = baseDamage;
+    const effectsApplied: StatusEffect[] = [];
+    const finalVitalPointsHit: VitalPoint[] = [];
+    let mostSevereVitalPoint: VitalPoint | undefined = undefined;
+    let overallSeverity: VitalPointSeverity | undefined = undefined;
+    let isCritical = false;
+
+    if (hitVitalPoints.length > 0) {
+      hitVitalPoints.forEach((vp) => {
+        finalVitalPointsHit.push(vp);
+        const vpDamage = this.calculateVitalPointDamage(
+          vp,
+          baseDamage,
+          attackerArchetype
+        );
+        totalDamage += vpDamage * (vp.damageMultiplier || 1) - baseDamage; // Add bonus damage
+
+        if (Math.random() < (technique.critChance ?? 0.05)) {
+          // Example crit chance
+          isCritical = true;
+          totalDamage *= technique.critMultiplier ?? 1.5;
+        }
+
+        vp.effects.forEach((effect: VitalPointEffect) => {
+          // Convert VitalPointEffect to StatusEffect
+          effectsApplied.push({
+            id: `${effect.id}_${Date.now()}`,
+            type: effect.type as EffectType,
+            name: effect.description, // Assuming description can serve as name
+            description: effect.description,
+            duration: effect.duration,
+            startTime: Date.now(),
+            endTime: Date.now() + effect.duration,
+            intensity: effect.intensity as EffectIntensity,
+            stackable: effect.stackable,
+            source: technique.id,
+            // magnitude: effect.intensity, // Or derive from intensity
+          });
+        });
+        if (
+          !mostSevereVitalPoint ||
+          VITAL_POINTS_SEVERITY_ORDER[vp.severity] >
+            VITAL_POINTS_SEVERITY_ORDER[mostSevereVitalPoint.severity]
+        ) {
+          mostSevereVitalPoint = vp;
+          overallSeverity = vp.severity;
+        }
+      });
+    }
+
+    return {
+      hit: hitVitalPoints.length > 0,
+      damage: Math.round(totalDamage),
+      effects: effectsApplied,
+      vitalPointsHit: finalVitalPointsHit,
+      vitalPoint: mostSevereVitalPoint,
+      severity: overallSeverity,
+      criticalHit: isCritical,
+      location: targetPosition, // This should be the actual hit location
+      effectiveness: 1, // Placeholder, could be calculated based on hit quality
+      statusEffectsApplied: effectsApplied, // Duplicate for now, consider unifying
+      painLevel: mostSevereVitalPoint
+        ? VITAL_POINTS_SEVERITY_ORDER[mostSevereVitalPoint.severity] * 10
+        : 0, // Example pain
+      consciousnessImpact: mostSevereVitalPoint
+        ? VITAL_POINTS_SEVERITY_ORDER[mostSevereVitalPoint.severity] * 5
+        : 0, // Example impact
+    };
+  }
+
+  public calculateHit(
+    _technique: KoreanTechnique,
+    _targetVitalPointId: string | null,
+    _accuracyRoll: number,
+    _attackerPosition: Position,
+    _defenderPosition: Position,
+    _defenderStance: TrigramStance
+  ): VitalPointHitResult {
+    // Placeholder for the other calculateHit signature if needed
+    return {
+      hit: false,
+      damage: 0,
+      effects: [],
+      vitalPointsHit: [],
+      criticalHit: false,
+      location: { x: 0, y: 0 },
+      effectiveness: 0,
+      statusEffectsApplied: [],
+      painLevel: 0,
+      consciousnessImpact: 0,
+    };
+  }
+
+  public applyVitalPointEffects(
+    player: PlayerState,
+    _vitalPoint: VitalPoint,
+    _intensityMultiplier?: number
+  ): PlayerState {
+    // Placeholder
+    return player;
+  }
 }
+
+// Helper for severity comparison
+const VITAL_POINTS_SEVERITY_ORDER: Record<VitalPointSeverity, number> = {
+  [VitalPointSeverity.MINOR]: 1,
+  [VitalPointSeverity.MODERATE]: 2,
+  [VitalPointSeverity.SEVERE]: 3,
+  [VitalPointSeverity.CRITICAL]: 4,
+  [VitalPointSeverity.LETHAL]: 5,
+};

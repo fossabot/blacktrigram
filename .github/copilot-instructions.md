@@ -65,7 +65,6 @@ src/components/combat/index.ts
 src/components/game
 src/components/game/DojangBackground.tsx
 src/components/game/GameEngine.tsx
-src/components/game/GameUI.tsx
 src/components/game/HitEffectsLayer.tsx
 src/components/game/index.ts
 src/components/game/Player.tsx
@@ -172,6 +171,7 @@ src/types/systems.ts
 src/types/trigram.ts
 src/types/ui.ts
 src/utils/colorUtils.ts
+src/utils/effectUtils.ts
 src/utils/playerUtils.ts
 src/vite-env.d.ts
 

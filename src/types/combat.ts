@@ -7,12 +7,15 @@ import type {
   CombatState, // Add CombatState import
   EnumCombatAttackType,
 } from "./enums";
-import type { PlayerState } from "./player"; // Ensure PlayerState is imported
-import type { DamageRange, Position } from "./common";
-import type { StatusEffect } from "./effects"; // Ensure this is the correct StatusEffect
-import type { KoreanText } from "./korean-text";
-import type { VitalPoint as AnatomyVitalPoint } from "./anatomy";
-import type { HitEffectType } from "./enums"; // Ensure HitEffectType is imported
+import type {
+  PlayerState,
+  KoreanTechnique,
+  StatusEffect,
+  VitalPoint,
+  HitEffect,
+  KoreanText, // Added KoreanText
+} from "./index";
+import type { DamageRange } from ".";
 
 // Use the enum type directly
 export type CombatAttackType = EnumCombatAttackType;
@@ -56,14 +59,20 @@ export interface KoreanTechnique {
 
 // Combat result from technique execution
 export interface CombatResult {
-  readonly hit: boolean;
+  readonly attacker: PlayerState;
+  readonly defender: PlayerState;
   readonly damage: number;
+  readonly hit: boolean; // Add missing property
   readonly critical: boolean;
-  readonly updatedAttacker?: Partial<PlayerState>;
-  readonly updatedDefender?: Partial<PlayerState>;
-  readonly effects: readonly HitEffect[];
-  readonly message: string;
-  // Fix: Ensure no nested hitResult structure
+  readonly blocked: boolean;
+  readonly parried: boolean;
+  readonly dodged: boolean;
+  readonly effects: readonly HitEffect[]; // Add missing property
+  readonly vitalPointsHit?: readonly VitalPoint[];
+  readonly hitEffect?: HitEffect;
+  readonly message?: KoreanText;
+  readonly updatedAttacker?: Partial<PlayerState>; // Add missing property
+  readonly updatedDefender?: Partial<PlayerState>; // Add missing property
 }
 
 // Type alias for HitResult as requested by error messages

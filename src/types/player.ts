@@ -1,152 +1,127 @@
-// Player state and archetype definitions for Korean martial arts game
+// Player state and archetype definitions for Korean martial arts
 
 import type {
-  PlayerArchetype as PlayerArchetypeEnum, // Use alias to avoid conflict if any local declaration was intended
+  PlayerArchetype,
   TrigramStance,
-  CombatState,
-  BodyRegion,
-  CombatReadiness,
-  PlayerArchetype, // Import CombatReadiness
-} from "./enums";
-import type { Position, KoreanText } from "./index"; // Imports from the main index file
-import type { StatusEffect } from "./effects";
-import type { KoreanTechnique } from "./combat"; // Ensure KoreanTechnique is imported
+  KoreanTechnique,
+  StatusEffect,
+  VitalPoint,
+  KoreanText,
+  Position,
+} from "./index";
 
-// Define and export PlayerAttributes
-export interface PlayerAttributes {
-  strength: number;
-  agility: number;
-  endurance: number;
-  intelligence: number;
-  focus: number; // Ki control, precision
-  resilience: number; // Pain tolerance, recovery
-}
-
-// Define and export PlayerSkills
-export interface PlayerSkills {
-  striking: number; // 권법 (Gwongbeop) - Punching/Striking
-  kicking: number; // 발차기 (Balchagi) - Kicking
-  grappling: number; // 유술 (Yusul) - Grappling/Joint Locks
-  weaponry: number; // 무기술 (Mugisul) - Weaponry (if applicable)
-  meditation: number; // 명상 (Myeongsang) - Ki cultivation
-  strategy: number; // 전략 (Jeonryak) - Combat tactics
-}
-
+// Main player state interface
 export interface PlayerState {
   readonly id: string;
   readonly name: KoreanText;
   readonly archetype: PlayerArchetype;
+
+  // Health & vitality
   health: number;
   readonly maxHealth: number;
+  consciousness: number;
+  pain: number;
+  balance: number;
+  bloodLoss: number;
+
+  // Energy systems
   ki: number;
   readonly maxKi: number;
   stamina: number;
   readonly maxStamina: number;
+  focusLevel: number;
+
+  // Combat state
   readonly currentStance: TrigramStance;
   readonly position: Position;
-  readonly isGuarding: boolean;
-  readonly stunDuration: number;
-  readonly comboCount: number;
-  readonly lastActionTime: number;
-  readonly consciousness: number;
-  readonly pain: number;
-  readonly balance: number;
-  readonly bloodLoss: number;
-  readonly currentTechnique: string | null;
+  isGuarding: boolean;
+  stunDuration: number;
+  comboCount: number;
+  lastActionTime: number;
+
+  // Techniques & effects
+  readonly currentTechnique: KoreanTechnique | null;
   readonly activeEffects: readonly string[];
-  readonly vitalPoints: readonly string[]; // Fix: Use vitalPoints instead of vitalPointHits
-  readonly defensiveBonus: number;
-  readonly attackPower: number;
-  readonly movementSpeed: number;
-  readonly reactionTime: number;
-  readonly focusLevel: number;
-  readonly battleExperience: number;
+  readonly vitalPoints: Record<string, VitalPoint>;
+
+  // Combat modifiers
+  defensiveBonus: number;
+  attackPower: number;
+  movementSpeed: number;
+  reactionTime: number;
+
+  // Character progression
+  battleExperience: number;
   readonly injuredLimbs: readonly string[];
-  readonly statusConditions: readonly string[];
+  readonly statusConditions: readonly StatusEffect[];
+
+  // Optional fields for advanced gameplay
+  lastStanceChangeTime?: number;
+  currentCombo?: string[];
+  guardBreakVulnerability?: number;
 }
 
-// Player archetype specific bonuses
-export interface PlayerArchetypeBonuses {
-  readonly damageBonus: number;
-  readonly accuracyBonus: number;
-  readonly speedBonus: number;
-  readonly defenseBonus: number;
-  readonly damageResistance?: number;
-  readonly precisionBonus?: number;
-  readonly kiEfficiency?: number; // Added
-  readonly staminaEfficiency?: number; // Added
-  // Allow other string-based descriptive bonuses if necessary,
-  // but calculation-relevant ones should be numbers.
-  [key: string]: number | string | undefined;
-}
-
-// Player archetype data structure - Consolidated definition
-export interface PlayerArchetypeData {
+// Player archetype configuration
+export interface PlayerArchetypeConfig {
+  readonly id: PlayerArchetype;
   readonly name: KoreanText;
   readonly description: KoreanText;
+  readonly philosophy: KoreanText;
+
+  // Base stats
+  readonly baseHealth: number;
+  readonly baseKi: number;
+  readonly baseStamina: number;
+  readonly coreStance: TrigramStance;
+
+  // Visual theme
   readonly colors: {
     readonly primary: number;
     readonly secondary: number;
     readonly accent: number;
-    readonly background: number;
   };
-  readonly baseStats: {
-    readonly health: number;
+
+  // Combat preferences
+  readonly favoredStances: readonly TrigramStance[];
+  readonly specialTechniques: readonly string[];
+  readonly combatStyle: "aggressive" | "defensive" | "balanced" | "technical";
+
+  // Archetype bonuses
+  readonly statModifiers: {
+    readonly attackPower: number;
+    readonly defense: number;
+    readonly speed: number;
+    readonly precision: number;
     readonly ki: number;
     readonly stamina: number;
-    readonly strength: number;
-    readonly agility: number;
-    readonly technique: number;
-  };
-  readonly preferredStances: readonly TrigramStance[];
-  readonly specialAbilities: readonly string[];
-  readonly culturalBackground: KoreanText;
-  readonly philosophy: KoreanText; // Add missing philosophy property
-}
-
-export interface PlayerCombatStats {
-  readonly id: string;
-  readonly archetype: PlayerArchetype;
-  readonly level: number;
-  readonly experience: number;
-  readonly nextLevelExperience: number;
-  readonly attributes: PlayerAttributes;
-  readonly skills: PlayerSkills;
-  readonly combatState: CombatState;
-  readonly lastActionTime: number;
-  readonly lastStanceChangeTime: number;
-  readonly comboCount: number;
-  readonly vitalPointDamage: Record<string, number>;
-  readonly bodyPartStatus: Record<
-    BodyRegion,
-    "healthy" | "injured" | "critical"
-  >;
-  readonly knownTechniques: readonly string[];
-  readonly currentStance: TrigramStance;
-  readonly combatReadiness: CombatReadiness; // Added
-}
-
-export interface PlayerProgression {
-  readonly id: string;
-  readonly archetype: PlayerArchetype;
-  readonly level: number;
-  readonly experience: number;
-  readonly nextLevelExperience: number;
-  readonly attributes: PlayerAttributes;
-  readonly skills: PlayerSkills;
-  readonly knownTechniques: readonly string[];
-}
-
-// Add VitalPoint interface if not exists
-export interface VitalPoint {
-  readonly id: string;
-  readonly status: "normal" | "damaged" | "critical";
-  readonly damage: number;
-  readonly painLevel: number;
-  readonly isBlocked: boolean;
-  readonly lastHit: number | null;
-  readonly location?: {
-    readonly x: number;
-    readonly y: number;
   };
 }
+
+// Player input state for controls
+export interface PlayerInputState {
+  readonly playerId: string;
+  readonly currentInput: {
+    readonly movement: { x: number; y: number };
+    readonly attack: boolean;
+    readonly defend: boolean;
+    readonly stanceChange: TrigramStance | null;
+    readonly targetVitalPoint: string | null;
+  };
+  readonly inputHistory: readonly string[];
+  readonly lastInputTime: number;
+}
+
+// Player performance tracking
+export interface PlayerPerformance {
+  readonly playerId: string;
+  readonly accuracy: number;
+  readonly damageDealt: number;
+  readonly damageReceived: number;
+  readonly techniquesUsed: number;
+  readonly stanceChanges: number;
+  readonly perfectTimings: number;
+  readonly vitalPointsHit: number;
+  readonly combosCompleted: number;
+}
+
+export default PlayerState;

@@ -1,48 +1,57 @@
-import React, { useCallback, useState } from "react";
-import { Container } from "@pixi/react";
-import type { CombatArenaProps, Position, HitEffect } from "../../../types";
-import { GAME_CONFIG } from "../../../types/constants";
-import { Player } from "../../ui/Player";
-import { HitEffectsLayer } from "../../game/HitEffectsLayer";
+import React, { useCallback } from "react";
+import { Container, Graphics } from "@pixi/react";
+import * as PIXI from "pixi.js";
+import type { CombatArenaProps } from "../../../types/components";
+import { KOREAN_COLORS } from "../../../types/constants";
+import { Player } from "../../game/Player";
+import { DojangBackground } from "../../game/DojangBackground";
 
 export const CombatArena: React.FC<CombatArenaProps> = ({
-  player1,
-  player2,
-  width = GAME_CONFIG.CANVAS_WIDTH,
-  height = GAME_CONFIG.CANVAS_HEIGHT,
+  players,
+  onPlayerClick,
+  width = 800,
+  height = 600,
+  x = 0,
+  y = 0,
 }) => {
-  const [effects] = useState<HitEffect[]>([]);
+  const drawArenaFloor = useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+      g.beginFill(KOREAN_COLORS.ARENA_BACKGROUND, 0.3);
+      g.drawRect(0, 0, width, height);
+      g.endFill();
 
-  const player1Position: Position = { x: width * 0.25, y: height * 0.65 };
-  const player2Position: Position = { x: width * 0.75, y: height * 0.65 };
-
-  const handlePlayerClick = useCallback((playerIndex: number) => {
-    console.log(`Player ${playerIndex + 1} clicked`);
-  }, []);
+      // Arena boundaries
+      g.lineStyle(2, KOREAN_COLORS.PRIMARY_CYAN, 0.8);
+      g.drawRect(0, 0, width, height);
+    },
+    [width, height]
+  );
 
   return (
-    <Container width={width} height={height} data-testid="combat-arena">
-      {/* Player 1 */}
+    <Container x={x} y={y}>
+      {/* Background */}
+      <DojangBackground width={width} height={height} />
+
+      {/* Arena floor */}
+      <Graphics draw={drawArenaFloor} />
+
+      {/* Players */}
       <Player
-        playerState={player1}
-        playerIndex={0}
-        x={player1Position.x}
-        y={player1Position.y}
-        onStateUpdate={() => {}}
-        onClick={() => handlePlayerClick(0)}
+        playerState={players[0]}
+        x={players[0].position.x}
+        y={players[0].position.y}
+        onClick={() => onPlayerClick?.(0)}
+        interactive={!!onPlayerClick}
       />
 
-      {/* Player 2 */}
       <Player
-        playerState={player2}
-        playerIndex={1}
-        x={player2Position.x}
-        y={player2Position.y}
-        onStateUpdate={() => {}}
-        onClick={() => handlePlayerClick(1)}
+        playerState={players[1]}
+        x={players[1].position.x}
+        y={players[1].position.y}
+        onClick={() => onPlayerClick?.(1)}
+        interactive={!!onPlayerClick}
       />
-
-      <HitEffectsLayer effects={effects} />
     </Container>
   );
 };

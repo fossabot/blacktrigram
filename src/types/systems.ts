@@ -75,26 +75,27 @@ export interface CombatSystemInterface {
 // Vital point system interface - FIXED: Match implementation
 export interface VitalPointSystemInterface {
   getVitalPointsInRegion(region: string): readonly VitalPoint[];
-  getVitalPointById(id: string): VitalPoint | undefined; // Added missing method
-  getAllVitalPoints(): readonly VitalPoint[]; // Added missing method
-  calculateVitalPointAccuracy( // Added
+  getVitalPointById(id: string): VitalPoint | undefined;
+  getAllVitalPoints(): readonly VitalPoint[];
+  calculateVitalPointAccuracy(
     targetPosition: Position,
     attackAccuracy: number,
     vitalPoint: VitalPoint
   ): number;
-  calculateVitalPointDamage( // Added missing method
+  calculateVitalPointDamage(
     vitalPoint: VitalPoint,
     baseDamage: number,
-    archetype: string // Changed from PlayerArchetype
+    archetype: PlayerArchetype // Changed from string to PlayerArchetype
   ): number;
   processHit: (
-    // Added processHit to match usage in playerUtils
+    // Added processHit to match usage
     targetPosition: Position,
     technique: KoreanTechnique,
     baseDamage: number,
     attackerArchetype: PlayerArchetype,
-    targetDimensions: { width: number; height: number }
-  ) => VitalPointHitResult; // Returns the detailed VitalPointHitResult from anatomy.ts
+    targetDimensions: { width: number; height: number },
+    targetedVitalPointId?: string | null // Added optional targetedVitalPointId
+  ) => VitalPointHitResult;
   calculateHit: (
     // This might be an internal or alternative method
     technique: KoreanTechnique,
@@ -113,14 +114,15 @@ export interface VitalPointSystemInterface {
 
 // Trigram system interface
 export interface TrigramSystemInterface {
-  getCurrentStanceData: (stance: TrigramStance) => TrigramData; // Added
+  getCurrentStanceData(stance: TrigramStance): TrigramData | undefined;
   getTechniqueForStance: (
     stance: TrigramStance,
-    archetype?: PlayerArchetype // Added archetype
+    archetype?: PlayerArchetype
   ) => KoreanTechnique | undefined;
   calculateStanceEffectiveness: (
     attackerStance: TrigramStance,
-    defenderStance: TrigramStance
+    defenderStance: TrigramStance,
+    technique?: KoreanTechnique // Added optional technique
   ) => number;
   isValidTransition: (from: TrigramStance, to: TrigramStance) => boolean; // Added
   getTransitionCost: (
@@ -296,4 +298,72 @@ export interface SystemConfig {
   readonly performanceMonitoring?: boolean;
 }
 
-export type { RegionData } from "./anatomy";
+// System-specific types for Korean martial arts combat
+
+import type {
+  PlayerState,
+  KoreanTechnique,
+  TrigramStance,
+  StatusEffect,
+  VitalPoint,
+  PlayerArchetype,
+} from "./index";
+
+// Combat system interfaces
+export interface CombatSystemConfig {
+  readonly damageMultiplier: number;
+  readonly criticalChance: number;
+  readonly blockEffectiveness: number;
+  readonly staminaDrainRate: number;
+}
+
+// Trigram system interfaces
+export interface TrigramSystemConfig {
+  readonly transitionSpeed: number;
+  readonly energyCost: number;
+  readonly effectivenessMatrix: Record<
+    TrigramStance,
+    Record<TrigramStance, number>
+  >;
+}
+
+// Vital point system interfaces
+export interface VitalPointSystemConfig {
+  readonly precisionRequired: number;
+  readonly damageMultipliers: Record<string, number>;
+  readonly effectDurations: Record<string, number>;
+}
+
+// AI system interfaces
+export interface AISystemConfig {
+  readonly difficulty: "easy" | "medium" | "hard" | "expert";
+  readonly reactionTime: number;
+  readonly aggressiveness: number;
+  readonly adaptability: number;
+}
+
+// Game state management
+export interface GameSystemState {
+  readonly combat: CombatSystemConfig;
+  readonly trigram: TrigramSystemConfig;
+  readonly vitalPoint: VitalPointSystemConfig;
+  readonly ai: AISystemConfig;
+}
+
+// System event types
+export interface SystemEvent {
+  readonly type: string;
+  readonly timestamp: number;
+  readonly source: string;
+  readonly data: Record<string, any>;
+}
+
+// Performance monitoring
+export interface SystemPerformance {
+  readonly fps: number;
+  readonly memoryUsage: number;
+  readonly renderTime: number;
+  readonly updateTime: number;
+}
+
+export default GameSystemState;

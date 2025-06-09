@@ -3,6 +3,17 @@
  * Korean Martial Arts Combat Simulator
  */
 
+import { MatchStatistics } from "./combat";
+import { HitEffect } from "./effects";
+import {
+  VitalPointSeverity,
+  EffectType,
+  EffectIntensity,
+  HitEffectType,
+  TrigramStance,
+} from "./enums";
+import { PlayerState } from "./player";
+
 // Core type system for Black Trigram Korean martial arts game
 
 // Base types
@@ -18,12 +29,7 @@ export type {
   PlayerState,
   PlayerAttributes,
   PlayerSkills,
-  PlayerEquipment, // Added
-  PlayerStatus, // Added (if different from PlayerState)
-  PlayerAction, // Added
-  PlayerMovement, // Added
-  PlayerCombatStats, // Added (if different from PlayerAttributes/Skills)
-  PlayerAnimations, // Added
+  PlayerCombatStats, // Already defined in player.ts
   PlayerArchetypeData,
   // PlayerArchetype is already exported from enums via *
 } from "./player";
@@ -32,17 +38,17 @@ export type {
   KoreanTechnique,
   CombatResult,
   DamageRange,
-  TechniqueEffect,
-  TargetingInfo,
-  CombatLogEntry,
+  // TechniqueEffect, // Not defined, remove if not used
+  // TargetingInfo, // Not defined, remove if not used
+  // CombatLogEntry, // Not defined, remove if not used
   // DamageType is already exported from enums
   // CombatAttackType is already exported from enums
   // HitEffectType is already exported from enums
 } from "./combat";
 
 export type {
-  VitalPoint,
-  VitalPointEffect,
+  VitalPoint as AnatomyVitalPoint, // Alias to avoid conflict with local definition below if any
+  VitalPointEffect as AnatomyVitalPointEffect, // Alias
   BodyRegionData,
   AnatomyModel, // Added
   AnatomicalHit, // Added
@@ -168,15 +174,14 @@ export type {
 // Utility types (if any are defined at this level)
 // export type { DeepPartial, ReadonlyRecord } from './utils';
 
-// Core type system exports - comprehensive interface definitions
+// Core type exports for Black Trigram Korean martial arts system
 
-// Re-export all major type categories
+// Re-export all types from individual modules
 export * from "./anatomy";
 export * from "./audio";
 export * from "./combat";
 export * from "./common";
 export * from "./components";
-export * from "./constants";
 export * from "./controls";
 export * from "./effects";
 export * from "./enums";
@@ -187,115 +192,55 @@ export * from "./systems";
 export * from "./trigram";
 export * from "./ui";
 
-// Ensure all component prop types are exported
-export type {
-  GameEngineProps,
-  GameUIProps,
-  CombatScreenProps,
-  CombatArenaProps,
-  CombatHUDProps,
-  CombatControlsProps,
-  PlayerProps,
-  PlayerVisualsProps,
-  DojangBackgroundProps,
-  IntroScreenProps,
-  TrainingScreenProps,
-} from "./components";
+// Export constants
+export * from "./constants";
 
-// Essential game state types
-export type {
-  PlayerState,
-  GameState,
-  CombatResult,
-  HitEffect,
-  VitalPoint,
-  KoreanTechnique,
-  Position,
-} from "./game";
+// Re-export GameMode from enums to fix type conflicts
+export { GameMode } from "./enums";
 
-// Korean text and cultural types
-export type {
-  KoreanText,
-  KoreanTextVariant,
-  KoreanTextStyle,
-} from "./korean-text";
-
-// Enum exports
-export {
-  PlayerArchetype,
-  TrigramStance,
-  CombatState,
-  GamePhase,
-  CombatReadiness,
-} from "./enums";
-
-// Korean text type
-export interface KoreanText {
-  readonly korean: string;
-  readonly english: string;
-  readonly romanized?: string;
+// Additional missing types
+export interface HitEffectsLayerProps {
+  readonly effects: readonly HitEffect[];
 }
 
-// Vital point type
-export interface VitalPoint {
-  readonly id: string;
-  readonly name: KoreanText;
-  readonly location: {
-    readonly x: number;
-    readonly y: number;
-    readonly region: string;
-  };
-  readonly category: string;
-  readonly severity: "minor" | "moderate" | "severe" | "critical";
-  readonly damageMultiplier: number;
-  readonly baseAccuracy: number;
-  readonly baseDamage: number;
-  readonly techniques?: readonly string[];
-  readonly effects: readonly VitalPointEffect[];
+export interface DojangBackgroundProps {
+  readonly width?: number;
+  readonly height?: number;
+  readonly animate?: boolean;
+  readonly lighting?: "normal" | "dramatic" | "cyberpunk";
 }
 
-export interface VitalPointEffect {
-  readonly id: string;
-  readonly type: string;
-  readonly intensity: number;
-  readonly duration: number;
-  readonly description: KoreanText;
-  readonly stackable: boolean;
+export interface GameUIProps {
+  readonly player1: PlayerState;
+  readonly player2: PlayerState;
+  readonly timeRemaining: number;
+  readonly currentRound: number;
+  readonly maxRounds: number;
+  readonly combatEffects: readonly HitEffect[];
+  readonly width?: number;
+  readonly height?: number;
+  readonly x?: number;
+  readonly y?: number;
 }
 
-// Add experience field to PlayerState
-export interface PlayerSkills {
-  readonly striking: number;
-  readonly grappling: number;
-  readonly defense: number;
-  readonly focus: number;
-  readonly experience: number; // Add experience field
+export interface EndScreenProps {
+  readonly winner: PlayerState | null;
+  readonly matchStatistics: MatchStatistics;
+  readonly onRestart: () => void;
+  readonly onReturnToMenu: () => void; // Fixed: renamed from onMainMenu
 }
 
-// Match statistics interface
-export interface MatchStatistics {
-  readonly roundsWon: {
-    readonly player1: number;
-    readonly player2: number;
-  };
-  readonly totalDamageDealt: {
-    readonly player1: number;
-    readonly player2: number;
-  };
-  readonly techniquesUsed: {
-    readonly player1: number;
-    readonly player2: number;
-  };
-  readonly vitalPointsHit: {
-    readonly player1: number;
-    readonly player2: number;
-  };
+export interface TrigramDisplay {
+  readonly stance: TrigramStance;
+  readonly size?: number;
+  readonly interactive?: boolean;
 }
 
-// Fix: Export missing types
-export type { KoreanTechnique, CombatResult } from "./combat";
-export type { TrigramStance } from "./enums";
-
-// Fix: Import GameMode from the correct location
-export { GameMode } from "./game";
-export { GamePhase, PlayerArchetype, TrigramStance } from "./enums";
+export interface EffectUtils {
+  createHitEffect: (
+    type: HitEffectType,
+    attackerId: string,
+    defenderId: string,
+    options?: Partial<HitEffect>
+  ) => HitEffect;
+}

@@ -4,8 +4,12 @@
  */
 
 import type { PlayerArchetype, TrigramStance } from "../types/enums";
-import type { SoundEffectId, MusicTrackId, AudioAsset } from "../types/audio";
-import { getSoundAsset, getMusicAsset } from "./AudioAssetRegistry";
+import type {
+  SoundEffect,
+  MusicTrack,
+  MusicTrackId,
+  SoundEffectId,
+} from "../types/audio";
 
 export interface AudioVariantContext {
   readonly archetype?: PlayerArchetype;
@@ -18,83 +22,82 @@ export interface AudioVariantContext {
 }
 
 export class VariantSelector {
-  private static readonly ARCHETYPE_SOUND_PREFERENCES: Record<
-    PlayerArchetype,
-    {
-      attackPrefix: string;
-      voiceStyle: string;
-      intensity: number;
-    }
-  > = {
-    musa: {
-      attackPrefix: "traditional",
-      voiceStyle: "honorable",
-      intensity: 1.0,
-    },
-    amsalja: { attackPrefix: "stealth", voiceStyle: "silent", intensity: 0.8 },
-    hacker: { attackPrefix: "tech", voiceStyle: "digital", intensity: 0.9 },
-    jeongbo_yowon: {
-      attackPrefix: "tactical",
-      voiceStyle: "precise",
-      intensity: 0.85,
-    },
-    jojik_pokryeokbae: {
-      attackPrefix: "brutal",
-      voiceStyle: "aggressive",
-      intensity: 1.2,
-    },
-  };
-
-  private static readonly STANCE_AUDIO_MODIFIERS: Record<
-    TrigramStance,
-    {
-      pitchModifier: number;
-      reverb: number;
-      element: string;
-    }
-  > = {
-    geon: { pitchModifier: 1.1, reverb: 0.3, element: "thunder" },
-    tae: { pitchModifier: 0.9, reverb: 0.5, element: "water" },
-    li: { pitchModifier: 1.2, reverb: 0.2, element: "fire" },
-    jin: { pitchModifier: 1.3, reverb: 0.1, element: "lightning" },
-    son: { pitchModifier: 0.95, reverb: 0.4, element: "wind" },
-    gam: { pitchModifier: 0.8, reverb: 0.6, element: "deep_water" },
-    gan: { pitchModifier: 0.7, reverb: 0.8, element: "mountain" },
-    gon: { pitchModifier: 0.85, reverb: 0.7, element: "earth" },
-  };
-
   /**
    * Select the best sound variant for the given context
    */
   static selectSoundVariant(
-    baseId: SoundEffectId,
-    context: AudioVariantContext = {}
-  ): AudioAsset | undefined {
-    const baseAsset = getSoundAsset(baseId);
-    if (!baseAsset) {
-      console.warn(`Base sound asset not found: ${baseId}`);
-      return undefined;
+    baseSound: SoundEffect,
+    archetype: PlayerArchetype,
+    stance?: TrigramStance
+  ): SoundEffect {
+    if (!baseSound.variations || baseSound.variations.length === 0) {
+      return baseSound;
     }
 
-    // For now, return the base asset
-    // In a full implementation, this would select from variants based on context
-    return this.applyContextualModifications(baseAsset, context);
+    // Select variant based on archetype
+    let variantIndex = 0;
+    switch (archetype) {
+      case "musa": // Traditional warrior - use original
+        variantIndex = 0;
+        break;
+      case "amsalja": // Assassin - use quieter variants
+        variantIndex = Math.min(1, baseSound.variations.length - 1);
+        break;
+      case "hacker": // Cyber warrior - use electronic variants
+        variantIndex = Math.min(2, baseSound.variations.length - 1);
+        break;
+      case "jeongbo_yowon": // Intelligence - use subtle variants
+        variantIndex = Math.min(3, baseSound.variations.length - 1);
+        break;
+      case "jojik_pokryeokbae": // Crime - use aggressive variants
+        variantIndex = Math.min(4, baseSound.variations.length - 1);
+        break;
+      default:
+        variantIndex = 0;
+    }
+
+    // Modify based on stance if provided
+    if (stance) {
+      const stanceModifier = this.getStanceModifier(stance);
+      variantIndex =
+        (variantIndex + stanceModifier) % baseSound.variations.length;
+    }
+
+    const selectedVariant = baseSound.variations[variantIndex];
+
+    return {
+      ...baseSound,
+      url: selectedVariant,
+      id: `${baseSound.id}_${archetype}_${stance || "default"}`,
+    };
   }
 
   /**
    * Select the best music variant for the given context
    */
   static selectMusicVariant(
-    baseId: MusicTrackId,
-    context: AudioVariantContext = {}
-  ): AudioAsset | undefined {
-    const baseAsset = getMusicAsset(baseId);
-    if (!baseAsset) {
-      console.warn(`Base music asset not found: ${baseId}`);
-      return undefined;
+    baseMusic: MusicTrack,
+    archetype: PlayerArchetype,
+    intensity: number = 0.5
+  ): MusicTrack {
+    if (!baseMusic.variations || baseMusic.variations.length === 0) {
+      return baseMusic;
     }
 
-    return this.applyContextualModifications(baseAsset, context);
+    // Select based on archetype and intensity
+    const archetypeWeight = this.getArchetypeWeight(archetype);
+    const intensityWeight = Math.floor(intensity * 3); // 0-2 range
+
+    const variantIndex =
+      (archetypeWeight + intensityWeight) % baseMusic.variations.length;
+    const selectedVariant = baseMusic.variations[variantIndex];
+
+    return {
+      ...baseMusic,
+      url: selectedVariant,
+      id: `${baseMusic.id}_${archetype}_intensity${intensityWeight}`,
+      volume: (baseMusic.volume ?? 0.7) * (0.8 + intensity * 0.4), // Fix: Handle undefined volume
+    };
   }
 
   /**
@@ -179,70 +182,119 @@ export class VariantSelector {
   }
 
   /**
-   * Apply contextual modifications to audio asset
+   * Get stance modifier for audio selection
    */
-  private static applyContextualModifications(
-    asset: AudioAsset,
-    context: AudioVariantContext
-  ): AudioAsset {
-    let modifiedAsset = { ...asset };
-
-    // Apply archetype-based modifications
-    if (context.archetype) {
-      const archetypePrefs =
-        this.ARCHETYPE_SOUND_PREFERENCES[context.archetype];
-      modifiedAsset = {
-        ...modifiedAsset,
-        volume: Math.min(1.0, asset.volume * archetypePrefs.intensity),
-      };
-    }
-
-    // Apply stance-based modifications
-    if (context.stance) {
-      const stanceModifier = this.STANCE_AUDIO_MODIFIERS[context.stance];
-      // In a full implementation, this would modify pitch, reverb, etc.
-      // For now, just adjust volume slightly based on stance
-      const stanceVolumeModifier =
-        0.9 + (stanceModifier.pitchModifier - 1.0) * 0.1;
-      modifiedAsset = {
-        ...modifiedAsset,
-        volume: Math.min(1.0, modifiedAsset.volume * stanceVolumeModifier),
-      };
-    }
-
-    return modifiedAsset;
+  private static getStanceModifier(stance: TrigramStance): number {
+    const stanceMap: Record<TrigramStance, number> = {
+      geon: 0, // Heaven - original
+      tae: 1, // Lake - fluid
+      li: 2, // Fire - intense
+      jin: 3, // Thunder - explosive
+      son: 4, // Wind - swift
+      gam: 5, // Water - flowing
+      gan: 6, // Mountain - stable
+      gon: 7, // Earth - grounded
+    };
+    return stanceMap[stance] || 0;
   }
 
   /**
-   * Get combo sound based on combo count
+   * Get archetype weight for variant selection
    */
-  static getComboSound(comboCount: number): SoundEffectId {
-    if (comboCount >= 5) {
-      return "combo_finish";
-    } else if (comboCount >= 2) {
-      return "combo_buildup";
-    } else {
-      return "perfect_strike";
-    }
+  private static getArchetypeWeight(archetype: PlayerArchetype): number {
+    const archetypeMap: Record<PlayerArchetype, number> = {
+      musa: 0, // Traditional
+      amsalja: 1, // Stealth
+      hacker: 2, // Tech
+      jeongbo_yowon: 3, // Intelligence
+      jojik_pokryeokbae: 4, // Aggressive
+    };
+    return archetypeMap[archetype] || 0;
   }
 
   /**
-   * Check if a specific variant exists for the given context
+   * Select context-appropriate audio variant
    */
-  static hasVariant(
-    baseId: SoundEffectId | MusicTrackId,
-    _context: AudioVariantContext
-  ): boolean {
-    // In a full implementation, this would check for specific variant files
-    // For placeholder implementation, always return true for base assets
-    const isSfx =
-      typeof baseId === "string" && getSoundAsset(baseId as SoundEffectId);
-    const isMusic =
-      typeof baseId === "string" && getMusicAsset(baseId as MusicTrackId);
+  public static selectByContext(
+    baseAssetId: string,
+    context: {
+      archetype: PlayerArchetype;
+      stance?: TrigramStance;
+      intensity?: number;
+    }
+  ): { soundId?: string; musicId?: string } {
+    // Return string IDs instead of typed IDs
+    return {
+      soundId: `${baseAssetId}_${context.archetype}`,
+      musicId: `${baseAssetId}_${context.archetype}`,
+    };
+  }
 
-    return !!(isSfx || isMusic);
+  /**
+   * Select the best music variant for the given context
+   */
+  public static selectMusicVariantForArchetype(
+    baseMusic: MusicTrack,
+    archetype: PlayerArchetype,
+    intensity: number = 1.0
+  ): string {
+    // Fix: Check for variations property existence
+    if (
+      !("variations" in baseMusic) ||
+      !baseMusic.variations ||
+      baseMusic.variations.length === 0
+    ) {
+      console.warn(`No variations available for music track: ${baseMusic.id}`);
+      return baseMusic.url;
+    }
+
+    const archetypeWeight = this.getArchetypeWeight(archetype);
+    const intensityWeight = Math.floor(intensity * 10);
+
+    const variantIndex =
+      (archetypeWeight + intensityWeight) % baseMusic.variations.length;
+    const selectedVariant = baseMusic.variations[variantIndex];
+
+    console.log(
+      `Selected variant for ${archetype} at intensity ${intensity}: ${selectedVariant}`
+    );
+
+    return selectedVariant;
+  }
+
+  /**
+   * Get random variant from available options
+   */
+  public static selectRandomVariant(
+    baseAsset: MusicTrack | SoundEffect
+  ): string {
+    // Fix: Type guard to check for variations
+    const hasVariations = (
+      asset: MusicTrack | SoundEffect
+    ): asset is SoundEffect => {
+      return (
+        "variations" in asset &&
+        Array.isArray(asset.variations) &&
+        asset.variations.length > 0
+      );
+    };
+
+    if (!hasVariations(baseAsset)) {
+      return baseAsset.url;
+    }
+
+    // Fix: Now TypeScript knows baseAsset.variations exists and is not empty
+    const randomIndex = Math.floor(
+      Math.random() * baseAsset.variations!.length
+    );
+    const selectedVariant = baseAsset.variations![randomIndex];
+
+    console.log(`Random variant selected: ${selectedVariant}`);
+    return selectedVariant;
   }
 }
+
+export default VariantSelector;
 
 // Export convenience functions
 export function selectCombatSound(context: AudioVariantContext): SoundEffectId {

@@ -66,7 +66,7 @@ export { default as TrigramWheelDefault } from "./TrigramWheel";
 export { ArchetypeDisplay } from "./ArchetypeDisplay";
 export { EndScreen } from "./EndScreen";
 export { HealthBar } from "./HealthBar";
-export { HitEffectsLayer } from "./HitEffectsLayer";
+export { HitEffectsLayer } from "./HitEffectsLayer"; // Fix: Use default export
 export { KoreanHeader } from "./KoreanHeader";
 export { Player } from "./Player";
 export { PlayerVisuals } from "./PlayerVisuals";

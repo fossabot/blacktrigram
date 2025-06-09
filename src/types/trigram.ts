@@ -137,3 +137,47 @@ export interface TrigramTheme {
   text: number; // Ensure text property is present
   glow?: number; // Optional glow color
 }
+
+// Korean trigram system types for martial arts
+
+import type { KoreanText, KoreanTechnique, PlayerArchetype } from "./index";
+
+// Trigram stance enumeration from I Ching
+export enum TrigramStance {
+  GEON = "geon", // ☰ Heaven - 건
+  TAE = "tae", // ☱ Lake - 태
+  LI = "li", // ☲ Fire - 리
+  JIN = "jin", // ☳ Thunder - 진
+  SON = "son", // ☴ Wind - 손
+  GAM = "gam", // ☵ Water - 감
+  GAN = "gan", // ☶ Mountain - 간
+  GON = "gon", // ☷ Earth - 곤
+}
+
+// Trigram stance data structure
+export interface TrigramStanceData {
+  readonly id: TrigramStance;
+  readonly symbol: string; // Unicode trigram symbol
+  readonly korean: string; // Korean name
+  readonly english: string; // English name
+  readonly element: string; // Associated element
+  readonly philosophy: KoreanText; // Philosophical meaning
+  readonly technique: KoreanTechnique; // Primary technique
+  readonly colors: {
+    readonly primary: number;
+    readonly secondary: number;
+  };
+  readonly theme: {
+    readonly primary: number;
+    readonly secondary: number;
+  };
+  readonly combatStyle: "offensive" | "defensive" | "balanced";
+  readonly preferredArchetypes: readonly PlayerArchetype[];
+  readonly movementPattern: "linear" | "circular" | "angular";
+  readonly kiCost: number;
+  readonly staminaCost: number;
+  readonly transitionSpeed: number;
+}
+
+// Export types
+export type { TrigramStanceData };

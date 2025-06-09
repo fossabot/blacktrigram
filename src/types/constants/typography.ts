@@ -26,7 +26,7 @@ export const KOREAN_FONT_WEIGHTS = {
 export const FONT_WEIGHTS = KOREAN_FONT_WEIGHTS;
 
 // Add missing font family exports
-export const KOREAN_FONT_FAMILY = FONT_FAMILY.PRIMARY;
+export const KOREAN_FONT_FAMILY = "Noto Sans KR, Arial, sans-serif"; // Ensure this is defined and exported
 
 // Font Sizes (Numeric values in pixels)
 export const KOREAN_TEXT_SIZES: Record<
@@ -43,7 +43,22 @@ export const KOREAN_TEXT_SIZES: Record<
   extraLarge: 36, // Add missing size
   title: 48,
 };
-export const FONT_SIZES = KOREAN_TEXT_SIZES; // Alias for general use
+export const FONT_SIZES: Record<
+  KoreanTextSize | "default" | "extraLarge" | "title" | "xsmall" | "xxlarge",
+  number
+> = {
+  [KoreanTextSize.TINY]: 10,
+  [KoreanTextSize.SMALL]: 12,
+  [KoreanTextSize.MEDIUM]: 16,
+  [KoreanTextSize.LARGE]: 20,
+  [KoreanTextSize.XLARGE]: 24,
+  [KoreanTextSize.HUGE]: 32,
+  default: 16,
+  extraLarge: 28,
+  title: 36,
+  xsmall: 10,
+  xxlarge: 40,
+} as const; // Alias for general use
 
 // PIXI specific font weights (must be strings as per PIXI.TextStyleFontWeight)
 export const PIXI_FONT_WEIGHTS: Record<

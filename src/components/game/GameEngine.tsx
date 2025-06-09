@@ -1,255 +1,241 @@
 // Complete game engine for Black Trigram Korean martial arts
 
-import React, { useState, useCallback, useEffect } from "react";
-import { Container, Graphics, Text, useTick } from "@pixi/react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import * as PIXI from "pixi.js";
-import type { GameEngineProps } from "../../types/components";
-import type { PlayerState, CombatResult, HitEffect } from "../../types"; // Fix: Remove unused Position import
-import {
-  GameMode, // Fix: Import from correct location
-  TrigramStance,
-  PlayerArchetype,
-} from "../../types/enums";
-import {
-  KOREAN_COLORS,
-  // Fix: Remove unused FONT_FAMILY and FONT_WEIGHTS imports
-  FONT_SIZES,
-  GAME_CONFIG,
-} from "../../types/constants";
+import { Graphics, Text, useTick } from "@pixi/react";
 import { CombatSystem } from "../../systems/CombatSystem";
 import { TrigramSystem } from "../../systems/TrigramSystem";
+import type {
+  PlayerState,
+  CombatResult,
+  HitEffect,
+  TrigramStance,
+} from "../../types";
+import { GameMode } from "../../types/enums";
+import { HitEffectType } from "../../types/effects";
+import { KOREAN_COLORS } from "../../types/constants";
 
-export const GameEngine: React.FC<GameEngineProps> = ({
-  player1,
-  player2,
-  onPlayer1Update,
-  onPlayer2Update,
+interface GameEngineProps {
+  players: readonly [PlayerState, PlayerState];
+  onPlayerUpdate: (playerIndex: 0 | 1, updates: Partial<PlayerState>) => void;
+  onCombatResult: (result: CombatResult) => void;
+  onGameEvent: (event: string, data?: any) => void;
+  isPaused: boolean;
+  gameMode?: GameMode; // Added gameMode prop
+  gameTime?: number; // Added gameTime prop with default
+}
+
+// Define checkWinCondition outside or as a static method if it doesn't need component scope
+// If it needs onGameEvent, it should be passed or defined within the component.
+// For now, assuming it's a utility that can be called statically or needs onGameEvent passed.
+const checkWinConditionAndUpdate = (
+  currentPlayers: readonly [PlayerState, PlayerState],
+  onGameEventCallback: (event: string, data?: any) => void
+) => {
+  const winner = CombatSystem.checkWinCondition(currentPlayers);
+  if (winner === undefined) {
+    onGameEventCallback("gameOver", { winner: null, reason: "Draw" });
+  } else if (winner) {
+    onGameEventCallback("gameOver", { winner, reason: "Knockout" });
+  }
+  // If winner is null, game continues
+};
+
+export function GameEngine({
+  players,
+  onPlayerUpdate,
   onCombatResult,
-  gameMode = GameMode.VERSUS,
-  isPaused = false,
-}) => {
-  const [gameTime, setGameTime] = useState(0);
-  const [combatEffects, setCombatEffects] = useState<HitEffect[]>([]);
+  onGameEvent,
+  isPaused,
+}: GameEngineProps) {
+  const combatSystem = useMemo(() => new CombatSystem(), []);
+  const trigramSystem = useMemo(() => new TrigramSystem(), []);
 
-  // Animation loop
-  useTick((delta) => {
-    if (!isPaused) {
-      setGameTime((prevTime) => prevTime + delta);
+  const [activeHitEffects, setActiveHitEffects] = useState<HitEffect[]>([]);
 
-      // Clean up expired effects
-      setCombatEffects((effects) =>
-        effects
-          .filter((effect) => effect.lifespan > 0)
+  useTick(
+    (deltaTicker) => {
+      if (isPaused) return;
+      const delta =
+        deltaTicker / (PIXI.Ticker.targetFPMS || 16.667 / 1000) / 1000; // Convert delta to seconds, use static Ticker.targetFPMS
+
+      // Update hit effects
+      setActiveHitEffects((prevEffects) =>
+        prevEffects
           .map((effect) => ({
             ...effect,
-            lifespan: effect.lifespan - delta,
+            lifespan: (effect.lifespan ?? 0) - delta * 1000,
             position: {
-              x: effect.position.x + (effect.velocity?.x || 0) * delta,
-              y: effect.position.y + (effect.velocity?.y || 0) * delta,
+              x: (effect.position?.x ?? 0) + (effect.velocity?.x || 0) * delta,
+              y: (effect.position?.y ?? 0) + (effect.velocity?.y || 0) * delta,
             },
           }))
+          .filter((effect) => (effect.lifespan ?? 0) > 0)
       );
-    }
-  });
 
-  // Create helper function to ensure complete PlayerState objects
-  const createCompletePlayerState = useCallback(
-    (basePlayer: PlayerState, updates: Partial<PlayerState>): PlayerState => ({
-      ...basePlayer,
-      ...updates,
-      id: updates.id || basePlayer.id,
-    }),
-    []
-  );
-
-  // Simplified combat result handler
-  const processCombatResult = useCallback(
-    (combatResult: CombatResult) => {
-      if (combatResult.updatedAttacker && combatResult.updatedDefender) {
-        const attackerIsPlayer1 =
-          combatResult.updatedAttacker.id === player1.id;
-
-        const updatedAttacker = createCompletePlayerState(
-          attackerIsPlayer1 ? player1 : player2,
-          combatResult.updatedAttacker
-        );
-
-        const updatedDefender = createCompletePlayerState(
-          attackerIsPlayer1 ? player2 : player1,
-          combatResult.updatedDefender
-        );
-
-        if (attackerIsPlayer1) {
-          onPlayer1Update?.(updatedAttacker);
-          onPlayer2Update?.(updatedDefender);
-        } else {
-          onPlayer1Update?.(updatedDefender);
-          onPlayer2Update?.(updatedAttacker);
+      // Update players (basic example: stamina regeneration)
+      players.forEach((player, index) => {
+        if (player.stamina < player.maxStamina) {
+          onPlayerUpdate(index as 0 | 1, {
+            stamina: Math.min(
+              player.maxStamina,
+              player.stamina + (player.maxStamina / 20) * delta // Regenerate 5% per second
+            ),
+          });
         }
-      }
-
-      onCombatResult?.(combatResult);
-    },
-    [
-      player1,
-      player2,
-      onPlayer1Update,
-      onPlayer2Update,
-      onCombatResult,
-      createCompletePlayerState,
-    ]
+      });
+      checkWinConditionAndUpdate(players, onGameEvent); // Call with current players and callback
+    }
+    // Fix: Remove dependency array to fix useTick usage
   );
 
-  // Handle keyboard input for combat
-  const handleKeyDown = useCallback(
-    async (event: KeyboardEvent) => {
+  const handlePlayerAction = useCallback(
+    async (
+      // Fix: Make async to handle await
+      playerIndex: 0 | 1,
+      actionType: "attack" | "defend" | "stance_change",
+      data?: any
+    ) => {
       if (isPaused) return;
 
-      const key = event.key;
+      const attacker = players[playerIndex];
+      const defender = players[playerIndex === 0 ? 1 : 0];
 
-      // Stance changes (1-8 keys)
-      if (key >= "1" && key <= "8") {
-        const stanceIndex = parseInt(key) - 1;
-        const stances = Object.values(TrigramStance);
-        const newStance = stances[stanceIndex];
+      if (actionType === "attack") {
+        const currentStance = attacker.currentStance;
+        const technique = trigramSystem.getTechniqueForStance(
+          currentStance,
+          attacker.archetype
+        );
 
-        if (newStance) {
-          const updatedPlayer1: Partial<PlayerState> = {
-            ...player1,
-            currentStance: newStance,
-          };
-          onPlayer1Update?.(updatedPlayer1);
-        }
-        return;
-      }
-
-      // Combat actions
-      switch (key) {
-        case " ": // Space - Execute technique
-          event.preventDefault();
+        if (technique) {
           try {
-            const technique = TrigramSystem.getTechniqueForStance(
-              player1.currentStance
+            // Fix: Properly await the async call
+            const result = await CombatSystem.executeAttack(
+              attacker,
+              defender,
+              technique
             );
-            if (technique) {
-              const combatResult = await CombatSystem.executeAttack(
-                player1,
-                player2,
-                technique
-              );
-              processCombatResult(combatResult);
-            }
-          } catch (error) {
-            console.error("Combat execution error:", error);
-          }
-          break;
 
-        case "Shift": // Guard/Block
-          event.preventDefault();
-          const updatedPlayer1Guard: Partial<PlayerState> = {
-            ...player1,
-            isGuarding: !player1.isGuarding,
-          };
-          onPlayer1Update?.(updatedPlayer1Guard);
-          break;
-
-        case "Tab": // Cycle archetype (for training)
-          event.preventDefault();
-          if (gameMode === GameMode.TRAINING) {
-            const archetypes = Object.values(PlayerArchetype);
-            const currentIndex = archetypes.indexOf(player1.archetype);
-            const nextIndex = (currentIndex + 1) % archetypes.length;
-            const updatedPlayer1Archetype: Partial<PlayerState> = {
-              ...player1,
-              archetype: archetypes[nextIndex],
+            const newHitEffect: HitEffect = {
+              id: `hit-${Date.now()}-${Math.random()}`,
+              type: result.critical
+                ? HitEffectType.CRITICAL_HIT
+                : HitEffectType.GENERAL_DAMAGE,
+              attackerId: attacker.id,
+              defenderId: defender.id,
+              timestamp: Date.now(),
+              duration: 1000,
+              position: { ...(defender.position || { x: 0, y: 0 }) },
+              lifespan: 1000,
+              velocity: {
+                x: Math.random() * 100 - 50,
+                y: -Math.random() * 100,
+              },
+              damageAmount: result.damage,
+              color: result.critical
+                ? KOREAN_COLORS.CRITICAL_HIT
+                : KOREAN_COLORS.ACCENT_RED,
+              size: result.damage > 50 ? 15 : result.damage > 20 ? 10 : 5,
+              text: result.damage.toString(),
             };
-            onPlayer1Update?.(updatedPlayer1Archetype);
+            setActiveHitEffects((prev) => [...prev, newHitEffect]);
+
+            onCombatResult(result);
+            // Fix: Apply result effects using CombatSystem
+            const { updatedAttacker, updatedDefender } =
+              CombatSystem.applyCombatResult(result, attacker, defender);
+            onPlayerUpdate(playerIndex, updatedAttacker);
+            onPlayerUpdate(playerIndex === 0 ? 1 : 0, updatedDefender);
+            onGameEvent("attack_resolved", { result });
+          } catch (error) {
+            console.error("Attack resolution failed:", error);
+            onGameEvent("error", {
+              message: "Attack resolution failed",
+              details: error,
+            });
           }
-          break;
+        } else {
+          onGameEvent("action_fail", {
+            playerId: attacker.id,
+            action: "attack",
+            reason: "No technique available for current stance",
+          });
+        }
+      } else if (actionType === "stance_change" && data?.stance) {
+        onPlayerUpdate(playerIndex, {
+          currentStance: data.stance as TrigramStance,
+        });
+        onGameEvent("stance_changed", {
+          playerId: attacker.id,
+          newStance: data.stance,
+        });
       }
+      // Add defend logic if needed
     },
-    [isPaused, player1, player2, onPlayer1Update, processCombatResult, gameMode]
+    [
+      isPaused,
+      players,
+      onPlayerUpdate,
+      trigramSystem,
+      combatSystem,
+      onCombatResult,
+      onGameEvent,
+    ] // Corrected dependencies
   );
 
-  // Set up keyboard event listeners
+  // useEffect to call handlePlayerAction for testing or AI
   useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [handleKeyDown]);
+    // Example: Trigger an attack from player 0 after a delay if not paused
+    // This is just for demonstration; real AI or input handling would go here.
+    if (!isPaused && players[0] && players[1]) {
+      // const timer = setTimeout(() => {
+      //     handlePlayerAction(0, "attack");
+      // }, 2000);
+      // return () => clearTimeout(timer);
+    }
+  }, [isPaused, players, handlePlayerAction]);
 
-  // Render game components
   return (
-    <Container data-testid="game-engine">
-      {/* Game time display */}
-      <Text
-        text={`시간: ${Math.floor(gameTime / 60)}분 ${Math.floor(
-          gameTime % 60
-        )}초`}
-        style={
-          new PIXI.TextStyle({
-            fontSize: 16,
-            fill: KOREAN_COLORS.TEXT_PRIMARY,
-          })
-        }
-        x={10}
-        y={10}
-      />
-
-      {/* Combat effects layer */}
-      <Container data-testid="combat-effects">
-        {combatEffects.map((effect) => (
-          <Container
-            key={effect.id}
-            x={effect.position.x}
-            y={effect.position.y}
-          >
-            <Graphics
-              draw={(g: PIXI.Graphics) => {
-                g.clear();
-                g.beginFill(effect.color || KOREAN_COLORS.ACCENT_RED, 0.8);
-                g.drawCircle(0, 0, (effect.damage || 10) * 0.5 + 5);
-                g.endFill();
-              }}
-            />
-            {effect.damage && (
-              <Text
-                text={effect.damage.toString()}
-                anchor={0.5}
-                style={
-                  new PIXI.TextStyle({
-                    fontSize: 14,
-                    fill: KOREAN_COLORS.TEXT_PRIMARY,
-                  })
-                }
-              />
-            )}
-          </Container>
-        ))}
-      </Container>
-
-      {/* Game state indicators */}
-      {isPaused && (
-        <Container
-          x={GAME_CONFIG.CANVAS_WIDTH / 2}
-          y={GAME_CONFIG.CANVAS_HEIGHT / 2}
-        >
+    <>
+      {activeHitEffects.map((effect, index) => (
+        <Graphics
+          key={`hit-effect-${effect.timestamp}-${index}`}
+          x={effect.position?.x ?? 0}
+          y={effect.position?.y ?? 0}
+          draw={(g: PIXI.Graphics) => {
+            // Typed g
+            g.clear();
+            g.beginFill(effect.color || 0xff0000, 0.8);
+            g.drawCircle(
+              0,
+              0,
+              (effect.damageAmount || 10) * 0.5 + (effect.size ?? 5)
+            );
+            g.endFill();
+          }}
+        />
+      ))}
+      {activeHitEffects.map((effect, index) =>
+        effect.damageAmount && effect.type === HitEffectType.GENERAL_DAMAGE ? (
           <Text
-            text="일시정지 (Paused)"
-            anchor={0.5}
+            key={`hit-text-${effect.timestamp}-${index}`}
+            text={effect.damageAmount.toString()}
+            anchor={{ x: 0.5, y: 0.5 }}
+            x={(effect.position?.x ?? 0) + 15}
+            y={(effect.position?.y ?? 0) - 15}
             style={
               new PIXI.TextStyle({
-                fontSize: FONT_SIZES.xlarge,
-                fill: KOREAN_COLORS.WARNING_YELLOW,
+                fill: KOREAN_COLORS.TEXT_PRIMARY,
+                fontSize: 16,
                 fontWeight: "bold",
               })
             }
           />
-        </Container>
+        ) : null
       )}
-    </Container>
+    </>
   );
-};
+}
 
 export default GameEngine;

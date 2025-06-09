@@ -7,9 +7,6 @@ import type {
   Position,
   TrigramStance,
   CombatState,
-  StatusEffect,
-  KoreanTechnique,
-  VitalPoint,
 } from "../types";
 import { PLAYER_ARCHETYPES_DATA, TRIGRAM_DATA } from "../types/constants";
 
@@ -20,15 +17,17 @@ export type PlayerUpdateFunction = (
 ) => void;
 
 export function createPlayerState(
-  name: KoreanText,
+  name: KoreanText, // Fix: Accept KoreanText object instead of string
   archetype: PlayerArchetype,
-  stance: KoreanText,
-  id: string
+  stance: TrigramStance,
+  playerId: string,
+  position: Position
 ): PlayerState {
   const archetypeData = PLAYER_ARCHETYPES_DATA[archetype];
+  const initialStance = stance || archetypeData.coreStance; // Use provided stance or default
 
   return {
-    id,
+    id: playerId,
     name,
     archetype,
     health: archetypeData.baseHealth,
@@ -40,33 +39,35 @@ export function createPlayerState(
     pain: 0,
     consciousness: 100,
     balance: 100,
-    currentStance: stance.english.toLowerCase() as TrigramStance, // Convert to stance enum
-    position: position,
-    combatState: "ready" as CombatState,
-    isBlocking: false,
-    isCountering: false,
-    isStunned: false,
+    currentStance: initialStance,
+    position: position, // Use provided position
+    isGuarding: false,
+    stunDuration: 0,
+    comboCount: 0,
     lastActionTime: 0,
-    lastStanceChangeTime: 0,
-    statusEffects: [],
-    vitalPoints: undefined,
-    availableTechniques: [
-      TRIGRAM_DATA[archetypeData.coreStance]?.technique,
-    ].filter(Boolean) as KoreanTechnique[],
-    skills: {
-      striking: 50,
-      grappling: 50,
-      defense: 50,
-      mobility: 50,
-      focus: 50,
-      endurance: 50,
-    },
-    combo: {
-      count: 0,
-      multiplier: 1.0,
-      lastTechniqueTime: 0,
-    },
+    bloodLoss: 0,
+    currentTechnique: null,
+    activeEffects: [],
+    vitalPoints: {}, // Initialize as empty object
+    defensiveBonus: 0,
+    attackPower: archetypeData.stats.attackPower || 1.0,
+    movementSpeed: archetypeData.stats.speed || 1.0,
+    reactionTime: 1.0, // Default or derive from archetype
+    focusLevel: 100, // Default or derive
+    battleExperience: 0,
+    injuredLimbs: [],
+    statusConditions: [],
   };
+}
+
+// Add overload for backward compatibility with tests
+export function createPlayerStateSimple(
+  id: string,
+  name: { korean: string; english: string },
+  archetype: PlayerArchetype,
+  stance: TrigramStance
+): PlayerState {
+  return createPlayerState(id, name, archetype, stance, { x: 0, y: 0 });
 }
 
 // Fix: Remove or correct executeTechnique if it exists

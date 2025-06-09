@@ -1,151 +1,167 @@
-// Status effects system for Korean martial arts
+// Combat effects and status system for Korean martial arts
 
-import type { EffectType, EffectIntensity, DamageType } from "./enums"; // Added DamageType
-import type { KoreanText } from "./korean-text";
-import type { Position } from "./common";
-import type { DamageType } from "./combat";
-import { HitEffectType } from "./enums"; // Import the enum
+import type { PlayerState, KoreanText, Position, VitalPoint } from "./index";
 
+// Hit effect for visual feedback
+export interface HitEffect {
+  readonly id: string;
+  readonly type: HitEffectType;
+  readonly attackerId: string;
+  readonly defenderId: string;
+  readonly timestamp: number;
+  readonly duration: number;
+  readonly position?: Position;
+  readonly velocity?: { x: number; y: number };
+  readonly color?: number;
+  readonly size?: number;
+  readonly alpha?: number;
+  readonly lifespan?: number;
+  readonly text?: string | KoreanText;
+  readonly damageAmount?: number;
+  readonly vitalPointId?: string;
+  readonly statusEffect?: StatusEffect;
+  readonly yOffset?: number;
+}
+
+// Hit effect types
+export enum HitEffectType {
+  GENERAL_DAMAGE = "general_damage",
+  CRITICAL_HIT = "critical_hit",
+  VITAL_POINT_STRIKE = "vital_point_strike",
+  STATUS_EFFECT = "status_effect",
+  MISS = "miss",
+  BLOCK = "block",
+  PARRY = "parry",
+  COUNTER = "counter",
+}
+
+// Status effects that can be applied to players
 export interface StatusEffect {
   readonly id: string;
   readonly type: EffectType;
-  readonly intensity: EffectIntensity; // Uses EffectIntensity from enums
-  readonly duration: number; // in milliseconds
-  readonly description: KoreanText;
-  readonly stackable: boolean;
-  readonly source?: string; // Optional source identifier
-  readonly chance?: number;
-  readonly modifiers?: readonly EffectModifier[];
-}
-
-export interface EffectModifier {
-  readonly attribute: string;
-  readonly value: number;
-  readonly type: "flat" | "percentage";
-  readonly damageType?: DamageType; // Added optional damageType
-}
-
-export interface VitalPointEffect extends StatusEffect {
-  // VitalPointEffect is essentially a StatusEffect with potential additional properties
-  readonly vitalPointId?: string;
-  readonly bodyRegion?: string;
-}
-
-// Hit effect for visual combat feedback
-export interface HitEffect {
-  readonly id: string;
-  readonly position: Position;
-  readonly damage?: number;
-  readonly color?: number;
-  readonly lifespan: number;
-  readonly velocity?: {
-    readonly x: number;
-    readonly y: number;
-  };
-  readonly effectType: HitEffectType; // Fix: Make required
-  readonly duration: number; // Fix: Make required
-  readonly intensity?: number;
-  readonly type: HitEffectType; // Fix: Add missing type property
-  readonly timestamp: number; // Fix: Add missing timestamp property
-  readonly text?: string; // Fix: Add missing text property
-  readonly targetId?: string; // Fix: Add missing targetId property
-}
-
-// Combat effect types
-export interface CombatEffect {
-  readonly id: string;
-  readonly type: "buff" | "debuff" | "status" | "environmental";
   readonly name: string;
   readonly description: string;
   readonly duration: number;
-  readonly intensity: number;
-  readonly timestamp: number;
-  readonly position?: Position;
+  readonly startTime: number;
+  readonly endTime: number;
+  readonly intensity: EffectIntensity;
+  readonly stackable: boolean;
+  readonly source: string;
+  readonly modifiers?: readonly EffectModifier[];
+  readonly magnitude?: number;
 }
 
-// Particle effect configuration
+// Effect types
+export enum EffectType {
+  STUN = "stun",
+  BLEED = "bleed",
+  POISON = "poison",
+  PARALYSIS = "paralysis",
+  WEAKNESS = "weakness",
+  STRENGTH = "strength",
+  SPEED = "speed",
+  REGENERATION = "regeneration",
+  VULNERABILITY = "vulnerability",
+  IMMUNITY = "immunity",
+  CONFUSION = "confusion",
+  FEAR = "fear",
+  RAGE = "rage",
+  FOCUS = "focus",
+}
+
+// Effect intensity levels
+export enum EffectIntensity {
+  WEAK = "weak",
+  MILD = "mild",
+  MODERATE = "moderate",
+  STRONG = "strong",
+  SEVERE = "severe",
+  EXTREME = "extreme",
+}
+
+// Effect modifiers for stat changes
+export interface EffectModifier {
+  readonly stat: PlayerStatType;
+  readonly value: number | string;
+  readonly type: "add" | "multiply" | "set";
+  readonly permanent?: boolean;
+}
+
+// Player stat types that can be modified
+export type PlayerStatType =
+  | "health"
+  | "ki"
+  | "stamina"
+  | "attackPower"
+  | "defense"
+  | "speed"
+  | "accuracy"
+  | "criticalChance"
+  | "balance"
+  | "consciousness"
+  | "pain"
+  | "focusLevel";
+
+// Vital point effect when hit
+export interface VitalPointEffect {
+  readonly id: string;
+  readonly type: string;
+  readonly description: string;
+  readonly duration: number;
+  readonly intensity: number;
+  readonly stackable: boolean;
+}
+
+// Particle effect for visual feedback
 export interface ParticleEffect {
   readonly id: string;
-  readonly type: "sparks" | "blood" | "ki_energy" | "dust" | "wind";
+  readonly type: ParticleType;
   readonly position: Position;
   readonly velocity: { x: number; y: number };
-  readonly lifespan: number;
+  readonly acceleration?: { x: number; y: number };
   readonly color: number;
-  readonly alpha: number;
-  readonly scale: number;
+  readonly size: number;
+  readonly lifetime: number;
+  readonly fadeOut?: boolean;
+  readonly gravity?: number;
 }
 
-// Screen effect types for UI feedback
-export interface ScreenEffect {
+// Particle effect types
+export enum ParticleType {
+  SPARK = "spark",
+  BLOOD = "blood",
+  ENERGY = "energy",
+  DUST = "dust",
+  FLASH = "flash",
+  SMOKE = "smoke",
+  LIGHTNING = "lightning",
+  WIND = "wind",
+}
+
+// Environmental effect
+export interface EnvironmentalEffect {
   readonly id: string;
-  readonly type: "flash" | "shake" | "zoom" | "blur" | "color_shift";
+  readonly type: EnvironmentalEffectType;
+  readonly area: {
+    readonly center: Position;
+    readonly radius: number;
+  };
+  readonly duration: number;
   readonly intensity: number;
-  readonly duration: number;
-  readonly easing?: "linear" | "ease_in" | "ease_out" | "ease_in_out";
+  readonly affectedPlayers: readonly string[];
+  readonly statusEffect?: StatusEffect;
 }
 
-// Animation effect configuration
-export interface AnimationEffect {
-  readonly id: string;
-  readonly target: string; // Target object ID
-  readonly property: string; // Property to animate
-  readonly from: number;
-  readonly to: number;
-  readonly duration: number;
-  readonly easing?: "linear" | "ease_in" | "ease_out" | "ease_in_out";
-  readonly loop?: boolean;
-  readonly delay?: number;
+// Environmental effect types
+export enum EnvironmentalEffectType {
+  SMOKE = "smoke",
+  FIRE = "fire",
+  ICE = "ice",
+  WIND = "wind",
+  LIGHTNING = "lightning",
+  DARKNESS = "darkness",
+  LIGHT = "light",
+  PRESSURE = "pressure",
 }
 
-// Sound effect integration
-export interface SoundEffect {
-  readonly id: string;
-  readonly soundId: string;
-  readonly volume: number;
-  readonly pitch?: number;
-  readonly delay?: number;
-  readonly position?: Position; // For spatial audio
-}
-
-// Composite effect that combines multiple effects
-export interface CompositeEffect {
-  readonly id: string;
-  readonly hitEffects: HitEffect[];
-  readonly combatEffects: CombatEffect[];
-  readonly particleEffects: ParticleEffect[];
-  readonly screenEffects: ScreenEffect[];
-  readonly soundEffects: SoundEffect[];
-  readonly animationEffects: AnimationEffect[];
-}
-
-// Effect manager state
-export interface EffectState {
-  readonly activeHitEffects: HitEffect[];
-  readonly activeCombatEffects: CombatEffect[];
-  readonly activeParticleEffects: ParticleEffect[];
-  readonly activeScreenEffects: ScreenEffect[];
-  readonly activeAnimationEffects: AnimationEffect[];
-}
-
-// Effect creation helpers
-export type EffectFactory = {
-  createHitEffect: (
-    damage: number,
-    position: Position,
-    type?: HitEffect["type"]
-  ) => HitEffect;
-  createCombatEffect: (
-    type: CombatEffect["type"],
-    name: string,
-    duration: number
-  ) => CombatEffect;
-  createParticleEffect: (
-    type: ParticleEffect["type"],
-    position: Position
-  ) => ParticleEffect;
-  createScreenEffect: (
-    type: ScreenEffect["type"],
-    intensity: number,
-    duration: number
-  ) => ScreenEffect;
-};
+export default HitEffect;

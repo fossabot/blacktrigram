@@ -83,8 +83,9 @@ vi.mock("../audio/AudioManager", () => {
         muted: !currentState.muted,
       }));
     }),
-    initialize: vi.fn(),
+    initialize: vi.fn(), // Remove parameter
     playSFX: vi.fn(),
+    playSoundEffect: vi.fn(), // Add missing method
     playMusic: vi.fn(),
     stopMusic: vi.fn(),
     stopAllSounds: vi.fn(),
@@ -94,6 +95,7 @@ vi.mock("../audio/AudioManager", () => {
     playStanceChangeSound: vi.fn(),
     playVitalPointHit: vi.fn(),
     playEnvironmentalSound: vi.fn(),
+    loadAudioAsset: vi.fn(), // Add missing method
   };
 
   return {

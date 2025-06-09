@@ -53,6 +53,7 @@ export const ENHANCED_DAMAGE_CONSTANTS = {
   ARCHETYPE_BONUS: 0.15,
   COMBO_MULTIPLIER: 1.2,
   PERFECT_TIMING_BONUS: 0.3,
+  BASE_CRIT_CHANCE: 0.1, // Added: Base critical hit chance (e.g., 10%)
 } as const;
 
 // Combat system constants for Korean martial arts

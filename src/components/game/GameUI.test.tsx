@@ -1,27 +1,77 @@
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import { Stage } from "@pixi/react";
-import { GameUI } from "./GameUI";
-import type { GameUIProps } from "../../types/components";
-import { PlayerArchetype } from "../../types/enums";
-import { createPlayerState } from "../../utils/playerUtils";
+import { GameUI } from "../GameUI";
+import type { PlayerState } from "../../types";
+import { PlayerArchetype, TrigramStance } from "../../types/enums";
 
-describe("GameUI Component", () => {
-  const mockPlayer1 = createPlayerState(
-    { korean: "Player 1", english: "Player 1" }, // Fix: Use KoreanText object
-    PlayerArchetype.MUSA,
-    { korean: "건", english: "geon" }, // Fix: Use KoreanText object
-    "player1"
-  );
+describe("GameUI", () => {
+  const mockPlayer1: PlayerState = {
+    id: "player1",
+    name: { korean: "선수 1", english: "Player 1" },
+    archetype: PlayerArchetype.MUSA,
+    health: 80,
+    maxHealth: 100,
+    ki: 70,
+    maxKi: 100,
+    stamina: 90,
+    maxStamina: 100,
+    currentStance: TrigramStance.GEON,
+    position: { x: 100, y: 300 },
+    isGuarding: false,
+    stunDuration: 0,
+    comboCount: 0,
+    lastActionTime: 0,
+    consciousness: 100,
+    pain: 0,
+    balance: 100,
+    bloodLoss: 0,
+    currentTechnique: null,
+    activeEffects: [],
+    vitalPoints: {},
+    defensiveBonus: 0,
+    attackPower: 1,
+    movementSpeed: 1,
+    reactionTime: 1,
+    focusLevel: 100,
+    battleExperience: 0,
+    injuredLimbs: [],
+    statusConditions: [],
+  };
 
-  const mockPlayer2 = createPlayerState(
-    { korean: "Player 2", english: "Player 2" }, // Fix: Use KoreanText object
-    PlayerArchetype.AMSALJA,
-    { korean: "태", english: "tae" }, // Fix: Use KoreanText object
-    "player2"
-  );
+  const mockPlayer2: PlayerState = {
+    id: "player2",
+    name: { korean: "선수 2", english: "Player 2" },
+    archetype: PlayerArchetype.AMSALJA,
+    health: 60,
+    maxHealth: 100,
+    ki: 85,
+    maxKi: 100,
+    stamina: 75,
+    maxStamina: 100,
+    currentStance: TrigramStance.TAE,
+    position: { x: 700, y: 300 },
+    isGuarding: true,
+    stunDuration: 0,
+    comboCount: 0,
+    lastActionTime: 0,
+    consciousness: 100,
+    pain: 0,
+    balance: 100,
+    bloodLoss: 0,
+    currentTechnique: null,
+    activeEffects: [],
+    vitalPoints: {},
+    defensiveBonus: 0,
+    attackPower: 1,
+    movementSpeed: 1,
+    reactionTime: 1,
+    focusLevel: 100,
+    battleExperience: 0,
+    injuredLimbs: [],
+    statusConditions: [],
+  };
 
-  const defaultProps: GameUIProps = {
+  const defaultProps = {
     player1: mockPlayer1,
     player2: mockPlayer2,
     timeRemaining: 120,
@@ -32,30 +82,20 @@ describe("GameUI Component", () => {
 
   describe("Component Rendering", () => {
     it("renders without crashing", () => {
-      const { container } = render(
-        <Stage>
-          <GameUI {...defaultProps} />
-        </Stage>
-      );
+      const { container } = render(<GameUI {...defaultProps} />);
       expect(container).toBeInTheDocument();
     });
 
     it("displays player information", () => {
-      const { container } = render(
-        <Stage>
-          <GameUI {...defaultProps} />
-        </Stage>
-      );
-      expect(container).toBeInTheDocument();
+      render(<GameUI {...defaultProps} />);
+      expect(screen.getByText(/선수 1/i)).toBeInTheDocument();
+      expect(screen.getByText(/선수 2/i)).toBeInTheDocument();
     });
 
     it("shows game timer and round info", () => {
-      const { container } = render(
-        <Stage>
-          <GameUI {...defaultProps} timeRemaining={30} currentRound={2} />
-        </Stage>
-      );
-      expect(container).toBeInTheDocument();
+      render(<GameUI {...defaultProps} timeRemaining={30} currentRound={2} />);
+      expect(screen.getByText(/time remaining: 30/i)).toBeInTheDocument();
+      expect(screen.getByText(/round 2/i)).toBeInTheDocument();
     });
 
     it("renders with correct props structure", () => {

@@ -1,20 +1,10 @@
-import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
-import { DojangBackground } from "./DojangBackground";
-
-// Mock the missing Stage component
-const MockStage = ({ children }: { children: React.ReactNode }) => (
-  <div data-testid="pixi-stage">{children}</div>
-);
+import DojangBackground from "../DojangBackground"; // Fix: Use default import
 
 describe("DojangBackground", () => {
-  it("should render without crashing", () => {
+  it("renders without crashing", () => {
     expect(() => {
-      render(
-        <MockStage>
-          <DojangBackground width={800} height={600} />
-        </MockStage>
-      );
+      render(<DojangBackground width={800} height={600} />);
     }).not.toThrow();
   });
 
@@ -27,11 +17,7 @@ describe("DojangBackground", () => {
 
     testDimensions.forEach(({ width, height }) => {
       expect(() => {
-        render(
-          <MockStage>
-            <DojangBackground width={width} height={height} />
-          </MockStage>
-        );
+        render(<DojangBackground width={width} height={height} />);
       }).not.toThrow();
     });
   });
@@ -41,22 +27,14 @@ describe("DojangBackground", () => {
     const customHeight = 768;
 
     expect(() => {
-      render(
-        <MockStage>
-          <DojangBackground width={customWidth} height={customHeight} />
-        </MockStage>
-      );
+      render(<DojangBackground width={customWidth} height={customHeight} />);
     }).not.toThrow();
   });
 
   it("should render consistently across multiple renders", () => {
     for (let i = 0; i < 3; i++) {
       expect(() => {
-        render(
-          <MockStage>
-            <DojangBackground width={800} height={600} />
-          </MockStage>
-        );
+        render(<DojangBackground width={800} height={600} />);
       }).not.toThrow();
     }
   });

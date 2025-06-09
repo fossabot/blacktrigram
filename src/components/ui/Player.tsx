@@ -180,3 +180,25 @@ export function Player({
 }
 
 export default Player;
+
+export interface PlayerProps {
+  readonly playerState: PlayerState;
+  readonly x?: number;
+  readonly y?: number;
+  readonly showStats?: boolean;
+  readonly showVitalPoints?: boolean; // Add missing prop
+  readonly interactive?: boolean;
+  readonly onClick?: () => void;
+}
+
+export const Player: React.FC<PlayerProps> = ({
+  playerState,
+  x = 0,
+  y = 0,
+  showStats = true,
+  showVitalPoints = false, // Add missing prop
+  interactive = false,
+  onClick,
+}) => {
+  // ...existing code...
+};

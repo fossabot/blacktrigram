@@ -48,5 +48,18 @@ export const KOREAN_FONT_WEIGHTS = {
 // Re-export from other constant files
 // export * from "./constants/index"; // Already at the top
 
-// Re-export typography constants
+// Re-export all constants for easy importing
+export * from "./constants/colors";
 export * from "./constants/typography";
+export * from "./constants/game";
+export * from "./constants/combat";
+export * from "./constants/controls";
+export * from "./constants/trigram";
+export * from "./constants/techniques";
+export * from "./constants/player";
+export * from "./constants/ui";
+export * from "./constants/vital-points";
+export * from "./constants/animations";
+
+// Default export for convenience
+export { KOREAN_COLORS as default } from "./constants/colors";

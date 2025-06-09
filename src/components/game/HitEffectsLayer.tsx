@@ -1,101 +1,124 @@
 // Hit effects layer for combat feedback
 
-import React, { useMemo } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
+import React, { useState /*, useMemo // Unused */ } from "react";
 import * as PIXI from "pixi.js";
-import type { HitEffect } from "../../types"; // Fix: Remove unused HitEffectType import
-import { KOREAN_COLORS, FONT_FAMILY, FONT_SIZES } from "../../types/constants";
+import {
+  Container,
+  Graphics,
+  Text,
+  useTick /*, useApp // Unused */,
+} from "@pixi/react";
+import type { HitEffect, HitEffectsLayerProps, KoreanText } from "../../types"; // Add KoreanText import
+import { HitEffectType } from "../../types/effects";
+import { KOREAN_COLORS } from "../../types/constants";
 
-interface HitEffectsLayerProps {
-  effects: readonly HitEffect[];
-  currentTime?: number; // Fix: Add currentTime prop
-}
+const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({ effects }) => {
+  const [currentTime, setCurrentTime] = useState(Date.now());
 
-export const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({
-  effects,
-  currentTime = Date.now(), // Fix: Use proper default
-}) => {
-  const textStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.medium,
-        fill: KOREAN_COLORS.TEXT_ACCENT,
-      }),
-    []
+  useTick(() => {
+    setCurrentTime(Date.now());
+  });
+
+  const activeEffects = effects.filter(
+    (effect: HitEffect) =>
+      currentTime - effect.timestamp < (effect.duration ?? 1000)
   );
 
-  // Fix: Filter effects with proper property access
-  const activeEffects = useMemo(() => {
-    return effects.filter(
-      (effect: HitEffect) => currentTime - effect.timestamp < effect.duration
-    );
-  }, [effects, currentTime]);
-
   const getEffectColor = (effect: HitEffect): number => {
+    if (effect.color) return effect.color;
     switch (effect.type) {
-      case "hit":
+      case HitEffectType.CRITICAL_HIT:
+        return KOREAN_COLORS.CRITICAL_HIT || KOREAN_COLORS.ACCENT_RED;
+      case HitEffectType.VITAL_POINT_STRIKE:
+        return KOREAN_COLORS.VITAL_POINT_HIT || KOREAN_COLORS.ACCENT_ORANGE;
+      case HitEffectType.GENERAL_DAMAGE:
         return KOREAN_COLORS.ACCENT_RED;
-      case "critical":
-        return KOREAN_COLORS.ACCENT_GOLD;
-      case "block":
-        return KOREAN_COLORS.PRIMARY_CYAN;
-      case "miss":
-        return KOREAN_COLORS.TEXT_SECONDARY;
       default:
         return effect.color || KOREAN_COLORS.ACCENT_RED;
     }
   };
 
   const getEffectSize = (effect: HitEffect): number => {
+    let baseSize = effect.damageAmount || 10;
     switch (effect.type) {
-      case "critical":
-        return 20;
-      case "hit":
-        return 15;
-      case "block":
-        return 12;
-      case "miss":
-        return 8;
+      case HitEffectType.CRITICAL_HIT:
+        return baseSize * 0.7 + 10;
+      case HitEffectType.VITAL_POINT_STRIKE:
+        return baseSize * 0.6 + 7;
       default:
-        return (effect.damage || 10) * 0.5 + 5;
+        return baseSize * 0.5 + 5;
     }
   };
 
+  const getEffectTextAndStyle = (
+    effect: HitEffect,
+    progress: number
+  ): { textStr: string; style: PIXI.TextStyle } => {
+    const text =
+      typeof effect.text === "object"
+        ? (effect.text as any).korean
+        : effect.text || (effect.damageAmount ? `${effect.damageAmount}` : "");
+    let fontSize = 16;
+    let fill: number = KOREAN_COLORS.TEXT_PRIMARY;
+
+    switch (effect.type) {
+      case HitEffectType.CRITICAL_HIT:
+        fontSize = 24;
+        fill = KOREAN_COLORS.CRITICAL_HIT || KOREAN_COLORS.ACCENT_RED;
+        break;
+      case HitEffectType.VITAL_POINT_STRIKE:
+        fontSize = 20;
+        fill = KOREAN_COLORS.VITAL_POINT_HIT || KOREAN_COLORS.ACCENT_ORANGE;
+        break;
+      default:
+        fill = getEffectColor(effect);
+        break;
+    }
+
+    return {
+      textStr: text,
+      style: new PIXI.TextStyle({
+        fill: fill,
+        fontSize: fontSize * (1 - progress * 0.5),
+        fontWeight: "bold",
+        stroke: KOREAN_COLORS.BLACK,
+        strokeThickness: 2,
+        align: "center",
+      }),
+    };
+  };
+
   return (
-    <Container data-testid="hit-effects-layer">
-      {activeEffects.map((effect: HitEffect) => {
-        // Fix: Use proper property access with required properties
-        const progress = (currentTime - effect.timestamp) / effect.duration;
-        const alpha = Math.max(0, 1 - progress);
-        const text = effect.text || (effect.damage ? `${effect.damage}` : "");
-        const effectColor = getEffectColor(effect);
-        const effectSize = getEffectSize(effect);
+    <Container>
+      {activeEffects.map((effect) => {
+        const progress =
+          (currentTime - effect.timestamp) / (effect.duration ?? 1000);
+        const alpha = effect.alpha ?? 1 - progress; // Use effect.alpha if provided
+        const { textStr, style } = getEffectTextAndStyle(effect, progress);
+        const yOffset = (effect.yOffset ?? 0) - 30 * progress; // Use effect.yOffset
 
         return (
           <Container
             key={effect.id}
-            x={effect.position.x}
-            y={effect.position.y}
+            x={effect.position?.x || 0}
+            y={(effect.position?.y || 0) + yOffset}
+            alpha={alpha}
           >
             <Graphics
               draw={(g: PIXI.Graphics) => {
+                // Add type for g
                 g.clear();
-                g.beginFill(effectColor, alpha * 0.8);
-                g.drawCircle(0, 0, effectSize);
+                g.beginFill(getEffectColor(effect), 0.8 * alpha);
+                g.drawCircle(
+                  0,
+                  0,
+                  getEffectSize(effect) * (1 + progress * 0.2)
+                ); // Slightly different expansion
                 g.endFill();
               }}
             />
-            {text && (
-              <Text
-                text={text}
-                anchor={0.5}
-                style={{
-                  ...textStyle,
-                  fill: effectColor,
-                }}
-                alpha={alpha}
-              />
+            {textStr && (
+              <Text text={textStr} anchor={{ x: 0.5, y: 0.5 }} style={style} />
             )}
           </Container>
         );
@@ -104,4 +127,4 @@ export const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({
   );
 };
 
-export default HitEffectsLayer;
+export default HitEffectsLayer; // Assuming default export

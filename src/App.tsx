@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { Application, Stage } from "@pixi/react";
-import { GameMode, PlayerArchetype, TrigramStance } from "./types/enums"; // Fix: Import TrigramStance
+import { GameMode, PlayerArchetype, TrigramStance } from "./types/enums";
 import { IntroScreen } from "./components/intro/IntroScreen";
 import { CombatScreen } from "./components/combat/CombatScreen";
 import { TrainingScreen } from "./components/training/TrainingScreen";
@@ -13,85 +13,102 @@ function App() {
   const [currentMode, setCurrentMode] = useState<GameMode | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Create default players for combat
-  const createDefaultPlayers = useCallback((): [PlayerState, PlayerState] => {
-    const player1: PlayerState = {
-      id: "player1",
-      name: { korean: "플레이어 1", english: "Player 1" },
-      archetype: PlayerArchetype.MUSA,
-      health: 100,
-      maxHealth: 100,
-      ki: 100,
-      maxKi: 100,
-      stamina: 100,
-      maxStamina: 100,
-      currentStance: TrigramStance.GEON,
-      position: { x: 200, y: 300 },
-      isGuarding: false,
-      stunDuration: 0,
-      comboCount: 0,
-      lastActionTime: 0,
-      consciousness: 100,
-      pain: 0,
-      balance: 100,
-      bloodLoss: 0,
-      currentTechnique: null,
-      activeEffects: [],
-      vitalPoints: [], // Fix: Use vitalPoints instead of vitalPointHits
-      defensiveBonus: 0,
-      attackPower: 1.0,
-      movementSpeed: 1.0,
-      reactionTime: 1.0,
-      focusLevel: 100,
-      battleExperience: 0,
-      injuredLimbs: [],
-      statusConditions: [],
-    };
+  const createDefaultPlayer = useCallback(
+    (
+      id: string,
+      koreanName: string,
+      englishName: string,
+      archetype: PlayerArchetype,
+      stance: TrigramStance,
+      position: { x: number; y: number }
+    ): PlayerState => {
+      return {
+        id,
+        name: { korean: koreanName, english: englishName },
+        archetype,
+        health: 100,
+        maxHealth: 100,
+        ki: 100,
+        maxKi: 100,
+        stamina: 100,
+        maxStamina: 100,
+        currentStance: stance,
+        position,
+        isGuarding: false,
+        stunDuration: 0,
+        comboCount: 0,
+        lastActionTime: 0,
+        consciousness: 100,
+        pain: 0,
+        balance: 100,
+        bloodLoss: 0,
+        currentTechnique: null,
+        activeEffects: [],
+        vitalPoints: {},
+        defensiveBonus: 0,
+        attackPower: 1.0,
+        movementSpeed: 1.0,
+        reactionTime: 1.0,
+        focusLevel: 100,
+        battleExperience: 0,
+        injuredLimbs: [],
+        statusConditions: [],
+      };
+    },
+    []
+  );
 
-    const player2: PlayerState = {
-      id: "player2",
-      name: { korean: "플레이어 2", english: "Player 2" },
-      archetype: PlayerArchetype.AMSALJA,
-      health: 100,
-      maxHealth: 100,
-      ki: 100,
-      maxKi: 100,
-      stamina: 100,
-      maxStamina: 100,
-      currentStance: TrigramStance.TAE,
-      position: { x: 600, y: 300 },
-      isGuarding: false,
-      stunDuration: 0,
-      comboCount: 0,
-      lastActionTime: 0,
-      consciousness: 100,
-      pain: 0,
-      balance: 100,
-      bloodLoss: 0,
-      currentTechnique: null,
-      activeEffects: [],
-      vitalPoints: [], // Fix: Use vitalPoints instead of vitalPointHits
-      defensiveBonus: 0,
-      attackPower: 1.0,
-      movementSpeed: 1.0,
-      reactionTime: 1.0,
-      focusLevel: 100,
-      battleExperience: 0,
-      injuredLimbs: [],
-      statusConditions: [],
-    };
+  const [gamePlayers, setGamePlayers] = useState<[PlayerState, PlayerState]>(
+    () => [
+      createDefaultPlayer(
+        "player1",
+        "플레이어 1",
+        "Player 1",
+        PlayerArchetype.MUSA,
+        TrigramStance.GEON,
+        { x: 200, y: 300 }
+      ),
+      createDefaultPlayer(
+        "player2",
+        "플레이어 2",
+        "Player 2",
+        PlayerArchetype.AMSALJA,
+        TrigramStance.TAE,
+        { x: 600, y: 300 }
+      ),
+    ]
+  );
+  const [round, _setRound] = useState(1); // setRound is unused
+  const [time, _setTime] = useState(GAME_CONFIG.ROUND_DURATION_SECONDS); // setTime is unused
+  const [paused, _setPaused] = useState(false); // setPaused is unused
 
-    return [player1, player2];
-  }, []);
-
-  const handleMenuSelect = useCallback((mode: GameMode) => {
-    setCurrentMode(mode);
-    setIsInitialized(true);
-  }, []);
+  const handlePlayerUpdate = useCallback(
+    (index: 0 | 1, updates: Partial<PlayerState>) => {
+      setGamePlayers((prevPlayers) => {
+        const newPlayers = [...prevPlayers] as [PlayerState, PlayerState];
+        newPlayers[index] = { ...newPlayers[index], ...updates };
+        return newPlayers;
+      });
+    },
+    []
+  );
 
   const handleBackToMenu = useCallback(() => {
     setCurrentMode(null);
     setIsInitialized(false);
+  }, []);
+
+  const handleGameEnd = useCallback(
+    (winner?: PlayerState | null) => {
+      console.log("Game ended. Winner:", winner?.name.english);
+      handleBackToMenu();
+    },
+    [handleBackToMenu]
+  );
+
+  const handleMenuSelect = useCallback((mode: GameMode) => {
+    setCurrentMode(mode);
+    setIsInitialized(true);
   }, []);
 
   const renderCurrentScreen = () => {
@@ -103,14 +120,19 @@ function App() {
       case GameMode.VERSUS:
         return (
           <CombatScreen
+            players={gamePlayers}
+            currentRound={round}
+            timeRemaining={time}
+            isPaused={paused}
+            onPlayerUpdate={handlePlayerUpdate}
             onReturnToMenu={handleBackToMenu}
-            players={createDefaultPlayers()}
+            onGameEnd={handleGameEnd}
           />
-        ); // Fix: Add players prop
+        );
       case GameMode.TRAINING:
         return (
           <TrainingScreen
-            selectedArchetype={PlayerArchetype.MUSA} // Fix: Use PlayerArchetype enum
+            selectedArchetype={PlayerArchetype.MUSA}
             onBack={handleBackToMenu}
             onTrainingComplete={() => {
               console.log("Training completed");
@@ -120,24 +142,39 @@ function App() {
       case GameMode.STORY:
         return (
           <CombatScreen
+            players={gamePlayers}
+            currentRound={round}
+            timeRemaining={time}
+            isPaused={paused}
+            onPlayerUpdate={handlePlayerUpdate}
             onReturnToMenu={handleBackToMenu}
-            players={createDefaultPlayers()}
+            onGameEnd={handleGameEnd}
           />
-        ); // Fix: Add players prop
-      case GameMode.ARCADE:
+        );
+      case GameMode.SPARRING: // Fix: Use SPARRING instead of ARCADE
         return (
           <CombatScreen
+            players={gamePlayers}
+            currentRound={round}
+            timeRemaining={time}
+            isPaused={paused}
+            onPlayerUpdate={handlePlayerUpdate}
             onReturnToMenu={handleBackToMenu}
-            players={createDefaultPlayers()}
+            onGameEnd={handleGameEnd}
           />
-        ); // Fix: Add players prop
+        );
       case GameMode.SURVIVAL:
         return (
           <CombatScreen
+            players={gamePlayers}
+            currentRound={round}
+            timeRemaining={time}
+            isPaused={paused}
+            onPlayerUpdate={handlePlayerUpdate}
             onReturnToMenu={handleBackToMenu}
-            players={createDefaultPlayers()}
+            onGameEnd={handleGameEnd}
           />
-        ); // Fix: Add players prop
+        );
       default:
         return <IntroScreen onMenuSelect={handleMenuSelect} />;
     }

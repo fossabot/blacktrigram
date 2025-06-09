@@ -10,7 +10,7 @@ import {
   GAME_CONFIG,
 } from "../../types/constants";
 
-export const DojangBackground: React.FC<DojangBackgroundProps> = ({
+const DojangBackground: React.FC<DojangBackgroundProps> = ({
   width = GAME_CONFIG.CANVAS_WIDTH,
   height = GAME_CONFIG.CANVAS_HEIGHT,
   animate = true,
@@ -86,3 +86,8 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
     </Container>
   );
 };
+
+export default DojangBackground;
+
+// Keep named export
+export { DojangBackground };

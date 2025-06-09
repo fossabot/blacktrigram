@@ -4,20 +4,20 @@ import type { ComponentProps, ReactNode } from "react";
 import type * as PIXI from "pixi.js";
 import type {
   PlayerState,
-  GameState,
-  GamePhase,
   TrigramStance,
-  HitEffect,
-  MatchStatistics,
-  KoreanTechnique,
-  CombatResult,
-  Position,
   KoreanText,
-  VitalPoint,
+  HitEffect,
+  GamePhase,
+  PlayerArchetype,
+  BaseUIProps,
+  CombatResult,
+  GameMode,
+  KoreanTechnique,
   KoreanTextEmphasis,
   KoreanTextSize,
+  MatchStatistics,
+  VitalPoint, // Added
 } from "./index";
-import type { GameMode, PlayerArchetype } from "./enums";
 import { KoreanTextWeight } from "@/components";
 
 // Base component props for all PixiJS components
@@ -58,13 +58,22 @@ export interface KoreanTextProps {
   style?: PIXI.TextStyle;
 }
 
-// Player visual component props
-export interface PlayerVisualsProps extends BasePixiProps {
+// Player props
+export interface PlayerProps extends BaseComponentProps {
   playerState: PlayerState;
-  showHealthBar?: boolean;
-  showStanceIndicator?: boolean;
-  showVitalPoints?: boolean;
-  onVitalPointClick?: (vitalPoint: VitalPoint) => void;
+  playerIndex: number; // Added playerIndex
+  isSelected?: boolean;
+  onClick?: (playerIndex: number) => void;
+  onStateUpdate?: (updates: Partial<PlayerState>) => void;
+  // Add other player-specific props like textures, animations, etc.
+}
+
+// Player visual component props
+export interface PlayerVisualsProps extends BaseUIProps {
+  playerState: PlayerState;
+  isAttacking?: boolean;
+  isHit?: boolean;
+  // Add other visual-specific props
 }
 
 // Health bar component props
@@ -100,51 +109,52 @@ export interface TrigramWheelProps {
 }
 
 // Combat HUD props
-export interface CombatHUDProps extends BasePixiProps {
+export interface CombatHUDProps extends BaseUIProps {
+  player1: PlayerState;
+  player2: PlayerState;
   players: readonly [PlayerState, PlayerState];
   timeRemaining: number;
   currentRound: number;
   maxRounds: number;
-  isPaused: boolean;
-  isPlayerTurn?: boolean;
+  gameMessage?: string;
+  isPaused?: boolean; // Add missing prop
+  isPlayerTurn?: boolean; // Add missing prop
+  onPauseToggle?: () => void;
 }
 
 // Combat arena props
-export interface CombatArenaProps extends BasePixiProps {
+export interface CombatArenaProps extends BaseUIProps {
   players: readonly [PlayerState, PlayerState];
-  onPlayerUpdate: (playerIndex: 0 | 1, updates: Partial<PlayerState>) => void;
-  onTechniqueExecute: (
-    playerIndex: 0 | 1,
-    technique: KoreanTechnique
-  ) => Promise<CombatResult | undefined>;
-  combatEffects: readonly HitEffect[];
-  isExecutingTechnique?: boolean;
-  showVitalPoints?: boolean;
-  showDebugInfo?: boolean;
+  onPlayerClick?: (playerIndex: 0 | 1) => void;
 }
 
 // Combat controls props
-export interface CombatControlsProps extends BasePixiProps {
-  players: readonly [PlayerState, PlayerState];
-  player: PlayerState;
-  onStanceChange: (playerIndex: 0 | 1, stance: TrigramStance) => void;
-  isExecutingTechnique?: boolean;
-  isPaused?: boolean;
-  showVitalPoints?: boolean;
+export interface CombatControlsProps extends BaseUIProps {
+  onAttack: () => void;
+  onDefend: () => void;
+  onSwitchStance: (stance: TrigramStance) => void;
+  onStanceChange?: (stance: TrigramStance) => void;
+  onTechniqueExecute?: (technique: KoreanTechnique) => void; // Add missing prop
+  onGuard?: () => void; // Add missing prop
+  onPauseToggle: () => void;
+  isPaused: boolean;
+  player?: PlayerState; // Added to access currentStance
+  isExecutingTechnique?: boolean; // Added
 }
 
-// Combat screen props
+// Combat screen props - ensure all required properties are included
 export interface CombatScreenProps {
   readonly players: readonly [PlayerState, PlayerState];
-  readonly onPlayerUpdate?: (
-    playerIndex: number,
+  readonly currentRound: number;
+  readonly timeRemaining: number;
+  readonly isPaused: boolean;
+  readonly onPlayerUpdate: (
+    playerIndex: 0 | 1,
     updates: Partial<PlayerState>
   ) => void;
-  readonly onReturnToMenu?: () => void;
-  readonly gamePhase?: GamePhase; // Fix: Now properly typed
-  readonly onGamePhaseChange?: (phase: GamePhase) => void; // Fix: Now properly typed
-  readonly timeRemaining?: number;
-  readonly gameMode?: GameMode;
+  readonly onReturnToMenu: () => void; // Ensure this exists
+  readonly onGameEnd: (winner?: PlayerState | null | undefined) => void; // Ensure this exists
+  readonly gameMode?: GameMode; // Ensure this exists
   readonly player1Archetype?: PlayerArchetype;
   readonly player2Archetype?: PlayerArchetype;
   readonly width?: number;
@@ -153,26 +163,13 @@ export interface CombatScreenProps {
 
 // Game engine props
 export interface GameEngineProps {
-  readonly player1: PlayerState;
-  readonly player2: PlayerState;
-  readonly gamePhase?: GamePhase;
-  readonly onGameStateChange?: (gameState: GameState) => void;
-  readonly onPlayerUpdate?: (
-    playerIndex: number,
-    updates: Partial<PlayerState>
-  ) => void;
-  readonly onGamePhaseChange?: (phase: GamePhase) => void;
-  readonly timeRemaining?: number;
-  readonly currentRound?: number;
-  readonly isPaused?: boolean;
-  readonly gameMode?: GameMode; // Fix: Remove explicit import, use local GameMode enum
-  readonly width?: number;
-  readonly height?: number;
-  readonly x?: number;
-  readonly y?: number;
-  readonly onPlayer1Update?: (updates: Partial<PlayerState>) => void;
-  readonly onPlayer2Update?: (updates: Partial<PlayerState>) => void;
-  readonly onCombatResult?: (result: CombatResult) => void; // Fix: Add missing prop
+  players: readonly [PlayerState, PlayerState];
+  onPlayerUpdate: (playerIndex: 0 | 1, updates: Partial<PlayerState>) => void;
+  onCombatResult: (result: CombatResult) => void;
+  onGameEvent: (event: string, data?: any) => void;
+  isPaused: boolean;
+  gameMode?: GameMode; // Added gameMode prop
+  gameTime?: number; // Added gameTime prop
 }
 
 // Game UI props
@@ -236,14 +233,15 @@ export interface ArchetypeDisplayProps extends BaseComponentProps {
 
 // End screen props
 export interface EndScreenProps {
-  readonly winner: PlayerState | null;
+  readonly winner: PlayerState | null | undefined;
   readonly matchStatistics: MatchStatistics;
   readonly onRestart: () => void;
   readonly onReturnToMenu: () => void;
-  readonly width?: number;
-  readonly height?: number;
-  readonly x?: number;
-  readonly y?: number;
+  readonly width?: number; // Add missing prop
+  readonly height?: number; // Add missing prop
+  readonly x?: number; // Add missing prop
+  readonly y?: number; // Add missing prop
+  readonly children?: ReactNode;
 }
 
 // Intro screen props
@@ -274,9 +272,18 @@ export interface MenuSectionProps {
   readonly height?: number;
 }
 
-// Combat screen props
+// Combat screen props - consolidated and corrected
 export interface CombatScreenProps {
-  readonly onReturnToMenu?: () => void; // Fix: Add missing prop
+  readonly players: readonly [PlayerState, PlayerState];
+  readonly currentRound: number;
+  readonly timeRemaining: number;
+  readonly isPaused: boolean;
+  readonly onPlayerUpdate: (
+    playerIndex: 0 | 1,
+    updates: Partial<PlayerState>
+  ) => void;
+  readonly onReturnToMenu: () => void; // Add missing property
+  readonly onGameEnd: (winner?: PlayerState | null | undefined) => void;
   readonly gameMode?: GameMode;
   readonly player1Archetype?: PlayerArchetype;
   readonly player2Archetype?: PlayerArchetype;

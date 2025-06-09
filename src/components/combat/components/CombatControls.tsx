@@ -1,119 +1,300 @@
-import React, { useCallback, useMemo } from "react";
+import { useMemo, useCallback, useState } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import type { CombatControlsProps } from "../../../types/components";
-import type { TrigramStance } from "../../../types/enums";
+import type {
+  CombatControlsProps,
+  TrigramStance,
+  KoreanTechnique,
+} from "../../../types";
 import {
   KOREAN_COLORS,
   FONT_FAMILY,
   FONT_SIZES,
-  FONT_WEIGHTS,
   TRIGRAM_DATA,
   TRIGRAM_STANCES_ORDER,
 } from "../../../types/constants";
+import { BaseButton } from "../../ui/base/BaseButton";
 
 export const CombatControls: React.FC<CombatControlsProps> = ({
+  onAttack,
+  onDefend,
+  onSwitchStance,
+  onPauseToggle,
+  isPaused,
   player,
-  onStanceChange,
+  onTechniqueExecute,
+  onGuard,
   isExecutingTechnique = false,
-  isPaused = false,
+  width = 300,
+  height = 100,
   x = 0,
   y = 0,
 }) => {
-  const handleStanceClick = useCallback(
-    (stance: TrigramStance) => {
-      if (!isPaused && !isExecutingTechnique) {
-        onStanceChange(0, stance);
-      }
-    },
-    [onStanceChange, isPaused, isExecutingTechnique]
+  const [selectedStance, setSelectedStance] = useState<TrigramStance | null>(
+    null
   );
 
-  const stanceButtonStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.small,
-        fill: KOREAN_COLORS.TEXT_PRIMARY,
-        fontWeight: FONT_WEIGHTS.medium.toString() as PIXI.TextStyleFontWeight,
-        align: "center",
-        stroke: KOREAN_COLORS.BLACK_SOLID,
-      }),
-    []
+  // Get current stance data safely
+  const currentStanceData = player
+    ? TRIGRAM_DATA[player.currentStance as TrigramStance]
+    : undefined;
+
+  const availableTechniques: KoreanTechnique[] = useMemo(() => {
+    if (!currentStanceData?.technique) return [];
+    return [currentStanceData.technique];
+  }, [currentStanceData]);
+
+  const handleStanceSelect = useCallback(
+    (stance: TrigramStance) => {
+      setSelectedStance(stance);
+      onSwitchStance?.(stance);
+    },
+    [onSwitchStance]
   );
 
-  const renderStanceButton = useCallback(
-    (stance: TrigramStance) => {
-      const stanceData = TRIGRAM_DATA[stance];
-      const isSelected = player.currentStance === stance;
-
-      return (
-        <Container
-          key={stance}
-          interactive={true}
-          buttonMode={true}
-          pointertap={() => handleStanceClick(stance)}
-        >
-          <Graphics
-            draw={(g: PIXI.Graphics) => {
-              g.clear();
-              const fillColor = isSelected
-                ? KOREAN_COLORS.ACCENT_PRIMARY
-                : stanceData.theme?.primary ||
-                  KOREAN_COLORS.UI_BACKGROUND_MEDIUM;
-
-              g.beginFill(fillColor, 0.8);
-              g.drawRect(0, 0, 60, 60);
-              g.endFill();
-
-              // Draw trigram symbol
-              g.lineStyle(3, KOREAN_COLORS.TEXT_PRIMARY, 1);
-              for (let i = 0; i < 3; i++) {
-                g.moveTo(10, 15 + i * 15);
-                g.lineTo(50, 15 + i * 15);
-              }
-            }}
-          />
-
-          <Text
-            text={stanceData.name?.korean || stance}
-            style={stanceButtonStyle}
-            x={30}
-            y={45}
-            anchor={0.5}
-          />
-        </Container>
-      );
+  const handleTechniqueExecute = useCallback(
+    (technique: KoreanTechnique) => {
+      onTechniqueExecute?.(technique);
     },
-    [player.currentStance, handleStanceClick, stanceButtonStyle]
+    [onTechniqueExecute]
+  );
+
+  // Get current stance technique for the player
+  const getCurrentTechnique = useCallback((): KoreanTechnique | null => {
+    if (!player?.currentStance) return null;
+
+    // Create a basic technique based on current stance
+    return {
+      id: `${player.currentStance}_basic`,
+      name: `${player.currentStance} 기법`,
+      koreanName: `${player.currentStance} 기법`,
+      englishName: `${player.currentStance} Technique`,
+      romanized: `${player.currentStance} gihbeop`,
+      description: {
+        korean: `${player.currentStance} 자세의 기본 기법`,
+        english: `Basic technique for ${player.currentStance} stance`,
+      },
+      stance: player.currentStance,
+      type: "strike" as any, // Use appropriate type
+      damage: 20,
+      kiCost: 10,
+      staminaCost: 15,
+      accuracy: 0.8,
+    };
+  }, [player?.currentStance]);
+
+  const controlsPanelDraw = useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.9);
+      g.lineStyle(2, KOREAN_COLORS.PRIMARY_CYAN, 0.8);
+      g.drawRoundedRect(0, 0, width, height, 10);
+      g.endFill();
+    },
+    [width, height]
   );
 
   return (
     <Container x={x} y={y}>
-      {/* Current stance display */}
-      <Text
-        text={`현재 자세: ${
-          TRIGRAM_DATA[player.currentStance as TrigramStance].name?.korean
-        } (${
-          TRIGRAM_DATA[player.currentStance as TrigramStance].name?.english
-        })`}
-        style={stanceButtonStyle}
-        x={20}
-        y={20}
+      {/* Controls panel background */}
+      <Graphics draw={controlsPanelDraw} />
+
+      {/* Stance selection buttons */}
+      <Container x={20} y={20}>
+        <Text
+          text="자세 선택 (Stance Selection)"
+          style={
+            new PIXI.TextStyle({
+              fontSize: FONT_SIZES.small,
+              fill: KOREAN_COLORS.TEXT_SECONDARY,
+              fontFamily: FONT_FAMILY.PRIMARY,
+            })
+          }
+        />
+
+        {TRIGRAM_STANCES_ORDER.map((stance, index) => {
+          const stanceData = TRIGRAM_DATA[stance];
+          const isSelected = selectedStance === stance;
+          const isCurrentStance = player?.currentStance === stance;
+
+          return (
+            <BaseButton
+              key={stance}
+              x={index * 80}
+              y={25}
+              width={70}
+              height={30}
+              text={stanceData?.symbol || stance}
+              variant={
+                isCurrentStance ? "primary" : isSelected ? "secondary" : "ghost"
+              }
+              onClick={() => handleStanceSelect(stance as TrigramStance)} // Fix: Use onClick instead of onPointerTap
+              interactive={!isExecutingTechnique}
+            />
+          );
+        })}
+      </Container>
+
+      {/* Available techniques */}
+      <Container x={20} y={80}>
+        <Text
+          text="기술 (Techniques)"
+          style={
+            new PIXI.TextStyle({
+              fontSize: FONT_SIZES.small,
+              fill: KOREAN_COLORS.TEXT_SECONDARY,
+              fontFamily: FONT_FAMILY.PRIMARY,
+            })
+          }
+        />
+
+        {availableTechniques.map((tech: KoreanTechnique, index: number) => (
+          <BaseButton
+            key={tech.id}
+            x={index * 160}
+            y={25}
+            width={150}
+            height={35}
+            text={tech.koreanName}
+            variant={!isExecutingTechnique ? "primary" : "ghost"}
+            onClick={() => handleTechniqueExecute(tech)} // Fix: Use onClick instead of onPointerTap
+            disabled={isExecutingTechnique}
+          />
+        ))}
+      </Container>
+
+      {/* Status indicators */}
+      <Container x={width - 200} y={20}>
+        <Graphics
+          draw={(g: PIXI.Graphics) => {
+            g.clear();
+            if (player) {
+              // Ki indicator
+              g.beginFill(KOREAN_COLORS.PRIMARY_CYAN, 0.7);
+              g.drawRect(0, 0, (player.ki / player.maxKi) * 180, 15);
+              g.endFill();
+
+              // Stamina indicator
+              g.beginFill(KOREAN_COLORS.SECONDARY_YELLOW, 0.7);
+              g.drawRect(0, 20, (player.stamina / player.maxStamina) * 180, 15);
+              g.endFill();
+            }
+          }}
+        />
+
+        <Text
+          text={`기 (Ki): ${player?.ki || 0}/${player?.maxKi || 100}`}
+          style={
+            new PIXI.TextStyle({
+              fontSize: FONT_SIZES.small,
+              fill: KOREAN_COLORS.TEXT_PRIMARY,
+              fontFamily: FONT_FAMILY.PRIMARY,
+            })
+          }
+          y={40}
+        />
+
+        <Text
+          text={`체력 (Stamina): ${player?.stamina || 0}/${
+            player?.maxStamina || 100
+          }`}
+          style={
+            new PIXI.TextStyle({
+              fontSize: FONT_SIZES.small,
+              fill: KOREAN_COLORS.TEXT_PRIMARY,
+              fontFamily: FONT_FAMILY.PRIMARY,
+            })
+          }
+          y={55}
+        />
+      </Container>
+
+      {/* Technique Execution Button - Fix: Pass actual technique */}
+      <BaseButton
+        text="기술 (Technique)"
+        onClick={() => {
+          const technique = getCurrentTechnique();
+          if (technique) {
+            handleTechniqueExecute(technique);
+          }
+        }}
+        x={10}
+        y={50}
+        width={80}
+        height={30}
+        interactive={!isExecutingTechnique}
+        variant="accent"
+        disabled={!getCurrentTechnique() || isExecutingTechnique}
       />
 
-      {/* Stance buttons grid */}
-      <Container x={20} y={50}>
-        {TRIGRAM_STANCES_ORDER.map((stance, index) => (
-          <Container
-            key={stance}
-            x={(index % 4) * 70}
-            y={Math.floor(index / 4) * 70}
-          >
-            {renderStanceButton(stance as TrigramStance)}{" "}
-            {/* Fix: type assertion */}
-          </Container>
-        ))}
+      {/* Attack Button */}
+      <BaseButton
+        text="공격 (Attack)"
+        onClick={onAttack}
+        x={10}
+        y={10}
+        width={80}
+        height={30}
+        variant={!isExecutingTechnique ? "primary" : "ghost"} // Fix: Use destructured prop
+        interactive={true}
+        disabled={isExecutingTechnique} // Fix: Use destructured prop
+      />
+
+      {/* Guard Button */}
+      <Container
+        x={10}
+        y={90}
+        interactive={true}
+        buttonMode={true}
+        pointertap={() => onGuard?.()} // Fix: Use destructured prop
+      >
+        <BaseButton
+          text="방어 (Guard)"
+          onClick={() => onGuard?.()} // Fix: Use destructured prop
+          width={80}
+          height={30}
+          variant="secondary"
+        />
+      </Container>
+
+      {/* Combat Control Buttons */}
+      <Container x={width - 300} y={height - 100}>
+        {/* Defend Button */}
+        <BaseButton
+          text="방어 (Defend)"
+          onClick={onDefend}
+          x={100}
+          y={10}
+          width={80}
+          height={30}
+          variant="secondary"
+        />
+
+        {/* Pause Button */}
+        <BaseButton
+          text={isPaused ? "재개" : "일시정지"}
+          onClick={onPauseToggle}
+          x={190}
+          y={10}
+          width={80}
+          height={30}
+          variant="ghost"
+        />
+
+        {/* Stance Info */}
+        {player && (
+          <Text
+            text={`현재 자세: ${player.currentStance}`}
+            style={
+              new PIXI.TextStyle({
+                fontSize: FONT_SIZES.small,
+                fill: KOREAN_COLORS.TEXT_PRIMARY,
+              })
+            }
+            x={10}
+            y={50}
+          />
+        )}
       </Container>
     </Container>
   );

@@ -1,132 +1,157 @@
 import React, {
   createContext,
   useContext,
-  useEffect,
-  useCallback,
   useState,
-  ReactNode,
+  useCallback,
+  useEffect,
 } from "react";
-import type {
-  IAudioManager,
-  AudioState,
-  SoundEffectId,
-  MusicTrackId,
-  AudioPlaybackOptions,
-} from "../types/audio";
 import { AudioManager } from "./AudioManager";
+import type { AudioConfig, SoundEffectId, MusicTrackId } from "../types/audio";
+import type { PlayerArchetype } from "../types/enums";
 
-interface AudioContextValue {
-  audioManager: IAudioManager;
+interface AudioContextType {
+  audioManager: AudioManager;
   isInitialized: boolean;
-  playSFX: (id: SoundEffectId, options?: AudioPlaybackOptions) => void;
-  playMusic: (id: MusicTrackId, options?: AudioPlaybackOptions) => void;
-  stopMusic: (id?: MusicTrackId, fadeOutDuration?: number) => void;
-  setMasterVolume: (volume: number) => void;
-  setSFXVolume: (volume: number) => void;
+  currentMusic: string | null;
+  sfxVolume: number;
+  musicVolume: number;
+  setSfxVolume: (volume: number) => void;
   setMusicVolume: (volume: number) => void;
-  setMuted: (muted: boolean) => void;
-  getState: () => AudioState;
+  playKoreanTechniqueSound: (
+    techniqueId: string,
+    archetype: PlayerArchetype
+  ) => Promise<void>;
+  playTrigramStanceSound: (stance: string) => Promise<void>;
+  playVitalPointHitSound: (
+    severity: "minor" | "moderate" | "severe" | "critical"
+  ) => Promise<void>;
+  playMusic: (trackId: MusicTrackId) => Promise<void>;
+  playSoundEffect: (soundId: SoundEffectId) => Promise<void>;
+  stopMusic: () => void;
+  mute: () => void;
+  unmute: () => void;
+  isMuted: boolean;
 }
 
-const AudioContext = createContext<AudioContextValue | null>(null);
+const AudioContext = createContext<AudioContextType | undefined>(undefined);
+
+export const useAudio = (): AudioContextType => {
+  const context = useContext(AudioContext);
+  if (!context) {
+    throw new Error("useAudio must be used within an AudioProvider");
+  }
+  return context;
+};
 
 interface AudioProviderProps {
-  children: ReactNode;
-  manager?: IAudioManager;
+  children: React.ReactNode;
+  config?: AudioConfig;
 }
 
-export const AudioProvider: React.FC<AudioProviderProps> = ({
-  children,
-  manager,
-}) => {
-  const [audioManager] = useState<IAudioManager>(
-    () => manager || new AudioManager()
-  );
+export const AudioProvider: React.FC<AudioProviderProps> = ({ children }) => {
   const [isInitialized, setIsInitialized] = useState(false);
+  const [audioManager] = useState(() => new AudioManager()); // Remove config parameter
 
   useEffect(() => {
     const initializeAudio = async () => {
       try {
-        await audioManager.init();
+        // Create proper AudioConfig object
+        const config: AudioConfig = {
+          enableSpatialAudio: false,
+          maxSimultaneousSounds: 32,
+          audioFormats: ["audio/mp3", "audio/wav", "audio/webm"],
+          fadeTransitionTime: 1000,
+          defaultVolume: 0.7,
+        };
+
+        await audioManager.initialize(config); // Use config instead of audioAssetRegistry
         setIsInitialized(true);
-        console.log("Audio system initialized successfully");
       } catch (error) {
-        console.error("Failed to initialize audio system:", error);
-        setIsInitialized(false);
+        console.error("Failed to initialize audio:", error);
       }
     };
 
-    if (!audioManager.isInitialized) {
-      initializeAudio();
-    } else {
-      setIsInitialized(true);
-    }
+    initializeAudio();
   }, [audioManager]);
 
-  const playSFX = useCallback(
-    (id: SoundEffectId, options?: AudioPlaybackOptions) => {
-      audioManager.playSFX(id, options);
-    },
-    [audioManager]
-  );
+  const playKoreanTechniqueSound = async (
+    techniqueId: string,
+    archetype: PlayerArchetype
+  ): Promise<void> => {
+    if (!isInitialized) return;
+    return audioManager.playKoreanTechniqueSound(techniqueId, archetype);
+  };
 
-  const playMusic = useCallback(
-    (id: MusicTrackId, options?: AudioPlaybackOptions) => {
-      audioManager.playMusic(id, options);
-    },
-    [audioManager]
-  );
+  const playTrigramStanceSound = async (stance: string): Promise<void> => {
+    if (!isInitialized) return;
+    return audioManager.playTrigramStanceSound(stance);
+  };
 
-  const stopMusic = useCallback(
-    (id?: MusicTrackId, fadeOutDuration?: number) => {
-      audioManager.stopMusic(id, fadeOutDuration);
-    },
-    [audioManager]
-  );
+  const playVitalPointHitSound = async (
+    severity: "minor" | "moderate" | "severe" | "critical"
+  ): Promise<void> => {
+    if (!isInitialized) return;
+    return audioManager.playVitalPointHitSound(severity);
+  };
 
-  const setMasterVolume = useCallback(
+  const playMusic = async (trackId: MusicTrackId): Promise<void> => {
+    if (!isInitialized) return;
+    await audioManager.playMusicTrack(trackId);
+  };
+
+  const playSoundEffect = async (soundId: SoundEffectId): Promise<void> => {
+    if (!isInitialized) return;
+    console.log(`Playing sound effect: ${soundId}`);
+  };
+
+  const stopMusic = (): void => {
+    audioManager.stopMusic();
+  };
+
+  const mute = (): void => {
+    audioManager.setVolume("master", 0);
+  };
+
+  const unmute = (): void => {
+    audioManager.setVolume("master", 1);
+  };
+
+  const [sfxVolumeState, setSfxVolumeState] = useState(0.8);
+  const [musicVolumeState, setMusicVolumeState] = useState(0.7);
+
+  const setSfxVolume = useCallback(
     (volume: number) => {
-      audioManager.setMasterVolume(volume);
-    },
-    [audioManager]
-  );
-
-  const setSFXVolume = useCallback(
-    (volume: number) => {
-      audioManager.setSFXVolume(volume);
+      audioManager.setVolume("sfx", volume);
+      setSfxVolumeState(volume);
     },
     [audioManager]
   );
 
   const setMusicVolume = useCallback(
     (volume: number) => {
-      audioManager.setMusicVolume(volume);
+      audioManager.setVolume("music", volume);
+      setMusicVolumeState(volume);
     },
     [audioManager]
   );
 
-  const setMuted = useCallback(
-    (muted: boolean) => {
-      audioManager.setMuted(muted);
-    },
-    [audioManager]
-  );
-
-  const getState = useCallback(() => {
-    return audioManager.getState();
-  }, [audioManager]);
-
-  const contextValue: AudioContextValue = {
+  const contextValue: AudioContextType = {
     audioManager,
     isInitialized,
-    playSFX,
+    currentMusic: null,
+    sfxVolume: sfxVolumeState,
+    musicVolume: musicVolumeState,
+    setSfxVolume: setSfxVolume,
+    setMusicVolume: setMusicVolume,
+    playKoreanTechniqueSound,
+    playTrigramStanceSound,
+    playVitalPointHitSound,
     playMusic,
+    playSoundEffect,
     stopMusic,
-    setMasterVolume,
-    setSFXVolume,
-    setMusicVolume,
-    setMuted,
-    getState,
+    mute,
+    unmute,
+    isMuted: false,
   };
 
   return (
@@ -136,13 +161,4 @@ export const AudioProvider: React.FC<AudioProviderProps> = ({
   );
 };
 
-export const useAudio = (): AudioContextValue => {
-  const context = useContext(AudioContext);
-  if (!context) {
-    throw new Error("useAudio must be used within an AudioProvider");
-  }
-  return context;
-};
-
-// Export for convenience
-export { AudioManager };
+export default AudioProvider;

@@ -14,13 +14,15 @@ export const GAME_CONFIG = {
   FPS: 60, // Ensure FPS is present
 
   // Game timing
-  ROUND_DURATION: 180, // 3 minutes in seconds
+  ROUND_DURATION_SECONDS: 180, // Renamed from ROUND_DURATION
   MAX_ROUNDS: 3,
 
   // Player positioning
   PLAYER_START_POS_X_1: 480,
   PLAYER_START_POS_X_2: 1440,
-  PLAYER_START_POS_Y: 540,
+  PLAYER_START_POS_Y: 800, // Example starting Y for both players
+  GROUND_LEVEL_Y: 900, // Y-coordinate for the ground
+  GRAVITY: 0.5, // Basic gravity for jumps/falls
 
   // Player visuals
   PLAYER_VISUAL_WIDTH: 100,
@@ -48,6 +50,27 @@ export const GAME_CONFIG = {
   MASTER_VOLUME: 0.7,
   SFX_VOLUME: 0.8,
   MUSIC_VOLUME: 0.5,
+
+  // Player movement and action
+  PLAYER_MOVE_SPEED: 5,
+  PLAYER_JUMP_FORCE: 15,
+  MAX_KI: 100,
+  MAX_STAMINA: 100,
+  KI_REGEN_RATE: 0.5, // Ki points per second
+  STAMINA_REGEN_RATE: 2, // Stamina points per second - Added
+  STAMINA_COST_MOVE: 0.1,
+  STAMINA_COST_JUMP: 10,
+  STAMINA_COST_ATTACK: 15,
+  STAMINA_COST_BLOCK: 5,
+
+  // Hit effects
+  HIT_EFFECT_DURATION: 500, // milliseconds
+
+  // Default font
+  DEFAULT_FONT_FAMILY: "Noto Sans KR, Arial, sans-serif", // Added
+
+  // Audio settings
+  AUDIO_ENABLED: true,
 } as const;
 
 // Add missing player colors
@@ -131,6 +154,10 @@ export const DAMAGE_CONSTANTS = {
   BALANCE_IMPACT_MULTIPLIER: 0.3,
   CONSCIOUSNESS_THRESHOLD: 30,
   PAIN_THRESHOLD: 80,
+  BASE_CRIT_CHANCE: 0.1, // Added: Base critical hit chance (e.g., 10%)
+  TECHNIQUE_ACCURACY_MODIFIER: 1.0, // Added
+  STANCE_EFFECTIVENESS_RANGE: { MIN: 0.5, MAX: 1.5 }, // Added
+  PERFECT_TIMING_BONUS: 0.3, // Added
 } as const;
 
 // Animation timings

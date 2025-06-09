@@ -4,9 +4,11 @@
 export { Player as GamePlayer } from "./game/Player";
 export { PlayerVisuals as GamePlayerVisuals } from "./game/PlayerVisuals";
 export { GameEngine } from "./game/GameEngine";
-export { GameUI } from "./game/GameUI";
+export { default as GameUIDefault } from "./game/GameUI";
+export { Player } from "./game/Player";
+export { PlayerVisuals } from "./game/PlayerVisuals";
 export { DojangBackground } from "./game/DojangBackground";
-export { HitEffectsLayer as GameHitEffectsLayer } from "./game/HitEffectsLayer";
+export { default as HitEffectsLayer } from "./game/HitEffectsLayer"; // Game version
 
 // Combat components
 export { default as CombatScreen } from "./combat/CombatScreen";
@@ -22,7 +24,7 @@ export * from "./intro/sections";
 // UI components (use aliases for conflicts)
 export { Player as UIPlayer } from "./ui/Player";
 export { PlayerVisuals as UIPlayerVisuals } from "./ui/PlayerVisuals";
-export { HitEffectsLayer as UIHitEffectsLayer } from "./ui/HitEffectsLayer";
+export { default as UIHitEffectsLayer } from "./ui/HitEffectsLayer"; // UI version
 export * from "./ui/base";
 export * from "./ui/ProgressTracker";
 export * from "./ui/TrigramWheel";

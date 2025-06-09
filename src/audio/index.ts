@@ -1,37 +1,52 @@
-/**
- * Main audio system exports for Black Trigram Korean martial arts
- */
+// Audio system exports for Black Trigram Korean martial arts
 
-// Core audio manager and interfaces
-export { AudioManager } from "./AudioManager";
-export { AudioProvider } from "./AudioProvider";
-export { DefaultSoundGenerator } from "./DefaultSoundGenerator";
-export { VariantSelector } from "./VariantSelector";
-export { AudioUtils } from "./AudioUtils";
-
-// Asset registry and management
-export { createPlaceholderAudioAssets } from "./AudioAssetRegistry";
-
-// Placeholder and procedural audio
-export {
-  initializePlaceholderAudio,
-  cleanupPlaceholderAudio,
-  PLACEHOLDER_AUDIO_ASSETS,
+import {
+  TECHNIQUE_SOUND_EFFECTS,
+  ARCHETYPE_MUSIC_THEMES,
+  ALL_PLACEHOLDER_SOUNDS,
 } from "./placeholder-sounds";
 
-// Re-export types for convenience
+// Core audio components
+export { AudioManager } from "./AudioManager";
+export { AudioProvider, useAudio } from "./AudioProvider";
+export { AudioAssetRegistry } from "./AudioAssetRegistry";
+export { AudioUtils, AUDIO_FORMATS } from "./AudioUtils";
+export { DefaultSoundGenerator } from "./DefaultSoundGenerator";
+export { VariantSelector } from "./VariantSelector";
+
+// Placeholder sounds - fix import
+export {
+  PLACEHOLDER_AUDIO_ASSETS,
+  ALL_PLACEHOLDER_SOUNDS,
+  ALL_PLACEHOLDER_MUSIC,
+  TECHNIQUE_SOUND_EFFECTS,
+  ARCHETYPE_MUSIC_THEMES,
+} from "./placeholder-sounds";
+
+// Types
 export type {
+  AudioConfig,
+  SoundEffect,
+  MusicTrack,
   AudioAsset,
-  AudioAssetRegistry,
-  AudioPlaybackOptions,
-  AudioState,
-  SoundEffectId,
-  MusicTrackId,
   AudioFormat,
   AudioCategory,
-  CombatAudioEvent,
-  ProceduralSoundConfig,
+  SoundEffectId,
+  MusicTrackId,
+  AudioManagerInterface,
 } from "../types/audio";
 
-export type { AudioVariantContext } from "./VariantSelector";
-export type { EnhancedPlaceholderSound } from "./placeholder-sounds";
+// Audio constants
+export const AUDIO_SYSTEM_CONFIG = {
+  MAX_CONCURRENT_SOUNDS: 32,
+  DEFAULT_VOLUME: 0.7,
+  FADE_DURATION: 1000,
+  PRELOAD_PRIORITY_SOUNDS: true,
+} as const;
+
+// Korean martial arts audio integration
+export const KOREAN_MARTIAL_ARTS_AUDIO = {
+  TRIGRAM_SOUNDS: TECHNIQUE_SOUND_EFFECTS,
+  ARCHETYPE_THEMES: ARCHETYPE_MUSIC_THEMES,
+  COMBAT_EFFECTS: ALL_PLACEHOLDER_SOUNDS,
+} as const;

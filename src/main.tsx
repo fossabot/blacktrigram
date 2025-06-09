@@ -1,11 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import AppWithAudio from "./App"; // AppWithAudio already includes AudioProvider and AudioManager instance
+import App from "./App";
 import "./index.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <AppWithAudio />
+    <App />
   </React.StrictMode>
 );
 

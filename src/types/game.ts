@@ -1,176 +1,144 @@
-// Types related to game flow, UI props for game screens, and training
+// Core game state and flow management
 
-import { PlayerArchetype } from "./enums"; // Changed import for PlayerArchetype
-// Import GamePhase from enums
-import type { GamePhase as EnumGamePhase, TrigramStance } from "./enums";
-import type { PlayerState, GamePhase, Position, KoreanText } from "./index";
-import type { HitEffect } from "./effects";
+import type {
+  PlayerState,
+  GameMode,
+  KoreanText,
+  CombatResult,
+  MatchStatistics,
+} from "./index";
 
-/**
- * Core game state interface for Black Trigram
- */
+// Main game state interface
 export interface GameState {
   readonly mode: GameMode;
   readonly phase: GamePhase;
-  readonly isTraining: boolean;
-  readonly player1: PlayerState;
-  readonly player2: PlayerState;
-  readonly currentRound: number;
-  readonly maxRounds: number;
-  readonly timeRemaining: number;
-  readonly isPaused: boolean;
-  readonly combatEffects: readonly HitEffect[];
-  readonly matchHistory: readonly MatchResult[];
-  // Fix: Add missing properties
-  readonly gameTime: number;
-  readonly winner: PlayerState | null;
-}
-
-export interface MatchResult {
-  readonly winner: PlayerState;
-  readonly loser: PlayerState;
-  readonly duration: number;
-  readonly totalDamageDealt: number;
-  readonly perfectStrikes: number;
-  readonly vitalPointHits: number;
-  readonly stanceChanges: number;
-}
-
-export interface GameConfig {
-  readonly roundDuration: number; // seconds
-  readonly maxRounds: number;
-  readonly healthRegen: boolean;
-  readonly kiRegen: boolean;
-  readonly difficultyLevel: "easy" | "normal" | "hard" | "expert";
-}
-
-/**
- * Game configuration interface
- */
-export interface GameConfig {
-  readonly maxRounds: number;
-  readonly roundDuration: number;
-  readonly maxPlayers: 2;
-  readonly enableVitalPoints: boolean;
-  readonly enableDebugMode: boolean;
-}
-
-/**
- * Match state for tracking game progress
- */
-export interface MatchState {
-  readonly currentRound: number;
-  readonly scores: Record<string, number>;
-  readonly roundWinner?: string;
-  readonly matchWinner?: string;
-  readonly isComplete: boolean;
-}
-
-/**
- * Game mode types
- */
-export enum GameMode {
-  VERSUS = "versus",
-  TRAINING = "training",
-  STORY = "story",
-  ARCADE = "arcade", // Fix: Add missing ARCADE mode
-  SURVIVAL = "survival",
-}
-
-/**
- * Game difficulty levels
- */
-export type GameDifficulty =
-  | "beginner"
-  | "intermediate"
-  | "advanced"
-  | "master";
-
-/**
- * Game performance metrics
- */
-export interface GameMetrics {
-  readonly frameRate: number;
-  readonly audioLatency: number;
-  readonly inputLatency: number;
-  readonly memoryUsage: number;
-}
-
-export interface AppState {
-  readonly gamePhase: EnumGamePhase; // Use GamePhase from enums
   readonly players: readonly [PlayerState, PlayerState];
-  readonly gameTime: number;
   readonly currentRound: number;
+  readonly maxRounds: number;
   readonly timeRemaining: number;
-  readonly combatLog: readonly string[];
   readonly isPaused: boolean;
-  readonly winnerId: string | null;
+  readonly winner: PlayerState | null | undefined;
+  readonly matchStatistics: MatchStatistics;
 }
 
-export type GamePhase = EnumGamePhase; // Re-export GamePhase from enums
-
-export type GameScreen = "intro" | "training" | "combat" | "menu";
-
-export interface SessionData {
-  readonly startTime: number;
-  readonly trainingStats: TrainingStats;
-  readonly combatStats: CombatStats;
-  readonly currentScore: number;
+// Game phases during combat
+export enum GamePhase {
+  MENU = "menu",
+  CHARACTER_SELECT = "character_select",
+  PRE_ROUND = "pre_round",
+  COMBAT = "combat",
+  POST_ROUND = "post_round",
+  MATCH_END = "match_end",
+  PAUSE = "pause",
 }
 
-export interface TrainingStats {
-  readonly sessionsCompleted: number;
-  readonly totalTrainingTime: number;
-  readonly stancesLearned: readonly TrigramStance[];
-  readonly techniquesLearned: readonly string[];
+// Round result information
+export interface RoundResult {
+  readonly roundNumber: number;
+  readonly winner: PlayerState | null;
+  readonly method: "knockout" | "time" | "forfeit" | "draw";
+  readonly duration: number;
+  readonly finalHealth: readonly [number, number];
+  readonly damageDealt: readonly [number, number];
+  readonly combatEvents: readonly CombatResult[];
 }
 
-export interface CombatStats {
-  readonly wins: number;
-  readonly losses: number;
-  readonly totalCombats: number;
-  readonly averageDamageDealt: number;
-  readonly favoriteStance: TrigramStance;
+// Match configuration
+export interface MatchConfig {
+  readonly mode: GameMode;
+  readonly rounds: number;
+  readonly roundDuration: number; // seconds
+  readonly player1Archetype: string;
+  readonly player2Archetype: string;
+  readonly stage: string;
+  readonly difficulty?: "easy" | "medium" | "hard" | "expert";
 }
 
-export interface GameSettings {
-  readonly audioEnabled: boolean;
-  readonly musicVolume: number;
-  readonly sfxVolume: number;
-  readonly language: "korean" | "english" | "bilingual";
-  readonly showVitalPoints: boolean;
-  readonly showDebugInfo: boolean;
-  readonly difficulty: "beginner" | "intermediate" | "advanced" | "master";
-}
-
-export interface GameAction {
-  readonly type: string;
+// Game event system
+export interface GameEvent {
+  readonly id: string;
+  readonly type: GameEventType;
   readonly timestamp: number;
-  readonly data?: unknown;
+  readonly playerId?: string;
+  readonly data: Record<string, any>;
+  readonly message?: KoreanText;
 }
 
-// Renamed to avoid conflict with IntroScreenProps in types/components.ts
-export interface IntroSetupProps {
-  onArchetypeSelect: (archetype: PlayerArchetype) => void;
-  onStanceSelect: (stance: TrigramStance) => void;
-  onStartTraining: () => void;
-  onStartCombat: () => void;
-  selectedArchetype: PlayerArchetype;
-  selectedStance: TrigramStance;
+// Game event types
+export enum GameEventType {
+  GAME_START = "game_start",
+  ROUND_START = "round_start",
+  ROUND_END = "round_end",
+  MATCH_END = "match_end",
+  PLAYER_ATTACK = "player_attack",
+  PLAYER_HIT = "player_hit",
+  STANCE_CHANGE = "stance_change",
+  TECHNIQUE_EXECUTE = "technique_execute",
+  VITAL_POINT_HIT = "vital_point_hit",
+  STATUS_EFFECT = "status_effect",
+  PAUSE_TOGGLE = "pause_toggle",
+  ERROR = "error",
 }
 
-export interface TrainingScreenProps {
-  archetype: PlayerArchetype; // Use PlayerArchetype directly
-  stance: TrigramStance;
-  onBack: () => void;
-  onStartCombat: () => void;
+// Game settings interface
+export interface GameSettings {
+  readonly audio: {
+    readonly masterVolume: number;
+    readonly musicVolume: number;
+    readonly sfxVolume: number;
+    readonly voiceVolume: number;
+  };
+  readonly graphics: {
+    readonly resolution: "720p" | "1080p" | "1440p" | "4k";
+    readonly quality: "low" | "medium" | "high" | "ultra";
+    readonly fullscreen: boolean;
+    readonly vsync: boolean;
+    readonly frameRate: 30 | 60 | 120 | 144;
+  };
+  readonly controls: {
+    readonly keyboardLayout: "qwerty" | "azerty" | "dvorak";
+    readonly mouseSensitivity: number;
+    readonly showInputHistory: boolean;
+  };
+  readonly gameplay: {
+    readonly language: "korean" | "english" | "both";
+    readonly showRomanization: boolean;
+    readonly showVitalPoints: boolean;
+    readonly combatHints: boolean;
+    readonly difficultyLevel:
+      | "beginner"
+      | "intermediate"
+      | "advanced"
+      | "master";
+  };
+  readonly accessibility: {
+    readonly colorBlindSupport: boolean;
+    readonly highContrast: boolean;
+    readonly largeText: boolean;
+    readonly reducedMotion: boolean;
+  };
 }
 
-// Re-export GamePhase from enums to ensure consistency
-export { GamePhase } from "./enums";
+// Save data structure
+export interface SaveData {
+  readonly version: string;
+  readonly playerId: string;
+  readonly progress: {
+    readonly unlockedArchetypes: readonly string[];
+    readonly unlockedStages: readonly string[];
+    readonly completedModes: readonly GameMode[];
+    readonly achievements: readonly string[];
+  };
+  readonly statistics: {
+    readonly totalMatches: number;
+    readonly wins: number;
+    readonly losses: number;
+    readonly draws: number;
+    readonly favoriteArchetype: string;
+    readonly totalPlayTime: number; // milliseconds
+  };
+  readonly settings: GameSettings;
+  readonly timestamp: number;
+}
 
-// Re-export from player types for convenience
-export type { PlayerArchetype } from "./enums"; // Export PlayerArchetype from enums
-
-// Fix: Export GameMode as value, not just type
-export { GameMode } from "./enums";
+export default GameState;

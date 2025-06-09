@@ -6,17 +6,17 @@
 // Ensure that there are no naming conflicts between re-exported members.
 
 // Re-export all constants from individual files
+export * from "./animations";
 export * from "./colors";
-export * from "./game";
 export * from "./combat";
 export * from "./controls";
-export * from "./typography";
-export * from "./ui";
-export * from "./animations";
+export * from "./game";
+export * from "./player";
 export * from "./techniques";
 export * from "./trigram";
+export * from "./typography";
+export * from "./ui";
 export * from "./vital-points";
-export * from "./player";
 
 // Fix: Ensure KOREAN_COLORS is available from main exports
 export { KOREAN_COLORS } from "./colors";

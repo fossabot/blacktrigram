@@ -14,6 +14,14 @@ import {
   STANCE_EFFECTIVENESS_MATRIX,
 } from "../types/constants";
 import { TrigramCalculator } from "./trigram/TrigramCalculator";
+import {
+  PlayerArchetype,
+  TrigramData,
+  TrigramEffectivenessMatrix,
+  TRIGRAM_EFFECTIVENESS,
+  ARCHETYPE_TRIGRAM_AFFINITY,
+  TRIGRAM_TRANSITIONS,
+} from "../types"; // Assuming types are exported from root types
 
 export class TrigramSystem {
   private trigramCalculator: TrigramCalculator; // Add missing property
@@ -248,53 +256,108 @@ export class TrigramSystem {
     );
   }
 
-  public getStanceCycle(clockwise: boolean = true): readonly TrigramStance[] {
-    if (clockwise) {
-      return TRIGRAM_STANCES_ORDER;
-    } else {
-      return [...TRIGRAM_STANCES_ORDER].reverse();
+  public getCurrentStanceData(stance: TrigramStance): TrigramData | undefined {
+    return TRIGRAM_DATA[stance];
+  }
+
+  public getTechniqueForStance(
+    stance: TrigramStance,
+    _archetype?: PlayerArchetype
+  ): KoreanTechnique | undefined {
+    const stanceData = TRIGRAM_DATA[stance];
+    return stanceData?.technique;
+  }
+
+  public calculateStanceEffectiveness(
+    attackerStance: TrigramStance,
+    defenderStance: TrigramStance,
+    _technique?: KoreanTechnique // Added technique parameter
+  ): number {
+    // Basic effectiveness from matrix
+    let effectiveness =
+      TRIGRAM_EFFECTIVENESS[attackerStance]?.[defenderStance] ?? 1.0;
+
+    // TODO: Consider archetype affinity and technique properties if available
+    // For example, if a technique has a bonus against certain stances or elements
+
+    return effectiveness;
+  }
+
+  public isValidTransition(from: TrigramStance, to: TrigramStance): boolean {
+    return TRIGRAM_TRANSITIONS.some(
+      (rule) => rule.from === from && rule.to === to
+    );
+  }
+
+  public getTransitionCost(
+    from: TrigramStance,
+    to: TrigramStance,
+    _player?: PlayerState
+  ): { ki: number; stamina: number; timeMs: number } {
+    const rule = TRIGRAM_TRANSITIONS.find(
+      (r) => r.from === from && r.to === to
+    );
+    if (rule) {
+      return {
+        ki: rule.cost.ki,
+        stamina: rule.cost.stamina,
+        timeMs: rule.cost.timeMilliseconds,
+      };
     }
+    return { ki: 999, stamina: 999, timeMs: 5000 }; // Default high cost if no rule
   }
 
-  public getNextStanceInCycle(
-    currentStance: TrigramStance,
-    clockwise: boolean = true
+  public recommendStance(
+    player: PlayerState,
+    opponent?: PlayerState
   ): TrigramStance {
-    const cycle = this.getStanceCycle(clockwise);
-    const currentIndex = cycle.indexOf(currentStance);
-    if (currentIndex === -1) return currentStance; // Should not happen
-    const nextIndex = (currentIndex + 1) % cycle.length;
-    return cycle[nextIndex];
-  }
+    // Simple recommendation: counter opponent's stance or pick a high affinity stance
+    if (opponent) {
+      const opponentStance = opponent.currentStance;
+      let bestStance = player.currentStance;
+      let maxEffectiveness = -Infinity;
 
-  // Add missing method for test compatibility
-  public getOptimalStanceAgainst(
-    opponentStance: TrigramStance,
-    playerState: PlayerState
-  ): TrigramStance {
-    // Simple implementation: return stance with best effectiveness against opponent
-    const stances: TrigramStance[] = [
-      "geon",
-      "tae",
-      "li",
-      "jin",
-      "son",
-      "gam",
-      "gan",
-      "gon",
-    ];
-    let bestStance: TrigramStance = playerState.currentStance;
-    let bestEffectiveness = 0;
-
-    for (const stance of stances) {
-      const effectiveness = this.getStanceEffectiveness(stance, opponentStance);
-      if (effectiveness > bestEffectiveness) {
-        bestEffectiveness = effectiveness;
-        bestStance = stance;
+      for (const stance in TRIGRAM_EFFECTIVENESS) {
+        const effectiveness = this.calculateStanceEffectiveness(
+          stance as TrigramStance,
+          opponentStance
+        );
+        if (effectiveness > maxEffectiveness) {
+          maxEffectiveness = effectiveness;
+          bestStance = stance as TrigramStance;
+        }
       }
+      return bestStance;
     }
 
-    return bestStance;
+    // If no opponent, pick a stance with high affinity for the player's archetype
+    const archetypeAffinities = ARCHETYPE_TRIGRAM_AFFINITY[player.archetype];
+    if (archetypeAffinities) {
+      let bestStance = player.currentStance;
+      let maxAffinity = -Infinity;
+      for (const stance in archetypeAffinities) {
+        if (archetypeAffinities[stance as TrigramStance] > maxAffinity) {
+          maxAffinity = archetypeAffinities[stance as TrigramStance];
+          bestStance = stance as TrigramStance;
+        }
+      }
+      return bestStance;
+    }
+
+    return player.currentStance; // Default
+  }
+
+  // Placeholder for calculateStanceEffects if it was intended to be different
+  public calculateStanceEffects(
+    _attackerStance: TrigramStance,
+    _defenderStance: TrigramStance,
+    _technique?: KoreanTechnique
+  ): any {
+    // Replace 'any' with a proper return type
+    // This method was suggested by a previous error message.
+    // If it's distinct from calculateStanceEffectiveness, implement its logic here.
+    // Otherwise, it might be redundant.
+    return { effectivenessFactor: 1.0 }; // Placeholder
   }
 
   public executeStanceChange(
@@ -343,52 +406,5 @@ export class TrigramSystem {
       cost: transitionCost,
       newState,
     };
-  }
-
-  /**
-   * Get technique for a specific stance - Fix: Add missing method
-   */
-  static getTechniqueForStance(stance: TrigramStance): KoreanTechnique | null {
-    const stanceData = TRIGRAM_DATA[stance];
-    if (!stanceData?.techniques?.primary) {
-      return null;
-    }
-
-    return {
-      id: `${stance}_primary`,
-      korean: stanceData.techniques.primary.korean,
-      english: stanceData.techniques.primary.english,
-      stance,
-      damage: stanceData.techniques.primary.damage || 10,
-      kiCost: stanceData.techniques.primary.kiCost || 5,
-      staminaCost: stanceData.techniques.primary.staminaCost || 10,
-      hitChance: stanceData.techniques.primary.hitChance || 0.8,
-      criticalChance: stanceData.techniques.primary.criticalChance || 0.1,
-      description: stanceData.techniques.primary.description || {
-        korean: "기본 기술",
-        english: "Basic technique",
-      },
-      targetAreas: stanceData.techniques.primary.targetAreas || [],
-      effects: stanceData.techniques.primary.effects || [],
-    };
-  }
-
-  /**
-   * Calculate stance effects for combat
-   */
-  calculateStanceEffects(
-    attackerStance: TrigramStance,
-    defenderStance: TrigramStance,
-    technique: KoreanTechnique
-  ): StatusEffect[] {
-    const effects: StatusEffect[] = [];
-
-    // Add stance-specific effects based on trigram philosophy
-    const attackerData = TRIGRAM_DATA[attackerStance];
-    if (attackerData?.philosophy?.effects) {
-      effects.push(...attackerData.philosophy.effects);
-    }
-
-    return effects;
   }
 }

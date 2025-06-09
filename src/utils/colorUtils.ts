@@ -348,6 +348,41 @@ export function createGradient(
   return gradient;
 }
 
+/**
+ * Color utility functions for Korean martial arts UI
+ */
+
+export function hexToPixi(hex: string): number {
+  return parseInt(hex.replace("#", ""), 16);
+}
+
+export function pixiToHex(color: number): string {
+  return `#${color.toString(16).padStart(6, "0")}`;
+}
+
+export function getArchetypeColor(archetype: string): number {
+  switch (archetype) {
+    case "musa":
+      return KOREAN_COLORS.ACCENT_GOLD;
+    case "amsalja":
+      return KOREAN_COLORS.ACCENT_PURPLE;
+    case "hacker":
+      return KOREAN_COLORS.PRIMARY_CYAN;
+    case "jeongbo_yowon":
+      return KOREAN_COLORS.ACCENT_BLUE;
+    case "jojik_pokryeokbae":
+      return KOREAN_COLORS.ACCENT_RED;
+    default:
+      return KOREAN_COLORS.UI_GRAY;
+  }
+}
+
+export const ColorUtils = {
+  hexToPixi,
+  pixiToHex,
+  getArchetypeColor,
+};
+
 export default {
   numericToHex,
   hexToNumeric,
@@ -368,4 +403,5 @@ export default {
   addAlpha,
   getTrigramColor,
   createGradient,
+  ...ColorUtils,
 };
