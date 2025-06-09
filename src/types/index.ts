@@ -46,6 +46,7 @@ export type { PlayerState, PlayerMatchStats } from "./player";
 export type {
   KoreanTechnique,
   CombatResult,
+  TrainingCombatResult, // Fix: Add missing export
   CombatEventData,
   CombatStats,
 } from "./combat";

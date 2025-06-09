@@ -170,13 +170,13 @@ export function getVitalPointById(
 }
 
 /**
- * Check if player can act - FIX: Complete the function properly
+ * Check if player can act
  */
 export function canPlayerAct(player: PlayerState): boolean {
-  // Fix: Complete the if statement
   if (player.health <= 0) return false;
   if (player.consciousness <= 0) return false;
   if (player.combatState === CombatState.STUNNED) return false;
+  if (player.isStunned) return false;
   return true;
 }
 

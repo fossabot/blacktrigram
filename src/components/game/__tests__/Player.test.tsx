@@ -1,5 +1,9 @@
 import { render } from "@testing-library/react";
-import { PlayerArchetype, TrigramStance } from "../../../types/enums";
+import {
+  PlayerArchetype,
+  TrigramStance,
+  CombatState,
+} from "../../../types/enums";
 import { Player } from "../Player";
 import type { PlayerState } from "../../../types";
 
@@ -32,6 +36,15 @@ const mockPlayerState: PlayerState = {
   recoveryTime: 0,
   statusEffects: [],
   activeEffects: [],
+  combatState: CombatState.IDLE,
+  lastStanceChangeTime: 0,
+  vitalPoints: [],
+  totalDamageReceived: 0,
+  totalDamageDealt: 0,
+  hitsTaken: 0,
+  hitsLanded: 0,
+  perfectStrikes: 0,
+  vitalPointHits: 0,
 };
 
 describe("Player", () => {

@@ -1,7 +1,12 @@
 import { render } from "@testing-library/react";
 import { GameEngine } from "./GameEngine";
 import type { PlayerState } from "../../types";
-import { PlayerArchetype, TrigramStance, GameMode } from "../../types/enums";
+import {
+  PlayerArchetype,
+  TrigramStance,
+  GameMode,
+  CombatState,
+} from "../../types/enums";
 
 // Fix: Create tuple with exactly 2 players as required by interface
 const mockPlayers: readonly [PlayerState, PlayerState] = [
@@ -34,6 +39,15 @@ const mockPlayers: readonly [PlayerState, PlayerState] = [
     recoveryTime: 0,
     statusEffects: [],
     activeEffects: [],
+    combatState: CombatState.IDLE,
+    lastStanceChangeTime: 0,
+    vitalPoints: [],
+    totalDamageReceived: 0,
+    totalDamageDealt: 0,
+    hitsTaken: 0,
+    hitsLanded: 0,
+    perfectStrikes: 0,
+    vitalPointHits: 0,
   },
   {
     id: "player2",
@@ -64,8 +78,17 @@ const mockPlayers: readonly [PlayerState, PlayerState] = [
     recoveryTime: 0,
     statusEffects: [],
     activeEffects: [],
+    combatState: CombatState.IDLE,
+    lastStanceChangeTime: 0,
+    vitalPoints: [],
+    totalDamageReceived: 0,
+    totalDamageDealt: 0,
+    hitsTaken: 0,
+    hitsLanded: 0,
+    perfectStrikes: 0,
+    vitalPointHits: 0,
   },
-];
+] as const;
 
 describe("GameEngine", () => {
   it("renders without crashing", () => {

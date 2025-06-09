@@ -130,6 +130,22 @@ export class TrigramSystem {
     return { valid: true };
   }
 
+  /**
+   * Fix: Add missing updatePlayerKiFlow method
+   */
+  updatePlayerKiFlow(player: PlayerState): PlayerState {
+    const stanceData = this.getCurrentStanceData(player.currentStance);
+    if (!stanceData) return player;
+
+    const kiFlowModifier = stanceData.kiFlowModifier || 1.0;
+    const kiRegeneration = Math.floor(2 * kiFlowModifier);
+
+    return {
+      ...player,
+      ki: Math.min(player.maxKi, player.ki + kiRegeneration),
+    };
+  }
+
   // Fix: Add missing method referenced in other files
   recommendStance(player: PlayerState, opponent?: PlayerState): TrigramStance {
     if (opponent) {

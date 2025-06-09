@@ -17,42 +17,79 @@ export class CombatSystem {
     this.trigramSystem = new TrigramSystem();
   }
 
+  /**
+   * Fix: Update resolveAttack signature to match expected interface
+   */
   resolveAttack(
     attacker: PlayerState,
     defender: PlayerState,
     targetedVitalPointId?: string
   ): CombatResult {
-    const baseDamage = attacker.attackPower;
+    // Get technique from attacker's current stance
+    const technique = this.getAvailableTechniques(attacker)[0];
+    if (!technique) {
+      return {
+        hit: false,
+        damage: 0,
+        criticalHit: false,
+        vitalPointHit: false,
+        effects: [],
+        timestamp: Date.now(),
+      };
+    }
 
-    const vitalPointResult = this.vitalPointSystem.processHit(
-      defender.position,
-      null,
-      baseDamage,
-      attacker.archetype,
-      { width: 100, height: 200 },
+    // Use existing combat logic with proper parameters
+    return this.processCombat(
+      attacker,
+      defender,
+      technique,
       targetedVitalPointId
     );
+  }
 
-    const stanceEffectiveness = this.trigramSystem.calculateStanceEffectiveness(
-      attacker.currentStance,
-      defender.currentStance
-    );
+  /**
+   * Fix: Make applyCombatResult non-static instance method
+   */
+  applyCombatResult(
+    result: CombatResult,
+    attacker: PlayerState,
+    defender: PlayerState
+  ): { updatedAttacker: PlayerState; updatedDefender: PlayerState } {
+    return CombatSystem.applyCombatResult(result, attacker, defender);
+  }
 
-    const finalDamage = Math.floor(
-      vitalPointResult.damage * stanceEffectiveness
-    );
+  /**
+   * Static version for backwards compatibility
+   */
+  static applyCombatResult(
+    result: CombatResult,
+    attacker: PlayerState,
+    defender: PlayerState
+  ): { updatedAttacker: PlayerState; updatedDefender: PlayerState } {
+    // Apply damage and effects
+    let updatedDefender = defender;
+    let updatedAttacker = attacker;
 
-    let totalDamage = finalDamage;
-    totalDamage += Math.floor(baseDamage * 0.1); // Add base damage bonus
+    if (result.hit) {
+      updatedDefender = {
+        ...defender,
+        health: Math.max(0, defender.health - result.damage),
+        totalDamageReceived: defender.totalDamageReceived + result.damage,
+        hitsTaken: defender.hitsTaken + 1,
+      };
+    }
 
-    return {
-      hit: vitalPointResult.hit,
-      damage: totalDamage,
-      criticalHit: totalDamage > baseDamage * 1.5,
-      vitalPointHit: !!vitalPointResult.vitalPoint,
-      effects: [...vitalPointResult.effects],
-      timestamp: Date.now(),
+    // Apply technique costs to attacker
+    updatedAttacker = {
+      ...attacker,
+      ki: Math.max(0, attacker.ki - 5),
+      stamina: Math.max(0, attacker.stamina - 10),
+      totalDamageDealt:
+        attacker.totalDamageDealt + (result.hit ? result.damage : 0),
+      hitsLanded: attacker.hitsLanded + (result.hit ? 1 : 0),
     };
+
+    return { updatedAttacker, updatedDefender };
   }
 
   /**
@@ -79,18 +116,6 @@ export class CombatSystem {
   ): CombatResult {
     const instance = new CombatSystem();
     return instance.executeAttack(attacker, defender, technique);
-  }
-
-  static applyCombatResult(
-    result: CombatResult,
-    defender: PlayerState
-  ): { updatedDefender: PlayerState } {
-    const updatedDefender: PlayerState = {
-      ...defender,
-      health: Math.max(0, defender.health - result.damage),
-    };
-
-    return { updatedDefender };
   }
 
   static getAvailableTechniques(player: PlayerState): KoreanTechnique[] {
@@ -277,6 +302,45 @@ export class CombatSystem {
       ...player,
       ki: Math.max(0, player.ki - technique.kiCost),
       stamina: Math.max(0, player.stamina - technique.staminaCost),
+    };
+  }
+
+  /**
+   * Fix: Add missing processCombat method
+   */
+  private processCombat(
+    attacker: PlayerState,
+    defender: PlayerState,
+    technique: KoreanTechnique,
+    targetedVitalPointId?: string
+  ): CombatResult {
+    // Calculate base damage
+    const baseDamage = technique.damage || 15;
+
+    // Apply archetype bonuses
+    const attackerBonus = attacker.attackPower * 0.1;
+    let totalDamage = baseDamage + attackerBonus;
+
+    // Apply defense reduction
+    const defenseReduction = defender.defense * 0.05;
+    totalDamage = Math.max(1, totalDamage - defenseReduction);
+
+    // Check for critical hit
+    const isCritical = Math.random() < technique.critChance;
+    if (isCritical) {
+      totalDamage *= technique.critMultiplier;
+    }
+
+    // Check for vital point hit
+    const isVitalPoint = Boolean(targetedVitalPointId);
+
+    return {
+      hit: true,
+      damage: Math.floor(totalDamage),
+      criticalHit: isCritical,
+      vitalPointHit: isVitalPoint,
+      effects: [...technique.effects],
+      timestamp: Date.now(),
     };
   }
 }

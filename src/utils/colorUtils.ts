@@ -131,5 +131,18 @@ export function getContrastColor(backgroundColor: number): number {
     : KOREAN_COLORS.WHITE_SOLID;
 }
 
+/**
+ * Get color based on health percentage
+ */
+export function getHealthColor(healthPercentage: number): number {
+  if (healthPercentage > 0.6) {
+    return KOREAN_COLORS.POSITIVE_GREEN;
+  } else if (healthPercentage > 0.3) {
+    return KOREAN_COLORS.SECONDARY_YELLOW;
+  } else {
+    return KOREAN_COLORS.ACCENT_RED;
+  }
+}
+
 // DO NOT ADD ANY MORE FUNCTIONS BELOW THIS LINE
 // All functions are already exported above using individual export statements

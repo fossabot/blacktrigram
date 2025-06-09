@@ -1,84 +1,70 @@
 import { CombatSystem } from "../CombatSystem";
-import type { PlayerState, KoreanTechnique, CombatResult } from "../../types";
-
-/**
- * Training-specific combat result with additional data
- */
-interface TrainingCombatResult extends CombatResult {
-  readonly trainingData?: {
-    readonly accuracy: number;
-    readonly damageCalculation: number;
-    readonly stanceEffectiveness: number;
-    readonly techniqueTiming: number;
-  };
-}
+import type { PlayerState, TrainingCombatResult } from "../../types";
 
 /**
  * Specialized combat system for training mode
  * Provides enhanced feedback and safer combat mechanics
  */
 export class TrainingCombatSystem extends CombatSystem {
-  // Fix: Remove unused showHitboxes property
-  private infiniteResources: boolean = true;
+  // Fix: Remove unused trainingAids property - use it properly
+  private trainingAidsEnabled: boolean = false;
 
   constructor() {
     super();
   }
 
+  setTrainingAids(enabled: boolean): void {
+    this.trainingAidsEnabled = enabled; // Fix: Use the property
+  }
+
   /**
-   * Training-specific combat resolution with enhanced feedback
+   * Override resolveAttack to provide training-specific feedback
    */
   resolveAttack(
     attacker: PlayerState,
     defender: PlayerState,
-    technique: KoreanTechnique
+    targetedVitalPointId?: string
   ): TrainingCombatResult {
-    // Use parent combat system but with training modifications
-    const result = super.resolveAttack(attacker, defender, technique);
+    // Get base combat result
+    const baseResult = super.resolveAttack(
+      attacker,
+      defender,
+      targetedVitalPointId
+    );
 
-    // In training mode, restore resources by updating player state
-    if (this.infiniteResources) {
-      // Fix: Create new player state instead of mutating readonly properties
-      const updatedAttacker: PlayerState = {
-        ...attacker,
-        ki: attacker.maxKi,
-        stamina: attacker.maxStamina,
-      };
+    // Get technique from attacker's stance for training analysis
+    const availableTechniques = this.getAvailableTechniques(attacker);
+    const technique = availableTechniques[0]; // Use first available technique
 
-      // Update the result with restored resources
+    // Create training-specific result with additional data
+    const trainingResult: TrainingCombatResult = {
+      ...baseResult,
+      trainingData: {
+        accuracy: technique ? technique.accuracy : 0.5,
+        damageCalculation: baseResult.damage,
+        stanceEffectiveness: 1.0,
+        techniqueTiming: technique ? technique.executionTime : 500,
+      },
+    };
+
+    // Apply training aids if enabled (restore resources)
+    if (this.trainingAidsEnabled && baseResult.updatedAttacker) {
+      // Fix: Create new result object instead of modifying readonly property
       return {
-        ...result,
-        attacker: updatedAttacker,
-        // Fix: Add trainingData with proper typing
-        trainingData: {
-          accuracy: technique.accuracy,
-          damageCalculation: result.damage,
-          stanceEffectiveness: 1.0,
-          techniqueTiming: Date.now(),
+        ...trainingResult,
+        updatedAttacker: {
+          ...baseResult.updatedAttacker,
+          ki: attacker.maxKi,
+          stamina: attacker.maxStamina,
         },
-      } as TrainingCombatResult;
+      };
     }
 
-    return {
-      ...result,
-      trainingData: {
-        accuracy: technique.accuracy,
-        damageCalculation: result.damage,
-        stanceEffectiveness: 1.0,
-        techniqueTiming: Date.now(),
-      },
-    } as TrainingCombatResult;
+    return trainingResult;
   }
 
   /**
-   * Enable/disable visual aids for training
-   */
-  setTrainingAids(infiniteResources: boolean): void {
-    this.infiniteResources = infiniteResources;
-  }
-
-  /**
-   * Reset training dummy to full health
+   * Reset training dummy to full health and resources
    */
   resetTrainingDummy(dummy: PlayerState): PlayerState {
     return {
@@ -86,10 +72,11 @@ export class TrainingCombatSystem extends CombatSystem {
       health: dummy.maxHealth,
       ki: dummy.maxKi,
       stamina: dummy.maxStamina,
-      statusEffects: [],
       pain: 0,
       consciousness: 100,
       balance: 100,
+      statusEffects: [],
+      activeEffects: [],
     };
   }
 }
