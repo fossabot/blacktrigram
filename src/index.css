@@ -102,14 +102,18 @@ button:focus-visible {
 
 /* Canvas styling for PixiJS */
 canvas {
-  display: block;
+  display: block !important;
+  position: relative !important; /* Change from fixed to relative */
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 1 !important; /* Ensure canvas is visible but below UI */
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
   cursor: pointer;
   outline: none;
-  position: relative !important; /* Fix: Override any position: fixed */
-  z-index: 1 !important; /* Fix: Ensure canvas is below overlay but visible */
 }
 
 /* Combat UI styling */
@@ -246,7 +250,7 @@ html {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1000;
+  z-index: 500; /* Lower than before to not cover canvas */
   background: transparent;
 }
 
@@ -267,17 +271,21 @@ html {
 
 /* Fix canvas visibility and z-index issues */
 canvas {
-  display: block;
+  display: block !important;
+  position: relative !important; /* Change from fixed to relative */
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 1 !important; /* Ensure canvas is visible but below UI */
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
   cursor: pointer;
   outline: none;
-  position: relative !important; /* Fix: Override any position: fixed */
-  z-index: 1 !important; /* Fix: Ensure canvas is below overlay but visible */
 }
 
-/* Fix test overlay positioning */
+/* Fix test overlay positioning to not interfere with canvas */
 .test-overlay {
   pointer-events: none;
   position: absolute;
@@ -285,50 +293,50 @@ canvas {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 1000;
+  z-index: 500; /* Lower than before to not cover canvas */
   background: transparent;
 }
 
-/* Fix: Ensure test elements don't cover canvas inappropriately */
-.test-overlay button {
+/* Ensure test elements are properly positioned */
+.test-overlay button,
+.test-overlay .archetype-section {
   pointer-events: auto;
-  z-index: 1001;
+  z-index: 501;
 }
 
-/* Fix: Ensure canvas is not covered by overlay elements */
-.app-container {
-  position: relative;
-  overflow: visible;
-}
-
-.app-container canvas {
-  position: relative;
-  z-index: 1;
-  width: 100% !important;
-  height: 100% !important;
-}
-
-/* Mobile-specific fixes */
+/* Mobile-specific fixes for better UX */
 @media (max-width: 768px) {
   .test-overlay .archetype-section {
-    bottom: 5%;
+    bottom: 2%;
     left: 2%;
+    right: 2%;
+    max-width: none;
   }
 
   .test-overlay button {
     font-size: 14px;
     padding: 10px 16px;
+    min-width: 150px;
+  }
+
+  /* Better mobile button layout */
+  .training-button {
+    left: 5% !important;
+    right: 5% !important;
+    width: auto !important;
+  }
+
+  .combat-button {
+    left: 5% !important;
+    right: 5% !important;
+    width: auto !important;
   }
 }
 
+/* Improved responsive design */
 @media (max-width: 375px) {
-  .test-overlay .archetype-section {
-    bottom: 2%;
-    left: 1%;
-  }
-
-  .test-overlay .archetype-section button {
-    width: 150px;
+  .test-overlay button {
     font-size: 12px;
+    padding: 8px 12px;
   }
 }

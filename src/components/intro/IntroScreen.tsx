@@ -273,6 +273,98 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
         />
       )}
 
+      {/* Enhanced Interactive Menu with Better Mobile Support */}
+      {currentSection === "menu" && (
+        <>
+          <MenuSection
+            selectedMode={MENU_ITEMS[selectedMenuIndex].mode}
+            onModeSelect={handleMenuClick}
+            onStartGame={() =>
+              handleMenuClick(MENU_ITEMS[selectedMenuIndex].mode)
+            }
+            onShowPhilosophy={handleShowPhilosophy}
+            onShowControls={handleShowControls}
+            width={isMobile ? width * 0.9 : isTablet ? width * 0.7 : 480}
+            height={isMobile ? height * 0.25 : height * 0.3}
+            x={
+              width / 2 -
+              (isMobile ? width * 0.45 : isTablet ? width * 0.35 : 240)
+            }
+            y={menuStartY}
+            menuItems={MENU_ITEMS}
+            data-testid="main-menu-section"
+          />
+
+          {/* Enhanced Cyberpunk Menu Overlay with Korean Aesthetics */}
+          <pixiContainer
+            x={width / 2}
+            y={height * 0.6}
+            data-testid="interactive-menu"
+          >
+            {MENU_ITEMS.map((item, index) => (
+              <pixiContainer
+                key={item.mode}
+                y={index * (isMobile ? 50 : 60)}
+                data-testid={`menu-item-${item.mode}`}
+              >
+                <pixiGraphics
+                  draw={(g) => {
+                    g.clear();
+                    const isSelected = selectedMenuIndex === index;
+                    g.fill({
+                      color: isSelected
+                        ? KOREAN_COLORS.ACCENT_GOLD
+                        : KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
+                      alpha: 0.9,
+                    });
+                    g.roundRect(
+                      -(isMobile ? 120 : 150),
+                      -20,
+                      isMobile ? 240 : 300,
+                      40,
+                      8
+                    );
+                    g.fill();
+                    g.stroke({
+                      width: 2,
+                      color: isSelected
+                        ? KOREAN_COLORS.PRIMARY_CYAN
+                        : KOREAN_COLORS.ACCENT_GOLD,
+                      alpha: 0.8,
+                    });
+                    g.roundRect(
+                      -(isMobile ? 120 : 150),
+                      -20,
+                      isMobile ? 240 : 300,
+                      40,
+                      8
+                    );
+                    g.stroke();
+                  }}
+                  interactive={true}
+                  onPointerDown={() => handleMenuClick(item.mode)}
+                  data-testid={`menu-button-${item.mode}`}
+                />
+                <pixiText
+                  text={`${item.korean} - ${item.english}`}
+                  style={{
+                    fontSize: isMobile ? 14 : 18,
+                    fill:
+                      selectedMenuIndex === index
+                        ? KOREAN_COLORS.BLACK_SOLID
+                        : KOREAN_COLORS.TEXT_PRIMARY,
+                    align: "center",
+                    fontWeight: selectedMenuIndex === index ? "bold" : "normal",
+                  }}
+                  anchor={0.5}
+                  data-testid={`menu-text-${item.mode}`}
+                />
+              </pixiContainer>
+            ))}
+          </pixiContainer>
+        </>
+      )}
+
       {/* Dojang wall accent texture */}
       {dojangWallTexture && (
         <pixiSprite

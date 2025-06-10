@@ -300,7 +300,7 @@ function App() {
             width: "100%",
             height: "100%",
             pointerEvents: "none",
-            zIndex: 1000,
+            zIndex: 500, // Lower z-index to not cover canvas
           }}
           data-testid="ui-overlay"
         >
@@ -318,61 +318,20 @@ function App() {
                 }}
               />
 
-              <button
-                className="training-button"
-                data-testid="training-button"
-                style={{
-                  position: "absolute",
-                  top: "45%",
-                  left: "35%",
-                  padding: "12px 24px",
-                  backgroundColor: "rgba(0, 212, 255, 0.8)",
-                  color: "white",
-                  border: "2px solid #00d4ff",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  pointerEvents: "auto",
-                  fontSize: "16px",
-                  fontWeight: "bold",
-                  zIndex: 1001,
-                }}
-                onClick={() => handleGameStart(GameMode.TRAINING)}
-              >
-                훈련 모드 - Training
-              </button>
-
-              <button
-                className="combat-button"
-                data-testid="combat-button"
-                style={{
-                  position: "absolute",
-                  top: "55%",
-                  left: "35%",
-                  padding: "12px 24px",
-                  backgroundColor: "rgba(255, 107, 53, 0.8)",
-                  color: "white",
-                  border: "2px solid #ff6b35",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  pointerEvents: "auto",
-                  fontSize: "16px",
-                  fontWeight: "bold",
-                  zIndex: 1001,
-                }}
-                onClick={() => handleGameStart(GameMode.VERSUS)}
-              >
-                대전 모드 - Combat
-              </button>
-
-              {/* Fixed Archetype Selection */}
+              {/* Fix: Move archetype selection to not cover canvas */}
               <div
                 className="archetype-section"
                 style={{
                   position: "absolute",
-                  bottom: "15%",
-                  left: "5%",
+                  bottom: "5%",
+                  left: "2%",
+                  maxWidth: screenSize.isMobile ? "95%" : "300px",
                   pointerEvents: "auto",
-                  zIndex: 1001,
+                  zIndex: 501,
+                  backgroundColor: "rgba(0, 0, 0, 0.8)",
+                  borderRadius: "8px",
+                  padding: "10px",
+                  border: "2px solid #ffd700",
                 }}
               >
                 <button
@@ -474,6 +433,57 @@ function App() {
                     : "조직폭력배"}
                 </div>
               </div>
+
+              {/* Fix: Improved button positioning */}
+              <button
+                className="training-button"
+                data-testid="training-button"
+                style={{
+                  position: "absolute",
+                  top: screenSize.isMobile ? "50%" : "45%",
+                  left: screenSize.isMobile ? "10%" : "35%",
+                  padding: "12px 24px",
+                  backgroundColor: "rgba(0, 212, 255, 0.9)",
+                  color: "white",
+                  border: "2px solid #00d4ff",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  pointerEvents: "auto",
+                  fontSize: screenSize.isMobile ? "14px" : "16px",
+                  fontWeight: "bold",
+                  zIndex: 501,
+                  boxShadow: "0 0 20px rgba(0, 212, 255, 0.5)",
+                  transform: screenSize.isMobile ? "none" : "translateX(-50%)",
+                }}
+                onClick={() => handleGameStart(GameMode.TRAINING)}
+              >
+                훈련 모드 - Training
+              </button>
+
+              <button
+                className="combat-button"
+                data-testid="combat-button"
+                style={{
+                  position: "absolute",
+                  top: screenSize.isMobile ? "60%" : "55%",
+                  left: screenSize.isMobile ? "10%" : "35%",
+                  padding: "12px 24px",
+                  backgroundColor: "rgba(255, 107, 53, 0.9)",
+                  color: "white",
+                  border: "2px solid #ff6b35",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  pointerEvents: "auto",
+                  fontSize: screenSize.isMobile ? "14px" : "16px",
+                  fontWeight: "bold",
+                  zIndex: 501,
+                  boxShadow: "0 0 20px rgba(255, 107, 53, 0.5)",
+                  transform: screenSize.isMobile ? "none" : "translateX(-50%)",
+                }}
+                onClick={() => handleGameStart(GameMode.VERSUS)}
+              >
+                대전 모드 - Combat
+              </button>
             </>
           )}
 

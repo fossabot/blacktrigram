@@ -1,8 +1,14 @@
 import React from "react";
-import { usePixiExtensions } from "../../../utils/pixiExtensions";
-import type { ControlsSectionProps } from "../../../types/components";
-import { KOREAN_COLORS, COMBAT_CONTROLS } from "../../../types/constants";
-import * as PIXI from "pixi.js";
+import { KOREAN_COLORS } from "../../../types/constants";
+import { COMBAT_CONTROLS } from "../../../types/constants/controls";
+
+export interface ControlsSectionProps {
+  readonly onBack: () => void;
+  readonly x?: number;
+  readonly y?: number;
+  readonly width?: number;
+  readonly height?: number;
+}
 
 export const ControlsSection: React.FC<ControlsSectionProps> = ({
   onBack,
@@ -11,81 +17,74 @@ export const ControlsSection: React.FC<ControlsSectionProps> = ({
   width = 800,
   height = 600,
 }) => {
-  usePixiExtensions();
-
   return (
     <pixiContainer x={x} y={y} data-testid="controls-section">
       {/* Background */}
       <pixiGraphics
         draw={(g) => {
           g.clear();
-          g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.9);
-          g.drawRoundedRect(0, 0, width, height, 10);
-          g.endFill();
-
-          g.lineStyle(2, KOREAN_COLORS.ACCENT_GOLD, 0.8);
-          g.drawRoundedRect(0, 0, width, height, 10);
+          g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 0.95 });
+          g.roundRect(0, 0, width, height, 12);
+          g.fill();
+          g.stroke({ width: 3, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.8 });
+          g.roundRect(0, 0, width, height, 12);
+          g.stroke();
         }}
       />
 
       {/* Title */}
       <pixiText
         text="조작법 (Controls)"
-        style={
-          new PIXI.TextStyle({
-            fontSize: 32,
-            fill: KOREAN_COLORS.ACCENT_GOLD,
-            fontFamily: "Arial, sans-serif",
-            align: "center",
-          })
-        }
+        style={{
+          fontSize: 32,
+          fill: KOREAN_COLORS.ACCENT_GOLD,
+          fontFamily: "Arial, sans-serif",
+          align: "center",
+          fontWeight: "bold",
+        }}
         x={width / 2}
         y={40}
         anchor={0.5}
       />
 
-      {/* Stance Controls */}
+      {/* Trigram Stances Section */}
       <pixiText
         text="팔괘 자세 (Trigram Stances)"
-        style={
-          new PIXI.TextStyle({
-            fontSize: 24,
-            fill: KOREAN_COLORS.TEXT_PRIMARY,
-            fontFamily: "Arial, sans-serif",
-          })
-        }
+        style={{
+          fontSize: 24,
+          fill: KOREAN_COLORS.TEXT_PRIMARY,
+          fontFamily: "Arial, sans-serif",
+          fontWeight: "bold",
+        }}
         x={40}
         y={100}
       />
 
-      {/* Control mappings */}
+      {/* Stance Controls */}
       {Object.entries(COMBAT_CONTROLS.stanceControls).map(
         ([key, value], index) => (
           <pixiContainer key={key} x={40} y={140 + index * 30}>
             <pixiText
               text={`${key}: ${value.korean} (${value.technique})`}
-              style={
-                new PIXI.TextStyle({
-                  fontSize: 16,
-                  fill: KOREAN_COLORS.TEXT_SECONDARY,
-                  fontFamily: "Arial, sans-serif",
-                })
-              }
+              style={{
+                fontSize: 16,
+                fill: KOREAN_COLORS.TEXT_SECONDARY,
+                fontFamily: "Arial, sans-serif",
+              }}
             />
           </pixiContainer>
         )
       )}
 
-      {/* Combat Controls */}
+      {/* Combat Controls Section */}
       <pixiText
         text="전투 조작 (Combat Controls)"
-        style={
-          new PIXI.TextStyle({
-            fontSize: 24,
-            fill: KOREAN_COLORS.TEXT_PRIMARY,
-            fontFamily: "Arial, sans-serif",
-          })
-        }
+        style={{
+          fontSize: 24,
+          fill: KOREAN_COLORS.TEXT_PRIMARY,
+          fontFamily: "Arial, sans-serif",
+          fontWeight: "bold",
+        }}
         x={40}
         y={380}
       />
@@ -95,13 +94,11 @@ export const ControlsSection: React.FC<ControlsSectionProps> = ({
           <pixiContainer key={key} x={40} y={420 + index * 30}>
             <pixiText
               text={`${key}: ${description}`}
-              style={
-                new PIXI.TextStyle({
-                  fontSize: 16,
-                  fill: KOREAN_COLORS.TEXT_SECONDARY,
-                  fontFamily: "Arial, sans-serif",
-                })
-              }
+              style={{
+                fontSize: 16,
+                fill: KOREAN_COLORS.TEXT_SECONDARY,
+                fontFamily: "Arial, sans-serif",
+              }}
             />
           </pixiContainer>
         )
@@ -112,22 +109,21 @@ export const ControlsSection: React.FC<ControlsSectionProps> = ({
         <pixiGraphics
           draw={(g) => {
             g.clear();
-            g.beginFill(KOREAN_COLORS.ACCENT_RED, 0.8);
-            g.drawRoundedRect(0, 0, 120, 40, 5);
-            g.endFill();
+            g.fill({ color: KOREAN_COLORS.ACCENT_RED, alpha: 0.8 });
+            g.roundRect(0, 0, 120, 40, 5);
+            g.fill();
           }}
           interactive={true}
           onPointerDown={onBack}
         />
         <pixiText
           text="돌아가기"
-          style={
-            new PIXI.TextStyle({
-              fontSize: 16,
-              fill: KOREAN_COLORS.TEXT_PRIMARY,
-              align: "center",
-            })
-          }
+          style={{
+            fontSize: 16,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
+            align: "center",
+            fontWeight: "bold",
+          }}
           x={60}
           y={20}
           anchor={0.5}

@@ -11,23 +11,6 @@ const REPORTS = {
 } as const;
 
 export default defineConfig({
-  screenshotsFolder: REPORTS.screenshots,
-  videosFolder: REPORTS.videos,
-  experimentalMemoryManagement: true,
-  video: true,
-  screenshotOnRunFailure: true,
-  trashAssetsBeforeRuns: true,
-  viewportWidth: 1280,
-  viewportHeight: 800,
-  waitForAnimations: false,
-  pageLoadTimeout: 10000,
-  requestTimeout: 5000,
-  retries: {
-    runMode: 2,
-    openMode: 1,
-  },
-  // Simplified reporter configuration to avoid CommonJS conflicts
-  reporter: "spec",
   e2e: {
     baseUrl: "http://localhost:5173",
     specPattern: "cypress/e2e/**/*.cy.{js,jsx,ts,tsx}",
@@ -37,9 +20,9 @@ export default defineConfig({
       runMode: 2,
       openMode: 0,
     },
-    defaultCommandTimeout: 8000, // Reduced to speed up failures
-    requestTimeout: 10000,
-    responseTimeout: 10000,
+    defaultCommandTimeout: 10000, // Enhanced type support
+    requestTimeout: 15000, // Better error handling for PixiJS
+    responseTimeout: 15000,
     pageLoadTimeout: 15000,
     chromeWebSecurity: false,
     video: true, // Enable video recording for failed tests
@@ -52,6 +35,11 @@ export default defineConfig({
     numTestsKeptInMemory: 10, // Keep only one test in memory for performance
     experimentalRunAllSpecs: true, // Enable parallel test execution
     screenshotOnRunFailure: true, // Enable screenshots on failure
+    env: {
+      GAME_SPEED: 1.0,
+      DISABLE_AUDIO: true,
+      MOCK_WEBGL: true,
+    },
     setupNodeEvents(
       on: Cypress.PluginEvents,
       config: Cypress.PluginConfigOptions
@@ -104,6 +92,7 @@ export default defineConfig({
     viewportWidth: 1280,
     viewportHeight: 720,
     specPattern: "src/**/*.cy.{js,jsx,ts,tsx}",
+    supportFile: "cypress/support/component.ts",
     experimentalMemoryManagement: true,
   },
 });

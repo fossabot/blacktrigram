@@ -1,90 +1,154 @@
 import React, { useCallback } from "react";
-import { usePixiExtensions } from "../../utils/pixiExtensions";
-import type { TrigramWheelProps } from "../../types/components";
-import {
-  KOREAN_COLORS,
-  TRIGRAM_DATA,
-  TRIGRAM_STANCES_ORDER,
-} from "../../types/constants";
+import type { TrigramStance } from "../../types/trigram";
+
+export interface TrigramWheelProps {
+  currentStance: TrigramStance;
+  onStanceChange: (stance: TrigramStance) => void;
+  size?: number;
+  showLabels?: boolean;
+  x?: number;
+  y?: number;
+  interactive?: boolean;
+}
 
 export const TrigramWheel: React.FC<TrigramWheelProps> = ({
-  currentStance, // Fix: Use currentStance instead of selectedStance
-  onStanceSelect,
-  size = 100,
-  radius, // Fix: Accept radius prop for compatibility
+  currentStance,
+  onStanceChange,
+  size = 150,
+  showLabels = true,
+  x = 0,
+  y = 0,
   interactive = true,
-  showLabels = true, // Fix: Use this parameter
-  x = 0, // Fix: Add x to the interface
-  y = 0, // Fix: Add y to the interface
 }) => {
-  usePixiExtensions();
-
-  const wheelRadius = radius || size;
-
-  // Fix: Use drawWheel callback in the component
-  const drawWheel = useCallback(
-    (g: any) => {
-      g.clear();
-      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.8);
-      g.lineStyle(2, KOREAN_COLORS.ACCENT_GOLD, 0.8);
-      g.drawCircle(0, 0, wheelRadius);
-      g.endFill();
+  const handleStanceSelect = useCallback(
+    (stance: TrigramStance) => {
+      if (interactive) {
+        onStanceChange(stance);
+      }
     },
-    [wheelRadius]
+    [onStanceChange, interactive]
   );
+
+  // Trigram stances in order
+  const trigrams = [
+    {
+      stance: "geon" as TrigramStance,
+      symbol: "☰",
+      korean: "건",
+      english: "Heaven",
+    },
+    {
+      stance: "tae" as TrigramStance,
+      symbol: "☱",
+      korean: "태",
+      english: "Lake",
+    },
+    {
+      stance: "li" as TrigramStance,
+      symbol: "☲",
+      korean: "리",
+      english: "Fire",
+    },
+    {
+      stance: "jin" as TrigramStance,
+      symbol: "☳",
+      korean: "진",
+      english: "Thunder",
+    },
+    {
+      stance: "son" as TrigramStance,
+      symbol: "☴",
+      korean: "손",
+      english: "Wind",
+    },
+    {
+      stance: "gam" as TrigramStance,
+      symbol: "☵",
+      korean: "감",
+      english: "Water",
+    },
+    {
+      stance: "gan" as TrigramStance,
+      symbol: "☶",
+      korean: "간",
+      english: "Mountain",
+    },
+    {
+      stance: "gon" as TrigramStance,
+      symbol: "☷",
+      korean: "곤",
+      english: "Earth",
+    },
+  ];
+
+  const radius = size * 0.4;
+  const centerX = size / 2;
+  const centerY = size / 2;
 
   return (
     <pixiContainer x={x} y={y} data-testid="trigram-wheel">
-      {/* Wheel background */}
-      <pixiGraphics draw={drawWheel} />
+      {/* Outer circle */}
+      <pixiGraphics
+        draw={(g) => {
+          g.clear();
+          g.stroke({ width: 3, color: 0xffd700, alpha: 0.8 });
+          g.circle(centerX, centerY, radius + 20);
+          g.stroke();
+        }}
+      />
 
-      {/* Trigram stances around the wheel */}
-      {TRIGRAM_STANCES_ORDER.map((stance, index) => {
-        const angle =
-          (index / TRIGRAM_STANCES_ORDER.length) * Math.PI * 2 - Math.PI / 2;
-        const stanceX = Math.cos(angle) * (wheelRadius - 20);
-        const stanceY = Math.sin(angle) * (wheelRadius - 20);
-        const isSelected = currentStance === stance;
+      {/* Inner circle */}
+      <pixiGraphics
+        draw={(g) => {
+          g.clear();
+          g.stroke({ width: 2, color: 0x00ffff, alpha: 0.6 });
+          g.circle(centerX, centerY, radius);
+          g.stroke();
+        }}
+      />
+
+      {/* Trigram positions */}
+      {trigrams.map((trigram, index) => {
+        const angle = (index * Math.PI * 2) / 8 - Math.PI / 2;
+        const trigramX = centerX + Math.cos(angle) * radius;
+        const trigramY = centerY + Math.sin(angle) * radius;
+        const isSelected = currentStance === trigram.stance;
 
         return (
-          <pixiContainer key={stance} x={stanceX} y={stanceY}>
-            <pixiGraphics
-              draw={(g) => {
-                g.clear();
-                g.beginFill(
-                  isSelected
-                    ? KOREAN_COLORS.ACCENT_GOLD
-                    : KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
-                  isSelected ? 1.0 : 0.6
-                );
-                g.drawCircle(0, 0, 15);
-                g.endFill();
-              }}
-              interactive={interactive}
-              onPointerDown={() => onStanceSelect?.(stance)}
-            />
+          <pixiContainer key={trigram.stance} x={trigramX} y={trigramY}>
+            {/* Selection indicator */}
+            {isSelected && (
+              <pixiGraphics
+                draw={(g) => {
+                  g.clear();
+                  g.fill({ color: 0xffd700, alpha: 0.3 });
+                  g.circle(0, 0, 25);
+                  g.fill();
+                }}
+              />
+            )}
 
-            {/* Stance symbol */}
+            {/* Trigram symbol */}
             <pixiText
-              text={TRIGRAM_DATA[stance]?.symbol || "○"}
+              text={trigram.symbol}
               style={{
-                fontSize: 12,
-                fill: isSelected
-                  ? KOREAN_COLORS.BLACK_SOLID
-                  : KOREAN_COLORS.TEXT_PRIMARY,
-                fontWeight: "bold",
+                fontSize: 24,
+                fill: isSelected ? 0xffd700 : 0xffffff,
                 align: "center",
+                fontWeight: isSelected ? "bold" : "normal",
               }}
               anchor={0.5}
+              interactive={interactive}
+              onPointerDown={() => handleStanceSelect(trigram.stance)}
             />
 
-            {/* Labels - Fix: Use showLabels parameter */}
+            {/* Labels */}
             {showLabels && (
               <pixiText
-                text={TRIGRAM_DATA[stance]?.name.korean || ""}
+                text={trigram.korean}
                 style={{
-                  fontSize: 8,
-                  fill: KOREAN_COLORS.TEXT_SECONDARY,
+                  fontSize: 12,
+                  fill: isSelected ? 0xffd700 : 0xcccccc,
                   align: "center",
                 }}
                 anchor={0.5}
@@ -95,32 +159,30 @@ export const TrigramWheel: React.FC<TrigramWheelProps> = ({
         );
       })}
 
-      {/* Center display */}
-      {currentStance && (
-        <pixiContainer>
-          <pixiText
-            text={TRIGRAM_DATA[currentStance]?.name.korean || ""}
-            style={{
-              fontSize: 16,
-              fill: KOREAN_COLORS.ACCENT_GOLD,
-              fontWeight: "bold",
-              align: "center",
-            }}
-            anchor={0.5}
-            y={-8}
-          />
-          <pixiText
-            text={TRIGRAM_DATA[currentStance]?.name.english || ""}
-            style={{
-              fontSize: 12,
-              fill: KOREAN_COLORS.TEXT_SECONDARY,
-              align: "center",
-            }}
-            anchor={0.5}
-            y={8}
-          />
-        </pixiContainer>
-      )}
+      {/* Center text */}
+      <pixiContainer x={centerX} y={centerY}>
+        <pixiText
+          text="팔괘"
+          style={{
+            fontSize: 16,
+            fill: 0xffd700,
+            align: "center",
+            fontWeight: "bold",
+          }}
+          anchor={0.5}
+          y={-8}
+        />
+        <pixiText
+          text="Eight Trigrams"
+          style={{
+            fontSize: 10,
+            fill: 0xcccccc,
+            align: "center",
+          }}
+          anchor={0.5}
+          y={8}
+        />
+      </pixiContainer>
     </pixiContainer>
   );
 };
