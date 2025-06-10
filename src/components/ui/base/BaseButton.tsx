@@ -3,9 +3,8 @@
 import React, { useCallback, useMemo, useState } from "react";
 import * as PIXI from "pixi.js";
 import type { BaseButtonProps } from "../../../types/components";
-import { CYBERPUNK_COLORS } from "../../../types/constants/colors";
-import { KOREAN_TYPOGRAPHY } from "../../../types/constants/typography";
-import { usePixiExtensions } from "../../../utils/pixiExtensions";
+import { KOREAN_COLORS } from "../../../types/constants/colors";
+import { FONT_FAMILY, FONT_SIZES } from "../../../types/constants/typography";
 
 export const BaseButton: React.FC<BaseButtonProps> = ({
   x = 0,
@@ -20,26 +19,23 @@ export const BaseButton: React.FC<BaseButtonProps> = ({
   children,
   testId = "base-button",
 }) => {
-  // Ensure PixiJS components are extended
-  usePixiExtensions();
-
   const [isHovered, setIsHovered] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
 
   const buttonColors = useMemo(() => {
     const baseColors = {
-      primary: CYBERPUNK_COLORS.NEON_CYAN,
-      secondary: CYBERPUNK_COLORS.NEON_PURPLE,
-      accent: CYBERPUNK_COLORS.ACCENT_BLUE,
-      ghost: CYBERPUNK_COLORS.TEXT_SECONDARY,
-      danger: CYBERPUNK_COLORS.WARNING_RED,
+      primary: KOREAN_COLORS.PRIMARY_CYAN,
+      secondary: KOREAN_COLORS.SECONDARY_BLUE,
+      accent: KOREAN_COLORS.ACCENT_BLUE,
+      ghost: KOREAN_COLORS.TEXT_SECONDARY,
+      danger: KOREAN_COLORS.NEGATIVE_RED,
     };
 
     return {
       normal: baseColors[variant],
-      hover: CYBERPUNK_COLORS.ACCENT_BLUE,
-      pressed: CYBERPUNK_COLORS.ACCENT_ORANGE,
-      disabled: CYBERPUNK_COLORS.NEUTRAL_GRAY,
+      hover: KOREAN_COLORS.ACCENT_BLUE,
+      pressed: KOREAN_COLORS.ACCENT_ORANGE,
+      disabled: KOREAN_COLORS.UI_GRAY,
     };
   }, [variant]);
 
@@ -54,17 +50,12 @@ export const BaseButton: React.FC<BaseButtonProps> = ({
   const drawButton = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
-
-      // Draw button background
       g.beginFill(currentColor, 0.8);
       g.drawRoundedRect(0, 0, width, height, 8);
       g.endFill();
-
-      // Draw border
       g.lineStyle(2, currentColor, 1);
       g.drawRoundedRect(0, 0, width, height, 8);
 
-      // Draw inner glow effect
       if (!disabled && (isHovered || isPressed)) {
         g.beginFill(currentColor, 0.3);
         g.drawRoundedRect(2, 2, width - 4, height - 4, 6);
@@ -101,14 +92,14 @@ export const BaseButton: React.FC<BaseButtonProps> = ({
   const textStyle = useMemo(
     () =>
       new PIXI.TextStyle({
-        fontFamily: KOREAN_TYPOGRAPHY.FONTS.HEADING.join(", "),
-        fontSize: KOREAN_TYPOGRAPHY.SIZES.BODY,
+        fontFamily: FONT_FAMILY.PRIMARY,
+        fontSize: FONT_SIZES.medium,
         fill: disabled
-          ? CYBERPUNK_COLORS.NEUTRAL_GRAY
-          : CYBERPUNK_COLORS.TEXT_PRIMARY,
+          ? KOREAN_COLORS.UI_DISABLED_TEXT
+          : KOREAN_COLORS.TEXT_PRIMARY,
         align: "center",
         dropShadow: {
-          color: CYBERPUNK_COLORS.SHADOW,
+          color: KOREAN_COLORS.BLACK_SOLID,
           distance: 2,
           alpha: 0.8,
         },
@@ -122,6 +113,7 @@ export const BaseButton: React.FC<BaseButtonProps> = ({
       y={y}
       interactive={!disabled}
       cursor={disabled ? "default" : "pointer"}
+      // Fix: Use correct React event handler names
       onPointerDown={handlePointerDown}
       onPointerUp={handlePointerUp}
       onPointerOver={handlePointerOver}

@@ -139,3 +139,32 @@ export function hasKoreanText(text: string): boolean {
   const koreanRegex = /[\u3131-\u3163\uac00-\ud7a3]/;
   return koreanRegex.test(text);
 }
+
+export const getTextDirection = (_text: string): "ltr" | "rtl" => {
+  // Fix: Add underscore to unused parameter
+  // Korean text is left-to-right
+  return "ltr";
+};
+
+export const measureKoreanText = (
+  text: string,
+  fontSize: number
+): { width: number; height: number } => {
+  // Approximate Korean text measurements
+  const koreanCharWidth = fontSize * 0.9; // Korean characters are typically wider
+  const englishCharWidth = fontSize * 0.6;
+
+  let width = 0;
+  for (const char of text) {
+    if (/[\u3130-\u318F\uAC00-\uD7AF]/.test(char)) {
+      width += koreanCharWidth;
+    } else {
+      width += englishCharWidth;
+    }
+  }
+
+  return {
+    width,
+    height: fontSize * 1.2,
+  };
+};

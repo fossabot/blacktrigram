@@ -1,54 +1,52 @@
 import React from "react";
-import { KoreanText } from "./KoreanText";
-import type { KoreanTextComponentProps } from "../types";
+import * as PIXI from "pixi.js";
+import { usePixiExtensions } from "../../../../../utils/pixiExtensions";
+import { KOREAN_COLORS } from "../../../../../types/constants";
 
-export interface KoreanStatusTextProps extends KoreanTextComponentProps {
-  readonly status: {
-    readonly korean: string;
-    readonly english: string;
-    readonly value?: string | number;
-  };
-  readonly showIcon?: boolean;
-  readonly showValue?: boolean;
+export interface KoreanStatusTextProps {
+  readonly status: "normal" | "warning" | "danger" | "success";
+  readonly message: string;
+  readonly value?: number;
+  readonly maxValue?: number;
+  readonly x?: number;
+  readonly y?: number;
 }
 
 export const KoreanStatusText: React.FC<KoreanStatusTextProps> = ({
   status,
-  size = "medium", // Fix: Use valid size
-  weight = "regular", // Fix: Use valid weight
-  variant = "primary", // Fix: Use valid variant
-  emphasis = "none", // Fix: Use valid emphasis
-  display = "both",
-  order = "korean_first",
-  showIcon = false,
-  showValue = true,
-  className,
-  style,
-  ...rest
+  message,
+  value,
+  maxValue,
+  x = 0,
+  y = 0,
 }) => {
-  const statusKoreanLabel =
-    showValue && status.value !== undefined
-      ? `${status.korean}: ${status.value}`
-      : status.korean;
+  usePixiExtensions();
 
-  const statusEnglishLabel =
-    showValue && status.value !== undefined
-      ? `${status.english}: ${status.value}`
-      : status.english;
+  const getStatusColor = () => {
+    switch (status) {
+      case "warning":
+        return KOREAN_COLORS.WARNING_ORANGE;
+      case "danger":
+        return KOREAN_COLORS.NEGATIVE_RED;
+      case "success":
+        return KOREAN_COLORS.POSITIVE_GREEN;
+      default:
+        return KOREAN_COLORS.TEXT_PRIMARY;
+    }
+  };
 
-  return (
-    <KoreanText
-      korean={statusKoreanLabel}
-      english={statusEnglishLabel}
-      size={size}
-      weight={weight}
-      variant={variant}
-      emphasis={emphasis}
-      display={display}
-      order={order}
-      className={className}
-      style={style}
-      {...rest}
-    />
-  );
+  const textStyle = new PIXI.TextStyle({
+    fontSize: 14,
+    fill: getStatusColor(),
+    fontWeight: status === "danger" ? "bold" : "normal",
+  });
+
+  const displayText =
+    value !== undefined && maxValue !== undefined
+      ? `${message}: ${value}/${maxValue}`
+      : message;
+
+  return <pixiText text={displayText} style={textStyle} x={x} y={y} />;
 };
+
+export default KoreanStatusText;

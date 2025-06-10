@@ -1,57 +1,59 @@
 import React from "react";
-import { KoreanText } from "./KoreanText";
-import { TRIGRAM_DATA } from "../../../../../types/constants/trigram";
-import type { KoreanTechniqueTextProps } from "../types";
-import type { TrigramStance } from "../../../../../types";
+import * as PIXI from "pixi.js";
+import { usePixiExtensions } from "../../../../../utils/pixiExtensions";
+import { KOREAN_COLORS } from "../../../../../types/constants";
+import type { KoreanTechnique } from "../../../../../types/combat";
+
+export interface KoreanTechniqueTextProps {
+  readonly technique: KoreanTechnique;
+  readonly showDetails?: boolean;
+  readonly compact?: boolean;
+  readonly x?: number;
+  readonly y?: number;
+}
 
 export const KoreanTechniqueText: React.FC<KoreanTechniqueTextProps> = ({
   technique,
-  size = "medium",
-  weight = "regular",
-  variant = "primary",
-  emphasis = "none",
-  display = "both",
-  order = "korean_first",
-  showStance = true,
-  showDescription = false,
-  showEffects = false,
-  className,
-  style,
-  ...rest
+  showDetails = false,
+  compact = false,
+  x = 0,
+  y = 0,
 }) => {
-  const stanceData = TRIGRAM_DATA[technique.stance as TrigramStance];
+  usePixiExtensions();
+
+  const nameStyle = new PIXI.TextStyle({
+    fontSize: compact ? 14 : 18,
+    fill: KOREAN_COLORS.ACCENT_GOLD,
+    fontWeight: "bold",
+  });
+
+  const detailStyle = new PIXI.TextStyle({
+    fontSize: 12,
+    fill: KOREAN_COLORS.TEXT_SECONDARY,
+  });
 
   return (
-    <div className={className} style={style}>
-      <KoreanText
-        korean={technique.koreanName}
-        english={technique.englishName}
-        size={size}
-        weight={weight}
-        variant={variant}
-        emphasis={emphasis}
-        {...rest}
-      />
-
-      {showStance && stanceData && (
-        <KoreanText
-          korean={`(${stanceData.name.korean})`}
-          english={`(${stanceData.name.english})`}
-          size="small"
-          weight="light"
-          variant="secondary"
-        />
+    <pixiContainer x={x} y={y}>
+      <pixiText text={technique.koreanName} style={nameStyle} y={0} />
+      {!compact && (
+        <pixiText text={technique.englishName} style={detailStyle} y={20} />
       )}
-
-      {showDescription && technique.description && (
-        <KoreanText
-          korean={technique.description.korean}
-          english={technique.description.english}
-          size="small"
-          weight="light"
-          variant="secondary"
-        />
+      {showDetails && (
+        <>
+          <pixiText
+            text={`위력: ${technique.damage || 0}`}
+            style={detailStyle}
+            y={compact ? 20 : 40}
+          />
+          <pixiText
+            text={`기력: ${technique.kiCost}`}
+            style={detailStyle}
+            y={compact ? 35 : 55}
+          />
+        </>
       )}
-    </div>
+    </pixiContainer>
   );
 };
+
+export default KoreanTechniqueText;

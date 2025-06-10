@@ -1,57 +1,62 @@
-import React, { useCallback } from "react";
+import React from "react";
 import * as PIXI from "pixi.js";
 import { usePixiExtensions } from "../../utils/pixiExtensions";
 import { KOREAN_COLORS } from "../../types/constants";
-
-export interface HealthBarProps {
-  readonly health: number;
-  readonly maxHealth: number;
-  readonly width?: number;
-  readonly height?: number;
-  readonly showText?: boolean;
-}
+import type { HealthBarProps } from "../../types/ui";
 
 export const HealthBar: React.FC<HealthBarProps> = ({
-  health,
+  currentHealth,
   maxHealth,
   width = 200,
   height = 20,
   showText = true,
+  x = 0,
+  y = 0,
 }) => {
   usePixiExtensions();
 
-  const drawHealthBar = useCallback(
+  const healthPercent = Math.max(0, Math.min(1, currentHealth / maxHealth));
+
+  const getHealthColor = (percent: number): number => {
+    if (percent > 0.6) return KOREAN_COLORS.POSITIVE_GREEN;
+    if (percent > 0.3) return KOREAN_COLORS.WARNING_YELLOW;
+    return KOREAN_COLORS.NEGATIVE_RED;
+  };
+
+  const drawHealthBar = React.useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
-      const healthPercent = Math.max(0, Math.min(1, health / maxHealth));
 
       // Background
-      g.beginFill(KOREAN_COLORS.NEGATIVE_RED, 0.3);
+      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.8);
       g.drawRect(0, 0, width, height);
       g.endFill();
 
       // Health fill
-      g.beginFill(KOREAN_COLORS.POSITIVE_GREEN);
-      g.drawRect(0, 0, width * healthPercent, height);
+      const healthColor = getHealthColor(healthPercent);
+      g.beginFill(healthColor, 0.9);
+      g.drawRect(2, 2, (width - 4) * healthPercent, height - 4);
       g.endFill();
 
       // Border
-      g.lineStyle(1, KOREAN_COLORS.TEXT_PRIMARY, 0.5);
+      g.lineStyle(1, KOREAN_COLORS.UI_BORDER, 0.8);
       g.drawRect(0, 0, width, height);
     },
-    [health, maxHealth, width, height]
+    [width, height, healthPercent]
   );
 
   return (
-    <pixiContainer data-testid="health-bar">
+    <pixiContainer x={x} y={y} data-testid="health-bar">
       <pixiGraphics draw={drawHealthBar} />
+
       {showText && (
         <pixiText
-          text={`체력: ${Math.round(health)}/${maxHealth}`}
+          text={`${Math.round(currentHealth)}/${maxHealth}`}
           style={
             new PIXI.TextStyle({
               fontSize: 12,
               fill: KOREAN_COLORS.TEXT_PRIMARY,
+              align: "center",
             })
           }
           x={width / 2}

@@ -1,50 +1,53 @@
 import React from "react";
-import { KoreanText } from "./KoreanText";
-import type { KoreanTechniqueTextProps } from "../types";
+import * as PIXI from "pixi.js";
+import { usePixiExtensions } from "../../../../../utils/pixiExtensions";
+import { KOREAN_COLORS } from "../../../../../types/constants";
+import type { KoreanText } from "../../../../../types/korean-text";
 
-export const KoreanMartialText: React.FC<KoreanTechniqueTextProps> = ({
+export interface KoreanMartialTextProps {
+  readonly technique: KoreanText;
+  readonly stance: string;
+  readonly power?: number;
+  readonly showStats?: boolean;
+  readonly x?: number;
+  readonly y?: number;
+}
+
+export const KoreanMartialText: React.FC<KoreanMartialTextProps> = ({
   technique,
-  size = "medium", // Fix: Use valid size
-  weight = "regular", // Fix: Use valid weight
-  variant = "primary", // Fix: Use valid variant
-  emphasis = "none", // Fix: Use valid emphasis
-  display = "both",
-  order = "korean_first",
-  showStance = true,
-  showDescription = false,
-  showEffects = false,
-  className,
-  style,
-  ...rest
+  stance,
+  power = 0,
+  showStats = false,
+  x = 0,
+  y = 0,
 }) => {
-  const koreanToDisplay = technique.koreanName;
-  const englishToDisplay = technique.englishName;
+  usePixiExtensions();
+
+  const techniqueStyle = new PIXI.TextStyle({
+    fontSize: 20,
+    fill: KOREAN_COLORS.ACCENT_GOLD,
+    fontWeight: "bold",
+  });
+
+  const stanceStyle = new PIXI.TextStyle({
+    fontSize: 14,
+    fill: KOREAN_COLORS.PRIMARY_CYAN,
+  });
+
+  const statsStyle = new PIXI.TextStyle({
+    fontSize: 12,
+    fill: KOREAN_COLORS.TEXT_SECONDARY,
+  });
 
   return (
-    <div className={className} style={style}>
-      <KoreanText
-        korean={koreanToDisplay}
-        english={englishToDisplay}
-        size={size}
-        weight={weight}
-        variant={variant}
-        emphasis={emphasis}
-        display={display}
-        order={order}
-        {...rest}
-      />
-
-      {showDescription && technique.description && (
-        <KoreanText
-          korean={technique.description.korean}
-          english={technique.description.english}
-          size="small"
-          weight="light"
-          variant="secondary"
-          display={display}
-          order={order}
-        />
+    <pixiContainer x={x} y={y}>
+      <pixiText text={technique.korean} style={techniqueStyle} y={0} />
+      <pixiText text={`${stance} 자세`} style={stanceStyle} y={25} />
+      {showStats && (
+        <pixiText text={`위력: ${power}%`} style={statsStyle} y={45} />
       )}
-    </div>
+    </pixiContainer>
   );
 };
+
+export default KoreanMartialText;

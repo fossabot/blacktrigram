@@ -1,164 +1,161 @@
-import React, { useCallback, useState } from "react";
-import { Container } from "@pixi/react";
-import type { CombatScreenProps, PlayerState } from "../../types";
+import React, { useState, useCallback } from "react";
+import { usePixiExtensions } from "../../utils/pixiExtensions";
 import { CombatArena } from "./components/CombatArena";
 import { CombatHUD } from "./components/CombatHUD";
 import { CombatControls } from "./components/CombatControls";
 import { DojangBackground } from "../game/DojangBackground";
+import { HitEffectsLayer } from "../ui/HitEffectsLayer";
 import { GameEngine } from "../game/GameEngine";
-import { GAME_CONFIG } from "../../types/constants";
-import { BaseButton } from "../ui/base/BaseButton";
-import { GameMode } from "../../types/enums";
+import type { PlayerState } from "../../types/player";
+import type { CombatScreenProps } from "../../types/components";
+import type { HitEffect } from "../../types/effects";
 
 export const CombatScreen: React.FC<CombatScreenProps> = ({
   players,
   currentRound,
   timeRemaining,
   isPaused,
+  gameMode,
   onPlayerUpdate,
-  onReturnToMenu,
+  onReturnToMenu, // Fix: Use this parameter
   onGameEnd,
-  gameMode = GameMode.VERSUS,
-  width = GAME_CONFIG.CANVAS_WIDTH,
-  height = GAME_CONFIG.CANVAS_HEIGHT,
+  width = 1200,
+  height = 800,
 }) => {
+  usePixiExtensions();
+
+  // Fix: Remove unused state variables or use them
+  const [hitEffects, setHitEffects] = useState<HitEffect[]>([]);
   const [isExecutingTechnique, setIsExecutingTechnique] = useState(false);
 
+  // Fix: Use callback functions
   const handleCombatResult = useCallback(
     (result: any) => {
       console.log("Combat result:", result);
-      // Check for win conditions
-      if (result.winner) {
+      if (result.gameEnd) {
         onGameEnd(result.winner);
       }
     },
     [onGameEnd]
   );
 
-  const handleGameEvent = useCallback(
-    (event: string, data?: any) => {
-      console.log("Game event:", event, data);
-      // Handle game events like win conditions, round changes, etc.
-      if (event === "player_defeated") {
-        onGameEnd(data.winner);
-      }
-    },
-    [onGameEnd]
-  );
-
-  const handlePlayerAction = useCallback(
-    (playerIndex: 0 | 1, action: string) => {
-      console.log(`Player ${playerIndex + 1} performed: ${action}`);
+  const handleGameEvent = useCallback((event: string, data?: any) => {
+    console.log("Game event:", event, data);
+    if (event === "technique_executed") {
       setIsExecutingTechnique(true);
-
-      // Reset technique execution after animation
-      setTimeout(() => {
-        setIsExecutingTechnique(false);
-      }, 500);
-    },
-    []
-  );
-
-  const handlePauseToggle = useCallback(() => {
-    // Pause logic would be handled by parent component (App.tsx)
-    console.log("Pause toggle requested");
+      setTimeout(() => setIsExecutingTechnique(false), 500);
+    }
   }, []);
 
-  const handleStanceSwitch = useCallback(
-    (stance: any) => {
-      if (players[0]) {
-        onPlayerUpdate(0, { currentStance: stance });
-      }
-    },
-    [onPlayerUpdate, players]
-  );
+  const handleAttack = useCallback(() => {
+    console.log("Attack initiated");
+    setIsExecutingTechnique(true);
+  }, []);
 
-  const handleTechniqueExecute = useCallback(
-    (technique: any) => {
-      console.log("Executing technique:", technique);
-      handlePlayerAction(0, `technique_${technique.id}`);
-    },
-    [handlePlayerAction]
-  );
+  const handleDefend = useCallback(() => {
+    console.log("Defense initiated");
+  }, []);
 
-  // Fix: Create a wrapper function that matches GameEngineProps signature
+  const handlePauseToggle = useCallback(() => {
+    console.log("Pause toggled");
+  }, []);
+
+  const handleStanceSwitch = useCallback((stance: any) => {
+    console.log("Stance switched to:", stance);
+  }, []);
+
+  const handleTechniqueExecute = useCallback((technique: any) => {
+    console.log("Technique executed:", technique);
+    setIsExecutingTechnique(true);
+    setTimeout(() => setIsExecutingTechnique(false), 800);
+  }, []);
+
   const handlePlayerUpdateForEngine = useCallback(
     (playerIndex: number, updates: Partial<PlayerState>) => {
-      // Convert number to 0 | 1 for CombatScreenProps
-      if (playerIndex === 0 || playerIndex === 1) {
-        onPlayerUpdate(playerIndex as 0 | 1, updates as PlayerState);
-      }
+      onPlayerUpdate(playerIndex, updates);
     },
     [onPlayerUpdate]
   );
 
+  const handleEffectComplete = useCallback((effectId: string) => {
+    setHitEffects((prev) => prev.filter((effect) => effect.id !== effectId));
+  }, []);
+
   return (
-    <Container width={width} height={height}>
-      {/* Background */}
+    <pixiContainer data-testid="combat-screen">
       <DojangBackground
         width={width}
         height={height}
-        animate={true}
         lighting="cyberpunk"
+        animate={true}
       />
 
-      {/* Game Engine */}
       <GameEngine
-        players={[...players]} // Convert readonly array to mutable array
+        players={Array.from(players)} // Fix: Convert readonly array to mutable
         onPlayerUpdate={handlePlayerUpdateForEngine}
         onCombatResult={handleCombatResult}
         onGameEvent={handleGameEvent}
-        isPaused={isPaused}
         gameMode={gameMode}
-      />
-
-      {/* Combat Arena - Remove y prop */}
-      <CombatArena
-        players={[...players]} // Convert readonly array to mutable array
-        onPlayerClick={(playerIndex) => {
-          console.log(`Player ${playerIndex + 1} clicked`);
-        }}
         width={width}
-        height={height - 200} // Leave space for HUD and controls
+        height={height}
       />
 
-      {/* Combat HUD - Remove maxRounds and y props */}
+      <CombatArena
+        players={Array.from(players)} // Fix: Convert readonly array to mutable
+        width={width}
+        height={height}
+      />
+
       <CombatHUD
         player1={players[0]}
         player2={players[1]}
         timeRemaining={timeRemaining}
         currentRound={currentRound}
+        maxRounds={3}
+        isPaused={isPaused}
         width={width}
-        height={100}
+        height={height}
       />
 
-      {/* Combat Controls */}
       <CombatControls
-        onAttack={() => handlePlayerAction(0, "attack")}
-        onDefend={() => handlePlayerAction(0, "defend")}
-        onSwitchStance={handleStanceSwitch}
+        onAttack={handleAttack}
+        onDefend={handleDefend}
         onPauseToggle={handlePauseToggle}
+        onSwitchStance={handleStanceSwitch}
+        onTechniqueExecute={handleTechniqueExecute}
         isPaused={isPaused}
         player={players[0]}
-        onTechniqueExecute={handleTechniqueExecute}
-        onGuard={() => handlePlayerAction(0, "guard")}
         isExecutingTechnique={isExecutingTechnique}
+      />
+
+      <HitEffectsLayer
+        effects={hitEffects}
+        onEffectComplete={handleEffectComplete}
         width={width}
-        height={120}
-        y={height - 120}
+        height={height}
       />
 
       {/* Return to menu button */}
-      <Container x={width - 150} y={20}>
-        <BaseButton
-          text="메뉴 (Menu)"
-          onClick={onReturnToMenu}
-          variant="secondary"
-          width={120}
-          height={40}
+      <pixiContainer x={width - 120} y={20}>
+        <pixiGraphics
+          draw={(g) => {
+            g.clear();
+            g.beginFill(0x333333, 0.8);
+            g.drawRoundedRect(0, 0, 100, 30, 5);
+            g.endFill();
+          }}
+          interactive={true}
+          onPointerDown={onReturnToMenu} // Fix: Use onPointerDown instead of pointerdown
         />
-      </Container>
-    </Container>
+        <pixiText
+          text="메뉴"
+          style={{ fontSize: 14, fill: 0xffffff }}
+          x={50}
+          y={15}
+          anchor={0.5}
+        />
+      </pixiContainer>
+    </pixiContainer>
   );
 };
 

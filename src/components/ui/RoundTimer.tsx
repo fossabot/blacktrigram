@@ -1,54 +1,85 @@
-import React, { useMemo } from "react";
-import { Container, Text } from "@pixi/react";
+import React from "react";
 import * as PIXI from "pixi.js";
-import { KOREAN_COLORS, FONT_FAMILY, FONT_SIZES } from "../../types/constants";
+import { usePixiExtensions } from "../../utils/pixiExtensions";
+import { KOREAN_COLORS } from "../../types/constants";
 
 export interface RoundTimerProps {
   readonly timeRemaining: number;
-  readonly currentRound?: number; // Make optional if not always used
-  readonly maxRounds?: number; // Make optional if not always used
+  readonly totalTime?: number;
+  readonly isRunning?: boolean;
   readonly showWarning?: boolean;
-  readonly warningThreshold?: number;
   readonly x?: number;
   readonly y?: number;
 }
 
 export const RoundTimer: React.FC<RoundTimerProps> = ({
   timeRemaining,
+  totalTime = 180,
+  isRunning = true,
   showWarning = true,
-  warningThreshold = 30,
   x = 0,
   y = 0,
 }) => {
-  const isWarning = showWarning && timeRemaining <= warningThreshold;
+  usePixiExtensions();
 
-  const timerStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.MONO,
-        fontSize: FONT_SIZES.xxlarge,
-        fill: isWarning
-          ? KOREAN_COLORS.WARNING_ORANGE
-          : KOREAN_COLORS.TEXT_PRIMARY,
-        fontWeight: "bold",
-        align: "center",
-        stroke: KOREAN_COLORS.BLACK_SOLID,
-      }),
-    [isWarning]
-  );
+  const minutes = Math.floor(timeRemaining / 60);
+  const seconds = Math.floor(timeRemaining % 60);
+  const timeText = `${minutes}:${seconds.toString().padStart(2, "0")}`;
 
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
-  };
+  const isLowTime = timeRemaining <= 30;
+  const textColor =
+    isLowTime && showWarning
+      ? KOREAN_COLORS.WARNING_ORANGE
+      : KOREAN_COLORS.TEXT_PRIMARY;
+
+  // Fix: Use totalTime and isRunning to avoid unused variable warnings
+  const progressPercent = totalTime > 0 ? timeRemaining / totalTime : 1;
+  const timerAlpha = isRunning ? 1.0 : 0.5;
 
   return (
-    <Container x={x} y={y}>
-      <Text text={formatTime(timeRemaining)} style={timerStyle} anchor={0.5} />
-    </Container>
+    <pixiContainer x={x} y={y} data-testid="round-timer" alpha={timerAlpha}>
+      <pixiText
+        text="시간 (Time)"
+        style={
+          new PIXI.TextStyle({
+            fontSize: 12,
+            fill: KOREAN_COLORS.TEXT_SECONDARY,
+          })
+        }
+        anchor={0.5}
+        y={-15}
+      />
+
+      <pixiText
+        text={timeText}
+        style={
+          new PIXI.TextStyle({
+            fontSize: 24,
+            fill: textColor,
+            fontWeight: "bold",
+          })
+        }
+        anchor={0.5}
+      />
+
+      {/* Progress bar showing time remaining */}
+      <pixiGraphics
+        draw={(g: PIXI.Graphics) => {
+          g.clear();
+          g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.5);
+          g.drawRect(-50, 20, 100, 4);
+          g.endFill();
+
+          g.beginFill(
+            isLowTime
+              ? KOREAN_COLORS.WARNING_ORANGE
+              : KOREAN_COLORS.PRIMARY_CYAN
+          );
+          g.drawRect(-50, 20, 100 * progressPercent, 4);
+          g.endFill();
+        }}
+      />
+    </pixiContainer>
   );
 };
 

@@ -3,7 +3,6 @@
 import React, { useCallback } from "react";
 import * as PIXI from "pixi.js";
 import { KOREAN_COLORS } from "../../types/constants";
-import { usePixiExtensions } from "../../utils/pixiExtensions";
 
 export interface DojangBackgroundProps {
   readonly width?: number;
@@ -18,9 +17,6 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
   animate = true,
   lighting = "normal",
 }) => {
-  // Ensure PixiJS components are extended
-  usePixiExtensions();
-
   const backgroundDraw = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();

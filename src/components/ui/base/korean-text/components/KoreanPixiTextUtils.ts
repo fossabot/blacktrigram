@@ -1,41 +1,47 @@
-import type { KoreanText } from "../../../../../types";
-import { KOREAN_COLORS, FONT_FAMILY } from "../../../../../types/constants";
-import * as PIXI from "pixi.js";
+/**
+ * TypeScript type definitions for Korean PixiJS text utilities
+ * This file provides types that can be imported separately from the React components
+ */
+
+import type * as PIXI from "pixi.js";
+
+export interface KoreanText {
+  readonly korean: string;
+  readonly english: string;
+  readonly romanized?: string;
+}
 
 export interface KoreanPixiTextStyle {
   fontSize?: number;
-  fill?: number | string;
+  fill?: number;
   fontWeight?: string;
-  align?: "left" | "center" | "right";
-  stroke?: number | string;
-  fontFamily?: string;
+  align?: string;
+  wordWrap?: boolean;
+  wordWrapWidth?: number;
 }
 
-export function createKoreanTextStyle(
-  options: KoreanPixiTextStyle
-): PIXI.TextStyle {
-  return new PIXI.TextStyle({
-    fontFamily: options.fontFamily || FONT_FAMILY.PRIMARY,
-    fontSize: options.fontSize || 16,
-    fill: options.fill || KOREAN_COLORS.TEXT_PRIMARY,
-    fontWeight: (options.fontWeight || "400") as PIXI.TextStyleFontWeight,
-    align: options.align || "left",
-    stroke: options.stroke || KOREAN_COLORS.BLACK_SOLID,
-  });
+export interface KoreanPixiTextProps {
+  text: KoreanText;
+  style?: PIXI.TextStyle;
+  showRomanization?: boolean;
+  x?: number;
+  y?: number;
+  anchor?: number | { x: number; y: number };
 }
 
-export function formatKoreanTextForPixi(
-  text: KoreanText | string,
-  showBoth: boolean = true,
-  koreanFirst: boolean = true
-): string {
-  if (typeof text === "string") return text;
+// Fix: Function type definitions with optional parameters
+export declare function createKoreanTextStyle(
+  options?: KoreanPixiTextStyle
+): PIXI.TextStyle;
 
-  if (!showBoth) {
-    return koreanFirst ? text.korean : text.english;
-  }
+export declare function getDisplayText(
+  text: KoreanText,
+  showRomanization?: boolean
+): string;
 
-  return koreanFirst
-    ? `${text.korean} / ${text.english}`
-    : `${text.english} / ${text.korean}`;
-}
+export declare const KOREAN_TEXT_STYLES: {
+  readonly heading: PIXI.TextStyle;
+  readonly body: PIXI.TextStyle;
+  readonly small: PIXI.TextStyle;
+  readonly accent: PIXI.TextStyle;
+};

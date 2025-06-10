@@ -1,112 +1,133 @@
-import React, { useMemo } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
+import React from "react";
 import * as PIXI from "pixi.js";
-import type { PlayerState } from "../../types";
-import { TrigramStance } from "../../types/enums";
-import {
-  KOREAN_COLORS,
-  FONT_FAMILY,
-  FONT_SIZES,
-  TRIGRAM_DATA,
-} from "../../types/constants";
+import { usePixiExtensions } from "../../utils/pixiExtensions";
+import { KOREAN_COLORS, PLAYER_ARCHETYPES_DATA } from "../../types/constants";
+import type { PlayerState } from "../../types/player";
 
 export interface PlayerVisualsProps {
   readonly playerState: PlayerState;
-  readonly playerIndex: number;
   readonly x?: number;
   readonly y?: number;
-  readonly width?: number;
-  readonly height?: number;
+  readonly scale?: number;
   readonly showDetails?: boolean;
-  readonly onPlayerClick?: (playerIndex: number) => void;
-  readonly interactive?: boolean;
+  readonly animationState?: string;
 }
 
 export const PlayerVisuals: React.FC<PlayerVisualsProps> = ({
   playerState,
-  playerIndex,
   x = 0,
   y = 0,
-  width = 100,
-  height = 150,
+  scale = 1.0,
   showDetails = true,
-  onPlayerClick,
-  interactive = true,
-  ...props
+  animationState = "idle",
 }) => {
-  const currentStance = playerState.currentStance as TrigramStance;
-  const stanceData = TRIGRAM_DATA[currentStance];
+  usePixiExtensions();
 
-  const playerStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.medium,
-        fill: KOREAN_COLORS.TEXT_PRIMARY,
-        align: "center",
-      }),
-    []
-  );
+  const archetypeData = PLAYER_ARCHETYPES_DATA[playerState.archetype];
+  const healthPercent = playerState.health / playerState.maxHealth;
 
-  const drawPlayer = React.useCallback(
+  const drawPlayerBody = React.useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
 
-      // Simple player representation
-      g.beginFill(KOREAN_COLORS.TEXT_PRIMARY, 0.8);
-      g.drawRect(-20, -30, 40, 60);
+      // Main body
+      g.beginFill(archetypeData.colors.primary, 0.9);
+      g.drawEllipse(0, 0, 25, 40);
       g.endFill();
 
-      // Stance indicator
-      if (stanceData) {
-        g.beginFill(
-          stanceData.theme?.primary || KOREAN_COLORS.ACCENT_PRIMARY,
-          0.5
-        );
-        g.drawCircle(0, 0, 35);
-        g.endFill();
-      }
+      // Head
+      g.beginFill(archetypeData.colors.secondary, 0.8);
+      g.drawCircle(0, -30, 15);
+      g.endFill();
+
+      // Arms
+      g.lineStyle(8, archetypeData.colors.primary, 0.8);
+      g.moveTo(-25, -10);
+      g.lineTo(-35, 10);
+      g.moveTo(25, -10);
+      g.lineTo(35, 10);
+
+      // Legs
+      g.moveTo(-10, 30);
+      g.lineTo(-15, 60);
+      g.moveTo(10, 30);
+      g.lineTo(15, 60);
     },
-    [stanceData]
+    [archetypeData, animationState]
   );
 
-  const handleClick = () => {
-    onPlayerClick?.(playerIndex);
-  };
+  const drawHealthBar = React.useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+
+      // Background
+      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.8);
+      g.drawRect(-30, -60, 60, 8);
+      g.endFill();
+
+      // Health fill
+      const healthColor =
+        healthPercent > 0.6
+          ? KOREAN_COLORS.POSITIVE_GREEN
+          : healthPercent > 0.3
+          ? KOREAN_COLORS.WARNING_YELLOW
+          : KOREAN_COLORS.NEGATIVE_RED;
+      g.beginFill(healthColor, 0.9);
+      g.drawRect(-28, -58, 56 * healthPercent, 4);
+      g.endFill();
+    },
+    [healthPercent]
+  );
 
   return (
-    <Container
-      x={x}
-      y={y}
-      interactive={interactive}
-      buttonMode={interactive}
-      pointertap={handleClick}
-      {...props}
-    >
-      <Graphics draw={drawPlayer} />
+    <pixiContainer x={x} y={y} scale={scale} data-testid="player-visuals">
+      <pixiGraphics draw={drawPlayerBody} />
 
-      {/* Player name */}
-      <Text
-        text={playerState.name.korean}
-        anchor={0.5}
-        x={0}
-        y={-50}
-        style={playerStyle}
-      />
+      {showDetails && (
+        <>
+          <pixiGraphics draw={drawHealthBar} />
 
-      {/* Stance symbol */}
-      <Text
-        text={stanceData?.symbol || "?"}
-        anchor={0.5}
-        x={0}
-        y={15}
-        style={{
-          ...playerStyle,
-          fontSize: FONT_SIZES.large,
-          fill: stanceData?.theme?.primary || KOREAN_COLORS.ACCENT_PRIMARY,
-        }}
-      />
-    </Container>
+          <pixiText
+            text={playerState.name.korean}
+            style={
+              new PIXI.TextStyle({
+                fontSize: 10,
+                fill: KOREAN_COLORS.TEXT_PRIMARY,
+                align: "center",
+              })
+            }
+            anchor={0.5}
+            y={-70}
+          />
+
+          <pixiText
+            text={`${Math.round(playerState.health)}/${playerState.maxHealth}`}
+            style={
+              new PIXI.TextStyle({
+                fontSize: 8,
+                fill: KOREAN_COLORS.TEXT_SECONDARY,
+                align: "center",
+              })
+            }
+            anchor={0.5}
+            y={-45}
+          />
+
+          <pixiText
+            text={playerState.currentStance}
+            style={
+              new PIXI.TextStyle({
+                fontSize: 8,
+                fill: KOREAN_COLORS.ACCENT_GOLD,
+                align: "center",
+              })
+            }
+            anchor={0.5}
+            y={70}
+          />
+        </>
+      )}
+    </pixiContainer>
   );
 };
 

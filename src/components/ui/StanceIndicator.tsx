@@ -1,80 +1,55 @@
-import React, { useCallback } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
+import React from "react";
 import * as PIXI from "pixi.js";
-import type { TrigramStance } from "../../types";
-import { KOREAN_COLORS, FONT_SIZES, TRIGRAM_DATA } from "../../types/constants";
+import { usePixiExtensions } from "../../utils/pixiExtensions";
+import { KOREAN_COLORS, TRIGRAM_DATA } from "../../types/constants";
+import type { TrigramStance } from "../../types/trigram";
 
 export interface StanceIndicatorProps {
   readonly stance: TrigramStance;
   readonly size?: number;
   readonly showText?: boolean;
-  readonly color?: number;
-  readonly onClick?: (stance: TrigramStance) => void;
+  readonly isActive?: boolean;
   readonly x?: number;
   readonly y?: number;
-  readonly width?: number;
-  readonly height?: number;
-  readonly isActive?: boolean;
 }
 
 export const StanceIndicator: React.FC<StanceIndicatorProps> = ({
   stance,
-  size = 60,
+  size = 50,
   showText = true,
-  color,
-  onClick, // Fix: Use onClick prop
-  isActive = true,
+  isActive = false,
   x = 0,
   y = 0,
 }) => {
+  usePixiExtensions();
+
   const stanceData = TRIGRAM_DATA[stance];
 
-  const drawStanceIndicator = useCallback(
+  const drawIndicator = React.useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
 
-      if (stanceData) {
-        g.beginFill(
-          isActive ? stanceData.theme.primary : stanceData.theme.secondary,
-          isActive ? 1.0 : 0.6
-        );
-      } else {
-        g.beginFill(KOREAN_COLORS.UI_GRAY, 0.5);
-      }
-
-      // Draw hexagon or circle for stance indicator
-      const radius = size / 2;
-      g.drawCircle(radius, radius, radius - 2);
+      // Background circle
+      g.beginFill(
+        isActive ? stanceData.theme.primary : KOREAN_COLORS.UI_BACKGROUND_DARK,
+        0.8
+      );
+      g.drawCircle(size / 2, size / 2, size / 2);
       g.endFill();
 
       // Border
-      g.lineStyle(2, KOREAN_COLORS.PRIMARY_CYAN, isActive ? 1.0 : 0.5);
-      g.drawCircle(radius, radius, radius - 2);
+      g.lineStyle(2, stanceData.theme.primary, isActive ? 1.0 : 0.5);
+      g.drawCircle(size / 2, size / 2, size / 2);
     },
-    [stance, size, color, isActive]
+    [stance, size, isActive, stanceData.theme.primary]
   );
 
-  // Fix: Add click handler
-  const handleClick = useCallback(() => {
-    onClick?.(stance);
-  }, [onClick, stance]);
-
   return (
-    <Container
-      x={x}
-      y={y}
-      interactive={!!onClick} // Make interactive if onClick is provided
-      buttonMode={!!onClick}
-      pointertap={handleClick} // Fix: Use onClick functionality
-    >
-      <Graphics draw={drawStanceIndicator} />
+    <pixiContainer x={x} y={y} data-testid="stance-indicator">
+      <pixiGraphics draw={drawIndicator} />
 
-      {/* Stance Symbol */}
-      <Text
-        text={stanceData?.symbol || stance}
-        anchor={0.5}
-        x={size / 2}
-        y={size / 2}
+      <pixiText
+        text={stanceData.symbol}
         style={
           new PIXI.TextStyle({
             fontSize: size * 0.4,
@@ -82,24 +57,26 @@ export const StanceIndicator: React.FC<StanceIndicatorProps> = ({
             fontWeight: "bold",
           })
         }
+        x={size / 2}
+        y={size / 2}
+        anchor={0.5}
       />
 
-      {/* Stance Name */}
       {showText && (
-        <Text
-          text={stanceData?.name.korean || stance}
-          anchor={0.5}
-          x={size / 2}
-          y={size + 10}
+        <pixiText
+          text={stanceData.name.korean}
           style={
             new PIXI.TextStyle({
-              fontSize: FONT_SIZES.small,
+              fontSize: 12,
               fill: KOREAN_COLORS.TEXT_SECONDARY,
             })
           }
+          x={size / 2}
+          y={size + 5}
+          anchor={0.5}
         />
       )}
-    </Container>
+    </pixiContainer>
   );
 };
 

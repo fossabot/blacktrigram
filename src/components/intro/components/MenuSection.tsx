@@ -1,19 +1,20 @@
-import React, { useMemo } from "react";
+import React from "react";
 import * as PIXI from "pixi.js";
-import { BaseButton } from "../../ui/base/BaseButton";
 import { usePixiExtensions } from "../../../utils/pixiExtensions";
-import { KoreanHeader } from "../../ui/base/KoreanHeader";
-import { KOREAN_COLORS, GAME_CONFIG } from "../../../types/constants";
+import { BaseButton } from "../../ui/base/BaseButton";
+import { KOREAN_COLORS } from "../../../types/constants";
 import { GameMode } from "../../../types/enums";
 
 export interface MenuSectionProps {
-  readonly selectedMode: any;
-  readonly onModeSelect: (mode: any) => void;
+  readonly selectedMode: GameMode;
+  readonly onModeSelect: (mode: GameMode) => void;
   readonly onStartGame: () => void;
   readonly onShowPhilosophy: () => void;
   readonly onShowControls: () => void;
   readonly width?: number;
   readonly height?: number;
+  readonly x?: number;
+  readonly y?: number;
 }
 
 export const MenuSection: React.FC<MenuSectionProps> = ({
@@ -22,140 +23,143 @@ export const MenuSection: React.FC<MenuSectionProps> = ({
   onStartGame,
   onShowPhilosophy,
   onShowControls,
-  width = GAME_CONFIG.CANVAS_WIDTH,
-  height = GAME_CONFIG.CANVAS_HEIGHT,
+  width = 1200,
+  height = 600,
+  x = 0,
+  y = 0,
 }) => {
-  // Ensure PixiJS components are extended
   usePixiExtensions();
 
-  const drawBackground = useMemo(
-    () => (g: PIXI.Graphics) => {
-      g.clear();
-      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.9);
-      g.drawRect(0, 0, width, height);
-      g.endFill();
-    },
-    [width, height]
-  );
-
   return (
-    <pixiContainer x={100} y={100} data-testid="menu-section">
-      <pixiGraphics draw={drawBackground} />
-
-      {/* Header */}
-      <KoreanHeader
-        title={{
-          korean: "흑괘 무술 도장",
-          english: "Black Trigram Martial Arts",
-        }}
-        subtitle={{
-          korean: "전통 한국 무술의 정수",
-          english: "The Essence of Traditional Korean Martial Arts",
-        }}
-        x={width / 2}
-        y={60}
-        fontSize={24}
-        align="center"
-      />
-
+    <pixiContainer
+      x={x}
+      y={y}
+      width={width}
+      height={height}
+      data-testid="menu-section"
+    >
       {/* Game Mode Selection */}
-      <pixiContainer x={width / 2 - 150} y={250}>
-        <BaseButton
-          text="대전 (Versus)"
-          onClick={() => onModeSelect(GameMode.VERSUS)}
-          width={300}
-          height={60}
-          variant={selectedMode === GameMode.VERSUS ? "primary" : "secondary"}
+      <pixiContainer x={width / 2 - 200} y={100}>
+        <pixiText
+          text="게임 모드 선택 (Select Game Mode)"
+          style={
+            new PIXI.TextStyle({
+              fontSize: 20,
+              fill: KOREAN_COLORS.ACCENT_GOLD,
+              fontWeight: "bold",
+            })
+          }
+          anchor={0.5}
+          x={200}
           y={0}
         />
 
         <BaseButton
-          text="훈련 (Training)"
-          onClick={() => onModeSelect(GameMode.TRAINING)}
-          width={300}
-          height={60}
-          variant={selectedMode === GameMode.TRAINING ? "primary" : "secondary"}
-          y={80}
+          text="대련 (Versus)"
+          koreanText="대련"
+          onClick={() => onModeSelect(GameMode.VERSUS)}
+          variant={selectedMode === GameMode.VERSUS ? "primary" : "secondary"}
+          x={50}
+          y={50}
+          width={150}
+          height={50}
         />
 
         <BaseButton
-          text="연습 (Practice)"
-          onClick={() => onModeSelect(GameMode.PRACTICE)}
-          width={300}
-          height={60}
-          variant={selectedMode === GameMode.PRACTICE ? "primary" : "secondary"}
-          y={160}
+          text="수련 (Training)"
+          koreanText="수련"
+          onClick={() => onModeSelect(GameMode.TRAINING)}
+          variant={selectedMode === GameMode.TRAINING ? "primary" : "secondary"}
+          x={220}
+          y={50}
+          width={150}
+          height={50}
+        />
+
+        <BaseButton
+          text="게임 시작 (Start Game)"
+          koreanText="게임 시작"
+          onClick={onStartGame}
+          variant="accent"
+          x={125}
+          y={120}
+          width={150}
+          height={50}
         />
       </pixiContainer>
 
-      {/* Action Buttons */}
-      <pixiContainer x={width / 2 - 100} y={500}>
-        <BaseButton
-          text="게임 시작"
-          onClick={onStartGame}
-          width={200}
-          height={50}
-          variant="accent"
-          y={0}
-        />
-
+      {/* Info Buttons */}
+      <pixiContainer x={width / 2 - 150} y={350}>
         <BaseButton
           text="철학 (Philosophy)"
+          koreanText="철학"
           onClick={onShowPhilosophy}
-          width={200}
-          height={50}
           variant="ghost"
-          y={70}
+          x={0}
+          y={0}
+          width={120}
+          height={40}
         />
 
         <BaseButton
           text="조작법 (Controls)"
+          koreanText="조작법"
           onClick={onShowControls}
-          width={200}
-          height={50}
           variant="ghost"
-          y={140}
+          x={180}
+          y={0}
+          width={120}
+          height={40}
         />
       </pixiContainer>
 
-      {/* 시작 버튼 - Start Combat */}
-      <BaseButton
-        x={50}
-        y={150}
-        width={300}
-        height={60}
-        text="Start Combat"
-        koreanText="전투 시작"
-        onClick={onStartGame}
-        variant="primary"
-        testId="start-combat-button"
-      />
+      {/* Archetype Preview */}
+      <pixiContainer x={50} y={250}>
+        <pixiText
+          text="플레이어 유형 (Player Archetypes)"
+          style={
+            new PIXI.TextStyle({
+              fontSize: 16,
+              fill: KOREAN_COLORS.TEXT_SECONDARY,
+              fontWeight: "bold",
+            })
+          }
+          y={0}
+        />
 
-      {/* 훈련 버튼 - Training Mode */}
-      <BaseButton
-        x={50}
-        y={230}
-        width={300}
-        height={60}
-        text="Training Mode"
-        koreanText="훈련 모드"
-        onClick={onShowControls}
-        variant="secondary"
-        testId="training-mode-button"
-      />
+        <pixiText
+          text="• 무사 (Musa) - 전통 무사의 길"
+          style={
+            new PIXI.TextStyle({
+              fontSize: 12,
+              fill: KOREAN_COLORS.TEXT_PRIMARY,
+            })
+          }
+          y={30}
+        />
 
-      {/* 아케타입 선택 - Archetype Selection */}
-      <BaseButton
-        x={50}
-        y={310}
-        width={300}
-        height={60}
-        text="Select Archetype"
-        koreanText="형태 선택"
-        onClick={() => console.log("Archetype selection not implemented")}
-        variant="accent"
-        testId="archetype-select-button"
-      />
+        <pixiText
+          text="• 암살자 (Amsalja) - 그림자 속의 효율성"
+          style={
+            new PIXI.TextStyle({
+              fontSize: 12,
+              fill: KOREAN_COLORS.TEXT_PRIMARY,
+            })
+          }
+          y={50}
+        />
+
+        <pixiText
+          text="• 해커 (Hacker) - 정보를 통한 힘"
+          style={
+            new PIXI.TextStyle({
+              fontSize: 12,
+              fill: KOREAN_COLORS.TEXT_PRIMARY,
+            })
+          }
+          y={70}
+        />
+      </pixiContainer>
     </pixiContainer>
   );
 };

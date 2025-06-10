@@ -1,82 +1,141 @@
-import React, { useCallback } from "react";
-import * as PIXI from "pixi.js";
+import React from "react";
 import { usePixiExtensions } from "../../utils/pixiExtensions";
+import { KOREAN_COLORS, PLAYER_ARCHETYPES_DATA } from "../../types/constants";
+import { lightenColor } from "../../utils/colorUtils";
 import type { PlayerState } from "../../types/player";
-import { KOREAN_COLORS } from "../../types/constants";
 
 export interface PlayerVisualsProps {
   readonly playerState: PlayerState;
-  readonly archetype: string;
-  readonly width?: number;
-  readonly height?: number;
+  readonly x?: number;
+  readonly y?: number;
+  readonly animationState?: string;
+  readonly scale?: number; // Fix: Add missing prop
+  readonly showDetails?: boolean; // Fix: Add missing prop
+  readonly showHitboxes?: boolean; // Fix: Add missing prop
 }
 
 export const PlayerVisuals: React.FC<PlayerVisualsProps> = ({
   playerState,
-  archetype,
-  width = 100,
-  height = 150,
+  x = 0,
+  y = 0,
+  animationState = "idle",
+  scale = 1.0, // Fix: Use the parameter
+  showDetails = true, // Fix: Use the parameter
+  showHitboxes = false, // Fix: Add default value
 }) => {
   usePixiExtensions();
 
-  const drawPlayer = useCallback(
-    (g: PIXI.Graphics) => {
+  const archetypeData = PLAYER_ARCHETYPES_DATA[playerState.archetype];
+  const healthPercent = playerState.health / playerState.maxHealth; // Fix: Use the variable
+
+  const drawPlayerBody = React.useCallback(
+    (g: any) => {
       g.clear();
 
-      // Player body based on archetype - use number type for fill
-      let playerColor: number = KOREAN_COLORS.PLAYER_1_COLOR;
-      switch (archetype) {
-        case "무사 (Musa)":
-          playerColor = 0xffd700; // Gold
-          break;
-        case "암살자 (Amsalja)":
-          playerColor = 0x00ffff; // Cyan
-          break;
-        case "해커 (Hacker)":
-          playerColor = 0x0066ff; // Blue
-          break;
-        case "정보요원 (Jeongbo Yowon)":
-          playerColor = 0x9933ff; // Purple
-          break;
-        case "조직폭력배 (Jojik Pokryeokbae)":
-          playerColor = 0xff3333; // Red
-          break;
+      // Main body - Fix: Use animationState in logic
+      const bodyColor =
+        animationState === "attacking"
+          ? lightenColor(archetypeData.colors.primary, 0.2)
+          : archetypeData.colors.primary;
+
+      g.beginFill(bodyColor, 0.9);
+      g.drawEllipse(0, 0, 25, 40);
+      g.endFill();
+
+      // Head
+      g.beginFill(archetypeData.colors.secondary, 0.8);
+      g.drawCircle(0, -30, 15);
+      g.endFill();
+
+      // Arms
+      g.lineStyle(8, archetypeData.colors.primary, 0.8);
+      g.moveTo(-25, -10);
+      g.lineTo(-35, 10);
+      g.moveTo(25, -10);
+      g.lineTo(35, 10);
+
+      // Legs
+      g.moveTo(-10, 30);
+      g.lineTo(-15, 60);
+      g.moveTo(10, 30);
+      g.lineTo(15, 60);
+
+      // Hitboxes (if enabled)
+      if (showHitboxes) {
+        g.lineStyle(1, 0xff0000, 0.5);
+        g.drawRect(-30, -45, 60, 105);
       }
-
-      g.beginFill(playerColor, 0.8);
-      g.drawRect(0, 0, width, height);
-      g.endFill();
-
-      // Health indicator
-      const healthPercent = playerState.health / playerState.maxHealth;
-      g.beginFill(KOREAN_COLORS.POSITIVE_GREEN, 0.7);
-      g.drawRect(5, 5, (width - 10) * healthPercent, 10);
-      g.endFill();
-
-      // Stance indicator (trigram symbol)
-      g.lineStyle(2, KOREAN_COLORS.PRIMARY_CYAN);
-      g.drawCircle(width / 2, height - 20, 15);
-      g.lineStyle(0);
     },
-    [playerState.health, playerState.maxHealth, width, height, archetype]
+    [archetypeData, animationState, showHitboxes]
+  );
+
+  const drawHealthBar = React.useCallback(
+    (g: any) => {
+      if (!showDetails) return;
+
+      g.clear();
+
+      // Background
+      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.8);
+      g.drawRect(-30, -60, 60, 8);
+      g.endFill();
+
+      // Health fill
+      const healthColor =
+        healthPercent > 0.6
+          ? KOREAN_COLORS.POSITIVE_GREEN
+          : healthPercent > 0.3
+          ? KOREAN_COLORS.WARNING_YELLOW
+          : KOREAN_COLORS.NEGATIVE_RED;
+      g.beginFill(healthColor, 0.9);
+      g.drawRect(-28, -58, 56 * healthPercent, 4);
+      g.endFill();
+    },
+    [healthPercent, showDetails]
   );
 
   return (
-    <pixiContainer data-testid="player-visuals">
-      <pixiGraphics draw={drawPlayer} />
-      <pixiText
-        text={`${archetype} - ${playerState.currentStance}`}
-        style={
-          new PIXI.TextStyle({
-            fontSize: 12,
-            fill: KOREAN_COLORS.TEXT_PRIMARY,
-            fontWeight: "bold",
-          })
-        }
-        anchor={0.5}
-        x={width / 2}
-        y={-20}
-      />
+    <pixiContainer x={x} y={y} scale={scale} data-testid="player-visuals">
+      <pixiGraphics draw={drawPlayerBody} />
+
+      {showDetails && (
+        <>
+          <pixiGraphics draw={drawHealthBar} />
+
+          <pixiText
+            text={playerState.name.korean}
+            style={{
+              fontSize: 10,
+              fill: KOREAN_COLORS.TEXT_PRIMARY,
+              align: "center",
+            }}
+            anchor={0.5}
+            y={-70}
+          />
+
+          <pixiText
+            text={`${Math.round(playerState.health)}/${playerState.maxHealth}`}
+            style={{
+              fontSize: 8,
+              fill: KOREAN_COLORS.TEXT_SECONDARY,
+              align: "center",
+            }}
+            anchor={0.5}
+            y={-45}
+          />
+
+          <pixiText
+            text={playerState.currentStance}
+            style={{
+              fontSize: 8,
+              fill: KOREAN_COLORS.ACCENT_GOLD,
+              align: "center",
+            }}
+            anchor={0.5}
+            y={70}
+          />
+        </>
+      )}
     </pixiContainer>
   );
 };

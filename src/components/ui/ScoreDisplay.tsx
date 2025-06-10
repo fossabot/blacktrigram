@@ -1,70 +1,126 @@
-import React, { useMemo } from "react";
-import { Container, Text } from "@pixi/react";
+import React from "react";
 import * as PIXI from "pixi.js";
-import type { PlayerState } from "../../types";
-import { KOREAN_COLORS, FONT_FAMILY, FONT_SIZES } from "../../types/constants";
+import { usePixiExtensions } from "../../utils/pixiExtensions";
+import { KOREAN_COLORS } from "../../types/constants";
 
 export interface ScoreDisplayProps {
-  readonly player1: PlayerState;
-  readonly player2: PlayerState;
-  readonly matchStatistics?: {
-    roundsWon: { player1: number; player2: number };
-  };
+  readonly player1Score: number;
+  readonly player2Score: number;
+  readonly maxScore?: number;
+  readonly player1Name?: string;
+  readonly player2Name?: string;
   readonly x?: number;
   readonly y?: number;
 }
 
 export const ScoreDisplay: React.FC<ScoreDisplayProps> = ({
-  player1,
-  player2,
-  matchStatistics,
+  player1Score,
+  player2Score,
+  maxScore = 3,
+  player1Name = "Player 1",
+  player2Name = "Player 2",
   x = 0,
   y = 0,
 }) => {
-  const scoreStyle = useMemo(
+  usePixiExtensions();
+
+  // Fix: Use the styles to avoid unused variable warnings
+  const scoreStyle = React.useMemo(
     () =>
       new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.xlarge,
-        fill: KOREAN_COLORS.ACCENT_GOLD,
+        fontSize: 28,
+        fill: KOREAN_COLORS.TEXT_PRIMARY,
         fontWeight: "bold",
-        align: "center",
-        stroke: KOREAN_COLORS.BLACK_SOLID,
       }),
     []
   );
 
-  const nameStyle = useMemo(
+  const nameStyle = React.useMemo(
     () =>
       new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.KOREAN_BATTLE,
-        fontSize: FONT_SIZES.medium,
+        fontSize: 14,
         fill: KOREAN_COLORS.TEXT_SECONDARY,
-        align: "center",
+        fontWeight: "bold",
       }),
     []
   );
 
   return (
-    <Container x={x} y={y}>
-      <Text text="점수 (Score)" style={scoreStyle} anchor={0.5} y={0} />
+    <pixiContainer x={x} y={y} data-testid="score-display">
+      {/* Player 1 Score */}
+      <pixiContainer x={0} y={0}>
+        <pixiText text={player1Name} style={nameStyle} anchor={0.5} y={-20} />
+        <pixiText
+          text={player1Score.toString()}
+          style={scoreStyle}
+          anchor={0.5}
+        />
+      </pixiContainer>
 
-      <Text
-        text={`${matchStatistics?.roundsWon?.player1 || 0} - ${
-          matchStatistics?.roundsWon?.player2 || 0
-        }`} // Fix: Use matchStatistics
-        style={scoreStyle}
+      {/* VS Text */}
+      <pixiText
+        text="VS"
+        style={
+          new PIXI.TextStyle({
+            fontSize: 16,
+            fill: KOREAN_COLORS.TEXT_SECONDARY,
+            fontWeight: "bold",
+          })
+        }
+        x={80}
+        y={-5}
         anchor={0.5}
-        y={40}
       />
 
-      <Text
-        text={`${player1.name.korean} vs ${player2.name.korean}`}
-        style={nameStyle}
-        anchor={0.5}
-        y={80}
-      />
-    </Container>
+      {/* Player 2 Score */}
+      <pixiContainer x={160} y={0}>
+        <pixiText text={player2Name} style={nameStyle} anchor={0.5} y={-20} />
+        <pixiText
+          text={player2Score.toString()}
+          style={scoreStyle}
+          anchor={0.5}
+        />
+      </pixiContainer>
+
+      {/* Score progress indicators */}
+      {Array.from({ length: maxScore }, (_, i) => (
+        <pixiGraphics
+          key={`p1-${i}`}
+          draw={(g: PIXI.Graphics) => {
+            g.clear();
+            g.beginFill(
+              i < player1Score
+                ? KOREAN_COLORS.PLAYER_1_COLOR
+                : KOREAN_COLORS.UI_GRAY,
+              0.8
+            );
+            g.drawCircle(0, 0, 4);
+            g.endFill();
+          }}
+          x={-40 + i * 12}
+          y={25}
+        />
+      ))}
+
+      {Array.from({ length: maxScore }, (_, i) => (
+        <pixiGraphics
+          key={`p2-${i}`}
+          draw={(g: PIXI.Graphics) => {
+            g.clear();
+            g.beginFill(
+              i < player2Score
+                ? KOREAN_COLORS.PLAYER_2_COLOR
+                : KOREAN_COLORS.UI_GRAY,
+              0.8
+            );
+            g.drawCircle(0, 0, 4);
+            g.endFill();
+          }}
+          x={200 + i * 12}
+          y={25}
+        />
+      ))}
+    </pixiContainer>
   );
 };
 

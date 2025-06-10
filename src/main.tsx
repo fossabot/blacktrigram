@@ -1,15 +1,19 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import { AudioProvider } from "./audio/AudioProvider";
 import "./index.css";
-import App from "./App.tsx";
 
-// Initialize PixiJS extensions before React app starts
-import "./utils/pixiExtensions";
+const root = ReactDOM.createRoot(
+  document.getElementById("root") as HTMLElement
+);
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>
+root.render(
+  <React.StrictMode>
+    <AudioProvider>
+      <App />
+    </AudioProvider>
+  </React.StrictMode>
 );
 
 // Set document title with Korean martial arts theme

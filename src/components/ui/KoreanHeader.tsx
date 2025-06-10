@@ -1,99 +1,101 @@
-import React, { useMemo } from "react";
-import { Container, Text } from "@pixi/react"; // Fix: Remove unused Graphics import
+import React from "react";
 import * as PIXI from "pixi.js";
-import type { KoreanHeaderProps } from "../../types/components";
-import { KOREAN_COLORS, FONT_FAMILY, FONT_SIZES } from "../../types/constants";
+import { usePixiExtensions } from "../../utils/pixiExtensions";
+import { KOREAN_COLORS, FONT_FAMILY } from "../../types/constants";
+import type { KoreanText } from "../../types/korean-text";
+
+export interface KoreanHeaderProps {
+  readonly title: KoreanText;
+  readonly subtitle?: KoreanText;
+  readonly size?: "small" | "medium" | "large";
+  readonly alignment?: "left" | "center" | "right";
+  readonly x?: number;
+  readonly y?: number;
+  readonly showUnderline?: boolean;
+}
 
 export const KoreanHeader: React.FC<KoreanHeaderProps> = ({
   title,
   subtitle,
-  // Note: size, alignment, height can be used for future styling
-  fontSize = FONT_SIZES.xlarge,
-  textColor = KOREAN_COLORS.TEXT_PRIMARY,
-  accentColor = KOREAN_COLORS.PRIMARY_CYAN,
-  showUnderline = true,
-  align = "center",
-  width = 400,
+  size = "medium",
+  alignment = "center",
   x = 0,
   y = 0,
+  showUnderline = true,
 }) => {
-  const titleStyle = useMemo(
+  usePixiExtensions();
+
+  const titleSize = size === "large" ? 32 : size === "medium" ? 24 : 18;
+  const subtitleSize = titleSize * 0.7;
+
+  const titleStyle = React.useMemo(
     () =>
       new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize,
-        fill: textColor,
+        fontFamily: FONT_FAMILY.KOREAN,
+        fontSize: titleSize,
+        fill: KOREAN_COLORS.ACCENT_GOLD,
         fontWeight: "bold",
-        align,
-        stroke: KOREAN_COLORS.BLACK_SOLID,
-        // strokeThickness: 2, // Remove this line to fix PIXI error
+        align: alignment,
       }),
-    [fontSize, textColor, align]
+    [titleSize, alignment]
   );
 
-  const subtitleStyle = useMemo(
+  const subtitleStyle = React.useMemo(
     () =>
       new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: fontSize * 0.6,
-        fill: accentColor,
-        align,
+        fontFamily: FONT_FAMILY.KOREAN,
+        fontSize: subtitleSize,
+        fill: KOREAN_COLORS.TEXT_SECONDARY,
+        align: alignment,
       }),
-    [fontSize, accentColor, align]
+    [subtitleSize, alignment]
   );
 
-  const underlineStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontSize: fontSize * 0.3,
-        fill: accentColor,
-        align,
-      }),
-    [fontSize, accentColor, align]
+  const anchorValue =
+    alignment === "center" ? 0.5 : alignment === "right" ? 1 : 0;
+
+  const drawUnderline = React.useCallback(
+    (g: PIXI.Graphics) => {
+      if (!showUnderline) return;
+
+      g.clear();
+      g.lineStyle(2, KOREAN_COLORS.ACCENT_GOLD, 0.8);
+      g.moveTo(-50, 0);
+      g.lineTo(50, 0);
+    },
+    [showUnderline]
   );
-
-  const getDisplayText = (text: typeof title) => {
-    if (typeof text === "string") return text;
-    return `${text.korean} (${text.english})`;
-  };
-
-  // Create underline text safely
-  const createUnderlineText = () => {
-    const underlineChar = "━";
-    const repeatCount = Math.floor(width / (fontSize * 0.6));
-    return underlineChar.repeat(Math.max(1, repeatCount));
-  };
 
   return (
-    <Container x={x} y={y}>
-      <Text
-        text={getDisplayText(title)}
-        style={titleStyle}
-        anchor={align === "center" ? 0.5 : align === "right" ? 1 : 0}
+    <pixiContainer x={x} y={y} data-testid="korean-header">
+      <pixiText text={title.korean} style={titleStyle} anchor={anchorValue} />
+
+      <pixiText
+        text={title.english}
+        style={
+          new PIXI.TextStyle({
+            ...titleStyle,
+            fontSize: titleSize * 0.6,
+            fill: KOREAN_COLORS.TEXT_TERTIARY,
+          })
+        }
+        anchor={anchorValue}
+        y={titleSize + 5}
       />
 
-      {subtitle && (
-        <Text
-          text={getDisplayText(subtitle)}
-          y={fontSize + 10}
-          style={subtitleStyle}
-          anchor={align === "center" ? 0.5 : align === "right" ? 1 : 0}
-        />
+      {showUnderline && (
+        <pixiGraphics draw={drawUnderline} y={titleSize + 15} />
       )}
 
-      {showUnderline && (
-        <Text
-          text={createUnderlineText()}
-          y={
-            fontSize +
-            (subtitle ? fontSize * 0.6 + 20 : 20) +
-            (align === "center" ? -fontSize * 0.3 : 0)
-          }
-          style={underlineStyle}
-          anchor={align === "center" ? 0.5 : align === "right" ? 1 : 0}
+      {subtitle && (
+        <pixiText
+          text={subtitle.korean}
+          style={subtitleStyle}
+          anchor={anchorValue}
+          y={titleSize + 30}
         />
       )}
-    </Container>
+    </pixiContainer>
   );
 };
 

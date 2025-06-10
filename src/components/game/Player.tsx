@@ -1,138 +1,95 @@
 // Complete Player component with Korean martial arts character rendering
 
-import React, { useMemo } from "react";
+import React from "react";
 import * as PIXI from "pixi.js";
-import type { PlayerState } from "../../types";
 import { usePixiExtensions } from "../../utils/pixiExtensions";
-import { KOREAN_COLORS, FONT_SIZES } from "../../types/constants";
+import { KOREAN_COLORS, PLAYER_ARCHETYPES_DATA } from "../../types/constants";
+import type { PlayerState } from "../../types/player";
 
 export interface PlayerProps {
   readonly playerState: PlayerState;
   readonly playerIndex: number;
-  readonly showStats?: boolean; // Fix: Add missing showStats prop
   readonly x?: number;
   readonly y?: number;
   readonly onClick?: () => void;
-  readonly interactive?: boolean;
-  readonly width?: number;
-  readonly height?: number;
+  readonly interactive?: boolean; // Fix: Add missing prop
 }
 
 export const Player: React.FC<PlayerProps> = ({
   playerState,
   playerIndex,
-  showStats = false,
   x = 0,
   y = 0,
   onClick,
-  width = 100,
-  height = 150,
+  interactive = false, // Fix: Add default value
 }) => {
-  // Ensure PixiJS components are extended
   usePixiExtensions();
 
-  const playerColor = useMemo(() => {
-    return playerIndex === 0
-      ? KOREAN_COLORS.PLAYER_1_COLOR
-      : KOREAN_COLORS.PLAYER_2_COLOR;
-  }, [playerIndex]);
+  const archetypeData = PLAYER_ARCHETYPES_DATA[playerState.archetype];
+  const healthPercent = playerState.health / playerState.maxHealth;
 
-  const playerDraw = useMemo(
-    () => (g: PIXI.Graphics) => {
+  const drawPlayer = React.useCallback(
+    (g: PIXI.Graphics) => {
       g.clear();
-      g.beginFill(playerColor, 0.8);
-      g.drawRect(0, 0, width, height);
+
+      // Player body
+      g.beginFill(archetypeData.colors.primary, 0.8);
+      g.drawCircle(0, 0, 30);
       g.endFill();
 
       // Health indicator
-      const healthPercent = playerState.health / playerState.maxHealth;
-      g.beginFill(KOREAN_COLORS.POSITIVE_GREEN, 0.7);
-      g.drawRect(5, 5, (width - 10) * healthPercent, 10);
+      g.beginFill(
+        healthPercent > 0.5
+          ? KOREAN_COLORS.POSITIVE_GREEN
+          : healthPercent > 0.25
+          ? KOREAN_COLORS.WARNING_ORANGE
+          : KOREAN_COLORS.NEGATIVE_RED
+      );
+      g.drawRect(-35, -50, 70 * healthPercent, 5);
       g.endFill();
 
       // Stance indicator
-      g.lineStyle(2, KOREAN_COLORS.PRIMARY_CYAN);
-      g.drawCircle(width / 2, height - 20, 15);
-      g.lineStyle(0);
+      g.lineStyle(2, archetypeData.colors.secondary);
+      g.drawCircle(0, 0, 35);
     },
-    [playerColor, playerState.health, playerState.maxHealth, width, height]
+    [archetypeData, healthPercent]
   );
 
   return (
     <pixiContainer
       x={x}
       y={y}
-      interactive={true}
+      interactive={interactive} // Fix: Use the prop
       onPointerDown={onClick}
-      data-testid="game-player"
+      data-testid={`player-${playerIndex}`}
     >
-      <pixiGraphics draw={playerDraw} />
+      <pixiGraphics draw={drawPlayer} />
 
-      {/* Player stance indicator */}
       <pixiText
-        text={`${playerState.archetype} - ${playerState.currentStance}`}
+        text={playerState.name.korean}
         style={
           new PIXI.TextStyle({
-            fontSize: FONT_SIZES.small,
+            fontSize: 12,
             fill: KOREAN_COLORS.TEXT_PRIMARY,
+            align: "center",
           })
         }
-        x={0}
-        y={-30}
         anchor={0.5}
+        y={-60}
       />
 
-      {/* Health display */}
       <pixiText
-        text={`체력: ${playerState.health}/${playerState.maxHealth}`}
+        text={playerState.currentStance}
         style={
           new PIXI.TextStyle({
-            fontSize: FONT_SIZES.tiny,
+            fontSize: 10,
             fill: KOREAN_COLORS.TEXT_SECONDARY,
+            align: "center",
           })
         }
-        x={0}
-        y={100}
         anchor={0.5}
+        y={45}
       />
-
-      {/* Fix: Use showStats prop for detailed stats */}
-      {showStats && (
-        <pixiContainer x={width + 10} y={0}>
-          <pixiText
-            text={`자세: ${playerState.currentStance}`}
-            style={
-              new PIXI.TextStyle({
-                fontSize: FONT_SIZES.tiny,
-                fill: KOREAN_COLORS.TEXT_SECONDARY,
-              })
-            }
-            y={0}
-          />
-          <pixiText
-            text={`체력: ${Math.round(playerState.health)}/${
-              playerState.maxHealth
-            }`}
-            style={
-              new PIXI.TextStyle({
-                fontSize: FONT_SIZES.tiny,
-                fill: KOREAN_COLORS.TEXT_SECONDARY,
-              })
-            }
-            y={12}
-          />
-          <pixiText
-            text={`기: ${Math.round(playerState.ki)}/${playerState.maxKi}`}
-            style={
-              new PIXI.TextStyle({
-                fontSize: FONT_SIZES.tiny,
-                fill: KOREAN_COLORS.TEXT_SECONDARY,
-              })
-            }
-            y={24}
-          />
-        </pixiContainer>
-      )}
     </pixiContainer>
   );
 };

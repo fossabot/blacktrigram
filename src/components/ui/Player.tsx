@@ -3,13 +3,11 @@
 import React, { useMemo } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import type { PlayerState } from "../../types"; // Fix: Remove PlayerProps import conflict
-import {
-  KOREAN_COLORS,
-  FONT_FAMILY,
-  FONT_SIZES,
-  FONT_WEIGHTS,
-} from "../../types/constants";
+import { usePixiExtensions } from "../../utils/pixiExtensions";
+import { KOREAN_COLORS, PLAYER_ARCHETYPES_DATA } from "../../types/constants";
+// Fix: Import font constants from the correct location
+import { FONT_FAMILY, FONT_SIZES, FONT_WEIGHTS } from "../../types/constants/typography";
+import type { PlayerState } from "../../types/player";
 
 // Fix: Define local PlayerProps interface
 interface UIPlayerProps {
@@ -19,7 +17,6 @@ interface UIPlayerProps {
   readonly y?: number;
   readonly width?: number;
   readonly height?: number;
-  readonly showVitalPoints?: boolean;
   readonly interactive?: boolean;
   readonly onClick?: (playerIndex: number) => void;
 }
@@ -54,6 +51,8 @@ export const Player: React.FC<UIPlayerProps> = ({
   interactive = false,
   onClick,
 }) => {
+  usePixiExtensions();
+
   const {
     name,
     archetype: playerArchetype,
@@ -66,6 +65,8 @@ export const Player: React.FC<UIPlayerProps> = ({
     currentStance,
   } = playerState;
 
+  const archetypeData = PLAYER_ARCHETYPES_DATA[playerState.archetype];
+
   const headerStyle = useMemo(
     () =>
       new PIXI.TextStyle({
@@ -76,6 +77,35 @@ export const Player: React.FC<UIPlayerProps> = ({
         align: "center",
       }),
     []
+  );
+
+  const healthPercent = health / maxHealth;
+
+  const drawPlayer = React.useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+
+      // Player body
+      g.beginFill(archetypeData.colors.primary, 0.8);
+      g.drawCircle(0, 0, 30);
+      g.endFill();
+
+      // Health indicator
+      g.beginFill(
+        healthPercent > 0.5
+          ? KOREAN_COLORS.POSITIVE_GREEN
+          : healthPercent > 0.25
+          ? KOREAN_COLORS.WARNING_ORANGE
+          : KOREAN_COLORS.NEGATIVE_RED
+      );
+      g.drawRect(-35, -50, 70 * healthPercent, 5);
+      g.endFill();
+
+      // Stance indicator
+      g.lineStyle(2, archetypeData.colors.secondary);
+      g.drawCircle(0, 0, 35);
+    },
+    [archetypeData, healthPercent]
   );
 
   const drawBackground = (g: PIXI.Graphics) => {
@@ -144,6 +174,7 @@ export const Player: React.FC<UIPlayerProps> = ({
     >
       <Graphics draw={drawBackground} />
       <Graphics draw={drawHealthBars} />
+      <Graphics draw={drawPlayer} />
 
       {/* Player Name */}
       <Text

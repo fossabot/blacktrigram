@@ -1,8 +1,8 @@
 /**
- * UI components export for Black Trigram
+ * UI components exports for Black Trigram Korean martial arts game
  */
 
-// Main UI components
+// Core UI components
 export { ArchetypeDisplay } from "./ArchetypeDisplay";
 export { EndScreen } from "./EndScreen";
 export { HealthBar } from "./HealthBar";
@@ -17,24 +17,19 @@ export { KoreanHeader } from "./KoreanHeader";
 export { Player } from "./Player";
 export { PlayerVisuals } from "./PlayerVisuals";
 
-// Fix: Export as default import since HitEffectsLayer doesn't have named export
-export { default as HitEffectsLayer } from "../game/HitEffectsLayer";
+// Hit effects
+export { HitEffectsLayer } from "./HitEffectsLayer";
 
 // Base components
 export * from "./base";
 
-// Fix: Export only the types that exist in components.ts and ui.ts
+// Re-export types
 export type {
   UIComponentProps,
-  StanceIndicatorProps,
   HealthBarProps,
-} from "../../types/ui";
-
-export type {
-  EndScreenProps,
+  StanceIndicatorProps,
+  TrigramWheelProps,
   ProgressTrackerProps,
   RoundTimerProps,
   ScoreDisplayProps,
-  TrigramWheelProps,
-  KoreanHeaderProps,
-} from "../../types/components";
+} from "../../types/ui";

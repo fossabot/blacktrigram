@@ -1,5 +1,4 @@
-import { useMemo, useCallback, useState } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
+import React, { useMemo, useCallback, useState } from "react";
 import * as PIXI from "pixi.js";
 import type {
   CombatControlsProps,
@@ -138,13 +137,13 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
   );
 
   return (
-    <Container x={x} y={y}>
+    <pixiContainer x={x} y={y}>
       {/* Controls panel background */}
-      <Graphics draw={controlsPanelDraw} />
+      <pixiGraphics draw={controlsPanelDraw} />
 
       {/* Stance selection buttons */}
-      <Container x={20} y={20}>
-        <Text
+      <pixiContainer x={20} y={20}>
+        <pixiText
           text="자세 선택 (Stance Selection)"
           style={
             new PIXI.TextStyle({
@@ -176,11 +175,11 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
             />
           );
         })}
-      </Container>
+      </pixiContainer>
 
-      {/* Available techniques display - Fix: Use availableTechniques */}
-      <Container x={20} y={80}>
-        <Text
+      {/* Available techniques display */}
+      <pixiContainer x={20} y={80}>
+        <pixiText
           text="기술 (Techniques)"
           style={
             new PIXI.TextStyle({
@@ -204,7 +203,7 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
             disabled={isExecutingTechnique}
           />
         ))}
-      </Container>
+      </pixiContainer>
 
       {/* Combat Control Buttons */}
       <BaseButton
@@ -228,17 +227,20 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
         variant="secondary"
       />
 
-      <BaseButton
-        text="방어 (Guard)"
-        onClick={() => onGuard?.()}
-        x={10}
-        y={50}
-        width={80}
-        height={30}
-        variant="secondary"
-      />
+      {/* Guard button - only show if onGuard is provided */}
+      {onGuard && (
+        <BaseButton
+          text="방어 (Guard)"
+          onClick={onGuard}
+          x={190}
+          y={10}
+          width={80}
+          height={30}
+          variant="secondary"
+        />
+      )}
 
-      {/* Technique execution button - Fix: Use getCurrentTechnique */}
+      {/* Technique execution button */}
       <BaseButton
         text="기법 실행"
         onClick={() => {
@@ -247,8 +249,8 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
             handleTechniqueExecute(technique);
           }
         }}
-        x={190}
-        y={50}
+        x={280}
+        y={10}
         width={80}
         height={30}
         variant="accent"
@@ -258,13 +260,13 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
       <BaseButton
         text={isPaused ? "재개" : "일시정지"}
         onClick={onPauseToggle}
-        x={190}
+        x={370}
         y={10}
         width={80}
         height={30}
         variant="ghost"
       />
-    </Container>
+    </pixiContainer>
   );
 };
 

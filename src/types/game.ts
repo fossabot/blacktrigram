@@ -221,5 +221,8 @@ export interface GameSaveData {
   };
 }
 
+// Fix: Remove GameUIProps export to avoid duplicate with components.ts
+// export interface GameUIProps { ... } // Remove this interface
+
 // Re-export PlayerMatchStats for compatibility
 export type { PlayerMatchStats } from "./player";

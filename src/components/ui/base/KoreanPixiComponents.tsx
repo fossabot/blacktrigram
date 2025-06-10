@@ -6,6 +6,13 @@ import {
   FONT_FAMILY,
   FONT_SIZES,
 } from "../../../types/constants";
+import { usePixiExtensions } from "../../../utils/pixiExtensions";
+import {
+  createKoreanTextStyle,
+  getDisplayText,
+} from "./korean-text/components/KoreanPixiTextUtils";
+// Fix: Import type from the main types directory to avoid conflict
+import type { KoreanText } from "../../../types/korean-text";
 
 // Define only necessary props interfaces
 export interface KoreanPixiButtonProps {
@@ -264,3 +271,43 @@ export const KoreanPixiHealthBar: React.FC<KoreanPixiHealthBarProps> = ({
     </Container>
   );
 };
+
+export interface KoreanPixiTextProps {
+  text: KoreanText;
+  style?: PIXI.TextStyle;
+  showRomanization?: boolean;
+  x?: number;
+  y?: number;
+  anchor?: number | { x: number; y: number };
+}
+
+export const KoreanPixiText: React.FC<KoreanPixiTextProps> = ({
+  text,
+  style,
+  showRomanization = false,
+  x = 0,
+  y = 0,
+  anchor = 0,
+}) => {
+  usePixiExtensions();
+
+  const displayText = getDisplayText(text, showRomanization);
+  const textStyle = style || createKoreanTextStyle(); // Fix: Now has default parameter
+
+  return (
+    <pixiText
+      text={displayText}
+      style={textStyle}
+      x={x}
+      y={y}
+      anchor={anchor}
+    />
+  );
+};
+
+// Fix: Export KoreanPixiComponents as a collection
+export const KoreanPixiComponents = {
+  KoreanPixiText,
+};
+
+export default KoreanPixiComponents;

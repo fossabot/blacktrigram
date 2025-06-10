@@ -3,6 +3,7 @@ import * as PIXI from "pixi.js";
 import { usePixiExtensions } from "../../utils/pixiExtensions";
 import { KOREAN_COLORS } from "../../types/constants";
 import { TrigramStance } from "../../types/trigram";
+import { TRIGRAM_DATA } from "../../types/constants/trigram";
 
 export interface TrigramWheelProps {
   readonly currentStance: TrigramStance;
@@ -42,8 +43,6 @@ export const TrigramWheel: React.FC<TrigramWheelProps> = ({
     "gon" as TrigramStance,
   ];
 
-  const trigramChars = ["건", "태", "리", "진", "손", "감", "간", "곤"];
-
   return (
     <pixiContainer data-testid="trigram-wheel">
       <pixiGraphics draw={drawWheel} />
@@ -63,6 +62,8 @@ export const TrigramWheel: React.FC<TrigramWheelProps> = ({
       />
 
       {trigrams.map((trigram, index) => {
+        // Fix: Use stanceData properly
+        const stanceData = TRIGRAM_DATA[trigram];
         const angle = (index / 8) * Math.PI * 2;
         const x = Math.cos(angle) * (radius * 0.8);
         const y = Math.sin(angle) * (radius * 0.8);
@@ -94,7 +95,7 @@ export const TrigramWheel: React.FC<TrigramWheelProps> = ({
               }}
             />
             <pixiText
-              text={trigramChars[index]}
+              text={stanceData?.symbol || trigram}
               style={
                 new PIXI.TextStyle({
                   fontSize: 14,

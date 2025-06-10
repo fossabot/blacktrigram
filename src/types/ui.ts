@@ -256,8 +256,8 @@ export interface ScoreDisplayProps extends UIComponentProps {
 // Round timer interface
 export interface RoundTimerProps extends UIComponentProps {
   readonly timeRemaining: number;
-  readonly totalTime: number;
-  readonly isRunning: boolean;
+  readonly totalTime: number; // Fix: Change from maxTime to totalTime
+  readonly isRunning?: boolean;
 }
 
 // End screen interface

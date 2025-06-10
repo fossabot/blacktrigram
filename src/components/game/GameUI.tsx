@@ -1,60 +1,101 @@
-import React, { useEffect } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
+import React from "react";
+import { usePixiExtensions } from "../../utils/pixiExtensions";
+import { HealthBar } from "../ui/HealthBar";
+import { StanceIndicator } from "../ui/StanceIndicator";
+import { RoundTimer } from "../ui/RoundTimer";
 import type { GameUIProps } from "../../types/components";
-import { KOREAN_COLORS, FONT_SIZES } from "../../types/constants";
-import * as PIXI from "pixi.js";
 
 export const GameUI: React.FC<GameUIProps> = ({
   gameState,
-  onStateChange,
+  onStateChange, // Fix: Use this parameter
+  onReturnToMenu,
+  onPlayerUpdate,
   x = 0,
   y = 0,
   width = 800,
   height = 600,
 }) => {
-  const backgroundDraw = (g: PIXI.Graphics) => {
-    g.clear();
-    g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.8);
-    g.drawRect(0, 0, width, height);
-    g.endFill();
+  usePixiExtensions();
+
+  const handleReturnClick = () => {
+    onReturnToMenu();
   };
 
-  // Use onStateChange for future state management
-  useEffect(() => {
-    if (onStateChange && gameState) {
-      onStateChange(gameState);
+  // Fix: Use onStateChange for any state changes
+  React.useEffect(() => {
+    if (gameState.players[0].health <= 0) {
+      onStateChange({ winner: 1 });
+      onPlayerUpdate({});
     }
-  }, [gameState, onStateChange]);
+  }, [gameState, onStateChange, onPlayerUpdate]);
 
   return (
-    <Container x={x} y={y}>
-      <Graphics draw={backgroundDraw} />
-      <Text
-        text="게임 UI (Game UI)"
-        style={
-          new PIXI.TextStyle({
-            fontSize: FONT_SIZES.large,
-            fill: KOREAN_COLORS.TEXT_PRIMARY,
-          })
-        }
+    <pixiContainer x={x} y={y} data-testid="game-ui">
+      {/* Player 1 Health Bar */}
+      <HealthBar
         x={20}
         y={20}
+        width={200}
+        height={20}
+        currentHealth={gameState.players[0].health}
+        maxHealth={gameState.players[0].maxHealth}
       />
 
-      {gameState && (
-        <Text
-          text={`상태: ${JSON.stringify(gameState)}`}
-          style={
-            new PIXI.TextStyle({
-              fontSize: FONT_SIZES.medium,
-              fill: KOREAN_COLORS.TEXT_SECONDARY,
-            })
-          }
-          x={20}
-          y={60}
+      {/* Round Timer */}
+      <RoundTimer
+        x={width / 2 - 50}
+        y={20}
+        timeRemaining={gameState.timeRemaining}
+        totalTime={180} // Fix: Use totalTime instead of maxTime
+      />
+
+      {/* Player 2 Health Bar */}
+      <HealthBar
+        x={width - 220}
+        y={20}
+        width={200}
+        height={20}
+        currentHealth={gameState.players[1].health}
+        maxHealth={gameState.players[1].maxHealth}
+      />
+
+      {/* Player 1 Stance Indicator */}
+      <StanceIndicator
+        x={20}
+        y={height - 100}
+        stance={gameState.players[0].currentStance}
+        size={60}
+      />
+
+      {/* Player 2 Stance Indicator */}
+      <StanceIndicator
+        x={width - 80}
+        y={height - 100}
+        stance={gameState.players[1].currentStance}
+        size={60}
+      />
+
+      {/* Return button */}
+      <pixiContainer x={20} y={height - 50}>
+        <pixiGraphics
+          draw={(g) => {
+            g.clear();
+            g.beginFill(0x666666, 0.8);
+            g.drawRoundedRect(0, 0, 80, 30, 5);
+            g.endFill();
+          }}
+          interactive={true}
+          onPointerDown={handleReturnClick}
         />
-      )}
-    </Container>
+        <pixiText
+          text="돌아가기"
+          style={{ fontSize: 12, fill: 0xffffff }}
+          x={40}
+          y={15}
+          anchor={0.5}
+        />
+      </pixiContainer>
+    </pixiContainer>
   );
 };
 

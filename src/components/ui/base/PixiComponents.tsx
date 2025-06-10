@@ -12,6 +12,7 @@ import {
 } from "../../../types/constants";
 import { createKoreanTextStyle } from "./korean-text/components/KoreanPixiTextUtils";
 import type { TrigramStance } from "../../../types";
+import { usePixiExtensions } from "../../../utils/pixiExtensions";
 
 // Fix: Define proper local interfaces
 interface TrigramWheelProps {
@@ -536,3 +537,80 @@ export const StanceSelector: React.FC<{
     </Container>
   );
 };
+
+// Basic PixiJS component wrappers for Black Trigram
+export interface PixiContainerProps {
+  readonly children?: React.ReactNode;
+  readonly x?: number;
+  readonly y?: number;
+  readonly width?: number;
+  readonly height?: number;
+  readonly interactive?: boolean;
+  readonly onPointerDown?: () => void;
+}
+
+export const PixiContainer: React.FC<PixiContainerProps> = ({
+  children,
+  x = 0,
+  y = 0,
+  interactive = false,
+  onPointerDown,
+}) => {
+  usePixiExtensions();
+
+  return (
+    <pixiContainer
+      x={x}
+      y={y}
+      interactive={interactive}
+      onPointerDown={onPointerDown}
+    >
+      {children}
+    </pixiContainer>
+  );
+};
+
+export interface PixiTextProps {
+  readonly text: string;
+  readonly style?: PIXI.TextStyle;
+  readonly x?: number;
+  readonly y?: number;
+  readonly anchor?: number | { x: number; y: number };
+}
+
+export const PixiText: React.FC<PixiTextProps> = ({
+  text,
+  style,
+  x = 0,
+  y = 0,
+  anchor = 0,
+}) => {
+  usePixiExtensions();
+
+  return <pixiText text={text} style={style} x={x} y={y} anchor={anchor} />;
+};
+
+export interface PixiGraphicsProps {
+  readonly draw: (graphics: PIXI.Graphics) => void;
+  readonly x?: number;
+  readonly y?: number;
+}
+
+export const PixiGraphics: React.FC<PixiGraphicsProps> = ({
+  draw,
+  x = 0,
+  y = 0,
+}) => {
+  usePixiExtensions();
+
+  return <pixiGraphics draw={draw} x={x} y={y} />;
+};
+
+// Fix: Export PixiComponents as a collection
+export const PixiComponents = {
+  PixiContainer,
+  PixiText,
+  PixiGraphics,
+};
+
+export default PixiComponents;

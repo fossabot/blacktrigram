@@ -5,7 +5,7 @@
 import type * as PIXI from "pixi.js";
 import type {
   PlayerState,
-  GameState,
+  // Fix: Remove unused GameState import
   GameMode,
   MatchStatistics,
   KoreanText,
@@ -242,12 +242,18 @@ export interface MenuSectionProps {
   readonly y?: number;
 }
 
-// Fix: Update GameUIProps to include position and size props
+// Fix: Update GameUIProps to include gameState property
 export interface GameUIProps {
-  readonly gameState: GameState;
-  readonly onStateChange: (newState: GameState) => void;
+  readonly gameState: {
+    readonly players: readonly [PlayerState, PlayerState];
+    readonly timeRemaining: number;
+    readonly currentRound: number;
+    readonly maxRounds: number;
+    readonly isPaused: boolean;
+  };
+  readonly onStateChange: (newState: any) => void;
   readonly onReturnToMenu: () => void;
-  readonly onPlayerUpdate: (updates: Partial<PlayerState>) => void;
+  readonly onPlayerUpdate: (updates: any) => void;
   readonly x?: number;
   readonly y?: number;
   readonly width?: number;

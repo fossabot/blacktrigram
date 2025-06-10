@@ -1,67 +1,61 @@
 import React, { useMemo, useCallback } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import type { PlayerArchetype } from "../../types";
-import {
-  KOREAN_COLORS,
-  FONT_FAMILY,
-  FONT_SIZES,
-  PLAYER_ARCHETYPES_DATA,
-} from "../../types/constants";
+import { usePixiExtensions } from "../../utils/pixiExtensions";
+import { KOREAN_COLORS, PLAYER_ARCHETYPES_DATA } from "../../types/constants";
+import type { PlayerState } from "../../types/player";
 
 export interface ArchetypeDisplayProps {
-  readonly archetype: PlayerArchetype;
+  readonly player: PlayerState;
+  readonly showDetails?: boolean;
+  readonly compact?: boolean;
   readonly x?: number;
   readonly y?: number;
   readonly width?: number;
   readonly height?: number;
-  readonly showDescription?: boolean;
 }
 
 export const ArchetypeDisplay: React.FC<ArchetypeDisplayProps> = ({
-  archetype,
+  player,
+  showDetails = true,
+  compact = false,
   x = 0,
   y = 0,
-  width = 250,
-  height = 80,
-  showDescription = true,
+  width = 200,
+  height = 120,
 }) => {
-  const archetypeData = PLAYER_ARCHETYPES_DATA[archetype];
+  usePixiExtensions();
 
-  const backgroundDraw = useCallback(
+  const archetypeData = PLAYER_ARCHETYPES_DATA[player.archetype];
+
+  const drawBackground = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
-
-      // Background with archetype colors
-      const primaryColor =
-        archetypeData?.colors?.primary || KOREAN_COLORS.UI_BACKGROUND_MEDIUM;
-      g.beginFill(primaryColor, 0.2);
-      g.lineStyle(2, primaryColor, 0.8);
-      g.drawRoundedRect(0, 0, width, height, 8);
+      g.beginFill(archetypeData.colors.primary, 0.2);
+      g.lineStyle(2, archetypeData.colors.primary, 0.8);
+      g.drawRoundedRect(0, 0, width, height, 10);
       g.endFill();
     },
-    [width, height, archetypeData]
+    [archetypeData.colors.primary, width, height]
   );
 
   const titleStyle = useMemo(
     () =>
       new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.medium,
-        fill: archetypeData?.colors?.primary || KOREAN_COLORS.TEXT_PRIMARY,
-        align: "left",
+        fontFamily: "Arial",
+        fontSize: compact ? 14 : 18,
+        fill: KOREAN_COLORS.TEXT_PRIMARY,
         fontWeight: "bold",
       }),
-    [archetypeData]
+    [compact]
   );
 
   const descriptionStyle = useMemo(
     () =>
       new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.small,
+        fontFamily: "Arial",
+        fontSize: 12,
         fill: KOREAN_COLORS.TEXT_SECONDARY,
-        align: "left",
         wordWrap: true,
         wordWrapWidth: width - 20,
       }),
@@ -69,19 +63,12 @@ export const ArchetypeDisplay: React.FC<ArchetypeDisplayProps> = ({
   );
 
   return (
-    <Container x={x} y={y}>
-      <Graphics draw={backgroundDraw} />
+    <Container x={x} y={y} data-testid="archetype-display">
+      <Graphics draw={drawBackground} />
 
-      <Text
-        text={`${archetypeData?.name.korean || archetype} (${
-          archetypeData?.name.english || archetype
-        })`}
-        style={titleStyle}
-        x={10}
-        y={10}
-      />
+      <Text text={archetypeData.name.korean} style={titleStyle} x={10} y={10} />
 
-      {showDescription && archetypeData?.description && (
+      {showDetails && (
         <Text
           text={archetypeData.description.korean}
           style={descriptionStyle}

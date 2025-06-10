@@ -233,6 +233,252 @@ src/assets/audio/sfx/\*
 
 ## 🎨 PixiJS + React Integration
 
+### Pixie React Usage
+
+```jsx
+import { Application, extend } from "@pixi/react";
+import { Container, Graphics } from "pixi.js";
+import { useCallback } from "react";
+
+extend({
+  Container,
+  Graphics,
+});
+
+const MyComponent = () => {
+  const drawCallback = useCallback((graphics) => {
+    graphics.clear();
+    graphics.setFillStyle({ color: "red" });
+    graphics.rect(0, 0, 100, 100);
+    graphics.fill();
+  }, []);
+
+  return (
+    <Application>
+      <pixiContainer x={100} y={100}>
+        <pixiGraphics draw={drawCallback} />
+      </pixiContainer>
+    </Application>
+  );
+};
+```
+
+## Docs
+
+### `extend`
+
+One of the most important concepts to understand with v8 is `extend`. Normally `@pixi/react` would have to import all pf Pixi.js to be able to provide the full library as JSX components. Instead, we use an internal catalogue of components populated by the `extend` API. This allows you to define exactly which parts of Pixi.js you want to import, keeping your bundle sizes small.
+
+To allow `@pixi/react` to use a Pixi.js component, pass it to the `extend` API:
+
+```jsx
+import { Container } from "pixi.js";
+import { extend } from "@pixi/react";
+
+extend({ Container });
+
+const MyComponent = () => <pixiContainer />;
+```
+
+> [!CAUTION]
+> Attempting to use components that haven't been passed to the `extend` API **will result in errors**.
+
+### Components
+
+#### `<Application>`
+
+The `<Application>` component is used to wrap your `@pixi/react` app. The `<Application>` component can take [all props that can be set](https://pixijs.download/release/docs/app.ApplicationOptions.html) on [`PIXI.Application`](https://pixijs.download/release/docs/app.Application.html).
+
+##### Example Usage
+
+```jsx
+import { Application } from "@pixi/react";
+
+const MyComponent = () => {
+  return <Application autoStart sharedTicker />;
+};
+```
+
+###### `defaultTextStyle`
+
+`defaultTextStyle` is a convenience property. Whatever is passed will automatically be assigned to Pixi.js's [`TextStyle.defaultTextStyle`](https://pixijs.download/release/docs/text.TextStyle.html#defaultTextStyle).
+
+> [!NOTE]
+> This property **is not retroactive**. It will only apply to text components created after `defaultTextStyle` is set. Any text components created before setting `defaultTextStyle` will retain the base styles they had before `defaultTextStyle` was changed.
+
+###### `extensions`
+
+`extensions` is an array of extensions to be loaded. Adding and removing items from this array will automatically load/unload the extensions. The first time this is handled happens before the application is initialised. See Pixi.js's [`extensions`](https://pixijs.download/release/docs/extensions.html) documentation for more info on extensions.
+
+###### `resizeTo`
+
+The `<Application>` component supports the `resizeTo` property, with some additional functionality: it can accept any HTML element **or** it can take a React `ref` directly.
+
+```jsx
+import { Application } from "@pixi/react";
+import { useRef } from "react";
+const MyComponent = () => {
+  const parentRef = useRef(null);
+  return (
+    <div ref={parentRef}>
+      <Application resizeTo={parentRef} />
+    </div>
+  );
+};
+```
+
+#### Pixi Components
+
+All other components should be included in your IDE's intellisense/autocomplete once you've installed/imported `@pixi/react`. If it's exported from Pixi.js, it's supported as a component with the `pixi` prefix. Here's a selection of commonly used components:
+
+```jsx
+<pixiContainer />
+<pixiGraphics />
+<pixiSprite />
+<pixiAnimatedSprite />
+<pixiText />
+<pixiHtmlText />
+```
+
+##### `<pixiGraphics>`
+
+The `pixiGraphics` component has a special `draw` property. `draw` takes a callback which receives the `Graphics` context, allowing drawing to happen on every tick.
+
+```jsx
+const MyComponent = () => {
+  return (
+    <pixiGraphics
+      draw={(graphics) => {
+        graphics.clear();
+        graphics.setFillStyle({ color: "red" });
+        graphics.rect(0, 0, 100, 100);
+        graphics.fill();
+      }}
+    />
+  );
+};
+```
+
+#### Custom Components
+
+`@pixi/react` supports custom components via the `extend` API. For example, you can create a `<viewport>` component using the [`pixi-viewport`](https://github.com/davidfig/pixi-viewport) library:
+
+```jsx
+import { extend } from "@pixi/react";
+import { Viewport } from "pixi-viewport";
+
+extend({ Viewport });
+
+const MyComponent = () => {
+  <viewport>
+    <pixiContainer />
+  </viewport>;
+};
+```
+
+The `extend` API will teach `@pixi/react` about your components, but TypeScript won't know about them nor their props.
+
+### Hooks
+
+#### `useApplication`
+
+`useApplication` allows access to the parent `PIXI.Application` created by the `<Application>` component. This hook _will not work_ outside of an `<Application>` component. Additionally, the parent application is passed via [React Context](https://react.dev/reference/react/useContext). This means `useApplication` will only work appropriately in _child components_, and in the same component that creates the `<Application>`.
+
+For example, the following example `useApplication` **will not** be able to access the parent application:
+
+```jsx
+import { Application, useApplication } from "@pixi/react";
+
+const ParentComponent = () => {
+  // This will cause an invariant violation.
+  const { app } = useApplication();
+
+  return <Application />;
+};
+```
+
+Here's a working example where `useApplication` **will** be able to access the parent application:
+
+```jsx
+import { Application, useApplication } from "@pixi/react";
+
+const ChildComponent = () => {
+  const { app } = useApplication();
+
+  console.log(app);
+
+  return <container />;
+};
+
+const ParentComponent = () => (
+  <Application>
+    <ChildComponent />
+  </Application>
+);
+```
+
+#### `useExtend`
+
+`useExtend` allows the `extend` API to be used as a React hook. Additionally, the `useExtend` hook is memoised, while the `extend` function is not.
+
+```jsx
+import { Container } from "pixi.js";
+import { useExtend } from "@pixi/react";
+
+const MyComponent = () => {
+  useExtend({ Container });
+
+  return <container />;
+};
+```
+
+#### `useTick`
+
+`useTick` allows a callback to be attached to the [`Ticker`](https://pixijs.download/release/docs/ticker.Ticker.html) on the parent application.
+
+```jsx
+import { useTick } from "@pixi/react";
+
+const MyComponent = () => {
+  useTick(() => console.log("This will be logged on every tick"));
+};
+```
+
+`useTick` optionally takes an options object. This allows control of all [`ticker.add`](https://pixijs.download/release/docs/ticker.Ticker.html#add) options, as well as adding the `isEnabled` option. Setting `isEnabled` to `false` will cause the callback to be disabled until the argument is changed to true again.
+
+```jsx
+import { useState } from 'react'
+import { useTick } from '@pixi/react'
+
+const MyComponent = () => {
+  const [isEnabled, setIsEnabled] = useState(false)
+
+  useTick(() => console.log('This will be logged on every tick as long as `isEnabled` is `true`'), isEnabled)
+
+  return (
+    <sprite onClick={setIsEnabled(previousState => !previousState)}>
+  )
+}
+```
+
+### For Typescript Users
+
+#### Custom Components
+
+`@pixi/react` already offers types for built-in components, but custom components need to be added to the library's type catalogue so it knows how to handle them. This can be achieved by adding your custom components to the `PixiElements` interface. Here's what it may look like to add the `viewport` component from our earlier `extend` example:
+
+```ts
+// global.d.ts
+import { type PixiReactElementProps } from "@pixi/react";
+import { type Viewport } from "pixi-viewport";
+
+declare module "@pixi/react" {
+  interface PixiElements {
+    viewport: PixiReactElementProps<typeof Viewport>;
+  }
+}
+```
+
 ## 🧪 Testing Strategy
 
 ### Existing Test Infrastructure (✅ Excellent)

@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { Container, Graphics, Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import { KOREAN_COLORS, FONT_FAMILY, FONT_SIZES } from "../../types/constants";
+import { usePixiExtensions } from "../../utils/pixiExtensions";
 
 export interface ProgressTrackerProps {
   currentValue: number;
@@ -24,6 +25,8 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({
   label,
   showPercentage = false,
 }) => {
+  usePixiExtensions();
+
   const progress = Math.max(0, Math.min(1, currentValue / maxValue));
   const percentage = Math.round(progress * 100);
 
@@ -32,17 +35,17 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({
       g.clear();
 
       // Background
-      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK);
+      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.8);
       g.drawRect(0, 0, width, height);
       g.endFill();
 
       // Progress fill
-      g.beginFill(KOREAN_COLORS.POSITIVE_GREEN);
+      g.beginFill(KOREAN_COLORS.PRIMARY_CYAN, 0.8);
       g.drawRect(0, 0, width * progress, height);
       g.endFill();
 
       // Border
-      g.lineStyle(1, KOREAN_COLORS.UI_BORDER);
+      g.lineStyle(1, KOREAN_COLORS.UI_BORDER, 0.6);
       g.drawRect(0, 0, width, height);
     },
     [width, height, progress]
@@ -65,7 +68,7 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({
   };
 
   return (
-    <Container x={x} y={y}>
+    <Container x={x} y={y} data-testid="progress-tracker">
       <Graphics draw={barDraw} />
 
       {(label || showPercentage) && (

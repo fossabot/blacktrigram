@@ -1,38 +1,60 @@
 import React from "react";
-import { Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
-import type { KoreanText } from "../types"; // Fix: Now properly exported
-import { KOREAN_COLORS, FONT_SIZES, FONT_FAMILY } from "../constants"; // Fix: Now properly exported
+import { usePixiExtensions } from "../../../../../utils/pixiExtensions";
+import { KOREAN_COLORS } from "../../../../../types/constants";
+import type { KoreanText } from "../../../../../types/korean-text";
 
-interface KoreanTitleProps {
-  readonly text: KoreanText;
-  readonly level?: 1 | 2 | 3 | 4 | 5 | 6;
-  readonly color?: number;
+export interface KoreanTitleProps {
+  readonly title: KoreanText;
+  readonly subtitle?: KoreanText;
+  readonly size?: "small" | "medium" | "large";
+  readonly alignment?: "left" | "center" | "right";
   readonly x?: number;
   readonly y?: number;
 }
 
 export const KoreanTitle: React.FC<KoreanTitleProps> = ({
-  text,
-  level = 1,
-  color = KOREAN_COLORS.TEXT_PRIMARY,
+  title,
+  subtitle,
+  size = "medium",
+  alignment = "center",
   x = 0,
   y = 0,
 }) => {
-  const fontSize = FONT_SIZES.title - (level - 1) * 4;
+  usePixiExtensions();
+
+  const titleSize = size === "large" ? 36 : size === "medium" ? 28 : 20;
+  const subtitleSize = titleSize * 0.6;
 
   const titleStyle = new PIXI.TextStyle({
-    fontFamily: FONT_FAMILY.KOREAN,
-    fontSize,
-    fill: color,
+    fontSize: titleSize,
+    fill: KOREAN_COLORS.ACCENT_GOLD,
     fontWeight: "bold",
-    align: "center",
+    align: alignment,
   });
 
-  const displayText = typeof text === "string" ? text : text.korean;
+  const subtitleStyle = new PIXI.TextStyle({
+    fontSize: subtitleSize,
+    fill: KOREAN_COLORS.TEXT_SECONDARY,
+    align: alignment,
+  });
 
   return (
-    <Text text={displayText} style={titleStyle} x={x} y={y} anchor={0.5} />
+    <pixiContainer x={x} y={y}>
+      <pixiText
+        text={title.korean}
+        style={titleStyle}
+        anchor={alignment === "center" ? 0.5 : alignment === "right" ? 1 : 0}
+      />
+      {subtitle && (
+        <pixiText
+          text={subtitle.korean}
+          style={subtitleStyle}
+          y={titleSize + 10}
+          anchor={alignment === "center" ? 0.5 : alignment === "right" ? 1 : 0}
+        />
+      )}
+    </pixiContainer>
   );
 };
 

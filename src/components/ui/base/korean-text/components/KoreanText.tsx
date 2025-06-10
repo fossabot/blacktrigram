@@ -1,76 +1,44 @@
 import React from "react";
-import type { KoreanTextComponentProps } from "../types";
+import * as PIXI from "pixi.js";
+import { usePixiExtensions } from "../../../../../utils/pixiExtensions";
+import { createKoreanTextStyle, getDisplayText } from "./KoreanPixiTextUtils";
+// Fix: Import type from separate file to avoid naming conflict
+import type { KoreanText as KoreanTextType } from "../../../../../types/korean-text";
 
-export const KoreanText: React.FC<KoreanTextComponentProps> = ({
+export interface KoreanTextProps {
+  readonly text: KoreanTextType;
+  readonly showRomanization?: boolean;
+  readonly style?: PIXI.TextStyle;
+  readonly x?: number;
+  readonly y?: number;
+  readonly anchor?: number | { x: number; y: number };
+}
+
+// Fix: Rename component to avoid conflict with type
+export const KoreanPixiTextComponent: React.FC<KoreanTextProps> = ({
   text,
-  korean = "",
-  english = "",
-  size = "medium",
-  weight = "regular",
-  variant = "primary",
-  emphasis = "none",
-  display = "both",
-  order = "korean_first",
-  showBoth = true,
-  koreanFirst = true,
-  separator = " / ",
-  cyberpunk = false,
-  showUnderline = false,
-  align = "left",
-  color,
-  className,
+  showRomanization = false,
   style,
-  onClick,
-  id,
-  children,
-  ...rest
+  x = 0,
+  y = 0,
+  anchor = 0,
 }) => {
-  // Handle text content
-  const getDisplayText = (): string => {
-    // Fix: Properly handle text parameter
-    if (typeof text === "string") {
-      return text;
-    }
+  usePixiExtensions();
 
-    if (text && typeof text === "object" && text !== null) {
-      // Handle KoreanText object
-      const koreanText = text.korean || "";
-      const englishText = text.english || "";
-      return `${koreanText} / ${englishText}`;
-    }
-
-    // Fallback to individual props
-    return `${korean} / ${english}`;
-  };
-
-  const displayText = getDisplayText();
-
-  const spanStyle: React.CSSProperties = {
-    fontSize: typeof size === "number" ? `${size}px` : undefined,
-    fontWeight: weight,
-    color:
-      typeof color === "string"
-        ? color
-        : color
-        ? `#${color.toString(16).padStart(6, "0")}`
-        : undefined,
-    textAlign: align,
-    textDecoration: showUnderline ? "underline" : "none",
-    ...style,
-  };
+  const displayText = getDisplayText(text, showRomanization);
+  const textStyle = style || createKoreanTextStyle(); // Fix: Now has default parameter
 
   return (
-    <span
-      className={className}
-      style={spanStyle}
-      onClick={onClick}
-      id={id}
-      {...(rest as React.HTMLAttributes<HTMLSpanElement>)}
-    >
-      {displayText}
-      {children}
-    </span>
+    <pixiText
+      text={displayText}
+      style={textStyle}
+      x={x}
+      y={y}
+      anchor={anchor}
+    />
   );
 };
 
+// Export with original name for compatibility
+export const KoreanText = KoreanPixiTextComponent;
 export default KoreanText;
