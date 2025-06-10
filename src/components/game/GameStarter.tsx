@@ -162,7 +162,13 @@ export const GameStarter: React.FC<GameStarterProps> = ({
       />
 
       {/* Combat Arena */}
-      <CombatArena players={players} width={800} height={600} />
+      <CombatArena
+        players={
+          players.slice(0, 2) as unknown as readonly [PlayerState, PlayerState]
+        } // Fix: Safe conversion
+        width={800}
+        height={600}
+      />
 
       {/* Combat HUD */}
       <CombatHUD
@@ -170,8 +176,8 @@ export const GameStarter: React.FC<GameStarterProps> = ({
         player2={players[1]}
         currentRound={currentRound}
         timeRemaining={timeRemaining}
-        maxRounds={3} // Fix: Add missing prop
-        isPaused={false} // Fix: Add missing prop
+        maxRounds={3}
+        isPaused={false}
         width={800}
       />
 

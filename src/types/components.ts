@@ -137,9 +137,10 @@ export interface KoreanHeaderProps extends BaseComponentProps {
 }
 
 export interface TrigramWheelProps extends BaseComponentProps {
-  readonly selectedStance?: TrigramStance;
+  readonly currentStance?: TrigramStance; // Fix: Use currentStance instead of selectedStance
   readonly onStanceSelect?: (stance: TrigramStance) => void;
   readonly size?: number;
+  readonly radius?: number; // Fix: Add radius prop for compatibility
   readonly interactive?: boolean;
   readonly showLabels?: boolean;
 }

@@ -1,9 +1,6 @@
-import React, { useMemo } from "react";
-import * as PIXI from "pixi.js";
-import { BaseButton } from "../../ui/base/BaseButton";
+import React from "react";
 import { usePixiExtensions } from "../../../utils/pixiExtensions";
-import { CYBERPUNK_COLORS } from "../../../types/constants/colors";
-import { KOREAN_TYPOGRAPHY } from "../../../types/constants/typography";
+import { KOREAN_COLORS } from "../../../types/constants";
 
 export interface PhilosophySectionProps {
   readonly onBack: () => void;
@@ -17,105 +14,128 @@ export const PhilosophySection: React.FC<PhilosophySectionProps> = ({
   onBack,
   width = 800,
   height = 600,
+  x = 0,
+  y = 0,
 }) => {
-  // Ensure PixiJS components are extended
   usePixiExtensions();
 
-  const drawBackground = useMemo(
-    () => (g: PIXI.Graphics) => {
-      g.clear();
-      g.beginFill(CYBERPUNK_COLORS.BG_DARK, 0.9);
-      g.drawRect(0, 0, width, height);
-      g.endFill();
-    },
-    [width, height]
-  );
-
-  const titleStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: KOREAN_TYPOGRAPHY.FONTS.HEADING.join(", "),
-        fontSize: KOREAN_TYPOGRAPHY.SIZES.HEADING,
-        fontWeight: "bold",
-        fill: CYBERPUNK_COLORS.TEXT_PRIMARY,
-        wordWrap: true,
-        wordWrapWidth: width - 100,
-        lineHeight: 24,
-      }),
-    [width]
-  );
-
-  const contentStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: KOREAN_TYPOGRAPHY.FONTS.BODY.join(", "),
-        fontSize: KOREAN_TYPOGRAPHY.SIZES.BODY,
-        fontWeight: "normal",
-        fill: CYBERPUNK_COLORS.TEXT_SECONDARY,
-        wordWrap: true,
-        wordWrapWidth: width - 100,
-        lineHeight: 22,
-      }),
-    [width]
-  );
-
   return (
-    <pixiContainer x={0} y={0} data-testid="philosophy-section">
-      <pixiGraphics draw={drawBackground} />
+    <pixiContainer x={x} y={y} data-testid="philosophy-section">
+      {/* Background */}
+      <pixiGraphics
+        draw={(g) => {
+          g.clear();
+          g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.9);
+          g.drawRect(0, 0, width, height);
+          g.endFill();
+        }}
+      />
 
-      {/* Philosophy content using pixiText components */}
+      {/* Title */}
       <pixiText
-        text="흑괘의 철학 (Philosophy of Black Trigram)"
-        style={titleStyle}
+        text="흑괘의 철학 - Philosophy of Black Trigram"
+        style={{
+          fontSize: 24,
+          fill: KOREAN_COLORS.ACCENT_GOLD,
+          fontWeight: "bold",
+          align: "center",
+        }}
         x={width / 2}
         y={60}
         anchor={0.5}
       />
 
-      <pixiText
-        text="팔괘 (Eight Trigrams) represent the fundamental forces of nature and combat"
-        style={contentStyle}
-        x={50}
-        y={150}
-      />
-
-      {/* Additional philosophy content */}
-      <pixiContainer x={50} y={200}>
-        {/* Trigram explanations using pixiText */}
+      {/* Philosophy Content */}
+      <pixiContainer x={50} y={120}>
         <pixiText
-          text="☰ 건 (Geon) - Heaven: Direct bone-striking force"
-          style={contentStyle}
+          text="팔괘 (八卦) - Eight Trigrams"
+          style={{
+            fontSize: 18,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
+            fontWeight: "bold",
+          }}
           y={0}
         />
+
         <pixiText
-          text="☱ 태 (Tae) - Lake: Fluid joint manipulation"
-          style={contentStyle}
-          y={40}
+          text="한국 무술은 자연의 힘과 조화를 이루는 예술입니다."
+          style={{
+            fontSize: 14,
+            fill: KOREAN_COLORS.TEXT_SECONDARY,
+          }}
+          y={30}
         />
+
         <pixiText
-          text="☲ 리 (Li) - Fire: Precise nerve strikes"
-          style={contentStyle}
-          y={80}
+          text="Korean martial arts are the art of harmonizing with nature's forces."
+          style={{
+            fontSize: 14,
+            fill: KOREAN_COLORS.TEXT_SECONDARY,
+          }}
+          y={50}
         />
+
         <pixiText
-          text="☳ 진 (Jin) - Thunder: Stunning techniques"
-          style={contentStyle}
-          y={120}
+          text="• ☰ 건 (Geon) - Heaven: Direct striking force"
+          style={{
+            fontSize: 12,
+            fill: KOREAN_COLORS.TEXT_SECONDARY,
+          }}
+          y={90}
+        />
+
+        <pixiText
+          text="• ☱ 태 (Tae) - Lake: Fluid joint manipulation"
+          style={{
+            fontSize: 12,
+            fill: KOREAN_COLORS.TEXT_SECONDARY,
+          }}
+          y={110}
+        />
+
+        <pixiText
+          text="• ☲ 리 (Li) - Fire: Precise nerve strikes"
+          style={{
+            fontSize: 12,
+            fill: KOREAN_COLORS.TEXT_SECONDARY,
+          }}
+          y={130}
+        />
+
+        <pixiText
+          text="• ☳ 진 (Jin) - Thunder: Stunning techniques"
+          style={{
+            fontSize: 12,
+            fill: KOREAN_COLORS.TEXT_SECONDARY,
+          }}
+          y={150}
         />
       </pixiContainer>
 
-      {/* Back button */}
-      <BaseButton
-        x={width - 150}
-        y={height - 80}
-        width={120}
-        height={50}
-        text="Back"
-        koreanText="돌아가기"
-        onClick={onBack}
-        variant="secondary"
-        testId="philosophy-back-button"
-      />
+      {/* Back Button */}
+      <pixiContainer x={50} y={height - 80}>
+        <pixiGraphics
+          draw={(g) => {
+            g.clear();
+            g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.8);
+            g.drawRoundedRect(0, 0, 100, 40, 5);
+            g.endFill();
+          }}
+          interactive={true}
+          onPointerDown={onBack}
+        />
+        <pixiText
+          text="돌아가기"
+          style={{
+            fontSize: 14,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
+            align: "center",
+          }}
+          x={50}
+          y={20}
+          anchor={0.5}
+        />
+      </pixiContainer>
     </pixiContainer>
   );
 };

@@ -1,137 +1,135 @@
-import React, { useMemo } from "react";
-import * as PIXI from "pixi.js";
-import { BaseButton } from "../../ui/base/BaseButton";
+import React from "react";
 import { usePixiExtensions } from "../../../utils/pixiExtensions";
-import { CYBERPUNK_COLORS } from "../../../types/constants/colors";
-import { KOREAN_TYPOGRAPHY } from "../../../types/constants/typography";
-
-export interface ControlsSectionProps {
-  readonly onBack: () => void;
-  readonly width?: number;
-  readonly height?: number;
-  readonly x?: number;
-  readonly y?: number;
-}
+import type { ControlsSectionProps } from "../../../types/components";
+import { KOREAN_COLORS, COMBAT_CONTROLS } from "../../../types/constants";
 
 export const ControlsSection: React.FC<ControlsSectionProps> = ({
   onBack,
   width = 800,
   height = 600,
+  x = 0,
+  y = 0,
 }) => {
-  // Ensure PixiJS components are extended
   usePixiExtensions();
 
-  const drawBackground = useMemo(
-    () => (g: PIXI.Graphics) => {
-      g.clear();
-      g.beginFill(CYBERPUNK_COLORS.BG_DARK, 0.9);
-      g.drawRect(0, 0, width, height);
-      g.endFill();
-    },
-    [width, height]
-  );
-
-  const titleStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: KOREAN_TYPOGRAPHY.FONTS.HEADING.join(", "),
-        fontSize: KOREAN_TYPOGRAPHY.SIZES.HEADING,
-        fontWeight: "bold",
-        fill: CYBERPUNK_COLORS.TEXT_PRIMARY,
-        wordWrap: true,
-        wordWrapWidth: width - 100,
-      }),
-    [width]
-  );
-
-  const controlStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: KOREAN_TYPOGRAPHY.FONTS.BODY.join(", "),
-        fontSize: KOREAN_TYPOGRAPHY.SIZES.BODY,
-        fontWeight: "normal",
-        fill: CYBERPUNK_COLORS.TEXT_SECONDARY,
-        wordWrap: true,
-        wordWrapWidth: width - 100,
-      }),
-    [width]
-  );
-
   return (
-    <pixiContainer x={0} y={0} data-testid="controls-section">
-      <pixiGraphics draw={drawBackground} />
+    <pixiContainer x={x} y={y} data-testid="controls-section">
+      {/* Background */}
+      <pixiGraphics
+        draw={(g) => {
+          g.clear();
+          g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.9);
+          g.drawRect(0, 0, width, height);
+          g.endFill();
+        }}
+      />
 
-      {/* Controls header */}
+      {/* Title */}
       <pixiText
-        text="조작법 (Controls)"
-        style={titleStyle}
+        text="조작법 - Controls"
+        style={{
+          fontSize: 24,
+          fill: KOREAN_COLORS.ACCENT_GOLD,
+          fontWeight: "bold",
+          align: "center",
+        }}
         x={width / 2}
         y={60}
         anchor={0.5}
       />
 
-      {/* Combat controls */}
-      <pixiContainer x={50} y={150}>
+      {/* Controls Content */}
+      <pixiContainer x={50} y={120}>
+        <pixiText
+          text="팔괘 자세 (Trigram Stances):"
+          style={{
+            fontSize: 16,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
+            fontWeight: "bold",
+          }}
+          y={0}
+        />
+
+        {Object.entries(COMBAT_CONTROLS.stanceControls).map(
+          ([key, control], index) => (
+            <pixiText
+              key={key}
+              text={`${key}: ${control.korean} (${control.technique})`}
+              style={{
+                fontSize: 12,
+                fill: KOREAN_COLORS.TEXT_SECONDARY,
+              }}
+              y={30 + index * 20}
+            />
+          )
+        )}
+
         <pixiText
           text="전투 조작 (Combat Controls):"
-          style={controlStyle}
-          y={0}
+          style={{
+            fontSize: 16,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
+            fontWeight: "bold",
+          }}
+          y={220}
         />
-        <pixiText
-          text="1-8: 팔괘 자세 선택 (Trigram Stance Selection)"
-          style={controlStyle}
-          y={40}
-        />
+
         <pixiText
           text="SPACE: 기술 실행 (Execute Technique)"
-          style={controlStyle}
-          y={80}
+          style={{
+            fontSize: 12,
+            fill: KOREAN_COLORS.TEXT_SECONDARY,
+          }}
+          y={250}
         />
+
         <pixiText
           text="SHIFT: 방어 자세 (Defensive Guard)"
-          style={controlStyle}
-          y={120}
+          style={{
+            fontSize: 12,
+            fill: KOREAN_COLORS.TEXT_SECONDARY,
+          }}
+          y={270}
         />
+
         <pixiText
-          text="CTRL: 급소 타격 모드 (Vital Point Targeting)"
-          style={controlStyle}
-          y={160}
+          text="CTRL: 급소 조준 (Vital Point Targeting)"
+          style={{
+            fontSize: 12,
+            fill: KOREAN_COLORS.TEXT_SECONDARY,
+          }}
+          y={290}
         />
       </pixiContainer>
 
-      {/* Movement controls */}
-      <pixiContainer x={50} y={350}>
-        <pixiText
-          text="이동 조작 (Movement Controls):"
-          style={controlStyle}
-          y={0}
+      {/* Back Button */}
+      <pixiContainer x={50} y={height - 80}>
+        <pixiGraphics
+          draw={(g) => {
+            g.clear();
+            g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.8);
+            g.drawRoundedRect(0, 0, 100, 40, 5);
+            g.endFill();
+          }}
+          interactive={true}
+          onPointerDown={onBack}
         />
         <pixiText
-          text="WASD: 전술적 위치 이동 (Tactical Positioning)"
-          style={controlStyle}
-          y={40}
-        />
-        <pixiText
-          text="화살표 키: 대체 이동 시스템 (Alternative Movement)"
-          style={controlStyle}
-          y={80}
+          text="돌아가기"
+          style={{
+            fontSize: 14,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
+            align: "center",
+          }}
+          x={50}
+          y={20}
+          anchor={0.5}
         />
       </pixiContainer>
-
-      {/* Back button */}
-      <BaseButton
-        x={width - 150}
-        y={height - 80}
-        width={120}
-        height={50}
-        text="Back"
-        koreanText="돌아가기"
-        onClick={onBack}
-        variant="secondary"
-        testId="controls-back-button"
-      />
     </pixiContainer>
   );
 };
+
+export type { ControlsSectionProps } from "../../../types/components";
 
 export default ControlsSection;

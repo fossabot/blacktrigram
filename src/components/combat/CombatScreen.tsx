@@ -101,7 +101,7 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
       />
 
       <CombatArena
-        players={Array.from(players)} // Fix: Convert readonly array to mutable
+        players={players as readonly [PlayerState, PlayerState]} // Fix: Proper type assertion
         width={width}
         height={height}
       />
