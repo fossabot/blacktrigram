@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import * as PIXI from "pixi.js";
 import { MenuSection } from "./components/MenuSection";
 import { PhilosophySection } from "./components/PhilosophySection";
@@ -35,42 +35,56 @@ const MENU_ITEMS: { mode: GameMode; korean: string; english: string }[] = [
 
 export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
   const audio = useAudio();
+  const introMusicStarted = useRef(false);
   const [currentSection, setCurrentSection] = useState<string>("menu");
   const [bgTexture, setBgTexture] = useState<PIXI.Texture | null>(null);
   const [logoTexture, setLogoTexture] = useState<PIXI.Texture | null>(null);
-  const [archetypeTextures, setArchetypeTextures] = useState<PIXI.Texture[]>(
-    []
-  );
+  const [dojangWallTexture, setDojangWallTexture] =
+    useState<PIXI.Texture | null>(null);
+  const [archetypeTextures, setArchetypeTextures] = useState<{
+    overview: PIXI.Texture | null;
+    explained: PIXI.Texture | null;
+    dynamics: PIXI.Texture | null;
+  }>({ overview: null, explained: null, dynamics: null });
   const [selectedArchetype, setSelectedArchetype] = useState(0);
-  const introMusicStarted = React.useRef(false);
   const [selectedMenuIndex, setSelectedMenuIndex] = useState(0);
   const { width, height } = useWindowSize();
 
-  // Load background and logo images using PIXI.Assets (PixiJS v7+)
+  // Enhanced asset loading with all available textures
   useEffect(() => {
     let destroyed = false;
     const loadAssets = async () => {
       try {
-        const [bg, logo, archetype1, archetype2, archetype3] =
-          await Promise.all([
-            PIXI.Assets.load("/assets/visual/bg/intro/intro_bg_loop.png"),
-            PIXI.Assets.load("/assets/visual/logo/black-trigram-256.png"),
-            PIXI.Assets.load(
-              "/assets/visual/bg/archetyples/CyberpunkTeamDynamics.png"
-            ),
-            PIXI.Assets.load(
-              "/assets/visual/bg/archetyples/PlayerArchetypesExplained.png"
-            ),
-            PIXI.Assets.load(
-              "/assets/visual/bg/archetyples/PlayerArchetypesOverview.png"
-            ),
-          ]);
+        const [
+          bg,
+          logo,
+          dojangWall,
+          archetypeOverview,
+          archetypeExplained,
+          archetypeDynamics,
+        ] = await Promise.all([
+          PIXI.Assets.load("/src/assets/visual/bg/intro/intro_bg_loop.png"),
+          PIXI.Assets.load("/src/assets/visual/logo/black-trigram.png"), // Use larger logo
+          PIXI.Assets.load("/src/assets/dojang_wall_neon_flicker.png"),
+          PIXI.Assets.load(
+            "/src/assets/visual/bg/archetyples/PlayerArchetypesOverview.png"
+          ),
+          PIXI.Assets.load(
+            "/src/assets/visual/bg/archetyples/PlayerArchetypesExplained.png"
+          ),
+          PIXI.Assets.load(
+            "/src/assets/visual/bg/archetyples/CyberpunkTeamDynamics.png"
+          ),
+        ]);
         if (destroyed) return;
         setBgTexture(bg as PIXI.Texture);
         setLogoTexture(logo as PIXI.Texture);
-        setArchetypeTextures(
-          [archetype1, archetype2, archetype3].filter(Boolean) as PIXI.Texture[]
-        );
+        setDojangWallTexture(dojangWall as PIXI.Texture);
+        setArchetypeTextures({
+          overview: archetypeOverview as PIXI.Texture,
+          explained: archetypeExplained as PIXI.Texture,
+          dynamics: archetypeDynamics as PIXI.Texture,
+        });
       } catch (err) {
         console.warn("Failed to load intro assets", err);
       }
@@ -189,62 +203,64 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
     audio.playSoundEffect("menu_back");
   }, [audio]);
 
-  // Cyberpunk grid and glow background
-  const drawBackground = useCallback(
+  // Responsive logo and layout calculations
+  const isMobile = width < 768;
+  const isTablet = width >= 768 && width < 1024;
+  const logoSize = isMobile
+    ? Math.min(width, height) * 0.35
+    : isTablet
+    ? Math.min(width, height) * 0.25
+    : Math.min(width, height) * 0.2;
+
+  const menuStartY = height * (isMobile ? 0.65 : isTablet ? 0.6 : 0.55);
+
+  // Enhanced cyberpunk background with neon grid
+  const drawEnhancedBackground = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
-      g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 1 });
+
+      // Base dark gradient
+      const gradient = new PIXI.FillGradient(0, 0, width, height);
+      gradient.addColorStop(0, 0x0a0a0f);
+      gradient.addColorStop(0.5, 0x1a1a2e);
+      gradient.addColorStop(1, 0x0f0f23);
+      g.fill(gradient);
       g.rect(0, 0, width, height);
       g.fill();
-      g.setStrokeStyle({
-        width: 1,
-        color: KOREAN_COLORS.PRIMARY_CYAN,
-        alpha: 0.08,
-      });
-      for (let i = 0; i < width; i += 40) {
+
+      // Cyberpunk neon grid
+      g.stroke({ width: 1, color: KOREAN_COLORS.PRIMARY_CYAN, alpha: 0.15 });
+      const gridSize = isMobile ? 30 : 40;
+      for (let i = 0; i < width; i += gridSize) {
         g.moveTo(i, 0);
         g.lineTo(i, height);
       }
-      for (let i = 0; i < height; i += 40) {
+      for (let i = 0; i < height; i += gridSize) {
         g.moveTo(0, i);
         g.lineTo(width, i);
       }
-      g.setStrokeStyle({ width: 0 });
+      g.stroke();
+
+      // Pulsing accent lines
+      g.stroke({ width: 2, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.3 });
+      g.moveTo(0, height * 0.2);
+      g.lineTo(width, height * 0.2);
+      g.moveTo(0, height * 0.8);
+      g.lineTo(width, height * 0.8);
+      g.stroke();
     },
-    [width, height]
+    [width, height, isMobile]
   );
-
-  // Responsive logo size
-  const logoSize = Math.min(width, height) * 0.28;
-
-  // Menu vertical position
-  const menuY = height / 2 + logoSize * 0.3;
-
-  // Handle audio errors gracefully
-  useEffect(() => {
-    const handleAudioError = (e: any) => {
-      if (
-        e.reason?.message?.includes("Failed to load") ||
-        e.reason?.message?.includes("no supported source")
-      ) {
-        console.warn(
-          "Audio loading failed, continuing without audio:",
-          e.reason
-        );
-        e.preventDefault();
-      }
-    };
-
-    window.addEventListener("unhandledrejection", handleAudioError);
-    return () => {
-      window.removeEventListener("unhandledrejection", handleAudioError);
-    };
-  }, []);
 
   return (
     <pixiContainer width={width} height={height} data-testid="intro-screen">
-      {/* Background */}
-      <pixiGraphics draw={drawBackground} />
+      {/* Enhanced Background Layers */}
+      <pixiGraphics
+        draw={drawEnhancedBackground}
+        data-testid="intro-background"
+      />
+
+      {/* Main background texture */}
       {bgTexture && (
         <pixiSprite
           texture={bgTexture}
@@ -252,43 +268,78 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
           y={0}
           width={width}
           height={height}
-          alpha={0.35}
-          anchor={{ x: 0, y: 0 }}
+          alpha={0.4}
+          data-testid="intro-bg-texture"
         />
       )}
 
-      {/* Title Section */}
+      {/* Dojang wall accent texture */}
+      {dojangWallTexture && (
+        <pixiSprite
+          texture={dojangWallTexture}
+          x={width * 0.8}
+          y={0}
+          width={width * 0.3}
+          height={height}
+          alpha={0.2}
+          data-testid="dojang-wall-accent"
+        />
+      )}
+
+      {/* Large Logo Section - Responsive positioning */}
       <pixiContainer
         x={width / 2}
-        y={height / 2 - logoSize * 0.7}
-        data-testid="title-section"
+        y={height * (isMobile ? 0.25 : 0.3)}
+        data-testid="logo-section"
       >
         {logoTexture && (
           <pixiSprite
             texture={logoTexture}
             x={0}
             y={0}
-            scale={{ x: logoSize / 256, y: logoSize / 256 }}
+            scale={{ x: logoSize / 512, y: logoSize / 512 }} // Assuming 512px source
             anchor={{ x: 0.5, y: 0.5 }}
             alpha={1}
+            data-testid="main-logo"
           />
         )}
 
-        {/* Trigram Symbols Display */}
-        <pixiContainer y={logoSize * 0.6} data-testid="trigram-symbols">
+        {/* Enhanced glow effect around logo */}
+        <pixiGraphics
+          draw={(g) => {
+            g.clear();
+            g.circle(0, 0, logoSize * 0.6);
+            g.fill({
+              color: KOREAN_COLORS.PRIMARY_CYAN,
+              alpha: 0.1,
+            });
+            g.circle(0, 0, logoSize * 0.8);
+            g.stroke({
+              width: 2,
+              color: KOREAN_COLORS.ACCENT_GOLD,
+              alpha: 0.6,
+            });
+          }}
+          data-testid="logo-glow-effect"
+        />
+
+        {/* Trigram Symbols with Better Spacing */}
+        <pixiContainer y={logoSize * 0.7} data-testid="trigram-symbols">
           <pixiText
             text="☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷"
             style={{
-              fontSize: 24,
+              fontSize: isMobile ? 20 : 28,
               fill: KOREAN_COLORS.PRIMARY_CYAN,
               align: "center",
+              letterSpacing: isMobile ? 8 : 12,
             }}
             anchor={0.5}
+            data-testid="trigram-symbols-text"
           />
         </pixiContainer>
       </pixiContainer>
 
-      {/* Title below logo */}
+      {/* Enhanced Title with Better Typography */}
       <KoreanHeader
         title={{ korean: "흑괘", english: "Black Trigram" }}
         subtitle={{
@@ -297,10 +348,11 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
         }}
         align="center"
         x={width / 2}
-        y={height / 2 - logoSize * 0.25}
+        y={height * (isMobile ? 0.45 : 0.48)}
+        data-testid="main-title"
       />
 
-      {/* Menu Section */}
+      {/* Main Menu Section - Responsive Layout */}
       {currentSection === "menu" && (
         <>
           <MenuSection
@@ -311,214 +363,331 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
             }
             onShowPhilosophy={handleShowPhilosophy}
             onShowControls={handleShowControls}
-            width={Math.min(480, width * 0.8)}
-            height={Math.max(260, height * 0.32)}
-            x={width / 2 - Math.min(480, width * 0.8) / 2}
-            y={menuY}
+            width={isMobile ? width * 0.9 : isTablet ? width * 0.7 : 480}
+            height={isMobile ? height * 0.25 : height * 0.3}
+            x={
+              width / 2 -
+              (isMobile ? width * 0.45 : isTablet ? width * 0.35 : 240)
+            }
+            y={menuStartY}
             menuItems={MENU_ITEMS}
+            data-testid="main-menu-section"
           />
 
-          {/* Archetype Selection */}
+          {/* Enhanced Archetype Selection - Mobile-Responsive */}
           <pixiContainer
-            x={20}
-            y={height - 200}
+            x={isMobile ? 20 : 40}
+            y={height - (isMobile ? 220 : 250)}
             data-testid="archetype-selection"
           >
-            {/* Archetype Toggle Button */}
+            {/* Archetype Toggle with Better Visual Design */}
             <pixiContainer data-testid="archetype-toggle">
               <pixiGraphics
                 draw={(g) => {
                   g.clear();
-                  g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.8);
-                  g.drawRoundedRect(0, 0, 150, 40, 5);
-                  g.endFill();
+                  g.fill({
+                    color: KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
+                    alpha: 0.9,
+                  });
+                  g.roundRect(0, 0, isMobile ? 140 : 180, 45, 8);
+                  g.fill();
+                  g.stroke({
+                    width: 2,
+                    color: KOREAN_COLORS.ACCENT_GOLD,
+                    alpha: 0.8,
+                  });
+                  g.roundRect(0, 0, isMobile ? 140 : 180, 45, 8);
+                  g.stroke();
                 }}
                 interactive={true}
-                onPointerDown={() => {
-                  audio.playSoundEffect("menu_hover");
-                }}
+                onPointerDown={() => audio.playSoundEffect("menu_hover")}
               />
               <pixiText
-                text="무사 유형"
+                text="무사 유형 선택"
                 style={{
-                  fontSize: 14,
+                  fontSize: isMobile ? 12 : 14,
                   fill: KOREAN_COLORS.TEXT_PRIMARY,
                   align: "center",
+                  fontWeight: "bold",
                 }}
-                x={75}
-                y={20}
+                x={(isMobile ? 140 : 180) / 2}
+                y={22}
                 anchor={0.5}
+                data-testid="archetype-toggle-text"
               />
             </pixiContainer>
 
-            {/* Archetype List */}
-            <pixiContainer y={50} data-testid="archetype-list">
+            {/* Enhanced Archetype List with Icons */}
+            <pixiContainer y={55} data-testid="archetype-list">
               {[
-                "musa",
-                "amsalja",
-                "hacker",
-                "jeongbo_yowon",
-                "jojik_pokryeokbae",
+                {
+                  id: "musa",
+                  korean: "무사",
+                  english: "Warrior",
+                  color: KOREAN_COLORS.TRIGRAM_GEON_PRIMARY,
+                },
+                {
+                  id: "amsalja",
+                  korean: "암살자",
+                  english: "Assassin",
+                  color: KOREAN_COLORS.TRIGRAM_SON_PRIMARY,
+                },
+                {
+                  id: "hacker",
+                  korean: "해커",
+                  english: "Hacker",
+                  color: KOREAN_COLORS.PRIMARY_CYAN,
+                },
+                {
+                  id: "jeongbo_yowon",
+                  korean: "정보요원",
+                  english: "Agent",
+                  color: KOREAN_COLORS.TRIGRAM_TAE_PRIMARY,
+                },
+                {
+                  id: "jojik_pokryeokbae",
+                  korean: "조직폭력배",
+                  english: "Gangster",
+                  color: KOREAN_COLORS.TRIGRAM_JIN_PRIMARY,
+                },
               ].map((archetype, index) => (
                 <pixiContainer
-                  key={archetype}
-                  y={index * 35}
-                  data-testid={`archetype-option-${archetype}`}
+                  key={archetype.id}
+                  y={index * (isMobile ? 32 : 38)}
+                  data-testid={`archetype-option-${archetype.id}`}
                 >
                   <pixiGraphics
                     draw={(g) => {
                       g.clear();
-                      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_LIGHT, 0.7);
-                      g.drawRoundedRect(0, 0, 140, 30, 3);
-                      g.endFill();
+                      g.fill({
+                        color:
+                          selectedArchetype === index
+                            ? KOREAN_COLORS.ACCENT_GOLD
+                            : KOREAN_COLORS.UI_BACKGROUND_LIGHT,
+                        alpha: 0.8,
+                      });
+                      g.roundRect(
+                        0,
+                        0,
+                        isMobile ? 160 : 200,
+                        isMobile ? 28 : 32,
+                        4
+                      );
+                      g.fill();
+                      g.stroke({
+                        width: 1,
+                        color: archetype.color,
+                        alpha: 0.8,
+                      });
+                      g.roundRect(
+                        0,
+                        0,
+                        isMobile ? 160 : 200,
+                        isMobile ? 28 : 32,
+                        4
+                      );
+                      g.stroke();
                     }}
                     interactive={true}
                     onPointerDown={() => {
+                      setSelectedArchetype(index);
                       audio.playSoundEffect("menu_select");
                     }}
                   />
-                  <pixiText
-                    text={archetype}
-                    style={{
-                      fontSize: 12,
-                      fill: KOREAN_COLORS.TEXT_PRIMARY,
+
+                  {/* Archetype icon/symbol */}
+                  <pixiGraphics
+                    draw={(g) => {
+                      g.clear();
+                      g.fill({ color: archetype.color, alpha: 0.8 });
+                      g.circle(12, (isMobile ? 28 : 32) / 2, 6);
+                      g.fill();
                     }}
-                    x={10}
-                    y={15}
+                    data-testid={`archetype-icon-${archetype.id}`}
+                  />
+
+                  <pixiText
+                    text={`${archetype.korean} - ${archetype.english}`}
+                    style={{
+                      fontSize: isMobile ? 10 : 12,
+                      fill:
+                        selectedArchetype === index
+                          ? KOREAN_COLORS.BLACK_SOLID
+                          : KOREAN_COLORS.TEXT_PRIMARY,
+                      fontWeight:
+                        selectedArchetype === index ? "bold" : "normal",
+                    }}
+                    x={25}
+                    y={(isMobile ? 28 : 32) / 2}
                     anchor={{ x: 0, y: 0.5 }}
+                    data-testid={`archetype-text-${archetype.id}`}
                   />
                 </pixiContainer>
               ))}
             </pixiContainer>
 
-            <pixiContainer y={200} data-testid="selected-archetype">
-              <pixiText
-                text="암살자"
-                style={{
-                  fontSize: 12,
-                  fill: KOREAN_COLORS.ACCENT_GOLD,
+            {/* Selected Archetype Display */}
+            <pixiContainer
+              y={isMobile ? 180 : 210}
+              data-testid="selected-archetype"
+            >
+              <pixiGraphics
+                draw={(g) => {
+                  g.clear();
+                  g.fill({
+                    color: KOREAN_COLORS.ACCENT_GOLD,
+                    alpha: 0.2,
+                  });
+                  g.roundRect(0, 0, isMobile ? 160 : 200, 40, 6);
+                  g.fill();
                 }}
+              />
+              <pixiText
+                text="선택된 무사 유형"
+                style={{
+                  fontSize: isMobile ? 10 : 12,
+                  fill: KOREAN_COLORS.TEXT_SECONDARY,
+                }}
+                x={8}
+                y={8}
+                data-testid="selected-archetype-label"
+              />
+              <pixiText
+                text={
+                  ["무사", "암살자", "해커", "정보요원", "조직폭력배"][
+                    selectedArchetype
+                  ]
+                }
+                style={{
+                  fontSize: isMobile ? 12 : 14,
+                  fill: KOREAN_COLORS.ACCENT_GOLD,
+                  fontWeight: "bold",
+                }}
+                x={8}
+                y={22}
+                data-testid="selected-archetype-value"
               />
             </pixiContainer>
           </pixiContainer>
 
-          {/* Archetype Display - Use archetypeTextures */}
-          {archetypeTextures.length > 0 && (
-            <pixiContainer x={width - 300} y={height / 2 - 150}>
-              <pixiText
-                text="무사 유형 - Archetype"
-                style={{
-                  fontSize: 18,
-                  fill: KOREAN_COLORS.ACCENT_GOLD,
-                  fontWeight: "bold",
-                }}
-                y={-30}
-              />
+          {/* Enhanced Archetype Display with Image Cycling */}
+          <pixiContainer
+            x={width - (isMobile ? width * 0.95 : isTablet ? 350 : 400)}
+            y={height / 2 - (isMobile ? 100 : 150)}
+            data-testid="archetype-display"
+          >
+            {!isMobile && (
+              <>
+                <pixiText
+                  text="무사 유형 가이드"
+                  style={{
+                    fontSize: isTablet ? 16 : 18,
+                    fill: KOREAN_COLORS.ACCENT_GOLD,
+                    fontWeight: "bold",
+                  }}
+                  y={-35}
+                  data-testid="archetype-display-title"
+                />
 
-              <pixiSprite
-                texture={
-                  archetypeTextures[
-                    selectedArchetype % archetypeTextures.length
-                  ]
-                }
-                width={250}
-                height={300}
-                interactive={true}
-                onPointerDown={() => {
-                  setSelectedArchetype(
-                    (prev) => (prev + 1) % archetypeTextures.length
-                  );
-                  audio.playSoundEffect("menu_hover");
-                }}
-              />
+                {/* Cycle through archetype images */}
+                {Object.values(archetypeTextures).filter(Boolean).length >
+                  0 && (
+                  <pixiSprite
+                    texture={
+                      Object.values(archetypeTextures).filter(Boolean)[
+                        selectedArchetype %
+                          Object.values(archetypeTextures).filter(Boolean)
+                            .length
+                      ]!
+                    }
+                    width={isTablet ? 280 : 320}
+                    height={isTablet ? 200 : 240}
+                    interactive={true}
+                    onPointerDown={() => {
+                      setSelectedArchetype((prev) => (prev + 1) % 5);
+                      audio.playSoundEffect("menu_hover");
+                    }}
+                    data-testid="archetype-display-image"
+                  />
+                )}
 
-              <pixiText
-                text={`${selectedArchetype + 1}/${archetypeTextures.length}`}
-                style={{
-                  fontSize: 14,
-                  fill: KOREAN_COLORS.TEXT_SECONDARY,
-                  align: "center",
-                }}
-                x={125}
-                y={310}
-                anchor={0.5}
-              />
-            </pixiContainer>
-          )}
+                <pixiText
+                  text={`${selectedArchetype + 1} / 5`}
+                  style={{
+                    fontSize: 14,
+                    fill: KOREAN_COLORS.TEXT_SECONDARY,
+                    align: "center",
+                  }}
+                  x={(isTablet ? 280 : 320) / 2}
+                  y={isTablet ? 220 : 260}
+                  anchor={0.5}
+                  data-testid="archetype-display-counter"
+                />
+              </>
+            )}
+          </pixiContainer>
         </>
       )}
+
+      {/* Philosophy and Controls sections remain similar but with responsive positioning */}
       {currentSection === "philosophy" && (
         <PhilosophySection
           onBack={handleBackToMenu}
-          width={width}
-          height={height * 0.7}
-          y={height * 0.15}
+          width={width * 0.9}
+          height={height * 0.8}
+          x={width * 0.05}
+          y={height * 0.1}
+          data-testid="philosophy-section"
         />
       )}
+
       {currentSection === "controls" && (
         <ControlsSection
           onBack={handleBackToMenu}
-          width={width}
-          height={height * 0.7}
-          y={height * 0.15}
+          width={width * 0.9}
+          height={height * 0.8}
+          x={width * 0.05}
+          y={height * 0.1}
+          data-testid="controls-section"
         />
       )}
-      {/* Footer with cyberpunk open source links */}
-      <pixiContainer x={width / 2} y={height - 40} anchor={{ x: 0.5, y: 0.5 }}>
+
+      {/* Enhanced Footer with Better Mobile Layout */}
+      <pixiContainer
+        x={width / 2}
+        y={height - (isMobile ? 60 : 80)}
+        data-testid="intro-footer"
+      >
         <pixiText
           text="흑괘의 길을 걸어라 - Walk the Path of the Black Trigram"
-          style={
-            new PIXI.TextStyle({
-              fontSize: 14,
-              fill: KOREAN_COLORS.ACCENT_CYAN,
-              align: "center",
-              fontStyle: "italic",
-              dropShadow: true,
-            })
-          }
+          style={{
+            fontSize: isMobile ? 10 : 14,
+            fill: KOREAN_COLORS.ACCENT_CYAN,
+            align: "center",
+            fontStyle: "italic",
+          }}
           x={0}
-          y={-18}
+          y={isMobile ? -30 : -35}
           anchor={0.5}
+          data-testid="footer-motto"
         />
-        {/* Open source link */}
+
         <pixiText
-          text="Open source, please support Korean martial arts game"
-          style={
-            new PIXI.TextStyle({
-              fontSize: 13,
-              fill: KOREAN_COLORS.SECONDARY_MAGENTA, // Fix: Use SECONDARY_MAGENTA
-              align: "center",
-              fontWeight: "bold",
-              dropShadow: true,
-              letterSpacing: 1.2,
-            })
-          }
+          text="Open Source Korean Martial Arts Game by Hack23"
+          style={{
+            fontSize: isMobile ? 9 : 12,
+            fill: KOREAN_COLORS.SECONDARY_MAGENTA,
+            align: "center",
+            fontWeight: "bold",
+          }}
           interactive={true}
           onPointerTap={() =>
             window.open("https://github.com/Hack23/blacktrigram", "_blank")
           }
           x={0}
-          y={6}
+          y={isMobile ? -15 : -18}
           anchor={0.5}
-        />
-        {/* By Hack23 link */}
-        <pixiText
-          text="by Hack23"
-          style={
-            new PIXI.TextStyle({
-              fontSize: 12,
-              fill: KOREAN_COLORS.ACCENT_BLUE,
-              align: "center",
-              fontStyle: "italic",
-              dropShadow: true,
-              letterSpacing: 1.1,
-            })
-          }
-          interactive={true}
-          onPointerTap={() => window.open("https://hack23.com/", "_blank")}
-          x={0}
-          y={28}
-          anchor={0.5}
+          data-testid="footer-link"
         />
       </pixiContainer>
     </pixiContainer>

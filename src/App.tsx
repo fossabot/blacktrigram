@@ -25,6 +25,15 @@ function App() {
     PlayerArchetype.AMSALJA
   );
 
+  // Add responsive screen size detection
+  const [screenSize, setScreenSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+    isMobile: window.innerWidth < 768,
+    isTablet: window.innerWidth >= 768 && window.innerWidth < 1024,
+    isDesktop: window.innerWidth >= 1024,
+  });
+
   const handleApplicationReady = useCallback((app: any) => {
     if (app && typeof window !== "undefined") {
       // Expose for testing
@@ -220,6 +229,23 @@ function App() {
     containerRef.current?.focus();
   }, [appReady]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      setScreenSize({
+        width,
+        height,
+        isMobile: width < 768,
+        isTablet: width >= 768 && width < 1024,
+        isDesktop: width >= 1024,
+      });
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   if (!appReady) {
     return (
       <div className="app loading" data-testid="app-container">
@@ -245,13 +271,18 @@ function App() {
         className="app"
         tabIndex={0}
         ref={containerRef}
-        style={{ outline: "none" }}
+        style={{
+          outline: "none",
+          width: "100vw",
+          height: "100vh",
+          overflow: "hidden",
+        }}
         data-testid="app-container"
       >
         <Application
-          width={1200}
-          height={800}
-          backgroundColor={0x1a1a2e}
+          width={screenSize.width}
+          height={screenSize.height}
+          backgroundColor={0x0a0a0f}
           antialias={true}
           autoDensity={true}
           resizeTo={window}
@@ -259,7 +290,7 @@ function App() {
           {renderCurrentScreen()}
         </Application>
 
-        {/* Enhanced HTML Overlay for better testability */}
+        {/* Enhanced Full-Screen Overlay with Better Test IDs */}
         <div
           className="test-overlay"
           style={{
@@ -271,6 +302,7 @@ function App() {
             pointerEvents: "none",
             zIndex: 1000,
           }}
+          data-testid="ui-overlay"
         >
           {/* Intro Screen Test Elements */}
           {gameMode === null && (
