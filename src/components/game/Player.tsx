@@ -1,9 +1,9 @@
 // Complete Player component with Korean martial arts character rendering
 
-import React, { useMemo, useCallback } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
+import React, { useMemo } from "react";
 import * as PIXI from "pixi.js";
 import type { PlayerState } from "../../types";
+import { usePixiExtensions } from "../../utils/pixiExtensions";
 import { KOREAN_COLORS, FONT_SIZES } from "../../types/constants";
 
 export interface PlayerProps {
@@ -21,14 +21,16 @@ export interface PlayerProps {
 export const Player: React.FC<PlayerProps> = ({
   playerState,
   playerIndex,
-  showStats = false, // Fix: Add showStats with default
+  showStats = false,
   x = 0,
   y = 0,
   onClick,
-  interactive = false,
   width = 100,
   height = 150,
 }) => {
+  // Ensure PixiJS components are extended
+  usePixiExtensions();
+
   const playerColor = useMemo(() => {
     return playerIndex === 0
       ? KOREAN_COLORS.PLAYER_1_COLOR
@@ -56,74 +58,48 @@ export const Player: React.FC<PlayerProps> = ({
     [playerColor, playerState.health, playerState.maxHealth, width, height]
   );
 
-  const drawHealthBars = useCallback(
-    (g: PIXI.Graphics) => {
-      g.clear();
-
-      // Health bar
-      const healthPercent = playerState.health / playerState.maxHealth;
-      g.beginFill(KOREAN_COLORS.NEGATIVE_RED, 0.3);
-      g.drawRect(0, -30, width, 8);
-      g.endFill();
-      g.beginFill(KOREAN_COLORS.POSITIVE_GREEN);
-      g.drawRect(0, -30, width * healthPercent, 8);
-      g.endFill();
-
-      // Ki bar
-      const kiPercent = playerState.ki / playerState.maxKi;
-      g.beginFill(KOREAN_COLORS.PRIMARY_CYAN, 0.3);
-      g.drawRect(0, -20, width, 6);
-      g.endFill();
-      g.beginFill(KOREAN_COLORS.PRIMARY_CYAN);
-      g.drawRect(0, -20, width * kiPercent, 6);
-      g.endFill();
-
-      // Stamina bar
-      const staminaPercent = playerState.stamina / playerState.maxStamina;
-      g.beginFill(KOREAN_COLORS.SECONDARY_YELLOW, 0.3);
-      g.drawRect(0, -10, width, 6);
-      g.endFill();
-      g.beginFill(KOREAN_COLORS.SECONDARY_YELLOW);
-      g.drawRect(0, -10, width * staminaPercent, 6);
-      g.endFill();
-    },
-    [playerState, width]
-  );
-
-  const displayName =
-    typeof playerState.name === "string"
-      ? playerState.name
-      : playerState.name.korean;
-
   return (
-    <Container
+    <pixiContainer
       x={x}
       y={y}
-      interactive={interactive}
-      buttonMode={interactive}
-      pointertap={onClick}
+      interactive={true}
+      onPointerDown={onClick}
+      data-testid="game-player"
     >
-      <Graphics draw={playerDraw} />
+      <pixiGraphics draw={playerDraw} />
 
-      {/* Fix: Use showStats prop */}
-      {showStats && <Graphics draw={drawHealthBars} />}
-
-      <Text
-        text={displayName}
+      {/* Player stance indicator */}
+      <pixiText
+        text={`${playerState.archetype} - ${playerState.currentStance}`}
         style={
           new PIXI.TextStyle({
             fontSize: FONT_SIZES.small,
             fill: KOREAN_COLORS.TEXT_PRIMARY,
           })
         }
-        x={5}
-        y={height + 5}
+        x={0}
+        y={-30}
+        anchor={0.5}
+      />
+
+      {/* Health display */}
+      <pixiText
+        text={`체력: ${playerState.health}/${playerState.maxHealth}`}
+        style={
+          new PIXI.TextStyle({
+            fontSize: FONT_SIZES.tiny,
+            fill: KOREAN_COLORS.TEXT_SECONDARY,
+          })
+        }
+        x={0}
+        y={100}
+        anchor={0.5}
       />
 
       {/* Fix: Use showStats prop for detailed stats */}
       {showStats && (
-        <Container x={width + 10} y={0}>
-          <Text
+        <pixiContainer x={width + 10} y={0}>
+          <pixiText
             text={`자세: ${playerState.currentStance}`}
             style={
               new PIXI.TextStyle({
@@ -133,7 +109,7 @@ export const Player: React.FC<PlayerProps> = ({
             }
             y={0}
           />
-          <Text
+          <pixiText
             text={`체력: ${Math.round(playerState.health)}/${
               playerState.maxHealth
             }`}
@@ -145,7 +121,7 @@ export const Player: React.FC<PlayerProps> = ({
             }
             y={12}
           />
-          <Text
+          <pixiText
             text={`기: ${Math.round(playerState.ki)}/${playerState.maxKi}`}
             style={
               new PIXI.TextStyle({
@@ -155,9 +131,9 @@ export const Player: React.FC<PlayerProps> = ({
             }
             y={24}
           />
-        </Container>
+        </pixiContainer>
       )}
-    </Container>
+    </pixiContainer>
   );
 };
 

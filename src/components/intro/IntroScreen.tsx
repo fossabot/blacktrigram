@@ -1,5 +1,4 @@
 import React, { useState, useCallback } from "react";
-import { Container, Graphics } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import type { IntroScreenProps } from "../../types/components";
 import { GameMode } from "../../types/enums";
@@ -7,15 +6,17 @@ import { KOREAN_COLORS, GAME_CONFIG } from "../../types/constants";
 import { MenuSection } from "./components/MenuSection";
 import { PhilosophySection } from "./components/PhilosophySection";
 import { ControlsSection } from "./components/ControlsSection";
+import { usePixiExtensions } from "../../utils/pixiExtensions";
 import "./IntroScreen.css";
 
 export const IntroScreen: React.FC<IntroScreenProps> = ({
   onMenuSelect,
   width = GAME_CONFIG.CANVAS_WIDTH,
   height = GAME_CONFIG.CANVAS_HEIGHT,
-  x = 0,
-  y = 0,
 }) => {
+  // Ensure PixiJS components are extended
+  usePixiExtensions();
+
   const [selectedMode, setSelectedMode] = useState<GameMode>(GameMode.VERSUS);
   const [showPhilosophy, setShowPhilosophy] = useState(false);
   const [showControls, setShowControls] = useState(false);
@@ -64,8 +65,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
   }, []);
 
   return (
-    <Container x={x} y={y}>
-      <Graphics draw={backgroundDraw} />
+    <pixiContainer x={0} y={0} data-testid="intro-screen">
+      <pixiGraphics draw={backgroundDraw} />
 
       {!showPhilosophy && !showControls && (
         <MenuSection
@@ -86,7 +87,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
       {showControls && (
         <ControlsSection onBack={handleBack} width={width} height={height} />
       )}
-    </Container>
+    </pixiContainer>
   );
 };
 

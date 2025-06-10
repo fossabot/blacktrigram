@@ -1,9 +1,9 @@
 import React, { useMemo } from "react";
-import { Container, Text, Graphics } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import { BaseButton } from "../../ui/base/BaseButton";
-import { KoreanHeader } from "../../ui/base/KoreanHeader";
-import { KOREAN_COLORS, COMBAT_CONTROLS } from "../../../types/constants";
+import { usePixiExtensions } from "../../../utils/pixiExtensions";
+import { CYBERPUNK_COLORS } from "../../../types/constants/colors";
+import { KOREAN_TYPOGRAPHY } from "../../../types/constants/typography";
 
 export interface ControlsSectionProps {
   readonly onBack: () => void;
@@ -17,137 +17,120 @@ export const ControlsSection: React.FC<ControlsSectionProps> = ({
   onBack,
   width = 800,
   height = 600,
-  x = 0,
-  y = 0,
 }) => {
-  const backgroundDraw = useMemo(
+  // Ensure PixiJS components are extended
+  usePixiExtensions();
+
+  const drawBackground = useMemo(
     () => (g: PIXI.Graphics) => {
       g.clear();
-      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.9);
+      g.beginFill(CYBERPUNK_COLORS.BG_DARK, 0.9);
       g.drawRect(0, 0, width, height);
       g.endFill();
-
-      // Add cyberpunk border
-      g.lineStyle(2, KOREAN_COLORS.PRIMARY_CYAN, 0.8);
-      g.drawRect(10, 10, width - 20, height - 20);
     },
     [width, height]
   );
 
-  const textStyle = useMemo(
+  const titleStyle = useMemo(
     () =>
       new PIXI.TextStyle({
-        fontFamily: "Arial",
-        fontSize: 16,
-        fill: KOREAN_COLORS.TEXT_PRIMARY,
+        fontFamily: KOREAN_TYPOGRAPHY.FONTS.HEADING.join(", "),
+        fontSize: KOREAN_TYPOGRAPHY.SIZES.HEADING,
+        fontWeight: "bold",
+        fill: CYBERPUNK_COLORS.TEXT_PRIMARY,
         wordWrap: true,
         wordWrapWidth: width - 100,
       }),
     [width]
   );
 
-  const headerStyle = useMemo(
+  const controlStyle = useMemo(
     () =>
       new PIXI.TextStyle({
-        fontFamily: "Arial",
-        fontSize: 20,
-        fill: KOREAN_COLORS.ACCENT_GOLD,
-        fontWeight: "bold",
+        fontFamily: KOREAN_TYPOGRAPHY.FONTS.BODY.join(", "),
+        fontSize: KOREAN_TYPOGRAPHY.SIZES.BODY,
+        fontWeight: "normal",
+        fill: CYBERPUNK_COLORS.TEXT_SECONDARY,
+        wordWrap: true,
+        wordWrapWidth: width - 100,
       }),
-    []
-  );
-
-  const keyStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: "monospace",
-        fontSize: 14,
-        fill: KOREAN_COLORS.PRIMARY_CYAN,
-        fontWeight: "bold",
-      }),
-    []
+    [width]
   );
 
   return (
-    <Container x={x} y={y}>
-      <Graphics draw={backgroundDraw} />
+    <pixiContainer x={0} y={0} data-testid="controls-section">
+      <pixiGraphics draw={drawBackground} />
 
-      {/* Header */}
-      <KoreanHeader
-        title={{
-          korean: "조작법",
-          english: "Controls",
-        }}
-        subtitle={{
-          korean: "흑괘 무술 조작 가이드",
-          english: "Black Trigram Martial Arts Control Guide",
-        }}
+      {/* Controls header */}
+      <pixiText
+        text="조작법 (Controls)"
+        style={titleStyle}
         x={width / 2}
         y={60}
-        fontSize={24}
-        align="center"
+        anchor={0.5}
       />
 
-      {/* Stance Controls Section */}
-      <Container x={50} y={140}>
-        <Text text="팔괘 자세 (Trigram Stances)" style={headerStyle} />
-        <Container y={40}>
-          {Object.entries(COMBAT_CONTROLS.stanceControls).map(
-            ([key, data], index) => (
-              <Container key={key} y={index * 30}>
-                <Text text={`[${key}]`} style={keyStyle} x={0} />
-                <Text
-                  text={`${data.korean} (${data.stance}) - ${data.technique}`}
-                  style={textStyle}
-                  x={40}
-                />
-              </Container>
-            )
-          )}
-        </Container>
-      </Container>
+      {/* Combat controls */}
+      <pixiContainer x={50} y={150}>
+        <pixiText
+          text="전투 조작 (Combat Controls):"
+          style={controlStyle}
+          y={0}
+        />
+        <pixiText
+          text="1-8: 팔괘 자세 선택 (Trigram Stance Selection)"
+          style={controlStyle}
+          y={40}
+        />
+        <pixiText
+          text="SPACE: 기술 실행 (Execute Technique)"
+          style={controlStyle}
+          y={80}
+        />
+        <pixiText
+          text="SHIFT: 방어 자세 (Defensive Guard)"
+          style={controlStyle}
+          y={120}
+        />
+        <pixiText
+          text="CTRL: 급소 타격 모드 (Vital Point Targeting)"
+          style={controlStyle}
+          y={160}
+        />
+      </pixiContainer>
 
-      {/* Combat Controls Section */}
-      <Container x={50} y={380}>
-        <Text text="전투 조작 (Combat Controls)" style={headerStyle} />
-        <Container y={40}>
-          {Object.entries(COMBAT_CONTROLS.combat).map(
-            ([key, description], index) => (
-              <Container key={key} y={index * 30}>
-                <Text text={`[${key}]`} style={keyStyle} x={0} />
-                <Text text={description} style={textStyle} x={80} />
-              </Container>
-            )
-          )}
-        </Container>
-      </Container>
+      {/* Movement controls */}
+      <pixiContainer x={50} y={350}>
+        <pixiText
+          text="이동 조작 (Movement Controls):"
+          style={controlStyle}
+          y={0}
+        />
+        <pixiText
+          text="WASD: 전술적 위치 이동 (Tactical Positioning)"
+          style={controlStyle}
+          y={40}
+        />
+        <pixiText
+          text="화살표 키: 대체 이동 시스템 (Alternative Movement)"
+          style={controlStyle}
+          y={80}
+        />
+      </pixiContainer>
 
-      {/* Movement Controls Section */}
-      <Container x={400} y={380}>
-        <Text text="이동 조작 (Movement)" style={headerStyle} />
-        <Container y={40}>
-          {Object.entries(COMBAT_CONTROLS.movement).map(
-            ([key, description], index) => (
-              <Container key={key} y={index * 30}>
-                <Text text={`[${key}]`} style={keyStyle} x={0} />
-                <Text text={description} style={textStyle} x={80} />
-              </Container>
-            )
-          )}
-        </Container>
-      </Container>
-
-      {/* Back Button */}
+      {/* Back button */}
       <BaseButton
-        text="돌아가기 (Back)"
-        onClick={onBack}
-        x={50}
+        x={width - 150}
         y={height - 80}
-        width={150}
+        width={120}
         height={50}
+        text="Back"
+        koreanText="돌아가기"
+        onClick={onBack}
         variant="secondary"
+        testId="controls-back-button"
       />
-    </Container>
+    </pixiContainer>
   );
 };
 
