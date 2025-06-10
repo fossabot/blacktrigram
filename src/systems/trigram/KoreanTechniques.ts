@@ -6,7 +6,7 @@ import type {
 } from "../../types";
 import { TrigramStance as TrigramStanceEnum } from "../../types/enums";
 import { TRIGRAM_TECHNIQUES } from "../../types/constants/techniques";
-import { PLAYER_ARCHETYPES_DATA } from "@/types/constants";
+import { PLAYER_ARCHETYPES_DATA } from "../../types/constants/player";
 
 /**
  * Korean martial arts techniques system
@@ -69,7 +69,7 @@ export class KoreanTechniquesSystem {
     const allTechniques = this.getAllTechniques();
 
     // Filter techniques based on archetype preferences
-    const archetypeData = PLAYER_ARCHETYPES_DATA[archetype];
+    const archetypeData = PLAYER_ARCHETYPES_DATA[archetype]; // Fix: Now properly imported
     const favoredStances = archetypeData.favoredStances || [];
 
     return allTechniques.filter((technique) =>
