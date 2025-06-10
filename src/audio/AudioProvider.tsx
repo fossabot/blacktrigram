@@ -96,16 +96,16 @@ export const AudioProvider: React.FC<AudioProviderProps> = ({ children }) => {
 
   const playMusic = async (trackId: MusicTrackId): Promise<void> => {
     if (!isInitialized) return;
-    await audioManager.playMusicTrack(trackId);
+    await audioManager.playMusic(trackId); // Fix: Use playMusic instead of playMusicTrack
   };
 
   const playSoundEffect = async (soundId: SoundEffectId): Promise<void> => {
     if (!isInitialized) return;
-    console.log(`Playing sound effect: ${soundId}`);
+    await audioManager.playSoundEffect(soundId); // Fix: Use correct method name
   };
 
   const stopMusic = (): void => {
-    audioManager.stopMusic();
+    audioManager.stopMusic(); // Fix: Now this method exists
   };
 
   const mute = (): void => {

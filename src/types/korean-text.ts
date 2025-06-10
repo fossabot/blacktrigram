@@ -9,7 +9,7 @@ export interface KoreanText {
   readonly romanized?: string;
 }
 
-// Korean text size enum
+// Add missing enums that are referenced throughout the codebase
 export enum KoreanTextSize {
   TINY = "tiny",
   SMALL = "small",
@@ -19,7 +19,6 @@ export enum KoreanTextSize {
   HUGE = "huge",
 }
 
-// Fix: Korean text weight enum with proper values
 export enum KoreanTextWeight {
   LIGHT = "light",
   NORMAL = "normal", // Fix: Use NORMAL instead of REGULAR
@@ -67,5 +66,16 @@ export interface KoreanTextAlignment {
   readonly horizontal: "left" | "center" | "right";
   readonly vertical: "top" | "middle" | "bottom";
 }
+
+// Fix: Add missing TrigramStance type
+export type TrigramStance =
+  | "geon"
+  | "tae"
+  | "li"
+  | "jin"
+  | "son"
+  | "gam"
+  | "gan"
+  | "gon";
 
 export default KoreanText;

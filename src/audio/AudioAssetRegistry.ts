@@ -72,6 +72,27 @@ export class AudioAssetRegistry {
       volume: 0.7,
       loop: true,
     });
+
+    // Add intro_theme music with both mp3 and webm for intro screen
+    this.registerMusic("intro_theme", {
+      id: "intro_theme",
+      type: "music",
+      name: "Black Trigram Theme",
+      title: { korean: "흑괘 테마", english: "Black Trigram Theme" },
+      category: "music",
+      url: "/assets/audio/music/intro_theme.mp3",
+      formats: ["audio/mp3", "audio/webm"],
+      loaded: false,
+      volume: 0.7,
+      loop: true,
+      variations: [
+        "/assets/audio/music/intro_theme.mp3",
+        "/assets/audio/music/intro_theme.webm",
+      ],
+      bpm: 90,
+      fadeInTime: 3000,
+      fadeOutTime: 3000,
+    });
   }
 
   public registerSFX(id: SoundEffectId, effect: SoundEffect): void {
@@ -190,8 +211,8 @@ export class AudioAssetRegistry {
         loop: true,
         category: "music", // Fix: Use string literal instead of enum
         variations: [
-          "/assets/audio/music/intro_theme_full.mp3",
-          "/assets/audio/music/intro_theme_loop.mp3",
+          "/assets/audio/music/intro_theme.mp3",
+          "/assets/audio/music/intro_theme.webm",
         ],
         bpm: 90,
         fadeInTime: 3000,

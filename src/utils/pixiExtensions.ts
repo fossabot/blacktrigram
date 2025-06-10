@@ -11,31 +11,29 @@ import {
   BitmapText,
 } from "pixi.js";
 
-// Note: @pixi/react v8 doesn't use extend API - components are automatically available
-// This is a compatibility layer for our codebase
+// Fix: Only register components once per React tree using a ref
+let componentsRegistered = false;
 
 export const usePixiExtensions = () => {
-  // Use the useExtend hook to register PIXI components
-  useExtend({
-    Container,
-    Graphics,
-    Text,
-    Sprite,
-    AnimatedSprite,
-    TilingSprite,
-    ParticleContainer,
-    BitmapText,
-  });
-
+  if (!componentsRegistered) {
+    useExtend({
+      Container,
+      Graphics,
+      Text,
+      Sprite,
+      AnimatedSprite,
+      TilingSprite,
+      ParticleContainer,
+      BitmapText,
+    });
+    componentsRegistered = true;
+    console.log("🎮 PixiJS components registered for Black Trigram");
+  }
   return true;
 };
 
-// Re-export useTick for convenience - Fix: Import from correct location
+// Re-export useTick for convenience
 export { useTick } from "@pixi/react";
-
-export const initializePixiExtensions = () => {
-  console.log("🎮 PixiJS components ready for Black Trigram (흑괘)");
-};
 
 // Available component list for reference
 export const AVAILABLE_PIXI_COMPONENTS = [

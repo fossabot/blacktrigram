@@ -10,7 +10,7 @@ import { createPlayerFromArchetype } from "./utils/playerUtils";
 import type { PlayerState } from "./types/player";
 import type { MatchStatistics } from "./types/game";
 import "./App.css";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 function App() {
   usePixiExtensions();
@@ -19,8 +19,37 @@ function App() {
   const [isGameActive, setIsGameActive] = useState(false);
   const [gameWinner, setGameWinner] = useState<PlayerState | null>(null);
   const [matchStats, setMatchStats] = useState<MatchStatistics | null>(null);
+  const [appReady, setAppReady] = useState(false);
+
+  // Fix: Ensure app is properly initialized
+  useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        // Focus window for input handling
+        window.focus();
+
+        // Set up global error handlers
+        window.addEventListener("error", (e) => {
+          console.error("Global error:", e.error);
+        });
+
+        window.addEventListener("unhandledrejection", (e) => {
+          console.error("Unhandled promise rejection:", e.reason);
+        });
+
+        setAppReady(true);
+        console.log("🎯 Black Trigram app initialized");
+      } catch (error) {
+        console.error("Failed to initialize app:", error);
+        setAppReady(true); // Continue with fallback
+      }
+    };
+
+    initializeApp();
+  }, []);
 
   const handleGameStart = useCallback((mode: GameMode) => {
+    console.log("🎮 Starting game mode:", mode);
     setGameMode(mode);
     setIsGameActive(true);
     setGameWinner(null);
@@ -146,9 +175,28 @@ function App() {
     return <IntroScreen onMenuSelect={handleGameStart} />;
   };
 
+  if (!appReady) {
+    return (
+      <div className="app loading">
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100vh",
+            color: "white",
+            backgroundColor: "#1a1a2e",
+          }}
+        >
+          흑괘 로딩 중... Loading Black Trigram...
+        </div>
+      </div>
+    );
+  }
+
   return (
     <AudioProvider>
-      <div className="app">
+      <div className="app" tabIndex={0} style={{ outline: "none" }}>
         <Application
           width={1200}
           height={800}

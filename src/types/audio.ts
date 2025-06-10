@@ -292,3 +292,30 @@ export interface AudioManagerInterface {
   playVitalPointHitSound(severity: string): Promise<void>;
   playDojiangAmbience(): Promise<void>;
 }
+
+// Fix: Add missing IAudioManager interface
+export interface IAudioManager {
+  readonly isInitialized: boolean;
+  readonly masterVolume: number;
+  readonly sfxVolume: number;
+  readonly musicVolume: number;
+  readonly muted: boolean;
+
+  initialize(config?: AudioConfig): Promise<void>;
+  setVolume(type: "master" | "sfx" | "music" | "voice", volume: number): void;
+  playMusic(trackId: string): Promise<void>;
+  playSoundEffect(soundId: string): Promise<void>;
+  stopMusic(): void;
+  mute(): void;
+  unmute(): void;
+  playKoreanTechniqueSound(
+    techniqueId: string,
+    archetype: string
+  ): Promise<void>;
+  playTrigramStanceSound(stance: string): Promise<void>;
+  playVitalPointHitSound(severity: string): Promise<void>;
+  playDojiangAmbience(): Promise<void>;
+}
+
+// Fix: Rename to match import expectations
+export interface AudioManagerInterface extends IAudioManager {}

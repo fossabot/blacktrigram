@@ -2,49 +2,101 @@ import type {
   AudioConfig,
   SoundEffectId,
   MusicTrackId,
-  AudioManagerInterface, // Fix: Import correct interface name
+  IAudioManager,
 } from "../types/audio";
 import { AudioAssetRegistry } from "./AudioAssetRegistry";
 import { DefaultSoundGenerator } from "./DefaultSoundGenerator";
 
-// Remove global declaration that conflicts
-// declare global {
-//   interface Window {
-//     webkitAudioContext?: typeof AudioContext;
-//   }
-// }
-
-export class AudioManager implements AudioManagerInterface {
+export class AudioManager implements IAudioManager {
   private initialized = false;
-  private audioContext?: AudioContext;
-  // Remove unused config property
-  private registry = new AudioAssetRegistry();
 
-  // Volume controls - mark as used via methods
-  private masterVolume = 1.0;
-  private sfxVolume = 1.0;
-  private musicVolume = 1.0;
-  private voiceVolume = 1.0;
+  private audioContext?: AudioContext;
+  private registry = new AudioAssetRegistry();
+  private activeSounds = new Map<string, HTMLAudioElement>();
+
+  // Fix: Add proper volume getters
+  private _masterVolume = 1.0;
+  private _sfxVolume = 1.0;
+  private _musicVolume = 1.0;
+  private _muted = false;
+
+  private currentMusicTrack: HTMLAudioElement | null = null; // Add for music playback
 
   public get isInitialized(): boolean {
     return this.initialized;
   }
 
-  public async initialize(_config: AudioConfig): Promise<void> {
-    // this.config = config; // Remove unused assignment
+  public get masterVolume(): number {
+    return this._masterVolume;
+  }
 
+  public get sfxVolume(): number {
+    return this._sfxVolume;
+  }
+
+  public get musicVolume(): number {
+    return this._musicVolume;
+  }
+
+  public get muted(): boolean {
+    return this._muted;
+  }
+
+  public async initialize(config?: AudioConfig): Promise<void> {
     try {
-      // Fix: Use proper AudioContext initialization without global declaration
+      // Try to initialize Web Audio API
       this.audioContext = new (window.AudioContext ||
         (window as any).webkitAudioContext)();
-
-      // Initialize registry
       await this.registry.loadAssets();
 
+      console.info("audioContext finitialize", this.audioContext);
+
+      // Set default volumes from config
+      if (config) {
+        this._masterVolume = config.defaultVolume ?? 0.7;
+        this._sfxVolume = config.defaultVolume ?? 0.8;
+        this._musicVolume = config.defaultVolume ?? 0.5;
+      }
+
       this.initialized = true;
+      console.log("🎵 AudioManager initialized successfully");
     } catch (error) {
-      console.error("Failed to initialize audio context:", error);
-      throw error;
+      console.warn(
+        "🔇 AudioManager failed to initialize, using fallback mode:",
+        error
+      );
+      this.initialized = true; // Allow fallback mode
+    }
+  }
+
+  public async playSoundEffect(id: SoundEffectId): Promise<void> {
+    if (!this.initialized || this._muted) return;
+
+    try {
+      // Try to get from registry first
+      let sound = this.registry.getSoundEffect(id);
+
+      // Generate fallback sound if not found
+      if (!sound) {
+        sound = DefaultSoundGenerator.generateSoundEffect(id, 440, 0.5);
+      }
+
+      // Create and play HTML Audio element for fallback
+      const audio = new Audio();
+      audio.src = sound.url;
+      audio.volume = this._sfxVolume * this._masterVolume;
+
+      // Store reference to manage multiple sounds
+      this.activeSounds.set(id, audio);
+
+      await audio.play();
+
+      // Clean up after playing
+      audio.onended = () => {
+        this.activeSounds.delete(id);
+      };
+    } catch (error) {
+      console.warn(`Failed to play sound effect: ${id}`, error);
     }
   }
 
@@ -56,87 +108,79 @@ export class AudioManager implements AudioManagerInterface {
 
     switch (type) {
       case "master":
-        this.masterVolume = clampedVolume;
+        this._masterVolume = clampedVolume;
         this.updateAllVolumes();
         break;
       case "sfx":
-        this.sfxVolume = clampedVolume;
+        this._sfxVolume = clampedVolume;
         break;
       case "music":
-        this.musicVolume = clampedVolume;
-        break;
-      case "voice":
-        this.voiceVolume = clampedVolume;
+        this._musicVolume = clampedVolume;
         break;
     }
   }
 
-  // Add missing setSfxVolume method
-  public setSfxVolume(volume: number): void {
-    this.sfxVolume = Math.max(0, Math.min(1, volume));
-    this.setVolume("sfx", this.sfxVolume);
+  public mute(): void {
+    this._muted = true;
+    this.updateAllVolumes();
   }
 
-  // Add missing setMusicVolume method
-  public setMusicVolume(volume: number): void {
-    this.musicVolume = Math.max(0, Math.min(1, volume));
-    this.setVolume("music", this.musicVolume);
+  public unmute(): void {
+    this._muted = false;
+    this.updateAllVolumes();
   }
 
-  // Add missing stopMusic method
+  // Add playMusic method for compatibility with AudioProvider
+  public async playMusic(trackId: string): Promise<void> {
+    if (!this.initialized || this._muted) return;
+
+    // Stop any currently playing music
+    this.stopMusic();
+
+    // Try to get music track from registry
+    let track = this.registry.getMusicTrack(trackId as MusicTrackId);
+
+    // Fallback: generate a default ambience if not found
+    if (!track) {
+      track = DefaultSoundGenerator.generateDojiangAmbience();
+    }
+
+    // Create and play HTML Audio element
+    const audio = new Audio();
+    audio.src = track.url;
+    audio.volume = this._musicVolume * this._masterVolume;
+    audio.loop = track.loop ?? false;
+
+    this.currentMusicTrack = audio;
+    await audio.play();
+  }
+
+  // Add stopMusic method for compatibility with AudioProvider
   public stopMusic(): void {
-    if (!this.initialized) return;
-    console.log("Stopping music");
-    // Implementation would stop current music track
+    if (this.currentMusicTrack) {
+      this.currentMusicTrack.pause();
+      this.currentMusicTrack.currentTime = 0;
+      this.currentMusicTrack = null;
+    }
   }
 
   private updateAllVolumes(): void {
-    // Update actual audio volumes when master volume changes
-    console.debug(
-      `Master volume updated to ${this.masterVolume}, affecting SFX: ${this.sfxVolume}, Music: ${this.musicVolume}, Voice: ${this.voiceVolume}`
-    );
-  }
+    const effectiveVolume = this._muted ? 0 : this._masterVolume;
 
-  // Add missing playSoundEffect method
-  public async playSoundEffect(id: SoundEffectId): Promise<void> {
-    if (!this.initialized || !this.audioContext) return;
+    // Update all active audio elements
+    this.activeSounds.forEach((audio) => {
+      audio.volume = effectiveVolume * this._sfxVolume;
+    });
 
-    try {
-      const sound = this.registry.getSoundEffect(id);
-      if (sound) {
-        console.log(`Playing sound effect: ${id}`, sound);
-        // Implementation would use Web Audio API to play the sound
-      } else {
-        // Generate sound if not found in registry
-        const generatedSound = DefaultSoundGenerator.generateSoundEffect(
-          id,
-          440,
-          0.5
-        );
-        console.log(
-          `Generated and playing sound effect: ${id}`,
-          generatedSound
-        );
-      }
-    } catch (error) {
-      console.warn(`Failed to play sound effect: ${id}`, error);
+    // Update music volume if music is playing
+    if (this.currentMusicTrack) {
+      this.currentMusicTrack.volume = effectiveVolume * this._musicVolume;
     }
   }
 
-  // Add missing playMusicTrack method
+  // Update playMusicTrack to use playMusic for consistency
   public async playMusicTrack(id: MusicTrackId): Promise<void> {
-    if (!this.initialized || !this.audioContext) return;
-
-    try {
-      const track = this.registry.getMusicTrack(id);
-      if (track) {
-        console.log(`Playing music track: ${id}`, track);
-      } else {
-        console.warn(`Music track not found: ${id}`);
-      }
-    } catch (error) {
-      console.warn(`Failed to play music track: ${id}`, error);
-    }
+    return this.playMusic(id);
   }
 
   public async playKoreanTechniqueSound(

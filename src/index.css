@@ -83,6 +83,15 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+/* Fix: Ensure app can receive focus for keyboard input */
+.app {
+  outline: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
 /* Game container styling */
 .game-container {
   width: 100%;
@@ -97,6 +106,8 @@ canvas {
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
+  cursor: pointer;
+  outline: none;
 }
 
 /* Combat UI styling */
@@ -188,4 +199,11 @@ html {
 /* Hide scrollbars in game */
 ::-webkit-scrollbar {
   display: none;
+}
+
+/* Loading screen styles */
+.app.loading {
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
 }
