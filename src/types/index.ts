@@ -82,4 +82,6 @@ export type {
   CombatSystemInterface,
   VitalPointSystemInterface,
   TrigramSystemInterface,
+  SystemEvent,
+  SystemPerformance,
 } from "./systems";

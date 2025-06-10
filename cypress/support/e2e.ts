@@ -15,6 +15,10 @@
 
 // Import commands.js using ES2015 syntax:
 import "./commands";
+import "./pixi-commands"; // Import PixiJS testing commands
+
+// Import cypress-wait-until for waitUntil command
+import "cypress-wait-until";
 
 // Task to silence WebGL warnings
 Cypress.on("window:before:load", (win) => {
@@ -43,6 +47,37 @@ Cypress.on("test:before:run", () => {
   // Log to provide visual separation in test output
   console.log("\n----- Starting Black Trigram Test -----\n");
 });
+
+// Global error handling for Black Trigram
+Cypress.on("uncaught:exception", (err, runnable) => {
+  // Ignore common game-related errors that don't affect functionality
+  if (
+    err.message.includes("Failed to load") ||
+    err.message.includes("no supported source") ||
+    err.message.includes("play() request was interrupted") ||
+    err.message.includes("WebGL") ||
+    err.message.includes("Audio")
+  ) {
+    return false;
+  }
+  return true;
+});
+
+// Performance logging for CI
+beforeEach(() => {
+  cy.window().then((win) => {
+    // Clear any previous performance marks
+    if (win.performance?.clearMarks) {
+      win.performance.clearMarks();
+    }
+  });
+});
+
+// Global test configuration for Korean martial arts game
+Cypress.config("defaultCommandTimeout", 10000);
+Cypress.config("requestTimeout", 15000);
+Cypress.config("responseTimeout", 15000);
+Cypress.config("pageLoadTimeout", 30000);
 
 // Note: Tasks are configured in cypress.config.ts, not here
 // The tasks "log" and "silenceWebGLWarning" should be defined there

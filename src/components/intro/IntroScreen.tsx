@@ -41,6 +41,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
   const [archetypeTextures, setArchetypeTextures] = useState<PIXI.Texture[]>(
     []
   );
+  const [selectedArchetype, setSelectedArchetype] = useState(0);
   const introMusicStarted = React.useRef(false);
   const [selectedMenuIndex, setSelectedMenuIndex] = useState(0);
   const { width, height } = useWindowSize();
@@ -219,6 +220,27 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
   // Menu vertical position
   const menuY = height / 2 + logoSize * 0.3;
 
+  // Handle audio errors gracefully
+  useEffect(() => {
+    const handleAudioError = (e: any) => {
+      if (
+        e.reason?.message?.includes("Failed to load") ||
+        e.reason?.message?.includes("no supported source")
+      ) {
+        console.warn(
+          "Audio loading failed, continuing without audio:",
+          e.reason
+        );
+        e.preventDefault();
+      }
+    };
+
+    window.addEventListener("unhandledrejection", handleAudioError);
+    return () => {
+      window.removeEventListener("unhandledrejection", handleAudioError);
+    };
+  }, []);
+
   return (
     <pixiContainer width={width} height={height} data-testid="intro-screen">
       {/* Background */}
@@ -234,46 +256,38 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
           anchor={{ x: 0, y: 0 }}
         />
       )}
-      {/* Archetype overlays */}
-      {archetypeTextures.length > 0 && (
-        <>
+
+      {/* Title Section */}
+      <pixiContainer
+        x={width / 2}
+        y={height / 2 - logoSize * 0.7}
+        data-testid="title-section"
+      >
+        {logoTexture && (
           <pixiSprite
-            texture={archetypeTextures[0]}
-            x={width - 320}
-            y={height - 320}
-            scale={{ x: 0.45, y: 0.45 }}
-            alpha={0.13}
-            anchor={{ x: 1, y: 1 }}
-          />
-          <pixiSprite
-            texture={archetypeTextures[1]}
-            x={320}
-            y={height - 220}
-            scale={{ x: 0.38, y: 0.38 }}
-            alpha={0.1}
-            anchor={{ x: 0, y: 1 }}
-          />
-          <pixiSprite
-            texture={archetypeTextures[2]}
-            x={width / 2}
-            y={height / 2 + 120}
-            scale={{ x: 0.32, y: 0.32 }}
-            alpha={0.08}
+            texture={logoTexture}
+            x={0}
+            y={0}
+            scale={{ x: logoSize / 256, y: logoSize / 256 }}
             anchor={{ x: 0.5, y: 0.5 }}
+            alpha={1}
           />
-        </>
-      )}
-      {/* Large centered logo with cyberpunk glow */}
-      {logoTexture && (
-        <pixiSprite
-          texture={logoTexture}
-          x={width / 2}
-          y={height / 2 - logoSize * 0.7}
-          scale={{ x: logoSize / 256, y: logoSize / 256 }}
-          anchor={{ x: 0.5, y: 0.5 }}
-          alpha={1}
-        />
-      )}
+        )}
+
+        {/* Trigram Symbols Display */}
+        <pixiContainer y={logoSize * 0.6} data-testid="trigram-symbols">
+          <pixiText
+            text="☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷"
+            style={{
+              fontSize: 24,
+              fill: KOREAN_COLORS.PRIMARY_CYAN,
+              align: "center",
+            }}
+            anchor={0.5}
+          />
+        </pixiContainer>
+      </pixiContainer>
+
       {/* Title below logo */}
       <KoreanHeader
         title={{ korean: "흑괘", english: "Black Trigram" }}
@@ -285,22 +299,153 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
         x={width / 2}
         y={height / 2 - logoSize * 0.25}
       />
+
       {/* Menu Section */}
       {currentSection === "menu" && (
-        <MenuSection
-          selectedMode={MENU_ITEMS[selectedMenuIndex].mode}
-          onModeSelect={handleMenuClick}
-          onStartGame={() =>
-            handleMenuClick(MENU_ITEMS[selectedMenuIndex].mode)
-          }
-          onShowPhilosophy={handleShowPhilosophy}
-          onShowControls={handleShowControls}
-          width={Math.min(480, width * 0.8)}
-          height={Math.max(260, height * 0.32)}
-          x={width / 2 - Math.min(480, width * 0.8) / 2}
-          y={menuY}
-          menuItems={MENU_ITEMS}
-        />
+        <>
+          <MenuSection
+            selectedMode={MENU_ITEMS[selectedMenuIndex].mode}
+            onModeSelect={handleMenuClick}
+            onStartGame={() =>
+              handleMenuClick(MENU_ITEMS[selectedMenuIndex].mode)
+            }
+            onShowPhilosophy={handleShowPhilosophy}
+            onShowControls={handleShowControls}
+            width={Math.min(480, width * 0.8)}
+            height={Math.max(260, height * 0.32)}
+            x={width / 2 - Math.min(480, width * 0.8) / 2}
+            y={menuY}
+            menuItems={MENU_ITEMS}
+          />
+
+          {/* Archetype Selection */}
+          <pixiContainer
+            x={20}
+            y={height - 200}
+            data-testid="archetype-selection"
+          >
+            {/* Archetype Toggle Button */}
+            <pixiContainer data-testid="archetype-toggle">
+              <pixiGraphics
+                draw={(g) => {
+                  g.clear();
+                  g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.8);
+                  g.drawRoundedRect(0, 0, 150, 40, 5);
+                  g.endFill();
+                }}
+                interactive={true}
+                onPointerDown={() => {
+                  audio.playSoundEffect("menu_hover");
+                }}
+              />
+              <pixiText
+                text="무사 유형"
+                style={{
+                  fontSize: 14,
+                  fill: KOREAN_COLORS.TEXT_PRIMARY,
+                  align: "center",
+                }}
+                x={75}
+                y={20}
+                anchor={0.5}
+              />
+            </pixiContainer>
+
+            {/* Archetype List */}
+            <pixiContainer y={50} data-testid="archetype-list">
+              {[
+                "musa",
+                "amsalja",
+                "hacker",
+                "jeongbo_yowon",
+                "jojik_pokryeokbae",
+              ].map((archetype, index) => (
+                <pixiContainer
+                  key={archetype}
+                  y={index * 35}
+                  data-testid={`archetype-option-${archetype}`}
+                >
+                  <pixiGraphics
+                    draw={(g) => {
+                      g.clear();
+                      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_LIGHT, 0.7);
+                      g.drawRoundedRect(0, 0, 140, 30, 3);
+                      g.endFill();
+                    }}
+                    interactive={true}
+                    onPointerDown={() => {
+                      audio.playSoundEffect("menu_select");
+                    }}
+                  />
+                  <pixiText
+                    text={archetype}
+                    style={{
+                      fontSize: 12,
+                      fill: KOREAN_COLORS.TEXT_PRIMARY,
+                    }}
+                    x={10}
+                    y={15}
+                    anchor={{ x: 0, y: 0.5 }}
+                  />
+                </pixiContainer>
+              ))}
+            </pixiContainer>
+
+            <pixiContainer y={200} data-testid="selected-archetype">
+              <pixiText
+                text="암살자"
+                style={{
+                  fontSize: 12,
+                  fill: KOREAN_COLORS.ACCENT_GOLD,
+                }}
+              />
+            </pixiContainer>
+          </pixiContainer>
+
+          {/* Archetype Display - Use archetypeTextures */}
+          {archetypeTextures.length > 0 && (
+            <pixiContainer x={width - 300} y={height / 2 - 150}>
+              <pixiText
+                text="무사 유형 - Archetype"
+                style={{
+                  fontSize: 18,
+                  fill: KOREAN_COLORS.ACCENT_GOLD,
+                  fontWeight: "bold",
+                }}
+                y={-30}
+              />
+
+              <pixiSprite
+                texture={
+                  archetypeTextures[
+                    selectedArchetype % archetypeTextures.length
+                  ]
+                }
+                width={250}
+                height={300}
+                interactive={true}
+                onPointerDown={() => {
+                  setSelectedArchetype(
+                    (prev) => (prev + 1) % archetypeTextures.length
+                  );
+                  audio.playSoundEffect("menu_hover");
+                }}
+              />
+
+              <pixiText
+                text={`${selectedArchetype + 1}/${archetypeTextures.length}`}
+                style={{
+                  fontSize: 14,
+                  fill: KOREAN_COLORS.TEXT_SECONDARY,
+                  align: "center",
+                }}
+                x={125}
+                y={310}
+                anchor={0.5}
+              />
+            </pixiContainer>
+          )}
+        </>
       )}
       {currentSection === "philosophy" && (
         <PhilosophySection

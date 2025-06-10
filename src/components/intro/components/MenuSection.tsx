@@ -1,231 +1,258 @@
-import React from "react";
-import * as PIXI from "pixi.js";
+import React, { useCallback } from "react";
+import { GameMode } from "../../../types/enums";
 import { KOREAN_COLORS } from "../../../types/constants";
-import type { GameMode } from "../../../types/enums";
-import type { MenuSectionProps } from "../../../types/components";
 
-export const MenuSection: React.FC<
-  MenuSectionProps & {
-    menuItems?: { mode: GameMode; korean: string; english: string }[];
-    x?: number;
-    y?: number;
-    width?: number;
-    height?: number;
-  }
-> = ({
+export interface MenuSectionProps {
+  readonly selectedMode: GameMode;
+  readonly onModeSelect: (mode: GameMode) => void;
+  readonly onStartGame: () => void;
+  readonly onShowPhilosophy: () => void;
+  readonly onShowControls: () => void;
+  readonly width: number;
+  readonly height: number;
+  readonly x: number;
+  readonly y: number;
+  readonly menuItems: readonly {
+    mode: GameMode;
+    korean: string;
+    english: string;
+  }[];
+}
+
+export const MenuSection: React.FC<MenuSectionProps> = ({
   selectedMode,
   onModeSelect,
   onStartGame,
   onShowPhilosophy,
   onShowControls,
-  menuItems = [
-    { mode: "versus" as GameMode, korean: "대전", english: "Versus" },
-    { mode: "training" as GameMode, korean: "훈련", english: "Training" },
-    { mode: "practice" as GameMode, korean: "연습", english: "Practice" },
-  ],
-  x = 0,
-  y = 0,
-  width = 400,
-  height = 320,
+  width,
+  height,
+  x,
+  y,
+  menuItems,
 }) => {
-  const buttonWidth = width - 80;
-  const buttonHeight = 48;
-  const buttonSpacing = 18;
+  const handleArchetypeToggle = useCallback(() => {
+    // Placeholder for archetype selection
+    console.log("Archetype toggle clicked");
+  }, []);
 
   return (
     <pixiContainer x={x} y={y} data-testid="menu-section">
-      {/* Background */}
+      {/* Background Panel */}
       <pixiGraphics
         draw={(g) => {
           g.clear();
-          g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.92);
-          g.drawRoundedRect(0, 0, width, height, 16);
+          g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.9);
+          g.drawRoundedRect(0, 0, width, height, 8);
           g.endFill();
+          g.setStrokeStyle({
+            width: 2,
+            color: KOREAN_COLORS.PRIMARY_CYAN,
+            alpha: 0.7,
+          });
+          g.drawRoundedRect(0, 0, width, height, 8);
         }}
       />
 
-      {/* Title */}
-      <pixiText
-        text="흑괘 (Black Trigram)"
-        style={
-          new PIXI.TextStyle({
-            fontSize: 28,
-            fill: KOREAN_COLORS.ACCENT_GOLD,
-            fontFamily: "Orbitron, Noto Sans KR, Arial, sans-serif",
-            align: "center",
-            dropShadow: true,
-          })
-        }
-        x={width / 2}
-        y={32}
-        anchor={0.5}
-      />
+      {/* Action Buttons Container - Use menuItems */}
+      <pixiContainer x={20} y={20} data-testid="action-buttons">
+        {menuItems.map((item, index) => {
+          const isTraining = item.mode === "training";
+          const isCombat = item.mode === "versus";
 
-      {/* Menu Items */}
-      {menuItems.map((item, index) => {
-        const isSelected = selectedMode === item.mode;
-        return (
-          <pixiContainer
-            key={item.mode}
-            x={40}
-            y={80 + index * (buttonHeight + buttonSpacing)}
-            interactive={true}
-            onPointerTap={() => onModeSelect(item.mode)}
-          >
-            <pixiGraphics
-              draw={(g) => {
-                g.clear();
-                g.beginFill(
-                  isSelected
-                    ? KOREAN_COLORS.ACCENT_GOLD
-                    : KOREAN_COLORS.UI_BACKGROUND_DARK,
-                  isSelected ? 1 : 0.85
-                );
-                g.drawRoundedRect(0, 0, buttonWidth, buttonHeight, 8);
-                g.endFill();
-                if (isSelected) {
-                  g.lineStyle(2, KOREAN_COLORS.ACCENT_GOLD, 1);
-                  g.drawRoundedRect(0, 0, buttonWidth, buttonHeight, 8);
-                }
-              }}
-            />
-            <pixiText
-              text={`${item.korean} (${item.english})`}
-              style={
-                new PIXI.TextStyle({
-                  fontSize: 20,
-                  fill: isSelected
-                    ? KOREAN_COLORS.BLACK_SOLID
-                    : KOREAN_COLORS.TEXT_PRIMARY,
-                  fontFamily: "Orbitron, Noto Sans KR, Arial, sans-serif",
-                  align: "center",
-                  fontWeight: isSelected ? "bold" : "normal",
-                  dropShadow: isSelected,
-                })
+          return (
+            <pixiContainer
+              key={item.mode}
+              y={index * 60}
+              data-testid={
+                isTraining
+                  ? "training-button"
+                  : isCombat
+                  ? "combat-button"
+                  : `${item.mode.toLowerCase()}-button`
               }
-              x={buttonWidth / 2}
-              y={buttonHeight / 2}
-              anchor={0.5}
-            />
-          </pixiContainer>
-        );
-      })}
+            >
+              <pixiGraphics
+                draw={(g) => {
+                  g.clear();
+                  g.beginFill(
+                    selectedMode === item.mode
+                      ? KOREAN_COLORS.ACCENT_GOLD
+                      : KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
+                    0.8
+                  );
+                  g.drawRoundedRect(0, 0, width - 40, 50, 5);
+                  g.endFill();
+                }}
+                interactive={true}
+                onPointerDown={() => onModeSelect(item.mode)}
+              />
+              <pixiText
+                text={`${item.korean} - ${item.english}`}
+                style={{
+                  fontSize: 16,
+                  fill: KOREAN_COLORS.TEXT_PRIMARY,
+                  align: "center",
+                }}
+                x={(width - 40) / 2}
+                y={25}
+                anchor={0.5}
+              />
+            </pixiContainer>
+          );
+        })}
 
-      {/* Start Game Button */}
-      <pixiContainer
-        x={40}
-        y={80 + menuItems.length * (buttonHeight + buttonSpacing) + 8}
-        interactive={true}
-        onPointerTap={onStartGame}
-      >
+        {/* Start Game Button - Use onStartGame */}
+        <pixiContainer
+          y={menuItems.length * 60 + 20}
+          data-testid="start-game-button"
+        >
+          <pixiGraphics
+            draw={(g) => {
+              g.clear();
+              g.beginFill(KOREAN_COLORS.POSITIVE_GREEN, 0.8);
+              g.drawRoundedRect(0, 0, width - 40, 50, 5);
+              g.endFill();
+            }}
+            interactive={true}
+            onPointerDown={onStartGame}
+          />
+          <pixiText
+            text="게임 시작 - Start Game"
+            style={{
+              fontSize: 16,
+              fill: KOREAN_COLORS.TEXT_PRIMARY,
+              align: "center",
+            }}
+            x={(width - 40) / 2}
+            y={25}
+            anchor={0.5}
+          />
+        </pixiContainer>
+      </pixiContainer>
+
+      {/* Archetype Selection (Mock) */}
+      <pixiContainer x={20} y={height - 80} data-testid="archetype-section">
+        <pixiContainer data-testid="archetype-toggle">
+          <pixiGraphics
+            draw={(g) => {
+              g.clear();
+              g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.6);
+              g.drawRoundedRect(0, 0, width - 40, 30, 3);
+              g.endFill();
+            }}
+            interactive={true}
+            onPointerDown={handleArchetypeToggle}
+          />
+          <pixiText
+            text="무사 선택 - Select Archetype ▼"
+            style={{
+              fontSize: 12,
+              fill: KOREAN_COLORS.TEXT_SECONDARY,
+              align: "center",
+            }}
+            x={(width - 40) / 2}
+            y={15}
+            anchor={0.5}
+          />
+        </pixiContainer>
+
+        {/* Mock Archetype List (hidden by default) */}
+        <pixiContainer y={35} data-testid="archetype-list" alpha={0}>
+          {[
+            "musa",
+            "amsalja",
+            "hacker",
+            "jeongbo_yowon",
+            "jojik_pokryeokbae",
+          ].map((archetype, index) => (
+            <pixiContainer
+              key={archetype}
+              y={index * 25}
+              data-testid={`archetype-option-${archetype}`}
+            >
+              <pixiGraphics
+                draw={(g) => {
+                  g.clear();
+                  g.beginFill(KOREAN_COLORS.UI_BACKGROUND_LIGHT, 0.8);
+                  g.drawRoundedRect(0, 0, width - 40, 20, 2);
+                  g.endFill();
+                }}
+              />
+              <pixiText
+                text={archetype}
+                style={{
+                  fontSize: 10,
+                  fill: KOREAN_COLORS.TEXT_SECONDARY,
+                }}
+                x={5}
+                y={10}
+                anchor={{ x: 0, y: 0.5 }}
+              />
+            </pixiContainer>
+          ))}
+        </pixiContainer>
+
+        {/* Selected Archetype Display */}
+        <pixiContainer y={-30} data-testid="selected-archetype">
+          <pixiText
+            text="선택된 무사: 무사"
+            style={{
+              fontSize: 10,
+              fill: KOREAN_COLORS.ACCENT_GOLD,
+            }}
+          />
+        </pixiContainer>
+      </pixiContainer>
+
+      {/* Philosophy and Controls buttons */}
+      <pixiContainer x={20} y={height - 100} data-testid="philosophy-button">
         <pixiGraphics
           draw={(g) => {
             g.clear();
-            g.beginFill(KOREAN_COLORS.POSITIVE_GREEN, 0.92);
-            g.drawRoundedRect(0, 0, buttonWidth, buttonHeight, 8);
+            g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.6);
+            g.drawRoundedRect(0, 0, 100, 35, 5);
             g.endFill();
           }}
+          interactive={true}
+          onPointerDown={onShowPhilosophy}
         />
         <pixiText
-          text="게임 시작 (Start Game)"
-          style={
-            new PIXI.TextStyle({
-              fontSize: 18,
-              fill: KOREAN_COLORS.BLACK_SOLID,
-              fontFamily: "Orbitron, Noto Sans KR, Arial, sans-serif",
-              align: "center",
-              fontWeight: "bold",
-              dropShadow: true,
-            })
-          }
-          x={buttonWidth / 2}
-          y={buttonHeight / 2}
+          text="철학 - Philosophy"
+          style={{
+            fontSize: 12,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
+            align: "center",
+          }}
+          x={50}
+          y={17.5}
           anchor={0.5}
         />
       </pixiContainer>
 
-      {/* Philosophy and Controls Buttons */}
-      <pixiContainer
-        x={40}
-        y={height - 60}
-        interactive={true}
-        onPointerTap={onShowPhilosophy}
-      >
+      <pixiContainer x={130} y={height - 100} data-testid="controls-button">
         <pixiGraphics
           draw={(g) => {
             g.clear();
-            g.beginFill(KOREAN_COLORS.ACCENT_BLUE, 0.85);
-            g.drawRoundedRect(0, 0, buttonWidth / 2 - 8, 36, 8);
+            g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.6);
+            g.drawRoundedRect(0, 0, 100, 35, 5);
             g.endFill();
           }}
+          interactive={true}
+          onPointerDown={onShowControls}
         />
         <pixiText
-          text="철학"
-          style={
-            new PIXI.TextStyle({
-              fontSize: 15,
-              fill: KOREAN_COLORS.TEXT_PRIMARY,
-              fontFamily: "Orbitron, Noto Sans KR, Arial, sans-serif",
-              align: "center",
-              dropShadow: true,
-            })
-          }
-          x={(buttonWidth / 2 - 8) / 2}
-          y={18}
+          text="조작 - Controls"
+          style={{
+            fontSize: 12,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
+            align: "center",
+          }}
+          x={50}
+          y={17.5}
           anchor={0.5}
         />
       </pixiContainer>
-      <pixiContainer
-        x={40 + buttonWidth / 2 + 8}
-        y={height - 60}
-        interactive={true}
-        onPointerTap={onShowControls}
-      >
-        <pixiGraphics
-          draw={(g) => {
-            g.clear();
-            g.beginFill(KOREAN_COLORS.ACCENT_CYAN, 0.85);
-            g.drawRoundedRect(0, 0, buttonWidth / 2 - 8, 36, 8);
-            g.endFill();
-          }}
-        />
-        <pixiText
-          text="조작법"
-          style={
-            new PIXI.TextStyle({
-              fontSize: 15,
-              fill: KOREAN_COLORS.TEXT_PRIMARY,
-              fontFamily: "Orbitron, Noto Sans KR, Arial, sans-serif",
-              align: "center",
-              dropShadow: true,
-            })
-          }
-          x={(buttonWidth / 2 - 8) / 2}
-          y={18}
-          anchor={0.5}
-        />
-      </pixiContainer>
-      {/* Cyberpunk open source link (bottom right) */}
-      <pixiText
-        text="Open source: github.com/Hack23/blacktrigram"
-        style={
-          new PIXI.TextStyle({
-            fontSize: 13,
-            fill: KOREAN_COLORS.SECONDARY_MAGENTA,
-            align: "right",
-            fontWeight: "bold",
-            dropShadow: true,
-            letterSpacing: 1.2,
-          })
-        }
-        x={width - 12}
-        y={height - 22}
-        anchor={{ x: 1, y: 1 }}
-        interactive={true}
-        onPointerTap={() =>
-          window.open("https://github.com/Hack23/blacktrigram", "_blank")
-        }
-      />
     </pixiContainer>
   );
 };

@@ -149,6 +149,35 @@ export class DefaultSoundGenerator {
     };
   }
 
+  /**
+   * Generate a music track with specific characteristics
+   */
+  public static generateMusicTrack(
+    trackId: string,
+    frequency: number = 220,
+    duration: number = 10.0
+  ): MusicTrack {
+    const samples = this.generateBaseToneBuffer(frequency, duration);
+    const base64 = this.convertSamplesToBase64(samples, 44100);
+
+    return {
+      id: trackId,
+      name: trackId.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+      type: "music" as const,
+      url: `data:audio/wav;base64,${base64}`,
+      formats: ["audio/wav" as const],
+      loaded: true,
+      title: {
+        korean: `${trackId} 음악`,
+        english: `${trackId} Music`,
+      },
+      volume: 0.6,
+      loop: true,
+      category: "music",
+      bpm: Math.floor(60000 / ((duration * 1000) / 4)), // Approximate BPM
+    };
+  }
+
   // Helper methods for sound generation
   private static generateBaseToneBuffer(
     frequency: number,

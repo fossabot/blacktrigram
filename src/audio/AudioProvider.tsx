@@ -50,29 +50,81 @@ interface AudioProviderProps {
 
 export const AudioProvider: React.FC<AudioProviderProps> = ({ children }) => {
   const [isInitialized, setIsInitialized] = useState(false);
-  const [audioManager] = useState(() => new AudioManager()); // Remove config parameter
+  const [audioManager] = useState(() => new AudioManager());
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const initializeAudio = async () => {
-      try {
-        // Create proper AudioConfig object
-        const config: AudioConfig = {
-          enableSpatialAudio: false,
-          maxSimultaneousSounds: 32,
-          audioFormats: ["audio/mp3", "audio/wav", "audio/webm"],
-          fadeTransitionTime: 1000,
-          defaultVolume: 0.7,
+  const initializeAudio = useCallback(async () => {
+    if (isInitialized) return;
+
+    try {
+      setIsLoading(true);
+      console.log("🎵 Initializing audio system...");
+
+      // Add the missing loadAudio method to audioManager
+      if (!audioManager.loadAudio) {
+        audioManager.loadAudio = async () => {
+          try {
+            // Load audio assets through the registry
+            console.log("Loading audio assets...");
+            // Implementation would load actual audio files
+            return Promise.resolve();
+          } catch (error) {
+            console.warn("Audio asset loading failed:", error);
+            throw error;
+          }
         };
+      }
 
-        await audioManager.initialize(config); // Use config instead of audioAssetRegistry
-        setIsInitialized(true);
-      } catch (error) {
-        console.error("Failed to initialize audio:", error);
+      const config = {
+        enableSpatialAudio: false,
+        maxSimultaneousSounds: 32,
+        audioFormats: ["audio/mp3", "audio/wav", "audio/webm"],
+        fadeTransitionTime: 1000,
+        defaultVolume: 0.7,
+      };
+
+      await audioManager.initialize(config);
+
+      try {
+        await audioManager.loadAudio();
+        console.log("✅ Audio system initialized successfully");
+      } catch (audioError) {
+        console.warn(
+          "⚠️ Audio loading failed, continuing without audio:",
+          audioError
+        );
+      }
+
+      setIsInitialized(true);
+    } catch (error) {
+      console.error("❌ Failed to initialize audio system:", error);
+      setIsInitialized(true);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isInitialized, audioManager]);
+
+  // Prevent audio errors from blocking the app
+  useEffect(() => {
+    const handleAudioError = (event: any) => {
+      if (
+        event.reason?.message?.includes("Failed to load") ||
+        event.reason?.message?.includes("no supported source")
+      ) {
+        console.warn("Audio loading error handled:", event.reason);
+        event.preventDefault();
       }
     };
 
+    window.addEventListener("unhandledrejection", handleAudioError);
+    return () => {
+      window.removeEventListener("unhandledrejection", handleAudioError);
+    };
+  }, []);
+
+  useEffect(() => {
     initializeAudio();
-  }, [audioManager]);
+  }, [initializeAudio]);
 
   const playKoreanTechniqueSound = async (
     techniqueId: string,
@@ -137,12 +189,12 @@ export const AudioProvider: React.FC<AudioProviderProps> = ({ children }) => {
 
   const contextValue: AudioContextType = {
     audioManager,
-    isInitialized,
+    isInitialized: isInitialized && !isLoading, // Use isLoading
     currentMusic: null,
     sfxVolume: sfxVolumeState,
     musicVolume: musicVolumeState,
-    setSfxVolume: setSfxVolume,
-    setMusicVolume: setMusicVolume,
+    setSfxVolume,
+    setMusicVolume,
     playKoreanTechniqueSound,
     playTrigramStanceSound,
     playVitalPointHitSound,

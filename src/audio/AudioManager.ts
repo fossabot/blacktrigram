@@ -131,28 +131,43 @@ export class AudioManager implements IAudioManager {
   }
 
   // Add playMusic method for compatibility with AudioProvider
-  public async playMusic(trackId: string): Promise<void> {
+  public async playMusic(trackId: MusicTrackId): Promise<void> {
     if (!this.initialized || this._muted) return;
 
-    // Stop any currently playing music
-    this.stopMusic();
+    try {
+      // Stop current music if playing
+      if (this.currentMusicTrack) {
+        this.currentMusicTrack.pause();
+        this.currentMusicTrack.currentTime = 0;
+      }
 
-    // Try to get music track from registry
-    let track = this.registry.getMusicTrack(trackId as MusicTrackId);
+      // Get music track from registry
+      let track = this.registry.getMusicTrack(trackId);
 
-    // Fallback: generate a default ambience if not found
-    if (!track) {
-      track = DefaultSoundGenerator.generateDojiangAmbience();
+      if (!track) {
+        // Generate fallback music if not found
+        track = DefaultSoundGenerator.generateMusicTrack(trackId, 440, 0.3);
+      }
+
+      // Ensure track is defined before using
+      if (!track) {
+        console.warn(`Failed to get or generate music track: ${trackId}`);
+        return;
+      }
+
+      // Create and play HTML Audio element
+      const audio = new Audio();
+      audio.src = track.url;
+      audio.volume = this._musicVolume * this._masterVolume;
+      audio.loop = track.loop || false;
+
+      this.currentMusicTrack = audio;
+      await audio.play();
+
+      console.log(`🎵 Playing music: ${trackId}`);
+    } catch (error) {
+      console.warn(`Failed to play music: ${trackId}`, error);
     }
-
-    // Create and play HTML Audio element
-    const audio = new Audio();
-    audio.src = track.url;
-    audio.volume = this._musicVolume * this._masterVolume;
-    audio.loop = track.loop ?? false;
-
-    this.currentMusicTrack = audio;
-    await audio.play();
   }
 
   // Add stopMusic method for compatibility with AudioProvider
@@ -161,6 +176,27 @@ export class AudioManager implements IAudioManager {
       this.currentMusicTrack.pause();
       this.currentMusicTrack.currentTime = 0;
       this.currentMusicTrack = null;
+    }
+  }
+
+  // Add the missing loadAudio method
+  public async loadAudio(): Promise<void> {
+    try {
+      console.log("🎵 Loading audio assets...");
+
+      // Load audio assets through the registry
+      await this.registry.loadAssets();
+
+      // Initialize any additional audio components
+      if (this.audioContext) {
+        // Set up audio processing nodes if needed
+        console.log("Audio context state:", this.audioContext.state);
+      }
+
+      console.log("✅ Audio assets loaded successfully");
+    } catch (error) {
+      console.warn("⚠️ Failed to load some audio assets:", error);
+      // Don't throw - allow graceful degradation
     }
   }
 

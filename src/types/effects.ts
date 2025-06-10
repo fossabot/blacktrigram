@@ -37,10 +37,22 @@ export enum HitEffectType {
   COUNTER = "counter",
 }
 
+// Fix: Add missing EffectIntensity values
+export type EffectIntensity =
+  | "weak" // Fix: Add weak
+  | "minor"
+  | "low"
+  | "medium"
+  | "moderate"
+  | "high"
+  | "severe"
+  | "critical"
+  | "extreme"; // Fix: Add extreme
+
 // Status effects that can be applied to players
 export interface StatusEffect {
   readonly id: string;
-  readonly type: EffectType;
+  readonly type: string; // Fix: Keep as string for flexibility
   readonly intensity: EffectIntensity;
   readonly duration: number;
   readonly description: KoreanText;
@@ -66,9 +78,6 @@ export type EffectType =
   | "confusion" // Add missing confusion
   | "vulnerability" // Add missing vulnerability
   | "stamina_drain"; // Add missing stamina_drain
-
-// Effect intensity levels
-export type EffectIntensity = "minor" | "moderate" | "severe" | "critical";
 
 // Particle effect for visual feedback
 export interface ParticleEffect {

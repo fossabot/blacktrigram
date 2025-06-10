@@ -28,40 +28,41 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({
       g.endFill();
 
       // Progress fill
-      const fillWidth = (width - 4) * (progress / maxProgress);
-      if (fillWidth > 0) {
-        g.beginFill(KOREAN_COLORS.ACCENT_GOLD, 0.9);
-        g.drawRoundedRect(2, 2, fillWidth, height - 4, (height - 4) / 2);
-        g.endFill();
-      }
+      const fillWidth = (progress / maxProgress) * width;
+      g.beginFill(KOREAN_COLORS.POSITIVE_GREEN, 1.0);
+      g.drawRoundedRect(0, 0, fillWidth, height, height / 2);
+      g.endFill();
 
       // Border
-      g.lineStyle(2, KOREAN_COLORS.UI_BORDER, 0.6);
+      g.lineStyle(2, KOREAN_COLORS.UI_BORDER, 1.0);
       g.drawRoundedRect(0, 0, width, height, height / 2);
     },
     [progress, maxProgress, width, height]
   );
 
-  const getLabelText = () => {
-    return label || `${progress}/${maxProgress}`;
-  };
-
-  const textStyle = new PIXI.TextStyle({
-    fontFamily: "Arial, sans-serif", // Fix: Use simple font family
-    fontSize: 12, // Fix: Use number directly
-    fill: KOREAN_COLORS.TEXT_PRIMARY,
-    align: "center",
-  });
-
   return (
-    <pixiContainer x={x} y={y} data-testid="progress-tracker">
-      {" "}
-      {/* Fix: Use pixiContainer */}
-      <pixiGraphics draw={barDraw} /> {/* Fix: Use pixiGraphics */}
-      {(showPercentage || label) && (
-        <pixiText // Fix: Use pixiText
-          text={showPercentage ? `${percentage}%` : getLabelText()}
-          style={textStyle}
+    <pixiContainer x={x} y={y}>
+      {label && (
+        <pixiText
+          text={label}
+          style={{
+            fontSize: 12,
+            fill: KOREAN_COLORS.TEXT_SECONDARY,
+          }}
+          y={-20}
+        />
+      )}
+
+      <pixiGraphics draw={barDraw} />
+
+      {showPercentage && (
+        <pixiText
+          text={`${percentage}%`}
+          style={{
+            fontSize: 10,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
+            align: "center",
+          }}
           x={width / 2}
           y={height / 2}
           anchor={0.5}

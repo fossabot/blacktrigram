@@ -67,6 +67,12 @@ export class TrainingCombatSystem extends CombatSystem {
       attacker: updatedAttacker,
       defender: updatedDefender,
       trainingData,
+      // Fix: Add missing TrainingCombatResult properties
+      accuracyScore: trainingData.accuracy,
+      techniqueScore: trainingData.techniqueTiming,
+      formScore: trainingData.stanceEffectiveness,
+      improvementAreas: this.getImprovementAreas(trainingData),
+      nextTrainingGoals: this.getNextTrainingGoals(trainingData),
     };
   }
 
@@ -176,6 +182,47 @@ export class TrainingCombatSystem extends CombatSystem {
       stanceEfficiency: 80,
       improvementAreas: ["timing", "vital_point_targeting"],
     };
+  }
+
+  /**
+   * Fix: Add missing getImprovementAreas method
+   */
+  private getImprovementAreas(trainingData: any): string[] {
+    const areas: string[] = [];
+
+    if (trainingData.accuracy < 70) {
+      areas.push("accuracy");
+    }
+    if (trainingData.techniqueTiming < 70) {
+      areas.push("timing");
+    }
+    if (trainingData.stanceEffectiveness < 70) {
+      areas.push("stance_positioning");
+    }
+    if (trainingData.damageCalculation < 70) {
+      areas.push("power_generation");
+    }
+
+    return areas;
+  }
+
+  /**
+   * Fix: Add missing getNextTrainingGoals method
+   */
+  private getNextTrainingGoals(trainingData: any): string[] {
+    const goals: string[] = [];
+
+    if (trainingData.accuracy < 80) {
+      goals.push("Improve targeting precision");
+    }
+    if (trainingData.techniqueTiming < 80) {
+      goals.push("Perfect technique timing");
+    }
+    if (trainingData.stanceEffectiveness < 80) {
+      goals.push("Master stance transitions");
+    }
+
+    return goals;
   }
 }
 

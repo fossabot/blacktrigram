@@ -47,7 +47,8 @@ export class VitalPointSystem {
     const damageResult = DamageCalculator.calculateVitalPointDamage(
       targetVitalPoint,
       baseDamage,
-      { archetype: attackerArchetype } as PlayerState
+      { archetype: attackerArchetype } as PlayerState,
+      0.85 // Fix: Add missing accuracy parameter
     );
 
     // Fix: Convert VitalPointEffect to StatusEffect

@@ -68,8 +68,8 @@ export interface PlayerArchetypeData {
     speed: number;
     technique: number;
   };
-  readonly favoredStances: TrigramStance[];
-  readonly specialAbilities: string[];
+  readonly favoredStances: readonly TrigramStance[];
+  readonly specialAbilities: readonly string[];
   readonly philosophy: KoreanText;
 }
 

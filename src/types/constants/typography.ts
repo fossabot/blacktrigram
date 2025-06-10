@@ -1,5 +1,5 @@
 import * as PIXI from "pixi.js";
-import { KoreanTextSize, KoreanTextWeight } from "../korean-text";
+// Fix: Remove unused import
 import { KOREAN_COLORS } from "./colors";
 
 // Font Families
@@ -39,48 +39,46 @@ export const FONT_WEIGHTS = {
 } as const;
 
 // Use proper enum mapping for sizes
-export const KOREAN_TEXT_SIZES: Record<KoreanTextSize, number> = {
-  [KoreanTextSize.TINY]: 10,
-  [KoreanTextSize.SMALL]: 12,
-  [KoreanTextSize.MEDIUM]: 16,
-  [KoreanTextSize.LARGE]: 20,
-  [KoreanTextSize.XLARGE]: 24,
-  [KoreanTextSize.HUGE]: 32,
+export const KOREAN_TEXT_SIZES: Record<string, number> = {
+  tiny: 10,
+  small: 12,
+  medium: 16,
+  large: 20,
+  xlarge: 24,
+  huge: 32,
+  title: 36,
 };
 
 // Fix: Use proper enum values for font weights
-export const KOREAN_FONT_WEIGHTS = {
-  [KoreanTextWeight.LIGHT]: 300,
-  [KoreanTextWeight.NORMAL]: 400,
-  [KoreanTextWeight.MEDIUM]: 500,
-  [KoreanTextWeight.SEMIBOLD]: 600,
-  [KoreanTextWeight.BOLD]: 700,
-  [KoreanTextWeight.HEAVY]: 900,
-  // Fix: Add regular as alias for normal
-  regular: 400,
+export const KOREAN_FONT_WEIGHTS: Record<string, number> = {
+  light: 300,
+  normal: 400,
+  regular: 400, // Keep only one 'regular' entry
+  medium: 500,
+  semibold: 600,
+  bold: 700,
+  heavy: 900,
 } as const;
 
 // Fix: PIXI specific font weights with proper enum mapping
-export const PIXI_FONT_WEIGHTS: Record<
-  KoreanTextWeight,
-  PIXI.TextStyleFontWeight
-> = {
-  [KoreanTextWeight.LIGHT]: "300",
-  [KoreanTextWeight.NORMAL]: "400",
-  [KoreanTextWeight.MEDIUM]: "500",
-  [KoreanTextWeight.SEMIBOLD]: "600",
-  [KoreanTextWeight.BOLD]: "700",
-  [KoreanTextWeight.HEAVY]: "900",
+export const PIXI_FONT_WEIGHTS: Record<string, PIXI.TextStyleFontWeight> = {
+  light: "300",
+  normal: "400",
+  regular: "400",
+  medium: "500",
+  semibold: "600",
+  bold: "700",
+  heavy: "900",
 };
 
 // Default PIXI TextStyle
 export const DEFAULT_PIXI_TEXT_STYLE: Partial<PIXI.TextStyleOptions> = {
   fontFamily: FONT_FAMILY.KOREAN,
-  fontSize: KOREAN_TEXT_SIZES[KoreanTextSize.MEDIUM],
+  fontSize: KOREAN_TEXT_SIZES.medium,
   fill: KOREAN_COLORS.TEXT_PRIMARY,
   align: "left",
   wordWrap: false,
-  fontWeight: PIXI_FONT_WEIGHTS[KoreanTextWeight.NORMAL],
+  fontWeight: PIXI_FONT_WEIGHTS.normal,
 };
 
 // PIXI Text Style Collections
@@ -90,14 +88,14 @@ export const PIXI_TEXT_STYLES = {
     ...DEFAULT_PIXI_TEXT_STYLE,
     fontFamily: FONT_FAMILY.KOREAN_BATTLE,
     fontSize: FONT_SIZES.title,
-    fontWeight: PIXI_FONT_WEIGHTS[KoreanTextWeight.BOLD],
+    fontWeight: PIXI_FONT_WEIGHTS.bold,
     fill: KOREAN_COLORS.ACCENT_PRIMARY,
     align: "center",
   }),
   SUBTITLE: new PIXI.TextStyle({
     ...DEFAULT_PIXI_TEXT_STYLE,
     fontSize: FONT_SIZES.large,
-    fontWeight: PIXI_FONT_WEIGHTS[KoreanTextWeight.NORMAL],
+    fontWeight: PIXI_FONT_WEIGHTS.normal,
     fill: KOREAN_COLORS.TEXT_SECONDARY,
     align: "center",
   }),
@@ -109,7 +107,7 @@ export const PIXI_TEXT_STYLES = {
   BUTTON: new PIXI.TextStyle({
     ...DEFAULT_PIXI_TEXT_STYLE,
     fontSize: FONT_SIZES.medium,
-    fontWeight: PIXI_FONT_WEIGHTS[KoreanTextWeight.SEMIBOLD],
+    fontWeight: PIXI_FONT_WEIGHTS.semibold,
     fill: KOREAN_COLORS.TEXT_PRIMARY,
     align: "center",
   }),
@@ -121,9 +119,9 @@ export const KOREAN_FONT_FAMILY = FONT_FAMILY.KOREAN;
 // Default styles for HTML elements (React components)
 export const HTML_DEFAULT_TEXT_STYLE: React.CSSProperties = {
   fontFamily: KOREAN_FONT_FAMILY,
-  fontSize: `${KOREAN_TEXT_SIZES[KoreanTextSize.MEDIUM]}px`,
+  fontSize: `${KOREAN_TEXT_SIZES.medium}px`,
   color: `#${KOREAN_COLORS.TEXT_PRIMARY.toString(16).padStart(6, "0")}`,
-  fontWeight: KOREAN_FONT_WEIGHTS[KoreanTextWeight.NORMAL], // Fix: Use NORMAL instead of regular
+  fontWeight: KOREAN_FONT_WEIGHTS.normal,
 };
 
 // Fix: Add KOREAN_TYPOGRAPHY export

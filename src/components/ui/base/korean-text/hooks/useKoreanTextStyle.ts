@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { KOREAN_TEXT_CONSTANTS } from "../constants";
-import {
+import type {
   KoreanTextSize,
   KoreanTextWeight,
 } from "../../../../../types/korean-text";
@@ -18,24 +18,20 @@ export const useKoreanTextStyle = (
 ): PIXI.TextStyle => {
   return useMemo(() => {
     const {
-      size = KoreanTextSize.MEDIUM,
-      weight = KoreanTextWeight.NORMAL,
+      size = "medium" as KoreanTextSize, // Fix: Use string literal
+      weight = "normal" as KoreanTextWeight, // Fix: Use string literal
       color = KOREAN_TEXT_CONSTANTS.COLORS.PRIMARY,
       alignment = "left",
     } = options;
 
-    // Fix: Proper size lookup with enum to string conversion
+    // Fix: Proper size lookup with string to uppercase conversion
     const sizeKey =
       size.toUpperCase() as keyof typeof KOREAN_TEXT_CONSTANTS.FONT_SIZES;
     const fontSize = KOREAN_TEXT_CONSTANTS.FONT_SIZES[sizeKey] || 16;
 
-    // Fix: Proper weight conversion for PIXI
+    // Fix: Proper weight conversion for PIXI using string comparison
     const fontWeight =
-      weight === KoreanTextWeight.NORMAL
-        ? "400"
-        : weight === KoreanTextWeight.BOLD
-        ? "700"
-        : "400";
+      weight === "normal" ? "400" : weight === "bold" ? "700" : "400";
 
     return new PIXI.TextStyle({
       fontFamily: KOREAN_TEXT_CONSTANTS.FONT_FAMILIES.PRIMARY,

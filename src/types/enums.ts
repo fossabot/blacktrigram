@@ -159,18 +159,22 @@ export enum HitEffectType {
 
 // Korean text sizing
 export enum KoreanTextSize {
+  XSMALL = "xsmall",
   TINY = "tiny",
   SMALL = "small",
   MEDIUM = "medium",
   LARGE = "large",
   XLARGE = "xlarge",
+  XXLARGE = "xxlarge",
   HUGE = "huge",
+  TITLE = "title",
 }
 
 // Korean text weights
 export enum KoreanTextWeight {
   LIGHT = "light",
   NORMAL = "normal",
+  REGULAR = "regular",
   MEDIUM = "medium",
   SEMIBOLD = "semibold",
   BOLD = "bold",

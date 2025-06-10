@@ -207,3 +207,57 @@ html {
   height: 100vh;
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
 }
+
+/* Test-friendly classes for Cypress */
+.intro-screen {
+  /* Marker class for intro screen detection */
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.training-screen {
+  /* Marker class for training screen detection */
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.combat-screen {
+  /* Marker class for combat screen detection */
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.test-overlay {
+  /* Overlay specifically for testing */
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  background: transparent;
+}
+
+/* Improve visibility for test elements */
+[data-testid] {
+  /* Add subtle outline in dev mode for debugging */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Disable animations during testing */
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

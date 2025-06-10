@@ -14,6 +14,7 @@ export {
   createKoreanPixiText,
   getKoreanTextMetrics,
   formatKoreanText,
+  sizeToPixelValue,
 } from "../utils";
 
 // Fix: For PIXI-specific utilities, we'll create simple wrapper functions
@@ -26,8 +27,8 @@ export const createKoreanPixiTextWithFallback = (
 
 export const createKoreanPixiMultilineText = (
   text: import("../../../../../types/korean-text").KoreanText
-): string => {  // Simple implementation for now
-  return text.korean;
+): string => {
+  return `${text.korean}\n${text.english}`;
 };
 
 // Fix: Export PIXI TextStyle creator function instead of type

@@ -66,6 +66,15 @@ export interface TrainingCombatResult extends CombatResult {
   };
 }
 
+// Fix: Add missing TrainingCombatResult interface
+export interface TrainingCombatResult extends CombatResult {
+  readonly accuracyScore: number;
+  readonly techniqueScore: number;
+  readonly formScore: number;
+  readonly improvementAreas: readonly string[];
+  readonly nextTrainingGoals: readonly string[];
+}
+
 // Fix: Define CombatEventData interface that's used in MatchStatistics
 export interface CombatEventData {
   readonly id: string;

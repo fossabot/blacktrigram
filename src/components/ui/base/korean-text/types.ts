@@ -123,33 +123,34 @@ export const KOREAN_FONT_FAMILY = "'Noto Sans KR', 'Malgun Gothic', sans-serif";
 // Pixi-specific interfaces
 export interface KoreanPixiTextProps {
   readonly text: KoreanText;
+  readonly size?: KoreanTextSize;
+  readonly weight?: KoreanTextWeight;
+  readonly color?: number;
   readonly x?: number;
   readonly y?: number;
   readonly anchor?: number | { x: number; y: number };
+  readonly showRomanization?: boolean;
+  // Fix: Add missing properties
   readonly style?: any; // PIXI.TextStyle
   readonly visible?: boolean;
   readonly alpha?: number;
 }
 
-export interface KoreanTextStyleConfig {
+export interface KoreanTextStyle {
   readonly fontSize: number;
   readonly fontFamily: string;
+  readonly fontWeight: number;
   readonly fill: number;
-  readonly align: "left" | "center" | "right";
-  readonly fontWeight?: string | number;
-  readonly stroke?: number;
-  readonly strokeThickness?: number;
-  readonly letterSpacing?: number;
+  readonly align?: "left" | "center" | "right";
   readonly lineHeight?: number;
 }
 
-// Fix: Add missing KoreanTextStyle export
-export interface KoreanTextStyle {
-  readonly fontFamily: string;
-  readonly fontSize: number;
-  readonly fill: number;
-  readonly align: "left" | "center" | "right";
-  readonly fontWeight?: string | number;
+export interface KoreanTextStyleConfig {
+  readonly size: KoreanTextSize;
+  readonly weight: KoreanTextWeight;
+  readonly color: number;
+  readonly variant?: KoreanTextVariant;
+  readonly emphasis?: KoreanTextEmphasis;
 }
 
 export interface KoreanTextAnimation {

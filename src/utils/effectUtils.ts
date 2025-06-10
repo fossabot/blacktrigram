@@ -5,7 +5,7 @@ import type {
   EffectIntensity,
 } from "../types/effects";
 import type { Position, KoreanText } from "../types";
-import { HitEffectType } from "../types/effects"; // Fix: Import from effects.ts
+import { HitEffectType } from "../types/effects";
 
 /**
  * Create a hit effect for visual feedback
@@ -29,7 +29,7 @@ export function createHitEffect(
     lifespan: duration,
     alpha: 1.0,
     size: 1.0,
-    startTime: Date.now(), // Fix: Add required startTime property
+    startTime: Date.now(),
   };
 }
 
@@ -38,7 +38,7 @@ export function createHitEffect(
  */
 export function getHitEffectColor(type: HitEffectType): number {
   switch (type) {
-    case HitEffectType.CRITICAL_HIT: // Fix: Use correct enum value
+    case HitEffectType.CRITICAL_HIT:
       return 0xff6b00; // Orange
     case HitEffectType.VITAL_POINT_STRIKE:
       return 0xff0000; // Red
@@ -80,10 +80,11 @@ export function createStatusEffect(
  * Calculate effect intensity based on damage
  */
 export function calculateEffectIntensity(damage: number): EffectIntensity {
-  if (damage >= 50) return "critical";
-  if (damage >= 30) return "severe";
-  if (damage >= 15) return "moderate";
-  return "minor";
+  // Fix: Use proper EffectIntensity values from effects.ts
+  if (damage >= 50) return "extreme" as EffectIntensity;
+  if (damage >= 30) return "high" as EffectIntensity;
+  if (damage >= 15) return "medium" as EffectIntensity;
+  return "weak" as EffectIntensity;
 }
 
 /**
@@ -116,7 +117,7 @@ export function applyEffectModifiers(
 
   effects.forEach((effect) => {
     switch (effect.type) {
-      case "bleed": // Fix: Use string literal
+      case "bleed":
         if (statType === "attack") modifier *= 0.9;
         break;
       case "strengthened":
@@ -159,89 +160,158 @@ export function getEffectDescription(
     Record<EffectIntensity, KoreanText>
   > = {
     stun: {
-      minor: { korean: "가벼운 기절", english: "Light Stun" },
+      weak: { korean: "가벼운 기절", english: "Light Stun" },
+      minor: { korean: "경미한 기절", english: "Minor Stun" },
+      medium: { korean: "기절", english: "Stun" },
       moderate: { korean: "기절", english: "Stun" },
-      severe: { korean: "심한 기절", english: "Heavy Stun" },
+      high: { korean: "심한 기절", english: "Heavy Stun" },
+      severe: { korean: "심한 기절", english: "Severe Stun" },
       critical: { korean: "완전 기절", english: "Complete Stun" },
+      extreme: { korean: "완전 기절", english: "Complete Stun" },
+      low: { korean: "약한 기절", english: "Weak Stun" },
     },
     poison: {
+      weak: { korean: "경미한 중독", english: "Minor Poison" },
       minor: { korean: "경미한 중독", english: "Minor Poison" },
+      medium: { korean: "중독", english: "Poison" },
       moderate: { korean: "중독", english: "Poison" },
+      high: { korean: "심한 중독", english: "Severe Poison" },
       severe: { korean: "심한 중독", english: "Severe Poison" },
       critical: { korean: "치명적 중독", english: "Lethal Poison" },
+      extreme: { korean: "치명적 중독", english: "Lethal Poison" },
+      low: { korean: "약한 중독", english: "Weak Poison" },
     },
     weakened: {
-      minor: { korean: "약간 약화", english: "Slightly Weakened" },
+      weak: { korean: "약간 약화", english: "Slightly Weakened" },
+      minor: { korean: "경미한 약화", english: "Minor Weakness" },
+      medium: { korean: "약화", english: "Weakened" },
       moderate: { korean: "약화", english: "Weakened" },
+      high: { korean: "심하게 약화", english: "Severely Weakened" },
       severe: { korean: "심하게 약화", english: "Severely Weakened" },
       critical: { korean: "극도로 약화", english: "Critically Weakened" },
+      extreme: { korean: "극도로 약화", english: "Critically Weakened" },
+      low: { korean: "약간 약화", english: "Slightly Weakened" },
     },
-    // Add other effect types as needed
     burn: {
-      minor: { korean: "가벼운 화상", english: "Minor Burn" },
+      weak: { korean: "가벼운 화상", english: "Minor Burn" },
+      minor: { korean: "경미한 화상", english: "Minor Burn" },
+      medium: { korean: "화상", english: "Burn" },
       moderate: { korean: "화상", english: "Burn" },
+      high: { korean: "심한 화상", english: "Severe Burn" },
       severe: { korean: "심한 화상", english: "Severe Burn" },
       critical: { korean: "치명적 화상", english: "Critical Burn" },
+      extreme: { korean: "치명적 화상", english: "Critical Burn" },
+      low: { korean: "약한 화상", english: "Weak Burn" },
     },
     bleed: {
-      minor: { korean: "가벼운 출혈", english: "Minor Bleeding" },
+      weak: { korean: "가벼운 출혈", english: "Minor Bleeding" },
+      minor: { korean: "경미한 출혈", english: "Minor Bleeding" },
+      medium: { korean: "출혈", english: "Bleeding" },
       moderate: { korean: "출혈", english: "Bleeding" },
-      severe: { korean: "심한 출혈", english: "Heavy Bleeding" },
+      high: { korean: "심한 출혈", english: "Heavy Bleeding" },
+      severe: { korean: "심한 출혈", english: "Severe Bleeding" },
       critical: { korean: "치명적 출혈", english: "Critical Bleeding" },
+      extreme: { korean: "치명적 출혈", english: "Critical Bleeding" },
+      low: { korean: "약한 출혈", english: "Weak Bleeding" },
     },
     exhausted: {
-      minor: { korean: "약간 지침", english: "Slightly Tired" },
+      weak: { korean: "약간 지침", english: "Slightly Tired" },
+      minor: { korean: "경미한 피로", english: "Minor Fatigue" },
+      medium: { korean: "지침", english: "Exhausted" },
       moderate: { korean: "지침", english: "Exhausted" },
+      high: { korean: "심하게 지침", english: "Severely Exhausted" },
       severe: { korean: "심하게 지침", english: "Severely Exhausted" },
       critical: { korean: "완전 탈진", english: "Completely Drained" },
+      extreme: { korean: "완전 탈진", english: "Completely Drained" },
+      low: { korean: "약간 피로", english: "Slightly Fatigued" },
     },
     focused: {
-      minor: { korean: "약간 집중", english: "Slightly Focused" },
+      weak: { korean: "약간 집중", english: "Slightly Focused" },
+      minor: { korean: "경미한 집중", english: "Minor Focus" },
+      medium: { korean: "집중", english: "Focused" },
       moderate: { korean: "집중", english: "Focused" },
+      high: { korean: "깊은 집중", english: "Deeply Focused" },
       severe: { korean: "깊은 집중", english: "Deeply Focused" },
       critical: { korean: "완전 집중", english: "Completely Focused" },
+      extreme: { korean: "완전 집중", english: "Completely Focused" },
+      low: { korean: "약한 집중", english: "Weak Focus" },
     },
     rage: {
-      minor: { korean: "약간 분노", english: "Slightly Enraged" },
+      weak: { korean: "약간 분노", english: "Slightly Enraged" },
+      minor: { korean: "경미한 분노", english: "Minor Rage" },
+      medium: { korean: "분노", english: "Enraged" },
       moderate: { korean: "분노", english: "Enraged" },
+      high: { korean: "맹렬한 분노", english: "Furious" },
       severe: { korean: "맹렬한 분노", english: "Furious" },
       critical: { korean: "광분", english: "Berserk" },
+      extreme: { korean: "광분", english: "Berserk" },
+      low: { korean: "약한 분노", english: "Weak Rage" },
     },
     defensive: {
-      minor: { korean: "약간 방어적", english: "Slightly Defensive" },
+      weak: { korean: "약간 방어적", english: "Slightly Defensive" },
+      minor: { korean: "경미한 방어", english: "Minor Defense" },
+      medium: { korean: "방어적", english: "Defensive" },
       moderate: { korean: "방어적", english: "Defensive" },
+      high: { korean: "높은 방어", english: "Highly Defensive" },
       severe: { korean: "높은 방어", english: "Highly Defensive" },
       critical: { korean: "완벽한 방어", english: "Perfect Defense" },
+      extreme: { korean: "완벽한 방어", english: "Perfect Defense" },
+      low: { korean: "약한 방어", english: "Weak Defense" },
     },
     strengthened: {
-      minor: { korean: "약간 강화", english: "Slightly Strengthened" },
+      weak: { korean: "약간 강화", english: "Slightly Strengthened" },
+      minor: { korean: "경미한 강화", english: "Minor Strength" },
+      medium: { korean: "강화", english: "Strengthened" },
       moderate: { korean: "강화", english: "Strengthened" },
+      high: { korean: "크게 강화", english: "Greatly Strengthened" },
       severe: { korean: "크게 강화", english: "Greatly Strengthened" },
       critical: { korean: "극대 강화", english: "Maximally Strengthened" },
+      extreme: { korean: "극대 강화", english: "Maximally Strengthened" },
+      low: { korean: "약한 강화", english: "Weak Strength" },
     },
     paralysis: {
-      minor: { korean: "가벼운 마비", english: "Minor Paralysis" },
+      weak: { korean: "가벼운 마비", english: "Minor Paralysis" },
+      minor: { korean: "경미한 마비", english: "Minor Paralysis" },
+      medium: { korean: "마비", english: "Paralysis" },
       moderate: { korean: "마비", english: "Paralysis" },
+      high: { korean: "심한 마비", english: "Severe Paralysis" },
       severe: { korean: "심한 마비", english: "Severe Paralysis" },
       critical: { korean: "완전 마비", english: "Complete Paralysis" },
+      extreme: { korean: "완전 마비", english: "Complete Paralysis" },
+      low: { korean: "약한 마비", english: "Weak Paralysis" },
     },
     confusion: {
-      minor: { korean: "약간 혼란", english: "Slight Confusion" },
+      weak: { korean: "약간 혼란", english: "Slight Confusion" },
+      minor: { korean: "경미한 혼란", english: "Minor Confusion" },
+      medium: { korean: "혼란", english: "Confusion" },
       moderate: { korean: "혼란", english: "Confusion" },
+      high: { korean: "심한 혼란", english: "Severe Confusion" },
       severe: { korean: "심한 혼란", english: "Severe Confusion" },
       critical: { korean: "완전 혼란", english: "Complete Confusion" },
+      extreme: { korean: "완전 혼란", english: "Complete Confusion" },
+      low: { korean: "약한 혼란", english: "Weak Confusion" },
     },
     vulnerability: {
-      minor: { korean: "약간 취약", english: "Slightly Vulnerable" },
+      weak: { korean: "약간 취약", english: "Slightly Vulnerable" },
+      minor: { korean: "경미한 취약", english: "Minor Vulnerability" },
+      medium: { korean: "취약", english: "Vulnerable" },
       moderate: { korean: "취약", english: "Vulnerable" },
+      high: { korean: "매우 취약", english: "Very Vulnerable" },
       severe: { korean: "매우 취약", english: "Very Vulnerable" },
       critical: { korean: "극도로 취약", english: "Extremely Vulnerable" },
+      extreme: { korean: "극도로 취약", english: "Extremely Vulnerable" },
+      low: { korean: "약한 취약", english: "Weak Vulnerability" },
     },
     stamina_drain: {
-      minor: { korean: "체력 소모", english: "Stamina Drain" },
+      weak: { korean: "체력 소모", english: "Stamina Drain" },
+      minor: { korean: "경미한 체력 소모", english: "Minor Stamina Drain" },
+      medium: { korean: "체력 고갈", english: "Stamina Depletion" },
       moderate: { korean: "체력 고갈", english: "Stamina Depletion" },
+      high: { korean: "심한 체력 고갈", english: "Severe Stamina Loss" },
       severe: { korean: "심한 체력 고갈", english: "Severe Stamina Loss" },
       critical: { korean: "완전 체력 고갈", english: "Complete Stamina Loss" },
+      extreme: { korean: "완전 체력 고갈", english: "Complete Stamina Loss" },
+      low: { korean: "약한 체력 소모", english: "Weak Stamina Drain" },
     },
   };
 
@@ -272,10 +342,12 @@ export function updateEffect(
  */
 export function combineEffects(effects: StatusEffect[]): StatusEffect[] {
   const combinedEffects: StatusEffect[] = [];
-  const effectsByType = new Map<EffectType, StatusEffect[]>();
+  // Fix: Use string type instead of EffectType since StatusEffect.type is string
+  const effectsByType = new Map<string, StatusEffect[]>();
 
   // Group effects by type
   effects.forEach((effect) => {
+    // Fix: effect.type is string, so use string methods
     if (!effectsByType.has(effect.type)) {
       effectsByType.set(effect.type, []);
     }
@@ -300,4 +372,130 @@ export function combineEffects(effects: StatusEffect[]): StatusEffect[] {
   });
 
   return combinedEffects;
+}
+
+/**
+ * Remove expired effects
+ */
+export function removeExpiredEffects(effects: StatusEffect[]): StatusEffect[] {
+  const currentTime = Date.now();
+  return effects.filter((effect) => effect.endTime > currentTime);
+}
+
+/**
+ * Create effect from Korean text
+ */
+export function createEffectFromKoreanText(
+  koreanText: string,
+  englishText: string,
+  duration: number = 3000
+): StatusEffect {
+  // Fix: Provide all required arguments
+  return createStatusEffect(
+    koreanText.toLowerCase(),
+    "stun" as EffectType, // Use proper EffectType
+    "medium" as EffectIntensity,
+    duration,
+    {
+      korean: koreanText,
+      english: englishText,
+    }
+  );
+}
+
+/**
+ * Get effect display text
+ */
+export function getEffectDisplayText(
+  effect: StatusEffect,
+  preferKorean: boolean = true
+): string {
+  return preferKorean ? effect.description.korean : effect.description.english;
+}
+
+// Fix: Korean martial arts specific effect utilities
+export function createKoreanStatusEffect(
+  koreanName: string,
+  englishName: string,
+  intensity: EffectIntensity = "medium" as EffectIntensity,
+  duration: number = 3000
+): StatusEffect {
+  return createStatusEffect(
+    koreanName.toLowerCase().replace(/\s+/g, "_"),
+    "stun" as EffectType, // This is correct - keep as is
+    intensity,
+    duration,
+    { korean: koreanName, english: englishName }
+  );
+}
+
+export function createVitalPointEffect(
+  vitalPointName: string,
+  effectType: EffectType,
+  duration: number = 5000
+): StatusEffect {
+  return createStatusEffect(
+    `vital_point_${effectType}`,
+    effectType, // This is correct - use the parameter directly
+    "medium" as EffectIntensity,
+    duration,
+    {
+      korean: `${vitalPointName} 급소 타격`,
+      english: `${vitalPointName} vital point strike`,
+    }
+  );
+}
+
+export function createTrigramEffect(
+  stanceName: string,
+  effectType: EffectType,
+  duration: number = 2000
+): StatusEffect {
+  return createStatusEffect(
+    `trigram_${stanceName}_${effectType}`,
+    effectType, // This is correct - use the parameter directly
+    "medium" as EffectIntensity,
+    duration,
+    {
+      korean: `${stanceName}괘 효과`,
+      english: `${stanceName} trigram effect`,
+    }
+  );
+}
+
+// Fix: Group effects by type using proper typing
+export function groupEffectsByTypeEnum(
+  effects: StatusEffect[]
+): Map<EffectType, StatusEffect[]> {
+  const effectsByType = new Map<EffectType, StatusEffect[]>();
+
+  for (const effect of effects) {
+    // Cast string to EffectType for enum operations
+    const effectType = effect.type as EffectType;
+    if (!effectsByType.has(effectType)) {
+      effectsByType.set(effectType, []);
+    }
+    effectsByType.get(effectType)!.push(effect);
+  }
+
+  return effectsByType;
+}
+
+/**
+ * Group effects by type using string keys (works with StatusEffect.type)
+ */
+export function groupEffectsByType(
+  effects: StatusEffect[]
+): Map<string, StatusEffect[]> {
+  const effectsByType = new Map<string, StatusEffect[]>();
+
+  for (const effect of effects) {
+    // Fix: Use string type directly since StatusEffect.type is string
+    if (!effectsByType.has(effect.type)) {
+      effectsByType.set(effect.type, []);
+    }
+    effectsByType.get(effect.type)!.push(effect);
+  }
+
+  return effectsByType;
 }
