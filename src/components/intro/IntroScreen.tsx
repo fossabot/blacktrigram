@@ -12,6 +12,12 @@ export interface IntroScreenProps {
   readonly onMenuSelect: (mode: GameMode) => void;
 }
 
+const MENU_ITEMS: { mode: GameMode; korean: string; english: string }[] = [
+  { mode: GameMode.VERSUS, korean: "대전", english: "Versus" },
+  { mode: GameMode.TRAINING, korean: "훈련", english: "Training" },
+  { mode: GameMode.PRACTICE, korean: "연습", english: "Practice" },
+];
+
 export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
   const audio = useAudio();
   const [currentSection, setCurrentSection] = useState<string>("menu");
@@ -21,6 +27,9 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
     []
   );
   const introMusicStarted = useRef(false);
+
+  // Menu navigation state
+  const [selectedMenuIndex, setSelectedMenuIndex] = useState(0);
 
   // Load background and logo images using PIXI.Assets (PixiJS v7+)
   useEffect(() => {
@@ -89,38 +98,62 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
         return;
       }
       if (currentSection === "menu") {
-        switch (event.key) {
-          case "1":
-            audio.playSoundEffect("menu_select");
-            onMenuSelect(GameMode.VERSUS);
-            break;
-          case "2":
-            audio.playSoundEffect("menu_select");
-            onMenuSelect(GameMode.TRAINING);
-            break;
-          case "3":
-            audio.playSoundEffect("menu_select");
-            onMenuSelect(GameMode.PRACTICE);
-            break;
-          case "F1":
-            setCurrentSection("controls");
-            audio.playSoundEffect("menu_select");
-            break;
-          case "4":
-            setCurrentSection("philosophy");
-            audio.playSoundEffect("menu_select");
-            break;
+        if (event.key === "ArrowUp") {
+          setSelectedMenuIndex((prev) => {
+            const next = prev === 0 ? MENU_ITEMS.length - 1 : prev - 1;
+            audio.playSoundEffect("menu_hover");
+            return next;
+          });
+        } else if (event.key === "ArrowDown") {
+          setSelectedMenuIndex((prev) => {
+            const next = prev === MENU_ITEMS.length - 1 ? 0 : prev + 1;
+            audio.playSoundEffect("menu_hover");
+            return next;
+          });
+        } else if (event.key === " " || event.key === "Enter") {
+          audio.playSoundEffect("menu_select");
+          onMenuSelect(MENU_ITEMS[selectedMenuIndex].mode);
+        } else {
+          switch (event.key) {
+            case "1":
+              setSelectedMenuIndex(0);
+              audio.playSoundEffect("menu_hover");
+              audio.playSoundEffect("menu_select");
+              onMenuSelect(GameMode.VERSUS);
+              break;
+            case "2":
+              setSelectedMenuIndex(1);
+              audio.playSoundEffect("menu_hover");
+              audio.playSoundEffect("menu_select");
+              onMenuSelect(GameMode.TRAINING);
+              break;
+            case "3":
+              setSelectedMenuIndex(2);
+              audio.playSoundEffect("menu_hover");
+              audio.playSoundEffect("menu_select");
+              onMenuSelect(GameMode.PRACTICE);
+              break;
+            case "F1":
+              setCurrentSection("controls");
+              audio.playSoundEffect("menu_select");
+              break;
+            case "4":
+              setCurrentSection("philosophy");
+              audio.playSoundEffect("menu_select");
+              break;
+          }
         }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
-    window.focus();
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onMenuSelect, currentSection, audio]);
+  }, [onMenuSelect, currentSection, audio, selectedMenuIndex]);
 
   // Menu click handler with audio feedback
   const handleMenuClick = useCallback(
     (mode: GameMode) => {
+      const idx = MENU_ITEMS.findIndex((item) => item.mode === mode);
+      setSelectedMenuIndex(idx >= 0 ? idx : 0);
       audio.playSoundEffect("menu_select");
       onMenuSelect(mode);
     },
@@ -166,7 +199,12 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
   }, []);
 
   return (
-    <pixiContainer width={1200} height={800} data-testid="intro-screen">
+    <pixiContainer
+      width={1200}
+      height={800}
+      data-testid="intro-screen"
+      tabIndex={0}
+    >
       {/* Layered background: grid, bg image, archetype overlays */}
       <pixiGraphics draw={drawBackground} />
       {bgTexture && (
@@ -252,9 +290,11 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
           default:
             return (
               <MenuSection
-                selectedMode={GameMode.VERSUS}
+                selectedMode={MENU_ITEMS[selectedMenuIndex].mode}
                 onModeSelect={handleMenuClick}
-                onStartGame={() => handleMenuClick(GameMode.VERSUS)}
+                onStartGame={() =>
+                  handleMenuClick(MENU_ITEMS[selectedMenuIndex].mode)
+                }
                 onShowPhilosophy={handleShowPhilosophy}
                 onShowControls={handleShowControls}
                 width={1200}

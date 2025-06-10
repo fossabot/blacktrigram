@@ -1,5 +1,4 @@
 import React from "react";
-import { usePixiExtensions } from "../../../utils/pixiExtensions";
 import type { MenuSectionProps } from "../../../types/components";
 import { KOREAN_COLORS } from "../../../types/constants";
 import { GameMode } from "../../../types/enums";
@@ -16,8 +15,6 @@ export const MenuSection: React.FC<MenuSectionProps> = ({
   width = 400,
   height = 500,
 }) => {
-  usePixiExtensions();
-
   const menuItems = [
     { mode: GameMode.VERSUS, korean: "대전", english: "Versus" },
     { mode: GameMode.TRAINING, korean: "훈련", english: "Training" },
