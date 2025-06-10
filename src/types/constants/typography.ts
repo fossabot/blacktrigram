@@ -71,7 +71,7 @@ export const PIXI_FONT_WEIGHTS: Record<string, PIXI.TextStyleFontWeight> = {
   heavy: "900",
 };
 
-// Default PIXI TextStyle
+// Default PIXI TextStyle - Fix property names to match PixiJS v8
 export const DEFAULT_PIXI_TEXT_STYLE: Partial<PIXI.TextStyleOptions> = {
   fontFamily: FONT_FAMILY.KOREAN,
   fontSize: KOREAN_TEXT_SIZES.medium,
@@ -79,9 +79,17 @@ export const DEFAULT_PIXI_TEXT_STYLE: Partial<PIXI.TextStyleOptions> = {
   align: "left",
   wordWrap: false,
   fontWeight: PIXI_FONT_WEIGHTS.normal,
+  // Fix: Use correct PixiJS v8 drop shadow properties
+  dropShadow: {
+    alpha: 0.5,
+    angle: Math.PI / 6,
+    blur: 2,
+    color: 0x000000,
+    distance: 2,
+  },
 };
 
-// PIXI Text Style Collections
+// PIXI Text Style Collections - Fix invalid properties
 export const PIXI_TEXT_STYLES = {
   DEFAULT: new PIXI.TextStyle(DEFAULT_PIXI_TEXT_STYLE),
   TITLE: new PIXI.TextStyle({
@@ -91,6 +99,14 @@ export const PIXI_TEXT_STYLES = {
     fontWeight: PIXI_FONT_WEIGHTS.bold,
     fill: KOREAN_COLORS.ACCENT_PRIMARY,
     align: "center",
+    // Fix: Use correct PixiJS v8 drop shadow format
+    dropShadow: {
+      alpha: 0.8,
+      angle: Math.PI / 6,
+      blur: 3,
+      color: 0x000000,
+      distance: 3,
+    },
   }),
   SUBTITLE: new PIXI.TextStyle({
     ...DEFAULT_PIXI_TEXT_STYLE,

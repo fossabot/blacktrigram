@@ -302,8 +302,8 @@ export const estimateKoreanReadingTime = (text: KoreanText): number => {
 
 export const normalizeKoreanSpacing = (text: string): string => {
   return text
-    .replace(/\s+/g, " ")
-    .replace(/\s*([.,!?])\s*/g, "$1 ")
+    .replace(/\s+/g, " ") // Replace multiple spaces with single space
+    .replace(/([ㄱ-ㅎㅏ-ㅣ가-힣])\s+([ㄱ-ㅎㅏ-ㅣ가-힣])/g, "$1 $2") // Normalize Korean spacing
     .trim();
 };
 

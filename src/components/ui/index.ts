@@ -1,27 +1,32 @@
 /**
- * UI components exports for Black Trigram Korean martial arts game
+ * UI Components exports for Black Trigram Korean martial arts game
  */
 
-// Core UI components
-export { ArchetypeDisplay } from "./ArchetypeDisplay";
-export { EndScreen } from "./EndScreen";
+// Base UI components
+export * from "./base";
+
+// Game-specific UI components
 export { HealthBar } from "./HealthBar";
-export { StanceIndicator } from "./StanceIndicator";
-export { ProgressTracker } from "./ProgressTracker";
 export { RoundTimer } from "./RoundTimer";
-export { ScoreDisplay } from "./ScoreDisplay";
+export { StanceIndicator } from "./StanceIndicator";
 export { TrigramWheel } from "./TrigramWheel";
+export { ProgressTracker } from "./ProgressTracker";
+export { ScoreDisplay } from "./ScoreDisplay";
+export { HitEffectsLayer } from "./HitEffectsLayer";
+export { EndScreen } from "./EndScreen";
+export { ArchetypeDisplay } from "./ArchetypeDisplay";
 export { KoreanHeader } from "./KoreanHeader";
 
-// Player components
+// Player-related UI
 export { Player } from "./Player";
 export { PlayerVisuals } from "./PlayerVisuals";
 
-// Hit effects
-export { HitEffectsLayer } from "./HitEffectsLayer";
-
-// Base components
-export * from "./base";
+// Default exports for convenience
+export { default as HealthBarDefault } from "./HealthBar";
+export { default as RoundTimerDefault } from "./RoundTimer";
+export { default as StanceIndicatorDefault } from "./StanceIndicator";
+export { default as TrigramWheelDefault } from "./TrigramWheel";
+export { default as EndScreenDefault } from "./EndScreen";
 
 // Re-export types
 export type {

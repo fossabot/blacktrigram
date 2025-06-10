@@ -1,7 +1,8 @@
 import { render } from "@testing-library/react";
+import { vi } from "vitest"; // Fix: Add missing vi import
 import { Application } from "@pixi/react";
 import { TrigramWheel } from "../TrigramWheel";
-import { TrigramStance } from "../../../types/enums"; // Fix: Import enum
+import { TrigramStance } from "../../../types/enums";
 
 describe("TrigramWheel", () => {
   it("renders without crashing", () => {
@@ -10,8 +11,7 @@ describe("TrigramWheel", () => {
         <TrigramWheel
           currentStance={TrigramStance.GEON}
           onStanceSelect={vi.fn()}
-        />{" "}
-        {/* Fix: Use enum */}
+        />
       </Application>
     );
   });
@@ -23,8 +23,7 @@ describe("TrigramWheel", () => {
         <TrigramWheel
           currentStance={TrigramStance.GEON}
           onStanceSelect={mockOnStanceSelect}
-        />{" "}
-        {/* Fix: Use enum */}
+        />
       </Application>
     );
     // Test interactions

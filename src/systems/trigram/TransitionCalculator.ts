@@ -154,7 +154,7 @@ export class TransitionCalculator {
    */
   static calculatePathCost(path: TrigramStance[]): TrigramTransitionCost {
     if (path.length <= 1) {
-      return { ki: 0, stamina: 0, timeMilliseconds: 0 };
+      return { ki: 0, stamina: 0, timeMilliseconds: 0 }; // Fix: Use timeMilliseconds
     }
 
     let totalCost = { ki: 0, stamina: 0, timeMilliseconds: 0 };
@@ -163,7 +163,7 @@ export class TransitionCalculator {
       const stepCost = this.calculateCost(path[i], path[i + 1]);
       totalCost.ki += stepCost.ki;
       totalCost.stamina += stepCost.stamina;
-      totalCost.timeMilliseconds += stepCost.timeMilliseconds; // Fix property name
+      totalCost.timeMilliseconds += stepCost.timeMilliseconds;
     }
 
     return totalCost;

@@ -8,6 +8,7 @@ import type {
   TrigramStance,
   HitEffect,
 } from "./index";
+import type { GameMode } from "./enums";
 
 // Base UI component props
 export interface BaseUIProps {
@@ -124,16 +125,21 @@ export interface TrainingScreenProps {
 
 // Component props that might be missing
 export interface CombatScreenProps {
-  readonly players: readonly [PlayerState, PlayerState];
+  readonly players: readonly PlayerState[];
   readonly onPlayerUpdate: (
-    index: 0 | 1,
+    playerIndex: number,
     updates: Partial<PlayerState>
   ) => void;
   readonly currentRound: number;
   readonly timeRemaining: number;
   readonly isPaused: boolean;
+  readonly onReturnToMenu: () => void;
+  readonly onGameEnd: (winner: number) => void;
+  readonly gameMode?: GameMode;
   readonly width?: number;
   readonly height?: number;
+  readonly x?: number;
+  readonly y?: number;
 }
 
 export interface HealthBarProps {

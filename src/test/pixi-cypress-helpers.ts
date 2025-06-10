@@ -31,6 +31,15 @@ export function exposePixiAppForTesting(app: PIXI.Application): void {
   if (typeof window !== "undefined") {
     window.blackTrigramApp = app;
     window.pixiApp = app; // Compatibility with article approach
+    (window as any).__PIXI_APP__ = app;
+
+    // Also expose for Korean martial arts specific testing
+    (window as any).blackTrigramApp = {
+      pixiApp: app,
+      version: "1.0.0",
+      gameState: "intro",
+    };
+
     console.log("🎯 PixiJS app exposed for testing");
   }
 }
@@ -70,7 +79,7 @@ export function findPixiObject(
     return container;
   }
 
-  // Recursively check children
+  // Search children
   for (const child of container.children) {
     if (child instanceof PIXI.Container) {
       const found = findPixiObject(child, requiredData);
@@ -105,4 +114,42 @@ export function findAllPixiObjects(
   }
 
   return results;
+}
+
+/**
+ * Mock WebGL context for testing
+ */
+export function mockWebGLContext(): Partial<WebGLRenderingContext> {
+  const canvas = document.createElement("canvas");
+  const context: Partial<WebGLRenderingContext> = {
+    getExtension: () => null,
+    getParameter: () => 4096,
+    createProgram: () => ({} as WebGLProgram),
+    createShader: () => ({} as WebGLShader),
+    attachShader: () => {},
+    linkProgram: () => {},
+    useProgram: () => {},
+    getUniformLocation: () => ({} as WebGLUniformLocation),
+    uniform1f: () => {},
+    uniform2f: () => {},
+    uniform3f: () => {},
+    uniform4f: () => {},
+    uniformMatrix4fv: () => {},
+    createBuffer: () => ({} as WebGLBuffer),
+    bindBuffer: () => {},
+    bufferData: () => {},
+    enableVertexAttribArray: () => {},
+    vertexAttribPointer: () => {},
+    drawArrays: () => {},
+    clear: () => {},
+    clearColor: () => {},
+    enable: () => {},
+    disable: () => {},
+    blendFunc: () => {},
+    viewport: () => {},
+  };
+
+  // Fix: Use proper type assertion for canvas getContext
+  (canvas as any).getContext = () => context;
+  return context;
 }

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from "react";
-import type { CombatScreenProps } from "../../types/components";
+import type { CombatScreenProps } from "../../types/combat"; // Fix: Import from combat types
 import type { PlayerState } from "../../types/player";
 import type { Position } from "../../types/common";
 import type { HitEffect } from "../../types/effects";
@@ -8,15 +8,17 @@ import { CombatControls } from "./components/CombatControls";
 import { CombatHUD } from "./components/CombatHUD";
 import { HitEffectsLayer } from "../ui/HitEffectsLayer";
 import { DojangBackground } from "../game/DojangBackground";
+import { CombatStats, PlayerStatusPanel } from "./components/";
+import { KOREAN_COLORS } from "../../types/constants";
 
 export const CombatScreen: React.FC<CombatScreenProps> = ({
   players,
-  onPlayerUpdate, // Fix: Use this parameter
+  onPlayerUpdate,
   currentRound,
   timeRemaining,
   isPaused,
-  onReturnToMenu, // Fix: Use this parameter
-  onGameEnd, // Fix: Use this parameter
+  onReturnToMenu,
+  onGameEnd,
   width = 1200,
   height = 800,
   x = 0,
@@ -24,6 +26,9 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
 }) => {
   const [hitEffects, setHitEffects] = useState<HitEffect[]>([]);
   const [isExecutingTechnique, setIsExecutingTechnique] = useState(false);
+  const [selectedPlayer, setSelectedPlayer] = useState<number | null>(null);
+  // Fix: Remove unused setCombatLog since it's never used
+  const [combatLog] = useState<string[]>([]);
 
   const createHitEffect = useCallback(
     (
@@ -41,6 +46,7 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
       position,
       intensity,
       startTime: Date.now(),
+      // Fix: Remove readonly text assignment - handle in effects layer
     }),
     []
   );
@@ -133,6 +139,7 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
 
   return (
     <pixiContainer x={x} y={y} data-testid="combat-screen">
+      {/* Enhanced Background with Korean Pattern */}
       <DojangBackground
         width={width}
         height={height}
@@ -140,17 +147,37 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         animate={true}
       />
 
+      {/* Korean Traditional Pattern Overlay */}
+      <pixiGraphics
+        draw={(g) => {
+          g.clear();
+          g.lineStyle(1, KOREAN_COLORS.ACCENT_GOLD, 0.1);
+          // Draw traditional Korean taegeuk pattern subtly
+          for (let i = 0; i < width; i += 150) {
+            for (let j = 0; j < height; j += 150) {
+              g.drawCircle(i + 75, j + 75, 40);
+              g.moveTo(i + 35, j + 75);
+              g.arc(i + 75, j + 75, 40, Math.PI, 0);
+              g.arc(i + 75, j + 55, 20, 0, Math.PI, true);
+              g.arc(i + 75, j + 95, 20, Math.PI, 0, true);
+            }
+          }
+        }}
+      />
+
+      {/* Main Combat Arena */}
       <CombatArena
         players={validatedPlayers}
         width={width}
-        height={height}
+        height={height * 0.75}
+        y={height * 0.15}
         onPlayerClick={(playerIndex) => {
-          // Fix: Use parameter
-          console.log(`Player ${playerIndex} clicked`);
+          setSelectedPlayer(playerIndex);
           addHitEffect("hit", { x: 100 + playerIndex * 200, y: 200 });
         }}
       />
 
+      {/* Enhanced Top HUD with Complete Player Info */}
       <CombatHUD
         player1={validatedPlayers[0]}
         player2={validatedPlayers[1]}
@@ -159,9 +186,43 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         maxRounds={3}
         isPaused={isPaused}
         width={width}
-        height={100}
+        height={120}
+        y={0}
       />
 
+      {/* Left Player Status Panel - Comprehensive Data */}
+      <PlayerStatusPanel
+        player={validatedPlayers[0]}
+        position="left"
+        x={20}
+        y={height * 0.2}
+        width={180}
+        height={300}
+        isSelected={selectedPlayer === 0}
+      />
+
+      {/* Right Player Status Panel - Comprehensive Data */}
+      <PlayerStatusPanel
+        player={validatedPlayers[1]}
+        position="right"
+        x={width - 200}
+        y={height * 0.2}
+        width={180}
+        height={300}
+        isSelected={selectedPlayer === 1}
+      />
+
+      {/* Combat Statistics Panel */}
+      <CombatStats
+        players={validatedPlayers}
+        combatLog={combatLog}
+        x={width / 2 - 150}
+        y={height - 180}
+        width={300}
+        height={160}
+      />
+
+      {/* Enhanced Combat Controls */}
       <CombatControls
         onAttack={handleAttack}
         onDefend={handleDefend}
@@ -172,41 +233,92 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         onTechniqueExecute={handleTechniqueExecute}
         onGuard={handleGuard}
         isExecutingTechnique={isExecutingTechnique}
-        width={300}
-        height={100}
-        x={0}
-        y={height - 100}
+        width={400}
+        height={120}
+        x={20}
+        y={height - 140}
       />
 
+      {/* Hit Effects Layer */}
       <HitEffectsLayer
         effects={hitEffects}
         onEffectComplete={handleEffectComplete}
       />
 
-      {/* Return to Menu Button */}
-      <pixiContainer x={width - 120} y={20}>
+      {/* Enhanced Return Menu Button */}
+      <pixiContainer x={width - 150} y={20}>
         <pixiGraphics
           draw={(g) => {
             g.clear();
-            g.beginFill(0x333333, 0.8);
-            g.drawRoundedRect(0, 0, 100, 40, 5);
+            g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.9);
+            g.lineStyle(2, KOREAN_COLORS.ACCENT_GOLD, 0.8);
+            g.drawRoundedRect(0, 0, 120, 45, 8);
             g.endFill();
           }}
           interactive={true}
-          onPointerDown={onReturnToMenu} // Fix: Use parameter
+          onPointerDown={onReturnToMenu}
         />
         <pixiText
-          text="메뉴"
+          text="메뉴로"
           style={{
             fontSize: 14,
-            fill: 0xffffff,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
+            align: "center",
+            fontWeight: "bold",
+          }}
+          x={60}
+          y={15}
+          anchor={0.5}
+        />
+        <pixiText
+          text="Return"
+          style={{
+            fontSize: 10,
+            fill: KOREAN_COLORS.TEXT_SECONDARY,
             align: "center",
           }}
-          x={50}
-          y={20}
+          x={60}
+          y={30}
           anchor={0.5}
         />
       </pixiContainer>
+
+      {/* Pause Overlay */}
+      {isPaused && (
+        <pixiContainer x={0} y={0}>
+          <pixiGraphics
+            draw={(g) => {
+              g.clear();
+              g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.8);
+              g.drawRect(0, 0, width, height);
+              g.endFill();
+            }}
+          />
+          <pixiText
+            text="일시 정지"
+            style={{
+              fontSize: 48,
+              fill: KOREAN_COLORS.ACCENT_GOLD,
+              fontWeight: "bold",
+              align: "center",
+            }}
+            x={width / 2}
+            y={height / 2 - 30}
+            anchor={0.5}
+          />
+          <pixiText
+            text="PAUSED"
+            style={{
+              fontSize: 24,
+              fill: KOREAN_COLORS.TEXT_SECONDARY,
+              align: "center",
+            }}
+            x={width / 2}
+            y={height / 2 + 20}
+            anchor={0.5}
+          />
+        </pixiContainer>
+      )}
     </pixiContainer>
   );
 };

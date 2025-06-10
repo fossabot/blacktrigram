@@ -62,6 +62,18 @@ export interface PlayerState {
   readonly hitsLanded: number;
   readonly perfectStrikes: number;
   readonly vitalPointHits: number;
+
+  // Fix: Add missing properties
+  readonly misses?: number;
+  readonly accuracy?: number;
+  readonly comboCount?: number;
+  readonly maxCombo?: number;
+  readonly roundsWon?: number;
+  readonly matchesWon?: number;
+  readonly experiencePoints?: number;
+  readonly rank?: string;
+  readonly wins?: number;
+  readonly losses?: number;
 }
 
 // Player creation data

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest"; // Fix: Remove unused vi import
+import { describe, it, expect, beforeEach } from "vitest";
 import { StanceManager } from "./StanceManager";
 import { TrigramStance, PlayerArchetype } from "../../types/enums";
 import { createPlayerFromArchetype } from "../../utils/playerUtils";
@@ -9,7 +9,6 @@ describe("StanceManager", () => {
   let player: PlayerState;
 
   beforeEach(() => {
-    // Fix: Remove constructor argument
     stanceManager = new StanceManager();
     player = createPlayerFromArchetype(PlayerArchetype.MUSA, 0);
   });
@@ -94,14 +93,15 @@ describe("StanceManager", () => {
     it("should respect cooldown periods", () => {
       const recentChangePlayer = {
         ...player,
-        lastStanceChangeTime: Date.now() - 50,
+        lastStanceChangeTime: Date.now() - 50, // Recent change
       };
 
       const canChange = stanceManager.canChangeStance(
         recentChangePlayer,
-        TrigramStance.SON
+        TrigramStance.TAE
       );
 
+      // Should respect cooldown
       expect(canChange).toBe(false);
     });
   });

@@ -9,7 +9,6 @@ import type { KoreanTechnique } from "../../types/combat";
 describe("KoreanTechniquesSystem", () => {
   describe("getAllTechniques", () => {
     it("should return array of techniques", () => {
-      // Fix: Use static method
       const techniques = KoreanTechniquesSystem.getAllTechniques();
 
       expect(Array.isArray(techniques)).toBe(true);
@@ -17,11 +16,9 @@ describe("KoreanTechniquesSystem", () => {
     });
 
     it("should return techniques with Korean names", () => {
-      // Fix: Use static method
       const techniques = KoreanTechniquesSystem.getAllTechniques();
 
       techniques.forEach((technique: KoreanTechnique) => {
-        // Fix: Add type annotation
         expect(technique.name.korean).toBeDefined();
         expect(technique.name.english).toBeDefined();
         expect(technique.koreanName).toBeDefined();
@@ -30,11 +27,9 @@ describe("KoreanTechniquesSystem", () => {
     });
 
     it("should have valid technique properties", () => {
-      // Fix: Use static method
       const techniques = KoreanTechniquesSystem.getAllTechniques();
 
       techniques.forEach((technique: KoreanTechnique) => {
-        // Fix: Add type annotation
         expect(technique.id).toBeDefined();
         expect(technique.stance).toBeDefined();
         expect(Object.values(TrigramStance)).toContain(technique.stance);
@@ -48,7 +43,6 @@ describe("KoreanTechniquesSystem", () => {
 
   describe("getTechniquesByArchetype", () => {
     it("should return archetype-specific techniques", () => {
-      // Fix: Use static method
       const techniques = KoreanTechniquesSystem.getTechniquesByArchetype(
         PlayerArchetype.MUSA
       );
@@ -64,7 +58,6 @@ describe("KoreanTechniquesSystem", () => {
 
     it("should handle all archetypes", () => {
       Object.values(PlayerArchetype).forEach((archetype) => {
-        // Fix: Use static method
         const techniques =
           KoreanTechniquesSystem.getTechniquesByArchetype(archetype);
         expect(Array.isArray(techniques)).toBe(true);
@@ -74,11 +67,9 @@ describe("KoreanTechniquesSystem", () => {
 
   describe("getTechniqueById", () => {
     it("should return technique by ID", () => {
-      // Fix: Use static method
       const allTechniques = KoreanTechniquesSystem.getAllTechniques();
       if (allTechniques.length > 0) {
         const firstTechnique = allTechniques[0];
-        // Fix: Use static method
         const foundTechnique = KoreanTechniquesSystem.getTechniqueById(
           firstTechnique.id
         );
@@ -89,14 +80,13 @@ describe("KoreanTechniquesSystem", () => {
     });
 
     it("should return undefined for invalid ID", () => {
-      // Fix: Use static method
       const technique = KoreanTechniquesSystem.getTechniqueById("invalid_id");
-
       expect(technique).toBeUndefined();
     });
   });
 });
 
+// Fix: Keep standalone function tests
 describe("getTechniquesByStance", () => {
   it("should return techniques for specific stance", () => {
     const techniques = getTechniquesByStance(TrigramStance.GEON);
@@ -115,7 +105,6 @@ describe("getTechniquesByStance", () => {
   });
 
   it("should return empty array for stance with no techniques", () => {
-    // Test edge case - some stances might not have techniques defined yet
     const techniques = getTechniquesByStance(TrigramStance.GON);
     expect(Array.isArray(techniques)).toBe(true);
   });

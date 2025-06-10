@@ -49,7 +49,7 @@ describe("TrigramSystem", () => {
 
       expect(cost.ki).toBe(0);
       expect(cost.stamina).toBe(0);
-      expect(cost.timeMilliseconds).toBe(0);
+      expect(cost.timeMilliseconds).toBe(0); // Fix: Use timeMilliseconds instead of time
     });
 
     it("should return positive cost for different stances", () => {
@@ -61,7 +61,7 @@ describe("TrigramSystem", () => {
 
       expect(cost.ki).toBeGreaterThan(0);
       expect(cost.stamina).toBeGreaterThan(0);
-      expect(cost.timeMilliseconds).toBeGreaterThan(0);
+      expect(cost.timeMilliseconds).toBeGreaterThan(0); // Fix: Use timeMilliseconds instead of time
     });
   });
 

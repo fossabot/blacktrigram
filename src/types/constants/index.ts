@@ -26,6 +26,18 @@ export { KOREAN_COLORS as default } from "./colors";
 // Fix: Export COMBAT_CONTROLS from controls
 export { COMBAT_CONTROLS } from "./controls";
 
+// Fix: Add missing KOREAN_TYPOGRAPHY export
+export { KOREAN_TYPOGRAPHY } from "./typography";
+
+// Fix: Add missing PIXI_FONT_WEIGHTS export
+export { PIXI_FONT_WEIGHTS } from "./typography";
+
+// Fix: Add missing ANIMATION_DURATIONS export
+export { ANIMATION_DURATIONS } from "./animations";
+
+// Fix: Add missing VITAL_POINT_REGIONS export
+export { VITAL_POINT_REGIONS } from "./vital-points";
+
 export const ARCHETYPE_TECHNIQUE_BONUSES: Record<
   string,
   Record<string, number>
@@ -87,3 +99,6 @@ export * from "./trigram";
 export * from "./techniques";
 export * from "./player";
 export * from "./vital-points";
+
+// Fix: Re-export properly to avoid circular dependencies
+export type { TrigramStanceData } from "./trigram";
