@@ -118,58 +118,47 @@ Cypress.Commands.add("waitForCanvasReady", () => {
   // Wait for the app container
   cy.get('[data-testid="app-container"]', { timeout: 10000 }).should("exist");
 
-  // Wait for canvas to be present
-  cy.get("canvas", { timeout: 8000 }).should("be.visible");
+  // Wait for canvas to be present and have some dimensions
+  cy.get("canvas", { timeout: 10000 })
+    .should("exist")
+    .and("be.visible")
+    .and(($canvas) => {
+      const canvas = $canvas[0] as HTMLCanvasElement;
+      expect(canvas.width).to.be.greaterThan(0);
+      expect(canvas.height).to.be.greaterThan(0);
+    });
 
-  // Additional wait for rendering
-  cy.wait(1000);
+  // Wait for intro screen to be ready
+  cy.get('[data-testid="intro-screen"]', { timeout: 8000 }).should("exist");
 
-  // Check if we can detect the current screen
-  cy.get("body").then(($body) => {
-    if ($body.find('[data-testid="intro-screen"], .intro-screen').length > 0) {
-      cy.log("Intro screen detected");
-    } else if (
-      $body.find('[data-testid="training-screen"], .training-screen').length > 0
-    ) {
-      cy.log("Training screen detected");
-    } else if (
-      $body.find('[data-testid="combat-screen"], .combat-screen').length > 0
-    ) {
-      cy.log("Combat screen detected");
-    } else {
-      cy.log("Screen type not detected, but canvas is ready");
-    }
-  });
+  // Small delay for initialization
+  cy.wait(500);
 });
 
-// Improved Training mode helpers with better waiting strategy
+// Enhanced Training mode helpers with better waiting strategy
 Cypress.Commands.add("enterTrainingMode", () => {
-  // Try multiple methods to enter training mode
-  cy.log("Attempting to enter training mode");
-
-  // Method 1: Click training button if visible
+  // Method 1: Try clicking visible button
   cy.get("body").then(($body) => {
-    if ($body.find('[data-testid="training-button"]').length > 0) {
+    if ($body.find('[data-testid="training-button"]:visible').length > 0) {
       cy.get('[data-testid="training-button"]').click();
     } else {
       // Method 2: Use keyboard shortcut
-      cy.get("body").type("2");
+      cy.get("body").type("2", { delay: 100 });
     }
   });
 
-  // Wait for training screen to appear
   cy.waitForCanvasReady();
 });
 
 // Enter combat mode from intro screen
 Cypress.Commands.add("enterCombatMode", () => {
-  cy.log("Attempting to enter combat mode");
-
+  // Method 1: Try clicking visible button
   cy.get("body").then(($body) => {
-    if ($body.find('[data-testid="combat-button"]').length > 0) {
+    if ($body.find('[data-testid="combat-button"]:visible').length > 0) {
       cy.get('[data-testid="combat-button"]').click();
     } else {
-      cy.get("body").type("1");
+      // Method 2: Use keyboard shortcut
+      cy.get("body").type("1", { delay: 100 });
     }
   });
 
@@ -178,59 +167,49 @@ Cypress.Commands.add("enterCombatMode", () => {
 
 // Return to intro screen from anywhere
 Cypress.Commands.add("returnToIntro", () => {
-  cy.log("Returning to intro screen");
-
-  // Try return button first
+  // Try multiple methods to return to intro
   cy.get("body").then(($body) => {
-    if ($body.find('[data-testid="return-to-menu-button"]').length > 0) {
+    if (
+      $body.find('[data-testid="return-to-menu-button"]:visible').length > 0
+    ) {
       cy.get('[data-testid="return-to-menu-button"]').click();
     } else {
       // Use ESC key as fallback
-      cy.get("body").type("{esc}");
+      cy.get("body").type("{esc}", { delay: 100 });
     }
   });
 
-  cy.waitForCanvasReady();
+  // Verify we're back at intro
+  cy.get('[data-testid="intro-screen"]', { timeout: 5000 }).should("exist");
 });
 
 // Optimized practice stance command
 Cypress.Commands.add(
   "practiceStance",
   (stanceNumber: number, repetitions: number = 1) => {
-    // Ensure we're in basics mode
-    cy.get('[data-testid="mode-basics"]').click();
-
-    // Select the stance
-    cy.get("body").type(`${stanceNumber}`);
-    cy.wait(300); // Wait for stance change
-
-    // Switch to technique mode
-    cy.get('[data-testid="mode-techniques"]').click();
-
-    // Execute technique multiple times
     for (let i = 0; i < repetitions; i++) {
-      cy.contains("기법 실행").click();
-      cy.wait(500); // Wait for technique execution
+      cy.get("body").type(stanceNumber.toString(), { delay: 200 });
+      cy.get("body").type(" ", { delay: 300 }); // Execute technique
+      cy.wait(400); // Wait for technique to complete
     }
-
-    // Return to basics
-    cy.get('[data-testid="mode-basics"]').click();
   }
 );
 
 // Execute a sequence of game actions with reliable typing
 Cypress.Commands.add("gameActions", (actions: string[]) => {
-  actions.forEach((action) => {
-    // Type the action with minimal delay
-    cy.get("body").type(action, { delay: 0 });
-    cy.wait(100); // Small wait between actions for game to process
+  actions.forEach((action, index) => {
+    cy.get("body").type(action, { delay: 100 });
+    // Add small delay between actions for game processing
+    if (index < actions.length - 1) {
+      cy.wait(150);
+    }
   });
 });
 
 // Add annotation to test for better test documentation
 Cypress.Commands.add("annotate", (message: string) => {
-  cy.log(`**${message}**`);
-  // Could integrate with a visual testing tool here
+  cy.log(`🎯 ${message}`);
+  cy.task("log", `[${new Date().toISOString()}] ${message}`, { log: false });
 });
 
 // Custom tab implementation - fixed type errors

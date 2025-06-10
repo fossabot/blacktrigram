@@ -1,16 +1,7 @@
 describe("Black Trigram Training Mode", () => {
   beforeEach(() => {
-    // Use the new visitWithWebGLMock command
     cy.visitWithWebGLMock("/", { timeout: 12000 });
-
-    // Wait for the intro screen to appear
-    cy.get(".intro-screen").should("be.visible");
-
-    // Enter training mode
-    cy.get('[data-testid="training-button"]').click();
-
-    // Wait for training screen
-    cy.get("[data-testid='training-screen']").should("be.visible");
+    cy.waitForCanvasReady();
   });
 
   it("should display training screen components", () => {
@@ -96,5 +87,42 @@ describe("Black Trigram Training Mode", () => {
     // Return to intro
     cy.contains("메뉴로 돌아가기").click();
     cy.get(".intro-screen").should("be.visible");
+  });
+
+  it("should support complete training workflow", () => {
+    cy.annotate("Starting training workflow test");
+
+    // Enter training mode
+    cy.enterTrainingMode();
+
+    // Practice multiple stances
+    cy.annotate("Practicing stances");
+    cy.practiceStance(1, 2); // Practice first stance twice
+    cy.practiceStance(2, 1); // Practice second stance once
+    cy.practiceStance(3, 1); // Practice third stance once
+
+    // Test training controls
+    cy.gameActions(["w", "a", "s", "d"]); // Movement
+    cy.gameActions([" ", " ", " "]); // Execute techniques
+
+    // Return to menu
+    cy.annotate("Returning to menu");
+    cy.returnToIntro();
+
+    cy.annotate("Training workflow test completed");
+  });
+
+  it("should handle rapid input during training", () => {
+    cy.annotate("Testing rapid input handling");
+
+    cy.enterTrainingMode();
+
+    // Rapid stance changes and techniques
+    cy.gameActions(["1", " ", "2", " ", "3", " ", "4", " "]);
+
+    // Test movement with attacks
+    cy.gameActions(["w", "1", "a", "2", "s", "3", "d", "4"]);
+
+    cy.returnToIntro();
   });
 });
