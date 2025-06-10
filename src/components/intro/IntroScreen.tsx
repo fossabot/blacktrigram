@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import * as PIXI from "pixi.js";
 import { MenuSection } from "./components/MenuSection";
 import { PhilosophySection } from "./components/PhilosophySection";
@@ -7,6 +7,21 @@ import { KoreanHeader } from "../ui/base/KoreanHeader";
 import { KOREAN_COLORS } from "../../types/constants";
 import { GameMode } from "../../types/enums";
 import { useAudio } from "../../audio/AudioProvider";
+
+// Responsive dimensions
+function useWindowSize() {
+  const [size, setSize] = useState<{ width: number; height: number }>({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+  useEffect(() => {
+    const onResize = () =>
+      setSize({ width: window.innerWidth, height: window.innerHeight });
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+  return size;
+}
 
 export interface IntroScreenProps {
   readonly onMenuSelect: (mode: GameMode) => void;
@@ -26,10 +41,9 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
   const [archetypeTextures, setArchetypeTextures] = useState<PIXI.Texture[]>(
     []
   );
-  const introMusicStarted = useRef(false);
-
-  // Menu navigation state
+  const introMusicStarted = React.useRef(false);
   const [selectedMenuIndex, setSelectedMenuIndex] = useState(0);
+  const { width, height } = useWindowSize();
 
   // Load background and logo images using PIXI.Assets (PixiJS v7+)
   useEffect(() => {
@@ -174,88 +188,93 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
     audio.playSoundEffect("menu_back");
   }, [audio]);
 
-  // Draws the intro background with art assets
-  const drawBackground = useCallback((g: PIXI.Graphics) => {
-    g.clear();
-    // Fill with dark color as fallback
-    g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 1 });
-    g.rect(0, 0, 1200, 800);
-    g.fill();
-    // Cyberpunk grid overlay
-    g.setStrokeStyle({
-      width: 1,
-      color: KOREAN_COLORS.PRIMARY_CYAN,
-      alpha: 0.08,
-    });
-    for (let i = 0; i < 1200; i += 40) {
-      g.moveTo(i, 0);
-      g.lineTo(i, 800);
-    }
-    for (let i = 0; i < 800; i += 40) {
-      g.moveTo(0, i);
-      g.lineTo(1200, i);
-    }
-    g.setStrokeStyle({ width: 0 });
-  }, []);
+  // Cyberpunk grid and glow background
+  const drawBackground = useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+      g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 1 });
+      g.rect(0, 0, width, height);
+      g.fill();
+      g.setStrokeStyle({
+        width: 1,
+        color: KOREAN_COLORS.PRIMARY_CYAN,
+        alpha: 0.08,
+      });
+      for (let i = 0; i < width; i += 40) {
+        g.moveTo(i, 0);
+        g.lineTo(i, height);
+      }
+      for (let i = 0; i < height; i += 40) {
+        g.moveTo(0, i);
+        g.lineTo(width, i);
+      }
+      g.setStrokeStyle({ width: 0 });
+    },
+    [width, height]
+  );
+
+  // Responsive logo size
+  const logoSize = Math.min(width, height) * 0.28;
+
+  // Menu vertical position
+  const menuY = height / 2 + logoSize * 0.3;
 
   return (
-    <pixiContainer
-      width={1200}
-      height={800}
-      data-testid="intro-screen"
-      tabIndex={0}
-    >
-      {/* Layered background: grid, bg image, archetype overlays */}
+    <pixiContainer width={width} height={height} data-testid="intro-screen">
+      {/* Background */}
       <pixiGraphics draw={drawBackground} />
       {bgTexture && (
         <pixiSprite
           texture={bgTexture}
           x={0}
           y={0}
-          width={1200}
-          height={800}
-          alpha={0.4}
+          width={width}
+          height={height}
+          alpha={0.35}
           anchor={{ x: 0, y: 0 }}
         />
       )}
+      {/* Archetype overlays */}
       {archetypeTextures.length > 0 && (
         <>
           <pixiSprite
             texture={archetypeTextures[0]}
-            x={1200 - 320}
-            y={800 - 320}
+            x={width - 320}
+            y={height - 320}
             scale={{ x: 0.45, y: 0.45 }}
-            alpha={0.18}
+            alpha={0.13}
             anchor={{ x: 1, y: 1 }}
           />
           <pixiSprite
             texture={archetypeTextures[1]}
             x={320}
-            y={800 - 220}
+            y={height - 220}
             scale={{ x: 0.38, y: 0.38 }}
-            alpha={0.13}
+            alpha={0.1}
             anchor={{ x: 0, y: 1 }}
           />
           <pixiSprite
             texture={archetypeTextures[2]}
-            x={1200 / 2}
-            y={800 / 2 + 120}
+            x={width / 2}
+            y={height / 2 + 120}
             scale={{ x: 0.32, y: 0.32 }}
-            alpha={0.1}
+            alpha={0.08}
             anchor={{ x: 0.5, y: 0.5 }}
           />
         </>
       )}
+      {/* Large centered logo with cyberpunk glow */}
       {logoTexture && (
         <pixiSprite
           texture={logoTexture}
-          x={600}
-          y={180}
-          scale={{ x: 0.45, y: 0.45 }}
+          x={width / 2}
+          y={height / 2 - logoSize * 0.7}
+          scale={{ x: logoSize / 256, y: logoSize / 256 }}
           anchor={{ x: 0.5, y: 0.5 }}
           alpha={1}
         />
       )}
+      {/* Title below logo */}
       <KoreanHeader
         title={{ korean: "흑괘", english: "Black Trigram" }}
         subtitle={{
@@ -263,62 +282,100 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
           english: "Korean Martial Arts Simulator",
         }}
         align="center"
-        x={600}
-        y={80}
+        x={width / 2}
+        y={height / 2 - logoSize * 0.25}
       />
-      {/* Current Section */}
-      {(() => {
-        switch (currentSection) {
-          case "philosophy":
-            return (
-              <PhilosophySection
-                onBack={handleBackToMenu}
-                width={1200}
-                height={600}
-                y={100}
-              />
-            );
-          case "controls":
-            return (
-              <ControlsSection
-                onBack={handleBackToMenu}
-                width={1200}
-                height={600}
-                y={100}
-              />
-            );
-          default:
-            return (
-              <MenuSection
-                selectedMode={MENU_ITEMS[selectedMenuIndex].mode}
-                onModeSelect={handleMenuClick}
-                onStartGame={() =>
-                  handleMenuClick(MENU_ITEMS[selectedMenuIndex].mode)
-                }
-                onShowPhilosophy={handleShowPhilosophy}
-                onShowControls={handleShowControls}
-                width={1200}
-                height={600}
-                y={100}
-              />
-            );
-        }
-      })()}
-      {/* Footer */}
-      <pixiText
-        text="흑괘의 길을 걸어라 - Walk the Path of the Black Trigram"
-        style={
-          new PIXI.TextStyle({
-            fontSize: 12,
-            fill: KOREAN_COLORS.TEXT_TERTIARY,
-            align: "center",
-            fontStyle: "italic",
-          })
-        }
-        x={600}
-        y={770}
-        anchor={0.5}
-      />
+      {/* Menu Section */}
+      {currentSection === "menu" && (
+        <MenuSection
+          selectedMode={MENU_ITEMS[selectedMenuIndex].mode}
+          onModeSelect={handleMenuClick}
+          onStartGame={() =>
+            handleMenuClick(MENU_ITEMS[selectedMenuIndex].mode)
+          }
+          onShowPhilosophy={handleShowPhilosophy}
+          onShowControls={handleShowControls}
+          width={Math.min(480, width * 0.8)}
+          height={Math.max(260, height * 0.32)}
+          x={width / 2 - Math.min(480, width * 0.8) / 2}
+          y={menuY}
+          menuItems={MENU_ITEMS}
+        />
+      )}
+      {currentSection === "philosophy" && (
+        <PhilosophySection
+          onBack={handleBackToMenu}
+          width={width}
+          height={height * 0.7}
+          y={height * 0.15}
+        />
+      )}
+      {currentSection === "controls" && (
+        <ControlsSection
+          onBack={handleBackToMenu}
+          width={width}
+          height={height * 0.7}
+          y={height * 0.15}
+        />
+      )}
+      {/* Footer with cyberpunk open source links */}
+      <pixiContainer x={width / 2} y={height - 40} anchor={{ x: 0.5, y: 0.5 }}>
+        <pixiText
+          text="흑괘의 길을 걸어라 - Walk the Path of the Black Trigram"
+          style={
+            new PIXI.TextStyle({
+              fontSize: 14,
+              fill: KOREAN_COLORS.ACCENT_CYAN,
+              align: "center",
+              fontStyle: "italic",
+              dropShadow: true,
+            })
+          }
+          x={0}
+          y={-18}
+          anchor={0.5}
+        />
+        {/* Open source link */}
+        <pixiText
+          text="Open source, please support Korean martial arts game"
+          style={
+            new PIXI.TextStyle({
+              fontSize: 13,
+              fill: KOREAN_COLORS.SECONDARY_MAGENTA, // Fix: Use SECONDARY_MAGENTA
+              align: "center",
+              fontWeight: "bold",
+              dropShadow: true,
+              letterSpacing: 1.2,
+            })
+          }
+          interactive={true}
+          onPointerTap={() =>
+            window.open("https://github.com/Hack23/blacktrigram", "_blank")
+          }
+          x={0}
+          y={6}
+          anchor={0.5}
+        />
+        {/* By Hack23 link */}
+        <pixiText
+          text="by Hack23"
+          style={
+            new PIXI.TextStyle({
+              fontSize: 12,
+              fill: KOREAN_COLORS.ACCENT_BLUE,
+              align: "center",
+              fontStyle: "italic",
+              dropShadow: true,
+              letterSpacing: 1.1,
+            })
+          }
+          interactive={true}
+          onPointerTap={() => window.open("https://hack23.com/", "_blank")}
+          x={0}
+          y={28}
+          anchor={0.5}
+        />
+      </pixiContainer>
     </pixiContainer>
   );
 };

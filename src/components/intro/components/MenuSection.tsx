@@ -1,25 +1,36 @@
 import React from "react";
-import type { MenuSectionProps } from "../../../types/components";
-import { KOREAN_COLORS } from "../../../types/constants";
-import { GameMode } from "../../../types/enums";
 import * as PIXI from "pixi.js";
+import { KOREAN_COLORS } from "../../../types/constants";
+import type { GameMode } from "../../../types/enums";
+import type { MenuSectionProps } from "../../../types/components";
 
-export const MenuSection: React.FC<MenuSectionProps> = ({
+export const MenuSection: React.FC<
+  MenuSectionProps & {
+    menuItems?: { mode: GameMode; korean: string; english: string }[];
+    x?: number;
+    y?: number;
+    width?: number;
+    height?: number;
+  }
+> = ({
   selectedMode,
   onModeSelect,
   onStartGame,
   onShowPhilosophy,
   onShowControls,
+  menuItems = [
+    { mode: "versus" as GameMode, korean: "대전", english: "Versus" },
+    { mode: "training" as GameMode, korean: "훈련", english: "Training" },
+    { mode: "practice" as GameMode, korean: "연습", english: "Practice" },
+  ],
   x = 0,
   y = 0,
   width = 400,
-  height = 500,
+  height = 320,
 }) => {
-  const menuItems = [
-    { mode: GameMode.VERSUS, korean: "대전", english: "Versus" },
-    { mode: GameMode.TRAINING, korean: "훈련", english: "Training" },
-    { mode: GameMode.PRACTICE, korean: "연습", english: "Practice" },
-  ];
+  const buttonWidth = width - 80;
+  const buttonHeight = 48;
+  const buttonSpacing = 18;
 
   return (
     <pixiContainer x={x} y={y} data-testid="menu-section">
@@ -27,8 +38,8 @@ export const MenuSection: React.FC<MenuSectionProps> = ({
       <pixiGraphics
         draw={(g) => {
           g.clear();
-          g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.8);
-          g.drawRoundedRect(0, 0, width, height, 10);
+          g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.92);
+          g.drawRoundedRect(0, 0, width, height, 16);
           g.endFill();
         }}
       />
@@ -40,70 +51,80 @@ export const MenuSection: React.FC<MenuSectionProps> = ({
           new PIXI.TextStyle({
             fontSize: 28,
             fill: KOREAN_COLORS.ACCENT_GOLD,
-            fontFamily: "Arial, sans-serif",
+            fontFamily: "Orbitron, Noto Sans KR, Arial, sans-serif",
             align: "center",
+            dropShadow: true,
           })
         }
         x={width / 2}
-        y={40}
+        y={32}
         anchor={0.5}
       />
 
       {/* Menu Items */}
-      {menuItems.map((item, index) => (
-        <pixiContainer key={item.mode} x={50} y={120 + index * 60}>
-          <pixiGraphics
-            draw={(g) => {
-              g.clear();
-              const isSelected = selectedMode === item.mode;
-              g.beginFill(
-                isSelected
-                  ? KOREAN_COLORS.ACCENT_GOLD
-                  : KOREAN_COLORS.UI_BACKGROUND_DARK,
-                0.8
-              );
-              g.drawRoundedRect(0, 0, width - 100, 50, 5);
-              g.endFill();
-
-              if (isSelected) {
-                g.lineStyle(2, KOREAN_COLORS.ACCENT_GOLD, 1);
-                g.drawRoundedRect(0, 0, width - 100, 50, 5);
-              }
-            }}
+      {menuItems.map((item, index) => {
+        const isSelected = selectedMode === item.mode;
+        return (
+          <pixiContainer
+            key={item.mode}
+            x={40}
+            y={80 + index * (buttonHeight + buttonSpacing)}
             interactive={true}
-            onPointerDown={() => onModeSelect(item.mode)}
-          />
-          <pixiText
-            text={`${item.korean} (${item.english})`}
-            style={
-              new PIXI.TextStyle({
-                fontSize: 18,
-                fill:
-                  selectedMode === item.mode
+            onPointerTap={() => onModeSelect(item.mode)}
+          >
+            <pixiGraphics
+              draw={(g) => {
+                g.clear();
+                g.beginFill(
+                  isSelected
+                    ? KOREAN_COLORS.ACCENT_GOLD
+                    : KOREAN_COLORS.UI_BACKGROUND_DARK,
+                  isSelected ? 1 : 0.85
+                );
+                g.drawRoundedRect(0, 0, buttonWidth, buttonHeight, 8);
+                g.endFill();
+                if (isSelected) {
+                  g.lineStyle(2, KOREAN_COLORS.ACCENT_GOLD, 1);
+                  g.drawRoundedRect(0, 0, buttonWidth, buttonHeight, 8);
+                }
+              }}
+            />
+            <pixiText
+              text={`${item.korean} (${item.english})`}
+              style={
+                new PIXI.TextStyle({
+                  fontSize: 20,
+                  fill: isSelected
                     ? KOREAN_COLORS.BLACK_SOLID
                     : KOREAN_COLORS.TEXT_PRIMARY,
-                fontFamily: "Arial, sans-serif",
-                align: "center",
-              })
-            }
-            x={(width - 100) / 2}
-            y={25}
-            anchor={0.5}
-          />
-        </pixiContainer>
-      ))}
+                  fontFamily: "Orbitron, Noto Sans KR, Arial, sans-serif",
+                  align: "center",
+                  fontWeight: isSelected ? "bold" : "normal",
+                  dropShadow: isSelected,
+                })
+              }
+              x={buttonWidth / 2}
+              y={buttonHeight / 2}
+              anchor={0.5}
+            />
+          </pixiContainer>
+        );
+      })}
 
       {/* Start Game Button */}
-      <pixiContainer x={50} y={360}>
+      <pixiContainer
+        x={40}
+        y={80 + menuItems.length * (buttonHeight + buttonSpacing) + 8}
+        interactive={true}
+        onPointerTap={onStartGame}
+      >
         <pixiGraphics
           draw={(g) => {
             g.clear();
-            g.beginFill(KOREAN_COLORS.POSITIVE_GREEN, 0.8);
-            g.drawRoundedRect(0, 0, width - 100, 50, 5);
+            g.beginFill(KOREAN_COLORS.POSITIVE_GREEN, 0.92);
+            g.drawRoundedRect(0, 0, buttonWidth, buttonHeight, 8);
             g.endFill();
           }}
-          interactive={true}
-          onPointerDown={onStartGame}
         />
         <pixiText
           text="게임 시작 (Start Game)"
@@ -111,71 +132,100 @@ export const MenuSection: React.FC<MenuSectionProps> = ({
             new PIXI.TextStyle({
               fontSize: 18,
               fill: KOREAN_COLORS.BLACK_SOLID,
-              fontFamily: "Arial, sans-serif",
+              fontFamily: "Orbitron, Noto Sans KR, Arial, sans-serif",
               align: "center",
+              fontWeight: "bold",
+              dropShadow: true,
             })
           }
-          x={(width - 100) / 2}
-          y={25}
+          x={buttonWidth / 2}
+          y={buttonHeight / 2}
           anchor={0.5}
         />
       </pixiContainer>
 
-      {/* Philosophy Button */}
-      <pixiContainer x={50} y={430}>
+      {/* Philosophy and Controls Buttons */}
+      <pixiContainer
+        x={40}
+        y={height - 60}
+        interactive={true}
+        onPointerTap={onShowPhilosophy}
+      >
         <pixiGraphics
           draw={(g) => {
             g.clear();
-            g.beginFill(KOREAN_COLORS.ACCENT_BLUE, 0.8);
-            g.drawRoundedRect(0, 0, (width - 120) / 2, 40, 5);
+            g.beginFill(KOREAN_COLORS.ACCENT_BLUE, 0.85);
+            g.drawRoundedRect(0, 0, buttonWidth / 2 - 8, 36, 8);
             g.endFill();
           }}
-          interactive={true}
-          onPointerDown={onShowPhilosophy}
         />
         <pixiText
           text="철학"
           style={
             new PIXI.TextStyle({
-              fontSize: 14,
+              fontSize: 15,
               fill: KOREAN_COLORS.TEXT_PRIMARY,
-              fontFamily: "Arial, sans-serif",
+              fontFamily: "Orbitron, Noto Sans KR, Arial, sans-serif",
               align: "center",
+              dropShadow: true,
             })
           }
-          x={(width - 120) / 4}
-          y={20}
+          x={(buttonWidth / 2 - 8) / 2}
+          y={18}
           anchor={0.5}
         />
       </pixiContainer>
-
-      {/* Controls Button */}
-      <pixiContainer x={50 + (width - 120) / 2 + 20} y={430}>
+      <pixiContainer
+        x={40 + buttonWidth / 2 + 8}
+        y={height - 60}
+        interactive={true}
+        onPointerTap={onShowControls}
+      >
         <pixiGraphics
           draw={(g) => {
             g.clear();
-            g.beginFill(KOREAN_COLORS.ACCENT_CYAN, 0.8);
-            g.drawRoundedRect(0, 0, (width - 120) / 2, 40, 5);
+            g.beginFill(KOREAN_COLORS.ACCENT_CYAN, 0.85);
+            g.drawRoundedRect(0, 0, buttonWidth / 2 - 8, 36, 8);
             g.endFill();
           }}
-          interactive={true}
-          onPointerDown={onShowControls}
         />
         <pixiText
           text="조작법"
           style={
             new PIXI.TextStyle({
-              fontSize: 14,
+              fontSize: 15,
               fill: KOREAN_COLORS.TEXT_PRIMARY,
-              fontFamily: "Arial, sans-serif",
+              fontFamily: "Orbitron, Noto Sans KR, Arial, sans-serif",
               align: "center",
+              dropShadow: true,
             })
           }
-          x={(width - 120) / 4}
-          y={20}
+          x={(buttonWidth / 2 - 8) / 2}
+          y={18}
           anchor={0.5}
         />
       </pixiContainer>
+      {/* Cyberpunk open source link (bottom right) */}
+      <pixiText
+        text="Open source: github.com/Hack23/blacktrigram"
+        style={
+          new PIXI.TextStyle({
+            fontSize: 13,
+            fill: KOREAN_COLORS.SECONDARY_MAGENTA,
+            align: "right",
+            fontWeight: "bold",
+            dropShadow: true,
+            letterSpacing: 1.2,
+          })
+        }
+        x={width - 12}
+        y={height - 22}
+        anchor={{ x: 1, y: 1 }}
+        interactive={true}
+        onPointerTap={() =>
+          window.open("https://github.com/Hack23/blacktrigram", "_blank")
+        }
+      />
     </pixiContainer>
   );
 };
