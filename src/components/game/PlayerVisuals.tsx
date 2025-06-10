@@ -1,107 +1,83 @@
-import React, { useMemo } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
+import React, { useCallback } from "react";
 import * as PIXI from "pixi.js";
-import type { PlayerState } from "../../types";
-import { TrigramStance } from "../../types/enums";
-import {
-  KOREAN_COLORS,
-  FONT_FAMILY,
-  FONT_SIZES,
-  TRIGRAM_DATA,
-} from "../../types/constants";
+import { usePixiExtensions } from "../../utils/pixiExtensions";
+import type { PlayerState } from "../../types/player";
+import { KOREAN_COLORS } from "../../types/constants";
 
 export interface PlayerVisualsProps {
   readonly playerState: PlayerState;
-  readonly playerIndex: number;
-  readonly x?: number;
-  readonly y?: number;
+  readonly archetype: string;
   readonly width?: number;
   readonly height?: number;
-  readonly showDetails?: boolean;
-  readonly onPlayerClick?: (playerIndex: number) => void;
-  readonly interactive?: boolean;
 }
 
 export const PlayerVisuals: React.FC<PlayerVisualsProps> = ({
   playerState,
-  playerIndex,
-  x = 0,
-  y = 0,
-  onPlayerClick,
-  interactive = true,
+  archetype,
+  width = 100,
+  height = 150,
 }) => {
-  const currentStance = playerState.currentStance as TrigramStance;
-  const stanceData = TRIGRAM_DATA[currentStance];
+  usePixiExtensions();
 
-  const playerStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.medium,
-        fill: KOREAN_COLORS.TEXT_PRIMARY,
-        align: "center",
-      }),
-    []
-  );
-
-  const drawPlayer = React.useCallback(
+  const drawPlayer = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
 
-      // Simple player representation
-      g.beginFill(KOREAN_COLORS.TEXT_PRIMARY, 0.8);
-      g.drawRect(-20, -30, 40, 60);
+      // Player body based on archetype - use number type for fill
+      let playerColor: number = KOREAN_COLORS.PLAYER_1_COLOR;
+      switch (archetype) {
+        case "무사 (Musa)":
+          playerColor = 0xffd700; // Gold
+          break;
+        case "암살자 (Amsalja)":
+          playerColor = 0x00ffff; // Cyan
+          break;
+        case "해커 (Hacker)":
+          playerColor = 0x0066ff; // Blue
+          break;
+        case "정보요원 (Jeongbo Yowon)":
+          playerColor = 0x9933ff; // Purple
+          break;
+        case "조직폭력배 (Jojik Pokryeokbae)":
+          playerColor = 0xff3333; // Red
+          break;
+      }
+
+      g.beginFill(playerColor, 0.8);
+      g.drawRect(0, 0, width, height);
       g.endFill();
 
-      // Stance indicator
-      if (stanceData) {
-        g.beginFill(
-          stanceData.theme?.primary || KOREAN_COLORS.ACCENT_PRIMARY,
-          0.5
-        );
-        g.drawCircle(0, 0, 35);
-        g.endFill();
-      }
+      // Health indicator
+      const healthPercent = playerState.health / playerState.maxHealth;
+      g.beginFill(KOREAN_COLORS.POSITIVE_GREEN, 0.7);
+      g.drawRect(5, 5, (width - 10) * healthPercent, 10);
+      g.endFill();
+
+      // Stance indicator (trigram symbol)
+      g.lineStyle(2, KOREAN_COLORS.PRIMARY_CYAN);
+      g.drawCircle(width / 2, height - 20, 15);
+      g.lineStyle(0);
     },
-    [stanceData]
+    [playerState.health, playerState.maxHealth, width, height, archetype]
   );
 
-  const handleClick = () => {
-    onPlayerClick?.(playerIndex);
-  };
-
   return (
-    <Container
-      x={x}
-      y={y}
-      interactive={interactive}
-      buttonMode={interactive}
-      pointertap={handleClick}
-    >
-      <Graphics draw={drawPlayer} />
-
-      {/* Player name */}
-      <Text
-        text={playerState.name.korean}
+    <pixiContainer data-testid="player-visuals">
+      <pixiGraphics draw={drawPlayer} />
+      <pixiText
+        text={`${archetype} - ${playerState.currentStance}`}
+        style={
+          new PIXI.TextStyle({
+            fontSize: 12,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
+            fontWeight: "bold",
+          })
+        }
         anchor={0.5}
-        x={0}
-        y={-50}
-        style={playerStyle}
+        x={width / 2}
+        y={-20}
       />
-
-      {/* Stance symbol */}
-      <Text
-        text={stanceData?.symbol || "?"}
-        anchor={0.5}
-        x={0}
-        y={15}
-        style={{
-          ...playerStyle,
-          fontSize: FONT_SIZES.large,
-          fill: stanceData?.theme?.primary || KOREAN_COLORS.ACCENT_PRIMARY,
-        }}
-      />
-    </Container>
+    </pixiContainer>
   );
 };
 

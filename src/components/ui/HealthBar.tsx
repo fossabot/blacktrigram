@@ -1,69 +1,65 @@
-import React, { useMemo } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
+import React, { useCallback } from "react";
 import * as PIXI from "pixi.js";
-import type { HealthBarProps } from "../../types/components";
-import { KOREAN_COLORS, FONT_FAMILY, FONT_SIZES } from "../../types/constants";
-import { getHealthColor } from "../../utils/colorUtils";
+import { usePixiExtensions } from "../../utils/pixiExtensions";
+import { KOREAN_COLORS } from "../../types/constants";
+
+export interface HealthBarProps {
+  readonly health: number;
+  readonly maxHealth: number;
+  readonly width?: number;
+  readonly height?: number;
+  readonly showText?: boolean;
+}
 
 export const HealthBar: React.FC<HealthBarProps> = ({
-  currentHealth,
+  health,
   maxHealth,
-  x = 0,
-  y = 0,
   width = 200,
   height = 20,
-  backgroundColor = KOREAN_COLORS.UI_BACKGROUND_DARK,
-  borderColor = KOREAN_COLORS.UI_BORDER,
-  criticalColor = KOREAN_COLORS.NEGATIVE_RED,
   showText = true,
-  ...props
 }) => {
-  const healthPercent = Math.max(0, Math.min(1, currentHealth / maxHealth));
-  const fillColor = getHealthColor(healthPercent);
+  usePixiExtensions();
 
-  const textStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.small,
-        fill: KOREAN_COLORS.TEXT_PRIMARY,
-        align: "center",
-      }),
-    []
+  const drawHealthBar = useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+      const healthPercent = Math.max(0, Math.min(1, health / maxHealth));
+
+      // Background
+      g.beginFill(KOREAN_COLORS.NEGATIVE_RED, 0.3);
+      g.drawRect(0, 0, width, height);
+      g.endFill();
+
+      // Health fill
+      g.beginFill(KOREAN_COLORS.POSITIVE_GREEN);
+      g.drawRect(0, 0, width * healthPercent, height);
+      g.endFill();
+
+      // Border
+      g.lineStyle(1, KOREAN_COLORS.TEXT_PRIMARY, 0.5);
+      g.drawRect(0, 0, width, height);
+    },
+    [health, maxHealth, width, height]
   );
 
-  const drawHealthBar = (g: PIXI.Graphics) => {
-    g.clear();
-
-    // Background
-    g.beginFill(backgroundColor);
-    g.drawRect(0, 0, width, height);
-    g.endFill();
-
-    // Health fill
-    const fillWidth = width * healthPercent;
-    g.beginFill(fillColor);
-    g.drawRect(0, 0, fillWidth, height);
-    g.endFill();
-
-    // Border
-    g.lineStyle(1, borderColor);
-    g.drawRect(0, 0, width, height);
-  };
-
   return (
-    <Container x={x} y={y} {...props}>
-      <Graphics draw={drawHealthBar} />
+    <pixiContainer data-testid="health-bar">
+      <pixiGraphics draw={drawHealthBar} />
       {showText && (
-        <Text
-          text={`${Math.ceil(currentHealth)}/${maxHealth}`}
-          anchor={0.5}
+        <pixiText
+          text={`체력: ${Math.round(health)}/${maxHealth}`}
+          style={
+            new PIXI.TextStyle({
+              fontSize: 12,
+              fill: KOREAN_COLORS.TEXT_PRIMARY,
+            })
+          }
           x={width / 2}
-          y={height / 2}
-          style={textStyle}
+          y={height + 5}
+          anchor={0.5}
         />
       )}
-    </Container>
+    </pixiContainer>
   );
 };
 

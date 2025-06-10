@@ -104,38 +104,32 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
 
       {/* Game Engine */}
       <GameEngine
-        players={players}
-        onPlayerUpdate={handlePlayerUpdateForEngine} // Fix: Use wrapper function
+        players={[...players]} // Convert readonly array to mutable array
+        onPlayerUpdate={handlePlayerUpdateForEngine}
         onCombatResult={handleCombatResult}
         onGameEvent={handleGameEvent}
         isPaused={isPaused}
         gameMode={gameMode}
       />
 
-      {/* Combat Arena */}
+      {/* Combat Arena - Remove y prop */}
       <CombatArena
-        players={players}
+        players={[...players]} // Convert readonly array to mutable array
         onPlayerClick={(playerIndex) => {
           console.log(`Player ${playerIndex + 1} clicked`);
         }}
         width={width}
         height={height - 200} // Leave space for HUD and controls
-        y={100}
       />
 
-      {/* Combat HUD */}
+      {/* Combat HUD - Remove maxRounds and y props */}
       <CombatHUD
-        players={players}
         player1={players[0]}
         player2={players[1]}
         timeRemaining={timeRemaining}
         currentRound={currentRound}
-        maxRounds={3}
-        isPaused={isPaused}
-        onPauseToggle={handlePauseToggle}
         width={width}
         height={100}
-        y={0}
       />
 
       {/* Combat Controls */}

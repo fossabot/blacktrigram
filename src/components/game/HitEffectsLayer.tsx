@@ -1,98 +1,60 @@
 // Hit effects layer for combat feedback
 
-import React, { useEffect, useMemo } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
+import React, { useCallback } from "react";
 import * as PIXI from "pixi.js";
-import type { HitEffectsLayerProps } from "../../types/components";
-import type { DisplayHitEffect } from "../../types/effects"; // Fix: Remove unused HitEffect import
-import { KOREAN_COLORS, FONT_SIZES } from "../../types/constants";
+import { usePixiExtensions } from "../../utils/pixiExtensions";
+import { KOREAN_COLORS } from "../../types/constants";
+
+export interface HitEffect {
+  readonly id: string;
+  readonly position: { x: number; y: number };
+  readonly damage: number;
+  readonly radius?: number;
+  readonly text?: string;
+  readonly color?: number;
+  readonly duration?: number;
+}
+
+export interface HitEffectsLayerProps {
+  readonly effects: HitEffect[];
+}
 
 export const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({
   effects,
-  onEffectComplete,
-  width = 800, // Use width for container bounds
-  height = 600, // Use height for container bounds
-  x = 0,
-  y = 0,
 }) => {
-  const displayEffects = useMemo(() => {
-    return effects.map((effect: any) => ({
-      id: effect.id || `effect_${Date.now()}`,
-      position: effect.position || { x: 0, y: 0 },
-      color: effect.color || KOREAN_COLORS.ACCENT_RED,
-      damageAmount: effect.damageAmount,
-      text: effect.text,
-      type: effect.type || "damage",
-      duration: effect.duration || 1000,
-      intensity: effect.intensity || 1.0,
-      opacity: effect.opacity || 1.0,
-      scale: effect.scale || 1.0,
-      startTime: effect.startTime || Date.now(),
-      // Add missing display properties
-      displayAlpha: effect.displayAlpha || 1.0,
-      displayY: effect.displayY || effect.position?.y || 0,
-      displaySize: effect.displaySize || 20,
-    })) as DisplayHitEffect[];
-  }, [effects]);
+  // Ensure PixiJS components are extended
+  usePixiExtensions();
 
-  // Use width and height for bounds checking
-  const boundedEffects = useMemo(() => {
-    return displayEffects.filter((effect) => {
-      const pos = effect.position;
-      return (
-        pos && pos.x >= 0 && pos.x <= width && pos.y >= 0 && pos.y <= height
-      );
-    });
-  }, [displayEffects, width, height]);
-
-  // Use onEffectComplete callback
-  useEffect(() => {
-    const completedEffects = displayEffects.filter(
-      (effect) => Date.now() - effect.startTime >= effect.duration
-    );
-
-    completedEffects.forEach((effect) => {
-      onEffectComplete?.(effect.id);
-    });
-  }, [displayEffects, onEffectComplete]);
+  const drawEffect = useCallback((g: PIXI.Graphics, effect: HitEffect) => {
+    g.clear();
+    g.beginFill(effect.color || 0xff0000, 0.8);
+    g.drawCircle(0, 0, effect.radius || 10);
+    g.endFill();
+  }, []);
 
   return (
-    <Container x={x} y={y}>
-      {boundedEffects.map((effect) => (
-        <Container
-          key={effect.id}
-          x={effect.position?.x || 0}
-          y={effect.position?.y || 0}
+    <pixiContainer data-testid="hit-effects-layer">
+      {effects.map((effect, index) => (
+        <pixiContainer
+          key={`${effect.id}-${index}`}
+          x={effect.position.x}
+          y={effect.position.y}
         >
-          <Graphics
-            draw={(g: PIXI.Graphics) => {
-              g.clear();
-              g.beginFill(effect.color || KOREAN_COLORS.ACCENT_RED, 0.8);
-              g.drawCircle(0, 0, 20);
-              g.endFill();
-            }}
+          <pixiGraphics draw={(g) => drawEffect(g, effect)} />
+          <pixiText
+            text={effect.text || effect.damage.toString()}
+            style={
+              new PIXI.TextStyle({
+                fontSize: 16,
+                fill: KOREAN_COLORS.TEXT_PRIMARY,
+                fontWeight: "bold",
+              })
+            }
+            anchor={0.5}
           />
-          {(effect.damageAmount || effect.text) && (
-            <Text
-              text={
-                typeof effect.text === "string"
-                  ? effect.text
-                  : effect.text?.korean || ""
-              }
-              style={
-                new PIXI.TextStyle({
-                  fontSize: FONT_SIZES.large,
-                  fill: KOREAN_COLORS.TEXT_PRIMARY,
-                  fontWeight: "bold",
-                })
-              }
-              anchor={0.5}
-              y={-30}
-            />
-          )}
-        </Container>
+        </pixiContainer>
       ))}
-    </Container>
+    </pixiContainer>
   );
 };
 

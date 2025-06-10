@@ -1,15 +1,13 @@
 // Underground dojang background for Korean martial arts
 
 import React, { useCallback } from "react";
-import { Container, Graphics } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import { KOREAN_COLORS } from "../../types/constants";
+import { usePixiExtensions } from "../../utils/pixiExtensions";
 
 export interface DojangBackgroundProps {
   readonly width?: number;
   readonly height?: number;
-  readonly x?: number;
-  readonly y?: number;
   readonly animate?: boolean;
   readonly lighting?: "normal" | "cyberpunk" | "traditional";
 }
@@ -17,11 +15,12 @@ export interface DojangBackgroundProps {
 export const DojangBackground: React.FC<DojangBackgroundProps> = ({
   width = 800,
   height = 600,
-  x = 0,
-  y = 0,
   animate = true,
   lighting = "normal",
 }) => {
+  // Ensure PixiJS components are extended
+  usePixiExtensions();
+
   const backgroundDraw = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
@@ -49,21 +48,22 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
     [width, height, lighting]
   );
 
-  return (
-    <Container x={x} y={y}>
-      <Graphics draw={backgroundDraw} />
+  const animationDraw = useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+      g.beginFill(KOREAN_COLORS.PRIMARY_CYAN, 0.1);
+      g.drawRect(0, height * 0.8, width, height * 0.2);
+      g.endFill();
+    },
+    [width, height]
+  );
 
-      {animate && (
-        <Graphics
-          draw={(g: PIXI.Graphics) => {
-            g.clear();
-            g.beginFill(KOREAN_COLORS.PRIMARY_CYAN, 0.1);
-            g.drawRect(0, height * 0.8, width, height * 0.2);
-            g.endFill();
-          }}
-        />
-      )}
-    </Container>
+  return (
+    <pixiContainer data-testid="dojang-background">
+      <pixiGraphics draw={backgroundDraw} />
+
+      {animate && <pixiGraphics draw={animationDraw} />}
+    </pixiContainer>
   );
 };
 
