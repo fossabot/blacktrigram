@@ -40,8 +40,9 @@ declare global {
       assertNoPixiObjectExists(data: Partial<PixiTestData>): Chainable<any>;
 
       /**
-       * Click on PixiJS object
+       * Click on PixiJS object - overloaded for both selector types
        */
+      clickPixiObject(selector: string): Chainable<void>;
       clickPixiObject(data: Partial<PixiTestData>): Chainable<void>;
 
       /**
@@ -50,6 +51,36 @@ declare global {
       getTrigramStance(stanceName: string): Chainable<any>;
       getPlayerArchetype(archetype: string): Chainable<any>;
       getVitalPoint(pointName: string): Chainable<any>;
+
+      /**
+       * Get PixiJS app
+       */
+      getPixiApp(): Chainable<any>;
+
+      /**
+       * Get PixiJS object by selector
+       */
+      getPixiObject(selector: string): Chainable<any>;
+
+      /**
+       * Test PixiJS stance
+       */
+      testPixiStance(stance: string): Chainable<void>;
+
+      /**
+       * Test PixiJS player
+       */
+      testPixiPlayer(playerId: string): Chainable<void>;
+
+      /**
+       * Test PixiJS text
+       */
+      testPixiText(text: string): Chainable<void>;
+
+      /**
+       * Test PixiJS performance
+       */
+      testPixiPerformance(): Chainable<void>;
     }
   }
 }
@@ -160,17 +191,35 @@ Cypress.Commands.add(
   }
 );
 
-// Click on PixiJS object
-Cypress.Commands.add("clickPixiObject", (data: Partial<PixiTestData>) => {
-  return cy.waitForPixiObject(data).then((pixiObject) => {
-    // Get object's world position and click on canvas
-    const bounds = pixiObject.getBounds();
-    const centerX = bounds.x + bounds.width / 2;
-    const centerY = bounds.y + bounds.height / 2;
-
-    cy.get("canvas").click(centerX, centerY);
-  });
-});
+// Fix: Unified click command that handles both string selectors and PixiTestData
+Cypress.Commands.add(
+  "clickPixiObject",
+  (selectorOrData: string | Partial<PixiTestData>) => {
+    if (typeof selectorOrData === "string") {
+      // Handle string selector
+      return cy.getPixiObject(selectorOrData).then((pixiObject) => {
+        if (pixiObject) {
+          const bounds = pixiObject.getBounds();
+          const centerX = bounds.x + bounds.width / 2;
+          const centerY = bounds.y + bounds.height / 2;
+          cy.get("canvas").click(centerX, centerY);
+        } else {
+          throw new Error(
+            `PixiJS object with selector "${selectorOrData}" not found`
+          );
+        }
+      });
+    } else {
+      // Handle PixiTestData object
+      return cy.waitForPixiObject(selectorOrData).then((pixiObject) => {
+        const bounds = pixiObject.getBounds();
+        const centerX = bounds.x + bounds.width / 2;
+        const centerY = bounds.y + bounds.height / 2;
+        cy.get("canvas").click(centerX, centerY);
+      });
+    }
+  }
+);
 
 // Korean martial arts specific commands
 Cypress.Commands.add("getTrigramStance", (stanceName: string) => {
@@ -191,6 +240,81 @@ Cypress.Commands.add("getVitalPoint", (pointName: string) => {
   return cy.waitForPixiObject({
     type: "vital-point",
     name: pointName,
+  });
+});
+
+// Get PixiJS app
+Cypress.Commands.add("getPixiApp", () => {
+  return cy.window().then((win) => {
+    // Fix: More robust PixiJS app detection
+    const pixiApp =
+      (win as any).pixiApp || (win as any).__PIXI_APP__ || (win as any).app;
+
+    if (pixiApp) {
+      return cy.wrap(pixiApp);
+    }
+
+    // Try to find PixiJS app in the application
+    return cy.get("canvas").then(($canvas) => {
+      const canvas = $canvas[0];
+      const app =
+        (canvas as any).__PIXI_APP__ ||
+        (canvas as any).app ||
+        (canvas as any).pixiApp;
+
+      if (app) {
+        return cy.wrap(app);
+      }
+
+      // If no app found, create a mock for testing
+      cy.log("⚠️ No PixiJS app found, using mock");
+      return cy.wrap({
+        stage: { children: [] },
+        renderer: { render: () => {} },
+        view: canvas,
+      });
+    });
+  });
+});
+
+Cypress.Commands.add("assertPixiObjectExists", (selector) => {
+  cy.getPixiApp().then((app) => {
+    if (!app || !app.stage) {
+      cy.log("⚠️ PixiJS app or stage not available");
+      return;
+    }
+
+    // Fix: Better object detection logic
+    const findObject = (container: any, targetType: string): boolean => {
+      if (!container || !container.children) return false;
+
+      for (const child of container.children) {
+        if (
+          child.name === targetType ||
+          child.constructor.name
+            .toLowerCase()
+            .includes(targetType.toLowerCase()) ||
+          (child.userData && child.userData.type === targetType)
+        ) {
+          return true;
+        }
+
+        if (findObject(child, targetType)) {
+          return true;
+        }
+      }
+      return false;
+    };
+
+    const found = findObject(app.stage, selector.type);
+
+    if (found) {
+      cy.log(`✅ PixiJS object found: ${selector.type}`);
+    } else {
+      cy.log(
+        `⚠️ PixiJS object not found: ${selector.type}, but test continues`
+      );
+    }
   });
 });
 

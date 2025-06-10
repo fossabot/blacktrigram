@@ -25,6 +25,8 @@ function useWindowSize() {
 
 export interface IntroScreenProps {
   readonly onMenuSelect: (mode: GameMode) => void;
+  readonly width?: number;
+  readonly height?: number;
 }
 
 const MENU_ITEMS: { mode: GameMode; korean: string; english: string }[] = [
@@ -33,7 +35,11 @@ const MENU_ITEMS: { mode: GameMode; korean: string; english: string }[] = [
   { mode: GameMode.PRACTICE, korean: "연습", english: "Practice" },
 ];
 
-export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
+export const IntroScreen: React.FC<IntroScreenProps> = ({
+  onMenuSelect,
+  width: propWidth,
+  height: propHeight,
+}) => {
   const audio = useAudio();
   const introMusicStarted = useRef(false);
   const [currentSection, setCurrentSection] = useState<string>("menu");
@@ -49,6 +55,10 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
   const [selectedArchetype, setSelectedArchetype] = useState(0);
   const [selectedMenuIndex, setSelectedMenuIndex] = useState(0);
   const { width, height } = useWindowSize();
+
+  // Use prop dimensions if provided, otherwise use window size
+  const screenWidth = propWidth ?? width;
+  const screenHeight = propHeight ?? height;
 
   // Enhanced asset loading with all available textures
   useEffect(() => {
@@ -204,15 +214,15 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
   }, [audio]);
 
   // Responsive logo and layout calculations
-  const isMobile = width < 768;
-  const isTablet = width >= 768 && width < 1024;
+  const isMobile = screenWidth < 768;
+  const isTablet = screenWidth >= 768 && screenWidth < 1024;
   const logoSize = isMobile
-    ? Math.min(width, height) * 0.35
+    ? Math.min(screenWidth, screenHeight) * 0.35
     : isTablet
-    ? Math.min(width, height) * 0.25
-    : Math.min(width, height) * 0.2;
+    ? Math.min(screenWidth, screenHeight) * 0.25
+    : Math.min(screenWidth, screenHeight) * 0.2;
 
-  const menuStartY = height * (isMobile ? 0.65 : isTablet ? 0.6 : 0.55);
+  const menuStartY = screenHeight * (isMobile ? 0.65 : isTablet ? 0.6 : 0.55);
 
   // Enhanced cyberpunk background with neon grid
   const drawEnhancedBackground = useCallback(
@@ -220,40 +230,44 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
       g.clear();
 
       // Base dark gradient
-      const gradient = new PIXI.FillGradient(0, 0, width, height);
+      const gradient = new PIXI.FillGradient(0, 0, screenWidth, screenHeight);
       gradient.addColorStop(0, 0x0a0a0f);
       gradient.addColorStop(0.5, 0x1a1a2e);
       gradient.addColorStop(1, 0x0f0f23);
       g.fill(gradient);
-      g.rect(0, 0, width, height);
+      g.rect(0, 0, screenWidth, screenHeight);
       g.fill();
 
       // Cyberpunk neon grid
       g.stroke({ width: 1, color: KOREAN_COLORS.PRIMARY_CYAN, alpha: 0.15 });
       const gridSize = isMobile ? 30 : 40;
-      for (let i = 0; i < width; i += gridSize) {
+      for (let i = 0; i < screenWidth; i += gridSize) {
         g.moveTo(i, 0);
-        g.lineTo(i, height);
+        g.lineTo(i, screenHeight);
       }
-      for (let i = 0; i < height; i += gridSize) {
+      for (let i = 0; i < screenHeight; i += gridSize) {
         g.moveTo(0, i);
-        g.lineTo(width, i);
+        g.lineTo(screenWidth, i);
       }
       g.stroke();
 
       // Pulsing accent lines
       g.stroke({ width: 2, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.3 });
-      g.moveTo(0, height * 0.2);
-      g.lineTo(width, height * 0.2);
-      g.moveTo(0, height * 0.8);
-      g.lineTo(width, height * 0.8);
+      g.moveTo(0, screenHeight * 0.2);
+      g.lineTo(screenWidth, screenHeight * 0.2);
+      g.moveTo(0, screenHeight * 0.8);
+      g.lineTo(screenWidth, screenHeight * 0.8);
       g.stroke();
     },
-    [width, height, isMobile]
+    [screenWidth, screenHeight, isMobile]
   );
 
   return (
-    <pixiContainer width={width} height={height} data-testid="intro-screen">
+    <pixiContainer
+      width={screenWidth}
+      height={screenHeight}
+      data-testid="intro-screen"
+    >
       {/* Enhanced Background Layers */}
       <pixiGraphics
         draw={drawEnhancedBackground}
@@ -266,8 +280,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
           texture={bgTexture}
           x={0}
           y={0}
-          width={width}
-          height={height}
+          width={screenWidth}
+          height={screenHeight}
           alpha={0.4}
           data-testid="intro-bg-texture"
         />
@@ -284,11 +298,17 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
             }
             onShowPhilosophy={handleShowPhilosophy}
             onShowControls={handleShowControls}
-            width={isMobile ? width * 0.9 : isTablet ? width * 0.7 : 480}
-            height={isMobile ? height * 0.25 : height * 0.3}
+            width={
+              isMobile ? screenWidth * 0.9 : isTablet ? screenWidth * 0.7 : 480
+            }
+            height={isMobile ? screenHeight * 0.25 : screenHeight * 0.3}
             x={
-              width / 2 -
-              (isMobile ? width * 0.45 : isTablet ? width * 0.35 : 240)
+              screenWidth / 2 -
+              (isMobile
+                ? screenWidth * 0.45
+                : isTablet
+                ? screenWidth * 0.35
+                : 240)
             }
             y={menuStartY}
             menuItems={MENU_ITEMS}
@@ -297,8 +317,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
 
           {/* Enhanced Cyberpunk Menu Overlay with Korean Aesthetics */}
           <pixiContainer
-            x={width / 2}
-            y={height * 0.6}
+            x={screenWidth / 2}
+            y={screenHeight * 0.6}
             data-testid="interactive-menu"
           >
             {MENU_ITEMS.map((item, index) => (
@@ -369,10 +389,10 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
       {dojangWallTexture && (
         <pixiSprite
           texture={dojangWallTexture}
-          x={width * 0.8}
+          x={screenWidth * 0.8}
           y={0}
-          width={width * 0.3}
-          height={height}
+          width={screenWidth * 0.3}
+          height={screenHeight}
           alpha={0.2}
           data-testid="dojang-wall-accent"
         />
@@ -380,8 +400,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
 
       {/* Large Logo Section - Responsive positioning */}
       <pixiContainer
-        x={width / 2}
-        y={height * (isMobile ? 0.25 : 0.3)}
+        x={screenWidth / 2}
+        y={screenHeight * (isMobile ? 0.25 : 0.3)}
         data-testid="logo-section"
       >
         {logoTexture && (
@@ -439,8 +459,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
           english: "Korean Martial Arts Simulator",
         }}
         align="center"
-        x={width / 2}
-        y={height * (isMobile ? 0.45 : 0.48)}
+        x={screenWidth / 2}
+        y={screenHeight * (isMobile ? 0.45 : 0.48)}
         data-testid="main-title"
       />
 
@@ -455,11 +475,17 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
             }
             onShowPhilosophy={handleShowPhilosophy}
             onShowControls={handleShowControls}
-            width={isMobile ? width * 0.9 : isTablet ? width * 0.7 : 480}
-            height={isMobile ? height * 0.25 : height * 0.3}
+            width={
+              isMobile ? screenWidth * 0.9 : isTablet ? screenWidth * 0.7 : 480
+            }
+            height={isMobile ? screenHeight * 0.25 : screenHeight * 0.3}
             x={
-              width / 2 -
-              (isMobile ? width * 0.45 : isTablet ? width * 0.35 : 240)
+              screenWidth / 2 -
+              (isMobile
+                ? screenWidth * 0.45
+                : isTablet
+                ? screenWidth * 0.35
+                : 240)
             }
             y={menuStartY}
             menuItems={MENU_ITEMS}
@@ -469,7 +495,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
           {/* Enhanced Archetype Selection - Mobile-Responsive */}
           <pixiContainer
             x={isMobile ? 20 : 40}
-            y={height - (isMobile ? 220 : 250)}
+            y={screenHeight - (isMobile ? 220 : 250)}
             data-testid="archetype-selection"
           >
             {/* Archetype Toggle with Better Visual Design */}
@@ -664,8 +690,11 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
 
           {/* Enhanced Archetype Display with Image Cycling */}
           <pixiContainer
-            x={width - (isMobile ? width * 0.95 : isTablet ? 350 : 400)}
-            y={height / 2 - (isMobile ? 100 : 150)}
+            x={
+              screenWidth -
+              (isMobile ? screenWidth * 0.95 : isTablet ? 350 : 400)
+            }
+            y={screenHeight / 2 - (isMobile ? 100 : 150)}
             data-testid="archetype-display"
           >
             {!isMobile && (
@@ -725,10 +754,10 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
       {currentSection === "philosophy" && (
         <PhilosophySection
           onBack={handleBackToMenu}
-          width={width * 0.9}
-          height={height * 0.8}
-          x={width * 0.05}
-          y={height * 0.1}
+          width={screenWidth * 0.9}
+          height={screenHeight * 0.8}
+          x={screenWidth * 0.05}
+          y={screenHeight * 0.1}
           data-testid="philosophy-section"
         />
       )}
@@ -736,18 +765,18 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
       {currentSection === "controls" && (
         <ControlsSection
           onBack={handleBackToMenu}
-          width={width * 0.9}
-          height={height * 0.8}
-          x={width * 0.05}
-          y={height * 0.1}
+          width={screenWidth * 0.9}
+          height={screenHeight * 0.8}
+          x={screenWidth * 0.05}
+          y={screenHeight * 0.1}
           data-testid="controls-section"
         />
       )}
 
       {/* Enhanced Footer with Better Mobile Layout */}
       <pixiContainer
-        x={width / 2}
-        y={height - (isMobile ? 60 : 80)}
+        x={screenWidth / 2}
+        y={screenHeight - (isMobile ? 60 : 80)}
         data-testid="intro-footer"
       >
         <pixiText

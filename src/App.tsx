@@ -21,9 +21,6 @@ function App() {
   const [gameWinner, setGameWinner] = useState<PlayerState | null>(null);
   const [matchStats, setMatchStats] = useState<MatchStatistics | null>(null);
   const [appReady, setAppReady] = useState(false);
-  const [selectedArchetype, setSelectedArchetype] = useState<PlayerArchetype>(
-    PlayerArchetype.AMSALJA
-  );
 
   // Add responsive screen size detection
   const [screenSize, setScreenSize] = useState({
@@ -97,11 +94,6 @@ function App() {
     setIsGameActive(true);
     setGameWinner(null);
     setMatchStats(null);
-  }, []);
-
-  const handleArchetypeSelect = useCallback((archetype: PlayerArchetype) => {
-    setSelectedArchetype(archetype);
-    console.log(`Selected archetype: ${archetype}`);
   }, []);
 
   const handleGameEnd = useCallback((winner: number) => {
@@ -178,6 +170,8 @@ function App() {
           matchStatistics={matchStats}
           onReturnToMenu={handleReturnToMenu}
           onRestart={() => handleGameStart(gameMode!)}
+          width={screenSize.width}
+          height={screenSize.height}
         />
       );
     }
@@ -189,8 +183,8 @@ function App() {
           return (
             <TrainingScreen
               onReturnToMenu={handleReturnToMenu}
-              width={1200}
-              height={800}
+              width={screenSize.width}
+              height={screenSize.height}
             />
           );
         case GameMode.VERSUS:
@@ -210,17 +204,29 @@ function App() {
               onReturnToMenu={handleReturnToMenu}
               onGameEnd={handleGameEnd}
               gameMode={gameMode}
-              width={1200}
-              height={800}
+              width={screenSize.width}
+              height={screenSize.height}
             />
           );
         default:
-          return <IntroScreen onMenuSelect={handleGameStart} />;
+          return (
+            <IntroScreen
+              onMenuSelect={handleGameStart}
+              width={screenSize.width}
+              height={screenSize.height}
+            />
+          );
       }
     }
 
-    // Default to intro screen
-    return <IntroScreen onMenuSelect={handleGameStart} />;
+    // Default to intro screen with full dimensions
+    return (
+      <IntroScreen
+        onMenuSelect={handleGameStart}
+        width={screenSize.width}
+        height={screenSize.height}
+      />
+    );
   };
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -318,123 +324,7 @@ function App() {
                 }}
               />
 
-              {/* Fix: Move archetype selection to not cover canvas */}
-              <div
-                className="archetype-section"
-                style={{
-                  position: "absolute",
-                  bottom: "5%",
-                  left: "2%",
-                  maxWidth: screenSize.isMobile ? "95%" : "300px",
-                  pointerEvents: "auto",
-                  zIndex: 501,
-                  backgroundColor: "rgba(0, 0, 0, 0.8)",
-                  borderRadius: "8px",
-                  padding: "10px",
-                  border: "2px solid #ffd700",
-                }}
-              >
-                <button
-                  className="archetype-toggle"
-                  data-testid="archetype-toggle"
-                  style={{
-                    padding: "10px 20px",
-                    backgroundColor: "rgba(255, 215, 0, 0.8)",
-                    color: "black",
-                    border: "2px solid #ffd700",
-                    borderRadius: "6px",
-                    cursor: "pointer",
-                    fontSize: "14px",
-                    fontWeight: "bold",
-                    marginBottom: "10px",
-                    display: "block",
-                  }}
-                  onClick={() => console.log("Archetype toggle clicked")}
-                >
-                  무사 유형 - Archetype
-                </button>
-
-                <div data-testid="archetype-list" style={{ display: "block" }}>
-                  {[
-                    {
-                      id: PlayerArchetype.MUSA,
-                      korean: "무사",
-                      english: "Warrior",
-                    },
-                    {
-                      id: PlayerArchetype.AMSALJA,
-                      korean: "암살자",
-                      english: "Assassin",
-                    },
-                    {
-                      id: PlayerArchetype.HACKER,
-                      korean: "해커",
-                      english: "Hacker",
-                    },
-                    {
-                      id: PlayerArchetype.JEONGBO_YOWON,
-                      korean: "정보요원",
-                      english: "Agent",
-                    },
-                    {
-                      id: PlayerArchetype.JOJIK_POKRYEOKBAE,
-                      korean: "조직폭력배",
-                      english: "Gangster",
-                    },
-                  ].map((archetype) => (
-                    <button
-                      key={archetype.id}
-                      className={`archetype-option-${archetype.id}`}
-                      data-testid={`archetype-option-${archetype.id}`}
-                      style={{
-                        display: "block",
-                        width: "200px",
-                        padding: "8px 16px",
-                        marginBottom: "5px",
-                        backgroundColor:
-                          selectedArchetype === archetype.id
-                            ? "rgba(255, 215, 0, 0.3)"
-                            : "rgba(26, 26, 46, 0.9)",
-                        color: "white",
-                        border: "1px solid #4a5568",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                        fontSize: "12px",
-                        textAlign: "left",
-                      }}
-                      onClick={() => handleArchetypeSelect(archetype.id)}
-                    >
-                      {archetype.korean} - {archetype.english}
-                    </button>
-                  ))}
-                </div>
-
-                <div
-                  data-testid="selected-archetype"
-                  style={{
-                    marginTop: "10px",
-                    padding: "8px",
-                    backgroundColor: "rgba(255, 215, 0, 0.2)",
-                    color: "#ffd700",
-                    borderRadius: "4px",
-                    fontSize: "14px",
-                    fontWeight: "bold",
-                  }}
-                >
-                  선택됨:{" "}
-                  {selectedArchetype === PlayerArchetype.AMSALJA
-                    ? "암살자"
-                    : selectedArchetype === PlayerArchetype.HACKER
-                    ? "해커"
-                    : selectedArchetype === PlayerArchetype.MUSA
-                    ? "무사"
-                    : selectedArchetype === PlayerArchetype.JEONGBO_YOWON
-                    ? "정보요원"
-                    : "조직폭력배"}
-                </div>
-              </div>
-
-              {/* Fix: Improved button positioning */}
+              {/* Fix: Lower z-index and better positioning for mobile buttons */}
               <button
                 className="training-button"
                 data-testid="training-button"
@@ -451,7 +341,7 @@ function App() {
                   pointerEvents: "auto",
                   fontSize: screenSize.isMobile ? "14px" : "16px",
                   fontWeight: "bold",
-                  zIndex: 501,
+                  zIndex: 400, // Fix: Lower z-index
                   boxShadow: "0 0 20px rgba(0, 212, 255, 0.5)",
                   transform: screenSize.isMobile ? "none" : "translateX(-50%)",
                 }}
@@ -476,7 +366,7 @@ function App() {
                   pointerEvents: "auto",
                   fontSize: screenSize.isMobile ? "14px" : "16px",
                   fontWeight: "bold",
-                  zIndex: 501,
+                  zIndex: 400, // Fix: Lower z-index
                   boxShadow: "0 0 20px rgba(255, 107, 53, 0.5)",
                   transform: screenSize.isMobile ? "none" : "translateX(-50%)",
                 }}
@@ -514,7 +404,7 @@ function App() {
                   cursor: "pointer",
                   pointerEvents: "auto",
                   fontSize: "14px",
-                  zIndex: 1001,
+                  zIndex: 400, // Fix: Lower z-index
                 }}
                 onClick={handleReturnToMenu}
               >
@@ -546,7 +436,7 @@ function App() {
                   fontSize: "24px",
                   fontWeight: "bold",
                   pointerEvents: "none",
-                  zIndex: 1001,
+                  zIndex: 400, // Fix: Lower z-index
                 }}
               >
                 Combat - 전투
@@ -565,7 +455,7 @@ function App() {
                   cursor: "pointer",
                   pointerEvents: "auto",
                   fontSize: "14px",
-                  zIndex: 1001,
+                  zIndex: 400, // Fix: Lower z-index
                 }}
                 onClick={handleReturnToMenu}
               >

@@ -1,4 +1,9 @@
 import React from "react";
+import {
+  ResponsivePixiContainer,
+  ResponsivePixiButton,
+  ResponsivePixiPanel,
+} from "../../ui/base/ResponsivePixiComponents";
 import { KOREAN_COLORS } from "../../../types/constants";
 import { COMBAT_CONTROLS } from "../../../types/constants/controls";
 
@@ -17,119 +22,173 @@ export const ControlsSection: React.FC<ControlsSectionProps> = ({
   width = 800,
   height = 600,
 }) => {
+  const isMobile = width < 768;
+  const isTablet = width >= 768 && width < 1024;
+
   return (
-    <pixiContainer x={x} y={y} data-testid="controls-section">
-      {/* Background */}
-      <pixiGraphics
-        draw={(g) => {
-          g.clear();
-          g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 0.95 });
-          g.roundRect(0, 0, width, height, 12);
-          g.fill();
-          g.stroke({ width: 3, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.8 });
-          g.roundRect(0, 0, width, height, 12);
-          g.stroke();
-        }}
-      />
-
-      {/* Title */}
-      <pixiText
-        text="조작법 (Controls)"
-        style={{
-          fontSize: 32,
-          fill: KOREAN_COLORS.ACCENT_GOLD,
-          fontFamily: "Arial, sans-serif",
-          align: "center",
-          fontWeight: "bold",
-        }}
-        x={width / 2}
-        y={40}
-        anchor={0.5}
-      />
-
+    <ResponsivePixiPanel
+      title="조작법 (Controls)"
+      x={x}
+      y={y}
+      width={width}
+      height={height}
+      screenWidth={width}
+      screenHeight={height}
+      data-testid="controls-section"
+    >
       {/* Trigram Stances Section */}
-      <pixiText
-        text="팔괘 자세 (Trigram Stances)"
-        style={{
-          fontSize: 24,
-          fill: KOREAN_COLORS.TEXT_PRIMARY,
-          fontFamily: "Arial, sans-serif",
-          fontWeight: "bold",
-        }}
-        x={40}
-        y={100}
-      />
-
-      {/* Stance Controls */}
-      {Object.entries(COMBAT_CONTROLS.stanceControls).map(
-        ([key, value], index) => (
-          <pixiContainer key={key} x={40} y={140 + index * 30}>
-            <pixiText
-              text={`${key}: ${value.korean} (${value.technique})`}
-              style={{
-                fontSize: 16,
-                fill: KOREAN_COLORS.TEXT_SECONDARY,
-                fontFamily: "Arial, sans-serif",
-              }}
-            />
-          </pixiContainer>
-        )
-      )}
-
-      {/* Combat Controls Section */}
-      <pixiText
-        text="전투 조작 (Combat Controls)"
-        style={{
-          fontSize: 24,
-          fill: KOREAN_COLORS.TEXT_PRIMARY,
-          fontFamily: "Arial, sans-serif",
-          fontWeight: "bold",
-        }}
-        x={40}
-        y={380}
-      />
-
-      {Object.entries(COMBAT_CONTROLS.combat).map(
-        ([key, description], index) => (
-          <pixiContainer key={key} x={40} y={420 + index * 30}>
-            <pixiText
-              text={`${key}: ${description}`}
-              style={{
-                fontSize: 16,
-                fill: KOREAN_COLORS.TEXT_SECONDARY,
-                fontFamily: "Arial, sans-serif",
-              }}
-            />
-          </pixiContainer>
-        )
-      )}
-
-      {/* Back Button */}
-      <pixiContainer x={width - 150} y={height - 80}>
-        <pixiGraphics
-          draw={(g) => {
-            g.clear();
-            g.fill({ color: KOREAN_COLORS.ACCENT_RED, alpha: 0.8 });
-            g.roundRect(0, 0, 120, 40, 5);
-            g.fill();
-          }}
-          interactive={true}
-          onPointerDown={onBack}
-        />
+      <ResponsivePixiContainer
+        x={0}
+        y={0}
+        screenWidth={width}
+        screenHeight={height}
+        data-testid="trigram-controls"
+      >
         <pixiText
-          text="돌아가기"
+          text="팔괘 자세 (Trigram Stances)"
           style={{
-            fontSize: 16,
+            fontSize: isMobile ? 18 : 24,
             fill: KOREAN_COLORS.TEXT_PRIMARY,
-            align: "center",
+            fontFamily: "Arial, sans-serif",
             fontWeight: "bold",
           }}
-          x={60}
-          y={20}
-          anchor={0.5}
+          x={20}
+          y={0}
         />
-      </pixiContainer>
-    </pixiContainer>
+
+        {/* Stance Controls Grid */}
+        <ResponsivePixiContainer
+          x={20}
+          y={35}
+          screenWidth={width}
+          screenHeight={height}
+          data-testid="stance-controls-grid"
+        >
+          {Object.entries(COMBAT_CONTROLS.stanceControls).map(
+            ([key, value], index) => {
+              const buttonsPerRow = isMobile ? 2 : isTablet ? 4 : 4;
+              const buttonWidth = isMobile ? 160 : 180;
+              const buttonHeight = isMobile ? 40 : 35;
+              const xPos = (index % buttonsPerRow) * (buttonWidth + 10);
+              const yPos =
+                Math.floor(index / buttonsPerRow) * (buttonHeight + 10);
+
+              return (
+                <ResponsivePixiContainer
+                  key={key}
+                  x={xPos}
+                  y={yPos}
+                  screenWidth={width}
+                  screenHeight={height}
+                  data-testid={`stance-control-${key}`}
+                >
+                  <pixiGraphics
+                    draw={(g) => {
+                      g.clear();
+                      g.fill({
+                        color: KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
+                        alpha: 0.8,
+                      });
+                      g.roundRect(0, 0, buttonWidth, buttonHeight, 6);
+                      g.fill();
+                      g.stroke({
+                        width: 1,
+                        color: KOREAN_COLORS.ACCENT_GOLD,
+                        alpha: 0.6,
+                      });
+                      g.roundRect(0, 0, buttonWidth, buttonHeight, 6);
+                      g.stroke();
+                    }}
+                  />
+                  <pixiText
+                    text={`${key}: ${value.korean} (${value.technique})`}
+                    style={{
+                      fontSize: isMobile ? 10 : 12,
+                      fill: KOREAN_COLORS.TEXT_SECONDARY,
+                      fontFamily: "Arial, sans-serif",
+                    }}
+                    x={8}
+                    y={buttonHeight / 2}
+                    anchor={{ x: 0, y: 0.5 }}
+                  />
+                </ResponsivePixiContainer>
+              );
+            }
+          )}
+        </ResponsivePixiContainer>
+      </ResponsivePixiContainer>
+
+      {/* Combat Controls Section */}
+      <ResponsivePixiContainer
+        x={0}
+        y={height * 0.5}
+        screenWidth={width}
+        screenHeight={height}
+        data-testid="combat-controls"
+      >
+        <pixiText
+          text="전투 조작 (Combat Controls)"
+          style={{
+            fontSize: isMobile ? 18 : 24,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
+            fontFamily: "Arial, sans-serif",
+            fontWeight: "bold",
+          }}
+          x={20}
+          y={0}
+        />
+
+        {Object.entries(COMBAT_CONTROLS.combat).map(
+          ([key, description], index) => (
+            <ResponsivePixiContainer
+              key={key}
+              x={20}
+              y={35 + index * (isMobile ? 25 : 30)}
+              screenWidth={width}
+              screenHeight={height}
+              data-testid={`combat-control-${key}`}
+            >
+              <pixiGraphics
+                draw={(g) => {
+                  g.clear();
+                  g.fill({
+                    color: KOREAN_COLORS.UI_BACKGROUND_LIGHT,
+                    alpha: 0.6,
+                  });
+                  g.roundRect(0, 0, width - 80, isMobile ? 20 : 25, 4);
+                  g.fill();
+                }}
+              />
+              <pixiText
+                text={`${key}: ${description}`}
+                style={{
+                  fontSize: isMobile ? 11 : 14,
+                  fill: KOREAN_COLORS.TEXT_SECONDARY,
+                  fontFamily: "Arial, sans-serif",
+                }}
+                x={8}
+                y={(isMobile ? 20 : 25) / 2}
+                anchor={{ x: 0, y: 0.5 }}
+              />
+            </ResponsivePixiContainer>
+          )
+        )}
+      </ResponsivePixiContainer>
+
+      {/* Back Button */}
+      <ResponsivePixiButton
+        text="돌아가기"
+        x={width - 150}
+        y={height - 80}
+        width={120}
+        height={40}
+        screenWidth={width}
+        screenHeight={height}
+        variant="secondary"
+        onClick={onBack}
+        data-testid="controls-back-button"
+      />
+    </ResponsivePixiPanel>
   );
 };
 

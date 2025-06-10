@@ -81,3 +81,12 @@ Cypress.config("pageLoadTimeout", 30000);
 
 // Note: Tasks are configured in cypress.config.ts, not here
 // The tasks "log" and "silenceWebGLWarning" should be defined there
+
+// Import custom commands with type support
+import "./commands";
+import "./pixi-commands";
+
+// Fix: Ensure proper type declarations are loaded
+/// <reference types="cypress" />
+/// <reference path="./commands.ts" />
+/// <reference path="./pixi-commands.ts" />
