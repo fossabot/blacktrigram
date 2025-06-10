@@ -43,10 +43,10 @@ export const GameUI: React.FC<GameUIProps> = ({
 
       {/* Round Timer */}
       <RoundTimer
-        x={width / 2 - 50}
+        x={width / 2}
         y={20}
         timeRemaining={gameState.timeRemaining}
-        totalTime={180} // Fix: Use totalTime instead of maxTime
+        totalTime={180} // Fix: Use totalTime consistently
       />
 
       {/* Player 2 Health Bar */}

@@ -29,6 +29,7 @@ export function createHitEffect(
     lifespan: duration,
     alpha: 1.0,
     size: 1.0,
+    startTime: Date.now(), // Fix: Add required startTime property
   };
 }
 

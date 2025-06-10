@@ -21,7 +21,8 @@ export interface HitEffect {
   readonly vitalPointId?: string;
   readonly statusEffect?: StatusEffect;
   readonly yOffset?: number;
-  readonly intensity: number; // Added missing property for consistency
+  readonly intensity: number;
+  readonly startTime: number; // Required property
 }
 
 // Hit effect types

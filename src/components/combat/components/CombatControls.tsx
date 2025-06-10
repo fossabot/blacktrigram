@@ -1,38 +1,26 @@
-import React, { useMemo, useCallback, useState } from "react";
-import * as PIXI from "pixi.js";
-import type {
-  CombatControlsProps,
-  TrigramStance,
-  KoreanTechnique,
-} from "../../../types";
+import React, { useCallback, useMemo } from "react";
+import { usePixiExtensions } from "../../../utils/pixiExtensions";
+import type { CombatControlsProps } from "../../../types/components";
+import type { KoreanTechnique } from "../../../types/combat";
+import type { TrigramStance } from "../../../types/trigram";
+import { KOREAN_COLORS } from "../../../types/constants/colors";
+import { TRIGRAM_DATA } from "../../../types/constants/trigram";
 import { DamageType } from "../../../types/enums";
-import {
-  KOREAN_COLORS,
-  FONT_FAMILY,
-  FONT_SIZES,
-  TRIGRAM_DATA,
-  TRIGRAM_STANCES_ORDER,
-} from "../../../types/constants";
-import { BaseButton } from "../../ui/base/BaseButton";
+import * as PIXI from "pixi.js";
 
 export const CombatControls: React.FC<CombatControlsProps> = ({
   onAttack,
   onDefend,
   onSwitchStance,
-  onPauseToggle,
-  isPaused,
   player,
   onTechniqueExecute,
-  onGuard,
   isExecutingTechnique = false,
   width = 300,
   height = 100,
   x = 0,
   y = 0,
 }) => {
-  const [selectedStance, setSelectedStance] = useState<TrigramStance | null>(
-    null
-  );
+  usePixiExtensions();
 
   // Get current stance data safely
   const currentStanceData = player
@@ -76,54 +64,13 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
     return [koreanTechnique];
   }, [currentStanceData, player.currentStance]);
 
-  const handleStanceSelect = useCallback(
-    (stance: TrigramStance) => {
-      setSelectedStance(stance);
-      onSwitchStance?.(stance);
-    },
-    [onSwitchStance]
-  );
-
   const handleTechniqueExecute = useCallback(
     (technique: KoreanTechnique) => {
+      console.log("Executing technique:", technique.name.korean);
       onTechniqueExecute?.(technique);
     },
     [onTechniqueExecute]
   );
-
-  const getCurrentTechnique = useCallback((): KoreanTechnique | null => {
-    if (!player?.currentStance) return null;
-
-    return {
-      id: `${player.currentStance}_basic`,
-      name: {
-        korean: `${player.currentStance} 기법`,
-        english: `${player.currentStance} Technique`,
-        romanized: `${player.currentStance} gihbeop`,
-      },
-      koreanName: `${player.currentStance} 기법`,
-      englishName: `${player.currentStance} Technique`,
-      romanized: `${player.currentStance} gihbeop`,
-      description: {
-        korean: `${player.currentStance} 자세의 기본 기법`,
-        english: `Basic technique for ${player.currentStance} stance`,
-      },
-      stance: player.currentStance,
-      type: "strike" as any,
-      damageType: DamageType.BLUNT,
-      damage: 20,
-      damageRange: { min: 15, max: 25 },
-      range: 1.0,
-      kiCost: 10,
-      staminaCost: 15,
-      accuracy: 0.8,
-      executionTime: 500,
-      recoveryTime: 800,
-      critChance: 0.1,
-      critMultiplier: 1.5,
-      effects: [],
-    };
-  }, [player?.currentStance]);
 
   const controlsPanelDraw = useCallback(
     (g: PIXI.Graphics) => {
@@ -137,135 +84,139 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
   );
 
   return (
-    <pixiContainer x={x} y={y}>
-      {/* Controls panel background */}
+    <pixiContainer x={x} y={y} data-testid="combat-controls">
+      {/* Control Panel Background */}
       <pixiGraphics draw={controlsPanelDraw} />
 
-      {/* Stance selection buttons */}
-      <pixiContainer x={20} y={20}>
-        <pixiText
-          text="자세 선택 (Stance Selection)"
-          style={
-            new PIXI.TextStyle({
-              fontSize: FONT_SIZES.small,
-              fill: KOREAN_COLORS.TEXT_SECONDARY,
-              fontFamily: FONT_FAMILY.PRIMARY,
-            })
-          }
+      {/* Attack Button */}
+      <pixiContainer x={10} y={10}>
+        <pixiGraphics
+          draw={(g) => {
+            g.clear();
+            g.beginFill(KOREAN_COLORS.ACCENT_RED, 0.8);
+            g.drawRoundedRect(0, 0, 60, 30, 5);
+            g.endFill();
+          }}
+          interactive={true}
+          onPointerDown={onAttack}
         />
-
-        {TRIGRAM_STANCES_ORDER.map((stance, index) => {
-          const stanceData = TRIGRAM_DATA[stance];
-          const isSelected = selectedStance === stance;
-          const isCurrentStance = player?.currentStance === stance;
-
-          return (
-            <BaseButton
-              key={stance}
-              x={index * 80}
-              y={25}
-              width={70}
-              height={30}
-              text={stanceData?.symbol || stance}
-              variant={
-                isCurrentStance ? "primary" : isSelected ? "secondary" : "ghost"
-              }
-              onClick={() => handleStanceSelect(stance as TrigramStance)}
-              disabled={isExecutingTechnique}
-            />
-          );
-        })}
+        <pixiText
+          text="공격"
+          style={{
+            fontSize: 12,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
+            align: "center",
+          }}
+          x={30}
+          y={15}
+          anchor={0.5}
+        />
       </pixiContainer>
 
-      {/* Available techniques display */}
-      <pixiContainer x={20} y={80}>
-        <pixiText
-          text="기술 (Techniques)"
-          style={
-            new PIXI.TextStyle({
-              fontSize: FONT_SIZES.small,
-              fill: KOREAN_COLORS.TEXT_SECONDARY,
-              fontFamily: FONT_FAMILY.PRIMARY,
-            })
-          }
+      {/* Defend Button */}
+      <pixiContainer x={80} y={10}>
+        <pixiGraphics
+          draw={(g) => {
+            g.clear();
+            g.beginFill(KOREAN_COLORS.ACCENT_BLUE, 0.8);
+            g.drawRoundedRect(0, 0, 60, 30, 5);
+            g.endFill();
+          }}
+          interactive={true}
+          onPointerDown={onDefend}
         />
+        <pixiText
+          text="방어"
+          style={{
+            fontSize: 12,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
+            align: "center",
+          }}
+          x={30}
+          y={15}
+          anchor={0.5}
+        />
+      </pixiContainer>
 
-        {availableTechniques.map((tech: KoreanTechnique, index: number) => (
-          <BaseButton
-            key={tech.id}
-            x={index * 160}
-            y={25}
-            width={150}
-            height={35}
-            text={tech.koreanName}
-            variant={!isExecutingTechnique ? "primary" : "ghost"}
-            onClick={() => handleTechniqueExecute(tech)}
-            disabled={isExecutingTechnique}
+      {/* Current Technique Button */}
+      {availableTechniques.length > 0 && (
+        <pixiContainer x={150} y={10}>
+          <pixiGraphics
+            draw={(g) => {
+              g.clear();
+              g.beginFill(KOREAN_COLORS.ACCENT_GOLD, 0.8);
+              g.drawRoundedRect(0, 0, 80, 30, 5);
+              g.endFill();
+            }}
+            interactive={true}
+            onPointerDown={() => handleTechniqueExecute(availableTechniques[0])}
           />
-        ))}
-      </pixiContainer>
-
-      {/* Combat Control Buttons */}
-      <BaseButton
-        text="공격 (Attack)"
-        onClick={onAttack}
-        x={10}
-        y={10}
-        width={80}
-        height={30}
-        variant={!isExecutingTechnique ? "primary" : "ghost"}
-        disabled={isExecutingTechnique}
-      />
-
-      <BaseButton
-        text="방어 (Defend)"
-        onClick={onDefend}
-        x={100}
-        y={10}
-        width={80}
-        height={30}
-        variant="secondary"
-      />
-
-      {/* Guard button - only show if onGuard is provided */}
-      {onGuard && (
-        <BaseButton
-          text="방어 (Guard)"
-          onClick={onGuard}
-          x={190}
-          y={10}
-          width={80}
-          height={30}
-          variant="secondary"
-        />
+          <pixiText
+            text={availableTechniques[0].name.korean}
+            style={{
+              fontSize: 10,
+              fill: KOREAN_COLORS.BLACK_SOLID,
+              align: "center",
+            }}
+            x={40}
+            y={15}
+            anchor={0.5}
+          />
+        </pixiContainer>
       )}
 
-      {/* Technique execution button */}
-      <BaseButton
-        text="기법 실행"
-        onClick={() => {
-          const technique = getCurrentTechnique();
-          if (technique) {
-            handleTechniqueExecute(technique);
-          }
-        }}
-        x={280}
-        y={10}
-        width={80}
-        height={30}
-        variant="accent"
-        disabled={!getCurrentTechnique() || isExecutingTechnique}
-      />
+      {/* Current Stance Display */}
+      <pixiContainer x={10} y={50}>
+        <pixiText
+          text={`현재 자세: ${currentStanceData?.name.korean || "없음"}`}
+          style={{
+            fontSize: 10,
+            fill: KOREAN_COLORS.TEXT_SECONDARY,
+          }}
+        />
+      </pixiContainer>
 
-      <BaseButton
-        text={isPaused ? "재개" : "일시정지"}
-        onClick={onPauseToggle}
-        x={370}
-        y={10}
-        width={80}
-        height={30}
-        variant="ghost"
-      />
+      {/* Stance Change Button */}
+      {onSwitchStance && (
+        <pixiContainer x={150} y={50}>
+          <pixiGraphics
+            draw={(g) => {
+              g.clear();
+              g.beginFill(KOREAN_COLORS.ACCENT_CYAN, 0.8);
+              g.drawRoundedRect(0, 0, 80, 20, 3);
+              g.endFill();
+            }}
+            interactive={true}
+            onPointerDown={() => onSwitchStance(player.currentStance)}
+          />
+          <pixiText
+            text="자세 변경"
+            style={{
+              fontSize: 8,
+              fill: KOREAN_COLORS.BLACK_SOLID,
+              align: "center",
+            }}
+            x={40}
+            y={10}
+            anchor={0.5}
+          />
+        </pixiContainer>
+      )}
+
+      {/* Execution Status */}
+      {isExecutingTechnique && (
+        <pixiContainer x={width / 2} y={height / 2}>
+          <pixiText
+            text="기술 실행 중..."
+            style={{
+              fontSize: 12,
+              fill: KOREAN_COLORS.WARNING_YELLOW,
+              align: "center",
+            }}
+            anchor={0.5}
+          />
+        </pixiContainer>
+      )}
     </pixiContainer>
   );
 };

@@ -1,9 +1,9 @@
 import React from "react";
 import { usePixiExtensions } from "../../../utils/pixiExtensions";
-import { HealthBar } from "../../ui/HealthBar";
-import { StanceIndicator } from "../../ui/StanceIndicator";
-import { RoundTimer } from "../../ui/RoundTimer";
 import type { CombatHUDProps } from "../../../types/components";
+import { HealthBar } from "../../ui/HealthBar";
+import { RoundTimer } from "../../ui/RoundTimer";
+import { StanceIndicator } from "../../ui/StanceIndicator";
 import { KOREAN_COLORS } from "../../../types/constants";
 
 export const CombatHUD: React.FC<CombatHUDProps> = ({
@@ -15,7 +15,7 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
   isPaused,
   onPauseToggle,
   width = 1200,
-  height = 800,
+  height = 100,
   x = 0,
   y = 0,
 }) => {
@@ -23,7 +23,17 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
 
   return (
     <pixiContainer x={x} y={y} data-testid="combat-hud">
-      {/* Player 1 Health Bar */}
+      {/* Background */}
+      <pixiGraphics
+        draw={(g) => {
+          g.clear();
+          g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.8);
+          g.drawRect(0, 0, width, height);
+          g.endFill();
+        }}
+      />
+
+      {/* Player 1 Health */}
       <HealthBar
         currentHealth={player1.health}
         maxHealth={player1.maxHealth}
@@ -37,15 +47,41 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
       <pixiText
         text={player1.name.korean}
         style={{
-          fontSize: 14,
-          fill: KOREAN_COLORS.TEXT_PRIMARY,
+          fontSize: 16,
+          fill: KOREAN_COLORS.PLAYER_1_COLOR,
           fontWeight: "bold",
         }}
         x={20}
-        y={45}
+        y={5}
       />
 
-      {/* Player 2 Health Bar */}
+      {/* Player 1 Stance */}
+      <StanceIndicator stance={player1.currentStance} x={20} y={45} size={30} />
+
+      {/* Round Timer */}
+      <RoundTimer
+        timeRemaining={timeRemaining}
+        totalTime={180}
+        x={width / 2 - 60}
+        y={20}
+        width={120}
+        height={30}
+      />
+
+      {/* Round Counter */}
+      <pixiText
+        text={`Round ${currentRound}/${maxRounds}`}
+        style={{
+          fontSize: 14,
+          fill: KOREAN_COLORS.TEXT_PRIMARY,
+          align: "center",
+        }}
+        x={width / 2}
+        y={55}
+        anchor={0.5}
+      />
+
+      {/* Player 2 Health */}
       <HealthBar
         currentHealth={player2.health}
         maxHealth={player2.maxHealth}
@@ -59,70 +95,32 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
       <pixiText
         text={player2.name.korean}
         style={{
-          fontSize: 14,
-          fill: KOREAN_COLORS.TEXT_PRIMARY,
+          fontSize: 16,
+          fill: KOREAN_COLORS.PLAYER_2_COLOR,
           fontWeight: "bold",
           align: "right",
         }}
         x={width - 20}
-        y={45}
+        y={5}
         anchor={{ x: 1, y: 0 }}
-      />
-
-      {/* Round Timer */}
-      <RoundTimer
-        timeRemaining={timeRemaining}
-        totalTime={180}
-        x={width / 2}
-        y={20}
-      />
-
-      {/* Round Counter */}
-      <pixiText
-        text={`라운드 ${currentRound} / ${maxRounds}`}
-        style={{
-          fontSize: 16,
-          fill: KOREAN_COLORS.TEXT_PRIMARY,
-          fontWeight: "bold",
-          align: "center",
-        }}
-        x={width / 2}
-        y={50}
-        anchor={0.5}
-      />
-
-      {/* Player 1 Stance */}
-      <StanceIndicator
-        stance={player1.currentStance}
-        x={20}
-        y={height - 120}
-        size={60}
       />
 
       {/* Player 2 Stance */}
       <StanceIndicator
         stance={player2.currentStance}
-        x={width - 80}
-        y={height - 120}
-        size={60}
+        x={width - 50}
+        y={45}
+        size={30}
       />
 
       {/* Pause Indicator */}
       {isPaused && (
         <pixiContainer x={width / 2} y={height / 2}>
-          <pixiGraphics
-            draw={(g) => {
-              g.clear();
-              g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.8);
-              g.drawRoundedRect(-100, -30, 200, 60, 10);
-              g.endFill();
-            }}
-          />
           <pixiText
             text="일시정지 - PAUSED"
             style={{
               fontSize: 18,
-              fill: KOREAN_COLORS.TEXT_PRIMARY,
+              fill: KOREAN_COLORS.WARNING_YELLOW,
               fontWeight: "bold",
               align: "center",
             }}
@@ -133,26 +131,26 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
 
       {/* Pause Button */}
       {onPauseToggle && (
-        <pixiContainer x={width - 60} y={height - 60}>
+        <pixiContainer x={width - 60} y={height - 30}>
           <pixiGraphics
             draw={(g) => {
               g.clear();
               g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.8);
-              g.drawRoundedRect(0, 0, 40, 40, 5);
+              g.drawRoundedRect(0, 0, 50, 25, 3);
               g.endFill();
             }}
             interactive={true}
             onPointerDown={onPauseToggle}
           />
           <pixiText
-            text="⏸"
+            text={isPaused ? "▶" : "⏸"}
             style={{
-              fontSize: 16,
+              fontSize: 12,
               fill: KOREAN_COLORS.TEXT_PRIMARY,
               align: "center",
             }}
-            x={20}
-            y={20}
+            x={25}
+            y={12}
             anchor={0.5}
           />
         </pixiContainer>

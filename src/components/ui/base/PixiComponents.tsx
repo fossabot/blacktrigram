@@ -539,78 +539,64 @@ export const StanceSelector: React.FC<{
 };
 
 // Basic PixiJS component wrappers for Black Trigram
-export interface PixiContainerProps {
-  readonly children?: React.ReactNode;
-  readonly x?: number;
-  readonly y?: number;
-  readonly width?: number;
-  readonly height?: number;
-  readonly interactive?: boolean;
-  readonly onPointerDown?: () => void;
+export interface PixiComponentProps {
+  children?: React.ReactNode;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  alpha?: number;
+  visible?: boolean;
+  interactive?: boolean;
 }
 
-export const PixiContainer: React.FC<PixiContainerProps> = ({
-  children,
-  x = 0,
-  y = 0,
-  interactive = false,
-  onPointerDown,
-}) => {
+export const PixiContainer: React.FC<PixiComponentProps> = (props) => {
   usePixiExtensions();
-
-  return (
-    <pixiContainer
-      x={x}
-      y={y}
-      interactive={interactive}
-      onPointerDown={onPointerDown}
-    >
-      {children}
-    </pixiContainer>
-  );
+  return <pixiContainer {...props} />;
 };
 
-export interface PixiTextProps {
-  readonly text: string;
-  readonly style?: PIXI.TextStyle;
-  readonly x?: number;
-  readonly y?: number;
-  readonly anchor?: number | { x: number; y: number };
-}
-
-export const PixiText: React.FC<PixiTextProps> = ({
-  text,
-  style,
-  x = 0,
-  y = 0,
-  anchor = 0,
-}) => {
+export const PixiGraphics: React.FC<{
+  draw: (graphics: any) => void;
+  x?: number;
+  y?: number;
+  interactive?: boolean;
+  onPointerDown?: () => void;
+  onPointerUp?: () => void;
+  onPointerOver?: () => void;
+  onPointerOut?: () => void;
+}> = (props) => {
   usePixiExtensions();
-
-  return <pixiText text={text} style={style} x={x} y={y} anchor={anchor} />;
+  return <pixiGraphics {...props} />;
 };
 
-export interface PixiGraphicsProps {
-  readonly draw: (graphics: PIXI.Graphics) => void;
-  readonly x?: number;
-  readonly y?: number;
-}
-
-export const PixiGraphics: React.FC<PixiGraphicsProps> = ({
-  draw,
-  x = 0,
-  y = 0,
-}) => {
+export const PixiText: React.FC<{
+  text: string;
+  style?: any;
+  x?: number;
+  y?: number;
+  anchor?: number | { x: number; y: number };
+}> = (props) => {
   usePixiExtensions();
-
-  return <pixiGraphics draw={draw} x={x} y={y} />;
+  return <pixiText {...props} />;
 };
 
-// Fix: Export PixiComponents as a collection
-export const PixiComponents = {
+export const PixiSprite: React.FC<{
+  texture?: any;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  anchor?: number | { x: number; y: number };
+  interactive?: boolean;
+  onPointerDown?: () => void;
+}> = (props) => {
+  usePixiExtensions();
+  return <pixiSprite {...props} />;
+};
+
+export default {
   PixiContainer,
-  PixiText,
   PixiGraphics,
+  PixiText,
+  PixiSprite,
 };
-
-export default PixiComponents;

@@ -5,16 +5,15 @@
 import type * as PIXI from "pixi.js";
 import type {
   PlayerState,
-  // Fix: Remove unused GameState import
   GameMode,
   MatchStatistics,
   KoreanText,
   KoreanTechnique,
   TrigramStance,
   PlayerArchetype,
-  Position,
 } from "./index";
 import type { CombatResult as CombatResultType } from "./combat";
+import type { HitEffect } from "./effects";
 
 // Base component props interface
 export interface BaseComponentProps {
@@ -186,7 +185,7 @@ export interface ProgressTrackerProps extends BaseComponentProps {
 
 export interface RoundTimerProps extends BaseComponentProps {
   readonly timeRemaining: number;
-  readonly maxTime: number;
+  readonly totalTime: number; // Fix: Change from maxTime to totalTime
   readonly isPaused?: boolean;
   readonly showWarning?: boolean;
 }
@@ -282,16 +281,10 @@ export type {
 // Fix: Remove duplicate CombatResult interface - use the one from combat.ts
 export type CombatResult = CombatResultType;
 
-export interface HitEffectsLayerProps extends BaseComponentProps {
-  readonly effects: readonly HitEffect[];
-  readonly onEffectComplete: (effectId: string) => void;
-}
+// Fix: Unify HitEffect interfaces - use the one from effects.ts
+export type { HitEffect } from "./effects";
 
-export interface HitEffect {
-  readonly id: string;
-  readonly type: "hit" | "critical" | "block" | "miss";
-  readonly position: Position;
-  readonly intensity: number;
-  readonly duration: number;
-  readonly startTime: number;
+export interface HitEffectsLayerProps extends BaseComponentProps {
+  readonly effects: readonly HitEffect[]; // Fix: Now HitEffect is properly imported
+  readonly onEffectComplete: (effectId: string) => void;
 }
