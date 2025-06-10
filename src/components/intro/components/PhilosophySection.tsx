@@ -1,9 +1,9 @@
 import React, { useMemo } from "react";
-import { Container, Text, Graphics } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import { BaseButton } from "../../ui/base/BaseButton";
-import { KoreanHeader } from "../../ui/base/KoreanHeader";
-import { KOREAN_COLORS } from "../../../types/constants";
+import { usePixiExtensions } from "../../../utils/pixiExtensions";
+import { CYBERPUNK_COLORS } from "../../../types/constants/colors";
+import { KOREAN_TYPOGRAPHY } from "../../../types/constants/typography";
 
 export interface PhilosophySectionProps {
   readonly onBack: () => void;
@@ -17,25 +17,27 @@ export const PhilosophySection: React.FC<PhilosophySectionProps> = ({
   onBack,
   width = 800,
   height = 600,
-  x = 0,
-  y = 0,
 }) => {
-  const backgroundDraw = useMemo(
+  // Ensure PixiJS components are extended
+  usePixiExtensions();
+
+  const drawBackground = useMemo(
     () => (g: PIXI.Graphics) => {
       g.clear();
-      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.9);
+      g.beginFill(CYBERPUNK_COLORS.BG_DARK, 0.9);
       g.drawRect(0, 0, width, height);
       g.endFill();
     },
     [width, height]
   );
 
-  const textStyle = useMemo(
+  const titleStyle = useMemo(
     () =>
       new PIXI.TextStyle({
-        fontFamily: "Arial",
-        fontSize: 16,
-        fill: KOREAN_COLORS.TEXT_PRIMARY,
+        fontFamily: KOREAN_TYPOGRAPHY.FONTS.HEADING.join(", "),
+        fontSize: KOREAN_TYPOGRAPHY.SIZES.HEADING,
+        fontWeight: "bold",
+        fill: CYBERPUNK_COLORS.TEXT_PRIMARY,
         wordWrap: true,
         wordWrapWidth: width - 100,
         lineHeight: 24,
@@ -43,70 +45,78 @@ export const PhilosophySection: React.FC<PhilosophySectionProps> = ({
     [width]
   );
 
-  return (
-    <Container x={x} y={y}>
-      <Graphics draw={backgroundDraw} />
+  const contentStyle = useMemo(
+    () =>
+      new PIXI.TextStyle({
+        fontFamily: KOREAN_TYPOGRAPHY.FONTS.BODY.join(", "),
+        fontSize: KOREAN_TYPOGRAPHY.SIZES.BODY,
+        fontWeight: "normal",
+        fill: CYBERPUNK_COLORS.TEXT_SECONDARY,
+        wordWrap: true,
+        wordWrapWidth: width - 100,
+        lineHeight: 22,
+      }),
+    [width]
+  );
 
-      {/* Header */}
-      <KoreanHeader
-        title={{
-          korean: "철학",
-          english: "Philosophy",
-        }}
-        subtitle={{
-          korean: "흑괘 무술의 정신적 기반",
-          english: "Spiritual Foundation of Black Trigram Martial Arts",
-        }}
+  return (
+    <pixiContainer x={0} y={0} data-testid="philosophy-section">
+      <pixiGraphics draw={drawBackground} />
+
+      {/* Philosophy content using pixiText components */}
+      <pixiText
+        text="흑괘의 철학 (Philosophy of Black Trigram)"
+        style={titleStyle}
         x={width / 2}
         y={60}
-        fontSize={24}
-        align="center" // Fix: Use align instead of alignment
+        anchor={0.5}
       />
 
-      {/* Philosophy Content */}
-      <Container x={50} y={140}>
-        <Text
-          text="팔괘의 철학 (Eight Trigrams Philosophy)"
-          style={
-            new PIXI.TextStyle({
-              ...textStyle,
-              fontSize: 20,
-              fill: KOREAN_COLORS.ACCENT_GOLD,
-              fontWeight: "bold",
-            })
-          }
+      <pixiText
+        text="팔괘 (Eight Trigrams) represent the fundamental forces of nature and combat"
+        style={contentStyle}
+        x={50}
+        y={150}
+      />
+
+      {/* Additional philosophy content */}
+      <pixiContainer x={50} y={200}>
+        {/* Trigram explanations using pixiText */}
+        <pixiText
+          text="☰ 건 (Geon) - Heaven: Direct bone-striking force"
+          style={contentStyle}
           y={0}
         />
-
-        <Text
-          text="흑괘 무술은 고대 한국의 철학과 현대 사이버펑크 기술의 융합입니다.\n\n팔괘(八卦)는 천지만물의 변화를 나타내는 여덟 개의 기호로,\n각각 고유한 전투 스타일과 철학을 대표합니다.\n\n• 건(☰) - 하늘: 창조적 힘과 무한한 가능성\n• 태(☱) - 호수: 평온함과 유연한 적응\n• 리(☲) - 불: 밝음과 정확한 판단\n• 진(☳) - 천둥: 역동성과 순간적 행동"
-          style={textStyle}
+        <pixiText
+          text="☱ 태 (Tae) - Lake: Fluid joint manipulation"
+          style={contentStyle}
           y={40}
         />
-
-        <Text
-          text="Black Trigram martial arts represents the fusion of ancient Korean\nphilosophy with modern cyberpunk technology.\n\nThe Eight Trigrams (팔괘) are symbols representing the changes\nof all things in the universe, each embodying unique combat\nstyles and philosophical principles.\n\nThrough disciplined practice and understanding of these\nprinciples, practitioners achieve harmony between mind,\nbody, and spirit in the digital age."
-          style={
-            new PIXI.TextStyle({
-              ...textStyle,
-              fill: KOREAN_COLORS.TEXT_SECONDARY,
-            })
-          }
-          y={220}
+        <pixiText
+          text="☲ 리 (Li) - Fire: Precise nerve strikes"
+          style={contentStyle}
+          y={80}
         />
-      </Container>
+        <pixiText
+          text="☳ 진 (Jin) - Thunder: Stunning techniques"
+          style={contentStyle}
+          y={120}
+        />
+      </pixiContainer>
 
-      {/* Back Button */}
+      {/* Back button */}
       <BaseButton
-        text="돌아가기 (Back)"
-        onClick={onBack}
-        x={50}
+        x={width - 150}
         y={height - 80}
-        width={150}
+        width={120}
         height={50}
+        text="Back"
+        koreanText="돌아가기"
+        onClick={onBack}
         variant="secondary"
+        testId="philosophy-back-button"
       />
-    </Container>
+    </pixiContainer>
   );
 };
 
