@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useMemo } from "react";
-import { usePixiExtensions } from "../../utils/pixiExtensions";
 import type { TrainingScreenProps } from "../../types/components";
 import type { PlayerState } from "../../types/player";
 import type { TrigramStance } from "../../types/trigram";
@@ -20,8 +19,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = ({
   x = 0,
   y = 0,
 }) => {
-  usePixiExtensions();
-
   const [selectedStance, setSelectedStance] = useState<TrigramStance>(
     TrigramStanceEnum.GEON
   ); // Fix: Use enum value

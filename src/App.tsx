@@ -10,7 +10,7 @@ import { createPlayerFromArchetype } from "./utils/playerUtils";
 import type { PlayerState } from "./types/player";
 import type { MatchStatistics } from "./types/game";
 import "./App.css";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 
 function App() {
   usePixiExtensions();
@@ -175,6 +175,12 @@ function App() {
     return <IntroScreen onMenuSelect={handleGameStart} />;
   };
 
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    containerRef.current?.focus();
+  }, [appReady]);
+
   if (!appReady) {
     return (
       <div className="app loading">
@@ -196,7 +202,12 @@ function App() {
 
   return (
     <AudioProvider>
-      <div className="app" tabIndex={0} style={{ outline: "none" }}>
+      <div
+        className="app"
+        tabIndex={0}
+        ref={containerRef}
+        style={{ outline: "none" }}
+      >
         <Application
           width={1200}
           height={800}

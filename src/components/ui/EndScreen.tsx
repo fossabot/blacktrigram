@@ -1,6 +1,5 @@
 import React from "react";
 // Fix: Remove direct PIXI React imports
-import { usePixiExtensions } from "../../utils/pixiExtensions";
 import type { EndScreenProps } from "../../types/components";
 import { KOREAN_COLORS } from "../../types/constants";
 
@@ -14,8 +13,6 @@ export const EndScreen: React.FC<EndScreenProps> = ({
   x = 0,
   y = 0,
 }) => {
-  usePixiExtensions();
-
   return (
     <pixiContainer x={x} y={y} data-testid="end-screen">
       {/* Background */}

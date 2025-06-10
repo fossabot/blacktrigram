@@ -11,24 +11,18 @@ import {
   BitmapText,
 } from "pixi.js";
 
-// Fix: Only register components once per React tree using a ref
-let componentsRegistered = false;
-
+// Only call this inside a React component!
 export const usePixiExtensions = () => {
-  if (!componentsRegistered) {
-    useExtend({
-      Container,
-      Graphics,
-      Text,
-      Sprite,
-      AnimatedSprite,
-      TilingSprite,
-      ParticleContainer,
-      BitmapText,
-    });
-    componentsRegistered = true;
-    console.log("🎮 PixiJS components registered for Black Trigram");
-  }
+  useExtend({
+    Container,
+    Graphics,
+    Text,
+    Sprite,
+    AnimatedSprite,
+    TilingSprite,
+    ParticleContainer,
+    BitmapText,
+  });
   return true;
 };
 

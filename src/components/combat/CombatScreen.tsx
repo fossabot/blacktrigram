@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useMemo } from "react";
-import { usePixiExtensions } from "../../utils/pixiExtensions";
 import type { CombatScreenProps } from "../../types/components";
 import type { PlayerState } from "../../types/player";
 import type { Position } from "../../types/common";
@@ -23,8 +22,6 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
   x = 0,
   y = 0,
 }) => {
-  usePixiExtensions();
-
   const [hitEffects, setHitEffects] = useState<HitEffect[]>([]);
   const [isExecutingTechnique, setIsExecutingTechnique] = useState(false);
 

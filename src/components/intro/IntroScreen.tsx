@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import * as PIXI from "pixi.js";
-import { usePixiExtensions } from "../../utils/pixiExtensions";
 import { MenuSection } from "./components/MenuSection";
 import { PhilosophySection } from "./components/PhilosophySection";
 import { ControlsSection } from "./components/ControlsSection";
@@ -14,7 +13,6 @@ export interface IntroScreenProps {
 }
 
 export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
-  usePixiExtensions();
   const audio = useAudio();
   const [currentSection, setCurrentSection] = useState<string>("menu");
   const [bgTexture, setBgTexture] = useState<PIXI.Texture | null>(null);
@@ -59,15 +57,27 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
     };
   }, []);
 
-  // Play intro music on mount
+  // Play intro music after first user interaction
   useEffect(() => {
-    if (audio.isInitialized && !introMusicStarted.current) {
-      introMusicStarted.current = true;
-      audio.playMusic("intro_theme");
-    }
+    const startMusic = () => {
+      if (audio.isInitialized && !introMusicStarted.current) {
+        introMusicStarted.current = true;
+        audio.playMusic("intro_theme");
+      }
+      window.removeEventListener("keydown", startMusic);
+      window.removeEventListener("mousedown", startMusic);
+      window.removeEventListener("touchstart", startMusic);
+    };
+    window.addEventListener("keydown", startMusic, { once: true });
+    window.addEventListener("mousedown", startMusic, { once: true });
+    window.addEventListener("touchstart", startMusic, { once: true });
     return () => {
+      window.removeEventListener("keydown", startMusic);
+      window.removeEventListener("mousedown", startMusic);
+      window.removeEventListener("touchstart", startMusic);
       audio.stopMusic();
     };
+    // eslint-disable-next-line
   }, [audio.isInitialized, audio]);
 
   // Keyboard input for menu navigation and controls
@@ -135,11 +145,15 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
   const drawBackground = useCallback((g: PIXI.Graphics) => {
     g.clear();
     // Fill with dark color as fallback
-    g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 1);
-    g.drawRect(0, 0, 1200, 800);
-    g.endFill();
+    g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 1 });
+    g.rect(0, 0, 1200, 800);
+    g.fill();
     // Cyberpunk grid overlay
-    g.lineStyle(1, KOREAN_COLORS.PRIMARY_CYAN, 0.08);
+    g.setStrokeStyle({
+      width: 1,
+      color: KOREAN_COLORS.PRIMARY_CYAN,
+      alpha: 0.08,
+    });
     for (let i = 0; i < 1200; i += 40) {
       g.moveTo(i, 0);
       g.lineTo(i, 800);
@@ -148,7 +162,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onMenuSelect }) => {
       g.moveTo(0, i);
       g.lineTo(1200, i);
     }
-    g.lineStyle(0);
+    g.setStrokeStyle({ width: 0 });
   }, []);
 
   return (
