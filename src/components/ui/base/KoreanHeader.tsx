@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
-import { Text } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import type { KoreanText } from "../../../types/korean-text";
+import { usePixiExtensions } from "../../../utils/pixiExtensions";
 import {
   FONT_SIZES,
   KOREAN_COLORS,
@@ -32,6 +32,9 @@ export const KoreanHeader: React.FC<KoreanHeaderProps> = ({
   showUnderline = true,
   align = "center",
 }) => {
+  // Ensure PixiJS components are extended
+  usePixiExtensions();
+
   const getDisplayText = (text: KoreanText): string => {
     return `${text.korean} (${text.english})`;
   };
@@ -75,10 +78,12 @@ export const KoreanHeader: React.FC<KoreanHeaderProps> = ({
     return "━".repeat(20);
   };
 
+  const displayText = getDisplayText(title);
+
   return (
     <>
-      <Text
-        text={getDisplayText(title)}
+      <pixiText
+        text={displayText}
         x={x}
         y={y}
         style={titleStyle}
@@ -86,7 +91,7 @@ export const KoreanHeader: React.FC<KoreanHeaderProps> = ({
       />
 
       {subtitle && (
-        <Text
+        <pixiText
           text={getDisplayText(subtitle)}
           x={x}
           y={y + fontSize + 10}
@@ -96,7 +101,7 @@ export const KoreanHeader: React.FC<KoreanHeaderProps> = ({
       )}
 
       {showUnderline && (
-        <Text
+        <pixiText
           text={createUnderlineText()}
           x={x}
           y={y + fontSize + (subtitle ? fontSize * 0.6 + 20 : 20)}

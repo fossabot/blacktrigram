@@ -144,21 +144,18 @@ export interface TrigramWheelProps extends BaseComponentProps {
   readonly showLabels?: boolean;
 }
 
-export interface BaseButtonProps extends BaseComponentProps {
-  readonly text: string;
-  readonly onClick: () => void;
-  readonly variant?: "primary" | "secondary" | "accent" | "ghost";
-  readonly disabled?: boolean;
-  readonly koreanText?: KoreanText;
-  readonly icon?: string;
-  readonly size?: "small" | "medium" | "large";
-  readonly onPointerDown?: () => void;
-  readonly onPointerUp?: () => void;
-  readonly onPointerOver?: () => void;
-  readonly onPointerOut?: () => void;
-  readonly testId?: string;
-  readonly buttonMode?: boolean;
-  readonly loading?: boolean; // Fix: Add missing loading prop
+export interface BaseButtonProps {
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  text?: string;
+  koreanText?: string;
+  onClick?: () => void;
+  disabled?: boolean;
+  variant?: "primary" | "secondary" | "accent" | "ghost" | "danger";
+  children?: React.ReactNode;
+  testId?: string;
 }
 
 export interface HealthBarProps extends BaseComponentProps {

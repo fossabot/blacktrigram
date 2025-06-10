@@ -124,6 +124,45 @@ export const KOREAN_COLORS = {
   SECONDARY_BLUE_DARK: 0x1144aa,
 } as const;
 
+// Cyberpunk color palette
+export const CYBERPUNK_COLORS = {
+  // Primary neon colors - 사이버펑크 네온 색상
+  NEON_CYAN: 0x00ffff, // 네온 시안 - Primary UI
+  NEON_PURPLE: 0xff00ff, // 네온 보라 - Secondary accents
+  NEON_GREEN: 0x00ff00, // 네온 초록 - Success states
+  NEON_PINK: 0xff1493, // 네온 핑크 - Special effects
+
+  // Accent colors - 강조 색상
+  ACCENT_BLUE: 0x0080ff, // 강조 파랑 - Interactive elements
+  ACCENT_ORANGE: 0xff8000, // 강조 주황 - Warning/action
+  ACCENT_YELLOW: 0xffff00, // 강조 노랑 - Highlights
+
+  // Status colors - 상태 색상
+  WARNING_RED: 0xff4444, // 경고 빨강 - Danger/error
+  SUCCESS_GREEN: 0x44ff44, // 성공 초록 - Positive feedback
+  INFO_BLUE: 0x4444ff, // 정보 파랑 - Information
+
+  // Text colors - 텍스트 색상
+  TEXT_PRIMARY: 0xffffff, // 주요 텍스트 - High contrast
+  TEXT_SECONDARY: 0xcccccc, // 보조 텍스트 - Medium contrast
+  TEXT_MUTED: 0x888888, // 음소거 텍스트 - Low contrast
+
+  // Background colors - 배경 색상
+  BG_DARK: 0x0a0a0a, // 어두운 배경 - Main background
+  BG_DARKER: 0x050505, // 더 어두운 배경 - Deep background
+  BG_PANEL: 0x1a1a1a, // 패널 배경 - UI panels
+
+  // Neutral colors - 중성 색상
+  NEUTRAL_GRAY: 0x666666, // 중성 회색 - Disabled states
+  NEUTRAL_LIGHT: 0x999999, // 밝은 회색 - Borders
+  NEUTRAL_DARK: 0x333333, // 어두운 회색 - Separators
+
+  // Special effects - 특수 효과
+  SHADOW: 0x000000, // 그림자 - Drop shadows
+  GLOW: 0xffffff, // 글로우 - Glow effects
+  HIGHLIGHT: 0xffff80, // 하이라이트 - Selection highlight
+} as const;
+
 // Color utility functions
 export const colorUtils = {
   /**

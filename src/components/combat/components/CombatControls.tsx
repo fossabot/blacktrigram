@@ -172,7 +172,7 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
                 isCurrentStance ? "primary" : isSelected ? "secondary" : "ghost"
               }
               onClick={() => handleStanceSelect(stance as TrigramStance)}
-              interactive={!isExecutingTechnique}
+              disabled={isExecutingTechnique}
             />
           );
         })}
@@ -215,7 +215,6 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
         width={80}
         height={30}
         variant={!isExecutingTechnique ? "primary" : "ghost"}
-        interactive={true}
         disabled={isExecutingTechnique}
       />
 

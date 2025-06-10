@@ -1,246 +1,147 @@
 // Base button component with Korean martial arts styling
 
 import React, { useCallback, useMemo, useState } from "react";
-// Fix: Remove Container from import
-import { Graphics, Text, Sprite } from "@pixi/react";
 import * as PIXI from "pixi.js";
 import type { BaseButtonProps } from "../../../types/components";
-import {
-  KOREAN_COLORS,
-  FONT_FAMILY,
-  FONT_SIZES,
-} from "../../../types/constants";
-
-// Button variant configurations
-const BUTTON_VARIANTS = {
-  primary: {
-    bgColor: KOREAN_COLORS.PRIMARY_CYAN,
-    textColor: KOREAN_COLORS.BLACK_SOLID,
-    borderColor: KOREAN_COLORS.PRIMARY_CYAN,
-    hoverBgColor: KOREAN_COLORS.ACCENT_CYAN,
-    pressedBgColor: KOREAN_COLORS.PRIMARY_BLUE,
-    disabledBgColor: KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
-    disabledTextColor: KOREAN_COLORS.TEXT_TERTIARY,
-  },
-  secondary: {
-    bgColor: KOREAN_COLORS.SECONDARY_BLUE,
-    textColor: KOREAN_COLORS.TEXT_PRIMARY,
-    borderColor: KOREAN_COLORS.UI_BORDER,
-    hoverBgColor: KOREAN_COLORS.SECONDARY_BLUE_LIGHT,
-    pressedBgColor: KOREAN_COLORS.SECONDARY_BLUE_DARK,
-    disabledBgColor: KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
-    disabledTextColor: KOREAN_COLORS.TEXT_TERTIARY,
-  },
-  danger: {
-    bgColor: KOREAN_COLORS.NEGATIVE_RED,
-    textColor: KOREAN_COLORS.TEXT_PRIMARY,
-    borderColor: KOREAN_COLORS.NEGATIVE_RED,
-    hoverBgColor: KOREAN_COLORS.NEGATIVE_RED_LIGHT,
-    pressedBgColor: KOREAN_COLORS.NEGATIVE_RED_DARK,
-    disabledBgColor: KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
-    disabledTextColor: KOREAN_COLORS.TEXT_TERTIARY,
-  },
-  ghost: {
-    bgColor: KOREAN_COLORS.UI_BACKGROUND_DARK,
-    textColor: KOREAN_COLORS.TEXT_PRIMARY,
-    borderColor: KOREAN_COLORS.UI_BORDER,
-    hoverBgColor: KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
-    pressedBgColor: KOREAN_COLORS.UI_BACKGROUND_LIGHT,
-    disabledBgColor: KOREAN_COLORS.UI_BACKGROUND_DARK,
-    disabledTextColor: KOREAN_COLORS.TEXT_TERTIARY,
-  },
-  accent: {
-    bgColor: KOREAN_COLORS.ACCENT_GOLD,
-    textColor: KOREAN_COLORS.BLACK_SOLID,
-    borderColor: KOREAN_COLORS.ACCENT_PRIMARY,
-    hoverBgColor: KOREAN_COLORS.ACCENT_YELLOW,
-    pressedBgColor: KOREAN_COLORS.ACCENT_ORANGE,
-    disabledBgColor: KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
-    disabledTextColor: KOREAN_COLORS.TEXT_TERTIARY,
-  },
-} as const;
-
-const BUTTON_SIZES = {
-  small: { width: 100, height: 32, fontSize: FONT_SIZES.small },
-  medium: { width: 150, height: 40, fontSize: FONT_SIZES.medium },
-  large: { width: 200, height: 50, fontSize: FONT_SIZES.large },
-} as const;
+import { CYBERPUNK_COLORS } from "../../../types/constants/colors";
+import { KOREAN_TYPOGRAPHY } from "../../../types/constants/typography";
+import { usePixiExtensions } from "../../../utils/pixiExtensions";
 
 export const BaseButton: React.FC<BaseButtonProps> = ({
-  text,
-  onClick,
-  variant = "primary",
-  disabled = false,
-  koreanText,
-  icon,
-  size = "medium",
-  onPointerDown,
-  onPointerUp,
-  onPointerOver,
-  onPointerOut,
-  testId,
-  buttonMode = true,
-  loading = false,
-  width = 120,
-  height = 40,
   x = 0,
   y = 0,
+  width = 200,
+  height = 50,
+  text,
+  koreanText,
+  onClick,
+  disabled = false,
+  variant = "primary",
+  children,
+  testId = "base-button",
 }) => {
+  // Ensure PixiJS components are extended
+  usePixiExtensions();
+
   const [isHovered, setIsHovered] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
 
-  const variantConfig = BUTTON_VARIANTS[variant];
-  const sizeConfig = BUTTON_SIZES[size];
-  const buttonWidth = width;
-  const buttonHeight = height;
-
-  const buttonTextContent = useMemo(() => {
-    if (loading) return "Loading...";
-    if (koreanText) return koreanText.korean;
-    return text || "";
-  }, [text, koreanText, loading]);
-
-  const textStyle = useMemo(() => {
-    const color = disabled
-      ? variantConfig.disabledTextColor
-      : isPressed
-      ? variantConfig.textColor
-      : isHovered
-      ? variantConfig.textColor
-      : variantConfig.textColor;
-
-    return new PIXI.TextStyle({
-      fontFamily: FONT_FAMILY.PRIMARY,
-      fontSize: sizeConfig.fontSize,
-      fill: color,
-      align: "center",
-      fontWeight: "600",
-    });
-  }, [variantConfig, disabled, isPressed, isHovered, sizeConfig.fontSize]);
-
-  // Simplified text measurement
-  const textMetrics = useMemo(() => {
-    // Use a simplified approach for text measurement
-    const estimatedWidth = buttonTextContent.length * sizeConfig.fontSize * 0.6;
-    const estimatedHeight = sizeConfig.fontSize;
-    return {
-      width: estimatedWidth,
-      height: estimatedHeight,
+  const buttonColors = useMemo(() => {
+    const baseColors = {
+      primary: CYBERPUNK_COLORS.NEON_CYAN,
+      secondary: CYBERPUNK_COLORS.NEON_PURPLE,
+      accent: CYBERPUNK_COLORS.ACCENT_BLUE,
+      ghost: CYBERPUNK_COLORS.TEXT_SECONDARY,
+      danger: CYBERPUNK_COLORS.WARNING_RED,
     };
-  }, [buttonTextContent, sizeConfig.fontSize]);
 
-  const buttonBackgroundDraw = useCallback(
+    return {
+      normal: baseColors[variant],
+      hover: CYBERPUNK_COLORS.ACCENT_BLUE,
+      pressed: CYBERPUNK_COLORS.ACCENT_ORANGE,
+      disabled: CYBERPUNK_COLORS.NEUTRAL_GRAY,
+    };
+  }, [variant]);
+
+  const currentColor = disabled
+    ? buttonColors.disabled
+    : isPressed
+    ? buttonColors.pressed
+    : isHovered
+    ? buttonColors.hover
+    : buttonColors.normal;
+
+  const drawButton = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
 
-      let bgColor: number = variantConfig.bgColor;
-      if (disabled) {
-        bgColor = variantConfig.disabledBgColor;
-      } else if (isPressed) {
-        bgColor = variantConfig.pressedBgColor;
-      } else if (isHovered) {
-        bgColor = variantConfig.hoverBgColor;
-      }
-
-      // Background
-      g.beginFill(bgColor, 0.9);
-      g.drawRoundedRect(0, 0, buttonWidth, buttonHeight, 8);
+      // Draw button background
+      g.beginFill(currentColor, 0.8);
+      g.drawRoundedRect(0, 0, width, height, 8);
       g.endFill();
 
-      // Border
-      g.lineStyle(2, variantConfig.borderColor, disabled ? 0.3 : 1.0);
-      g.drawRoundedRect(0, 0, buttonWidth, buttonHeight, 8);
+      // Draw border
+      g.lineStyle(2, currentColor, 1);
+      g.drawRoundedRect(0, 0, width, height, 8);
 
-      // Cyberpunk glow effect
+      // Draw inner glow effect
       if (!disabled && (isHovered || isPressed)) {
-        g.lineStyle(1, variantConfig.borderColor, 0.6);
-        g.drawRoundedRect(-2, -2, buttonWidth + 4, buttonHeight + 4, 10);
+        g.beginFill(currentColor, 0.3);
+        g.drawRoundedRect(2, 2, width - 4, height - 4, 6);
+        g.endFill();
       }
     },
-    [variantConfig, disabled, isPressed, isHovered, buttonWidth, buttonHeight]
+    [currentColor, width, height, disabled, isHovered, isPressed]
   );
 
   const handlePointerDown = useCallback(() => {
-    if (disabled || loading) return;
-    setIsPressed(true);
-    onPointerDown?.();
-  }, [disabled, loading, onPointerDown]);
+    if (!disabled) {
+      setIsPressed(true);
+    }
+  }, [disabled]);
 
   const handlePointerUp = useCallback(() => {
-    if (disabled || loading) return;
-    setIsPressed(false);
-    onPointerUp?.();
-    onClick?.();
-  }, [disabled, loading, onPointerUp, onClick]);
+    if (!disabled) {
+      setIsPressed(false);
+      onClick?.();
+    }
+  }, [disabled, onClick]);
 
   const handlePointerOver = useCallback(() => {
-    if (disabled || loading) return;
-    setIsHovered(true);
-    onPointerOver?.();
-  }, [disabled, loading, onPointerOver]);
+    if (!disabled) {
+      setIsHovered(true);
+    }
+  }, [disabled]);
 
   const handlePointerOut = useCallback(() => {
     setIsHovered(false);
     setIsPressed(false);
-    onPointerOut?.();
-  }, [onPointerOut]);
+  }, []);
 
-  const iconSize = buttonHeight * 0.6;
+  const textStyle = useMemo(
+    () =>
+      new PIXI.TextStyle({
+        fontFamily: KOREAN_TYPOGRAPHY.FONTS.HEADING.join(", "),
+        fontSize: KOREAN_TYPOGRAPHY.SIZES.BODY,
+        fill: disabled
+          ? CYBERPUNK_COLORS.NEUTRAL_GRAY
+          : CYBERPUNK_COLORS.TEXT_PRIMARY,
+        align: "center",
+        dropShadow: {
+          color: CYBERPUNK_COLORS.SHADOW,
+          distance: 2,
+          alpha: 0.8,
+        },
+      }),
+    [disabled]
+  );
 
   return (
-    <Graphics
-      draw={buttonBackgroundDraw}
-      interactive={buttonMode && !disabled && !loading} // Fix: Use props instead of undefined variable
-      buttonMode={buttonMode}
-      pointerdown={handlePointerDown}
-      pointerup={handlePointerUp}
-      pointerupoutside={handlePointerUp}
-      pointerover={handlePointerOver}
-      pointerout={handlePointerOut}
+    <pixiContainer
       x={x}
       y={y}
-      width={buttonWidth}
-      height={buttonHeight}
+      interactive={!disabled}
+      cursor={disabled ? "default" : "pointer"}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerOver={handlePointerOver}
+      onPointerOut={handlePointerOut}
       data-testid={testId}
     >
-      {/* Icon */}
-      {icon && typeof icon === "string" && (
-        <Sprite
-          texture={PIXI.Texture.from(icon)}
-          width={iconSize}
-          height={iconSize}
-          x={
-            buttonTextContent
-              ? -textMetrics.width / 2 - 10 - iconSize / 2
-              : -(iconSize / 2)
-          }
-          y={-(iconSize / 2)}
-          anchor={0.5}
-        />
-      )}
+      <pixiGraphics draw={drawButton} />
 
-      {/* Text */}
-      {buttonTextContent && (
-        <Text
-          text={buttonTextContent}
+      {(text || koreanText) && (
+        <pixiText
+          text={koreanText || text || ""}
           style={textStyle}
+          x={width / 2}
+          y={height / 2}
           anchor={0.5}
-          x={buttonWidth / 2 + (icon ? iconSize / 2 + 5 : 0)}
-          y={buttonHeight / 2}
         />
       )}
 
-      {/* Loading indicator */}
-      {loading && (
-        <Graphics
-          draw={(g: PIXI.Graphics) => {
-            g.clear();
-            g.lineStyle(2, variantConfig.textColor, 0.8);
-            g.arc(buttonWidth / 2, buttonHeight / 2, 8, 0, Math.PI);
-          }}
-        />
-      )}
-    </Graphics>
+      {children}
+    </pixiContainer>
   );
 };
 

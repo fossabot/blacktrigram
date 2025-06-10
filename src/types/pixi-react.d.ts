@@ -111,3 +111,20 @@ export interface KoreanPixiGraphicsOptions {
   glowColor?: number;
   pulseAnimation?: boolean;
 }
+
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      pixiContainer: any;
+      pixiGraphics: any;
+      pixiSprite: any;
+      pixiText: any;
+      pixiAnimatedSprite: any;
+      pixiTilingSprite: any;
+      pixiParticleContainer: any;
+      pixiBitmapText: any;
+    }
+  }
+}
+
+export {};

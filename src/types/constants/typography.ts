@@ -125,3 +125,45 @@ export const HTML_DEFAULT_TEXT_STYLE: React.CSSProperties = {
   color: `#${KOREAN_COLORS.TEXT_PRIMARY.toString(16).padStart(6, "0")}`,
   fontWeight: KOREAN_FONT_WEIGHTS[KoreanTextWeight.NORMAL], // Fix: Use NORMAL instead of regular
 };
+
+// Fix: Add KOREAN_TYPOGRAPHY export
+export const KOREAN_TYPOGRAPHY = {
+  FONTS: {
+    // Korean-optimized fonts - 한국어 최적화 폰트
+    HEADING: [
+      "Noto Sans KR",
+      "Malgun Gothic",
+      "AppleGothic",
+      "Arial",
+      "sans-serif",
+    ],
+    BODY: ["Noto Sans KR", "Malgun Gothic", "Dotum", "Arial", "sans-serif"],
+    MONO: ["D2Coding", "Consolas", "Monaco", "monospace"],
+    DISPLAY: ["Black Han Sans", "Noto Sans KR", "Arial Black", "sans-serif"],
+  },
+
+  SIZES: {
+    // Font sizes for different contexts - 컨텍스트별 폰트 크기
+    TITLE: 32, // 제목
+    HEADING: 24, // 헤딩
+    SUBHEADING: 18, // 부제목
+    BODY: 14, // 본문
+    CAPTION: 12, // 캡션
+    SMALL: 10, // 작은 텍스트
+  },
+
+  WEIGHTS: {
+    LIGHT: 300, // 가벼움
+    NORMAL: 400, // 보통
+    MEDIUM: 500, // 중간
+    BOLD: 700, // 굵음
+    BLACK: 900, // 매우 굵음
+  },
+
+  LINE_HEIGHTS: {
+    TIGHT: 1.2, // 좁음
+    NORMAL: 1.4, // 보통
+    RELAXED: 1.6, // 여유로움
+    LOOSE: 1.8, // 느슨함
+  },
+} as const;
