@@ -65,6 +65,7 @@ src/components/combat/index.ts
 src/components/game
 src/components/game/DojangBackground.tsx
 src/components/game/GameEngine.tsx
+src/components/game/GameStarter.tsx
 src/components/game/GameUI.tsx
 src/components/game/HitEffectsLayer.tsx
 src/components/game/index.ts
@@ -81,10 +82,6 @@ src/components/intro/index.ts
 src/components/intro/IntroScreen.css
 src/components/intro/IntroScreen.tsx
 src/components/intro/sections
-src/components/intro/sections/ControlsSection.tsx
-src/components/intro/sections/index.ts
-src/components/intro/sections/MenuSection.tsx
-src/components/intro/sections/PhilosophySection.tsx
 src/components/training
 src/components/training/index.ts
 src/components/training/TrainingScreen.tsx
@@ -114,6 +111,7 @@ src/components/ui/base/korean-text/KoreanText.tsx
 src/components/ui/base/korean-text/types.ts
 src/components/ui/base/korean-text/utils.ts
 src/components/ui/base/PixiComponents.tsx
+src/components/ui/base/PixiTestableComponents.tsx
 src/components/ui/EndScreen.tsx
 src/components/ui/HealthBar.tsx
 src/components/ui/HitEffectsLayer.tsx
@@ -174,6 +172,7 @@ src/types/trigram.ts
 src/types/ui.ts
 src/utils/colorUtils.ts
 src/utils/effectUtils.ts
+src/utils/pixiExtensions.ts
 src/utils/playerUtils.ts
 src/vite-env.d.ts
 

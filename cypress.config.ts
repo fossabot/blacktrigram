@@ -62,7 +62,11 @@ export default defineConfig({
           return null;
         },
         logPerformance({ name, duration }) {
-          console.log(`Performance: ${name} - ${duration}ms`);
+          console.log(`⚡ Performance: ${name} took ${duration}ms`);
+          return null;
+        },
+        log(message) {
+          console.log(message);
           return null;
         },
       });

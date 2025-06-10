@@ -21,6 +21,9 @@ function App() {
   const [gameWinner, setGameWinner] = useState<PlayerState | null>(null);
   const [matchStats, setMatchStats] = useState<MatchStatistics | null>(null);
   const [appReady, setAppReady] = useState(false);
+  const [selectedArchetype, setSelectedArchetype] = useState<PlayerArchetype>(
+    PlayerArchetype.AMSALJA
+  );
 
   const handleApplicationReady = useCallback((app: any) => {
     if (app && typeof window !== "undefined") {
@@ -85,6 +88,11 @@ function App() {
     setIsGameActive(true);
     setGameWinner(null);
     setMatchStats(null);
+  }, []);
+
+  const handleArchetypeSelect = useCallback((archetype: PlayerArchetype) => {
+    setSelectedArchetype(archetype);
+    console.log(`Selected archetype: ${archetype}`);
   }, []);
 
   const handleGameEnd = useCallback((winner: number) => {
@@ -251,7 +259,7 @@ function App() {
           {renderCurrentScreen()}
         </Application>
 
-        {/* HTML Overlay for better testability */}
+        {/* Enhanced HTML Overlay for better testability */}
         <div
           className="test-overlay"
           style={{
@@ -260,26 +268,28 @@ function App() {
             left: 0,
             width: "100%",
             height: "100%",
-            pointerEvents: "none", // Keep overlay non-interactive
+            pointerEvents: "none",
             zIndex: 1000,
           }}
         >
-          {/* Fix: Make test elements interactive with proper styling */}
-          {gameMode === null && (
-            <div
-              className="intro-screen"
-              data-testid="intro-screen"
-              style={{ pointerEvents: "none" }}
-            />
-          )}
-
+          {/* Intro Screen Test Elements */}
           {gameMode === null && (
             <>
+              <div
+                className="intro-screen"
+                data-testid="intro-screen"
+                style={{
+                  pointerEvents: "none",
+                  width: "100%",
+                  height: "100%",
+                  position: "absolute",
+                }}
+              />
+
               <button
                 className="training-button"
                 data-testid="training-button"
                 style={{
-                  opacity: 1, // Fix: Make visible for testing
                   position: "absolute",
                   top: "45%",
                   left: "35%",
@@ -289,7 +299,7 @@ function App() {
                   border: "2px solid #00d4ff",
                   borderRadius: "8px",
                   cursor: "pointer",
-                  pointerEvents: "auto", // Fix: Enable interaction
+                  pointerEvents: "auto",
                   fontSize: "16px",
                   fontWeight: "bold",
                   zIndex: 1001,
@@ -298,11 +308,11 @@ function App() {
               >
                 훈련 모드 - Training
               </button>
+
               <button
                 className="combat-button"
                 data-testid="combat-button"
                 style={{
-                  opacity: 1, // Fix: Make visible for testing
                   position: "absolute",
                   top: "55%",
                   left: "35%",
@@ -312,7 +322,7 @@ function App() {
                   border: "2px solid #ff6b35",
                   borderRadius: "8px",
                   cursor: "pointer",
-                  pointerEvents: "auto", // Fix: Enable interaction
+                  pointerEvents: "auto",
                   fontSize: "16px",
                   fontWeight: "bold",
                   zIndex: 1001,
@@ -322,7 +332,7 @@ function App() {
                 대전 모드 - Combat
               </button>
 
-              {/* Fix: Archetype selection with proper interaction */}
+              {/* Fixed Archetype Selection */}
               <div
                 className="archetype-section"
                 style={{
@@ -337,7 +347,6 @@ function App() {
                   className="archetype-toggle"
                   data-testid="archetype-toggle"
                   style={{
-                    opacity: 1,
                     padding: "10px 20px",
                     backgroundColor: "rgba(255, 215, 0, 0.8)",
                     color: "black",
@@ -356,16 +365,28 @@ function App() {
 
                 <div data-testid="archetype-list" style={{ display: "block" }}>
                   {[
-                    { id: "musa", korean: "무사", english: "Warrior" },
-                    { id: "amsalja", korean: "암살자", english: "Assassin" },
-                    { id: "hacker", korean: "해커", english: "Hacker" },
                     {
-                      id: "jeongbo_yowon",
+                      id: PlayerArchetype.MUSA,
+                      korean: "무사",
+                      english: "Warrior",
+                    },
+                    {
+                      id: PlayerArchetype.AMSALJA,
+                      korean: "암살자",
+                      english: "Assassin",
+                    },
+                    {
+                      id: PlayerArchetype.HACKER,
+                      korean: "해커",
+                      english: "Hacker",
+                    },
+                    {
+                      id: PlayerArchetype.JEONGBO_YOWON,
                       korean: "정보요원",
                       english: "Agent",
                     },
                     {
-                      id: "jojik_pokryeokbae",
+                      id: PlayerArchetype.JOJIK_POKRYEOKBAE,
                       korean: "조직폭력배",
                       english: "Gangster",
                     },
@@ -375,12 +396,14 @@ function App() {
                       className={`archetype-option-${archetype.id}`}
                       data-testid={`archetype-option-${archetype.id}`}
                       style={{
-                        opacity: 1,
                         display: "block",
                         width: "200px",
                         padding: "8px 16px",
                         marginBottom: "5px",
-                        backgroundColor: "rgba(26, 26, 46, 0.9)",
+                        backgroundColor:
+                          selectedArchetype === archetype.id
+                            ? "rgba(255, 215, 0, 0.3)"
+                            : "rgba(26, 26, 46, 0.9)",
                         color: "white",
                         border: "1px solid #4a5568",
                         borderRadius: "4px",
@@ -388,9 +411,7 @@ function App() {
                         fontSize: "12px",
                         textAlign: "left",
                       }}
-                      onClick={() =>
-                        console.log(`Selected archetype: ${archetype.id}`)
-                      }
+                      onClick={() => handleArchetypeSelect(archetype.id)}
                     >
                       {archetype.korean} - {archetype.english}
                     </button>
@@ -409,24 +430,37 @@ function App() {
                     fontWeight: "bold",
                   }}
                 >
-                  선택됨: 암살자 - Selected: Assassin
+                  선택됨:{" "}
+                  {selectedArchetype === PlayerArchetype.AMSALJA
+                    ? "암살자"
+                    : selectedArchetype === PlayerArchetype.HACKER
+                    ? "해커"
+                    : selectedArchetype === PlayerArchetype.MUSA
+                    ? "무사"
+                    : selectedArchetype === PlayerArchetype.JEONGBO_YOWON
+                    ? "정보요원"
+                    : "조직폭력배"}
                 </div>
               </div>
             </>
           )}
 
-          {/* Fix: Training screen test elements */}
+          {/* Training Screen Test Elements */}
           {gameMode === GameMode.TRAINING && (
             <>
               <div
                 className="training-screen"
                 data-testid="training-screen"
-                style={{ pointerEvents: "none" }}
+                style={{
+                  pointerEvents: "none",
+                  width: "100%",
+                  height: "100%",
+                  position: "absolute",
+                }}
               />
               <button
                 data-testid="return-to-menu-button"
                 style={{
-                  opacity: 1,
                   position: "absolute",
                   bottom: "10%",
                   right: "10%",
@@ -447,13 +481,55 @@ function App() {
             </>
           )}
 
-          {/* Fix: Combat screen test elements */}
+          {/* Combat Screen Test Elements */}
           {(gameMode === GameMode.VERSUS || gameMode === GameMode.PRACTICE) && (
-            <div
-              className="combat-screen"
-              data-testid="combat-screen"
-              style={{ pointerEvents: "none" }}
-            />
+            <>
+              <div
+                className="combat-screen"
+                data-testid="combat-screen"
+                style={{
+                  pointerEvents: "none",
+                  width: "100%",
+                  height: "100%",
+                  position: "absolute",
+                }}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  color: "white",
+                  fontSize: "24px",
+                  fontWeight: "bold",
+                  pointerEvents: "none",
+                  zIndex: 1001,
+                }}
+              >
+                Combat - 전투
+              </div>
+              <button
+                data-testid="return-to-menu-button"
+                style={{
+                  position: "absolute",
+                  top: "20px",
+                  right: "20px",
+                  padding: "10px 20px",
+                  backgroundColor: "rgba(74, 85, 104, 0.8)",
+                  color: "white",
+                  border: "2px solid #4a5568",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                  pointerEvents: "auto",
+                  fontSize: "14px",
+                  zIndex: 1001,
+                }}
+                onClick={handleReturnToMenu}
+              >
+                메뉴
+              </button>
+            </>
           )}
         </div>
       </div>
