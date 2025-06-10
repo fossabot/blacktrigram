@@ -1,10 +1,37 @@
+// PIXI React v8 hook for component extensions
+import { useExtend } from "@pixi/react";
+import {
+  Container,
+  Graphics,
+  Text,
+  Sprite,
+  AnimatedSprite,
+  TilingSprite,
+  ParticleContainer,
+  BitmapText,
+} from "pixi.js";
+
 // Note: @pixi/react v8 doesn't use extend API - components are automatically available
 // This is a compatibility layer for our codebase
 
 export const usePixiExtensions = () => {
-  // Components are automatically available in @pixi/react v8
+  // Use the useExtend hook to register PIXI components
+  useExtend({
+    Container,
+    Graphics,
+    Text,
+    Sprite,
+    AnimatedSprite,
+    TilingSprite,
+    ParticleContainer,
+    BitmapText,
+  });
+
   return true;
 };
+
+// Re-export useTick for convenience - Fix: Import from correct location
+export { useTick } from "@pixi/react";
 
 export const initializePixiExtensions = () => {
   console.log("🎮 PixiJS components ready for Black Trigram (흑괘)");
@@ -21,6 +48,3 @@ export const AVAILABLE_PIXI_COMPONENTS = [
   "pixiParticleContainer",
   "pixiBitmapText",
 ] as const;
-
-// Fix: Remove unused imports by not importing anything
-// PixiJS React v8 automatically provides components

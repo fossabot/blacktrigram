@@ -1,112 +1,42 @@
 import React, { useState, useCallback } from "react";
-import * as PIXI from "pixi.js";
+import { usePixiExtensions } from "../../utils/pixiExtensions";
 import { GameEngine } from "./GameEngine";
 import { CombatHUD } from "../combat/components/CombatHUD";
 import { CombatArena } from "../combat/components/CombatArena";
-import { TrigramWheel } from "../ui/TrigramWheel";
 import { DojangBackground } from "./DojangBackground";
-import { GameMode } from "../../types/enums";
+import { createPlayerFromArchetype } from "../../utils/playerUtils";
+import { PlayerArchetype, GameMode } from "../../types/enums";
 import type { PlayerState } from "../../types/player";
-import type { TrigramStance } from "../../types/trigram";
+import type { CombatResult } from "../../types/combat";
+import * as PIXI from "pixi.js";
 
 export interface GameStarterProps {
   readonly gameMode: GameMode;
   readonly onGameEnd?: () => void;
+  readonly onReturnToMenu?: () => void;
 }
 
 export const GameStarter: React.FC<GameStarterProps> = ({
   gameMode,
   onGameEnd,
+  onReturnToMenu,
 }) => {
-  // Initialize players with complete PlayerState properties
-  const [players, setPlayers] = useState<PlayerState[]>([
-    {
-      id: "player1",
-      name: { korean: "플레이어 1", english: "Player 1" },
-      archetype: "MUSA" as any,
-      health: 100,
-      maxHealth: 100,
-      ki: 50,
-      maxKi: 100,
-      stamina: 100,
-      maxStamina: 100,
-      energy: 100,
-      maxEnergy: 100,
-      attackPower: 50,
-      defense: 30,
-      speed: 40,
-      technique: 75,
-      pain: 0,
-      consciousness: 100,
-      balance: 100,
-      momentum: 0,
-      combatState: "idle" as any,
-      isBlocking: false,
-      isStunned: false,
-      isCountering: false,
-      lastActionTime: 0,
-      recoveryTime: 0,
-      lastStanceChangeTime: 0,
-      statusEffects: [],
-      activeEffects: [],
-      vitalPoints: [],
-      totalDamageReceived: 0,
-      totalDamageDealt: 0,
-      hitsTaken: 0,
-      hitsLanded: 0,
-      perfectStrikes: 0,
-      vitalPointHits: 0,
-      currentStance: "geon" as TrigramStance,
-      position: { x: 100, y: 300 },
-    },
-    {
-      id: "player2",
-      name: { korean: "플레이어 2", english: "Player 2" },
-      archetype: "AMSALJA" as any,
-      health: 100,
-      maxHealth: 100,
-      ki: 50,
-      maxKi: 100,
-      stamina: 100,
-      maxStamina: 100,
-      energy: 100,
-      maxEnergy: 100,
-      attackPower: 60,
-      defense: 25,
-      speed: 55,
-      technique: 85,
-      pain: 0,
-      consciousness: 100,
-      balance: 100,
-      momentum: 0,
-      combatState: "idle" as any,
-      isBlocking: false,
-      isStunned: false,
-      isCountering: false,
-      lastActionTime: 0,
-      recoveryTime: 0,
-      lastStanceChangeTime: 0,
-      statusEffects: [],
-      activeEffects: [],
-      vitalPoints: [],
-      totalDamageReceived: 0,
-      totalDamageDealt: 0,
-      hitsTaken: 0,
-      hitsLanded: 0,
-      perfectStrikes: 0,
-      vitalPointHits: 0,
-      currentStance: "tae" as TrigramStance,
-      position: { x: 600, y: 300 },
-    },
+  usePixiExtensions();
+
+  // Initialize players
+  const [players, setPlayers] = useState<[PlayerState, PlayerState]>(() => [
+    createPlayerFromArchetype(PlayerArchetype.MUSA, 0),
+    createPlayerFromArchetype(PlayerArchetype.AMSALJA, 1),
   ]);
 
-  const [currentRound] = useState(1);
-  const [timeRemaining] = useState(60);
+  const [currentRound, setCurrentRound] = useState(1);
+  const [timeRemaining, setTimeRemaining] = useState(180);
+  const [isPaused, setIsPaused] = useState(false);
 
   const handlePlayerUpdate = useCallback(
     (playerIndex: number, updates: Partial<PlayerState>) => {
       setPlayers((prev) => {
-        const newPlayers = [...prev];
+        const newPlayers = [...prev] as [PlayerState, PlayerState];
         newPlayers[playerIndex] = { ...newPlayers[playerIndex], ...updates };
         return newPlayers;
       });
@@ -114,21 +44,15 @@ export const GameStarter: React.FC<GameStarterProps> = ({
     []
   );
 
-  const handleStanceSelect = useCallback(
-    (stance: TrigramStance) => {
-      // Apply stance change to player 1 (player can control)
-      handlePlayerUpdate(0, {
-        ...players[0],
-        currentStance: stance,
-        ki: Math.min(players[0].ki + 5, players[0].maxKi),
-      });
-    },
-    [players, handlePlayerUpdate]
-  );
-
   const handleCombatResult = useCallback(
-    (result: any) => {
+    (result: CombatResult) => {
       console.log("Combat result:", result);
+
+      // Update players based on combat result
+      if (result.updatedAttacker && result.updatedDefender) {
+        setPlayers([result.updatedAttacker, result.updatedDefender]);
+      }
+
       // Check for game end conditions
       if (players.some((p) => p.health <= 0)) {
         onGameEnd?.();
@@ -137,17 +61,32 @@ export const GameStarter: React.FC<GameStarterProps> = ({
     [players, onGameEnd]
   );
 
-  const handleGameEvent = useCallback((event: any) => {
-    console.log("Game event:", event);
-    // Handle various game events
-  }, []);
+  const handleGameEvent = useCallback(
+    (event: string, data?: any) => {
+      console.log("Game event:", event, data);
+
+      switch (event) {
+        case "pause_toggle":
+          setIsPaused(!isPaused);
+          break;
+        case "round_end":
+          setCurrentRound((prev) => prev + 1);
+          setTimeRemaining(180);
+          break;
+        case "return_to_menu":
+          onReturnToMenu?.();
+          break;
+      }
+    },
+    [isPaused, onReturnToMenu]
+  );
 
   return (
     <pixiContainer data-testid="game-starter">
       {/* Background */}
       <DojangBackground
-        width={800}
-        height={600}
+        width={1200}
+        height={800}
         lighting="cyberpunk"
         animate={true}
       />
@@ -159,15 +98,15 @@ export const GameStarter: React.FC<GameStarterProps> = ({
         onPlayerUpdate={handlePlayerUpdate}
         onCombatResult={handleCombatResult}
         onGameEvent={handleGameEvent}
+        isPaused={isPaused}
       />
 
       {/* Combat Arena */}
       <CombatArena
-        players={
-          players.slice(0, 2) as unknown as readonly [PlayerState, PlayerState]
-        } // Fix: Safe conversion
-        width={800}
-        height={600}
+        players={players}
+        width={1200}
+        height={800}
+        onPlayerClick={(index) => console.log(`Player ${index} clicked`)}
       />
 
       {/* Combat HUD */}
@@ -177,61 +116,24 @@ export const GameStarter: React.FC<GameStarterProps> = ({
         currentRound={currentRound}
         timeRemaining={timeRemaining}
         maxRounds={3}
-        isPaused={false}
-        width={800}
+        isPaused={isPaused}
+        onPauseToggle={() => handleGameEvent("pause_toggle")}
+        width={1200}
+        height={80}
+        y={0}
       />
 
-      {/* Trigram Wheel for stance selection */}
-      <pixiContainer x={50} y={450}>
-        <TrigramWheel
-          currentStance={players[0].currentStance}
-          onStanceSelect={handleStanceSelect}
-          radius={80}
-        />
-      </pixiContainer>
-
-      {/* Game controls info */}
-      <pixiContainer x={650} y={450}>
+      {/* Controls guide */}
+      <pixiContainer x={50} y={720}>
         <pixiText
-          text="조작법 (Controls):"
+          text="조작법: 1-8(팔괘), SPACE(공격), ESC(일시정지)"
           style={
             new PIXI.TextStyle({
               fontSize: 14,
               fill: 0xffffff,
-              fontWeight: "bold",
+              fontFamily: "Arial, sans-serif",
             })
           }
-          y={0}
-        />
-        <pixiText
-          text="1-8: 팔괘 자세"
-          style={
-            new PIXI.TextStyle({
-              fontSize: 12,
-              fill: 0xcccccc,
-            })
-          }
-          y={20}
-        />
-        <pixiText
-          text="SPACE: 기술 실행"
-          style={
-            new PIXI.TextStyle({
-              fontSize: 12,
-              fill: 0xcccccc,
-            })
-          }
-          y={35}
-        />
-        <pixiText
-          text="ESC: 일시정지"
-          style={
-            new PIXI.TextStyle({
-              fontSize: 12,
-              fill: 0xcccccc,
-            })
-          }
-          y={50}
         />
       </pixiContainer>
     </pixiContainer>

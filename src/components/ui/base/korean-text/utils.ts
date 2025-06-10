@@ -3,10 +3,9 @@ import type {
   KoreanTextSize,
   KoreanTextWeight,
   KoreanTextConfig,
-  KoreanTextDisplay,
-  KoreanTextOrder,
 } from "./types";
-import type { KoreanText } from "../../../../types/korean-text";
+import type { KoreanText } from "../../../../types/korean-text"; // Fix: Correct path
+import { KOREAN_TEXT_CONSTANTS } from "./constants";
 
 // Single consolidated implementation - remove all duplicates
 export function isKoreanCharacter(char: string): boolean {
@@ -18,45 +17,6 @@ export function isKoreanCharacter(char: string): boolean {
     (code >= 0xa960 && code <= 0xa97f) ||
     (code >= 0xd7b0 && code <= 0xd7ff)
   );
-}
-
-export function validateKoreanText(text: unknown): text is KoreanText {
-  return (
-    typeof text === "object" &&
-    text !== null &&
-    "korean" in text &&
-    "english" in text &&
-    typeof (text as KoreanText).korean === "string" &&
-    typeof (text as KoreanText).english === "string"
-  );
-}
-
-export function formatKoreanText(
-  text: KoreanText | string,
-  config?: {
-    display?: KoreanTextDisplay;
-    order?: KoreanTextOrder;
-    separator?: string;
-  }
-): string {
-  if (typeof text === "string") return text;
-
-  const display = config?.display || "both";
-  const order = config?.order || "korean_first";
-  const separator = config?.separator || " / ";
-
-  switch (display) {
-    case "korean":
-      return text.korean;
-    case "english":
-      return text.english;
-    case "both":
-      return order === "korean_first"
-        ? `${text.korean}${separator}${text.english}`
-        : `${text.english}${separator}${text.korean}`;
-    default:
-      return text.korean;
-  }
 }
 
 export function sizeToPixels(size: KoreanTextSize | number): number {
@@ -167,4 +127,156 @@ export const measureKoreanText = (
     width,
     height: fontSize * 1.2,
   };
+};
+
+export const createKoreanPixiText = (
+  text: KoreanText,
+  options?: {
+    showBoth?: boolean;
+    showEnglish?: boolean;
+    romanized?: boolean;
+  }
+): string => {
+  const {
+    showBoth = false,
+    showEnglish = false,
+    romanized = false,
+  } = options || {};
+
+  if (showBoth) {
+    return `${text.korean} (${text.english})`;
+  }
+
+  if (showEnglish) {
+    return text.english;
+  }
+
+  if (romanized && text.romanized) {
+    return text.romanized;
+  }
+
+  return text.korean;
+};
+
+export const getKoreanTextMetrics = (
+  text: string,
+  fontSize: number = KOREAN_TEXT_CONSTANTS.FONT_SIZES.MEDIUM
+): { width: number; height: number } => {
+  const avgCharWidth = fontSize * 0.6;
+  const width = text.length * avgCharWidth;
+  const height = fontSize * KOREAN_TEXT_CONSTANTS.LAYOUT.LINE_HEIGHT_RATIO;
+
+  return { width, height };
+};
+
+// Fix: Remove duplicate - keep only this version
+export const formatKoreanText = (
+  text: KoreanText,
+  variant: "short" | "full" | "bilingual" = "short"
+): string => {
+  switch (variant) {
+    case "full":
+      return `${text.korean} (${text.english})${
+        text.romanized ? ` [${text.romanized}]` : ""
+      }`;
+    case "bilingual":
+      return `${text.korean} / ${text.english}`;
+    case "short":
+    default:
+      return text.korean;
+  }
+};
+
+// Additional utility functions for Korean text processing
+export const getTextLanguage = (
+  text: string
+): "korean" | "english" | "mixed" => {
+  const koreanChars = text.split("").filter(isKoreanCharacter).length;
+  const totalChars = text.replace(/\s/g, "").length;
+
+  if (koreanChars === 0) return "english";
+  if (koreanChars === totalChars) return "korean";
+  return "mixed";
+};
+
+export const optimizeKoreanTextForDisplay = (
+  text: KoreanText,
+  maxWidth: number,
+  fontSize: number
+): string => {
+  const estimatedWidth = getKoreanTextMetrics(text.korean, fontSize).width;
+
+  if (estimatedWidth <= maxWidth) {
+    return text.korean;
+  }
+
+  // Try shorter English version if available
+  const englishWidth = getKoreanTextMetrics(text.english, fontSize).width;
+  if (englishWidth <= maxWidth) {
+    return text.english;
+  }
+
+  // Truncate Korean text
+  const avgCharWidth = fontSize * 0.6;
+  const maxChars = Math.floor(maxWidth / avgCharWidth) - 3; // Reserve space for "..."
+  return text.korean.substring(0, Math.max(1, maxChars)) + "...";
+};
+
+export const createBilingualText = (
+  korean: string,
+  english: string,
+  romanized?: string
+): KoreanText => ({
+  korean,
+  english,
+  romanized,
+});
+
+// Fix: Remove duplicate - keep only this version
+export const validateKoreanText = (text: KoreanText): boolean => {
+  return !!(
+    text.korean &&
+    text.english &&
+    text.korean.trim().length > 0 &&
+    text.english.trim().length > 0
+  );
+};
+
+// Additional Korean text utilities
+export const splitKoreanSentence = (text: string): string[] => {
+  // Split on Korean sentence endings
+  return text.split(/[.!?。！？]/).filter((s) => s.trim().length > 0);
+};
+
+export const calculateKoreanLineHeight = (fontSize: number): number => {
+  // Korean text typically needs more line height due to character complexity
+  return fontSize * KOREAN_TEXT_CONSTANTS.LAYOUT.LINE_HEIGHT_RATIO;
+};
+
+export const estimateKoreanReadingTime = (text: KoreanText): number => {
+  // Average Korean reading speed: ~250-300 characters per minute
+  const koreanChars = text.korean.length;
+  const englishWords = text.english.split(" ").length;
+
+  // Estimate based on Korean characters (slower) and English words (faster)
+  const koreanTime = (koreanChars / 275) * 60; // seconds
+  const englishTime = (englishWords / 200) * 60; // seconds
+
+  return Math.max(koreanTime, englishTime);
+};
+
+export const normalizeKoreanSpacing = (text: string): string => {
+  // Normalize Korean spacing according to standard rules
+  return text
+    .replace(/\s+/g, " ") // Multiple spaces to single space
+    .replace(/\s*([.,!?])\s*/g, "$1 ") // Proper punctuation spacing
+    .trim();
+};
+
+export const detectKoreanTextDirection = (text: string): "ltr" | "mixed" => {
+  // Korean is always left-to-right, but mixed content might need special handling
+  const hasKorean = /[가-힣]/.test(text);
+  const hasEnglish = /[a-zA-Z]/.test(text);
+
+  return hasKorean && hasEnglish ? "mixed" : "ltr";
 };

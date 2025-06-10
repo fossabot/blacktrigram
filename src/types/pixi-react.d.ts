@@ -1,120 +1,10 @@
 /// <reference types="pixi.js" />
 /// <reference types="react" />
 
-import type {
-  Container,
-  Graphics,
-  Text,
-  Sprite,
-  Texture,
-  DisplayObject,
-  FederatedPointerEvent,
-  TextStyle,
-  Application as PIXIApplication, // Renamed to avoid conflict
-} from "pixi.js";
-
-// PIXI.js React integration type declarations
-declare module "@pixi/react" {
-  import * as PIXI from "pixi.js";
-  import { ComponentType, ReactNode } from "react";
-
-  // Basic PixiJS React components
-  export const Stage: ComponentType<{
-    children?: ReactNode;
-    width?: number;
-    height?: number;
-    options?: Partial<PIXI.ApplicationOptions>;
-  }>;
-
-  export const Container: ComponentType<{
-    children?: ReactNode;
-    x?: number;
-    y?: number;
-    width?: number;
-    height?: number;
-    interactive?: boolean;
-    buttonMode?: boolean;
-    pointertap?: () => void;
-    anchor?: number | { x: number; y: number };
-  }>;
-
-  export const Graphics: ComponentType<{
-    draw: (graphics: PIXI.Graphics) => void;
-    x?: number;
-    y?: number;
-  }>;
-
-  export const Text: ComponentType<{
-    text: string;
-    style?: PIXI.TextStyle | Partial<PIXI.TextStyleOptions>;
-    x?: number;
-    y?: number;
-    anchor?: number | { x: number; y: number };
-  }>;
-
-  export const Sprite: ComponentType<{
-    texture?: PIXI.Texture;
-    x?: number;
-    y?: number;
-    width?: number;
-    height?: number;
-    anchor?: number | { x: number; y: number };
-    interactive?: boolean;
-    buttonMode?: boolean;
-    pointertap?: () => void;
-  }>;
-
-  // Hooks
-  export function useApp(): PIXI.Application;
-  export function useTick(callback: (delta: number) => void): void;
-}
-
-// Additional PIXI types for Korean martial arts
-declare module "pixi.js" {
-  interface TextStyleOptions {
-    fontFamily?: string | string[];
-    fontSize?: number;
-    fontWeight?: TextStyleFontWeight;
-    fill?: ColorSource;
-    stroke?:
-      | ColorSource
-      | {
-          color?: ColorSource;
-          width?: number;
-        };
-    dropShadow?: {
-      color?: ColorSource;
-      alpha?: number;
-      angle?: number;
-      blur?: number;
-      distance?: number;
-    };
-    align?: TextStyleAlign;
-    wordWrap?: boolean;
-    wordWrapWidth?: number;
-    lineHeight?: number;
-  }
-}
-
-// Korean text specific PIXI extensions
-export interface KoreanPixiTextOptions extends PIXI.TextStyleOptions {
-  koreanFont?: string;
-  englishFont?: string;
-  romanizedFont?: string;
-  bilingual?: boolean;
-  showRomanization?: boolean;
-}
-
-export interface KoreanPixiGraphicsOptions {
-  trigramSymbol?: string;
-  stance?: string;
-  glowColor?: number;
-  pulseAnimation?: boolean;
-}
-
 declare global {
   namespace JSX {
     interface IntrinsicElements {
+      // PIXI React v8 automatically provides these after useExtend
       pixiContainer: any;
       pixiGraphics: any;
       pixiSprite: any;
@@ -125,6 +15,37 @@ declare global {
       pixiBitmapText: any;
     }
   }
+}
+
+// PIXI React v8 module declarations
+declare module "@pixi/react" {
+  import type { ReactNode } from "react";
+  import type * as PIXI from "pixi.js";
+
+  // Application component props (replaces Stage from v7)
+  export interface ApplicationProps {
+    width?: number;
+    height?: number;
+    backgroundColor?: number;
+    antialias?: boolean;
+    autoDensity?: boolean;
+    resizeTo?: HTMLElement | Window;
+    children?: ReactNode;
+  }
+
+  // Main Application component
+  export const Application: React.ComponentType<ApplicationProps>;
+
+  // Hooks
+  export function useApplication(): { app: PIXI.Application };
+  export function useExtend(components: Record<string, any>): void;
+  export function useTick(
+    callback: (delta: number) => void,
+    enabled?: boolean
+  ): void;
+
+  // Component creation helper
+  export function extend(components: Record<string, any>): void;
 }
 
 export {};

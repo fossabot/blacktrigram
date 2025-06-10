@@ -155,7 +155,7 @@ export interface StanceIndicatorProps {
 }
 
 export interface TrigramWheelProps {
-  readonly currentStance: TrigramStance;
+  readonly currentStance: TrigramStance; // Fix: Make required
   readonly onStanceChange: (stance: TrigramStance) => void;
   readonly selectedStance?: TrigramStance;
   readonly onStanceSelect?: (stance: TrigramStance) => void;

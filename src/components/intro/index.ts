@@ -4,10 +4,12 @@
 
 // Main screen
 export { IntroScreen } from "./IntroScreen";
-export { default as IntroScreenDefault } from "./IntroScreen";
 
 // Components - avoid duplicate exports
-export { MenuSection, PhilosophySection, ControlsSection } from "./components";
+export * from "./components";
+
+// Re-export for convenience
+export { default as Intro } from "./IntroScreen";
 
 // Type exports
 export type { IntroScreenProps } from "../../types/components";

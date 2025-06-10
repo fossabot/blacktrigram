@@ -1,19 +1,9 @@
-import React, { useMemo, useCallback } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
-import * as PIXI from "pixi.js";
+import React from "react";
+// Fix: Remove direct PIXI React imports, use pixi components directly
 import { usePixiExtensions } from "../../utils/pixiExtensions";
-import { KOREAN_COLORS, PLAYER_ARCHETYPES_DATA } from "../../types/constants";
-import type { PlayerState } from "../../types/player";
-
-export interface ArchetypeDisplayProps {
-  readonly player: PlayerState;
-  readonly showDetails?: boolean;
-  readonly compact?: boolean;
-  readonly x?: number;
-  readonly y?: number;
-  readonly width?: number;
-  readonly height?: number;
-}
+// Fix: Import from ui.ts instead of components.ts
+import type { ArchetypeDisplayProps } from "../../types/ui";
+import { KOREAN_COLORS } from "../../types/constants";
 
 export const ArchetypeDisplay: React.FC<ArchetypeDisplayProps> = ({
   player,
@@ -22,61 +12,87 @@ export const ArchetypeDisplay: React.FC<ArchetypeDisplayProps> = ({
   x = 0,
   y = 0,
   width = 200,
-  height = 120,
+  height = 100,
 }) => {
   usePixiExtensions();
 
-  const archetypeData = PLAYER_ARCHETYPES_DATA[player.archetype];
-
-  const drawBackground = useCallback(
-    (g: PIXI.Graphics) => {
-      g.clear();
-      g.beginFill(archetypeData.colors.primary, 0.2);
-      g.lineStyle(2, archetypeData.colors.primary, 0.8);
-      g.drawRoundedRect(0, 0, width, height, 10);
-      g.endFill();
-    },
-    [archetypeData.colors.primary, width, height]
-  );
-
-  const titleStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: "Arial",
-        fontSize: compact ? 14 : 18,
-        fill: KOREAN_COLORS.TEXT_PRIMARY,
-        fontWeight: "bold",
-      }),
-    [compact]
-  );
-
-  const descriptionStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: "Arial",
-        fontSize: 12,
-        fill: KOREAN_COLORS.TEXT_SECONDARY,
-        wordWrap: true,
-        wordWrapWidth: width - 20,
-      }),
-    [width]
-  );
-
   return (
-    <Container x={x} y={y} data-testid="archetype-display">
-      <Graphics draw={drawBackground} />
+    <pixiContainer x={x} y={y} data-testid="archetype-display">
+      {/* Background */}
+      <pixiGraphics
+        draw={(g) => {
+          g.clear();
+          g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.8);
+          g.lineStyle(2, KOREAN_COLORS.PRIMARY_CYAN, 0.6);
+          g.drawRoundedRect(0, 0, width, height, 8);
+          g.endFill();
+        }}
+      />
 
-      <Text text={archetypeData.name.korean} style={titleStyle} x={10} y={10} />
+      {/* Player Name */}
+      <pixiText
+        text={player.name.korean}
+        style={{
+          fontSize: compact ? 14 : 18,
+          fill: KOREAN_COLORS.TEXT_PRIMARY,
+          fontWeight: "bold",
+        }}
+        x={10}
+        y={10}
+      />
 
+      {/* English Name */}
+      <pixiText
+        text={player.name.english}
+        style={{
+          fontSize: compact ? 10 : 12,
+          fill: KOREAN_COLORS.TEXT_SECONDARY,
+        }}
+        x={10}
+        y={compact ? 25 : 30}
+      />
+
+      {/* Archetype */}
+      <pixiText
+        text={`유형: ${player.archetype}`}
+        style={{
+          fontSize: 12,
+          fill: KOREAN_COLORS.ACCENT_GOLD,
+        }}
+        x={10}
+        y={compact ? 40 : 50}
+      />
+
+      {/* Health Bar */}
       {showDetails && (
-        <Text
-          text={archetypeData.description.korean}
-          style={descriptionStyle}
-          x={10}
-          y={35}
-        />
+        <pixiContainer x={10} y={compact ? 55 : 70}>
+          <pixiGraphics
+            draw={(g) => {
+              g.clear();
+              // Background
+              g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.8);
+              g.drawRoundedRect(0, 0, width - 20, 10, 5);
+              g.endFill();
+
+              // Health
+              const healthPercentage = player.health / player.maxHealth;
+              g.beginFill(KOREAN_COLORS.POSITIVE_GREEN, 0.8);
+              g.drawRoundedRect(1, 1, (width - 22) * healthPercentage, 8, 4);
+              g.endFill();
+            }}
+          />
+          <pixiText
+            text={`${player.health}/${player.maxHealth}`}
+            style={{
+              fontSize: 8,
+              fill: KOREAN_COLORS.TEXT_PRIMARY,
+            }}
+            x={width - 60}
+            y={-2}
+          />
+        </pixiContainer>
       )}
-    </Container>
+    </pixiContainer>
   );
 };
 

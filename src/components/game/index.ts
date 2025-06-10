@@ -5,8 +5,7 @@
 export { DojangBackground } from "./DojangBackground";
 export { GameEngine } from "./GameEngine";
 export { GameUI } from "./GameUI";
-// Fix: Export as default import since HitEffectsLayer doesn't have named export
-export { default as HitEffectsLayer } from "./HitEffectsLayer";
+export { HitEffectsLayer } from "./HitEffectsLayer";
 export { Player } from "./Player";
 export { PlayerVisuals } from "./PlayerVisuals";
 
@@ -17,3 +16,6 @@ export type {
   PlayerVisualsProps,
   DojangBackgroundProps,
 } from "../../types/components";
+
+// Re-export GameStarter if it exists
+export { default as GameStarter } from "./GameStarter";

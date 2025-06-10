@@ -1,27 +1,111 @@
-import { render, type RenderOptions } from "@testing-library/react";
-import { Stage } from "@pixi/react";
-import type { ReactElement } from "react";
 import React from "react";
+import { Application } from "@pixi/react";
+import { render, RenderOptions } from "@testing-library/react";
+// Fix: Import missing types
 import type { AudioConfig } from "../types/audio";
-import { vi } from "vitest";
-import type { PlayerState } from "../types";
-import { createPlayerFromArchetype } from "../utils/playerUtils";
+import type { PlayerState } from "../types/player";
 import { PlayerArchetype } from "../types/enums";
+import { createPlayerFromArchetype } from "../utils/playerUtils";
 
-// Custom render function for testing Korean martial arts components
-export function renderKoreanMartialArtsComponent(
-  ui: ReactElement,
-  options?: Omit<RenderOptions, "wrapper">
-): ReturnType<typeof render> {
-  return render(ui, {
-    ...options,
-  });
+interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {
+  pixiProps?: any;
 }
 
-// Render function for PixiJS Stage components
-export function renderInStage(ui: ReactElement): ReturnType<typeof render> {
-  return render(React.createElement(Stage, {}, ui));
+function customRender(
+  ui: React.ReactElement,
+  options: CustomRenderOptions = {}
+) {
+  const { pixiProps = {}, ...renderOptions } = options;
+
+  function Wrapper({ children }: { children: React.ReactNode }) {
+    return React.createElement(
+      Application,
+      { width: 800, height: 600, ...pixiProps },
+      children
+    );
+  }
+
+  return render(ui, { wrapper: Wrapper, ...renderOptions });
 }
+
+// Fix: Export proper mock config
+export const mockAudioConfig: AudioConfig = {
+  enableSpatialAudio: false,
+  maxSimultaneousSounds: 16,
+  audioFormats: ["audio/mp3", "audio/wav"],
+  fadeTransitionTime: 1000,
+  defaultVolume: 0.7,
+};
+
+// Fix: Create test player function
+export function createTestPlayer(
+  archetype: PlayerArchetype = PlayerArchetype.MUSA,
+  playerIndex: number = 0
+): PlayerState {
+  return createPlayerFromArchetype(archetype, playerIndex);
+}
+
+// Fix: Mock match statistics
+export const mockMatchStatistics = {
+  totalDamageDealt: 100,
+  totalDamageTaken: 50,
+  criticalHits: 2,
+  vitalPointHits: 1,
+  techniquesUsed: 5,
+  perfectStrikes: 1,
+  consecutiveWins: 1,
+  matchDuration: 120,
+  totalMatches: 1,
+  maxRounds: 3,
+  winner: 0,
+  totalRounds: 2,
+  currentRound: 2,
+  timeRemaining: 0,
+  combatEvents: [],
+  finalScore: { player1: 2, player2: 0 },
+  roundsWon: { player1: 2, player2: 0 },
+  player1: {
+    wins: 1,
+    losses: 0,
+    hitsTaken: 3,
+    hitsLanded: 5,
+    totalDamageDealt: 100,
+    totalDamageReceived: 50,
+    techniques: ["천둥벽력"],
+    perfectStrikes: 1,
+    vitalPointHits: 1,
+    consecutiveWins: 1,
+    matchDuration: 120,
+  },
+  player2: {
+    wins: 0,
+    losses: 1,
+    hitsTaken: 5,
+    hitsLanded: 3,
+    totalDamageDealt: 50,
+    totalDamageReceived: 100,
+    techniques: ["유수연타"],
+    perfectStrikes: 0,
+    vitalPointHits: 0,
+    consecutiveWins: 0,
+    matchDuration: 120,
+  },
+};
+
+// Fix: Mock game state
+export const mockGameState = {
+  players: [
+    createTestPlayer(PlayerArchetype.MUSA, 0),
+    createTestPlayer(PlayerArchetype.AMSALJA, 1),
+  ] as const,
+  timeRemaining: 180,
+  currentRound: 1,
+  maxRounds: 3,
+  isPaused: false,
+};
+
+export * from "@testing-library/react";
+export { customRender as render };
 
 // Test utilities for Korean martial arts game testing
 export const TEST_CONSTANTS = {
@@ -89,24 +173,10 @@ export const mockPixiContainer = {
   alpha: 1,
 };
 
-// Fix: Use proper AudioConfig structure
-export const mockAudioConfig: AudioConfig = {
-  enableSpatialAudio: false,
-  maxSimultaneousSounds: 10,
-  audioFormats: ["mp3", "ogg"],
-  fadeTransitionTime: 1000,
-  defaultVolume: 0.5,
-  masterVolume: 1.0,
-  musicVolume: 0.8,
-  sfxVolume: 0.9,
-};
-
-// Create test player state
-export function createTestPlayer(
-  archetype: PlayerArchetype = PlayerArchetype.MUSA,
-  playerIndex: number = 0
-): PlayerState {
-  return createPlayerFromArchetype(archetype, playerIndex);
+// Test wrapper component
+export function renderWithTestWrapper(component: React.ReactElement) {
+  // Mock rendering setup for tests
+  return component;
 }
 
 // Mock combat result
@@ -143,72 +213,5 @@ export function createMockTechnique() {
     critChance: 0.1,
     critMultiplier: 1.5,
     effects: [],
-  };
-}
-
-// Test wrapper component
-export function renderWithTestWrapper(component: React.ReactElement) {
-  // Mock rendering setup for tests
-  return component;
-}
-
-// Mock game state
-export function createMockGameState() {
-  return {
-    mode: "versus" as any,
-    phase: "combat" as any,
-    players: [
-      createTestPlayer(PlayerArchetype.MUSA, 0),
-      createTestPlayer(PlayerArchetype.AMSALJA, 1),
-    ] as const,
-    currentRound: 1,
-    maxRounds: 3,
-    timeRemaining: 120,
-    isPaused: false,
-    matchStatistics: {
-      totalDamageDealt: 0,
-      totalDamageTaken: 0,
-      criticalHits: 0,
-      vitalPointHits: 0,
-      techniquesUsed: 0,
-      perfectStrikes: 0,
-      consecutiveWins: 0,
-      matchDuration: 0,
-      totalMatches: 1,
-      maxRounds: 3,
-      winner: 0,
-      totalRounds: 3,
-      currentRound: 1,
-      timeRemaining: 120,
-      combatEvents: [],
-      finalScore: { player1: 0, player2: 0 },
-      roundsWon: { player1: 0, player2: 0 },
-      player1: {
-        wins: 0,
-        losses: 0,
-        hitsTaken: 0,
-        hitsLanded: 0,
-        totalDamageDealt: 0,
-        totalDamageReceived: 0,
-        techniques: [],
-        perfectStrikes: 0,
-        vitalPointHits: 0,
-        consecutiveWins: 0,
-        matchDuration: 0,
-      },
-      player2: {
-        wins: 0,
-        losses: 0,
-        hitsTaken: 0,
-        hitsLanded: 0,
-        totalDamageDealt: 0,
-        totalDamageReceived: 0,
-        techniques: [],
-        perfectStrikes: 0,
-        vitalPointHits: 0,
-        consecutiveWins: 0,
-        matchDuration: 0,
-      },
-    },
   };
 }

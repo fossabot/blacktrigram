@@ -1,7 +1,6 @@
 // This file should primarily re-export types from the main /src/types/korean-text.ts
 // or define very local, component-specific sub-types if absolutely necessary.
 
-import type { TextStyle as PixiTextStyle } from "pixi.js";
 import type { KoreanText, TrigramStance } from "../../../../types";
 import type { ReactNode } from "react";
 
@@ -123,15 +122,43 @@ export const KOREAN_FONT_FAMILY = "'Noto Sans KR', 'Malgun Gothic', sans-serif";
 
 // Pixi-specific interfaces
 export interface KoreanPixiTextProps {
-  readonly text: string | KoreanText;
+  readonly text: KoreanText;
   readonly x?: number;
   readonly y?: number;
-  readonly anchor?: number;
-  readonly position?: { x: number; y: number };
-  readonly style?: PixiTextStyle;
+  readonly anchor?: number | { x: number; y: number };
+  readonly style?: any; // PIXI.TextStyle
+  readonly visible?: boolean;
+  readonly alpha?: number;
 }
 
-// Add missing interface definitions
+export interface KoreanTextStyleConfig {
+  readonly fontSize: number;
+  readonly fontFamily: string;
+  readonly fill: number;
+  readonly align: "left" | "center" | "right";
+  readonly fontWeight?: string | number;
+  readonly stroke?: number;
+  readonly strokeThickness?: number;
+  readonly letterSpacing?: number;
+  readonly lineHeight?: number;
+}
+
+// Fix: Add missing KoreanTextStyle export
+export interface KoreanTextStyle {
+  readonly fontFamily: string;
+  readonly fontSize: number;
+  readonly fill: number;
+  readonly align: "left" | "center" | "right";
+  readonly fontWeight?: string | number;
+}
+
+export interface KoreanTextAnimation {
+  readonly type: "fade" | "slide" | "scale" | "typewriter";
+  readonly duration: number;
+  readonly delay?: number;
+  readonly easing?: string;
+}
+
 export interface KoreanPixiProgressTrackerProps {
   readonly progress: number;
   readonly maxProgress?: number;

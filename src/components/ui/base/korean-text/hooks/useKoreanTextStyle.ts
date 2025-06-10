@@ -1,51 +1,52 @@
 import { useMemo } from "react";
-import * as PIXI from "pixi.js";
-import { KOREAN_COLORS, FONT_FAMILY } from "../../../../../types/constants";
-import type {
+import { KOREAN_TEXT_CONSTANTS } from "../constants";
+import {
   KoreanTextSize,
   KoreanTextWeight,
 } from "../../../../../types/korean-text";
+import * as PIXI from "pixi.js";
 
 export interface UseKoreanTextStyleOptions {
-  size?: KoreanTextSize;
-  weight?: KoreanTextWeight;
-  color?: number;
-  align?: "left" | "center" | "right";
+  readonly size?: KoreanTextSize;
+  readonly weight?: KoreanTextWeight;
+  readonly color?: number;
+  readonly alignment?: "left" | "center" | "right";
 }
 
-export const useKoreanTextStyle = (options: UseKoreanTextStyleOptions = {}) => {
+export const useKoreanTextStyle = (
+  options: UseKoreanTextStyleOptions = {}
+): PIXI.TextStyle => {
   return useMemo(() => {
     const {
-      size = "medium",
-      weight = "normal",
-      color = KOREAN_COLORS.TEXT_PRIMARY,
-      align = "left",
+      size = KoreanTextSize.MEDIUM,
+      weight = KoreanTextWeight.NORMAL,
+      color = KOREAN_TEXT_CONSTANTS.COLORS.PRIMARY,
+      alignment = "left",
     } = options;
 
-    const fontSize = {
-      tiny: 10,
-      small: 12,
-      medium: 16,
-      large: 20,
-      xlarge: 24,
-      huge: 32,
-    }[size];
+    // Fix: Proper size lookup with enum to string conversion
+    const sizeKey =
+      size.toUpperCase() as keyof typeof KOREAN_TEXT_CONSTANTS.FONT_SIZES;
+    const fontSize = KOREAN_TEXT_CONSTANTS.FONT_SIZES[sizeKey] || 16;
 
-    const fontWeight = {
-      light: "300",
-      normal: "400",
-      medium: "500",
-      semibold: "600",
-      bold: "700",
-      heavy: "900",
-    }[weight];
+    // Fix: Proper weight conversion for PIXI
+    const fontWeight =
+      weight === KoreanTextWeight.NORMAL
+        ? "400"
+        : weight === KoreanTextWeight.BOLD
+        ? "700"
+        : "400";
 
     return new PIXI.TextStyle({
-      fontFamily: FONT_FAMILY.PRIMARY,
+      fontFamily: KOREAN_TEXT_CONSTANTS.FONT_FAMILIES.PRIMARY,
       fontSize,
       fontWeight: fontWeight as PIXI.TextStyleFontWeight,
-      fill: color,
-      align: align as PIXI.TextStyleAlign,
+      fill: color as PIXI.ColorSource,
+      align: alignment,
+      lineHeight: KOREAN_TEXT_CONSTANTS.LAYOUT.LINE_HEIGHT_RATIO,
+      letterSpacing: KOREAN_TEXT_CONSTANTS.LAYOUT.LETTER_SPACING,
     });
-  }, [options]);
+  }, [options.size, options.weight, options.color, options.alignment]);
 };
+
+export default useKoreanTextStyle;

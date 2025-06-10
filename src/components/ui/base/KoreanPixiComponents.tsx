@@ -1,74 +1,58 @@
 import React, { useCallback } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
-import * as PIXI from "pixi.js";
-import {
-  KOREAN_COLORS,
-  FONT_FAMILY,
-  FONT_SIZES,
-} from "../../../types/constants";
 import { usePixiExtensions } from "../../../utils/pixiExtensions";
-import {
-  createKoreanTextStyle,
-  getDisplayText,
-} from "./korean-text/components/KoreanPixiTextUtils";
-// Fix: Import type from the main types directory to avoid conflict
 import type { KoreanText } from "../../../types/korean-text";
+import { KOREAN_COLORS, FONT_FAMILY } from "../../../types/constants"; // Fix: Import FONT_FAMILY
+import * as PIXI from "pixi.js";
 
-// Define only necessary props interfaces
-export interface KoreanPixiButtonProps {
-  label: string;
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  variant?: "primary" | "secondary" | "accent";
-  disabled?: boolean;
-  onClick?: () => void;
+// Fix: Define missing interfaces
+interface KoreanButtonProps {
+  readonly label: string;
+  readonly onClick: () => void;
+  readonly x?: number;
+  readonly y?: number;
+  readonly width?: number;
+  readonly height?: number;
+  readonly variant?: "primary" | "secondary";
+  readonly disabled?: boolean;
 }
 
-export interface KoreanPixiProgressTrackerProps {
-  currentValue: number;
-  maxValue: number;
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  label?: string;
-  showPercentage?: boolean;
-  color?: number;
-  backgroundColor?: number;
+interface KoreanTextDisplayProps {
+  readonly text: KoreanText | string;
+  readonly x?: number;
+  readonly y?: number;
+  readonly alignment?: "left" | "center" | "right";
+  readonly showBoth?: boolean;
 }
 
-export interface KoreanPixiTrigramWheelProps {
-  currentStance: string;
-  onStanceChange: (stance: string) => void;
-  size?: number;
-  x?: number;
-  y?: number;
-  showLabels?: boolean;
+interface KoreanTrigramSelectorProps {
+  readonly currentStance: string;
+  readonly onStanceSelect?: (stance: string) => void;
+  readonly x?: number;
+  readonly y?: number;
 }
 
-export interface KoreanPixiHealthBarProps {
-  currentHealth: number;
-  maxHealth: number;
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  showText?: boolean;
-  variant?: "player1" | "player2" | "neutral";
+interface KoreanHealthBarProps {
+  readonly currentHealth: number;
+  readonly maxHealth: number;
+  readonly x?: number;
+  readonly y?: number;
+  readonly width?: number;
+  readonly height?: number;
+  readonly showText?: boolean;
 }
 
-export const KoreanPixiButton: React.FC<KoreanPixiButtonProps> = ({
+export const KoreanButton: React.FC<KoreanButtonProps> = ({
   label,
+  onClick,
   x = 0,
   y = 0,
-  width = 150,
+  width = 120,
   height = 40,
-  variant = "primary",
+  variant = "primary", // Fix: Use variant
   disabled = false,
-  onClick,
 }) => {
+  usePixiExtensions();
+
   const handleClick = useCallback(() => {
     if (!disabled && onClick) {
       onClick();
@@ -76,141 +60,131 @@ export const KoreanPixiButton: React.FC<KoreanPixiButtonProps> = ({
   }, [disabled, onClick]);
 
   return (
-    <Container x={x} y={y}>
-      <Graphics
-        interactive={!disabled}
-        pointerdown={handleClick}
+    <pixiContainer x={x} y={y}>
+      {" "}
+      {/* Fix: Use pixiContainer */}
+      <pixiGraphics
         draw={(g: PIXI.Graphics) => {
           g.clear();
           const bgColor = disabled
             ? KOREAN_COLORS.UI_DISABLED_BG
             : variant === "primary"
             ? KOREAN_COLORS.PRIMARY_CYAN
-            : KOREAN_COLORS.SECONDARY_BLUE;
-          g.beginFill(bgColor);
+            : KOREAN_COLORS.UI_BACKGROUND_MEDIUM;
+          g.beginFill(bgColor, 0.8);
           g.drawRoundedRect(0, 0, width, height, 8);
           g.endFill();
+
+          g.lineStyle(2, KOREAN_COLORS.UI_BORDER, 0.8);
+          g.drawRoundedRect(0, 0, width, height, 8);
         }}
+        interactive={!disabled}
+        onPointerDown={handleClick}
       />
-      <Text
+      <pixiText
         text={label}
-        anchor={0.5}
-        x={width / 2}
-        y={height / 2}
         style={
           new PIXI.TextStyle({
-            fontFamily: FONT_FAMILY.PRIMARY,
-            fontSize: FONT_SIZES.medium,
+            fontFamily: FONT_FAMILY.PRIMARY, // Fix: Use FONT_FAMILY
+            fontSize: 14,
             fill: disabled
               ? KOREAN_COLORS.UI_DISABLED_TEXT
               : KOREAN_COLORS.TEXT_PRIMARY,
+            align: "center",
           })
         }
+        x={width / 2}
+        y={height / 2}
+        anchor={0.5}
       />
-    </Container>
+    </pixiContainer>
   );
 };
 
-// Export actual components, not just types
-export const KoreanPixiProgressTracker: React.FC<
-  KoreanPixiProgressTrackerProps
-> = ({
-  currentValue,
-  maxValue,
+export const KoreanTextDisplay: React.FC<KoreanTextDisplayProps> = ({
+  text,
   x = 0,
   y = 0,
-  width = 200,
-  height = 20,
-  label,
-  showPercentage = false,
-  color = KOREAN_COLORS.POSITIVE_GREEN,
-  backgroundColor = KOREAN_COLORS.UI_BACKGROUND_DARK,
+  alignment = "left", // Fix: Use alignment
+  showBoth = true,
 }) => {
-  // Implementation
-  const percentage = Math.max(0, Math.min(1, currentValue / maxValue));
+  usePixiExtensions();
 
   return (
-    <Container x={x} y={y}>
-      <Graphics
+    <pixiContainer x={x} y={y}>
+      {" "}
+      {/* Fix: Use pixiContainer */}
+      <pixiGraphics
         draw={(g: PIXI.Graphics) => {
           g.clear();
-          // Background
-          g.beginFill(backgroundColor);
-          g.drawRoundedRect(0, 0, width, height, 4);
-          g.endFill();
-
-          // Progress bar
-          g.beginFill(color);
-          g.drawRoundedRect(2, 2, (width - 4) * percentage, height - 4, 2);
+          g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.7);
+          g.drawRoundedRect(-5, -5, 250, showBoth ? 50 : 30, 5);
           g.endFill();
         }}
       />
-      {label && (
-        <Text
+      {showBoth && (
+        <pixiText
           text={
-            showPercentage
-              ? `${label}: ${Math.round(percentage * 100)}%`
-              : label
+            typeof text === "string" ? text : `${text.korean} (${text.english})`
           }
-          x={width / 2}
-          y={height / 2}
-          anchor={0.5}
           style={
             new PIXI.TextStyle({
               fontFamily: FONT_FAMILY.PRIMARY,
-              fontSize: 12,
+              fontSize: 14,
               fill: KOREAN_COLORS.TEXT_PRIMARY,
+              align: alignment,
             })
           }
         />
       )}
-    </Container>
+    </pixiContainer>
   );
 };
 
-export const KoreanPixiTrigramWheel: React.FC<KoreanPixiTrigramWheelProps> = ({
+export const KoreanTrigramSelector: React.FC<KoreanTrigramSelectorProps> = ({
   currentStance,
-  onStanceChange,
-  size = 100,
+  onStanceSelect,
   x = 0,
   y = 0,
-  showLabels = true,
 }) => {
+  usePixiExtensions();
+
   const handleStanceClick = useCallback(
     (stance: string) => {
-      onStanceChange(stance);
+      onStanceSelect?.(stance);
     },
-    [onStanceChange]
+    [onStanceSelect]
   );
 
   return (
-    <Container x={x} y={y}>
-      <Graphics
+    <pixiContainer x={x} y={y}>
+      {" "}
+      {/* Fix: Use pixiContainer */}
+      <pixiGraphics
         draw={(g: PIXI.Graphics) => {
           g.clear();
-          g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM);
-          g.drawCircle(0, 0, size);
-          g.endFill();
+          g.lineStyle(2, KOREAN_COLORS.ACCENT_GOLD, 0.8);
+          g.drawCircle(50, 50, 45);
 
-          // Draw stance indicators using all parameters
-          if (showLabels) {
-            g.lineStyle(
-              2,
-              currentStance === "geon"
-                ? KOREAN_COLORS.ACCENT_GOLD
-                : KOREAN_COLORS.UI_BORDER
-            );
-            g.drawCircle(0, 0, size * 0.8);
+          // Draw 8 trigram positions
+          for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2;
+            const stanceX = 50 + Math.cos(angle) * 35;
+            const stanceY = 50 + Math.sin(angle) * 35;
+
+            g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.8);
+            g.drawCircle(stanceX, stanceY, 8);
+            g.endFill();
           }
         }}
         interactive={true}
-        pointerdown={() => handleStanceClick(currentStance)}
+        onPointerDown={() => handleStanceClick(currentStance)}
       />
-    </Container>
+    </pixiContainer>
   );
 };
 
-export const KoreanPixiHealthBar: React.FC<KoreanPixiHealthBarProps> = ({
+export const KoreanHealthBar: React.FC<KoreanHealthBarProps> = ({
   currentHealth,
   maxHealth,
   x = 0,
@@ -218,96 +192,65 @@ export const KoreanPixiHealthBar: React.FC<KoreanPixiHealthBarProps> = ({
   width = 200,
   height = 20,
   showText = true,
-  variant = "neutral",
-}) => {
-  const healthPercentage = currentHealth / maxHealth;
-  const barColor =
-    healthPercentage > 0.5
-      ? KOREAN_COLORS.POSITIVE_GREEN
-      : healthPercentage > 0.25
-      ? KOREAN_COLORS.WARNING_YELLOW
-      : KOREAN_COLORS.NEGATIVE_RED;
-
-  return (
-    <Container x={x} y={y}>
-      <Graphics
-        draw={(g: PIXI.Graphics) => {
-          g.clear();
-          // Background
-          g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK);
-          g.drawRect(0, 0, width, height);
-          g.endFill();
-
-          // Health bar
-          g.beginFill(barColor);
-          g.drawRect(0, 0, width * healthPercentage, height);
-          g.endFill();
-
-          // Border based on variant
-          const borderColor =
-            variant === "player1"
-              ? KOREAN_COLORS.PLAYER_1_COLOR
-              : variant === "player2"
-              ? KOREAN_COLORS.PLAYER_2_COLOR
-              : KOREAN_COLORS.UI_BORDER;
-          g.lineStyle(1, borderColor);
-          g.drawRect(0, 0, width, height);
-        }}
-      />
-      {showText && (
-        <Text
-          text={`${currentHealth}/${maxHealth}`}
-          anchor={0.5}
-          x={width / 2}
-          y={height / 2}
-          style={
-            new PIXI.TextStyle({
-              fontSize: height * 0.6,
-              fill: KOREAN_COLORS.TEXT_PRIMARY,
-            })
-          }
-        />
-      )}
-    </Container>
-  );
-};
-
-export interface KoreanPixiTextProps {
-  text: KoreanText;
-  style?: PIXI.TextStyle;
-  showRomanization?: boolean;
-  x?: number;
-  y?: number;
-  anchor?: number | { x: number; y: number };
-}
-
-export const KoreanPixiText: React.FC<KoreanPixiTextProps> = ({
-  text,
-  style,
-  showRomanization = false,
-  x = 0,
-  y = 0,
-  anchor = 0,
 }) => {
   usePixiExtensions();
 
-  const displayText = getDisplayText(text, showRomanization);
-  const textStyle = style || createKoreanTextStyle(); // Fix: Now has default parameter
-
   return (
-    <pixiText
-      text={displayText}
-      style={textStyle}
-      x={x}
-      y={y}
-      anchor={anchor}
-    />
+    <pixiContainer x={x} y={y}>
+      {" "}
+      {/* Fix: Use pixiContainer */}
+      <pixiGraphics
+        draw={(g: PIXI.Graphics) => {
+          g.clear();
+
+          // Background
+          g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.8);
+          g.drawRoundedRect(0, 0, width, height, height / 2);
+          g.endFill();
+
+          // Health fill
+          const healthPercentage = currentHealth / maxHealth;
+          const fillWidth = (width - 4) * healthPercentage;
+
+          const healthColor =
+            healthPercentage > 0.6
+              ? KOREAN_COLORS.POSITIVE_GREEN
+              : healthPercentage > 0.3
+              ? KOREAN_COLORS.WARNING_YELLOW
+              : KOREAN_COLORS.NEGATIVE_RED;
+
+          g.beginFill(healthColor, 0.9);
+          g.drawRoundedRect(2, 2, fillWidth, height - 4, (height - 4) / 2);
+          g.endFill();
+
+          // Border
+          g.lineStyle(1, KOREAN_COLORS.UI_BORDER, 0.6);
+          g.drawRoundedRect(0, 0, width, height, height / 2);
+        }}
+      />
+      {showText && (
+        <pixiText
+          text={`${currentHealth}/${maxHealth}`}
+          style={
+            new PIXI.TextStyle({
+              fontSize: 10,
+              fill: KOREAN_COLORS.TEXT_PRIMARY,
+              align: "center",
+            })
+          }
+          x={width / 2}
+          y={height / 2}
+          anchor={0.5}
+        />
+      )}
+    </pixiContainer>
   );
 };
 
-// Fix: Export KoreanPixiComponents as a collection
-export const KoreanPixiComponents = {
-  KoreanPixiText,
+// Fix: Ensure proper default export at end of file
+export default {
+  KoreanButton,
+  KoreanTextDisplay,
+  KoreanTrigramSelector,
+  KoreanHealthBar,
 };
-
-export default KoreanPixiComponents;

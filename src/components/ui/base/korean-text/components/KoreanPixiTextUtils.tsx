@@ -1,77 +1,91 @@
+import React from "react";
+import { usePixiExtensions } from "../../../../../utils/pixiExtensions";
+import type { KoreanText } from "../../../../../types/korean-text";
+import { KOREAN_TEXT_CONSTANTS } from "../constants";
 import * as PIXI from "pixi.js";
-import { FONT_FAMILY, KOREAN_COLORS } from "../../../../../types/constants";
 
-// Fix: Define KoreanText interface locally to avoid import issues
-export interface KoreanText {
-  readonly korean: string;
-  readonly english: string;
-  readonly romanized?: string;
-}
+// Fix: Export all required functions properly
+export const createKoreanPixiText = (
+  text: KoreanText,
+  style?: PIXI.TextStyle
+): React.ReactElement => {
+  usePixiExtensions();
 
-// Fix: Define options type for createKoreanTextStyle
-export interface KoreanPixiTextStyle {
-  fontSize?: number;
-  fill?: number;
-  fontWeight?: string;
-  align?: string;
-  wordWrap?: boolean;
-  wordWrapWidth?: number;
-}
+  const defaultStyle = new PIXI.TextStyle({
+    fontFamily: KOREAN_TEXT_CONSTANTS.FONT_FAMILIES.PRIMARY,
+    fontSize: KOREAN_TEXT_CONSTANTS.FONT_SIZES.MEDIUM,
+    fill: KOREAN_TEXT_CONSTANTS.COLORS.PRIMARY as PIXI.ColorSource,
+  });
 
-// Korean Pixi Text utilities for Black Trigram martial arts game - Fix: Make options parameter optional
-export const createKoreanTextStyle = (
-  options: KoreanPixiTextStyle = {}
-): PIXI.TextStyle => {
+  return <pixiText text={text.korean} style={style || defaultStyle} />;
+};
+
+export const getKoreanTextMetrics = (text: string, style?: PIXI.TextStyle) => {
+  const textStyle =
+    style ||
+    new PIXI.TextStyle({
+      fontFamily: KOREAN_TEXT_CONSTANTS.FONT_FAMILIES.PRIMARY,
+      fontSize: KOREAN_TEXT_CONSTANTS.FONT_SIZES.MEDIUM,
+    });
+
+  const tempText = new PIXI.Text(text, textStyle);
+  return {
+    width: tempText.width,
+    height: tempText.height,
+  };
+};
+
+export const KoreanPixiTextStyle = (
+  options: Partial<PIXI.TextStyleOptions> = {}
+) => {
   return new PIXI.TextStyle({
-    fontFamily: FONT_FAMILY.PRIMARY,
-    fontSize: options.fontSize || 16,
-    fill: options.fill || KOREAN_COLORS.TEXT_PRIMARY,
-    fontWeight: (options.fontWeight || "normal") as PIXI.TextStyleFontWeight,
-    align: (options.align || "left") as PIXI.TextStyleAlign,
-    wordWrap: options.wordWrap || false,
-    wordWrapWidth: options.wordWrapWidth || 0,
+    fontFamily: KOREAN_TEXT_CONSTANTS.FONT_FAMILIES.PRIMARY,
+    fontSize: KOREAN_TEXT_CONSTANTS.FONT_SIZES.MEDIUM,
+    fill: KOREAN_TEXT_CONSTANTS.COLORS.PRIMARY as PIXI.ColorSource,
+    ...options,
   });
 };
 
-export const KOREAN_TEXT_STYLES = {
-  heading: createKoreanTextStyle({
-    fontSize: 24,
-    fontWeight: "bold",
-    fill: KOREAN_COLORS.ACCENT_GOLD,
-  }),
-  body: createKoreanTextStyle({
-    fontSize: 16,
-    fill: KOREAN_COLORS.TEXT_PRIMARY,
-  }),
-  small: createKoreanTextStyle({
-    fontSize: 12,
-    fill: KOREAN_COLORS.TEXT_SECONDARY,
-  }),
-  accent: createKoreanTextStyle({
-    fontSize: 18,
-    fontWeight: "bold",
-    fill: KOREAN_COLORS.PRIMARY_CYAN,
-  }),
-};
-
-export const getDisplayText = (
+export const createKoreanPixiTextWithFallback = (
   text: KoreanText,
-  showRomanization: boolean = false
-): string => {
-  return showRomanization ? `${text.korean} (${text.english})` : text.korean;
+  preferEnglish: boolean = false,
+  style?: PIXI.TextStyle
+): React.ReactElement => {
+  usePixiExtensions();
+
+  const displayText = preferEnglish ? text.english : text.korean;
+  const defaultStyle = KoreanPixiTextStyle({
+    fontSize: preferEnglish ? 14 : 16,
+  });
+
+  return <pixiText text={displayText} style={style || defaultStyle} />;
 };
 
-export interface KoreanPixiTextProps {
-  text: KoreanText;
-  style?: PIXI.TextStyle;
-  showRomanization?: boolean;
-  x?: number;
-  y?: number;
-  anchor?: number | { x: number; y: number };
-}
+export const createKoreanPixiMultilineText = (
+  text: KoreanText,
+  maxWidth: number,
+  style?: PIXI.TextStyle
+): React.ReactElement => {
+  usePixiExtensions();
 
-export default {
-  createKoreanTextStyle,
-  KOREAN_TEXT_STYLES,
-  getDisplayText,
+  const textStyle =
+    style ||
+    KoreanPixiTextStyle({
+      wordWrap: true,
+      wordWrapWidth: maxWidth,
+      lineHeight: KOREAN_TEXT_CONSTANTS.LAYOUT.LINE_HEIGHT_RATIO * 16,
+    });
+
+  return <pixiText text={text.korean} style={textStyle} />;
 };
+
+// Fix: Add proper default export
+const KoreanPixiTextUtils = {
+  createKoreanPixiText,
+  getKoreanTextMetrics,
+  KoreanPixiTextStyle,
+  createKoreanPixiTextWithFallback,
+  createKoreanPixiMultilineText,
+};
+
+export default KoreanPixiTextUtils;

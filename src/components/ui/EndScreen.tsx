@@ -1,138 +1,133 @@
-import React, { useMemo } from "react";
-import { Container, Graphics, Text } from "@pixi/react";
-import * as PIXI from "pixi.js";
+import React from "react";
+// Fix: Remove direct PIXI React imports
+import { usePixiExtensions } from "../../utils/pixiExtensions";
 import type { EndScreenProps } from "../../types/components";
-import {
-  KOREAN_COLORS,
-  FONT_FAMILY,
-  FONT_SIZES,
-  FONT_WEIGHTS,
-} from "../../types/constants";
-import { BaseButton } from "./base/BaseButton";
+import { KOREAN_COLORS } from "../../types/constants";
 
 export const EndScreen: React.FC<EndScreenProps> = ({
   winner,
   matchStatistics,
   onReturnToMenu,
-  onPlayAgain, // Fix: Add optional onPlayAgain prop
-  width = 800,
-  height = 600,
+  onRestart,
+  width = 1200,
+  height = 800,
   x = 0,
   y = 0,
 }) => {
-  const titleStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontFamily: FONT_FAMILY.PRIMARY,
-        fontSize: FONT_SIZES.title,
-        fill: KOREAN_COLORS.ACCENT_GOLD,
-        fontWeight: FONT_WEIGHTS.bold.toString() as PIXI.TextStyleFontWeight,
-        align: "center",
-        stroke: KOREAN_COLORS.BLACK_SOLID,
-        dropShadow: {
-          color: KOREAN_COLORS.BLACK_SOLID,
-          blur: 8,
-          angle: Math.PI / 4,
-          distance: 4,
-        },
-      }),
-    []
-  );
-
-  const backgroundDraw = useMemo(
-    () => (g: PIXI.Graphics) => {
-      g.clear();
-      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.95);
-      g.drawRect(0, 0, width, height);
-      g.endFill();
-
-      // Victory border effect
-      g.lineStyle(4, KOREAN_COLORS.ACCENT_GOLD, 0.8);
-      g.drawRect(20, 20, width - 40, height - 40);
-    },
-    [width, height]
-  );
-
-  const isVictory = winner !== null;
-  const resultText = isVictory ? "승리!" : "무승부";
-  const resultTextEn = isVictory ? "Victory!" : "Draw";
+  usePixiExtensions();
 
   return (
-    <Container x={x} y={y}>
-      <Graphics draw={backgroundDraw} />
+    <pixiContainer x={x} y={y} data-testid="end-screen">
+      {/* Background */}
+      <pixiGraphics
+        draw={(g) => {
+          g.clear();
+          g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.9);
+          g.drawRect(0, 0, width, height);
+          g.endFill();
+        }}
+      />
 
-      {/* Victory/Draw Title */}
-      <Text
-        text={`${resultText} / ${resultTextEn}`}
-        style={titleStyle}
+      {/* Winner Text */}
+      <pixiText
+        text={winner ? `승자: ${winner.name.korean}` : "무승부"}
+        style={{
+          fontSize: 32,
+          fill: KOREAN_COLORS.ACCENT_GOLD,
+          fontWeight: "bold",
+          align: "center",
+        }}
         x={width / 2}
-        y={height / 4}
+        y={100}
         anchor={0.5}
       />
 
-      {/* Winner Information */}
-      {winner && (
-        <Text
-          text={`${winner.name.korean} 승리 / ${winner.name.english} Wins`}
-          style={
-            new PIXI.TextStyle({
-              fontFamily: FONT_FAMILY.PRIMARY,
-              fontSize: FONT_SIZES.xlarge,
-              fill: KOREAN_COLORS.TEXT_PRIMARY,
-              align: "center",
-            })
-          }
-          x={width / 2}
-          y={height / 3}
-          anchor={0.5}
+      {/* Statistics */}
+      <pixiContainer x={width / 2 - 200} y={200}>
+        <pixiText
+          text="경기 통계"
+          style={{
+            fontSize: 24,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
+            fontWeight: "bold",
+          }}
+          y={0}
         />
-      )}
 
-      {/* Match Statistics */}
-      {matchStatistics && (
-        <Container x={width / 2} y={height / 2}>
-          <Text
-            text={`라운드: ${matchStatistics.roundsWon?.player1 || 0} - ${
-              matchStatistics.roundsWon?.player2 || 0
-            } / Rounds: ${matchStatistics.roundsWon?.player1 || 0} - ${
-              matchStatistics.roundsWon?.player2 || 0
-            }`}
-            style={
-              new PIXI.TextStyle({
-                fontFamily: FONT_FAMILY.MONO,
-                fontSize: FONT_SIZES.medium,
-                fill: KOREAN_COLORS.TEXT_SECONDARY,
-                align: "center",
-              })
-            }
-            anchor={0.5}
-            y={0}
-          />
-        </Container>
-      )}
+        <pixiText
+          text={`총 라운드: ${matchStatistics.totalRounds}`}
+          style={{
+            fontSize: 16,
+            fill: KOREAN_COLORS.TEXT_SECONDARY,
+          }}
+          y={40}
+        />
+
+        <pixiText
+          text={`경기 시간: ${Math.floor(
+            matchStatistics.matchDuration / 60
+          )}분`}
+          style={{
+            fontSize: 16,
+            fill: KOREAN_COLORS.TEXT_SECONDARY,
+          }}
+          y={65}
+        />
+      </pixiContainer>
 
       {/* Buttons */}
-      <Container x={width / 2 - 100} y={height - 100}>
-        <BaseButton
-          text="메뉴로 돌아가기"
-          onClick={onReturnToMenu}
-          width={200}
-          height={50}
-          variant="primary"
-        />
-
-        {onPlayAgain && (
-          <BaseButton
-            text="다시 플레이"
-            onClick={onPlayAgain}
-            width={200}
-            height={50}
-            variant="secondary"
-            y={60}
+      <pixiContainer x={width / 2 - 100} y={height - 150}>
+        {onRestart && (
+          <pixiGraphics
+            draw={(g) => {
+              g.clear();
+              g.beginFill(KOREAN_COLORS.ACCENT_GOLD, 0.8);
+              g.drawRoundedRect(0, 0, 200, 50, 8);
+              g.endFill();
+            }}
+            interactive={true}
+            onPointerDown={onRestart}
           />
         )}
-      </Container>
-    </Container>
+
+        <pixiText
+          text="다시 시작"
+          style={{
+            fontSize: 16,
+            fill: KOREAN_COLORS.BLACK_SOLID,
+            align: "center",
+          }}
+          x={100}
+          y={25}
+          anchor={0.5}
+        />
+      </pixiContainer>
+
+      <pixiContainer x={width / 2 - 100} y={height - 90}>
+        <pixiGraphics
+          draw={(g) => {
+            g.clear();
+            g.beginFill(KOREAN_COLORS.UI_STEEL_GRAY, 0.8);
+            g.drawRoundedRect(0, 0, 200, 50, 8);
+            g.endFill();
+          }}
+          interactive={true}
+          onPointerDown={onReturnToMenu}
+        />
+
+        <pixiText
+          text="메인 메뉴"
+          style={{
+            fontSize: 16,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
+            align: "center",
+          }}
+          x={100}
+          y={25}
+          anchor={0.5}
+        />
+      </pixiContainer>
+    </pixiContainer>
   );
 };
 

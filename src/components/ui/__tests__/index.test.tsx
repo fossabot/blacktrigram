@@ -1,5 +1,5 @@
-import { render } from "@testing-library/react"; // Fix: Remove unused React import
-import { Stage } from "@pixi/react";
+import { render } from "@testing-library/react";
+import { Application } from "@pixi/react";
 import { BaseButton } from "../base/BaseButton";
 import { KoreanHeader } from "../KoreanHeader";
 
@@ -8,12 +8,12 @@ describe("UI Components", () => {
 
   it("renders BaseButton with Korean text", () => {
     render(
-      <Stage>
+      <Application>
         <BaseButton
           text={koreanText} // Fix: Use string
           onClick={() => {}}
         />
-      </Stage>
+      </Application>
     );
   });
 
@@ -21,11 +21,11 @@ describe("UI Components", () => {
     const titleText = { korean: "제목", english: "Title" };
 
     render(
-      <Stage>
+      <Application>
         <KoreanHeader
           title={titleText} // Fix: Use correct type
         />
-      </Stage>
+      </Application>
     );
   });
 });

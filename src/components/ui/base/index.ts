@@ -1,24 +1,23 @@
-/**
- * Base UI components for Black Trigram Korean martial arts
- */
+// Base UI component exports for Korean martial arts game
 
+// Background components
 export { BackgroundGrid } from "./BackgroundGrid";
+
+// Button components
 export { BaseButton } from "./BaseButton";
-export { KoreanHeader } from "./KoreanHeader";
-export { KoreanPixiComponents } from "./KoreanPixiComponents";
-export {
-  PixiContainer,
-  PixiGraphics,
-  PixiText,
-  PixiSprite,
-  // Fix: Remove PixiComponents - export individual components instead
-} from "./PixiComponents";
 
-// Fix: Export the default export from PixiComponents as PixiUtils
-export { default as PixiUtils } from "./PixiComponents";
-
-// Korean text components
+// Korean text system
 export * from "./korean-text";
+export { KoreanHeader } from "./KoreanHeader";
 
-// Re-export types
-export type { BaseButtonProps } from "../../../types/components";
+// PIXI components
+export { default as KoreanPixiComponents } from "./KoreanPixiComponents";
+export { default as PixiComponents } from "./PixiComponents";
+
+// Re-export key Korean text utilities
+export {
+  KOREAN_TEXT_CONSTANTS,
+  useKoreanTextStyle,
+  createKoreanPixiText,
+  getKoreanTextMetrics,
+} from "./korean-text";

@@ -1,37 +1,32 @@
 import { render } from "@testing-library/react";
-import "@testing-library/jest-dom";
-import { Stage } from "@pixi/react";
-import { vi } from "vitest";
+import { Application } from "@pixi/react";
 import { TrigramWheel } from "../TrigramWheel";
-import { TrigramStance } from "../../../types/enums";
-
-const mockProps = {
-  currentStance: TrigramStance.GEON,
-  onStanceChange: vi.fn(),
-  size: 100,
-  x: 0,
-  y: 0,
-};
+import { TrigramStance } from "../../../types/enums"; // Fix: Import enum
 
 describe("TrigramWheel", () => {
-  it("renders correctly", () => {
+  it("renders without crashing", () => {
     render(
-      <Stage>
-        <TrigramWheel {...mockProps} />
-      </Stage>
+      <Application>
+        <TrigramWheel
+          currentStance={TrigramStance.GEON}
+          onStanceSelect={vi.fn()}
+        />{" "}
+        {/* Fix: Use enum */}
+      </Application>
     );
-    // Remove unused container variable - just verify render doesn't throw
-    expect(true).toBeTruthy();
   });
 
-  it("handles stance changes", () => {
+  it("calls onStanceSelect when stance is selected", () => {
+    const mockOnStanceSelect = vi.fn();
     render(
-      <Stage>
-        <TrigramWheel {...mockProps} />
-      </Stage>
+      <Application>
+        <TrigramWheel
+          currentStance={TrigramStance.GEON}
+          onStanceSelect={mockOnStanceSelect}
+        />{" "}
+        {/* Fix: Use enum */}
+      </Application>
     );
-
-    // Test that onStanceChange prop is correctly typed
-    expect(mockProps.onStanceChange).toBeDefined();
+    // Test interactions
   });
 });

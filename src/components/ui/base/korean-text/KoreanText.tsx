@@ -1,61 +1,52 @@
-import React from "react"; // Remove unused useMemo
-import type { KoreanTextComponentProps } from "./types";
+import React from "react";
+import { usePixiExtensions } from "../../../../utils/pixiExtensions";
+import type { KoreanPixiTextProps } from "./types";
+import { KOREAN_TEXT_CONSTANTS } from "./constants";
+import * as PIXI from "pixi.js";
 
-export const KoreanText: React.FC<KoreanTextComponentProps> = ({
+export const KoreanText: React.FC<KoreanPixiTextProps> = ({
   text,
-  korean = "",
-  english = "",
-  showBoth = true,
-  koreanFirst = true,
-  separator = " / ",
-  className,
+  x = 0,
+  y = 0,
+  anchor = 0,
   style,
-  // Remove color from rest parameters to avoid conflicts
-  color,
-  ...rest
+  visible = true,
+  alpha = 1,
 }) => {
-  const getDisplayText = (): string => {
-    if (typeof text === "string") return text;
+  usePixiExtensions();
 
-    if (text && typeof text === "object") {
-      if (!showBoth) {
-        return koreanFirst ? text.korean || "" : text.english || "";
-      }
+  const defaultStyle = new PIXI.TextStyle({
+    fontFamily: KOREAN_TEXT_CONSTANTS.FONT_FAMILIES.PRIMARY,
+    fontSize: KOREAN_TEXT_CONSTANTS.FONT_SIZES.MEDIUM,
+    fill: KOREAN_TEXT_CONSTANTS.COLORS.PRIMARY,
+    align: "left",
+  });
 
-      const koreanText = text.korean || "";
-      const englishText = text.english || "";
-
-      return koreanFirst
-        ? `${koreanText}${separator}${englishText}`
-        : `${englishText}${separator}${koreanText}`;
-    }
-
-    if (!showBoth) {
-      return koreanFirst ? korean : english;
-    }
-
-    return koreanFirst
-      ? `${korean}${separator}${english}`
-      : `${english}${separator}${korean}`;
-  };
-
-  const displayText = getDisplayText();
-
-  // Handle color conversion for CSS
-  const cssStyle = {
-    ...style,
-    ...(color && {
-      color:
-        typeof color === "number"
-          ? `#${color.toString(16).padStart(6, "0")}`
-          : color,
-    }),
-  };
+  const finalStyle = style || defaultStyle;
 
   return (
-    <span className={className} style={cssStyle} {...rest}>
-      {displayText}
-    </span>
+    <pixiContainer x={x} y={y} visible={visible} alpha={alpha}>
+      {/* Korean text */}
+      <pixiText text={text.korean} style={finalStyle} anchor={anchor} y={0} />
+
+      {/* English text (if provided) */}
+      {text.english && (
+        <pixiText
+          text={text.english}
+          style={
+            new PIXI.TextStyle({
+              ...finalStyle,
+              fontSize:
+                (finalStyle.fontSize as number) *
+                KOREAN_TEXT_CONSTANTS.LAYOUT.KOREAN_ENGLISH_RATIO,
+              fill: KOREAN_TEXT_CONSTANTS.COLORS.SECONDARY,
+            })
+          }
+          anchor={anchor}
+          y={(finalStyle.fontSize as number) + 4}
+        />
+      )}
+    </pixiContainer>
   );
 };
 

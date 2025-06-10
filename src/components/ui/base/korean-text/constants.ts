@@ -1,102 +1,68 @@
-import { KOREAN_COLORS, FONT_FAMILY } from "../../../../types/constants";
-import { KoreanTextVariant, KoreanTextConfig } from "./types";
+// Korean text rendering constants
 
-// Fix: Re-export for local use
-export { KOREAN_COLORS, FONT_FAMILY };
+// Fix: Import from correct path
+import { KOREAN_COLORS } from "../../../../types/constants/colors";
 
-// Fix: Add FONT_SIZES export
-export const FONT_SIZES = {
-  tiny: 10,
-  small: 12,
-  medium: 16,
-  large: 20,
-  xlarge: 24,
-  huge: 32,
-  title: 36,
+export const KOREAN_TEXT_CONSTANTS = {
+  // Font families optimized for Korean text
+  FONT_FAMILIES: {
+    PRIMARY: '"Noto Sans KR", "Malgun Gothic", Arial, sans-serif',
+    SECONDARY: '"Nanum Gothic", Arial, sans-serif',
+    DISPLAY: '"Black Han Sans", "Noto Sans KR", sans-serif',
+    MONO: '"D2Coding", "Consolas", monospace',
+  },
+
+  // Font sizes for different contexts
+  FONT_SIZES: {
+    TINY: 10,
+    SMALL: 12,
+    MEDIUM: 16,
+    LARGE: 20,
+    XLARGE: 24,
+    HUGE: 32,
+    TITLE: 36,
+  } as const,
+
+  // Fix: Add FONT_WEIGHTS
+  FONT_WEIGHTS: {
+    LIGHT: 300,
+    NORMAL: 400,
+    MEDIUM: 500,
+    SEMIBOLD: 600,
+    BOLD: 700,
+    HEAVY: 900,
+  } as const,
+
+  // Default colors for Korean text
+  COLORS: {
+    PRIMARY: KOREAN_COLORS.TEXT_PRIMARY,
+    SECONDARY: KOREAN_COLORS.TEXT_SECONDARY,
+    ACCENT: KOREAN_COLORS.ACCENT_GOLD,
+    WARNING: KOREAN_COLORS.WARNING_YELLOW,
+    ERROR: KOREAN_COLORS.NEGATIVE_RED,
+    SUCCESS: KOREAN_COLORS.POSITIVE_GREEN,
+  } as const,
+
+  // Korean text layout
+  LAYOUT: {
+    LINE_HEIGHT_RATIO: 1.4,
+    LETTER_SPACING: 0,
+    PARAGRAPH_SPACING: 16,
+    KOREAN_ENGLISH_RATIO: 0.8, // Size ratio when showing both languages
+  } as const,
+
+  // Animation defaults
+  ANIMATIONS: {
+    FADE_DURATION: 300,
+    SLIDE_DURATION: 400,
+    TYPEWRITER_SPEED: 50, // ms per character
+  } as const,
 } as const;
 
-// Fix: Remove invalid 'warning' variant
-export const KOREAN_TEXT_COLORS: Record<KoreanTextVariant, number> = {
-  primary: KOREAN_COLORS.TEXT_PRIMARY,
-  secondary: KOREAN_COLORS.TEXT_SECONDARY,
-  accent: KOREAN_COLORS.TEXT_ACCENT,
-  combat: KOREAN_COLORS.NEGATIVE_RED,
-};
+// Export font sizes for compatibility
+export const KOREAN_TEXT_SIZES = KOREAN_TEXT_CONSTANTS.FONT_SIZES;
 
-export const KOREAN_TEXT_VARIANT_SIZES: Record<KoreanTextVariant, number> = {
-  primary: 16,
-  secondary: 14,
-  accent: 20,
-  combat: 18,
-};
+// Export font family for compatibility
+export const KOREAN_FONT_FAMILY = KOREAN_TEXT_CONSTANTS.FONT_FAMILIES.PRIMARY;
 
-// Fix: Remove invalid 'warning' variant
-export const KOREAN_TEXT_VARIANT_CONFIGS: Record<
-  KoreanTextVariant,
-  KoreanTextConfig
-> = {
-  primary: {
-    variant: "primary",
-    size: "medium",
-    weight: "regular",
-    order: "korean_first",
-    cyberpunk: false,
-  },
-  secondary: {
-    variant: "secondary",
-    size: "small",
-    weight: "light",
-    order: "korean_first",
-    cyberpunk: false,
-  },
-  accent: {
-    variant: "accent",
-    size: "large",
-    weight: "bold",
-    order: "korean_first",
-    cyberpunk: true,
-  },
-  combat: {
-    variant: "combat",
-    size: "large",
-    weight: "bold",
-    order: "korean_first",
-    cyberpunk: true,
-  },
-};
-
-// Korean text system constants
-
-export const KOREAN_TEXT_SIZES = {
-  xsmall: 10,
-  small: 12,
-  medium: 16,
-  large: 20,
-  xlarge: 24,
-  xxlarge: 32,
-  title: 48,
-} as const;
-
-export const KOREAN_FONT_WEIGHTS = {
-  light: 300,
-  regular: 400,
-  medium: 500,
-  semibold: 600,
-  bold: 700,
-  heavy: 900,
-} as const;
-
-// Export font family for convenience
-export const KOREAN_FONT_FAMILY = FONT_FAMILY.PRIMARY;
-
-// Add missing TRIGRAM_SYMBOL_DATA
-export const TRIGRAM_SYMBOL_DATA = {
-  geon: { symbol: "☰", korean: "건", english: "Heaven" },
-  tae: { symbol: "☱", korean: "태", english: "Lake" },
-  li: { symbol: "☲", korean: "리", english: "Fire" },
-  jin: { symbol: "☳", korean: "진", english: "Thunder" },
-  son: { symbol: "☴", korean: "손", english: "Wind" },
-  gam: { symbol: "☵", korean: "감", english: "Water" },
-  gan: { symbol: "☶", korean: "간", english: "Mountain" },
-  gon: { symbol: "☷", korean: "곤", english: "Earth" },
-} as const;
+export default KOREAN_TEXT_CONSTANTS;
