@@ -1,8 +1,9 @@
-import React, { useMemo, useCallback } from "react";
+import React, { useCallback } from "react";
 import { extend } from "@pixi/react";
 import { Container, Graphics, Text } from "pixi.js";
 import { KOREAN_COLORS } from "../../../types/constants";
 
+// Extend PixiJS components for use
 extend({
   Container,
   Graphics,
@@ -10,67 +11,35 @@ extend({
 });
 
 export interface ResponsivePixiContainerProps {
-  readonly x?: number;
-  readonly y?: number;
-  readonly screenWidth: number;
-  readonly screenHeight: number;
-  readonly children?: React.ReactNode;
-  readonly "data-testid"?: string;
+  x?: number;
+  y?: number;
+  screenWidth: number;
+  screenHeight: number;
+  children?: React.ReactNode;
+  "data-testid"?: string;
 }
 
 export const ResponsivePixiContainer: React.FC<
   ResponsivePixiContainerProps
-> = ({
-  x = 0,
-  y = 0,
-  screenWidth,
-  screenHeight, // Fixed: Now properly used in responsive calculations
-  children,
-  "data-testid": testId,
-}) => {
-  const { scale } = useMemo(() => {
-    const isMobile = screenWidth < 768;
-    const isTablet = screenWidth >= 768 && screenWidth < 1024;
-
-    // Use screenHeight for responsive scaling calculations
-    let scale = 1.0;
-
-    if (isMobile) {
-      scale = Math.min(screenWidth / 375, screenHeight / 667) * 0.8;
-    } else if (isTablet) {
-      scale = Math.min(screenWidth / 768, screenHeight / 1024) * 0.9;
-    } else {
-      scale = Math.min(screenWidth / 1200, screenHeight / 800);
-    }
-
-    return {
-      scale: Math.max(0.5, Math.min(1.2, scale)),
-    };
-  }, [screenWidth, screenHeight]);
-
+> = ({ x = 0, y = 0, children, ...props }) => {
   return (
-    <pixiContainer
-      x={x}
-      y={y}
-      scale={{ x: scale, y: scale }}
-      data-testid={testId}
-    >
+    <pixiContainer x={x} y={y} {...props}>
       {children}
     </pixiContainer>
   );
 };
 
 export interface ResponsivePixiButtonProps {
-  readonly text: string;
-  readonly x: number;
-  readonly y: number;
-  readonly width: number;
-  readonly height: number;
-  readonly screenWidth: number;
-  readonly screenHeight: number;
-  readonly variant?: "primary" | "secondary";
-  readonly onClick: () => void;
-  readonly "data-testid"?: string;
+  text: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  screenWidth: number;
+  screenHeight: number;
+  variant?: "primary" | "secondary";
+  onClick?: () => void;
+  "data-testid"?: string;
 }
 
 export const ResponsivePixiButton: React.FC<ResponsivePixiButtonProps> = ({
@@ -79,73 +48,67 @@ export const ResponsivePixiButton: React.FC<ResponsivePixiButtonProps> = ({
   y,
   width,
   height,
-  screenWidth,
-  screenHeight, // Fixed: Now properly used for responsive design
   variant = "primary",
   onClick,
-  "data-testid": testId,
+  screenWidth,
+  ...props
 }) => {
-  const { buttonColors, fontSize } = useMemo(() => {
-    const isMobile = screenWidth < 768;
-    const isTablet = screenWidth >= 768 && screenWidth < 1024;
+  const bgColor =
+    variant === "primary"
+      ? KOREAN_COLORS.ACCENT_GOLD
+      : KOREAN_COLORS.UI_BACKGROUND_MEDIUM;
 
-    // Use screenHeight to adjust button sizing for different aspect ratios
-    const heightRatio = screenHeight / 800; // Base height ratio
-    let fontSize = 14;
+  const textColor =
+    variant === "primary"
+      ? KOREAN_COLORS.BLACK_SOLID
+      : KOREAN_COLORS.TEXT_PRIMARY;
 
-    if (isMobile) {
-      fontSize = Math.max(10, 12 * heightRatio);
-    } else if (isTablet) {
-      fontSize = Math.max(12, 13 * heightRatio);
-    } else {
-      fontSize = Math.max(14, 14 * heightRatio);
-    }
+  // Scale button based on screen size
+  const isMobile = screenWidth < 768;
+  const scale = isMobile ? 0.9 : 1.0;
+  const scaledWidth = width * scale;
+  const scaledHeight = height * scale;
 
-    const buttonColors =
-      variant === "primary"
-        ? {
-            bg: KOREAN_COLORS.PRIMARY_CYAN,
-            border: KOREAN_COLORS.ACCENT_GOLD,
-            text: KOREAN_COLORS.BLACK_SOLID,
-          }
-        : {
-            bg: KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
-            border: KOREAN_COLORS.TEXT_SECONDARY,
-            text: KOREAN_COLORS.TEXT_PRIMARY,
-          };
+  const drawButton = useCallback(
+    (g: any) => {
+      g.clear();
+      g.fill({ color: bgColor, alpha: 0.9 });
+      g.roundRect(0, 0, scaledWidth, scaledHeight, 8);
+      g.fill();
 
-    return { buttonColors, fontSize };
-  }, [variant, screenWidth, screenHeight]);
-
-  const handleClick = useCallback(() => {
-    onClick();
-  }, [onClick]);
+      // Border
+      g.stroke({
+        width: 2,
+        color:
+          variant === "primary"
+            ? KOREAN_COLORS.PRIMARY_CYAN
+            : KOREAN_COLORS.ACCENT_GOLD,
+        alpha: 0.8,
+      });
+      g.roundRect(0, 0, scaledWidth, scaledHeight, 8);
+      g.stroke();
+    },
+    [bgColor, scaledWidth, scaledHeight, variant]
+  );
 
   return (
-    <pixiContainer x={x} y={y} data-testid={testId}>
+    <pixiContainer x={x} y={y} {...props}>
       <pixiGraphics
-        draw={(g) => {
-          g.clear();
-          g.fill({ color: buttonColors.bg, alpha: 0.9 });
-          g.roundRect(0, 0, width, height, 8);
-          g.fill();
-          g.stroke({ width: 2, color: buttonColors.border, alpha: 0.8 });
-          g.roundRect(0, 0, width, height, 8);
-          g.stroke();
-        }}
+        draw={drawButton}
         interactive={true}
-        onPointerDown={handleClick}
+        onPointerDown={onClick}
+        cursor="pointer"
       />
       <pixiText
         text={text}
         style={{
-          fontSize,
-          fill: buttonColors.text,
+          fontSize: isMobile ? 10 : 12,
+          fill: textColor,
           align: "center",
-          fontWeight: "bold",
+          fontWeight: variant === "primary" ? "bold" : "normal",
         }}
-        x={width / 2}
-        y={height / 2}
+        x={scaledWidth / 2}
+        y={scaledHeight / 2}
         anchor={0.5}
       />
     </pixiContainer>
@@ -153,15 +116,15 @@ export const ResponsivePixiButton: React.FC<ResponsivePixiButtonProps> = ({
 };
 
 export interface ResponsivePixiPanelProps {
-  readonly title: string;
-  readonly x: number;
-  readonly y: number;
-  readonly width: number;
-  readonly height: number;
-  readonly screenWidth: number;
-  readonly screenHeight: number;
-  readonly children?: React.ReactNode;
-  readonly "data-testid"?: string;
+  title: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  screenWidth: number;
+  screenHeight: number;
+  children?: React.ReactNode;
+  "data-testid"?: string;
 }
 
 export const ResponsivePixiPanel: React.FC<ResponsivePixiPanelProps> = ({
@@ -170,52 +133,55 @@ export const ResponsivePixiPanel: React.FC<ResponsivePixiPanelProps> = ({
   y,
   width,
   height,
-  screenWidth,
-  screenHeight, // Fixed: Now properly used for responsive panel design
   children,
-  "data-testid": testId,
+  screenWidth,
+  ...props
 }) => {
-  const { titleFontSize } = useMemo(() => {
-    const isMobile = screenWidth < 768;
+  const isMobile = screenWidth < 768;
+  const scale = isMobile ? 0.95 : 1.0;
+  const scaledWidth = width * scale;
+  const scaledHeight = height * scale;
 
-    // Use screenHeight to determine appropriate font sizes for different screen ratios
-    const heightRatio = screenHeight / 800;
-    const titleFontSize = isMobile
-      ? Math.max(10, 12 * heightRatio)
-      : Math.max(12, 14 * heightRatio);
+  const drawPanel = useCallback(
+    (g: any) => {
+      g.clear();
 
-    return { titleFontSize };
-  }, [screenWidth, screenHeight]);
+      // Panel background
+      g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_MEDIUM, alpha: 0.9 });
+      g.roundRect(0, 0, scaledWidth, scaledHeight, 8);
+      g.fill();
+
+      // Panel border
+      g.stroke({ width: 2, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.8 });
+      g.roundRect(0, 0, scaledWidth, scaledHeight, 8);
+      g.stroke();
+
+      // Title bar
+      g.fill({ color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.3 });
+      g.roundRect(0, 0, scaledWidth, 25, [8, 8, 0, 0]);
+      g.fill();
+    },
+    [scaledWidth, scaledHeight]
+  );
 
   return (
-    <pixiContainer x={x} y={y} data-testid={testId}>
-      {/* Panel background */}
-      <pixiGraphics
-        draw={(g) => {
-          g.clear();
-          g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 0.9 });
-          g.roundRect(0, 0, width, height, 8);
-          g.fill();
-          g.stroke({ width: 1, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.6 });
-          g.roundRect(0, 0, width, height, 8);
-          g.stroke();
-        }}
-      />
+    <pixiContainer x={x} y={y} {...props}>
+      <pixiGraphics draw={drawPanel} />
 
-      {/* Panel title */}
+      {/* Panel Title */}
       <pixiText
         text={title}
         style={{
-          fontSize: titleFontSize,
+          fontSize: isMobile ? 11 : 14,
           fill: KOREAN_COLORS.ACCENT_GOLD,
           fontWeight: "bold",
         }}
-        x={8}
+        x={10}
         y={8}
       />
 
-      {/* Panel content */}
-      <pixiContainer x={0} y={25}>
+      {/* Panel Content */}
+      <pixiContainer x={0} y={30}>
         {children}
       </pixiContainer>
     </pixiContainer>

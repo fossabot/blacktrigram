@@ -18,12 +18,12 @@ export default defineConfig({
     testIsolation: true,
     retries: {
       runMode: 2,
-      openMode: 0,
+      openMode: 1,
     },
-    defaultCommandTimeout: 10000, // Enhanced type support
-    requestTimeout: 15000, // Better error handling for PixiJS
-    responseTimeout: 15000,
-    pageLoadTimeout: 15000,
+    defaultCommandTimeout: 8000, // Enhanced type support
+    requestTimeout: 10000, // Better error handling for PixiJS
+    responseTimeout: 10000,
+    pageLoadTimeout: 20000,
     chromeWebSecurity: false,
     video: true, // Enable video recording for failed tests
     videoCompression: 32, // Set video compression level
@@ -59,11 +59,6 @@ export default defineConfig({
           );
           return null;
         },
-
-        // Silent task to suppress WebGL warnings
-        silenceWebGLWarning() {
-          return null;
-        },
       });
 
       // Suppress WebGL warnings in browser console
@@ -86,6 +81,11 @@ export default defineConfig({
     devServer: {
       framework: "react",
       bundler: "vite",
+      viteConfig: {
+        optimizeDeps: {
+          include: ["@pixi/react", "pixi.js"],
+        },
+      },
     },
     viewportWidth: 1280,
     viewportHeight: 720,

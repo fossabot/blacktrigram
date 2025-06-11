@@ -95,56 +95,70 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = ({
   }, [isTraining]);
 
   // Handle technique execution - Fixed to properly update PlayerState
+  // Add better error boundaries for audio
   const handleTechniqueExecute = useCallback(() => {
     if (!dummy.isActive) return;
 
-    // Calculate damage based on stance and accuracy
-    const baseDamage = Math.random() * 20 + 10;
-    const isPerfect = Math.random() > 0.7;
-    const finalDamage = isPerfect ? baseDamage * 1.5 : baseDamage;
+    try {
+      // Calculate damage based on stance and accuracy
+      const baseDamage = Math.random() * 20 + 10;
+      const isPerfect = Math.random() > 0.7;
+      const finalDamage = isPerfect ? baseDamage * 1.5 : baseDamage;
 
-    // Update dummy health
-    setDummy((prev) => ({
-      ...prev,
-      health: Math.max(0, prev.health - finalDamage),
-    }));
+      // Update dummy health
+      setDummy((prev) => ({
+        ...prev,
+        health: Math.max(0, prev.health - finalDamage),
+      }));
 
-    // Update training stats
-    setTrainingStats((prev) => ({
-      ...prev,
-      techniquesExecuted: prev.techniquesExecuted + 1,
-      attempts: prev.attempts + 1, // Increment attempts for tests
-      perfectStrikes: isPerfect ? prev.perfectStrikes + 1 : prev.perfectStrikes,
-      totalDamage: prev.totalDamage + finalDamage,
-    }));
+      // Update training stats
+      setTrainingStats((prev) => ({
+        ...prev,
+        techniquesExecuted: prev.techniquesExecuted + 1,
+        attempts: prev.attempts + 1,
+        perfectStrikes: isPerfect
+          ? prev.perfectStrikes + 1
+          : prev.perfectStrikes,
+        totalDamage: prev.totalDamage + finalDamage,
+      }));
 
-    // Play appropriate sound
-    if (isPerfect) {
-      audio.playSoundEffect("perfect_strike");
-    } else {
-      audio.playSoundEffect("attack_medium");
-    }
+      // Safe audio playback
+      try {
+        if (isPerfect) {
+          audio.playSoundEffect("perfect_strike");
+        } else {
+          audio.playSoundEffect("attack_medium");
+        }
+      } catch (audioError) {
+        console.warn("Audio playback failed:", audioError);
+      }
 
-    // Update player state - Fixed to use actual player properties
-    onPlayerUpdate({
-      // Update experience points safely
-      experiencePoints: (player.experiencePoints || 0) + (isPerfect ? 15 : 10),
-      // Update player health, stamina, etc. directly
-      health: player.health,
-      stamina: Math.max(0, player.stamina - 5), // Reduce stamina from training
-      balance: player.balance,
-      consciousness: player.consciousness,
-      pain: player.pain,
-    });
+      // Safe player update
+      try {
+        onPlayerUpdate({
+          experiencePoints:
+            (player.experiencePoints || 0) + (isPerfect ? 15 : 10),
+          health: player.health,
+          stamina: Math.max(0, player.stamina - 5),
+          balance: player.balance,
+          consciousness: player.consciousness,
+          pain: player.pain,
+        });
+      } catch (updateError) {
+        console.warn("Player update failed:", updateError);
+      }
 
-    // Reset dummy if health reaches zero
-    if (dummy.health - finalDamage <= 0) {
-      setTimeout(() => {
-        setDummy((prev) => ({
-          ...prev,
-          health: prev.maxHealth,
-        }));
-      }, 2000);
+      // Reset dummy if health reaches zero
+      if (dummy.health - finalDamage <= 0) {
+        setTimeout(() => {
+          setDummy((prev) => ({
+            ...prev,
+            health: prev.maxHealth,
+          }));
+        }, 2000);
+      }
+    } catch (error) {
+      console.error("Technique execution failed:", error);
     }
   }, [dummy, audio, onPlayerUpdate, player]);
 
