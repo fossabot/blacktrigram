@@ -65,9 +65,8 @@ const generateAndSaveSound = async (
   try {
     const audio = await elevenlabs.textToSoundEffects.convert({
       text: prompt,
-      duration_seconds: durationSeconds,
-      prompt_influence: promptInfluence,
-      output_format: outputFormat,
+      durationSeconds: durationSeconds,
+      promptInfluence: promptInfluence,
     });
 
     await writeFile(outputFile, audio);
