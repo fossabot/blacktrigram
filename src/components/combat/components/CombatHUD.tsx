@@ -25,6 +25,12 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
 }) => {
   usePixiExtensions();
 
+  // Calculate responsive dimensions
+  const isMobile = width < 768;
+  const healthBarWidth = isMobile ? 180 : 250;
+  const timerWidth = isMobile ? 140 : 160;
+  const centerX = width / 2;
+
   const hudBackgroundDraw = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
@@ -88,13 +94,18 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
 
         {/* Enhanced Health Bar with Segments */}
         <HealthBar
-          currentHealth={player1.health}
-          maxHealth={player1.maxHealth}
-          width={250}
+          current={player1.health}
+          max={player1.maxHealth}
+          width={healthBarWidth}
           height={25}
           showText={true}
-          x={0}
-          y={40}
+          x={20}
+          y={35}
+          position="left"
+          playerName={player1.name.korean}
+          screenWidth={width}
+          screenHeight={height}
+          data-testid="player1-health-bar"
         />
 
         {/* Ki and Stamina Mini Bars */}
@@ -147,21 +158,28 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
         {/* Player 1 Stance */}
         <StanceIndicator
           stance={player1.currentStance}
-          x={280}
-          y={40}
-          size={35}
-          showText={false}
+          x={20}
+          y={60}
+          size={40}
+          data-testid="player1-stance-indicator"
         />
       </pixiContainer>
 
       {/* Center Section - Timer and Round */}
-      <pixiContainer x={width / 2 - 80} y={20}>
+      <pixiContainer x={centerX - timerWidth / 2} y={20}>
         <RoundTimer
+          currentRound={currentRound}
+          maxRounds={maxRounds}
           timeRemaining={timeRemaining}
           totalTime={180}
-          width={160}
+          width={timerWidth}
           height={35}
+          x={0}
+          y={0}
           isPaused={isPaused}
+          screenWidth={width}
+          screenHeight={height}
+          data-testid="round-timer"
         />
 
         <pixiText
@@ -223,13 +241,18 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
 
         {/* Player 2 Health Bar */}
         <HealthBar
-          currentHealth={player2.health}
-          maxHealth={player2.maxHealth}
-          width={250}
+          current={player2.health}
+          max={player2.maxHealth}
+          width={healthBarWidth}
           height={25}
           showText={true}
-          x={30}
-          y={40}
+          x={width - healthBarWidth - 20}
+          y={35}
+          position="right"
+          playerName={player2.name.korean}
+          screenWidth={width}
+          screenHeight={height}
+          data-testid="player2-health-bar"
         />
 
         {/* Player 2 Ki and Stamina */}
@@ -283,10 +306,10 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
         {/* Player 2 Stance */}
         <StanceIndicator
           stance={player2.currentStance}
-          x={-35}
-          y={40}
-          size={35}
-          showText={false}
+          x={width - 60}
+          y={60}
+          size={40}
+          data-testid="player2-stance-indicator"
         />
       </pixiContainer>
 

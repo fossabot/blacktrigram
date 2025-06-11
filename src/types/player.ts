@@ -145,3 +145,13 @@ export interface MinimalPlayerState {
   perfectStrikes: number;
   vitalPointHits: number;
 }
+export interface PlayerTrainingStats {
+  readonly attempts: number;
+  readonly successes: number;
+  readonly failures: number;
+  readonly averageTime: number;
+  readonly bestTime: number;
+  readonly worstTime: number;
+  readonly techniquesUsed: readonly string[];
+  readonly dummyInteractions: number;
+}

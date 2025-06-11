@@ -1,98 +1,224 @@
-import React from "react";
-// Fix: Remove direct PIXI React imports, use pixi components directly
-import { usePixiExtensions } from "../../utils/pixiExtensions";
-// Fix: Import from ui.ts instead of components.ts
-import type { ArchetypeDisplayProps } from "../../types/ui";
+import React, { useCallback } from "react";
+import { PlayerArchetype } from "../../types/enums";
 import { KOREAN_COLORS } from "../../types/constants";
+import { ResponsivePixiContainer } from "./base/ResponsivePixiComponents";
+
+export interface ArchetypeDisplayProps {
+  readonly archetype: PlayerArchetype;
+  readonly isSelected?: boolean;
+  readonly onSelect?: (archetype: PlayerArchetype) => void;
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+  readonly screenWidth: number;
+  readonly screenHeight: number;
+}
+
+const ARCHETYPE_INFO = {
+  [PlayerArchetype.MUSA]: {
+    korean: "무사",
+    english: "Warrior",
+    description: "전통 무사 - 힘을 통한 명예",
+    englishDescription: "Traditional Warrior - Honor through strength",
+    color: KOREAN_COLORS.TRIGRAM_GEON_PRIMARY,
+    symbol: "☰",
+  },
+  [PlayerArchetype.AMSALJA]: {
+    korean: "암살자",
+    english: "Assassin",
+    description: "그림자 암살자 - 은밀함을 통한 효율성",
+    englishDescription: "Shadow Assassin - Efficiency through stealth",
+    color: KOREAN_COLORS.TRIGRAM_SON_PRIMARY,
+    symbol: "☴",
+  },
+  [PlayerArchetype.HACKER]: {
+    korean: "해커",
+    english: "Hacker",
+    description: "사이버 전사 - 정보를 통한 힘",
+    englishDescription: "Cyber Warrior - Power through information",
+    color: KOREAN_COLORS.PRIMARY_CYAN,
+    symbol: "☲",
+  },
+  [PlayerArchetype.JEONGBO_YOWON]: {
+    korean: "정보요원",
+    english: "Agent",
+    description: "정보 요원 - 관찰을 통한 지식",
+    englishDescription: "Intelligence Agent - Knowledge through observation",
+    color: KOREAN_COLORS.TRIGRAM_TAE_PRIMARY,
+    symbol: "☱",
+  },
+  [PlayerArchetype.JOJIK_POKRYEOKBAE]: {
+    korean: "조직폭력배",
+    english: "Gangster",
+    description: "조직 폭력배 - 무자비함을 통한 생존",
+    englishDescription: "Organized Crime - Survival through ruthlessness",
+    color: KOREAN_COLORS.TRIGRAM_JIN_PRIMARY,
+    symbol: "☳",
+  },
+};
 
 export const ArchetypeDisplay: React.FC<ArchetypeDisplayProps> = ({
-  player,
-  showDetails = true,
-  compact = false,
-  x = 0,
-  y = 0,
-  width = 200,
-  height = 100,
+  archetype,
+  isSelected = false,
+  onSelect,
+  x,
+  y,
+  width,
+  height,
+  screenWidth,
+  screenHeight,
 }) => {
-  usePixiExtensions();
+  const archetypeInfo = ARCHETYPE_INFO[archetype];
+  const isMobile = screenWidth < 768;
+
+  const handleClick = useCallback(() => {
+    if (onSelect) {
+      onSelect(archetype);
+    }
+  }, [onSelect, archetype]);
+
+  const borderColor = isSelected
+    ? KOREAN_COLORS.ACCENT_GOLD
+    : archetypeInfo.color;
 
   return (
-    <pixiContainer x={x} y={y} data-testid="archetype-display">
-      {/* Background */}
+    <ResponsivePixiContainer
+      x={x}
+      y={y}
+      screenWidth={screenWidth}
+      screenHeight={screenHeight}
+      data-testid={`archetype-display-${archetype}`}
+    >
+      {/* Background with archetype color */}
       <pixiGraphics
         draw={(g) => {
           g.clear();
-          g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.8);
-          g.lineStyle(2, KOREAN_COLORS.PRIMARY_CYAN, 0.6);
-          g.drawRoundedRect(0, 0, width, height, 8);
-          g.endFill();
+          g.fill({
+            color: isSelected
+              ? KOREAN_COLORS.ACCENT_GOLD
+              : KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
+            alpha: isSelected ? 0.3 : 0.8,
+          });
+          g.roundRect(0, 0, width, height, 8);
+          g.fill();
+
+          g.stroke({
+            width: 2,
+            color: borderColor,
+            alpha: 0.9,
+          });
+          g.roundRect(0, 0, width, height, 8);
+          g.stroke();
         }}
+        interactive={!!onSelect}
+        onPointerDown={handleClick}
+        data-testid={`archetype-background-${archetype}`}
       />
 
-      {/* Player Name */}
+      {/* Trigram Symbol */}
+      <pixiContainer x={isMobile ? 15 : 20} y={isMobile ? 15 : 20}>
+        <pixiGraphics
+          draw={(g) => {
+            g.clear();
+            g.fill({ color: archetypeInfo.color, alpha: 0.8 });
+            g.circle(0, 0, isMobile ? 16 : 20);
+            g.fill();
+          }}
+        />
+        <pixiText
+          text={archetypeInfo.symbol}
+          style={{
+            fontSize: isMobile ? 14 : 18,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
+            fontWeight: "bold",
+            align: "center",
+          }}
+          anchor={0.5}
+          data-testid={`archetype-symbol-${archetype}`}
+        />
+      </pixiContainer>
+
+      {/* Korean Name */}
       <pixiText
-        text={player.name.korean}
+        text={archetypeInfo.korean}
         style={{
-          fontSize: compact ? 14 : 18,
-          fill: KOREAN_COLORS.TEXT_PRIMARY,
+          fontSize: isMobile ? 16 : 20,
+          fill: isSelected
+            ? KOREAN_COLORS.BLACK_SOLID
+            : KOREAN_COLORS.TEXT_PRIMARY,
           fontWeight: "bold",
+          fontFamily: "Noto Sans KR",
         }}
-        x={10}
-        y={10}
+        x={isMobile ? 50 : 60}
+        y={isMobile ? 12 : 15}
+        data-testid={`archetype-korean-${archetype}`}
       />
 
       {/* English Name */}
       <pixiText
-        text={player.name.english}
+        text={archetypeInfo.english}
         style={{
-          fontSize: compact ? 10 : 12,
-          fill: KOREAN_COLORS.TEXT_SECONDARY,
+          fontSize: isMobile ? 12 : 14,
+          fill: isSelected
+            ? KOREAN_COLORS.BLACK_SOLID
+            : KOREAN_COLORS.TEXT_SECONDARY,
+          fontStyle: "italic",
         }}
-        x={10}
-        y={compact ? 25 : 30}
+        x={isMobile ? 50 : 60}
+        y={isMobile ? 30 : 35}
+        data-testid={`archetype-english-${archetype}`}
       />
 
-      {/* Archetype */}
-      <pixiText
-        text={`유형: ${player.archetype}`}
-        style={{
-          fontSize: 12,
-          fill: KOREAN_COLORS.ACCENT_GOLD,
-        }}
-        x={10}
-        y={compact ? 40 : 50}
-      />
-
-      {/* Health Bar */}
-      {showDetails && (
-        <pixiContainer x={10} y={compact ? 55 : 70}>
-          <pixiGraphics
-            draw={(g) => {
-              g.clear();
-              // Background
-              g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.8);
-              g.drawRoundedRect(0, 0, width - 20, 10, 5);
-              g.endFill();
-
-              // Health
-              const healthPercentage = player.health / player.maxHealth;
-              g.beginFill(KOREAN_COLORS.POSITIVE_GREEN, 0.8);
-              g.drawRoundedRect(1, 1, (width - 22) * healthPercentage, 8, 4);
-              g.endFill();
-            }}
-          />
+      {/* Description - Only show on larger screens */}
+      {!isMobile && height > 80 && (
+        <>
           <pixiText
-            text={`${player.health}/${player.maxHealth}`}
+            text={archetypeInfo.description}
             style={{
-              fontSize: 8,
-              fill: KOREAN_COLORS.TEXT_PRIMARY,
+              fontSize: 10,
+              fill: isSelected
+                ? KOREAN_COLORS.BLACK_SOLID
+                : KOREAN_COLORS.TEXT_SECONDARY,
+              wordWrap: true,
+              wordWrapWidth: width - 70,
             }}
-            x={width - 60}
-            y={-2}
+            x={60}
+            y={55}
+            data-testid={`archetype-description-${archetype}`}
           />
-        </pixiContainer>
+
+          <pixiText
+            text={archetypeInfo.englishDescription}
+            style={{
+              fontSize: 9,
+              fill: isSelected
+                ? KOREAN_COLORS.BLACK_SOLID
+                : KOREAN_COLORS.TEXT_TERTIARY,
+              fontStyle: "italic",
+              wordWrap: true,
+              wordWrapWidth: width - 70,
+            }}
+            x={60}
+            y={height - 25}
+            data-testid={`archetype-description-english-${archetype}`}
+          />
+        </>
       )}
-    </pixiContainer>
+
+      {/* Selection indicator */}
+      {isSelected && (
+        <pixiGraphics
+          draw={(g) => {
+            g.clear();
+            g.fill({ color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.8 });
+            g.roundRect(width - 25, 5, 20, 8, 4);
+            g.fill();
+          }}
+          data-testid={`archetype-selected-indicator-${archetype}`}
+        />
+      )}
+    </ResponsivePixiContainer>
   );
 };
 

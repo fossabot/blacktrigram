@@ -158,17 +158,6 @@ export interface BaseButtonProps {
   testId?: string;
 }
 
-export interface HealthBarProps extends BaseComponentProps {
-  readonly currentHealth: number;
-  readonly maxHealth: number;
-  readonly showText?: boolean;
-  readonly showPercentage?: boolean;
-  readonly animated?: boolean;
-  readonly backgroundColor?: number;
-  readonly borderColor?: number;
-  readonly criticalColor?: number;
-}
-
 export interface StanceIndicatorProps extends BaseComponentProps {
   readonly stance: TrigramStance;
   readonly size?: number;

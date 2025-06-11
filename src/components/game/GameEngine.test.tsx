@@ -8,6 +8,7 @@ import {
   CombatState,
 } from "../../types/enums";
 
+
 // Fix: Create tuple with exactly 2 players as required by interface
 const mockPlayers: readonly [PlayerState, PlayerState] = [
   {

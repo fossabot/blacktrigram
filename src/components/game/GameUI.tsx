@@ -37,26 +37,43 @@ export const GameUI: React.FC<GameUIProps> = ({
         y={20}
         width={200}
         height={20}
-        currentHealth={gameState.players[0].health}
-        maxHealth={gameState.players[0].maxHealth}
+        current={gameState.players[0].health}
+        max={gameState.players[0].maxHealth}
+        position="left"
+        playerName={gameState.players[0].name.korean}
+        showText={true}
+        screenWidth={800}
+        screenHeight={600}
       />
 
       {/* Round Timer */}
       <RoundTimer
-        x={width / 2}
+        x={300}
         y={20}
+        currentRound={gameState.currentRound}
+        maxRounds={3}
         timeRemaining={gameState.timeRemaining}
-        totalTime={180} // Fix: Use totalTime consistently
+        totalTime={180}
+        width={200}
+        height={40}
+        isPaused={false}
+        screenWidth={800}
+        screenHeight={600}
       />
 
       {/* Player 2 Health Bar */}
       <HealthBar
-        x={width - 220}
+        x={580}
         y={20}
         width={200}
         height={20}
-        currentHealth={gameState.players[1].health}
-        maxHealth={gameState.players[1].maxHealth}
+        current={gameState.players[1].health}
+        max={gameState.players[1].maxHealth}
+        position="right"
+        playerName={gameState.players[1].name.korean}
+        showText={true}
+        screenWidth={800}
+        screenHeight={600}
       />
 
       {/* Player 1 Stance Indicator */}

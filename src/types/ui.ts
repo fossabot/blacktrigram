@@ -148,13 +148,19 @@ export interface CombatScreenProps {
 }
 
 export interface HealthBarProps {
-  readonly currentHealth: number;
-  readonly maxHealth: number;
-  readonly width?: number;
-  readonly height?: number;
+  readonly current: number;
+  readonly max: number;
+  readonly playerName: string;
+  readonly position?: "left" | "right" | "center";
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+  readonly screenWidth: number;
+  readonly screenHeight: number;
   readonly showText?: boolean;
-  readonly x?: number;
-  readonly y?: number;
+  readonly animated?: boolean;
+  readonly showDamageIndicator?: boolean;
 }
 
 export interface StanceIndicatorProps {

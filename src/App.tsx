@@ -187,8 +187,6 @@ function App() {
                 // Update training player state
                 console.log("Training player updated:", updates);
               }}
-              trigramSystem={trainingTrigramSystem}
-              vitalPointSystem={trainingVitalPointSystem}
               onReturnToMenu={handleReturnToMenu}
               width={screenSize.width}
               height={screenSize.height}
@@ -280,10 +278,6 @@ function App() {
 
   // Add a default player for training mode
   const trainingPlayer = createPlayerFromArchetype(PlayerArchetype.MUSA, 0);
-
-  // Minimal stubs for systems (replace with real implementations as needed)
-  const trainingTrigramSystem = {} as any;
-  const trainingVitalPointSystem = {} as any;
 
   return (
     <AudioProvider>

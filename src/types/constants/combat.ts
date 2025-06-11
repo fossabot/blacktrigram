@@ -240,6 +240,31 @@ export const COMBAT_STATE_MACHINE = {
   },
 } as const;
 
+// Training-specific combat constants
+export const TRAINING_COMBAT_SETTINGS = {
+  techniqueCooldown: 500,
+  perfectStrikeThreshold: 0.7,
+  maxTrainingSession: 300000, // 5 minutes
+  kiRegenerationRate: 2,
+  staminaRegenerationRate: 1.5,
+} as const;
+
+// Combat state transitions for training mode
+export const TRAINING_STATE_MACHINE = {
+  practicing: {
+    canTransitionTo: ["idle", "executing", "recovering"],
+    duration: Infinity,
+  },
+  executing: {
+    canTransitionTo: ["practicing", "idle"],
+    duration: 800,
+  },
+  recovering: {
+    canTransitionTo: ["practicing", "idle"],
+    duration: 300,
+  },
+} as const;
+
 // Technique execution results
 export const TECHNIQUE_RESULTS = {
   SUCCESS: "success",

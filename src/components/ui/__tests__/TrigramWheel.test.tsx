@@ -6,14 +6,18 @@ import { TrigramStance } from "../../../types/enums";
 
 describe("TrigramWheel", () => {
   it("renders without crashing", () => {
+    const mockOnStanceSelect = vi.fn();
+    const mockOnStanceChange = vi.fn();
+
     render(
       <Application>
         <TrigramWheel
           selectedStance={TrigramStance.GEON}
-          onStanceSelect={vi.fn()}
+          onStanceSelect={mockOnStanceSelect}
+          onStanceChange={mockOnStanceChange}
           x={100}
           y={100}
-          radius={80}
+          size={80}
           data-testid="trigram-wheel"
         />
       </Application>
@@ -22,14 +26,17 @@ describe("TrigramWheel", () => {
 
   it("calls onStanceSelect when stance is selected", () => {
     const mockOnStanceSelect = vi.fn();
+    const mockOnStanceChange = vi.fn();
+
     render(
       <Application>
         <TrigramWheel
           selectedStance={TrigramStance.GEON}
           onStanceSelect={mockOnStanceSelect}
+          onStanceChange={mockOnStanceChange}
           x={100}
           y={100}
-          radius={80}
+          size={80}
           data-testid="trigram-wheel"
         />
       </Application>
@@ -39,14 +46,17 @@ describe("TrigramWheel", () => {
 
   it("displays all eight trigram stances", () => {
     const mockOnStanceSelect = vi.fn();
+    const mockOnStanceChange = vi.fn();
+
     render(
       <Application>
         <TrigramWheel
           selectedStance={TrigramStance.TAE}
           onStanceSelect={mockOnStanceSelect}
+          onStanceChange={mockOnStanceChange}
           x={100}
           y={100}
-          radius={80}
+          size={80}
           data-testid="trigram-wheel"
         />
       </Application>
@@ -56,14 +66,17 @@ describe("TrigramWheel", () => {
 
   it("highlights the selected stance correctly", () => {
     const mockOnStanceSelect = vi.fn();
+    const mockOnStanceChange = vi.fn();
+
     render(
       <Application>
         <TrigramWheel
           selectedStance={TrigramStance.LI}
           onStanceSelect={mockOnStanceSelect}
+          onStanceChange={mockOnStanceChange}
           x={100}
           y={100}
-          radius={80}
+          size={80}
           data-testid="trigram-wheel"
         />
       </Application>
@@ -73,6 +86,7 @@ describe("TrigramWheel", () => {
 
   it("handles responsive sizing", () => {
     const mockOnStanceSelect = vi.fn();
+    const mockOnStanceChange = vi.fn();
 
     // Test with different radius sizes
     const { rerender } = render(
@@ -80,9 +94,10 @@ describe("TrigramWheel", () => {
         <TrigramWheel
           selectedStance={TrigramStance.GEON}
           onStanceSelect={mockOnStanceSelect}
+          onStanceChange={mockOnStanceChange}
           x={100}
           y={100}
-          radius={60}
+          size={60}
           data-testid="trigram-wheel"
         />
       </Application>
@@ -94,9 +109,10 @@ describe("TrigramWheel", () => {
         <TrigramWheel
           selectedStance={TrigramStance.GEON}
           onStanceSelect={mockOnStanceSelect}
+          onStanceChange={mockOnStanceChange}
           x={100}
           y={100}
-          radius={120}
+          size={120}
           data-testid="trigram-wheel"
         />
       </Application>

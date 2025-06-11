@@ -192,6 +192,8 @@ export enum CombatState {
   TRANSITIONING = "transitioning",
 }
 
+
+
 // Body regions for anatomical targeting
 export enum BodyRegion {
   HEAD = "head",
