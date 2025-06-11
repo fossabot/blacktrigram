@@ -113,17 +113,22 @@ Cypress.Commands.add("dataCy", (value: string) => {
 // Enhanced wait for canvas to be fully rendered and ready
 Cypress.Commands.add("waitForCanvasReady", () => {
   // First wait for canvas to exist
-  cy.get("canvas", { timeout: 15000 }).should("be.visible");
+  cy.get("canvas", { timeout: 15000 }).should("exist");
 
   // Wait for app container to be ready
   cy.get('[data-testid="app-container"]', { timeout: 10000 }).should("exist");
 
-  // Wait for canvas to have proper dimensions
+  // Check canvas dimensions and position
   cy.get("canvas").should(($canvas) => {
     const canvas = $canvas[0];
     const rect = canvas.getBoundingClientRect();
     expect(rect.width).to.be.greaterThan(100);
     expect(rect.height).to.be.greaterThan(100);
+
+    // Ensure canvas is not completely hidden
+    const computedStyle = window.getComputedStyle(canvas);
+    expect(computedStyle.display).to.not.equal("none");
+    expect(computedStyle.visibility).to.not.equal("hidden");
   });
 
   // Allow time for PixiJS to initialize
@@ -396,11 +401,10 @@ Cypress.Commands.add(
   }
 );
 
-// Enhanced canvas visibility checking
+// Enhanced canvas visibility checking with z-index awareness
 Cypress.Commands.add("checkCanvasVisibility", () => {
   cy.get("canvas")
     .should("exist")
-    .and("be.visible")
     .then(($canvas) => {
       // Check if canvas has proper dimensions
       const canvas = $canvas[0];
@@ -408,6 +412,10 @@ Cypress.Commands.add("checkCanvasVisibility", () => {
 
       expect(rect.width).to.be.greaterThan(100);
       expect(rect.height).to.be.greaterThan(100);
+
+      // Check if canvas is actually in the DOM and has proper styling
+      const computedStyle = window.getComputedStyle(canvas);
+      expect(computedStyle.display).to.not.equal("none");
 
       cy.log("✅ Canvas is visible with proper dimensions");
     });

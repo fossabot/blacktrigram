@@ -317,7 +317,7 @@ function App() {
             width: "100%",
             height: "100%",
             pointerEvents: "none",
-            zIndex: 500, // Lower z-index to not cover canvas
+            zIndex: 100, // Reduced z-index
           }}
           data-testid="ui-overlay"
         >
@@ -335,14 +335,14 @@ function App() {
                 }}
               />
 
-              {/* Fix: Lower z-index and better positioning for mobile buttons */}
+              {/* Fix: Better positioning for mobile buttons with lower z-index */}
               <button
                 className="training-button"
                 data-testid="training-button"
                 style={{
                   position: "absolute",
-                  top: screenSize.isMobile ? "50%" : "45%",
-                  left: screenSize.isMobile ? "10%" : "35%",
+                  top: screenSize.isMobile ? "65%" : "60%", // Moved down
+                  left: screenSize.isMobile ? "5%" : "25%",
                   padding: "12px 24px",
                   backgroundColor: "rgba(0, 212, 255, 0.9)",
                   color: "white",
@@ -352,9 +352,10 @@ function App() {
                   pointerEvents: "auto",
                   fontSize: screenSize.isMobile ? "14px" : "16px",
                   fontWeight: "bold",
-                  zIndex: 400, // Fix: Lower z-index
+                  zIndex: 50, // Reduced z-index
                   boxShadow: "0 0 20px rgba(0, 212, 255, 0.5)",
-                  transform: screenSize.isMobile ? "none" : "translateX(-50%)",
+                  transform: "none",
+                  maxWidth: "200px",
                 }}
                 onClick={() => handleGameStart(GameMode.TRAINING)}
               >
@@ -366,8 +367,8 @@ function App() {
                 data-testid="combat-button"
                 style={{
                   position: "absolute",
-                  top: screenSize.isMobile ? "60%" : "55%",
-                  left: screenSize.isMobile ? "10%" : "35%",
+                  top: screenSize.isMobile ? "75%" : "70%", // Moved down
+                  left: screenSize.isMobile ? "5%" : "25%",
                   padding: "12px 24px",
                   backgroundColor: "rgba(255, 107, 53, 0.9)",
                   color: "white",
@@ -377,9 +378,10 @@ function App() {
                   pointerEvents: "auto",
                   fontSize: screenSize.isMobile ? "14px" : "16px",
                   fontWeight: "bold",
-                  zIndex: 400, // Fix: Lower z-index
+                  zIndex: 50, // Reduced z-index
                   boxShadow: "0 0 20px rgba(255, 107, 53, 0.5)",
-                  transform: screenSize.isMobile ? "none" : "translateX(-50%)",
+                  transform: "none",
+                  maxWidth: "200px",
                 }}
                 onClick={() => handleGameStart(GameMode.VERSUS)}
               >
@@ -415,7 +417,7 @@ function App() {
                   cursor: "pointer",
                   pointerEvents: "auto",
                   fontSize: "14px",
-                  zIndex: 400, // Fix: Lower z-index
+                  zIndex: 50, // Reduced z-index
                 }}
                 onClick={handleReturnToMenu}
               >
@@ -447,7 +449,7 @@ function App() {
                   fontSize: "24px",
                   fontWeight: "bold",
                   pointerEvents: "none",
-                  zIndex: 400, // Fix: Lower z-index
+                  zIndex: 50, // Reduced z-index
                 }}
               >
                 Combat - 전투
@@ -466,7 +468,7 @@ function App() {
                   cursor: "pointer",
                   pointerEvents: "auto",
                   fontSize: "14px",
-                  zIndex: 400, // Fix: Lower z-index
+                  zIndex: 50, // Reduced z-index
                 }}
                 onClick={handleReturnToMenu}
               >
