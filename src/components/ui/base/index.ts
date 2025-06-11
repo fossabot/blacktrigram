@@ -13,6 +13,7 @@ export { KoreanHeader } from "./KoreanHeader";
 // PIXI components
 export { default as KoreanPixiComponents } from "./KoreanPixiComponents";
 export { default as PixiComponents } from "./PixiComponents";
+export * from "./ResponsivePixiComponents";
 
 // Re-export key Korean text utilities
 export {

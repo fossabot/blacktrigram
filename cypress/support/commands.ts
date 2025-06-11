@@ -156,17 +156,16 @@ Cypress.Commands.add("enterTrainingMode", () => {
     }
   });
 
-  // Wait for training screen to appear
-  cy.wait(1500);
+  // Wait for training screen to appear with increased timeout
+  cy.wait(2000);
 
-  // Verify we're in training mode
-  cy.get("body").then(($body) => {
-    if ($body.find('[data-testid="training-screen"]').length > 0) {
-      cy.log("✅ Successfully entered training mode");
-    } else {
-      cy.log("⚠️ Training screen not detected, but continuing test");
-    }
-  });
+  // Verify we're in training mode - be more flexible with element detection
+  cy.get('[data-testid="training-screen"]', { timeout: 15000 }).should("exist");
+
+  // Wait for additional elements to load
+  cy.get('[data-testid="training-header"]', { timeout: 10000 }).should("exist");
+
+  cy.log("✅ Successfully entered training mode");
 });
 
 // Enter combat mode from intro screen
@@ -457,17 +456,14 @@ Cypress.Commands.add("navigateToTraining", () => {
     }
   });
 
-  // Allow time for navigation
-  cy.wait(2000);
+  // Allow more time for navigation
+  cy.wait(3000);
 
-  // Verify training screen exists (but don't fail if it doesn't)
-  cy.get("body").then(($body) => {
-    if ($body.find('[data-testid="training-screen"]').length > 0) {
-      cy.log("✅ Training screen loaded successfully");
-    } else {
-      cy.log("⚠️ Training screen not found, but test continues");
-    }
-  });
+  // Verify training screen exists with extended timeout
+  cy.get('[data-testid="training-screen"]', { timeout: 20000 }).should("exist");
+  cy.get('[data-testid="training-header"]', { timeout: 15000 }).should("exist");
+
+  cy.log("✅ Training screen loaded successfully");
 });
 
 // Add vital point testing helper

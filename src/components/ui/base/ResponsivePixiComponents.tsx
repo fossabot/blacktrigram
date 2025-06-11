@@ -1,34 +1,17 @@
 import React, { useMemo, useCallback } from "react";
+import { extend } from "@pixi/react";
+import { Container, Graphics, Text } from "pixi.js";
 import { KOREAN_COLORS } from "../../../types/constants";
+
+extend({
+  Container,
+  Graphics,
+  Text,
+});
 
 export interface ResponsivePixiContainerProps {
   readonly x?: number;
   readonly y?: number;
-  readonly screenWidth: number;
-  readonly screenHeight: number;
-  readonly children?: React.ReactNode;
-  readonly "data-testid"?: string;
-}
-
-export interface ResponsivePixiButtonProps {
-  readonly text: string;
-  readonly x: number;
-  readonly y: number;
-  readonly width: number;
-  readonly height: number;
-  readonly screenWidth: number;
-  readonly screenHeight: number;
-  readonly variant?: "primary" | "secondary";
-  readonly onClick: () => void;
-  readonly "data-testid"?: string;
-}
-
-export interface ResponsivePixiPanelProps {
-  readonly title: string;
-  readonly x: number;
-  readonly y: number;
-  readonly width: number;
-  readonly height: number;
   readonly screenWidth: number;
   readonly screenHeight: number;
   readonly children?: React.ReactNode;
@@ -76,6 +59,19 @@ export const ResponsivePixiContainer: React.FC<
     </pixiContainer>
   );
 };
+
+export interface ResponsivePixiButtonProps {
+  readonly text: string;
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+  readonly screenWidth: number;
+  readonly screenHeight: number;
+  readonly variant?: "primary" | "secondary";
+  readonly onClick: () => void;
+  readonly "data-testid"?: string;
+}
 
 export const ResponsivePixiButton: React.FC<ResponsivePixiButtonProps> = ({
   text,
@@ -155,6 +151,18 @@ export const ResponsivePixiButton: React.FC<ResponsivePixiButtonProps> = ({
     </pixiContainer>
   );
 };
+
+export interface ResponsivePixiPanelProps {
+  readonly title: string;
+  readonly x: number;
+  readonly y: number;
+  readonly width: number;
+  readonly height: number;
+  readonly screenWidth: number;
+  readonly screenHeight: number;
+  readonly children?: React.ReactNode;
+  readonly "data-testid"?: string;
+}
 
 export const ResponsivePixiPanel: React.FC<ResponsivePixiPanelProps> = ({
   title,

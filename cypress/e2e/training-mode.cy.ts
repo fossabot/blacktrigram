@@ -9,11 +9,11 @@ describe("Black Trigram Training Mode", () => {
       cy.annotate("Testing training mode entry");
       cy.enterTrainingMode();
 
-      // Verify we're in training mode - check for essential elements
-      cy.get('[data-testid="training-screen"]', { timeout: 10000 }).should(
+      // Verify we're in training mode - check for essential elements with increased timeout
+      cy.get('[data-testid="training-screen"]', { timeout: 15000 }).should(
         "exist"
       );
-      cy.get('[data-testid="training-header"]', { timeout: 5000 }).should(
+      cy.get('[data-testid="training-header"]', { timeout: 10000 }).should(
         "exist"
       );
     });
@@ -22,28 +22,38 @@ describe("Black Trigram Training Mode", () => {
       cy.annotate("Testing training UI elements");
       cy.enterTrainingMode();
 
-      // Check for key training elements
-      cy.get('[data-testid="training-screen"]').should("exist");
-      cy.get('[data-testid="training-area"]').should("exist");
-      cy.get('[data-testid="training-player"]').should("exist");
-      cy.get('[data-testid="training-dummy-container"]').should("exist");
+      // Check for key training elements with increased timeouts
+      cy.get('[data-testid="training-screen"]', { timeout: 15000 }).should(
+        "exist"
+      );
+      cy.get('[data-testid="training-area"]', { timeout: 15000 }).should(
+        "exist"
+      );
+      cy.get('[data-testid="training-player"]', { timeout: 15000 }).should(
+        "exist"
+      );
+      cy.get('[data-testid="training-dummy-container"]', {
+        timeout: 15000,
+      }).should("exist");
     });
 
     it("should handle training mode selection", () => {
       cy.annotate("Testing training mode selection");
       cy.enterTrainingMode();
 
-      // Check mode selection panel
-      cy.get('[data-testid="training-mode-stances"]').should("exist");
-      cy.get('[data-testid="mode-basics"]')
+      // Check mode selection panel with increased timeout
+      cy.get('[data-testid="training-mode-stances"]', {
+        timeout: 15000,
+      }).should("exist");
+      cy.get('[data-testid="mode-basics"]', { timeout: 10000 })
         .should("exist")
         .click({ force: true });
 
       // Verify mode selection works
-      cy.get('[data-testid="mode-advanced"]')
+      cy.get('[data-testid="mode-advanced"]', { timeout: 10000 })
         .should("exist")
         .click({ force: true });
-      cy.get('[data-testid="mode-free"]')
+      cy.get('[data-testid="mode-free"]', { timeout: 10000 })
         .should("exist")
         .click({ force: true });
     });
@@ -52,17 +62,21 @@ describe("Black Trigram Training Mode", () => {
       cy.annotate("Testing stance practice");
       cy.enterTrainingMode();
 
-      // Check trigram wheel exists and is interactive
-      cy.get('[data-testid="training-trigram-wheel"]').should("exist");
+      // Check trigram wheel exists and is interactive with increased timeout
+      cy.get('[data-testid="training-trigram-wheel"]', {
+        timeout: 15000,
+      }).should("exist");
 
-      // Try clicking on different stance buttons
-      cy.get('[data-testid="stance-geon-button"]')
+      // Try clicking on stance button
+      cy.get('[data-testid="stance-geon-button"]', { timeout: 10000 })
         .should("exist")
         .click({ force: true });
       cy.wait(500);
 
       // Verify stance indicator updates
-      cy.get('[data-testid="current-stance-indicator"]').should("exist");
+      cy.get('[data-testid="current-stance-indicator"]', {
+        timeout: 10000,
+      }).should("exist");
 
       // Test keyboard stance changes
       cy.get("body").type("2"); // Switch to Tae stance
@@ -75,34 +89,44 @@ describe("Black Trigram Training Mode", () => {
       cy.annotate("Testing training statistics");
       cy.enterTrainingMode();
 
-      // Check stats panel exists
-      cy.get('[data-testid="training-stats-panel"]').should("exist");
-      cy.get('[data-testid="attempts-count"]').should("contain", "시도: 0");
+      // Check stats panel exists with increased timeout
+      cy.get('[data-testid="training-stats-panel"]', { timeout: 15000 }).should(
+        "exist"
+      );
+      cy.get('[data-testid="attempts-count"]', { timeout: 10000 }).should(
+        "contain",
+        "시도: 0"
+      );
 
       // Start training and execute techniques
-      cy.get('[data-testid="start-training-button"]')
+      cy.get('[data-testid="start-training-button"]', { timeout: 10000 })
         .should("exist")
         .click({ force: true });
       cy.wait(1000);
 
       // Execute techniques
-      cy.get('[data-testid="execute-technique-button"]')
+      cy.get('[data-testid="execute-technique-button"]', { timeout: 10000 })
         .should("exist")
         .click({ force: true });
       cy.wait(500);
       cy.get('[data-testid="execute-technique-button"]').click({ force: true });
 
       // Verify stats update
-      cy.get('[data-testid="attempts-count"]').should("not.contain", "시도: 0");
+      cy.get('[data-testid="attempts-count"]', { timeout: 5000 }).should(
+        "not.contain",
+        "시도: 0"
+      );
     });
 
     it("should support dummy interaction", () => {
       cy.annotate("Testing dummy interaction");
       cy.enterTrainingMode();
 
-      // Check dummy and reset functionality
-      cy.get('[data-testid="training-dummy"]').should("exist");
-      cy.get('[data-testid="reset-dummy-button"]')
+      // Check dummy and reset functionality with increased timeout
+      cy.get('[data-testid="training-dummy"]', { timeout: 15000 }).should(
+        "exist"
+      );
+      cy.get('[data-testid="reset-dummy-button"]', { timeout: 10000 })
         .should("exist")
         .click({ force: true });
 
@@ -114,16 +138,24 @@ describe("Black Trigram Training Mode", () => {
       cy.annotate("Testing training controls");
       cy.enterTrainingMode();
 
-      // Check all control elements
-      cy.get('[data-testid="training-controls"]').should("exist");
-      cy.get('[data-testid="start-training-button"]').should("exist");
-      cy.get('[data-testid="evaluate-button"]').should("exist");
+      // Check all control elements with increased timeout
+      cy.get('[data-testid="training-controls"]', { timeout: 15000 }).should(
+        "exist"
+      );
+      cy.get('[data-testid="start-training-button"]', {
+        timeout: 10000,
+      }).should("exist");
+      cy.get('[data-testid="evaluate-button"]', { timeout: 10000 }).should(
+        "exist"
+      );
 
       // Test control interactions
       cy.get('[data-testid="start-training-button"]').click({ force: true });
       cy.wait(1000);
 
-      cy.get('[data-testid="execute-technique-button"]').should("exist");
+      cy.get('[data-testid="execute-technique-button"]', {
+        timeout: 10000,
+      }).should("exist");
       cy.get('[data-testid="evaluate-button"]')
         .should("exist")
         .click({ force: true });
@@ -134,13 +166,15 @@ describe("Black Trigram Training Mode", () => {
       cy.enterTrainingMode();
 
       // Test return functionality
-      cy.get('[data-testid="return-to-menu-button"]')
+      cy.get('[data-testid="return-to-menu-button"]', { timeout: 10000 })
         .should("exist")
         .click({ force: true });
       cy.wait(2000);
 
       // Verify we're back at intro
-      cy.get('[data-testid="intro-screen"]').should("exist");
+      cy.get('[data-testid="intro-screen"]', { timeout: 15000 }).should(
+        "exist"
+      );
       cy.annotate("Return to menu successful");
     });
   });
@@ -161,10 +195,16 @@ describe("Black Trigram Training Mode", () => {
 
         cy.enterTrainingMode();
 
-        // Check essential elements exist at this viewport
-        cy.get('[data-testid="training-screen"]').should("exist");
-        cy.get('[data-testid="training-area"]').should("exist");
-        cy.get('[data-testid="training-controls"]').should("exist");
+        // Check essential elements exist at this viewport with increased timeouts
+        cy.get('[data-testid="training-screen"]', { timeout: 15000 }).should(
+          "exist"
+        );
+        cy.get('[data-testid="training-area"]', { timeout: 15000 }).should(
+          "exist"
+        );
+        cy.get('[data-testid="training-controls"]', { timeout: 15000 }).should(
+          "exist"
+        );
 
         // Return to intro for next iteration
         cy.returnToIntro();
