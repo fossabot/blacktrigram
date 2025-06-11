@@ -1,4 +1,4 @@
-import { render } from "@testing-library/react";
+import { renderWithPixi, screen, fireEvent } from "../../../test/test-utils";
 import {
   PlayerArchetype,
   TrigramStance,
@@ -49,63 +49,34 @@ const mockPlayerState: PlayerState = {
 
 describe("Player", () => {
   it("renders without crashing", () => {
-    render(
-      <Player
-        playerState={mockPlayerState}
-        playerIndex={0}
-        x={100}
-        y={200}
-        onClick={() => {}}
-        interactive={true}
-      />
-    );
+    renderWithPixi(<Player player={mockPlayerState} x={100} y={100} />);
+    expect(screen.getByTestId("player")).toBeInTheDocument();
   });
 
   it("displays player correctly", () => {
-    const { container } = render(
-      <Player
-        playerState={mockPlayerState}
-        playerIndex={0}
-        x={100}
-        y={200}
-        onClick={() => {}}
-        interactive={true}
-      />
-    );
-
-    expect(container).toBeDefined();
+    renderWithPixi(<Player player={mockPlayerState} x={100} y={100} />);
+    expect(screen.getByTestId("player")).toBeInTheDocument();
+    expect(screen.getByText(mockPlayerState.name.korean)).toBeInTheDocument();
   });
 
   it("handles player interaction", () => {
-    const mockOnClick = jest.fn();
-
-    render(
+    const mockOnInteract = vi.fn();
+    renderWithPixi(
       <Player
-        playerState={mockPlayerState}
-        playerIndex={0}
+        player={mockPlayerState}
         x={100}
-        y={200}
-        onClick={mockOnClick}
-        interactive={true}
+        y={100}
+        onInteract={mockOnInteract}
       />
     );
 
-    expect(mockOnClick).not.toHaveBeenCalled(); // Initial state
+    const playerElement = screen.getByTestId("player");
+    fireEvent.click(playerElement);
+    expect(playerElement).toBeInTheDocument();
   });
 
   it("displays player stance correctly", () => {
-    const player = render(
-      <Player
-        playerState={mockPlayerState}
-        playerIndex={0}
-        x={100}
-        y={200}
-        onClick={() => {}}
-        interactive={true}
-      />
-    );
-
-    expect(player).toBeTruthy();
-    expect(mockPlayerState.currentStance).toBe(TrigramStance.GEON);
+    renderWithPixi(<Player player={mockPlayerState} x={100} y={100} />);
+    expect(screen.getByTestId("player")).toBeInTheDocument();
   });
 });

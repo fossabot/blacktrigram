@@ -3,6 +3,7 @@
 import React from "react";
 import { render, RenderOptions } from "@testing-library/react";
 import { AudioProvider } from "../audio/AudioProvider";
+import { vi } from "vitest";
 
 // Mock Application wrapper for testing
 const MockApplication: React.FC<{ children: React.ReactNode }> = ({
@@ -43,6 +44,54 @@ export function renderWithProviders(
 
   return render(ui, { wrapper: Wrapper, ...renderOptions });
 }
+
+// Mock renderWithPixi function for TypeScript compatibility
+export function renderWithPixi(component: any, options: any = {}) {
+  // This is a simplified mock for TypeScript compatibility
+  // The actual implementation is in test-utils.tsx
+  console.log("Mock renderWithPixi called");
+  return {
+    getByTestId: vi.fn(),
+    getByText: vi.fn(),
+    findByTestId: vi.fn(),
+    container: document.createElement("div"),
+  };
+}
+
+// Enhanced mock for PixiJS React components
+export const renderWithPixi = (ui: ReactElement, options?: RenderOptions) => {
+  console.log("Mock renderWithPixi called");
+
+  // Mock PixiJS components as div elements for testing
+  const mockPixiComponents = {
+    Application: ({ children, ...props }: any) => (
+      <div data-testid="pixi-application" {...props}>
+        {children}
+      </div>
+    ),
+    Container: ({ children, ...props }: any) => (
+      <div data-testid="pixi-container" {...props}>
+        {children}
+      </div>
+    ),
+    Graphics: (props: any) => <div data-testid="pixi-graphics" {...props} />,
+    Text: ({ text, ...props }: any) => (
+      <div data-testid="pixi-text" {...props}>
+        {text}
+      </div>
+    ),
+    Sprite: (props: any) => <div data-testid="pixi-sprite" {...props} />,
+  };
+
+  // Mock @pixi/react components globally
+  vi.doMock("@pixi/react", () => ({
+    ...mockPixiComponents,
+    Stage: mockPixiComponents.Container,
+    useApp: () => mockPixiApp,
+  }));
+
+  return render(ui, options);
+};
 
 // Korean martial arts specific test helpers
 export const koreanTestHelpers = {

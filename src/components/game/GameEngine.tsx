@@ -1,130 +1,127 @@
 // Complete game engine for Black Trigram Korean martial arts
 
-import React, { useEffect, useCallback } from "react";
-import { usePixiExtensions } from "../../utils/pixiExtensions";
+import React, { useState, useEffect, useCallback } from "react";
+import { extend } from "@pixi/react";
+import { Container, Graphics } from "pixi.js";
 import { GameMode } from "../../types/enums"; // Fix: Import GameMode
+import type { PlayerState } from "../../types/player";
 import type { GameEngineProps } from "../../types/components";
 import type { TrigramStance } from "../../types/trigram"; // Fix: Import TrigramStance
+import { KOREAN_COLORS } from "../../types/constants";
+import { usePixiExtensions } from "../../utils/pixiExtensions";
+import { CombatSystem } from "../../systems/CombatSystem";
+
+extend({
+  Container,
+  Graphics,
+});
 
 export const GameEngine: React.FC<GameEngineProps> = ({
-  players,
+  player1,
+  player2,
   onPlayerUpdate,
   onCombatResult,
-  onGameEvent,
-  isPaused = false,
-  gameMode,
-  width = 800,
-  height = 600,
 }) => {
   usePixiExtensions();
-
-  // Mock combat system for now
-  const combatSystem = {
-    updatePlayerState: (player: any, _deltaTime: number) => {
-      // Simple health regeneration in training mode
-      if (gameMode === GameMode.TRAINING) {
-        return {
-          ...player,
-          stamina: Math.min(player.stamina + 0.1, player.maxStamina),
-        };
-      }
-      return player;
-    },
-  };
+  const [gameTime, setGameTime] = useState(0);
 
   // Game loop
   useEffect(() => {
-    if (isPaused) return;
+    const interval = setInterval(() => {
+      setGameTime((prev) => prev + 16); // ~60fps
+    }, 16);
 
-    const gameLoop = setInterval(() => {
-      // Update player states based on game mode
-      if (gameMode === GameMode.TRAINING) {
-        // Training mode updates
-        players.forEach((player, index) => {
-          // Simple training updates - regenerate resources
-          const updatedPlayer = {
-            ...player,
-            ki: Math.min(player.maxKi, player.ki + 1),
-            stamina: Math.min(player.maxStamina, player.stamina + 1),
-          };
-          if (updatedPlayer !== player) {
-            onPlayerUpdate(index, updatedPlayer);
-          }
-        });
-      } else {
-        // Combat mode updates
-        players.forEach((player, index) => {
-          // Apply natural regeneration and status effects
-          const updatedPlayer = combatSystem.updatePlayerState(player, 16);
-          if (updatedPlayer !== player) {
-            onPlayerUpdate(index, updatedPlayer);
-          }
-        });
-      }
+    return () => clearInterval(interval);
+  }, []);
 
-      // Check win conditions
-      players.forEach((player, index) => {
-        if (player.health <= 0 || player.consciousness <= 0) {
-          const winner = index === 0 ? 1 : 0;
-          onGameEvent("player_defeated", { winner });
-        }
+  const handleCombatAction = useCallback(
+    (attacker: PlayerState, defender: PlayerState) => {
+      const result = CombatSystem.resolveAttack(attacker, defender, {
+        technique: "basic_attack",
+        targetArea: "torso",
+        force: 50,
       });
-    }, 16); // 60fps
 
-    return () => clearInterval(gameLoop);
-  }, [isPaused, players, combatSystem, onPlayerUpdate, onGameEvent, gameMode]);
-
-  // Fix: Use technique execution handler
-  const handleTechniqueExecution = useCallback(
-    (technique: any) => {
-      onGameEvent?.("technique_executed", { technique });
-
-      onCombatResult?.({
-        hit: true,
-        damage: 10,
-        criticalHit: false,
-        vitalPointHit: false,
-        effects: [],
-        timestamp: Date.now(),
-        success: true,
-        isCritical: false,
-        isBlocked: false,
-      });
+      onCombatResult(result);
     },
-    [onGameEvent, onCombatResult]
+    [onCombatResult]
   );
 
-  // Fix: Use stance change handler
-  const handleStanceChange = useCallback(
-    (playerIndex: number, newStance: TrigramStance) => {
-      const player = players[playerIndex];
-      if (player) {
-        onPlayerUpdate(playerIndex, {
-          currentStance: newStance,
-          ki: Math.max(player.ki - 5, 0),
-        });
-        onGameEvent?.("stance_changed", { playerIndex, stance: newStance });
-      }
+  const drawArena = useCallback(
+    (g: any) => {
+      g.clear();
+
+      // Arena background
+      g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 0.8 });
+      g.rect(0, 0, width, height);
+      g.fill();
+
+      // Center line
+      g.stroke({ width: 2, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.5 });
+      g.moveTo(width / 2, 0);
+      g.lineTo(width / 2, height);
+      g.stroke();
     },
-    [players, onPlayerUpdate, onGameEvent]
+    [width, height]
   );
 
-  // Expose handlers for external use
-  React.useEffect(() => {
-    (window as any).gameEngine = {
-      executeTechnique: handleTechniqueExecution,
-      changeStance: handleStanceChange,
-    };
+  const renderPlayer = useCallback(
+    (player: PlayerState, index: number) => {
+      const x = index === 0 ? width * 0.25 : width * 0.75;
+      const y = height * 0.5;
 
-    return () => {
-      delete (window as any).gameEngine;
-    };
-  }, [handleTechniqueExecution, handleStanceChange]);
+      return (
+        <pixiContainer key={player.id} x={x} y={y}>
+          <pixiGraphics
+            draw={(g: any) => {
+              g.clear();
+
+              // Player body
+              g.fill({
+                color:
+                  index === 0
+                    ? KOREAN_COLORS.PRIMARY_CYAN
+                    : KOREAN_COLORS.ACCENT_RED,
+                alpha: 0.8,
+              });
+              g.circle(0, -40, 15); // Head
+              g.rect(-8, -25, 16, 40); // Body
+              g.rect(-6, 15, 5, 25); // Left leg
+              g.rect(1, 15, 5, 25); // Right leg
+              g.rect(-15, -20, 10, 5); // Left arm
+              g.rect(5, -20, 10, 5); // Right arm
+              g.fill();
+
+              // Health bar
+              const healthPercent = player.health / player.maxHealth;
+              g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 0.8 });
+              g.rect(-30, -60, 60, 8);
+              g.fill();
+
+              g.fill({
+                color:
+                  healthPercent > 0.5
+                    ? KOREAN_COLORS.POSITIVE_GREEN
+                    : KOREAN_COLORS.ACCENT_RED,
+                alpha: 0.9,
+              });
+              g.rect(-30, -60, 60 * healthPercent, 8);
+              g.fill();
+            }}
+          />
+        </pixiContainer>
+      );
+    },
+    [width, height]
+  );
 
   return (
-    <pixiContainer width={width} height={height} data-testid="game-engine">
+    <pixiContainer data-testid="game-engine">
+      <pixiGraphics draw={drawArena} />
+      {players.map(renderPlayer)}
+      {/* Game engine visualization */}
       <pixiText
-        text="Game Engine Active"
+        text={`Game Time: ${Math.floor(gameTime / 1000)}s`}
         style={{ fontSize: 12, fill: 0xffffff }}
         x={10}
         y={10}

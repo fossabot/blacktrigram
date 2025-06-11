@@ -14,3 +14,5 @@ export { KoreanHeader } from "./KoreanHeader";
 export { default as KoreanPixiComponents } from "./KoreanPixiComponents";
 export { default as PixiComponents } from "./PixiComponents";
 export * from "./ResponsivePixiComponents";
+export * from "./KoreanHeader";
+export * from "./BaseButton";

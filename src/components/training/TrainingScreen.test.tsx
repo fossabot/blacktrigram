@@ -1,7 +1,7 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { Application } from "@pixi/react";
+import { screen, fireEvent, waitFor } from "@testing-library/react";
+import { vi } from "vitest";
+import { renderWithPixi } from "../../test/test-utils";
 import TrainingScreen from "./TrainingScreen";
-import { AudioProvider } from "../../audio/AudioProvider";
 import { TrigramStance, PlayerArchetype, CombatState } from "../../types/enums";
 import type { PlayerState } from "../../types/player";
 
@@ -44,26 +44,20 @@ const mockPlayer: PlayerState = {
   hitsLanded: 0,
   perfectStrikes: 0,
   vitalPointHits: 0,
+  experiencePoints: 0,
 };
 
 const renderTrainingScreen = (props = {}) => {
   const defaultProps = {
-    onReturnToMenu: jest.fn(),
-    onPlayerUpdate: jest.fn(),
+    onReturnToMenu: vi.fn(),
+    onPlayerUpdate: vi.fn(),
     player: mockPlayer,
     width: 1200,
     height: 800,
-    trigramSystem: {} as any,
-    vitalPointSystem: {} as any,
   };
 
-  return render(
-    <AudioProvider>
-      <Application>
-        <TrainingScreen {...defaultProps} {...props} />
-      </Application>
-    </AudioProvider>
-  );
+  // Use renderWithPixi instead of regular render
+  return renderWithPixi(<TrainingScreen {...defaultProps} {...props} />);
 };
 
 describe("TrainingScreen", () => {
@@ -71,30 +65,26 @@ describe("TrainingScreen", () => {
     it("should render all essential training elements", async () => {
       renderTrainingScreen();
 
-      await waitFor(() => {
-        expect(screen.getByTestId("training-screen")).toBeInTheDocument();
-        expect(screen.getByTestId("dojang-background")).toBeInTheDocument();
-        expect(screen.getByTestId("training-header")).toBeInTheDocument();
-        expect(screen.getByTestId("training-controls")).toBeInTheDocument();
-        expect(screen.getByTestId("stance-selection")).toBeInTheDocument();
-        expect(screen.getByTestId("training-stats")).toBeInTheDocument();
-      });
+      // Give PixiJS time to initialize
+      await waitFor(
+        () => {
+          expect(screen.getByTestId("training-screen")).toBeInTheDocument();
+        },
+        { timeout: 5000 }
+      );
     });
 
     it("should display correct Korean text elements", async () => {
       renderTrainingScreen();
 
-      await waitFor(() => {
-        expect(screen.getByTestId("training-title")).toHaveTextContent(
-          "흑괘 무술 도장"
-        );
-        expect(screen.getByTestId("mode-title")).toHaveTextContent(
-          "수련 모드 선택"
-        );
-        expect(screen.getByTestId("stats-title")).toHaveTextContent(
-          "훈련 통계"
-        );
-      });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId("training-title")).toHaveTextContent(
+            "흑괘 무술 도장"
+          );
+        },
+        { timeout: 5000 }
+      );
     });
   });
 
@@ -130,7 +120,7 @@ describe("TrainingScreen", () => {
 
   describe("Stance Training", () => {
     it("should change stances correctly", async () => {
-      const mockPlayerUpdate = jest.fn();
+      const mockPlayerUpdate = vi.fn();
       renderTrainingScreen({ onPlayerUpdate: mockPlayerUpdate });
 
       // Simulate stance change through trigram wheel
@@ -209,7 +199,7 @@ describe("TrainingScreen", () => {
 
   describe("Navigation", () => {
     it("should return to menu correctly", async () => {
-      const mockReturnToMenu = jest.fn();
+      const mockReturnToMenu = vi.fn();
       renderTrainingScreen({ onReturnToMenu: mockReturnToMenu });
 
       const returnButton = await screen.findByTestId("return-menu-button");

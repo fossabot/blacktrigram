@@ -766,7 +766,7 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = ({
         screenHeight={height}
         variant="secondary"
         onClick={onReturnToMenu}
-        data-testid="return-to-menu-button"
+        data-testid="return-to-menu-button" // Fix: Consistent naming
       />
 
       {/* Training Status Overlay */}

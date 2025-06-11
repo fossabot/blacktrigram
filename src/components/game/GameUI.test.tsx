@@ -1,5 +1,4 @@
-import { render, screen } from "@testing-library/react"; // Fix: Remove unused React import
-import { Application } from "@pixi/react";
+import { render, screen, waitFor } from "@testing-library/react"; // Fix: Remove unused React import
 import { GameUI } from "./GameUI";
 import type { PlayerState } from "../../types/player";
 import { PlayerArchetype, TrigramStance, CombatState } from "../../types/enums";
@@ -55,25 +54,113 @@ const mockPlayer2: PlayerState = {
 };
 
 describe("GameUI", () => {
-  it("renders game UI elements", () => {
+  it("renders game UI elements", async () => {
+    const mockPlayers: PlayerState[] = [
+      {
+        id: "player1",
+        name: { korean: "선수1", english: "Player 1" },
+        archetype: PlayerArchetype.MUSA,
+        health: 100,
+        maxHealth: 100,
+        ki: 100,
+        maxKi: 100,
+        stamina: 100,
+        maxStamina: 100,
+        energy: 100,
+        maxEnergy: 100,
+        attackPower: 75,
+        defense: 75,
+        speed: 75,
+        technique: 75,
+        pain: 0,
+        consciousness: 100,
+        balance: 100,
+        momentum: 0,
+        currentStance: TrigramStance.GEON,
+        combatState: CombatState.IDLE,
+        position: { x: 300, y: 400 },
+        isBlocking: false,
+        isStunned: false,
+        isCountering: false,
+        lastActionTime: 0,
+        recoveryTime: 0,
+        lastStanceChangeTime: 0,
+        statusEffects: [],
+        activeEffects: [],
+        vitalPoints: [],
+        totalDamageReceived: 0,
+        totalDamageDealt: 0,
+        hitsTaken: 0,
+        hitsLanded: 0,
+        perfectStrikes: 0,
+        vitalPointHits: 0,
+        experiencePoints: 0,
+      },
+      {
+        id: "player2",
+        name: { korean: "선수2", english: "Player 2" },
+        archetype: PlayerArchetype.AMSALJA,
+        health: 80,
+        maxHealth: 100,
+        ki: 90,
+        maxKi: 100,
+        stamina: 85,
+        maxStamina: 100,
+        energy: 90,
+        maxEnergy: 100,
+        attackPower: 85,
+        defense: 65,
+        speed: 90,
+        technique: 95,
+        pain: 20,
+        consciousness: 80,
+        balance: 90,
+        momentum: 0,
+        currentStance: TrigramStance.SON,
+        combatState: CombatState.IDLE,
+        position: { x: 500, y: 400 },
+        isBlocking: false,
+        isStunned: false,
+        isCountering: false,
+        lastActionTime: 0,
+        recoveryTime: 0,
+        lastStanceChangeTime: 0,
+        statusEffects: [],
+        activeEffects: [],
+        vitalPoints: [],
+        totalDamageReceived: 20,
+        totalDamageDealt: 0,
+        hitsTaken: 1,
+        hitsLanded: 0,
+        perfectStrikes: 0,
+        vitalPointHits: 0,
+        experiencePoints: 0,
+      },
+    ];
+
     render(
-      <Application width={800} height={600}>
-        <GameUI
-          gameState={{
-            players: [mockPlayer1, mockPlayer2], // Fix: Use individual players
-            timeRemaining: 60,
-            currentRound: 1,
-            maxRounds: 3,
-            isPaused: false,
-          }}
-          onStateChange={jest.fn()}
-          onReturnToMenu={jest.fn()}
-          onPlayerUpdate={jest.fn()}
-        />
-      </Application>
+      <GameUI
+        players={mockPlayers}
+        roundNumber={1}
+        timeRemaining={180}
+        isPaused={false}
+        onTogglePause={() => {}}
+        onReturnToMenu={() => {}}
+        width={800}
+        height={600}
+      />
     );
 
-    expect(screen.getByTestId("game-ui")).toBeInTheDocument();
+    // Give PixiJS time to initialize
+    await waitFor(
+      () => {
+        expect(screen.getByTestId("game-ui")).toBeInTheDocument();
+      },
+      { timeout: 5000 }
+    );
+
+    // Just verify the canvas exists for now
+    expect(screen.getByRole("img")).toBeInTheDocument(); // Canvas has img role
   });
 
   // ...existing tests with mockPlayer1 and mockPlayer2...

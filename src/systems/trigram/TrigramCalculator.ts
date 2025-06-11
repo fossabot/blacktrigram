@@ -1,122 +1,187 @@
 import { TrigramStance } from "../../types/enums";
 
 /**
- * Trigram calculator for Korean martial arts stance relationships
+ * Enhanced stance effectiveness matrix for Korean martial arts
+ * Based on traditional I-Ching trigram relationships
  */
+const STANCE_EFFECTIVENESS_MATRIX: Record<
+  TrigramStance,
+  Partial<Record<TrigramStance, number>>
+> = {
+  [TrigramStance.GEON]: {
+    [TrigramStance.GON]: 1.2, // Heaven overcomes Earth
+    [TrigramStance.SON]: 0.8, // Heaven is weakened by Wind
+  },
+  [TrigramStance.GON]: {
+    [TrigramStance.GEON]: 0.8, // Earth is overcome by Heaven
+    [TrigramStance.GAM]: 1.2, // Earth absorbs Water
+  },
+  [TrigramStance.TAE]: {
+    [TrigramStance.JIN]: 1.2, // Lake reflects Thunder
+    [TrigramStance.GAN]: 0.8, // Lake is contained by Mountain
+  },
+  [TrigramStance.JIN]: {
+    [TrigramStance.TAE]: 0.8, // Thunder is reflected by Lake
+    [TrigramStance.SON]: 1.2, // Thunder moves Wind
+  },
+  [TrigramStance.LI]: {
+    [TrigramStance.GAM]: 1.2, // Fire evaporates Water
+    [TrigramStance.TAE]: 0.8, // Fire is extinguished by Lake
+  },
+  [TrigramStance.GAM]: {
+    [TrigramStance.LI]: 0.8, // Water is evaporated by Fire
+    [TrigramStance.GON]: 0.8, // Water is absorbed by Earth
+  },
+  [TrigramStance.SON]: {
+    [TrigramStance.GEON]: 1.2, // Wind moves Heaven
+    [TrigramStance.JIN]: 0.8, // Wind is moved by Thunder
+  },
+  [TrigramStance.GAN]: {
+    [TrigramStance.TAE]: 1.2, // Mountain contains Lake
+    [TrigramStance.LI]: 0.8, // Mountain is heated by Fire
+  },
+};
+
 export class TrigramCalculator {
   /**
-   * Fix: Define STANCE_EFFECTIVENESS_MATRIX locally to avoid import conflict
+   * Calculate effectiveness of one stance against another
    */
-  private static readonly STANCE_EFFECTIVENESS_MATRIX: Record<
-    TrigramStance,
-    Partial<Record<TrigramStance, number>>
-  > = {
-    [TrigramStance.GEON]: {
-      [TrigramStance.GON]: 1.2,
-      [TrigramStance.SON]: 0.8,
-    },
-    [TrigramStance.TAE]: {
-      [TrigramStance.JIN]: 1.2,
-      [TrigramStance.GAN]: 0.8,
-    },
-    [TrigramStance.LI]: {
-      [TrigramStance.GAM]: 1.2,
-      [TrigramStance.TAE]: 0.8,
-    },
-    [TrigramStance.JIN]: {
-      [TrigramStance.SON]: 1.2,
-      [TrigramStance.GEON]: 0.8,
-    },
-    [TrigramStance.SON]: {
-      [TrigramStance.GON]: 1.2,
-      [TrigramStance.LI]: 0.8,
-    },
-    [TrigramStance.GAM]: {
-      [TrigramStance.LI]: 1.2,
-      [TrigramStance.JIN]: 0.8,
-    },
-    [TrigramStance.GAN]: {
-      [TrigramStance.TAE]: 1.2,
-      [TrigramStance.GAM]: 0.8,
-    },
-    [TrigramStance.GON]: {
-      [TrigramStance.GEON]: 1.2,
-      [TrigramStance.SON]: 0.8,
-    },
-  };
+  calculateStanceEffectiveness(
+    attackerStance: TrigramStance,
+    defenderStance: TrigramStance
+  ): number {
+    if (attackerStance === defenderStance) {
+      return 1.0; // Neutral when same stance
+    }
+
+    const effectiveness =
+      STANCE_EFFECTIVENESS_MATRIX[attackerStance]?.[defenderStance];
+    return effectiveness ?? 1.0; // Default to neutral if no specific relationship
+  }
 
   /**
-   * Calculate effectiveness between two stances
+   * Get the optimal counter stance for a given stance
+   */
+  getCounterStance(targetStance: TrigramStance): TrigramStance {
+    let bestCounter = TrigramStance.GEON;
+    let bestEffectiveness = 0;
+
+    // Find stance with highest effectiveness against target
+    for (const stance of Object.values(TrigramStance)) {
+      const effectiveness = this.calculateStanceEffectiveness(
+        stance,
+        targetStance
+      );
+      if (effectiveness > bestEffectiveness) {
+        bestEffectiveness = effectiveness;
+        bestCounter = stance;
+      }
+    }
+
+    return bestCounter;
+  }
+
+  /**
+   * Calculate transition difficulty between stances
+   */
+  calculateTransitionDifficulty(
+    fromStance: TrigramStance,
+    toStance: TrigramStance
+  ): number {
+    if (fromStance === toStance) return 0;
+
+    // Base difficulty for any transition
+    const baseDifficulty = 0.5;
+
+    // Get stance order for adjacency calculation
+    const stanceOrder = Object.values(TrigramStance);
+    const fromIndex = stanceOrder.indexOf(fromStance);
+    const toIndex = stanceOrder.indexOf(toStance);
+
+    if (fromIndex === -1 || toIndex === -1) {
+      return 1.0; // Unknown stances, high difficulty
+    }
+
+    // Calculate distance (adjacent stances are easier)
+    const distance = Math.min(
+      Math.abs(toIndex - fromIndex),
+      stanceOrder.length - Math.abs(toIndex - fromIndex)
+    );
+
+    // Normalize distance to 0-1 range and add base difficulty
+    const normalizedDistance = distance / (stanceOrder.length / 2);
+    return baseDifficulty + normalizedDistance * 0.5;
+  }
+
+  /**
+   * Calculate stance effectiveness between attacker and defender
    */
   static calculateStanceEffectiveness(
     attackerStance: TrigramStance,
     defenderStance: TrigramStance
   ): number {
-    // Use the effectiveness matrix to determine advantage/disadvantage
+    // Use the effectiveness matrix from constants
     const effectiveness =
-      this.STANCE_EFFECTIVENESS_MATRIX[attackerStance]?.[defenderStance];
-    return effectiveness ?? 1.0; // Default to neutral if not specified
+      STANCE_EFFECTIVENESS_MATRIX[attackerStance]?.[defenderStance];
+    return effectiveness ?? 1.0; // Default neutral effectiveness
   }
 
   /**
-   * Get the optimal counter stance for a given opponent stance
+   * Get optimal counter stance against opponent stance
    */
   static getCounterStance(opponentStance: TrigramStance): TrigramStance {
-    // Find the stance that has the highest effectiveness against the opponent
-    let bestStance = TrigramStance.GEON;
+    // Find the stance that has highest effectiveness against opponent
+    const stances = Object.values(TrigramStance);
+    let bestCounter = TrigramStance.GEON;
     let bestEffectiveness = 0;
 
-    for (const stance of Object.values(TrigramStance)) {
+    stances.forEach((stance) => {
       const effectiveness = this.calculateStanceEffectiveness(
         stance,
         opponentStance
       );
       if (effectiveness > bestEffectiveness) {
         bestEffectiveness = effectiveness;
-        bestStance = stance;
+        bestCounter = stance;
       }
-    }
+    });
 
-    return bestStance;
+    return bestCounter;
   }
 
   /**
-   * Calculate transition difficulty between stances
+   * Calculate difficulty of transitioning between stances
    */
   static calculateTransitionDifficulty(
-    from: TrigramStance,
-    to: TrigramStance
+    fromStance: TrigramStance,
+    toStance: TrigramStance
   ): number {
-    if (from === to) {
-      return 0;
+    if (fromStance === toStance) {
+      return 0; // No transition needed
     }
 
-    const stanceOrder = Object.values(TrigramStance); // Fix: Use enum values
-    const fromIndex = stanceOrder.indexOf(from);
-    const toIndex = stanceOrder.indexOf(to);
+    // Base difficulty for any transition
+    const baseDifficulty = 0.5;
+
+    // Get stance order for adjacency calculation
+    const stanceOrder = Object.values(TrigramStance);
+    const fromIndex = stanceOrder.indexOf(fromStance);
+    const toIndex = stanceOrder.indexOf(toStance);
 
     if (fromIndex === -1 || toIndex === -1) {
-      return 1.0;
+      return 1.0; // Unknown stances, high difficulty
     }
 
-    const distance = Math.abs(fromIndex - toIndex);
-    const minDistance = Math.min(distance, stanceOrder.length - distance);
+    // Calculate distance (adjacent stances are easier)
+    const distance = Math.min(
+      Math.abs(toIndex - fromIndex),
+      stanceOrder.length - Math.abs(toIndex - fromIndex)
+    );
 
-    return Math.max(0.2, minDistance / (stanceOrder.length / 2));
-  }
-
-  /**
-   * Get adjacency modifier based on trigram relationships
-   */
-  public static getAdjacencyModifier(
-    from: TrigramStance,
-    to: TrigramStance
-  ): number {
-    const difficulty = this.calculateTransitionDifficulty(from, to);
-    return 1.0 - difficulty * 0.3;
+    // Normalize distance to 0-1 range and add base difficulty
+    const normalizedDistance = distance / (stanceOrder.length / 2);
+    return baseDifficulty + normalizedDistance * 0.5;
   }
 }
 
-// Fix: Export the matrix for external use
-export const STANCE_EFFECTIVENESS_MATRIX =
-  TrigramCalculator["STANCE_EFFECTIVENESS_MATRIX"];
+export { STANCE_EFFECTIVENESS_MATRIX };

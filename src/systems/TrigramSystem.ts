@@ -1,157 +1,161 @@
-import type {
-  TrigramStance,
-  PlayerState,
-  TrigramData,
-  TransitionPath,
-  TrigramTransitionCost,
-} from "../types";
+import { TrigramStance } from "../types/enums";
+import type { PlayerState } from "../types/player";
 import { TrigramCalculator } from "./trigram/TrigramCalculator";
 import { TRIGRAM_DATA } from "../types/constants/trigram";
 
 export class TrigramSystem {
+  private calculator: TrigramCalculator;
+
   constructor() {
-    // Initialize system
+    this.calculator = new TrigramCalculator();
   }
 
+  /**
+   * Check if player can transition to a new stance
+   */
   canTransitionTo(
     fromStance: TrigramStance,
     toStance: TrigramStance,
-    _playerState?: PlayerState // Fix: Add underscore to indicate unused
+    player: PlayerState
   ): boolean {
-    if (fromStance === toStance) return false;
+    if (fromStance === toStance) return true;
 
-    return true;
+    const cost = this.getTransitionCost(fromStance, toStance, player);
+
+    // Check if player has sufficient resources
+    const hasEnoughKi = player.ki >= cost.ki;
+    const hasEnoughStamina = player.stamina >= cost.stamina;
+
+    return hasEnoughKi && hasEnoughStamina;
   }
 
+  /**
+   * Get transition cost between stances
+   */
   getTransitionCost(
-    from: TrigramStance,
-    to: TrigramStance,
-    _player?: PlayerState // Fix: Add underscore to indicate unused
+    fromStance: TrigramStance,
+    toStance: TrigramStance
   ): TrigramTransitionCost {
-    if (from === to) {
-      return { ki: 0, stamina: 0, timeMilliseconds: 0 };
+    if (fromStance === toStance) {
+      return {
+        ki: 0,
+        stamina: 0,
+        timeMilliseconds: 0, // Fix: Add missing property
+      };
     }
 
-    const baseCost = 10;
     const difficulty = TrigramCalculator.calculateTransitionDifficulty(
-      from,
-      to
+      fromStance,
+      toStance
     );
+    const baseCost = 10;
+    const baseTime = 500;
 
     return {
-      ki: Math.floor(baseCost * difficulty),
-      stamina: Math.floor(baseCost * 1.5 * difficulty),
-      timeMilliseconds: Math.floor(500 * difficulty),
+      ki: Math.ceil(baseCost * difficulty),
+      stamina: Math.ceil(baseCost * difficulty * 1.5),
+      timeMilliseconds: Math.ceil(baseTime * difficulty), // Fix: Add missing property
     };
   }
 
-  findOptimalPath(
-    from: TrigramStance,
-    to: TrigramStance,
-    _player?: PlayerState // Fix: Add underscore to indicate unused
-  ): TransitionPath {
-    const path = [from, to];
-    const totalCost = this.getTransitionCost(from, to);
-
-    return {
-      path,
-      totalCost,
-      effectiveness: 1.0,
-      name: `${from}_to_${to}`,
-      description: {
-        korean: `${from}에서 ${to}로 전환`,
-        english: `Transition from ${from} to ${to}`,
-      },
-    };
-  }
-
-  getCurrentStanceData(stance: TrigramStance): TrigramData | undefined {
-    // Fix: Convert TrigramStanceData to TrigramData format
-    const stanceData = TRIGRAM_DATA[stance];
-    if (!stanceData) return undefined;
-
-    return {
-      id: stance,
-      korean: stanceData.name.korean,
-      english: stanceData.name.english,
-      symbol: stanceData.symbol,
-      element: stanceData.element,
-      nature: stanceData.nature,
-      philosophy: stanceData.philosophy,
-      combat: stanceData.combat,
-      // Fix: Add missing properties to match TrigramTheme interface
-      theme: {
-        primary: stanceData.theme.primary,
-        secondary: stanceData.theme.secondary,
-        active: stanceData.theme.primary, // Fix: Add missing active property
-        hover: stanceData.theme.secondary, // Fix: Add missing hover property
-        text: 0xffffff, // Fix: Add missing text property
-      },
-      name: stanceData.name,
-      defensiveBonus: stanceData.defensiveBonus,
-      kiFlowModifier: stanceData.kiFlowModifier,
-      techniques: stanceData.techniques,
-    };
-  }
-
+  /**
+   * Calculate stance effectiveness
+   */
   calculateStanceEffectiveness(
     attackerStance: TrigramStance,
     defenderStance: TrigramStance
   ): number {
-    return TrigramCalculator.calculateStanceEffectiveness(
+    return this.calculator.calculateStanceEffectiveness(
       attackerStance,
       defenderStance
     );
   }
 
-  // Fix: Add proper method signature
-  getOptimalCounter(
-    opponentStance: TrigramStance,
-    _playerState?: PlayerState // Fix: Add underscore to indicate unused
-  ): TrigramStance {
-    return TrigramCalculator.getCounterStance(opponentStance);
-  }
+  /**
+   * Get stance name in Korean and English
+   */
+  getStanceName(stance: TrigramStance): { korean: string; english: string } {
+    const stanceNames = {
+      [TrigramStance.GEON]: { korean: "건", english: "Heaven" },
+      [TrigramStance.TAE]: { korean: "태", english: "Lake" },
+      [TrigramStance.LI]: { korean: "리", english: "Fire" },
+      [TrigramStance.JIN]: { korean: "진", english: "Thunder" },
+      [TrigramStance.SON]: { korean: "손", english: "Wind" },
+      [TrigramStance.GAM]: { korean: "감", english: "Water" },
+      [TrigramStance.GAN]: { korean: "간", english: "Mountain" },
+      [TrigramStance.GON]: { korean: "곤", english: "Earth" },
+    };
 
-  // Fix: Add transition validation
-  validateTransition(
-    from: TrigramStance,
-    to: TrigramStance,
-    player: PlayerState
-  ): { valid: boolean; reason?: string } {
-    if (!this.canTransitionTo(from, to, player)) {
-      const cost = this.getTransitionCost(from, to, player);
-      if (player.ki < cost.ki) {
-        return { valid: false, reason: "Insufficient Ki" };
-      }
-      if (player.stamina < cost.stamina) {
-        return { valid: false, reason: "Insufficient Stamina" };
-      }
-    }
-    return { valid: true };
+    return stanceNames[stance] || { korean: "Unknown", english: "Unknown" };
   }
 
   /**
-   * Fix: Add missing updatePlayerKiFlow method
+   * Get current stance data
    */
-  updatePlayerKiFlow(player: PlayerState): PlayerState {
-    const stanceData = this.getCurrentStanceData(player.currentStance);
-    if (!stanceData) return player;
-
-    const kiFlowModifier = stanceData.kiFlowModifier || 1.0;
-    const kiRegeneration = Math.floor(2 * kiFlowModifier);
-
+  getCurrentStanceData(stance: TrigramStance): any {
+    const stanceName = this.getStanceName(stance);
     return {
-      ...player,
-      ki: Math.min(player.maxKi, player.ki + kiRegeneration),
+      id: stance,
+      name: stanceName,
+      korean: stanceName.korean,
+      english: stanceName.english,
     };
   }
 
-  // Fix: Add missing method referenced in other files
-  recommendStance(player: PlayerState, opponent?: PlayerState): TrigramStance {
-    if (opponent) {
-      return this.getOptimalCounter(opponent.currentStance, player);
+  /**
+   * Recommend optimal stance against opponent
+   */
+  recommendStance(opponentStance: TrigramStance): TrigramStance {
+    return this.calculator.getCounterStance(opponentStance);
+  }
+
+  /**
+   * Validate transition with detailed feedback
+   */
+  validateTransition(
+    fromStance: TrigramStance,
+    toStance: TrigramStance,
+    player: PlayerState
+  ): { valid: boolean; reason?: string } {
+    if (fromStance === toStance) {
+      return { valid: true };
     }
-    return player.currentStance;
+
+    const cost = this.getTransitionCost(fromStance, toStance, player);
+
+    if (player.ki < cost.ki) {
+      return {
+        valid: false,
+        reason: `Insufficient Ki: need ${cost.ki}, have ${player.ki}`,
+      };
+    }
+
+    if (player.stamina < cost.stamina) {
+      return {
+        valid: false,
+        reason: `Insufficient Stamina: need ${cost.stamina}, have ${player.stamina}`,
+      };
+    }
+
+    return { valid: true };
+  }
+
+  private getArchetypeModifier(player: PlayerState): number {
+    // Different archetypes have different stance transition costs
+    switch (player.archetype) {
+      case "musa":
+        return 0.9; // Warriors are efficient with stance changes
+      case "amsalja":
+        return 1.1; // Assassins pay more for stance changes
+      case "hacker":
+        return 1.0; // Neutral
+      case "jeongbo_yowon":
+        return 0.95; // Agents are well-trained
+      case "jojik_pokryeokbae":
+        return 1.2; // Gangsters are less efficient
+      default:
+        return 1.0;
+    }
   }
 }
 

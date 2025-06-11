@@ -1,27 +1,37 @@
 import React from "react";
-import { Application } from "@pixi/react";
 import { render, RenderOptions } from "@testing-library/react";
+import { Application, extend } from "@pixi/react";
+import { Container, Graphics, Text } from "pixi.js";
+import { AudioProvider } from "../audio/AudioProvider";
 
-interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {
-  pixiProps?: any;
-}
+// Extend PIXI React with necessary components
+extend({
+  Container,
+  Graphics,
+  Text,
+});
 
-function customRender(
+// Custom render function for components that need PixiJS
+export function renderWithPixi(
   ui: React.ReactElement,
-  options: CustomRenderOptions = {}
+  options: RenderOptions = {}
 ) {
-  const { pixiProps = {}, ...renderOptions } = options;
-
-  function Wrapper({ children }: { children: React.ReactNode }) {
-    return (
-      <Application width={800} height={600} {...pixiProps}>
+  const Wrapper = ({ children }: { children: React.ReactNode }) => (
+    <AudioProvider>
+      <Application
+        width={800}
+        height={600}
+        preference="webgl"
+        data-testid="mock-pixi-app"
+      >
         {children}
       </Application>
-    );
-  }
+    </AudioProvider>
+  );
 
-  return render(ui, { wrapper: Wrapper, ...renderOptions });
+  return render(ui, { wrapper: Wrapper, ...options });
 }
 
+// Re-export everything from testing library
 export * from "@testing-library/react";
-export { customRender as render };
+export { render } from "@testing-library/react";

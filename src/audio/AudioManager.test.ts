@@ -5,7 +5,32 @@ import type {
   SoundEffectId,
   MusicTrackId,
 } from "../../types/audio";
-import { AudioCategory } from "../../types/audio"; // Import as value
+import { AudioCategory } from "../../types/audio";
+
+// Enhanced mock for HTML Audio Element
+const createMockHTMLAudioElement = () => ({
+  play: vi.fn(() => Promise.resolve()),
+  pause: vi.fn(),
+  load: vi.fn(),
+  canPlayType: vi.fn((type: string) => {
+    if (type.includes("mp3")) return "probably";
+    if (type.includes("wav")) return "maybe";
+    return "";
+  }),
+  addEventListener: vi.fn(),
+  removeEventListener: vi.fn(),
+  volume: 1,
+  currentTime: 0,
+  duration: 100,
+  paused: false,
+  ended: false,
+  src: "",
+  crossOrigin: null,
+  preload: "auto",
+  onended: null,
+  onerror: null,
+  onloadeddata: null,
+});
 
 // Mock Web Audio API
 const mockAudioContext = {
@@ -16,9 +41,10 @@ const mockAudioContext = {
   sampleRate: 44100,
 };
 
-// Fix global type declarations to avoid conflicts
-(globalThis as any).AudioContext = vi.fn(() => mockAudioContext);
-(globalThis as any).webkitAudioContext = vi.fn(() => mockAudioContext);
+// Mock global Audio constructor
+global.Audio = vi.fn(() => createMockHTMLAudioElement()) as any;
+global.AudioContext = vi.fn(() => mockAudioContext) as any;
+(global as any).webkitAudioContext = vi.fn(() => mockAudioContext);
 
 describe("AudioManager", () => {
   const mockAudioConfig: AudioConfig = {
@@ -46,7 +72,9 @@ describe("AudioManager", () => {
       const audioManager = new AudioManager();
       await audioManager.initialize(mockAudioConfig);
 
-      await audioManager.playSoundEffect("attack_light" as SoundEffectId);
+      await expect(
+        audioManager.playSoundEffect("attack_light" as SoundEffectId)
+      ).resolves.not.toThrow();
 
       expect(audioManager.isInitialized).toBe(true);
     });
@@ -55,8 +83,13 @@ describe("AudioManager", () => {
       const audioManager = new AudioManager();
       await audioManager.initialize(mockAudioConfig);
 
-      await audioManager.playMusicTrack("intro_theme" as MusicTrackId);
-      await audioManager.playMusicTrack("combat_theme" as MusicTrackId);
+      await expect(
+        audioManager.playMusicTrack("intro_theme" as MusicTrackId)
+      ).resolves.not.toThrow();
+
+      await expect(
+        audioManager.playMusicTrack("combat_theme" as MusicTrackId)
+      ).resolves.not.toThrow();
 
       expect(audioManager).toBeInstanceOf(AudioManager);
     });

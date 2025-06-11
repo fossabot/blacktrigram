@@ -2,12 +2,10 @@
  * Game components export
  */
 
-export { DojangBackground } from "./DojangBackground";
-export { GameEngine } from "./GameEngine";
-export { GameUI } from "./GameUI";
-export { HitEffectsLayer } from "./HitEffectsLayer";
-export { Player } from "./Player";
-export { PlayerVisuals } from "./PlayerVisuals";
+export * from "./GameEngine";
+export * from "./DojangBackground";
+export * from "./Player";
+export * from "./PlayerVisuals";
 
 // Re-export types for convenience
 export type {

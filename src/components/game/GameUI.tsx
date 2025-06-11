@@ -3,17 +3,29 @@ import { usePixiExtensions } from "../../utils/pixiExtensions";
 import { HealthBar } from "../ui/HealthBar";
 import { StanceIndicator } from "../ui/StanceIndicator";
 import { RoundTimer } from "../ui/RoundTimer";
-import type { GameUIProps } from "../../types/components";
+import type { GameUIProps, PlayerState } from "../../types/components";
+import { Application } from "pixi.js";
+
+export interface GameUIProps {
+  readonly players: readonly PlayerState[];
+  readonly roundNumber: number;
+  readonly timeRemaining: number;
+  readonly isPaused: boolean;
+  readonly onTogglePause: () => void;
+  readonly onReturnToMenu: () => void;
+  readonly width: number;
+  readonly height: number;
+}
 
 export const GameUI: React.FC<GameUIProps> = ({
-  gameState,
-  onStateChange, // Fix: Use this parameter
+  players,
+  roundNumber,
+  timeRemaining,
+  isPaused,
+  onTogglePause,
   onReturnToMenu,
-  onPlayerUpdate,
-  x = 0,
-  y = 0,
-  width = 800,
-  height = 600,
+  width,
+  height,
 }) => {
   usePixiExtensions();
 
@@ -21,26 +33,23 @@ export const GameUI: React.FC<GameUIProps> = ({
     onReturnToMenu();
   };
 
-  // Fix: Use onStateChange for any state changes
-  React.useEffect(() => {
-    if (gameState.players[0].health <= 0) {
-      onStateChange({ winner: 1 });
-      onPlayerUpdate({});
-    }
-  }, [gameState, onStateChange, onPlayerUpdate]);
-
   return (
-    <pixiContainer x={x} y={y} data-testid="game-ui">
+    <Application
+      width={width}
+      height={height}
+      preference="webgl"
+      data-testid="game-ui"
+    >
       {/* Player 1 Health Bar */}
       <HealthBar
         x={20}
         y={20}
         width={200}
         height={20}
-        current={gameState.players[0].health}
-        max={gameState.players[0].maxHealth}
+        current={players[0].health}
+        max={players[0].maxHealth}
         position="left"
-        playerName={gameState.players[0].name.korean}
+        playerName={players[0].name.korean}
         showText={true}
         screenWidth={800}
         screenHeight={600}
@@ -50,13 +59,13 @@ export const GameUI: React.FC<GameUIProps> = ({
       <RoundTimer
         x={300}
         y={20}
-        currentRound={gameState.currentRound}
+        currentRound={roundNumber}
         maxRounds={3}
-        timeRemaining={gameState.timeRemaining}
+        timeRemaining={timeRemaining}
         totalTime={180}
         width={200}
         height={40}
-        isPaused={false}
+        isPaused={isPaused}
         screenWidth={800}
         screenHeight={600}
       />
@@ -67,10 +76,10 @@ export const GameUI: React.FC<GameUIProps> = ({
         y={20}
         width={200}
         height={20}
-        current={gameState.players[1].health}
-        max={gameState.players[1].maxHealth}
+        current={players[1].health}
+        max={players[1].maxHealth}
         position="right"
-        playerName={gameState.players[1].name.korean}
+        playerName={players[1].name.korean}
         showText={true}
         screenWidth={800}
         screenHeight={600}
@@ -80,7 +89,7 @@ export const GameUI: React.FC<GameUIProps> = ({
       <StanceIndicator
         x={20}
         y={height - 100}
-        stance={gameState.players[0].currentStance}
+        stance={players[0].currentStance}
         size={60}
       />
 
@@ -88,7 +97,7 @@ export const GameUI: React.FC<GameUIProps> = ({
       <StanceIndicator
         x={width - 80}
         y={height - 100}
-        stance={gameState.players[1].currentStance}
+        stance={players[1].currentStance}
         size={60}
       />
 
@@ -112,7 +121,7 @@ export const GameUI: React.FC<GameUIProps> = ({
           anchor={0.5}
         />
       </pixiContainer>
-    </pixiContainer>
+    </Application>
   );
 };
 
