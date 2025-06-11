@@ -44,40 +44,38 @@ export default defineConfig({
       on: Cypress.PluginEvents,
       config: Cypress.PluginConfigOptions
     ): Cypress.PluginConfigOptions {
-      // Suppress WebGL warnings
+      // Register custom tasks for testing
       on("task", {
-        silenceWebGLWarning() {
-          return null;
-        },
-        logPerformance({ name, duration }) {
-          console.log(`⚡ Performance: ${name} took ${duration}ms`);
-          return null;
-        },
+        // Log messages to console
         log(message) {
           console.log(message);
           return null;
         },
+
+        // Performance logging for PixiJS tests
+        logPerformance(metrics: { name: string; duration: number }) {
+          console.log(
+            `⚡ Performance: ${metrics.name} took ${metrics.duration}ms`
+          );
+          return null;
+        },
+
+        // Silent task to suppress WebGL warnings
+        silenceWebGLWarning() {
+          return null;
+        },
       });
 
-      // Configure browser launch options for WebGL
+      // Suppress WebGL warnings in browser console
       on("before:browser:launch", (browser, launchOptions) => {
-        // Add flags to suppress WebGL warnings
-        if (browser.name === "electron" || browser.name === "chrome") {
-          launchOptions.args = [
-            ...(launchOptions.args || []),
-            "--enable-unsafe-swiftshader",
-            "--disable-gpu",
-            "--disable-gpu-vsync",
-            "--disable-web-security",
-            "--ignore-gpu-blacklist",
-            "--disable-site-isolation-trials",
-            "--disable-features=VizDisplayCompositor",
-            "--disable-logging",
-            "--log-level=3",
-            "--mute-audio",
-          ];
+        if (browser.family === "chromium" && browser.name !== "electron") {
+          launchOptions.args.push("--enable-unsafe-swiftshader");
+          launchOptions.args.push("--disable-web-security");
+          launchOptions.args.push("--disable-features=VizDisplayCompositor");
+          launchOptions.args.push("--log-level=3"); // Suppress WebGL warnings
+          launchOptions.args.push("--disable-logging");
+          launchOptions.args.push("--silent");
         }
-
         return launchOptions;
       });
 

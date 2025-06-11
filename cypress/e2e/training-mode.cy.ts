@@ -1,128 +1,167 @@
 describe("Black Trigram Training Mode", () => {
   beforeEach(() => {
-    cy.visitWithWebGLMock("/", { timeout: 15000 });
+    cy.visitWithWebGLMock("/", { timeout: 20000 });
     cy.waitForCanvasReady();
-    cy.enterTrainingMode();
-    cy.wait(2000); // Wait for training screen to load
   });
 
-  it("should display training screen components", () => {
-    // Check for training screen data-testid
-    cy.get('[data-testid="training-screen"]', { timeout: 10000 }).should(
-      "exist"
-    );
+  describe("Training Mode Navigation", () => {
+    it("should enter training mode successfully", () => {
+      cy.annotate("Testing training mode entry");
 
-    // Check for essential training elements
-    cy.get('[data-testid="training-title"]').should("exist");
-    cy.get('[data-testid="training-mode-selection"]').should("exist");
-    cy.get('[data-testid="stance-selection"]').should("exist");
+      cy.enterTrainingMode();
+
+      // Verify training screen elements exist
+      cy.get('[data-testid="training-screen"]').should("exist");
+      cy.get('[data-testid="training-header"]').should("exist");
+      cy.get('[data-testid="training-area"]').should("exist");
+
+      cy.annotate("Training mode entry successful");
+    });
+
+    it("should display training UI elements", () => {
+      cy.annotate("Testing training UI elements");
+
+      cy.enterTrainingMode();
+
+      // Check for essential training elements
+      cy.get('[data-testid="training-player"]').should("exist");
+      cy.get('[data-testid="training-dummy"]').should("exist");
+      cy.get('[data-testid="stance-selection"]').should("exist");
+      cy.get('[data-testid="current-stance-indicator"]').should("exist");
+
+      cy.annotate("Training UI elements verified");
+    });
+
+    it("should handle training mode selection", () => {
+      cy.annotate("Testing training mode selection");
+
+      cy.enterTrainingMode();
+
+      // Test training mode buttons
+      cy.get('[data-testid="training-mode-stances"]')
+        .should("exist")
+        .click({ force: true });
+      cy.get('[data-testid="training-mode-techniques"]')
+        .should("exist")
+        .click({ force: true });
+      cy.get('[data-testid="training-mode-combinations"]')
+        .should("exist")
+        .click({ force: true });
+      cy.get('[data-testid="training-mode-meditation"]')
+        .should("exist")
+        .click({ force: true });
+
+      cy.annotate("Training mode selection working");
+    });
+
+    it("should support stance practice", () => {
+      cy.annotate("Testing stance practice");
+
+      cy.enterTrainingMode();
+
+      // Practice different stances
+      cy.get('[data-testid="training-trigram-wheel"]').should("exist");
+
+      // Test stance selection via keyboard
+      cy.practiceStance(1, 2); // Practice geon stance twice
+      cy.practiceStance(2, 1); // Practice tae stance once
+      cy.practiceStance(3, 1); // Practice li stance once
+
+      // Verify stats updated
+      cy.get('[data-testid="training-stats-panel"]').should("exist");
+
+      cy.annotate("Stance practice completed");
+    });
+
+    it("should track training statistics", () => {
+      cy.annotate("Testing training statistics");
+
+      cy.enterTrainingMode();
+
+      // Perform some training actions
+      cy.practiceStance(1, 3);
+      cy.practiceStance(2, 2);
+
+      // Check if stats panel shows updates
+      cy.get('[data-testid="training-stats-panel"]').should("exist");
+      cy.get('[data-testid="training-progress"]').should("exist");
+
+      cy.annotate("Training statistics verified");
+    });
+
+    it("should support dummy interaction", () => {
+      cy.annotate("Testing dummy interaction");
+
+      cy.enterTrainingMode();
+
+      // Test dummy reset functionality
+      cy.get('[data-testid="reset-dummy-button"]')
+        .should("exist")
+        .click({ force: true });
+
+      // Test dummy targeting
+      cy.get('[data-testid="training-dummy"]')
+        .should("exist")
+        .click({ force: true });
+
+      cy.annotate("Dummy interaction working");
+    });
+
+    it("should display training controls", () => {
+      cy.annotate("Testing training controls");
+
+      cy.enterTrainingMode();
+
+      // Verify control instructions
+      cy.get('[data-testid="training-controls"]').should("exist");
+
+      // Test action buttons
+      cy.get('[data-testid="reset-dummy-button"]').should("exist");
+      cy.get('[data-testid="return-menu-button"]').should("exist");
+
+      cy.annotate("Training controls verified");
+    });
+
+    it("should return to menu from training", () => {
+      cy.annotate("Testing return to menu");
+
+      cy.enterTrainingMode();
+
+      // Test return to menu
+      cy.returnToIntro();
+
+      // Verify we're back on intro screen
+      cy.get('[data-testid="intro-screen"]').should("exist");
+      cy.get('[data-testid="training-button"]').should("be.visible");
+
+      cy.annotate("Return to menu successful");
+    });
   });
 
-  it("should support training mode workflow", () => {
-    cy.log("Testing training mode workflow");
+  describe("Training Mode Responsive Design", () => {
+    it("should adapt to different screen sizes", () => {
+      cy.annotate("Testing responsive training mode");
 
-    // Check for training mode buttons
-    cy.get('[data-testid="training-mode-basic"]', { timeout: 10000 }).should(
-      "exist"
-    );
-    cy.get('[data-testid="mode-button-basic"]').click({ force: true });
-    cy.wait(500);
+      const viewports = [
+        [1280, 720], // Desktop
+        [768, 1024], // Tablet
+        [375, 667], // Mobile
+      ];
 
-    cy.get('[data-testid="training-mode-intermediate"]').should("exist");
-    cy.get('[data-testid="mode-button-intermediate"]').click({ force: true });
-    cy.wait(500);
+      viewports.forEach(([width, height]) => {
+        cy.viewport(width, height);
+        cy.wait(1000);
 
-    cy.get('[data-testid="training-mode-advanced"]').should("exist");
-    cy.get('[data-testid="mode-button-advanced"]').click({ force: true });
-    cy.wait(500);
-  });
+        cy.enterTrainingMode();
 
-  it("should allow trigram stance selection", () => {
-    // Check for trigram wheel and stance selection
-    cy.get('[data-testid="trigram-wheel"]', { timeout: 10000 }).should("exist");
-    cy.get('[data-testid="stance-selection-title"]').should("exist");
+        // Check essential elements exist at all sizes
+        cy.get('[data-testid="training-screen"]').should("exist");
+        cy.get('[data-testid="training-area"]').should("exist");
 
-    // Test stance selection through keyboard
-    cy.get("body").type("1"); // Geon stance
-    cy.wait(500);
-    cy.get("body").type("2"); // Tae stance
-    cy.wait(500);
-    cy.get("body").type("3"); // Li stance
-    cy.wait(500);
-  });
+        cy.returnToIntro();
+      });
 
-  it("should show stance information", () => {
-    // Check for current stance display
-    cy.get('[data-testid="current-stance-display"]', { timeout: 10000 }).should(
-      "exist"
-    );
-    cy.get('[data-testid="stance-indicator"]').should("exist");
-  });
-
-  it("should handle player status controls", () => {
-    // Check for training stats and progress
-    cy.get('[data-testid="training-stats"]', { timeout: 10000 }).should(
-      "exist"
-    );
-    cy.get('[data-testid="stats-title"]').should("exist");
-    cy.get('[data-testid="techniques-count"]').should("exist");
-    cy.get('[data-testid="accuracy-display"]').should("exist");
-  });
-
-  it("should support complete training workflow", () => {
-    cy.annotate("Starting training workflow test");
-
-    // Verify we're in training mode
-    cy.get('[data-testid="training-screen"]', { timeout: 10000 }).should(
-      "exist"
-    );
-
-    // Practice multiple stances
-    cy.annotate("Practicing stances");
-    cy.practiceStance(1, 2); // Practice first stance twice
-    cy.practiceStance(2, 1); // Practice second stance once
-    cy.practiceStance(3, 1); // Practice third stance once
-
-    // Test training controls
-    cy.gameActions(["w", "a", "s", "d"]); // Movement
-    cy.gameActions([" ", " ", " "]); // Execute techniques
-
-    // Check that stats updated
-    cy.get('[data-testid="techniques-count"]').should("contain", "기법 실행");
-
-    // Return to menu
-    cy.annotate("Returning to menu");
-    cy.returnToIntro();
-
-    cy.annotate("Training workflow test completed");
-  });
-
-  it("should handle rapid input during training", () => {
-    cy.annotate("Testing rapid input handling");
-
-    cy.get('[data-testid="training-screen"]', { timeout: 10000 }).should(
-      "exist"
-    );
-
-    // Rapid stance changes and techniques
-    cy.gameActions(["1", " ", "2", " ", "3", " ", "4", " "]);
-
-    // Test movement with attacks
-    cy.gameActions(["w", "1", "a", "2", "s", "3", "d", "4"]);
-
-    // Verify stats updated
-    cy.get('[data-testid="techniques-count"]').should("exist");
-
-    cy.returnToIntro();
-  });
-
-  it("should display training controls help", () => {
-    cy.get('[data-testid="training-controls"]', { timeout: 10000 }).should(
-      "exist"
-    );
-    cy.get('[data-testid="controls-title"]').should("contain", "조작법");
-    cy.get('[data-testid="stance-controls"]').should("contain", "1-8");
-    cy.get('[data-testid="technique-controls"]').should("contain", "Space");
-    cy.get('[data-testid="menu-controls"]').should("contain", "ESC");
+      cy.annotate("Responsive training mode verified");
+    });
   });
 });

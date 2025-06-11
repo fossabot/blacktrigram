@@ -270,7 +270,7 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = ({
       <DojangBackground
         width={width}
         height={height}
-        lighting="cyberpunk"
+        lighting="training"
         animate={true}
       />
 
@@ -483,6 +483,7 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = ({
         stance={selectedStance}
         x={isMobile ? width / 2 : width * 0.25}
         y={height - (isMobile ? 120 : 140)}
+        scale={isMobile ? 0.8 : 1.0}
         data-testid="current-stance-indicator"
       />
 
