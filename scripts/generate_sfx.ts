@@ -4,11 +4,11 @@
  *
  * ## Usage:
  * ```bash
- * npx tsx generate_sfx.mts "<prompt>" [output_file] [duration_seconds] [prompt_influence] [output_format]
+ * npx tsx generate_sfx.ts "<prompt>" [output_file] [duration_seconds] [prompt_influence] [output_format]
  * ```
  *
  * ## Arguments:
- * - `prompt` (string) — Required. Describes the sound effect to generate.
+ * - `prompt` (string) — Required. Describes the sound effect to generate (max 400 characters).
  * - `output_file` (string) — Optional. Filename for saving output audio. Defaults to `output.mp3`.
  * - `duration_seconds` (number) — Optional. Sound duration in seconds (0.5–22). Default is auto.
  * - `prompt_influence` (number) — Optional. How closely to follow the prompt (0–1). Default is 0.3.
@@ -24,16 +24,16 @@
  * ## Examples:
  * ```bash
  * # Simple usage
- * npx tsx generate_sfx.mts "Electric whoosh futuristic blade"
+ * npx tsx generate_sfx.ts "Electric whoosh futuristic blade"
  *
  * # With custom file output
- * npx tsx generate_sfx.mts "Temple bell combat start" ./sfx/match_start.mp3
+ * npx tsx generate_sfx.ts "Temple bell combat start" ./sfx/match_start.mp3
  *
  * # Specify duration and prompt influence
- * npx tsx generate_sfx.mts "Short heavy punch" punch.mp3 0.8 0.7
+ * npx tsx generate_sfx.ts "Short heavy punch" punch.mp3 0.8 0.7
  *
  * # All parameters including output format
- * npx tsx generate_sfx.mts "Glitched Korean haegeum tension" haegeum.mp3 3.5 0.9 pcm_44100
+ * npx tsx generate_sfx.ts "Glitched Korean haegeum tension" haegeum.mp3 3.5 0.9 pcm_44100
  * ```
  */
 
@@ -93,9 +93,16 @@ const parseArgs = () => {
   if (!prompt) {
     console.error(`\nUsage: <prompt> [output_file] [duration_seconds] [prompt_influence] [output_format]\n
 Examples:
-  npx tsx generate_sfx.mts "Short neon pulse"
-  npx tsx generate_sfx.mts "Combat start bell" ./sfx/start_bell.mp3 1.0 0.6 mp3_44100_128
-  npx tsx generate_sfx.mts "Vital nerve strike cyber distortion" output.wav 0.75 0.9 pcm_44100\n`);
+  npx tsx generate_sfx.ts "Short neon pulse"
+  npx tsx generate_sfx.ts "Combat start bell" ./sfx/start_bell.mp3 1.0 0.6 mp3_44100_128
+  npx tsx generate_sfx.ts "Vital nerve strike cyber distortion" output.wav 0.75 0.9 pcm_44100\n`);
+    exit(1);
+  }
+
+  if (prompt.length > 400) {
+    console.error(
+      `❌ Prompt is too long: ${prompt.length} characters. Maximum allowed is 400.`
+    );
     exit(1);
   }
 
