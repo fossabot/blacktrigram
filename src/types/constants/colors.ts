@@ -74,14 +74,14 @@ export const KOREAN_COLORS = {
   ACTIVE_BORDER: 0x00ffff, // Fix: Add missing ACTIVE_BORDER
 
   // Stance-specific colors (Trigram colors)
-  TRIGRAM_GEON_PRIMARY: 0xffffff, // Heaven - White
+  TRIGRAM_GEON_PRIMARY: 0xffd700, // Heaven - White
   TRIGRAM_TAE_PRIMARY: 0x87ceeb, // Lake - Sky Blue
   TRIGRAM_LI_PRIMARY: 0xff4500, // Fire - Orange Red
-  TRIGRAM_JIN_PRIMARY: 0xffff00, // Thunder - Yellow
-  TRIGRAM_SON_PRIMARY: 0x90ee90, // Wind - Light Green
-  TRIGRAM_GAM_PRIMARY: 0x0000ff, // Water - Blue
+  TRIGRAM_JIN_PRIMARY: 0x9370db, // Thunder - Yellow
+  TRIGRAM_SON_PRIMARY: 0x32cd32, // Wind - Light Green
+  TRIGRAM_GAM_PRIMARY: 0x1e90ff, // Water - Blue
   TRIGRAM_GAN_PRIMARY: 0x8b4513, // Mountain - Brown
-  TRIGRAM_GON_PRIMARY: 0x8b8000, // Earth - Dark Khaki
+  TRIGRAM_GON_PRIMARY: 0x2f4f4f, // Earth - Dark Khaki
 
   // Status colors
   POSITIVE_GREEN: 0x00ff00,

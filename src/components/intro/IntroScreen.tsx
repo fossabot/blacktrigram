@@ -518,7 +518,12 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                   g.stroke();
                 }}
                 interactive={true}
-                onPointerDown={() => audio.playSoundEffect("menu_hover")}
+                onPointerDown={() => {
+                  audio.playSoundEffect("menu_hover");
+                  // Toggle archetype list visibility or cycle through archetypes
+                  setSelectedArchetype((prev) => (prev + 1) % 5);
+                }}
+                data-testid="archetype-toggle-button"
               />
               <pixiText
                 text="무사 유형 선택"
@@ -611,6 +616,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                       setSelectedArchetype(index);
                       audio.playSoundEffect("menu_select");
                     }}
+                    data-testid={`archetype-option-${archetype.id}-button`}
                   />
 
                   {/* Archetype icon/symbol */}

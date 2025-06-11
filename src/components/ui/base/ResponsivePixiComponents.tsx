@@ -76,120 +76,100 @@ export const ResponsivePixiContainer: React.FC<ResponsivePixiProps> = ({
 };
 
 // Enhanced Responsive button with better mobile support
-export const ResponsivePixiButton: React.FC<
-  ResponsivePixiProps & {
-    text: string;
-    onClick?: () => void;
-    variant?: "primary" | "secondary";
-  }
-> = ({
+export interface ResponsivePixiButtonProps extends ResponsivePixiProps {
+  readonly text: string;
+  readonly onClick?: () => void;
+  readonly variant?: "primary" | "secondary";
+  readonly disabled?: boolean;
+}
+
+export const ResponsivePixiButton: React.FC<ResponsivePixiButtonProps> = ({
   text,
   onClick,
   variant = "primary",
+  disabled = false,
   x = 0,
   y = 0,
   width = 120,
   height = 40,
   screenWidth,
   screenHeight,
-  "data-testid": testId,
   responsive = true,
+  ...props
 }) => {
-  const {
-    adjustedX,
-    adjustedY,
-    adjustedWidth,
-    adjustedHeight,
-    fontSize,
-    screenType,
-  } = useMemo(() => {
+  const { adjustedWidth, adjustedHeight, calculatedFontSize } = useMemo(() => {
     const isMobile = screenWidth < 768;
     const isTablet = screenWidth >= 768 && screenWidth < 1024;
 
-    let adjustedX = x;
-    let adjustedY = y;
     let adjustedWidth = width;
     let adjustedHeight = height;
-    let fontSize = 16;
-    let screenType: "mobile" | "tablet" | "desktop" = "desktop";
+    let calculatedFontSize = 16;
 
     if (responsive) {
       if (isMobile) {
-        screenType = "mobile";
         const scale = Math.min(screenWidth / 1200, screenHeight / 800);
-        adjustedX = x * scale;
-        adjustedY = y * scale;
         adjustedWidth = Math.max(width * scale, 80);
         adjustedHeight = Math.max(height * scale, 30);
-        fontSize = 12;
+        calculatedFontSize = 12;
       } else if (isTablet) {
-        screenType = "tablet";
         const scale = Math.min(screenWidth / 1200, screenHeight / 800);
-        adjustedX = x * scale;
-        adjustedY = y * scale;
         adjustedWidth = width * scale;
         adjustedHeight = height * scale;
-        fontSize = 14;
+        calculatedFontSize = 14;
       }
     }
 
     return {
-      adjustedX,
-      adjustedY,
       adjustedWidth,
       adjustedHeight,
-      fontSize,
-      screenType,
+      calculatedFontSize,
     };
-  }, [x, y, width, height, screenWidth, screenHeight, responsive]);
-
-  const buttonColor =
-    variant === "primary"
-      ? KOREAN_COLORS.ACCENT_GOLD
-      : KOREAN_COLORS.UI_BACKGROUND_MEDIUM;
+  }, [width, height, screenWidth, screenHeight, responsive]);
 
   return (
-    <pixiContainer
-      x={adjustedX}
-      y={adjustedY}
-      ref={(container: any) => {
-        if (container && testId) {
-          container.pixiData = {
-            type: "responsive-button",
-            component: "ResponsivePixiButton",
-            testId,
-            responsive,
-            screenSize: screenType,
-            position: { x: adjustedX, y: adjustedY },
-            size: { width: adjustedWidth, height: adjustedHeight },
-            variant,
-            text,
-          };
-        }
-      }}
-    >
+    <pixiContainer x={x} y={y} {...props}>
       <pixiGraphics
         draw={(g) => {
           g.clear();
-          g.fill({ color: buttonColor, alpha: 0.9 });
-          g.roundRect(0, 0, adjustedWidth, adjustedHeight, 6);
+
+          // Adjust colors based on disabled state
+          const colors = disabled
+            ? {
+                bg: KOREAN_COLORS.UI_BACKGROUND_DARK,
+                border: KOREAN_COLORS.TEXT_SECONDARY,
+                alpha: 0.5,
+              }
+            : variant === "primary"
+            ? {
+                bg: KOREAN_COLORS.PRIMARY_CYAN,
+                border: KOREAN_COLORS.ACCENT_GOLD,
+                alpha: 0.9,
+              }
+            : {
+                bg: KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
+                border: KOREAN_COLORS.ACCENT_GOLD,
+                alpha: 0.8,
+              };
+
+          g.fill({ color: colors.bg, alpha: colors.alpha });
+          g.roundRect(0, 0, adjustedWidth, adjustedHeight, 4);
           g.fill();
-          g.stroke({ width: 2, color: KOREAN_COLORS.PRIMARY_CYAN, alpha: 0.8 });
-          g.roundRect(0, 0, adjustedWidth, adjustedHeight, 6);
+          g.stroke({ width: 2, color: colors.border, alpha: colors.alpha });
+          g.roundRect(0, 0, adjustedWidth, adjustedHeight, 4);
           g.stroke();
         }}
-        interactive={true}
-        onPointerDown={onClick}
+        interactive={!disabled}
+        onPointerDown={disabled ? undefined : onClick}
       />
-
       <pixiText
         text={text}
         style={{
-          fontSize,
-          fill:
-            variant === "primary"
-              ? KOREAN_COLORS.BLACK_SOLID
-              : KOREAN_COLORS.TEXT_PRIMARY,
+          fontSize: calculatedFontSize,
+          fill: disabled
+            ? KOREAN_COLORS.TEXT_SECONDARY
+            : variant === "primary"
+            ? KOREAN_COLORS.BLACK_SOLID
+            : KOREAN_COLORS.TEXT_PRIMARY,
           align: "center",
           fontWeight: "bold",
         }}

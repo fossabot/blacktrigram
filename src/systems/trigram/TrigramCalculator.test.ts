@@ -144,5 +144,78 @@ describe("TrigramCalculator", () => {
         }
       );
     });
+
+    it("should provide meaningful Korean martial arts combat balance", () => {
+      // Test that the matrix represents realistic Korean martial arts principles
+
+      // Heaven (건) should be strong against Earth (곤) - traditional opposition
+      const heavenVsEarth = TrigramCalculator.calculateStanceEffectiveness(
+        TrigramStance.GEON,
+        TrigramStance.GON
+      );
+      expect(heavenVsEarth).toBeGreaterThan(1.0);
+
+      // Fire (리) should be effective against certain stances
+      const fireEffectiveness = TrigramCalculator.calculateStanceEffectiveness(
+        TrigramStance.LI,
+        TrigramStance.SON
+      );
+      expect(fireEffectiveness).toBeGreaterThanOrEqual(1.0);
+
+      // Water (감) should counter Fire (리) in traditional I Ching
+      const waterVsFire = TrigramCalculator.calculateStanceEffectiveness(
+        TrigramStance.GAM,
+        TrigramStance.LI
+      );
+      expect(waterVsFire).toBeGreaterThanOrEqual(1.0);
+    });
+  });
+
+  describe("Korean martial arts integration", () => {
+    it("should reflect authentic trigram philosophy", () => {
+      // Test that the calculator respects traditional Korean martial arts principles
+      const stances = Object.values(TrigramStance);
+
+      stances.forEach((stance) => {
+        // Each stance should have at least one strong counter
+        const hasStrongCounter = stances.some((counterStance) => {
+          const effectiveness = TrigramCalculator.calculateStanceEffectiveness(
+            counterStance,
+            stance
+          );
+          return effectiveness > 1.1;
+        });
+
+        expect(hasStrongCounter).toBe(true);
+      });
+    });
+
+    it("should maintain game balance for all player archetypes", () => {
+      // Ensure no stance is universally dominant
+      const stances = Object.values(TrigramStance);
+
+      stances.forEach((stance) => {
+        let totalEffectiveness = 0;
+        let advantageCount = 0;
+
+        stances.forEach((targetStance) => {
+          if (stance !== targetStance) {
+            const effectiveness =
+              TrigramCalculator.calculateStanceEffectiveness(
+                stance,
+                targetStance
+              );
+            totalEffectiveness += effectiveness;
+            if (effectiveness > 1.0) advantageCount++;
+          }
+        });
+
+        const averageEffectiveness = totalEffectiveness / (stances.length - 1);
+
+        // No stance should have overwhelming advantage
+        expect(averageEffectiveness).toBeLessThan(1.5);
+        expect(advantageCount).toBeLessThan(stances.length);
+      });
+    });
   });
 });
