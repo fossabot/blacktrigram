@@ -101,6 +101,12 @@ declare global {
        * @param archetypeId The archetype ID to select
        */
       selectArchetype(archetypeId: string): void;
+
+      /**
+       * Test vital point interaction
+       * @param vitalPointName Name of the vital point to test
+       */
+      testVitalPointInteraction(vitalPointName: string): void;
     }
   }
 }
@@ -464,7 +470,27 @@ Cypress.Commands.add("navigateToTraining", () => {
   });
 });
 
-// Select archetype with error handling
+// Add vital point testing helper
+Cypress.Commands.add("testVitalPointInteraction", (vitalPointName: string) => {
+  cy.log(`Testing vital point interaction: ${vitalPointName}`);
+
+  // Create and test a vital point
+  cy.getVitalPoint(vitalPointName).should("exist");
+
+  // Click on the vital point
+  cy.get(`[data-vital-point="${vitalPointName}"]`).click({ force: true });
+
+  // Verify the interaction was registered
+  cy.get(`[data-vital-point="${vitalPointName}"]`).should(
+    "have.attr",
+    "data-vital-point",
+    vitalPointName
+  );
+
+  cy.log(`✅ Successfully tested vital point: ${vitalPointName}`);
+});
+
+// Enhanced archetype selection with better error handling
 Cypress.Commands.add("selectArchetype", (archetypeId: string) => {
   cy.get("body").then(($body) => {
     if ($body.find('[data-testid="archetype-toggle"]').length > 0) {

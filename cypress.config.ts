@@ -65,10 +65,10 @@ export default defineConfig({
         if (browser.name === "electron" || browser.name === "chrome") {
           launchOptions.args = [
             ...(launchOptions.args || []),
+            "--enable-unsafe-swiftshader",
             "--disable-gpu",
             "--disable-gpu-vsync",
             "--disable-web-security",
-            "--enable-unsafe-swiftshader",
             "--ignore-gpu-blacklist",
             "--disable-site-isolation-trials",
             "--disable-features=VizDisplayCompositor",
