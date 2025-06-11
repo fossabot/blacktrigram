@@ -4,7 +4,6 @@ import { exposePixiAppForTesting } from "./test/pixi-cypress-helpers";
 import { usePixiExtensions } from "./utils/pixiExtensions";
 import { AudioProvider } from "./audio/AudioProvider";
 import { IntroScreen } from "./components/intro/IntroScreen";
-import { TrainingScreen } from "./components/training/TrainingScreen";
 import { CombatScreen } from "./components/combat/CombatScreen";
 import { EndScreen } from "./components/ui/EndScreen";
 import { GameMode, PlayerArchetype } from "./types/enums";
@@ -12,6 +11,7 @@ import { createPlayerFromArchetype } from "./utils/playerUtils";
 import type { PlayerState } from "./types/player";
 import type { MatchStatistics } from "./types/game";
 import "./App.css";
+import { TrainingScreen } from "./components";
 
 function App() {
   usePixiExtensions();
@@ -182,6 +182,10 @@ function App() {
         case GameMode.TRAINING:
           return (
             <TrainingScreen
+              player={trainingPlayer}
+              onPlayerUpdate={() => {}}
+              trigramSystem={trainingTrigramSystem}
+              vitalPointSystem={trainingVitalPointSystem}
               onReturnToMenu={handleReturnToMenu}
               width={screenSize.width}
               height={screenSize.height}
@@ -270,6 +274,13 @@ function App() {
       </div>
     );
   }
+
+  // Add a default player for training mode
+  const trainingPlayer = createPlayerFromArchetype(PlayerArchetype.MUSA, 0);
+
+  // Minimal stubs for systems (replace with real implementations as needed)
+  const trainingTrigramSystem = {} as any;
+  const trainingVitalPointSystem = {} as any;
 
   return (
     <AudioProvider>

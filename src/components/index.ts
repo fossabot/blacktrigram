@@ -25,7 +25,7 @@ export { EndScreen } from "./ui/EndScreen";
 // Screen components
 export { IntroScreen } from "./intro/IntroScreen";
 export { CombatScreen } from "./combat/CombatScreen";
-export { TrainingScreen } from "./training/TrainingScreen";
+export { TrainingScreen } from "./training";
 
 // Combat components
 export { CombatArena } from "./combat/components/CombatArena";

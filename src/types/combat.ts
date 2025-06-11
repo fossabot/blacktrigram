@@ -2,7 +2,7 @@
  * Combat system types
  */
 
-import type { DamageRange, KoreanText, Position } from "./common";
+import type { DamageRange, KoreanText } from "./common";
 import type { StatusEffect } from "./effects";
 import type { PlayerState } from "./player";
 import { TrigramStance, CombatAttackType, DamageType, GameMode } from "./enums";
@@ -35,25 +35,18 @@ export interface KoreanTechnique {
 
 // Combat result - Fix: Ensure all properties are properly defined
 export interface CombatResult {
-  readonly hit: boolean;
+  readonly success: boolean;
   readonly damage: number;
-  readonly criticalHit: boolean; // Required property
-  readonly vitalPointHit: boolean; // Required property
-  readonly updatedAttacker?: PlayerState;
-  readonly updatedDefender?: PlayerState;
-  readonly attacker?: PlayerState;
-  readonly defender?: PlayerState;
+  readonly isCritical: boolean;
+  readonly hit: boolean;
+  readonly isBlocked: boolean;
+  readonly vitalPointHit: boolean;
+  readonly effects: readonly any[];
+  readonly attacker?: any;
+  readonly defender?: any;
   readonly technique?: KoreanTechnique;
-  readonly effects: readonly StatusEffect[];
-  readonly isCritical?: boolean; // Alternative naming for compatibility
-  readonly isVitalPoint?: boolean; // Alternative naming for compatibility
-  readonly isBlocked?: boolean;
-  readonly isCountered?: boolean;
-  readonly timestamp: number;
-  readonly success?: boolean;
-  readonly winner?: number;
-  readonly updatedPlayers?: readonly PlayerState[];
-  readonly hitLocation?: Position;
+  readonly criticalHit: boolean;
+  readonly timestamp: number; // <-- Ensure this property exists
 }
 
 // Training-specific combat result extension

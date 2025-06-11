@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { Application } from "@pixi/react";
-import { TrainingScreen } from "./TrainingScreen";
+import TrainingScreen from "./TrainingScreen";
 import { AudioProvider } from "../../audio/AudioProvider";
 import { TrigramStance, PlayerArchetype, CombatState } from "../../types/enums";
 import type { PlayerState } from "../../types/player";
@@ -53,6 +53,8 @@ const renderTrainingScreen = (props = {}) => {
     player: mockPlayer,
     width: 1200,
     height: 800,
+    trigramSystem: {} as any,
+    vitalPointSystem: {} as any,
   };
 
   return render(

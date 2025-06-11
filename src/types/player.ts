@@ -104,3 +104,44 @@ export interface PlayerMatchStats {
 
 // Player update type for partial updates
 export type PlayerUpdateData = Partial<PlayerState>;
+
+// Minimal PlayerState for error-free usage
+export interface MinimalPlayerState {
+  id: string;
+  name: { korean: string; english: string };
+  archetype: PlayerArchetype;
+  health: number;
+  maxHealth: number;
+  ki: number;
+  maxKi: number;
+  stamina: number;
+  maxStamina: number;
+  energy: number;
+  maxEnergy: number;
+  attackPower: number;
+  defense: number;
+  speed: number;
+  technique: number;
+  pain: number;
+  consciousness: number;
+  balance: number;
+  momentum: number;
+  currentStance: TrigramStance;
+  combatState: CombatState;
+  position: Position;
+  isBlocking: boolean;
+  isStunned: boolean;
+  isCountering: boolean;
+  lastActionTime: number;
+  recoveryTime: number;
+  lastStanceChangeTime: number;
+  statusEffects: any[];
+  activeEffects: any[];
+  vitalPoints: any[];
+  totalDamageReceived: number;
+  totalDamageDealt: number;
+  hitsTaken: number;
+  hitsLanded: number;
+  perfectStrikes: number;
+  vitalPointHits: number;
+}

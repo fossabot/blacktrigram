@@ -4,6 +4,7 @@
 
 // Fix: Remove duplicate exports and ensure proper imports
 export { KOREAN_COLORS } from "./colors";
+export { CYBERPUNK_COLORS } from "./colors";
 export { GAME_CONFIG, COMBAT_TIMING, DAMAGE_CONSTANTS } from "./game";
 export { COMBAT_CONFIG, COMBAT_CONSTANTS } from "./combat";
 export { PLAYER_ARCHETYPES_DATA } from "./player";

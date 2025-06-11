@@ -4,8 +4,8 @@
 
 // Position in 2D space
 export interface Position {
-  readonly x: number;
-  readonly y: number;
+  x: number;
+  y: number;
 }
 
 // Size dimensions

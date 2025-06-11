@@ -2,12 +2,13 @@ import type {
   CombatSystemInterface,
   VitalPointHitResult,
 } from "../types/systems";
-import type { PlayerState, KoreanTechnique, CombatResult } from "../types";
+import type { PlayerState, CombatResult } from "../types";
 import type { StatusEffect } from "../types/effects";
 import { VitalPointSystem } from "./VitalPointSystem";
 import { TrigramSystem } from "./TrigramSystem";
 import { VitalPointSeverity } from "../types/enums";
 import { TRIGRAM_TECHNIQUES } from "../types/constants";
+import type { KoreanTechnique } from "../types/combat";
 
 export class CombatSystem implements CombatSystemInterface {
   private vitalPointSystem: VitalPointSystem;
@@ -41,6 +42,9 @@ export class CombatSystem implements CombatSystemInterface {
         technique,
         attacker,
         defender,
+        success: false,
+        isCritical : false,
+        isBlocked: false,
       };
     }
 
@@ -66,6 +70,9 @@ export class CombatSystem implements CombatSystemInterface {
         technique,
         attacker,
         defender,
+        success: false,
+        isCritical : false,
+        isBlocked: false,
       };
     }
 
@@ -106,6 +113,9 @@ export class CombatSystem implements CombatSystemInterface {
       technique,
       attacker,
       defender,
+      success: true,
+      isCritical : vitalPointResult?.hit || false,
+      isBlocked: false,
     };
   }
 
@@ -162,8 +172,8 @@ export class CombatSystem implements CombatSystemInterface {
 
     // Filter techniques based on available resources using canExecuteTechnique
     return allTechniques.filter((technique) =>
-      this.canExecuteTechnique(player, technique)
-    );
+      this.canExecuteTechnique(player, technique as KoreanTechnique)
+    ) as readonly KoreanTechnique[];
   }
 
   /**
@@ -363,6 +373,9 @@ export class CombatSystem implements CombatSystemInterface {
         technique,
         attacker,
         defender,
+        success: false,
+        isCritical : false,
+        isBlocked: false,
       };
     }
 
@@ -391,6 +404,9 @@ export class CombatSystem implements CombatSystemInterface {
       technique,
       attacker,
       defender,
+      success: true,
+      isCritical : false,
+      isBlocked: false,
     };
   }
 
@@ -451,6 +467,33 @@ export class CombatSystem implements CombatSystemInterface {
       },
     };
   }
+}
+
+/**
+ * Creates a standardized CombatResult with all required fields
+ * Ensures both 'critical' and 'criticalHit' are present for API compatibility
+ */
+export function createCombatResult(
+  partialResult: Partial<CombatResult>
+): CombatResult {
+  // Set default values
+  const result: CombatResult = {
+    success: partialResult.success ?? false,
+    damage: partialResult.damage ?? 0,
+    isCritical: partialResult.isCritical ?? partialResult.criticalHit ?? false,
+    hit: partialResult.hit ?? partialResult.success ?? false,
+    isBlocked: partialResult.isBlocked ?? false,
+    vitalPointHit: partialResult.vitalPointHit ?? false,
+    effects: partialResult.effects ?? [],
+    attacker: partialResult.attacker,
+    defender: partialResult.defender,
+    technique: partialResult.technique,
+    // Always set criticalHit to match critical for consistency
+    criticalHit: partialResult.isCritical ?? partialResult.criticalHit ?? false,
+    timestamp: Date.now(), // <-- Add this property
+  };
+
+  return result;
 }
 
 export default CombatSystem;

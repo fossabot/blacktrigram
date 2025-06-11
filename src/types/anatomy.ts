@@ -186,3 +186,32 @@ export const ARCHETYPE_STANCES: Record<PlayerArchetype, TrigramStance[]> = {
   [PlayerArchetype.JEONGBO_YOWON]: [TrigramStance.TAE, TrigramStance.GAN],
   [PlayerArchetype.JOJIK_POKRYEOKBAE]: [TrigramStance.JIN, TrigramStance.GON],
 };
+
+export interface KoreanTechnique {
+  id: string;
+  name: {
+    korean: string;
+    english: string;
+    romanized: string;
+  };
+  koreanName: string;
+  englishName: string;
+  romanized: string;
+  description: {
+    korean: string;
+    english: string;
+  };
+  stance: TrigramStance;
+  type: string;
+  damageType: string;
+  damage: number;
+  kiCost: number;
+  staminaCost: number;
+  accuracy: number;
+  range: number;
+  executionTime: number;
+  recoveryTime: number;
+  critChance: number;
+  critMultiplier: number;
+  effects: any[];
+}

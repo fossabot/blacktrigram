@@ -18,7 +18,7 @@ export class KoreanTechniquesSystem {
   static getAvailableTechniques(
     stance: TrigramStance
   ): readonly KoreanTechnique[] {
-    return TRIGRAM_TECHNIQUES[stance] || [];
+    return (TRIGRAM_TECHNIQUES[stance] as readonly KoreanTechnique[]) || [];
   }
 
   /**
@@ -60,7 +60,7 @@ export class KoreanTechniquesSystem {
    */
   static getAllTechniques(): KoreanTechnique[] {
     // Fix: Convert readonly array to mutable array using spread operator
-    return [...Object.values(TRIGRAM_TECHNIQUES).flat()];
+    return [...Object.values(TRIGRAM_TECHNIQUES).flat()] as KoreanTechnique[];
   }
 
   static getTechniquesByArchetype(
@@ -88,7 +88,9 @@ export function getTechniquesByStance(
   stance: TrigramStance
 ): KoreanTechnique[] {
   // Fix: Convert readonly array to mutable array
-  return [...(TRIGRAM_TECHNIQUES[stance] || [])];
+  return [
+    ...((TRIGRAM_TECHNIQUES[stance] as unknown as KoreanTechnique[]) || []),
+  ];
 }
 
 // Export TRIGRAM_TECHNIQUES for tests

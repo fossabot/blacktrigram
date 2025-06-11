@@ -3,8 +3,7 @@
  */
 
 // Main training screen
-export { TrainingScreen } from "./TrainingScreen";
-export { default as TrainingScreenDefault } from "./TrainingScreen";
+export { default as TrainingScreen } from "./TrainingScreen";
 
 // Re-export training screen
 export * from "./TrainingScreen";

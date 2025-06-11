@@ -122,6 +122,12 @@ export const KOREAN_COLORS = {
   SECONDARY_BLUE: 0x3366cc,
   SECONDARY_BLUE_LIGHT: 0x5588ee,
   SECONDARY_BLUE_DARK: 0x1144aa,
+
+  // Cyberpunk neon colors (add for NEON_CYAN and others)
+  NEON_CYAN: 0x00ffff, // Neon cyan for cyberpunk UI
+  NEON_PURPLE: 0xff00ff,
+  NEON_GREEN: 0x00ff00,
+  NEON_PINK: 0xff1493,
 } as const;
 
 // Cyberpunk color palette

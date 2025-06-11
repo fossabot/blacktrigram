@@ -304,25 +304,14 @@ Cypress.Commands.add("checkCanvasVisibility", () => {
     .should("exist")
     .and("be.visible")
     .then(($canvas) => {
-      // Fix: Check if canvas is not covered by other elements
+      // Check if canvas has proper dimensions
       const canvas = $canvas[0];
       const rect = canvas.getBoundingClientRect();
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
 
-      // Get element at center point
-      const elementAtCenter = document.elementFromPoint(centerX, centerY);
+      expect(rect.width).to.be.greaterThan(100);
+      expect(rect.height).to.be.greaterThan(100);
 
-      // Fix: Allow canvas or its children to be at center
-      if (elementAtCenter === canvas || canvas.contains(elementAtCenter)) {
-        cy.log("✅ Canvas is visible and not covered");
-      } else {
-        // Try to click away any overlaying buttons
-        cy.get("body").click({ force: true });
-        cy.wait(500);
-        // Re-check visibility
-        cy.get("canvas").should("be.visible");
-      }
+      cy.log("✅ Canvas is visible with proper dimensions");
     });
 });
 

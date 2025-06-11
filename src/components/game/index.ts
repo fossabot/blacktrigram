@@ -16,6 +16,3 @@ export type {
   PlayerVisualsProps,
   DojangBackgroundProps,
 } from "../../types/components";
-
-// Re-export GameStarter if it exists
-export { default as GameStarter } from "./GameStarter";

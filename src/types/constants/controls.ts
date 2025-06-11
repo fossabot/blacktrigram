@@ -33,7 +33,7 @@ export const COMBAT_CONTROLS = {
   // Movement and combat actions
   movement: {
     WASD: "Tactical positioning and footwork",
-    "Arrow Keys": "Alternative movement system",
+    ArrowKeys: "Alternative movement system",
   },
 
   combat: {

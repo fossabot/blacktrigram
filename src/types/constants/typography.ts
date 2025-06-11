@@ -60,16 +60,11 @@ export const KOREAN_FONT_WEIGHTS: Record<string, number> = {
   heavy: 900,
 } as const;
 
-// Fix: PIXI specific font weights with proper enum mapping
-export const PIXI_FONT_WEIGHTS: Record<string, PIXI.TextStyleFontWeight> = {
-  light: "300",
-  normal: "400",
-  regular: "400",
-  medium: "500",
-  semibold: "600",
-  bold: "700",
-  heavy: "900",
-};
+// Only declare and export PIXI_FONT_WEIGHTS once, at the top
+export const PIXI_FONT_WEIGHTS = {
+  normal: "normal",
+  bold: "bold",
+} as const;
 
 // Default PIXI TextStyle - Fix property names to match PixiJS v8
 export const DEFAULT_PIXI_TEXT_STYLE: Partial<PIXI.TextStyleOptions> = {
@@ -123,7 +118,7 @@ export const PIXI_TEXT_STYLES = {
   BUTTON: new PIXI.TextStyle({
     ...DEFAULT_PIXI_TEXT_STYLE,
     fontSize: FONT_SIZES.medium,
-    fontWeight: PIXI_FONT_WEIGHTS.semibold,
+    fontWeight: PIXI_FONT_WEIGHTS.bold, // Fix: Change to bold
     fill: KOREAN_COLORS.TEXT_PRIMARY,
     align: "center",
   }),
@@ -140,10 +135,10 @@ export const HTML_DEFAULT_TEXT_STYLE: React.CSSProperties = {
   fontWeight: KOREAN_FONT_WEIGHTS.normal,
 };
 
-// Fix: Add KOREAN_TYPOGRAPHY export
+// Fix: Add missing KOREAN_TYPOGRAPHY export if not present
 export const KOREAN_TYPOGRAPHY = {
+  // Korean-optimized fonts - 한국어 최적화 폰트
   FONTS: {
-    // Korean-optimized fonts - 한국어 최적화 폰트
     HEADING: [
       "Noto Sans KR",
       "Malgun Gothic",

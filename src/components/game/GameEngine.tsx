@@ -86,6 +86,9 @@ export const GameEngine: React.FC<GameEngineProps> = ({
         vitalPointHit: false,
         effects: [],
         timestamp: Date.now(),
+        success: true,
+        isCritical: false,
+        isBlocked: false,
       });
     },
     [onGameEvent, onCombatResult]

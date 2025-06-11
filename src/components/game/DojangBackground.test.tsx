@@ -1,12 +1,13 @@
 import { render } from "@testing-library/react";
-import { DojangBackground } from "./DojangBackground"; // Fix: Use relative path
+import { describe, it } from "vitest";
+import { DojangBackground } from "./DojangBackground";
 
 describe("DojangBackground", () => {
   it("renders correctly with default props", () => {
     render(<DojangBackground width={800} height={600} />);
   });
 
-  it("renders with cyberpunk lighting", () => {
+  it("should render with cyberpunk lighting", () => {
     render(
       <DojangBackground
         width={800}
@@ -17,7 +18,7 @@ describe("DojangBackground", () => {
     );
   });
 
-  it("renders with traditional lighting", () => {
+  it("should render with traditional lighting", () => {
     render(
       <DojangBackground
         width={800}
