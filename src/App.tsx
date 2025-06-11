@@ -183,7 +183,10 @@ function App() {
           return (
             <TrainingScreen
               player={trainingPlayer}
-              onPlayerUpdate={() => {}}
+              onPlayerUpdate={(updates) => {
+                // Update training player state
+                console.log("Training player updated:", updates);
+              }}
               trigramSystem={trainingTrigramSystem}
               vitalPointSystem={trainingVitalPointSystem}
               onReturnToMenu={handleReturnToMenu}

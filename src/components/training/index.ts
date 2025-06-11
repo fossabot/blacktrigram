@@ -3,10 +3,10 @@
  */
 
 // Main training screen
-export { default as TrainingScreen } from "./TrainingScreen";
+export { TrainingScreen } from "./TrainingScreen";
 
 // Re-export training screen
 export * from "./TrainingScreen";
 
 // Training-specific utilities and types
-export type { TrainingScreenProps } from "../../types/components";
+export type { TrainingScreenProps } from "./TrainingScreen";

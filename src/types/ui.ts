@@ -3,12 +3,12 @@
 import type { ReactNode } from "react";
 import type {
   PlayerState,
-  KoreanText,
   MatchStatistics,
-  TrigramStance,
+  GameMode,
   HitEffect,
+  TrigramStance,
 } from "./index";
-import type { GameMode } from "./enums";
+import type { KoreanText } from "./korean-text";
 
 // Base UI component props
 export interface BaseUIProps {
@@ -121,6 +121,11 @@ export interface TrainingScreenProps {
   readonly player: PlayerState;
   readonly onPlayerUpdate: (updates: Partial<PlayerState>) => void;
   readonly children?: ReactNode;
+  readonly width?: number;
+  readonly height?: number;
+  readonly trigramSystem?: any; // Fix: Add missing props
+  readonly vitalPointSystem?: any; // Fix: Add missing props
+  readonly onReturnToMenu: () => void; // Fix: Add missing props
 }
 
 // Component props that might be missing
