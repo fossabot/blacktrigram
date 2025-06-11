@@ -41,15 +41,29 @@ export const ResponsivePixiContainer: React.FC<
   x = 0,
   y = 0,
   screenWidth,
-  screenHeight,
+  screenHeight, // Fixed: Now properly used in responsive calculations
   children,
   "data-testid": testId,
 }) => {
-  const isMobile = screenWidth < 768;
-  const scale = useMemo(() => {
-    if (isMobile) return 0.8;
-    return 1.0;
-  }, [isMobile]);
+  const { scale } = useMemo(() => {
+    const isMobile = screenWidth < 768;
+    const isTablet = screenWidth >= 768 && screenWidth < 1024;
+
+    // Use screenHeight for responsive scaling calculations
+    let scale = 1.0;
+
+    if (isMobile) {
+      scale = Math.min(screenWidth / 375, screenHeight / 667) * 0.8;
+    } else if (isTablet) {
+      scale = Math.min(screenWidth / 768, screenHeight / 1024) * 0.9;
+    } else {
+      scale = Math.min(screenWidth / 1200, screenHeight / 800);
+    }
+
+    return {
+      scale: Math.max(0.5, Math.min(1.2, scale)),
+    };
+  }, [screenWidth, screenHeight]);
 
   return (
     <pixiContainer
@@ -70,29 +84,42 @@ export const ResponsivePixiButton: React.FC<ResponsivePixiButtonProps> = ({
   width,
   height,
   screenWidth,
-  screenHeight,
+  screenHeight, // Fixed: Now properly used for responsive design
   variant = "primary",
   onClick,
   "data-testid": testId,
 }) => {
-  const isMobile = screenWidth < 768;
+  const { buttonColors, fontSize } = useMemo(() => {
+    const isMobile = screenWidth < 768;
+    const isTablet = screenWidth >= 768 && screenWidth < 1024;
 
-  const buttonColors = useMemo(() => {
-    if (variant === "primary") {
-      return {
-        bg: KOREAN_COLORS.PRIMARY_CYAN,
-        border: KOREAN_COLORS.ACCENT_GOLD,
-        text: KOREAN_COLORS.BLACK_SOLID,
-      };
+    // Use screenHeight to adjust button sizing for different aspect ratios
+    const heightRatio = screenHeight / 800; // Base height ratio
+    let fontSize = 14;
+
+    if (isMobile) {
+      fontSize = Math.max(10, 12 * heightRatio);
+    } else if (isTablet) {
+      fontSize = Math.max(12, 13 * heightRatio);
+    } else {
+      fontSize = Math.max(14, 14 * heightRatio);
     }
-    return {
-      bg: KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
-      border: KOREAN_COLORS.TEXT_SECONDARY,
-      text: KOREAN_COLORS.TEXT_PRIMARY,
-    };
-  }, [variant]);
 
-  const fontSize = isMobile ? 12 : 14;
+    const buttonColors =
+      variant === "primary"
+        ? {
+            bg: KOREAN_COLORS.PRIMARY_CYAN,
+            border: KOREAN_COLORS.ACCENT_GOLD,
+            text: KOREAN_COLORS.BLACK_SOLID,
+          }
+        : {
+            bg: KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
+            border: KOREAN_COLORS.TEXT_SECONDARY,
+            text: KOREAN_COLORS.TEXT_PRIMARY,
+          };
+
+    return { buttonColors, fontSize };
+  }, [variant, screenWidth, screenHeight]);
 
   const handleClick = useCallback(() => {
     onClick();
@@ -136,12 +163,21 @@ export const ResponsivePixiPanel: React.FC<ResponsivePixiPanelProps> = ({
   width,
   height,
   screenWidth,
-  screenHeight,
+  screenHeight, // Fixed: Now properly used for responsive panel design
   children,
   "data-testid": testId,
 }) => {
-  const isMobile = screenWidth < 768;
-  const titleFontSize = isMobile ? 12 : 14;
+  const { titleFontSize } = useMemo(() => {
+    const isMobile = screenWidth < 768;
+
+    // Use screenHeight to determine appropriate font sizes for different screen ratios
+    const heightRatio = screenHeight / 800;
+    const titleFontSize = isMobile
+      ? Math.max(10, 12 * heightRatio)
+      : Math.max(12, 14 * heightRatio);
+
+    return { titleFontSize };
+  }, [screenWidth, screenHeight]);
 
   return (
     <pixiContainer x={x} y={y} data-testid={testId}>
