@@ -84,6 +84,7 @@ export const StanceIndicator: React.FC<StanceIndicatorProps> = ({
   y,
   size = 60,
   showDetails = true,
+  ...props
 }) => {
   const stanceInfo = STANCE_INFO[stance];
   const radius = size / 2;
@@ -100,6 +101,7 @@ export const StanceIndicator: React.FC<StanceIndicatorProps> = ({
       screenWidth={size * 2}
       screenHeight={showDetails ? size * 1.8 : size}
       data-testid={`stance-indicator-${stance}`}
+      {...props}
     >
       {/* Main Stance Circle */}
       <pixiGraphics

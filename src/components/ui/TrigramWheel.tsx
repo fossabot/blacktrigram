@@ -80,6 +80,7 @@ export const TrigramWheel: React.FC<TrigramWheelProps> = ({
   y,
   size,
   interactive = true,
+  ...props
 }) => {
   const radius = size / 2;
   const centerX = radius;
@@ -116,6 +117,7 @@ export const TrigramWheel: React.FC<TrigramWheelProps> = ({
       screenWidth={size}
       screenHeight={size}
       data-testid="trigram-wheel"
+      {...props}
     >
       {/* Wheel Background */}
       <pixiGraphics

@@ -14,11 +14,3 @@ export { KoreanHeader } from "./KoreanHeader";
 export { default as KoreanPixiComponents } from "./KoreanPixiComponents";
 export { default as PixiComponents } from "./PixiComponents";
 export * from "./ResponsivePixiComponents";
-
-// Re-export key Korean text utilities
-export {
-  KOREAN_TEXT_CONSTANTS,
-  useKoreanTextStyle,
-  createKoreanPixiText,
-  getKoreanTextMetrics,
-} from "./korean-text";
