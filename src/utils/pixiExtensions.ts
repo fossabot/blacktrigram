@@ -1,24 +1,9 @@
 // PIXI React v8 hook for component extensions
-import { useExtend, extend } from "@pixi/react";
-import {
-  Container,
-  Graphics,
-  Text,
-  Sprite,
-  AnimatedSprite,
-  TilingSprite,
-  ParticleContainer,
-  BitmapText,
-} from "pixi.js";
+import { extend } from "@pixi/react";
+import { Container, Graphics } from "pixi.js";
 
 // Extend PixiJS components for React usage
-extend({
-  Container,
-  Graphics,
-  Text,
-  Sprite,
-  AnimatedSprite,
-});
+extend({ Container, Graphics });
 
 /**
  * Hook to ensure PixiJS extensions are loaded
@@ -52,17 +37,16 @@ export const PixiExtensions = {
    * Check if PixiJS is properly initialized
    */
   isInitialized: () => {
-    return typeof window !== "undefined" && window.PIXI !== undefined;
+    const w = window as any;
+    return typeof w !== "undefined" && typeof w.PIXI !== "undefined";
   },
 
   /**
    * Get PixiJS version information
    */
   getVersion: () => {
-    if (typeof window !== "undefined" && window.PIXI) {
-      return window.PIXI.VERSION;
-    }
-    return "Unknown";
+    const w: any = window;
+    return w.PIXI ? w.PIXI.VERSION : null;
   },
 } as const;
 

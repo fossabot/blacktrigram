@@ -1,275 +1,301 @@
 import type {
+  AudioAsset,
   AudioConfig,
+  AudioManager as IAudioManager,
   SoundEffectId,
   MusicTrackId,
-  IAudioManager,
 } from "../types/audio";
-import { AudioAssetRegistry } from "./AudioAssetRegistry";
-import { DefaultSoundGenerator } from "./DefaultSoundGenerator";
 
 export class AudioManager implements IAudioManager {
-  private initialized = false;
+  private _masterVolume: number = 1.0;
+  private _musicVolume: number = 0.7;
+  private _sfxVolume: number = 0.8;
+  private _muted: boolean = false;
+  private _currentMusicTrack: string | null = null;
+  private _fallbackMode: boolean = false;
+  private currentMusic: HTMLAudioElement | null = null;
+  private soundCache: Map<string, HTMLAudioElement> = new Map();
+  private _isInitialized: boolean = false;
 
-  private audioContext?: AudioContext;
-  private registry = new AudioAssetRegistry();
-  private activeSounds = new Map<string, HTMLAudioElement>();
-
-  // Fix: Add proper volume getters
-  private _masterVolume = 1.0;
-  private _sfxVolume = 1.0;
-  private _musicVolume = 1.0;
-  private _muted = false;
-
-  private currentMusicTrack: HTMLAudioElement | null = null; // Add for music playback
-
-  public get isInitialized(): boolean {
-    return this.initialized;
+  constructor(config?: Partial<AudioConfig>) {
+    if (config) {
+      this._masterVolume = config.masterVolume ?? 1.0;
+      this._musicVolume = config.musicVolume ?? 0.7;
+      this._sfxVolume = config.sfxVolume ?? 0.8;
+    }
   }
 
-  public get masterVolume(): number {
+  // Interface getters
+  get isInitialized(): boolean {
+    return this._isInitialized;
+  }
+
+  get fallbackMode(): boolean {
+    return this._fallbackMode;
+  }
+
+  get currentMusicTrack(): string | null {
+    return this._currentMusicTrack;
+  }
+
+  get masterVolume(): number {
     return this._masterVolume;
   }
 
-  public get sfxVolume(): number {
+  get sfxVolume(): number {
     return this._sfxVolume;
   }
 
-  public get musicVolume(): number {
+  get musicVolume(): number {
     return this._musicVolume;
   }
 
-  public get muted(): boolean {
+  get muted(): boolean {
     return this._muted;
   }
 
-  public async initialize(config?: AudioConfig): Promise<void> {
+  async initialize(config?: AudioConfig): Promise<void> {
     try {
-      // Try to initialize Web Audio API
-      this.audioContext = new (window.AudioContext ||
-        (window as any).webkitAudioContext)();
-      await this.registry.loadAssets();
+      // Remove unused audioContext variable
+      new (window.AudioContext || (window as any).webkitAudioContext)();
+      this._isInitialized = true;
+      this._fallbackMode = false;
 
-      console.info("audioContext finitialize", this.audioContext);
-
-      // Set default volumes from config
       if (config) {
-        this._masterVolume = config.defaultVolume ?? 0.7;
-        this._sfxVolume = config.defaultVolume ?? 0.8;
-        this._musicVolume = config.defaultVolume ?? 0.5;
+        this._masterVolume = config.masterVolume ?? this._masterVolume;
+        this._musicVolume = config.musicVolume ?? this._musicVolume;
+        this._sfxVolume = config.sfxVolume ?? this._sfxVolume;
       }
-
-      this.initialized = true;
-      console.log("🎵 AudioManager initialized successfully");
     } catch (error) {
       console.warn(
-        "🔇 AudioManager failed to initialize, using fallback mode:",
+        "AudioContext initialization failed, using fallback mode:",
         error
       );
-      this.initialized = true; // Allow fallback mode
+      this._isInitialized = true;
+      this._fallbackMode = true;
     }
   }
 
-  public async playSoundEffect(id: SoundEffectId): Promise<void> {
-    if (!this.initialized || this._muted) return;
-
+  async loadAsset(asset: AudioAsset): Promise<void> {
     try {
-      // Try to get from registry first
-      let sound = this.registry.getSoundEffect(id);
-
-      // Generate fallback sound if not found
-      if (!sound) {
-        sound = DefaultSoundGenerator.generateSoundEffect(id, 440, 0.5);
-      }
-
-      // Create and play HTML Audio element for fallback
-      const audio = new Audio();
-      audio.src = sound.url;
-      audio.volume = this._sfxVolume * this._masterVolume;
-
-      // Store reference to manage multiple sounds
-      this.activeSounds.set(id, audio);
-
-      await audio.play();
-
-      // Clean up after playing
-      audio.onended = () => {
-        this.activeSounds.delete(id);
-      };
+      const audio = new Audio(asset.url);
+      audio.volume = asset.volume || 1.0;
+      audio.preload = "auto";
+      this.soundCache.set(asset.id, audio);
     } catch (error) {
-      console.warn(`Failed to play sound effect: ${id}`, error);
+      console.warn(`Failed to load audio asset ${asset.id}:`, error);
     }
   }
 
-  public setVolume(
-    type: "master" | "sfx" | "music" | "voice",
-    volume: number
-  ): void {
+  async playSoundEffect(id: SoundEffectId): Promise<void> {
+    if (this._muted) return;
+
+    const audio = this.soundCache.get(id);
+    if (audio) {
+      try {
+        audio.currentTime = 0;
+        audio.volume = this._sfxVolume * this._masterVolume;
+        await audio.play();
+      } catch (error) {
+        console.warn(`Failed to play sound effect ${id}:`, error);
+      }
+    }
+  }
+
+  // Alias for playSoundEffect to match interface
+  async playSFX(id: SoundEffectId, volume?: number): Promise<void> {
+    if (this._muted) return;
+
+    const audio = this.soundCache.get(id);
+    if (audio) {
+      try {
+        audio.currentTime = 0;
+        audio.volume = (volume ?? this._sfxVolume) * this._masterVolume;
+        await audio.play();
+      } catch (error) {
+        console.warn(`Failed to play sound effect ${id}:`, error);
+      }
+    }
+  }
+
+  async playMusic(id: MusicTrackId, volume?: number): Promise<void> {
+    if (this._muted) return;
+
+    this.stopMusic();
+
+    const audio = this.soundCache.get(id);
+    if (audio) {
+      try {
+        audio.currentTime = 0;
+        audio.volume = (volume ?? this._musicVolume) * this._masterVolume;
+        audio.loop = true;
+        this.currentMusic = audio;
+        this._currentMusicTrack = id;
+        await audio.play();
+      } catch (error) {
+        console.warn(`Failed to play music ${id}:`, error);
+      }
+    }
+  }
+
+  stopMusic(): void {
+    if (this.currentMusic) {
+      this.currentMusic.pause();
+      this.currentMusic.currentTime = 0;
+      this.currentMusic = null;
+      this._currentMusicTrack = null;
+    }
+  }
+
+  stopAll(): void {
+    this.stopMusic();
+    this.soundCache.forEach((audio) => {
+      if (!audio.paused) {
+        audio.pause();
+        audio.currentTime = 0;
+      }
+    });
+  }
+
+  setVolume(type: "master" | "sfx" | "music" | "voice", volume: number): void {
     const clampedVolume = Math.max(0, Math.min(1, volume));
 
     switch (type) {
       case "master":
         this._masterVolume = clampedVolume;
-        this.updateAllVolumes();
         break;
       case "sfx":
         this._sfxVolume = clampedVolume;
         break;
       case "music":
         this._musicVolume = clampedVolume;
+        if (this.currentMusic) {
+          this.currentMusic.volume = this._musicVolume * this._masterVolume;
+        }
+        break;
+      case "voice":
+        // Handle voice volume if needed
         break;
     }
   }
 
-  public mute(): void {
+  mute(): void {
     this._muted = true;
-    this.updateAllVolumes();
+    if (this.currentMusic) {
+      this.currentMusic.volume = 0;
+    }
   }
 
-  public unmute(): void {
+  unmute(): void {
     this._muted = false;
-    this.updateAllVolumes();
-  }
-
-  // Add playMusic method for compatibility with AudioProvider
-  public async playMusic(trackId: MusicTrackId): Promise<void> {
-    if (!this.initialized || this._muted) return;
-
-    try {
-      // Stop current music if playing
-      if (this.currentMusicTrack) {
-        this.currentMusicTrack.pause();
-        this.currentMusicTrack.currentTime = 0;
-      }
-
-      // Get music track from registry
-      let track = this.registry.getMusicTrack(trackId);
-
-      if (!track) {
-        // Generate fallback music if not found
-        track = DefaultSoundGenerator.generateMusicTrack(trackId, 440, 0.3);
-      }
-
-      // Ensure track is defined before using
-      if (!track) {
-        console.warn(`Failed to get or generate music track: ${trackId}`);
-        return;
-      }
-
-      // Create and play HTML Audio element
-      const audio = new Audio();
-      audio.src = track.url;
-      audio.volume = this._musicVolume * this._masterVolume;
-      audio.loop = track.loop || false;
-
-      this.currentMusicTrack = audio;
-      await audio.play();
-
-      console.log(`🎵 Playing music: ${trackId}`);
-    } catch (error) {
-      console.warn(`Failed to play music: ${trackId}`, error);
+    if (this.currentMusic) {
+      this.currentMusic.volume = this._musicVolume * this._masterVolume;
     }
   }
 
-  // Add stopMusic method for compatibility with AudioProvider
-  public stopMusic(): void {
-    if (this.currentMusicTrack) {
-      this.currentMusicTrack.pause();
-      this.currentMusicTrack.currentTime = 0;
-      this.currentMusicTrack = null;
-    }
-  }
+  async fadeOut(duration: number = 1000): Promise<void> {
+    if (!this.currentMusic) return;
 
-  // Add the missing loadAudio method
-  public async loadAudio(): Promise<void> {
-    try {
-      console.log("🎵 Loading audio assets...");
+    return new Promise((resolve) => {
+      const startVolume = this.currentMusic!.volume;
+      const fadeStep = startVolume / (duration / 50);
 
-      // Load audio assets through the registry
-      await this.registry.loadAssets();
-
-      // Initialize any additional audio components
-      if (this.audioContext) {
-        // Set up audio processing nodes if needed
-        console.log("Audio context state:", this.audioContext.state);
-      }
-
-      console.log("✅ Audio assets loaded successfully");
-    } catch (error) {
-      console.warn("⚠️ Failed to load some audio assets:", error);
-      // Don't throw - allow graceful degradation
-    }
-  }
-
-  private updateAllVolumes(): void {
-    const effectiveVolume = this._muted ? 0 : this._masterVolume;
-
-    // Update all active audio elements
-    this.activeSounds.forEach((audio) => {
-      audio.volume = effectiveVolume * this._sfxVolume;
+      const fadeInterval = setInterval(() => {
+        if (this.currentMusic && this.currentMusic.volume > 0) {
+          this.currentMusic.volume = Math.max(
+            0,
+            this.currentMusic.volume - fadeStep
+          );
+        } else {
+          clearInterval(fadeInterval);
+          this.stopMusic();
+          resolve();
+        }
+      }, 50);
     });
-
-    // Update music volume if music is playing
-    if (this.currentMusicTrack) {
-      this.currentMusicTrack.volume = effectiveVolume * this._musicVolume;
-    }
   }
 
-  // Update playMusicTrack to use playMusic for consistency
-  public async playMusicTrack(id: MusicTrackId): Promise<void> {
-    return this.playMusic(id);
+  async fadeIn(trackId: MusicTrackId, duration: number = 1000): Promise<void> {
+    await this.playMusic(trackId, 0);
+
+    if (!this.currentMusic) return;
+
+    return new Promise((resolve) => {
+      const targetVolume = this._musicVolume * this._masterVolume;
+      const fadeStep = targetVolume / (duration / 50);
+
+      const fadeInterval = setInterval(() => {
+        if (this.currentMusic && this.currentMusic.volume < targetVolume) {
+          this.currentMusic.volume = Math.min(
+            targetVolume,
+            this.currentMusic.volume + fadeStep
+          );
+        } else {
+          clearInterval(fadeInterval);
+          resolve();
+        }
+      }, 50);
+    });
   }
 
-  public async playKoreanTechniqueSound(
+  async crossfade(
+    fromTrackId: MusicTrackId,
+    toTrackId: MusicTrackId,
+    duration: number = 1000
+  ): Promise<void> {
+    // Fix: Remove unused fromTrackId parameter or use it properly
+    const fadeOutPromise = this.fadeOut(duration);
+    await fadeOutPromise;
+    await this.fadeIn(toTrackId, duration);
+    console.log(`Crossfaded from ${fromTrackId} to ${toTrackId}`);
+  }
+
+  getLoadedAssets(): ReadonlyMap<string, HTMLAudioElement> {
+    return new Map(this.soundCache);
+  }
+
+  // Additional methods to match interface
+  async playVoice(id: string): Promise<void> {
+    return this.playSoundEffect(id);
+  }
+
+  async playKoreanTechniqueSound(
     techniqueId: string,
     archetype: string
   ): Promise<void> {
-    if (!this.initialized) return;
-
-    try {
-      const sound = DefaultSoundGenerator.generateKoreanTechniqueSound(
-        techniqueId,
-        archetype
-      );
-      await this.playSoundEffect(sound.id as SoundEffectId);
-    } catch (error) {
-      console.warn(
-        `Failed to play Korean technique sound: ${techniqueId}`,
-        error
-      );
-    }
+    const soundId = `${archetype}_${techniqueId}`;
+    return this.playSoundEffect(soundId);
   }
 
-  public async playTrigramStanceSound(stance: string): Promise<void> {
-    if (!this.initialized) return;
-
-    try {
-      const sound = DefaultSoundGenerator.generateTrigramSound(stance);
-      await this.playSoundEffect(sound.id as SoundEffectId);
-    } catch (error) {
-      console.warn(`Failed to play trigram stance sound: ${stance}`, error);
-    }
+  async playTrigramStanceSound(stance: string): Promise<void> {
+    const soundId = `stance_${stance}`;
+    return this.playSoundEffect(soundId);
   }
 
-  public async playVitalPointHitSound(severity: string): Promise<void> {
-    if (!this.initialized) return;
-
-    try {
-      const sound = DefaultSoundGenerator.generateVitalPointHitSound(severity);
-      await this.playSoundEffect(sound.id as SoundEffectId);
-    } catch (error) {
-      console.warn(`Failed to play vital point hit sound: ${severity}`, error);
-    }
+  async playVitalPointHitSound(severity: string): Promise<void> {
+    const soundId = `vital_point_${severity}`;
+    return this.playSoundEffect(soundId);
   }
 
-  public async playDojiangAmbience(): Promise<void> {
-    if (!this.initialized) return;
+  async playDojiangAmbience(): Promise<void> {
+    return this.playMusic("dojang_ambience");
+  }
 
-    try {
-      const ambience = DefaultSoundGenerator.generateDojiangAmbience();
-      await this.playMusicTrack(ambience.id as MusicTrackId);
-    } catch (error) {
-      console.warn("Failed to play dojang ambience", error);
-    }
+  // Legacy getters for backward compatibility
+  getMasterVolume(): number {
+    return this._masterVolume;
+  }
+
+  getMusicVolume(): number {
+    return this._musicVolume;
+  }
+
+  getSfxVolume(): number {
+    return this._sfxVolume;
+  }
+
+  get initialized(): boolean {
+    return this._isInitialized;
   }
 }
 

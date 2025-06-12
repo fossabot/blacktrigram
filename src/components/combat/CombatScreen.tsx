@@ -141,14 +141,13 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
     return { isMobile, isTablet };
   }, [width, height]);
 
+  const handlePlayerClick = (idx: number) => {
+    setSelectedPlayer(idx);
+    addHitEffect("hit", { x: 100 + idx * 200, y: 200 });
+  };
+
   return (
-    <ResponsivePixiContainer
-      x={x}
-      y={y}
-      screenWidth={width}
-      screenHeight={height}
-      data-testid="combat-screen"
-    >
+    <ResponsivePixiContainer x={x} y={y} data-testid="combat-screen">
       <DojangBackground
         width={width}
         height={height}
@@ -177,10 +176,7 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         width={width}
         height={height * (isMobile ? 0.65 : 0.75)}
         y={height * (isMobile ? 0.2 : 0.15)}
-        onPlayerClick={(playerIndex) => {
-          setSelectedPlayer(playerIndex);
-          addHitEffect("hit", { x: 100 + playerIndex * 200, y: 200 });
-        }}
+        onPlayerClick={handlePlayerClick}
       />
 
       <CombatHUD
@@ -201,8 +197,6 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         y={height * (isMobile ? 0.15 : 0.2)}
         width={isMobile ? width * 0.4 : 180}
         height={isMobile ? 200 : 300}
-        screenWidth={width}
-        screenHeight={height}
         data-testid="player1-status"
       >
         <PlayerStatusPanel
@@ -222,8 +216,6 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         y={height * (isMobile ? 0.15 : 0.2)}
         width={isMobile ? width * 0.4 : 180}
         height={isMobile ? 200 : 300}
-        screenWidth={width}
-        screenHeight={height}
         data-testid="player2-status"
       >
         <PlayerStatusPanel
@@ -243,8 +235,6 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         y={height - (isMobile ? 160 : 180)}
         width={isMobile ? width - 20 : 300}
         height={isMobile ? 100 : 160}
-        screenWidth={width}
-        screenHeight={height}
         data-testid="combat-stats-panel"
       >
         <CombatStats
@@ -260,8 +250,6 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
       <ResponsivePixiContainer
         x={isMobile ? 10 : 20}
         y={height - (isMobile ? 50 : 140)}
-        screenWidth={width}
-        screenHeight={height}
         data-testid="combat-controls-container"
       >
         <CombatControls
@@ -292,21 +280,13 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         y={isMobile ? 10 : 20}
         width={isMobile ? 70 : 120}
         height={isMobile ? 35 : 45}
-        screenWidth={width}
-        screenHeight={height}
         variant="secondary"
         onClick={onReturnToMenu}
         data-testid="return-menu-button"
       />
 
       {isPaused && (
-        <ResponsivePixiContainer
-          x={0}
-          y={0}
-          screenWidth={width}
-          screenHeight={height}
-          data-testid="pause-overlay"
-        >
+        <ResponsivePixiContainer x={0} y={0} data-testid="pause-overlay">
           <pixiGraphics
             draw={(g) => {
               g.clear();

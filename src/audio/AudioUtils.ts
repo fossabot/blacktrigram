@@ -182,3 +182,94 @@ export class AudioUtils {
     };
   }
 }
+
+/**
+ * Detect supported audio formats in the current browser
+ */
+export function detectSupportedFormats(): AudioFormat[] {
+  const audio = new Audio();
+  const formats: AudioFormat[] = [];
+
+  if (audio.canPlayType("audio/mp3")) {
+    formats.push("audio/mp3");
+  }
+
+  if (audio.canPlayType("audio/wav")) {
+    formats.push("audio/wav");
+  }
+
+  if (audio.canPlayType("audio/ogg")) {
+    formats.push("audio/ogg");
+  }
+
+  if (audio.canPlayType("audio/webm")) {
+    formats.push("audio/webm");
+  }
+
+  return formats;
+}
+
+/**
+ * Create and configure an audio element
+ */
+export function createAudioElement(
+  url: string,
+  volume: number = 1.0
+): HTMLAudioElement {
+  const audio = new Audio(url);
+  audio.volume = volume;
+  audio.preload = "auto";
+  return audio;
+}
+
+/**
+ * Validate audio URL format
+ */
+export function validateAudioUrl(url: string): boolean {
+  return typeof url === "string" && url.length > 0;
+}
+
+/**
+ * Normalize volume to range [0, 1]
+ */
+export function normalizeVolume(volume: number): number {
+  return Math.max(0, Math.min(1, volume));
+}
+
+/**
+ * Format audio duration from seconds to mm:ss
+ */
+export function formatDuration(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+}
+
+/**
+ * Check if the Audio API is supported
+ */
+export function isAudioSupported(): boolean {
+  return typeof Audio !== "undefined";
+}
+
+/**
+ * Get the optimal audio format from supported formats
+ */
+export function getOptimalFormat(
+  supportedFormats: AudioFormat[]
+): AudioFormat | null {
+  const preferredOrder: AudioFormat[] = [
+    "audio/webm",
+    "audio/mp3",
+    "audio/wav",
+    "audio/ogg",
+  ];
+
+  for (const format of preferredOrder) {
+    if (supportedFormats.includes(format)) {
+      return format;
+    }
+  }
+
+  return supportedFormats.length > 0 ? supportedFormats[0] : null;
+}

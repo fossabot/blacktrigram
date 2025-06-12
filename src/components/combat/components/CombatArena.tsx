@@ -1,8 +1,17 @@
 import React from "react";
 import { usePixiExtensions } from "../../../utils/pixiExtensions";
 import { Player } from "../../game/Player";
-import type { CombatArenaProps } from "../../../types/components";
+import type { PlayerState } from "../../../types/player";
 import { KOREAN_COLORS } from "../../../types/constants";
+
+export interface CombatArenaProps {
+  readonly players: readonly PlayerState[]; // now readonly
+  readonly onPlayerClick?: (idx: number) => void;
+  readonly width?: number;
+  readonly height?: number;
+  readonly x?: number;
+  readonly y?: number;
+}
 
 export const CombatArena: React.FC<CombatArenaProps> = ({
   players,
@@ -15,7 +24,7 @@ export const CombatArena: React.FC<CombatArenaProps> = ({
   usePixiExtensions();
 
   return (
-    <pixiContainer x={x} y={y} data-testid="combat-arena">
+    <pixiContainer x={x} y={y}>
       {/* Arena Floor */}
       <pixiGraphics
         draw={(g) => {
@@ -31,23 +40,15 @@ export const CombatArena: React.FC<CombatArenaProps> = ({
         }}
       />
 
-      {/* Player 1 */}
-      <Player
-        playerState={players[0]}
-        playerIndex={0}
-        x={width * 0.25}
-        y={height * 0.7}
-        onClick={() => onPlayerClick?.(0)}
-      />
-
-      {/* Player 2 */}
-      <Player
-        playerState={players[1]}
-        playerIndex={1}
-        x={width * 0.75}
-        y={height * 0.7}
-        onClick={() => onPlayerClick?.(1)}
-      />
+      {players.map((player, index) => (
+        <Player
+          key={player.id}
+          player={player}
+          x={index === 0 ? width * 0.25 : width * 0.75}
+          y={height * 0.7}
+          onClick={() => onPlayerClick?.(index)} // non-null
+        />
+      ))}
 
       {/* Arena Boundaries */}
       <pixiGraphics

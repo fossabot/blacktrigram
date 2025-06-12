@@ -1,11 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { AudioManager } from "../AudioManager";
-import type {
-  AudioConfig,
-  SoundEffectId,
-  MusicTrackId,
-} from "../../types/audio";
-import { AudioCategory } from "../../types/audio";
+import { AudioManager } from "./AudioManager";
+import type { AudioConfig, SoundEffectId, MusicTrackId } from "../types/audio";
+import { AudioCategory } from "../types/audio";
 
 // Enhanced mock for HTML Audio Element
 const createMockHTMLAudioElement = () => ({
@@ -84,11 +80,11 @@ describe("AudioManager", () => {
       await audioManager.initialize(mockAudioConfig);
 
       await expect(
-        audioManager.playMusicTrack("intro_theme" as MusicTrackId)
+        audioManager.playMusic("intro_theme" as MusicTrackId)
       ).resolves.not.toThrow();
 
       await expect(
-        audioManager.playMusicTrack("combat_theme" as MusicTrackId)
+        audioManager.playMusic("combat_theme" as MusicTrackId)
       ).resolves.not.toThrow();
 
       expect(audioManager).toBeInstanceOf(AudioManager);

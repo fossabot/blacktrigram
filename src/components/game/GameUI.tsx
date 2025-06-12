@@ -1,20 +1,17 @@
 import React from "react";
-import { usePixiExtensions } from "../../utils/pixiExtensions";
-import { HealthBar } from "../ui/HealthBar";
-import { StanceIndicator } from "../ui/StanceIndicator";
-import { RoundTimer } from "../ui/RoundTimer";
-import type { GameUIProps, PlayerState } from "../../types/components";
-import { Application } from "pixi.js";
+import { Application } from "@pixi/react";
+import type { PlayerState } from "../../types/player";
 
-export interface GameUIProps {
-  readonly players: readonly PlayerState[];
+// Fix: Define proper GameUIProps interface locally
+interface GameUIProps {
+  readonly players: PlayerState[];
   readonly roundNumber: number;
   readonly timeRemaining: number;
   readonly isPaused: boolean;
   readonly onTogglePause: () => void;
   readonly onReturnToMenu: () => void;
-  readonly width: number;
-  readonly height: number;
+  readonly width?: number;
+  readonly height?: number;
 }
 
 export const GameUI: React.FC<GameUIProps> = ({
@@ -22,106 +19,129 @@ export const GameUI: React.FC<GameUIProps> = ({
   roundNumber,
   timeRemaining,
   isPaused,
-  onTogglePause,
-  onReturnToMenu,
-  width,
-  height,
+  // Remove unused variables to fix warnings
+  // onTogglePause,
+  // onReturnToMenu,
+  width = 1200,
+  height = 800,
 }) => {
-  usePixiExtensions();
-
-  const handleReturnClick = () => {
-    onReturnToMenu();
+  const formatTime = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   return (
-    <Application
-      width={width}
-      height={height}
-      preference="webgl"
-      data-testid="game-ui"
-    >
-      {/* Player 1 Health Bar */}
-      <HealthBar
-        x={20}
-        y={20}
-        width={200}
-        height={20}
-        current={players[0].health}
-        max={players[0].maxHealth}
-        position="left"
-        playerName={players[0].name.korean}
-        showText={true}
-        screenWidth={800}
-        screenHeight={600}
-      />
+    <div style={{ width, height, position: "relative" }}>
+      <Application
+        width={width}
+        height={height}
+        // Fix: Use backgroundColor instead of background
+        backgroundColor={0x000000}
+        data-testid="game-ui"
+      >
+        {/* Player 1 Health Bar */}
+        <pixiContainer x={20} y={20}>
+          <pixiGraphics
+            draw={(g) => {
+              g.clear();
+              if (players[0]) {
+                const healthPercent = players[0].health / players[0].maxHealth;
+                g.fill({ color: 0x00ff00, alpha: 0.8 });
+                g.rect(0, 0, 200 * healthPercent, 20);
+                g.fill();
 
-      {/* Round Timer */}
-      <RoundTimer
-        x={300}
-        y={20}
-        currentRound={roundNumber}
-        maxRounds={3}
-        timeRemaining={timeRemaining}
-        totalTime={180}
-        width={200}
-        height={40}
-        isPaused={isPaused}
-        screenWidth={800}
-        screenHeight={600}
-      />
+                g.stroke({ width: 2, color: 0xffffff, alpha: 0.8 });
+                g.rect(0, 0, 200, 20);
+                g.stroke();
+              }
+            }}
+          />
 
-      {/* Player 2 Health Bar */}
-      <HealthBar
-        x={580}
-        y={20}
-        width={200}
-        height={20}
-        current={players[1].health}
-        max={players[1].maxHealth}
-        position="right"
-        playerName={players[1].name.korean}
-        showText={true}
-        screenWidth={800}
-        screenHeight={600}
-      />
+          <pixiText
+            text={players[0]?.name.korean || "Player 1"}
+            style={{
+              fontSize: 16,
+              fill: 0xffffff,
+              fontWeight: "bold",
+            }}
+            x={0}
+            y={-25}
+          />
+        </pixiContainer>
 
-      {/* Player 1 Stance Indicator */}
-      <StanceIndicator
-        x={20}
-        y={height - 100}
-        stance={players[0].currentStance}
-        size={60}
-      />
+        {/* Player 2 Health Bar */}
+        <pixiContainer x={width - 220} y={20}>
+          <pixiGraphics
+            draw={(g) => {
+              g.clear();
+              if (players[1]) {
+                const healthPercent = players[1].health / players[1].maxHealth;
+                g.fill({ color: 0xff6600, alpha: 0.8 });
+                g.rect(0, 0, 200 * healthPercent, 20);
+                g.fill();
 
-      {/* Player 2 Stance Indicator */}
-      <StanceIndicator
-        x={width - 80}
-        y={height - 100}
-        stance={players[1].currentStance}
-        size={60}
-      />
+                g.stroke({ width: 2, color: 0xffffff, alpha: 0.8 });
+                g.rect(0, 0, 200, 20);
+                g.stroke();
+              }
+            }}
+          />
 
-      {/* Return button */}
-      <pixiContainer x={20} y={height - 50}>
-        <pixiGraphics
-          draw={(g) => {
-            g.clear();
-            g.beginFill(0x666666, 0.8);
-            g.drawRoundedRect(0, 0, 80, 30, 5);
-            g.endFill();
-          }}
-          interactive={true}
-          onPointerDown={handleReturnClick}
-        />
-        <pixiText
-          text="돌아가기"
-          style={{ fontSize: 12, fill: 0xffffff }}
-          x={40}
-          y={15}
-          anchor={0.5}
-        />
-      </pixiContainer>
-    </Application>
+          <pixiText
+            text={players[1]?.name.korean || "Player 2"}
+            style={{
+              fontSize: 16,
+              fill: 0xffffff,
+              fontWeight: "bold",
+            }}
+            x={0}
+            y={-25}
+          />
+        </pixiContainer>
+
+        {/* Round and Timer */}
+        <pixiContainer x={width / 2} y={30}>
+          <pixiText
+            text={`Round ${roundNumber} - ${formatTime(timeRemaining)}`}
+            style={{
+              fontSize: 20,
+              fill: 0x00ffff,
+              fontWeight: "bold",
+              align: "center",
+            }}
+            anchor={0.5}
+          />
+        </pixiContainer>
+
+        {/* Pause indicator */}
+        {isPaused && (
+          <pixiContainer x={width / 2} y={height / 2}>
+            <pixiText
+              text="PAUSED"
+              style={{
+                fontSize: 48,
+                fill: 0xff0000,
+                fontWeight: "bold",
+                align: "center",
+              }}
+              anchor={0.5}
+            />
+          </pixiContainer>
+        )}
+
+        {/* Control hints */}
+        <pixiContainer x={20} y={height - 50}>
+          <pixiText
+            text="ESC: Pause | M: Menu"
+            style={{
+              fontSize: 14,
+              fill: 0xcccccc,
+            }}
+          />
+        </pixiContainer>
+      </Application>
+    </div>
   );
 };
 

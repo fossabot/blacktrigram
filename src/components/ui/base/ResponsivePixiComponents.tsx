@@ -1,63 +1,5 @@
 import React, { useState, useCallback, useMemo } from "react";
-import { usePixiExtensions } from "../../../utils/pixiExtensions";
 import { KOREAN_COLORS } from "../../../types/constants";
-
-// Define proper interfaces for responsive PixiJS components
-interface ResponsivePixiProps {
-  readonly screenWidth: number;
-  readonly screenHeight: number;
-  readonly x?: number;
-  readonly y?: number;
-  readonly children?: React.ReactNode;
-  readonly "data-testid"?: string;
-}
-
-interface ResponsivePixiButtonProps extends ResponsivePixiProps {
-  readonly text: string;
-  readonly width: number;
-  readonly height: number;
-  readonly variant?: "primary" | "secondary" | "accent" | "ghost" | "danger";
-  readonly onClick?: () => void;
-  readonly disabled?: boolean;
-}
-
-interface ResponsivePixiPanelProps extends ResponsivePixiProps {
-  readonly title: string;
-  readonly width: number;
-  readonly height: number;
-}
-
-// Responsive PixiJS Container that adapts to screen size
-export const ResponsivePixiContainer: React.FC<ResponsivePixiProps> = ({
-  screenWidth,
-  screenHeight,
-  x = 0,
-  y = 0,
-  children,
-  "data-testid": testId,
-}) => {
-  usePixiExtensions();
-
-  // Calculate responsive scale based on screen size
-  const scale = useMemo(() => {
-    const baseWidth = 1200;
-    const baseHeight = 800;
-    const scaleX = screenWidth / baseWidth;
-    const scaleY = screenHeight / baseHeight;
-    return Math.min(scaleX, scaleY, 1.0); // Don't scale up beyond 1.0
-  }, [screenWidth, screenHeight]);
-
-  return (
-    <pixiContainer
-      x={x}
-      y={y}
-      scale={{ x: scale, y: scale }}
-      data-testid={testId}
-    >
-      {children}
-    </pixiContainer>
-  );
-};
 
 // Responsive PixiJS Button with adaptive sizing
 export const ResponsivePixiButton: React.FC<ResponsivePixiButtonProps> = ({
@@ -67,21 +9,19 @@ export const ResponsivePixiButton: React.FC<ResponsivePixiButtonProps> = ({
   width,
   height,
   screenWidth,
-  screenHeight,
   variant = "primary",
   onClick,
   disabled = false,
   "data-testid": testId,
 }) => {
-  usePixiExtensions();
+  const sw = screenWidth ?? 0;
   const [isHovered, setIsHovered] = useState(false);
 
-  // Calculate responsive font size
   const fontSize = useMemo(() => {
-    const isMobile = screenWidth < 768;
-    const isTablet = screenWidth >= 768 && screenWidth < 1024;
+    const isMobile = sw < 768;
+    const isTablet = sw >= 768 && sw < 1024;
     return isMobile ? 12 : isTablet ? 14 : 16;
-  }, [screenWidth]);
+  }, [sw]);
 
   const getButtonColor = useCallback(() => {
     if (disabled) return KOREAN_COLORS.UI_DISABLED_BG;
@@ -111,11 +51,17 @@ export const ResponsivePixiButton: React.FC<ResponsivePixiButtonProps> = ({
           const alpha = isHovered ? 0.8 : 0.6;
 
           g.fill({ color, alpha });
-          g.roundRect(0, 0, width, height, 8);
+          g.roundRect(0, 0, width || 120, height || 40, 8);
           g.fill();
 
-          g.stroke({ width: 2, color: KOREAN_COLORS.PRIMARY_CYAN, alpha: 0.8 });
-          g.roundRect(0, 0, width, height, 8);
+          g.stroke({
+            width: 2,
+            color: disabled
+              ? KOREAN_COLORS.UI_DISABLED_BORDER
+              : KOREAN_COLORS.ACCENT_GOLD,
+            alpha: 0.8,
+          });
+          g.roundRect(0, 0, width || 120, height || 40, 8);
           g.stroke();
         }}
         interactive={!disabled}
@@ -133,10 +79,21 @@ export const ResponsivePixiButton: React.FC<ResponsivePixiButtonProps> = ({
           align: "center",
           fontWeight: "bold",
         }}
-        x={width / 2}
-        y={height / 2}
+        x={(width || 120) / 2}
+        y={(height || 40) / 2}
         anchor={0.5}
       />
+    </pixiContainer>
+  );
+};
+
+// Responsive PixiJS Container that adapts to screen size
+export const ResponsivePixiContainer: React.FC<
+  ResponsivePixiContainerProps
+> = ({ children, x = 0, y = 0, "data-testid": testId }) => {
+  return (
+    <pixiContainer x={x} y={y} data-testid={testId}>
+      {children}
     </pixiContainer>
   );
 };
@@ -144,71 +101,87 @@ export const ResponsivePixiButton: React.FC<ResponsivePixiButtonProps> = ({
 // Responsive PixiJS Panel with title bar
 export const ResponsivePixiPanel: React.FC<ResponsivePixiPanelProps> = ({
   title,
+  children,
   x = 0,
   y = 0,
-  width,
-  height,
-  screenWidth,
-  screenHeight,
-  children,
+  width = 200,
+  height = 150,
   "data-testid": testId,
 }) => {
-  usePixiExtensions();
-
-  // Calculate responsive font size
-  const titleFontSize = useMemo(() => {
-    const isMobile = screenWidth < 768;
-    const isTablet = screenWidth >= 768 && screenWidth < 1024;
-    return isMobile ? 14 : isTablet ? 16 : 18;
-  }, [screenWidth]);
-
   return (
     <pixiContainer x={x} y={y} data-testid={testId}>
-      {/* Panel background */}
       <pixiGraphics
         draw={(g) => {
           g.clear();
-          g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 0.8 });
-          g.roundRect(0, 0, width, height, 12);
+          g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_MEDIUM, alpha: 0.9 });
+          g.roundRect(0, 0, width, height, 8);
           g.fill();
 
-          g.stroke({ width: 2, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.6 });
-          g.roundRect(0, 0, width, height, 12);
+          g.stroke({
+            width: 2,
+            color: KOREAN_COLORS.ACCENT_GOLD,
+            alpha: 0.8,
+          });
+          g.roundRect(0, 0, width, height, 8);
           g.stroke();
         }}
       />
 
-      {/* Title bar */}
-      <pixiGraphics
-        draw={(g) => {
-          g.clear();
-          g.fill({ color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.2 });
-          g.roundRect(2, 2, width - 4, 30, 8);
-          g.fill();
-        }}
-      />
+      {title && (
+        <pixiText
+          text={title}
+          style={{
+            fontSize: 14,
+            fill: KOREAN_COLORS.ACCENT_GOLD,
+            fontWeight: "bold",
+          }}
+          x={10}
+          y={-20}
+        />
+      )}
 
-      {/* Title text */}
-      <pixiText
-        text={title}
-        style={{
-          fontSize: titleFontSize,
-          fill: KOREAN_COLORS.ACCENT_GOLD,
-          fontWeight: "bold",
-          align: "center",
-        }}
-        x={width / 2}
-        y={17}
-        anchor={0.5}
-      />
-
-      {/* Content area */}
-      <pixiContainer x={10} y={40}>
+      <pixiContainer x={0} y={25}>
         {children}
       </pixiContainer>
     </pixiContainer>
   );
 };
+
+// Props interfaces: make screenWidth/screenHeight optional
+export interface ResponsivePixiButtonProps {
+  readonly text: string;
+  readonly x?: number;
+  readonly y?: number;
+  readonly width?: number;
+  readonly height?: number;
+  readonly screenWidth?: number; // now optional
+  readonly screenHeight?: number; // now optional
+  readonly variant?: "primary" | "secondary" | "accent" | "ghost" | "danger";
+  readonly onClick?: () => void;
+  readonly disabled?: boolean;
+  readonly "data-testid"?: string;
+}
+
+export interface ResponsivePixiContainerProps {
+  readonly children?: React.ReactNode;
+  readonly x?: number;
+  readonly y?: number;
+  readonly screenWidth?: number; // now optional
+  readonly screenHeight?: number; // now optional
+  readonly "data-testid"?: string;
+}
+
+export interface ResponsivePixiPanelProps {
+  readonly title?: string;
+  readonly children?: React.ReactNode;
+  readonly x?: number;
+  readonly y?: number;
+  readonly width?: number;
+  readonly height?: number;
+  readonly screenWidth?: number; // now optional
+  readonly screenHeight?: number; // now optional
+  readonly "data-testid"?: string;
+}
 
 export default {
   ResponsivePixiContainer,

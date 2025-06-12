@@ -1,7 +1,8 @@
 import { TrigramStance } from "../types/enums";
-import type { PlayerState } from "../types/player";
+import type { PlayerState } from "../types/player"; // fix import
 import { TrigramCalculator } from "./trigram/TrigramCalculator";
-import { TRIGRAM_DATA } from "../types/constants/trigram";
+import type { TrigramTransitionCost } from "../types/anatomy";
+import { TRIGRAM_STANCES_ORDER } from "../types/constants";
 
 export class TrigramSystem {
   private calculator: TrigramCalculator;
@@ -20,7 +21,7 @@ export class TrigramSystem {
   ): boolean {
     if (fromStance === toStance) return true;
 
-    const cost = this.getTransitionCost(fromStance, toStance, player);
+    const cost = this.getTransitionCost(fromStance, toStance);
 
     // Check if player has sufficient resources
     const hasEnoughKi = player.ki >= cost.ki;
@@ -30,23 +31,43 @@ export class TrigramSystem {
   }
 
   /**
+   * Recommend optimal stance against opponent
+   */
+  recommendStance(player: PlayerState): TrigramStance {
+    const from = player.currentStance;
+    let best = from;
+    let bestScore = Infinity;
+
+    for (const to of TRIGRAM_STANCES_ORDER) {
+      const costObj: TrigramTransitionCost = this.getTransitionCost(from, to);
+      const score = costObj.ki + costObj.stamina + costObj.timeMs;
+      if (score < bestScore) {
+        bestScore = score;
+        best = to;
+      }
+    }
+
+    return best;
+  }
+
+  /**
    * Get transition cost between stances
    */
-  getTransitionCost(
-    fromStance: TrigramStance,
-    toStance: TrigramStance
+  private getTransitionCost(
+    from: TrigramStance,
+    to: TrigramStance
   ): TrigramTransitionCost {
-    if (fromStance === toStance) {
+    if (from === to) {
       return {
         ki: 0,
         stamina: 0,
-        timeMilliseconds: 0, // Fix: Add missing property
+        timeMs: 0, // Fix: Add missing property
       };
     }
 
     const difficulty = TrigramCalculator.calculateTransitionDifficulty(
-      fromStance,
-      toStance
+      from,
+      to
     );
     const baseCost = 10;
     const baseTime = 500;
@@ -54,7 +75,7 @@ export class TrigramSystem {
     return {
       ki: Math.ceil(baseCost * difficulty),
       stamina: Math.ceil(baseCost * difficulty * 1.5),
-      timeMilliseconds: Math.ceil(baseTime * difficulty), // Fix: Add missing property
+      timeMs: Math.ceil(baseTime * difficulty), // Fix: Add missing property
     };
   }
 
@@ -103,13 +124,6 @@ export class TrigramSystem {
   }
 
   /**
-   * Recommend optimal stance against opponent
-   */
-  recommendStance(opponentStance: TrigramStance): TrigramStance {
-    return this.calculator.getCounterStance(opponentStance);
-  }
-
-  /**
    * Validate transition with detailed feedback
    */
   validateTransition(
@@ -121,7 +135,7 @@ export class TrigramSystem {
       return { valid: true };
     }
 
-    const cost = this.getTransitionCost(fromStance, toStance, player);
+    const cost = this.getTransitionCost(fromStance, toStance);
 
     if (player.ki < cost.ki) {
       return {
@@ -138,24 +152,6 @@ export class TrigramSystem {
     }
 
     return { valid: true };
-  }
-
-  private getArchetypeModifier(player: PlayerState): number {
-    // Different archetypes have different stance transition costs
-    switch (player.archetype) {
-      case "musa":
-        return 0.9; // Warriors are efficient with stance changes
-      case "amsalja":
-        return 1.1; // Assassins pay more for stance changes
-      case "hacker":
-        return 1.0; // Neutral
-      case "jeongbo_yowon":
-        return 0.95; // Agents are well-trained
-      case "jojik_pokryeokbae":
-        return 1.2; // Gangsters are less efficient
-      default:
-        return 1.0;
-    }
   }
 }
 

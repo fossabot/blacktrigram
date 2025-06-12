@@ -133,52 +133,52 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (currentSection !== "menu" && event.key === "Escape") {
         setCurrentSection("menu");
-        audio.playSoundEffect("menu_back");
+        audio.playSFX("menu_back");
         return;
       }
       if (currentSection === "menu") {
         if (event.key === "ArrowUp") {
           setSelectedMenuIndex((prev) => {
             const next = prev === 0 ? MENU_ITEMS.length - 1 : prev - 1;
-            audio.playSoundEffect("menu_hover");
+            audio.playSFX("menu_hover");
             return next;
           });
         } else if (event.key === "ArrowDown") {
           setSelectedMenuIndex((prev) => {
             const next = prev === MENU_ITEMS.length - 1 ? 0 : prev + 1;
-            audio.playSoundEffect("menu_hover");
+            audio.playSFX("menu_hover");
             return next;
           });
         } else if (event.key === " " || event.key === "Enter") {
-          audio.playSoundEffect("menu_select");
+          audio.playSFX("menu_select");
           onMenuSelect(MENU_ITEMS[selectedMenuIndex].mode);
         } else {
           switch (event.key) {
             case "1":
               setSelectedMenuIndex(0);
-              audio.playSoundEffect("menu_hover");
-              audio.playSoundEffect("menu_select");
+              audio.playSFX("menu_hover");
+              audio.playSFX("menu_select");
               onMenuSelect(GameMode.VERSUS);
               break;
             case "2":
               setSelectedMenuIndex(1);
-              audio.playSoundEffect("menu_hover");
-              audio.playSoundEffect("menu_select");
+              audio.playSFX("menu_hover");
+              audio.playSFX("menu_select");
               onMenuSelect(GameMode.TRAINING);
               break;
             case "3":
               setSelectedMenuIndex(2);
-              audio.playSoundEffect("menu_hover");
-              audio.playSoundEffect("menu_select");
+              audio.playSFX("menu_hover");
+              audio.playSFX("menu_select");
               onMenuSelect(GameMode.PRACTICE);
               break;
             case "F1":
               setCurrentSection("controls");
-              audio.playSoundEffect("menu_select");
+              audio.playSFX("menu_select");
               break;
             case "4":
               setCurrentSection("philosophy");
-              audio.playSoundEffect("menu_select");
+              audio.playSFX("menu_select");
               break;
           }
         }
@@ -193,7 +193,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
     (mode: GameMode) => {
       const idx = MENU_ITEMS.findIndex((item) => item.mode === mode);
       setSelectedMenuIndex(idx >= 0 ? idx : 0);
-      audio.playSoundEffect("menu_select");
+      audio.playSFX("menu_select");
       onMenuSelect(mode);
     },
     [onMenuSelect, audio]
@@ -202,15 +202,15 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
   // Section navigation with audio feedback
   const handleShowPhilosophy = useCallback(() => {
     setCurrentSection("philosophy");
-    audio.playSoundEffect("menu_select");
+    audio.playSFX("menu_select");
   }, [audio]);
   const handleShowControls = useCallback(() => {
     setCurrentSection("controls");
-    audio.playSoundEffect("menu_select");
+    audio.playSFX("menu_select");
   }, [audio]);
   const handleBackToMenu = useCallback(() => {
     setCurrentSection("menu");
-    audio.playSoundEffect("menu_back");
+    audio.playSFX("menu_back");
   }, [audio]);
 
   // Responsive logo and layout calculations
@@ -519,7 +519,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                 }}
                 interactive={true}
                 onPointerDown={() => {
-                  audio.playSoundEffect("menu_hover");
+                  audio.playSFX("menu_hover");
                   // Toggle archetype list visibility or cycle through archetypes
                   setSelectedArchetype((prev) => (prev + 1) % 5);
                 }}
@@ -614,7 +614,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                     interactive={true}
                     onPointerDown={() => {
                       setSelectedArchetype(index);
-                      audio.playSoundEffect("menu_select");
+                      audio.playSFX("menu_select");
                     }}
                     data-testid={`archetype-option-${archetype.id}-button`}
                   />
@@ -732,7 +732,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                     interactive={true}
                     onPointerDown={() => {
                       setSelectedArchetype((prev) => (prev + 1) % 5);
-                      audio.playSoundEffect("menu_hover");
+                      audio.playSFX("menu_hover");
                     }}
                     data-testid="archetype-display-image"
                   />

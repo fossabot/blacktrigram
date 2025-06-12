@@ -1,18 +1,11 @@
 // Test setup for Black Trigram Korean martial arts game
 
 import { beforeAll, afterEach, vi } from "vitest";
-import { cleanup } from "@testing-library/react";
+import { expect } from "vitest";
 import * as matchers from "@testing-library/jest-dom/matchers";
 
 expect.extend(matchers);
 
-// Cleanup after each test case
-afterEach(() => {
-  cleanup();
-  vi.clearAllMocks();
-});
-
-// Mock PixiJS
 beforeAll(() => {
   // Enhanced Audio mock with proper HTMLAudioElement that matches test expectations
   global.HTMLAudioElement = vi.fn().mockImplementation(() => ({
@@ -52,39 +45,21 @@ beforeAll(() => {
     removeEventListener: vi.fn(),
   })) as any;
 
-  // Mock CanvasRenderer
-  vi.mock("pixi.js", async () => {
-    const actual = await vi.importActual("pixi.js");
-    return {
-      ...actual,
-      autoDetectRenderer: vi.fn(() => ({
-        render: vi.fn(),
-        destroy: vi.fn(),
-        plugins: {},
-      })),
-      Application: vi
-        .fn()
-        .mockImplementation(function (this: any, options: any) {
-          this.stage = {
-            children: [],
-            addChild: vi.fn(),
-            removeChild: vi.fn(),
-          };
-          this.renderer = { render: vi.fn(), destroy: vi.fn() };
-          this.ticker = {
-            add: vi.fn(),
-            remove: vi.fn(),
-            start: vi.fn(),
-            stop: vi.fn(),
-          };
-          this.init = vi.fn(() => Promise.resolve());
-          this.destroy = vi.fn();
-          return this;
-        }),
-    };
-  });
+  // Mock Canvas API
+  global.CanvasRenderingContext2D = vi.fn().mockImplementation(() => ({
+    fillRect: vi.fn(),
+    clearRect: vi.fn(),
+    beginPath: vi.fn(),
+    arc: vi.fn(),
+    fill: vi.fn(),
+    stroke: vi.fn(),
+  }));
 
-  // Mock window.matchMedia for responsive tests
+  // Mock requestAnimationFrame
+  global.requestAnimationFrame = vi.fn((cb) => window.setTimeout(cb, 16));
+  global.cancelAnimationFrame = vi.fn((id) => clearTimeout(id));
+
+  // Mock window.matchMedia
   Object.defineProperty(window, "matchMedia", {
     writable: true,
     value: vi.fn().mockImplementation((query) => ({
@@ -98,4 +73,33 @@ beforeAll(() => {
       dispatchEvent: vi.fn(),
     })),
   });
+
+  // Mock ResizeObserver
+  global.ResizeObserver = vi.fn().mockImplementation(() => ({
+    observe: vi.fn(),
+    unobserve: vi.fn(),
+    disconnect: vi.fn(),
+  }));
+
+  // Console warning suppression for cleaner test output
+  const originalWarn = console.warn;
+  console.warn = (...args) => {
+    // Suppress specific warnings that are expected in test environment
+    const message = args[0];
+    if (
+      typeof message === "string" &&
+      (message.includes("PixiJS") ||
+        message.includes("WebGL") ||
+        message.includes("AudioContext"))
+    ) {
+      return;
+    }
+    originalWarn(...args);
+  };
+});
+
+// Cleanup after each test case
+afterEach(() => {
+  // Clean up any test-specific mocks
+  vi.clearAllMocks();
 });

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import * as AudioUtils from "../AudioUtils";
-import type { AudioFormat } from "../../types/audio";
+import * as AudioUtils from "./AudioUtils";
+import type { AudioFormat } from "../types/audio";
 
 // Enhanced mock Audio constructor for testing
 const createMockAudio = (canPlayResponse: string = "probably") => {

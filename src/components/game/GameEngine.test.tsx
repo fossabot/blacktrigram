@@ -1,6 +1,7 @@
+import React from "react";
 import { render, screen } from "@testing-library/react";
 import { vi } from "vitest";
-import { GameEngine } from "../GameEngine";
+import { GameEngine } from "./GameEngine"; // <- fixed path
 import { createMockPlayerState } from "../../../test/test-utils";
 
 // Mock PixiJS
@@ -23,36 +24,25 @@ describe("GameEngine", () => {
     player2: { ...createMockPlayerState(), id: "player2" },
     onGameStateChange: vi.fn(),
     onCombatResult: vi.fn(),
-    width: 1200,
-    height: 800,
+    onPlayerUpdate: vi.fn(), // <- added
+    width: 800,
+    height: 600,
   };
 
   it("renders without crashing", () => {
-    render(
-      <div data-testid="game-engine">
-        <GameEngine {...mockProps} />
-      </div>
-    );
+    render(<GameEngine {...mockProps} />);
 
     expect(screen.getByTestId("game-engine")).toBeInTheDocument();
   });
 
   it("handles player updates correctly", () => {
-    render(
-      <div data-testid="game-engine">
-        <GameEngine {...mockProps} />
-      </div>
-    );
+    render(<GameEngine {...mockProps} />);
 
     expect(screen.getByTestId("game-engine")).toBeInTheDocument();
   });
 
   it("processes combat results", () => {
-    render(
-      <div data-testid="game-engine">
-        <GameEngine {...mockProps} />
-      </div>
-    );
+    render(<GameEngine {...mockProps} />);
 
     expect(screen.getByTestId("game-engine")).toBeInTheDocument();
   });

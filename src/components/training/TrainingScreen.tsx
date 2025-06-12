@@ -125,9 +125,9 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = ({
       // Safe audio playback
       try {
         if (isPerfect) {
-          audio.playSoundEffect("perfect_strike");
+          audio.playSFX("perfect_strike");
         } else {
-          audio.playSoundEffect("attack_medium");
+          audio.playSFX("attack_medium");
         }
       } catch (audioError) {
         console.warn("Audio playback failed:", audioError);
@@ -167,7 +167,7 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = ({
     (newStance: TrigramStance) => {
       setSelectedStance(newStance);
       onPlayerUpdate({ currentStance: newStance });
-      audio.playSoundEffect("stance_change");
+      audio.playSFX("stance_change");
     },
     [onPlayerUpdate, audio]
   );
@@ -192,9 +192,9 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = ({
         sessionTime: 0,
         attempts: 0,
       });
-      audio.playSoundEffect("match_start");
+      audio.playSFX("match_start");
     } else {
-      audio.playSoundEffect("match_end");
+      audio.playSFX("match_end");
     }
   }, [isTraining, audio]);
 
@@ -204,12 +204,12 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = ({
       ...prev,
       health: prev.maxHealth,
     }));
-    audio.playSoundEffect("ki_charge");
+    audio.playSFX("ki_charge");
   }, [audio]);
 
   // Handle training evaluation
   const handleEvaluate = useCallback(() => {
-    audio.playSoundEffect("menu_select");
+    audio.playSFX("menu_select");
     // Training evaluation logic here
   }, [audio]);
 

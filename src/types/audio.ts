@@ -136,37 +136,45 @@ export interface AudioState {
 
 // Audio manager interface
 export interface AudioManager {
+  // initialization
+  initialize(): Promise<void>;
+
+  // current state
   readonly isInitialized: boolean;
   readonly fallbackMode: boolean;
-  readonly currentMusicTrack: string | null;
+  readonly currentMusicTrack: MusicTrackId | null;
 
-  // Volume getters
+  // volumes
   readonly masterVolume: number;
-  readonly sfxVolume: number;
   readonly musicVolume: number;
+  readonly sfxVolume: number;
   readonly muted: boolean;
 
-  // Core methods
-  initialize(): Promise<void>;
+  // play / stop
   playSFX(id: SoundEffectId, volume?: number): Promise<void>;
   playMusic(id: MusicTrackId, volume?: number): Promise<void>;
-  playVoice(id: VoiceLineId, archetype?: PlayerArchetype): Promise<void>;
+  // alias for backward compatibility
+  playSoundEffect(id: SoundEffectId, volume?: number): Promise<void>;
+  stopMusic(): void;
   stopAll(): void;
 
-  // Fix setVolume to use string union instead of AudioCategory enum
-  setVolume(type: "master" | "sfx" | "music" | "voice", volume: number): void;
-
+  // controls
+  setVolume(type: "master" | "music" | "sfx" | "voice", v: number): void;
   mute(): void;
   unmute(): void;
+
+  // fades
   fadeOut(duration?: number): Promise<void>;
   fadeIn(trackId: MusicTrackId, duration?: number): Promise<void>;
   crossfade(
-    fromTrackId: MusicTrackId,
-    toTrackId: MusicTrackId,
+    from: MusicTrackId,
+    to: MusicTrackId,
     duration?: number
   ): Promise<void>;
-  getLoadedAssets(): ReadonlyMap<string, HTMLAudioElement>;
+
+  // asset loading
   loadAsset(asset: AudioAsset): Promise<void>;
+  getLoadedAssets(): ReadonlyMap<string, HTMLAudioElement>;
 }
 
 // Enhanced audio asset - fix inheritance

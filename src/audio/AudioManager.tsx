@@ -1,6 +1,10 @@
-import React, { createContext, useContext, ReactNode } from "react";
+import { createContext, useContext, ReactNode } from "react";
 import { AudioManager } from "./AudioManager";
 import type { IAudioManager } from "../types/audio";
+// Audio manager component for React integration
+import React, { useEffect, useRef } from "react";
+import type { PlayerArchetype } from "../types/enums";
+import type { SoundEffectId, MusicTrackId } from "../types/audio";
 
 // Create audio context
 const AudioContext = createContext<IAudioManager | null>(null);
@@ -31,12 +35,6 @@ export function useAudio(): IAudioManager {
 
 // Default export for compatibility
 export { useAudio as default };
-
-// Audio manager component for React integration
-import React, { useEffect, useRef } from "react";
-import { useAudio } from "./AudioProvider";
-import type { PlayerArchetype } from "../types/enums";
-import type { SoundEffectId, MusicTrackId } from "../types/audio";
 
 interface AudioManagerComponentProps {
   autoPlayIntro?: boolean;
@@ -116,5 +114,3 @@ export const AudioManagerComponent: React.FC<AudioManagerComponentProps> = ({
 
   return null;
 };
-
-export default AudioManagerComponent;
