@@ -1,5 +1,5 @@
 import type { PlayerState, TrigramTransitionCost } from "../../types";
-import { TrigramStance } from "../../types/enums"; // Fix: Import as value, not type
+import { TrigramStance } from "../../types/enums";
 import { TrigramCalculator } from "./TrigramCalculator";
 import { PLAYER_ARCHETYPES_DATA } from "../../types/constants";
 
@@ -15,10 +15,18 @@ export interface StanceChangeResult {
  */
 export class StanceManager {
   private readonly minTransitionInterval = 500;
+  private currentStance?: TrigramStance;
 
   // Fix: Remove constructor parameter requirement
   constructor() {
     // No initialization needed
+  }
+
+  /**
+   * Return the last stance we set (undefined if none yet)
+   */
+  public getCurrent(): TrigramStance | undefined {
+    return this.currentStance;
   }
 
   /**
@@ -47,6 +55,7 @@ export class StanceManager {
 
     // Same stance - no cost
     if (player.currentStance === newStance) {
+      this.currentStance = newStance;
       return {
         success: true,
         updatedPlayer: {
@@ -65,6 +74,7 @@ export class StanceManager {
       stamina: Math.max(0, player.stamina - cost.stamina),
       lastStanceChangeTime: Date.now(),
     };
+    this.currentStance = newStance;
 
     return {
       success: true,

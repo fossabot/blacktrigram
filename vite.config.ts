@@ -1,9 +1,29 @@
 /// <reference types="vitest" />
-import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { readFileSync } from "fs";
+import path from "path";
+import { defineConfig } from "vite";
+import tsconfigPaths from "vite-tsconfig-paths";
+import { defineConfig as defineVitestConfig } from "vitest/config";
+
+// Read version from package.json
+interface PackageJson {
+  version: string;
+  name: string;
+  [key: string]: any;
+}
+
+const packageJson: PackageJson = JSON.parse(
+  readFileSync(path.resolve("./package.json"), "utf8")
+);
 
 export default defineConfig(({ command, mode }) => ({
-  plugins: [react()],
+    plugins: [
+    // Enable React features
+    react(),
+    // Support for TypeScript paths
+    tsconfigPaths(),
+  ],
   // Use relative paths for production builds (GitHub Pages)
   base: command === "build" ? "./" : "/",
   resolve: {
@@ -29,7 +49,7 @@ export default defineConfig(({ command, mode }) => ({
     ],
   },
   build: {
-    target: "esnext",
+    target: "es2022",
     // Reduced chunk size warning limit for game assets
     chunkSizeWarningLimit: 500,
     // Force minification
@@ -132,7 +152,8 @@ export default defineConfig(({ command, mode }) => ({
   },
 
   esbuild: {
-    target: "ES2020",
+    target: "es2022",
+    jsx: "automatic",
     // Remove console logs in production
     drop: mode === "production" ? ["console", "debugger"] : [],
     // Optimize for smaller bundle
@@ -152,6 +173,9 @@ export default defineConfig(({ command, mode }) => ({
     hmr: { overlay: false },
     middlewareMode: false,
     compress: true, // Enable gzip compression in dev
+  },
+  define: {
+    APP_VERSION: JSON.stringify(packageJson.version),
   },
 
   // Preview server optimizations

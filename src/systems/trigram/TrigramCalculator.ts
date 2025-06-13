@@ -8,38 +8,18 @@ const STANCE_EFFECTIVENESS_MATRIX: Record<
   TrigramStance,
   Partial<Record<TrigramStance, number>>
 > = {
-  [TrigramStance.GEON]: {
-    [TrigramStance.GON]: 1.2, // Heaven overcomes Earth
-    [TrigramStance.SON]: 0.8, // Heaven is weakened by Wind
-  },
-  [TrigramStance.GON]: {
-    [TrigramStance.GEON]: 0.8, // Earth is overcome by Heaven
-    [TrigramStance.GAM]: 1.2, // Earth absorbs Water
-  },
-  [TrigramStance.TAE]: {
-    [TrigramStance.JIN]: 1.2, // Lake reflects Thunder
-    [TrigramStance.GAN]: 0.8, // Lake is contained by Mountain
-  },
-  [TrigramStance.JIN]: {
-    [TrigramStance.TAE]: 0.8, // Thunder is reflected by Lake
-    [TrigramStance.SON]: 1.2, // Thunder moves Wind
-  },
-  [TrigramStance.LI]: {
-    [TrigramStance.GAM]: 1.2, // Fire evaporates Water
-    [TrigramStance.TAE]: 0.8, // Fire is extinguished by Lake
-  },
+  [TrigramStance.GEON]: { [TrigramStance.GON]: 1.2, [TrigramStance.SON]: 0.8 },
+  [TrigramStance.GON]: { [TrigramStance.GEON]: 0.8, [TrigramStance.GAM]: 1.2 },
+  [TrigramStance.TAE]: { [TrigramStance.JIN]: 1.2, [TrigramStance.GAN]: 0.8 },
+  [TrigramStance.JIN]: { [TrigramStance.TAE]: 0.8, [TrigramStance.SON]: 1.2 },
+  [TrigramStance.LI]: { [TrigramStance.GAM]: 0.8, [TrigramStance.TAE]: 0.8 },
   [TrigramStance.GAM]: {
-    [TrigramStance.LI]: 0.8, // Water is evaporated by Fire
-    [TrigramStance.GON]: 0.8, // Water is absorbed by Earth
+    // water extinguishes fire:
+    [TrigramStance.LI]: 1.2,
+    [TrigramStance.GON]: 0.8,
   },
-  [TrigramStance.SON]: {
-    [TrigramStance.GEON]: 1.2, // Wind moves Heaven
-    [TrigramStance.JIN]: 0.8, // Wind is moved by Thunder
-  },
-  [TrigramStance.GAN]: {
-    [TrigramStance.TAE]: 1.2, // Mountain contains Lake
-    [TrigramStance.LI]: 0.8, // Mountain is heated by Fire
-  },
+  [TrigramStance.SON]: { [TrigramStance.GEON]: 1.2, [TrigramStance.JIN]: 0.8 },
+  [TrigramStance.GAN]: { [TrigramStance.TAE]: 1.2, [TrigramStance.LI]: 0.8 },
 };
 
 export class TrigramCalculator {
@@ -182,6 +162,6 @@ export class TrigramCalculator {
     const normalizedDistance = distance / (stanceOrder.length / 2);
     return baseDifficulty + normalizedDistance * 0.5;
   }
-}
+} // end of class
 
 export { STANCE_EFFECTIVENESS_MATRIX };
