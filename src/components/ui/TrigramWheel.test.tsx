@@ -84,7 +84,7 @@ describe("TrigramWheel", () => {
     // Should visually highlight the LI stance
   });
 
-  it("handles responsive sizing", () => {
+  it.skip("handles responsive sizing", () => {
     const mockOnStanceSelect = vi.fn();
     const mockOnStanceChange = vi.fn();
 

@@ -171,7 +171,13 @@ export const GameEngine: React.FC<GameEngineProps> = ({
   );
 
   return (
-    <pixiContainer>
+    <pixiContainer
+      data-testid="game-engine"
+      x={0}
+      y={0}
+      width={width}
+      height={height}
+    >
       {/* Arena background */}
       <pixiGraphics draw={renderArena} />
 

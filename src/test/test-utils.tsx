@@ -81,3 +81,4 @@ export function renderWithPixi(
 // Re-export everything from testing library
 export * from "@testing-library/react";
 export { render } from "@testing-library/react";
+export { renderWithPixi };
