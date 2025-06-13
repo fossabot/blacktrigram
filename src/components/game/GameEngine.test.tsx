@@ -4,14 +4,7 @@ import { vi } from "vitest";
 import { GameEngine } from "./GameEngine"; // <- fixed path
 import { createMockPlayerState } from "../../../test/test-utils";
 
-// Mock PixiJS
-vi.mock("@pixi/react", async (importOriginal) => {
-  const actual = await importOriginal();
-  return {
-    ...actual,
-    extend: vi.fn(), // stub out extend
-  };
-});
+// no explicit vi.mock here – rely on test-utils.tsx’s top‐level mock
 
 describe("GameEngine", () => {
   const mockProps = {

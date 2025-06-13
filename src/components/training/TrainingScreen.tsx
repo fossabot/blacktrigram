@@ -10,7 +10,7 @@ import {
 import { KOREAN_COLORS } from "../../types/constants";
 import { TrigramStance } from "../../types/enums";
 import type { PlayerState } from "../../types/player";
-import { useAudio } from "../../audio/AudioProvider";
+import { AudioProvider, useAudio } from "../../audio/AudioProvider";
 import { extend } from "@pixi/react";
 import { Container, Graphics, Text } from "pixi.js";
 
@@ -41,15 +41,18 @@ interface TrainingDummy {
 // Training mode types
 type TrainingMode = "basics" | "advanced" | "free";
 
-export const TrainingScreen: React.FC<TrainingScreenProps> = ({
-  player,
-  onPlayerUpdate,
-  onReturnToMenu,
-  width,
-  height,
-  x = 0,
-  y = 0,
-}) => {
+export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
+  // pull dimensions out of props
+  const {
+    width = 0,
+    height = 0,
+    player,
+    onPlayerUpdate,
+    onReturnToMenu,
+    x = 0,
+    y = 0,
+  } = props;
+
   const audio = useAudio();
   const [selectedStance, setSelectedStance] = useState<TrigramStance>(
     TrigramStance.GEON
@@ -796,4 +799,12 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = ({
   );
 };
 
-export default TrainingScreen;
+const TrainingScreenWrapper: React.FC<TrainingScreenProps> = (props) => {
+  return (
+    <AudioProvider>
+      <TrainingScreen {...props} width={props.width} height={props.height} />
+    </AudioProvider>
+  );
+};
+
+export default TrainingScreenWrapper;

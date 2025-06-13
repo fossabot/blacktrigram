@@ -1,7 +1,6 @@
 import React from "react";
 import { render, RenderOptions } from "@testing-library/react";
 import { vi } from "vitest";
-import { AudioProvider } from "../audio/AudioProvider";
 
 // Mock PixiJS components for testing
 const MockApplication: React.FC<any> = ({ children, ...props }) => (
@@ -40,11 +39,27 @@ const mockPixiComponents = {
 };
 
 // Mock the @pixi/react module
-vi.mock("@pixi/react", () => ({
-  Application: MockApplication,
-  extend: vi.fn(),
-  useApplication: () => ({ app: mockPixiComponents }),
-  useTick: vi.fn(),
+vi.mock("@pixi/react", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    Application: ({ children }: any) => <>{children}</>,
+    extend: vi.fn(),
+    useApplication: () => ({ app: {} }),
+    useTick: vi.fn(),
+  };
+});
+
+// Stub out AudioProvider/useAudio so TrainingScreen sees a provider
+vi.mock("../src/audio/AudioProvider", () => ({
+  AudioProvider: ({ children }: any) => <>{children}</>,
+  useAudio: () => ({
+    playSoundEffect: vi.fn(),
+    playMusic: vi.fn(),
+    setVolume: vi.fn(),
+    mute: vi.fn(),
+    unmute: vi.fn(),
+  }),
 }));
 
 // Custom render function for components that need PixiJS
