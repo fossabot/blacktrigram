@@ -81,15 +81,12 @@ describe("TrainingScreen", () => {
 
     it("should display correct Korean text elements", async () => {
       renderTrainingScreen();
-
-      await waitFor(
-        () => {
-          expect(screen.getByTestId("training-title")).toHaveTextContent(
-            "흑괘 무술 도장"
-          );
-        },
-        { timeout: 5000 }
-      );
+      // grab the pixiText attribute "text"
+      await waitFor(() => {
+        expect(screen.getByTestId("training-title").getAttribute("text")).toBe(
+          "흑괘 무술 도장"
+        );
+      });
     });
   });
 
@@ -101,39 +98,36 @@ describe("TrainingScreen", () => {
       fireEvent.click(basicsMode);
 
       await waitFor(() => {
-        expect(screen.getByTestId("training-mode-display")).toHaveTextContent(
-          "basics"
-        );
+        expect(
+          screen.getByTestId("training-mode-display").getAttribute("text")
+        ).toContain("basics");
       });
     });
 
     it("should update difficulty levels", async () => {
       renderTrainingScreen();
 
-      const advancedDifficulty = await screen.findByTestId(
-        "difficulty-advanced"
-      );
+      const advancedDifficulty = await screen.findByTestId("mode-advanced");
       fireEvent.click(advancedDifficulty);
 
       await waitFor(() => {
-        expect(screen.getByTestId("training-mode-display")).toHaveTextContent(
-          "advanced"
-        );
+        expect(
+          screen.getByTestId("training-mode-display").getAttribute("text")
+        ).toContain("advanced");
       });
     });
   });
 
   describe("Stance Training", () => {
     it("should change stances correctly", async () => {
-      const mockPlayerUpdate = vi.fn();
-      renderTrainingScreen({ onPlayerUpdate: mockPlayerUpdate });
+      const mockUpdate = vi.fn();
+      renderTrainingScreen({ onPlayerUpdate: mockUpdate });
 
-      // Simulate stance change through trigram wheel
-      const trigramWheel = await screen.findByTestId("trigram-wheel");
+      const trigramWheel = await screen.findByTestId("training-trigram-wheel");
       fireEvent.click(trigramWheel);
 
       await waitFor(() => {
-        expect(mockPlayerUpdate).toHaveBeenCalledWith({
+        expect(mockUpdate).toHaveBeenCalledWith({
           currentStance: expect.any(String),
         });
       });
@@ -148,30 +142,24 @@ describe("TrainingScreen", () => {
       fireEvent.click(startButton);
 
       await waitFor(() => {
-        expect(
-          screen.getByTestId("execute-technique-button")
-        ).toBeInTheDocument();
-        expect(screen.getByTestId("session-time")).toBeInTheDocument();
+        expect(screen.getByTestId("execute-technique-button")).toBeTruthy();
+        expect(screen.getByTestId("session-time")).toBeTruthy();
       });
     });
 
     it("should execute techniques and update statistics", async () => {
       renderTrainingScreen();
+      fireEvent.click(await screen.findByTestId("start-training-button"));
 
-      // Start training
-      const startButton = await screen.findByTestId("start-training-button");
-      fireEvent.click(startButton);
-
-      // Execute technique
       const executeButton = await screen.findByTestId(
         "execute-technique-button"
       );
       fireEvent.click(executeButton);
 
       await waitFor(() => {
-        expect(screen.getByTestId("attempts-count")).not.toHaveTextContent(
-          "시도: 0"
-        );
+        expect(
+          screen.getByTestId("attempts-count").getAttribute("text")
+        ).not.toMatch(/시도:\s*0/);
       });
     });
   });
@@ -185,7 +173,8 @@ describe("TrainingScreen", () => {
 
       await waitFor(() => {
         const feedbackMessage = screen.getByTestId("feedback-message");
-        expect(feedbackMessage).toHaveTextContent(/연습|실력|진전/);
+        const text = feedbackMessage.getAttribute("text") || "";
+        expect(text).toMatch(/연습|실력|진전/);
       });
     });
   });
@@ -204,13 +193,13 @@ describe("TrainingScreen", () => {
 
   describe("Navigation", () => {
     it("should return to menu correctly", async () => {
-      const mockReturnToMenu = vi.fn();
-      renderTrainingScreen({ onReturnToMenu: mockReturnToMenu });
+      const mockReturn = vi.fn();
+      renderTrainingScreen({ onReturnToMenu: mockReturn });
 
-      const returnButton = await screen.findByTestId("return-menu-button");
+      const returnButton = await screen.findByTestId("return-to-menu-button");
       fireEvent.click(returnButton);
 
-      expect(mockReturnToMenu).toHaveBeenCalled();
+      expect(mockReturn).toHaveBeenCalled();
     });
   });
 
