@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { TrigramSystem } from "../TrigramSystem";
-import { TrigramStance, PlayerArchetype } from "../../types/enums";
-import { createPlayerFromArchetype } from "../../utils/playerUtils";
-import type { PlayerState } from "../../types";
+import { TrigramSystem } from "./TrigramSystem";
+import { TrigramStance, PlayerArchetype } from "../types/enums";
+import { createPlayerFromArchetype } from "../utils/playerUtils";
+import type { PlayerState } from "../types";
 
 describe("TrigramSystem", () => {
   let system: TrigramSystem;
