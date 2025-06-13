@@ -1,56 +1,82 @@
-// PIXI React v8 hook for component extensions
+import { useEffect } from "react";
 import { extend } from "@pixi/react";
-import { Container, Graphics } from "pixi.js";
+import {
+  Container,
+  Graphics,
+  Text,
+  Sprite,
+  AnimatedSprite,
+  TilingSprite,
+  BitmapText,
+  NineSliceSprite,
+} from "pixi.js";
 
-// Extend PixiJS components for React usage
-extend({ Container, Graphics });
-
-/**
- * Hook to ensure PixiJS extensions are loaded
- */
-export function usePixiExtensions() {
-  // Extensions are loaded via the extend call above
-  // This hook can be used to ensure proper loading order
-  return true;
-}
-
-// Re-export useTick for convenience
+// Re-export useTick from @pixi/react for convenience
 export { useTick } from "@pixi/react";
 
-// Available component list for reference
-export const AVAILABLE_PIXI_COMPONENTS = [
-  "pixiContainer",
-  "pixiGraphics",
-  "pixiText",
-  "pixiSprite",
-  "pixiAnimatedSprite",
-  "pixiTilingSprite",
-  "pixiParticleContainer",
-  "pixiBitmapText",
-] as const;
+// Extend PIXI React with all components used in Black Trigram
+export function usePixiExtensions(): void {
+  useEffect(() => {
+    extend({
+      Container,
+      Graphics,
+      Text, // Fixed: Add Text to extensions
+      Sprite,
+      AnimatedSprite,
+      TilingSprite,
+      BitmapText,
+      NineSliceSprite,
+    });
+  }, []);
+}
 
-/**
- * PixiJS extension utilities for Black Trigram
- */
-export const PixiExtensions = {
-  /**
-   * Check if PixiJS is properly initialized
-   */
-  isInitialized: () => {
-    const w = window as any;
-    return typeof w !== "undefined" && typeof w.PIXI !== "undefined";
-  },
+// Enhanced Graphics API wrapper for v8 compatibility
+export const createKoreanGraphics = () => {
+  const graphics = new Graphics();
 
-  /**
-   * Get PixiJS version information
-   */
-  getVersion: () => {
-    const w: any = window;
-    return w.PIXI ? w.PIXI.VERSION : null;
-  },
-} as const;
+  // Modern PixiJS v8 API wrappers
+  const drawRoundedRect = (
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    radius: number
+  ) => {
+    return graphics.roundRect(x, y, width, height, radius); // Updated API
+  };
 
-export default {
-  usePixiExtensions,
-  PixiExtensions,
+  const fillWithColor = (color: number, alpha = 1) => {
+    return graphics.fill({ color, alpha }); // Updated API - no beginFill/endFill needed
+  };
+
+  const strokeWithColor = (color: number, width = 1, alpha = 1) => {
+    return graphics.stroke({ color, width, alpha }); // Updated API
+  };
+
+  return {
+    graphics,
+    drawRoundedRect,
+    fillWithColor,
+    strokeWithColor,
+  };
+};
+
+// Korean martial arts specific drawing utilities
+export const drawTrigramSymbol = (
+  graphics: Graphics,
+  x: number,
+  y: number,
+  size: number
+) => {
+  graphics.clear();
+
+  // Draw trigram lines using modern API
+  graphics.rect(x, y, size, size / 8);
+  graphics.fill({ color: 0x00ffff });
+
+  graphics.rect(x, y + size / 3, size, size / 8);
+  graphics.fill({ color: 0x00ffff });
+
+  graphics.rect(x, y + (2 * size) / 3, size, size / 8);
+  graphics.fill({ color: 0x00ffff });
 };

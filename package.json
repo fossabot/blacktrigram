@@ -4,11 +4,17 @@
   "version": "0.2.5",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "dev": "vite --host",
+    "build": "tsc -b && vite build --mode production",
+    "build:analyze": "tsc -b && vite build --mode production && npx vite-bundle-analyzer dist/assets/*.js",
+    "build:production": "NODE_ENV=production tsc -b && vite build --mode production --minify esbuild",
+    "build:profile": "tsc -b && vite build --mode production --profile --minify esbuild",
+    "build:stats": "tsc -b && vite build --mode production && npx vite-bundle-analyzer dist/assets/*.js",
+    "build:fast": "tsc -b --incremental && vite build --mode production --minify esbuild",
     "check": "tsc -b",
     "lint": "eslint .",
-    "preview": "vite preview",
+    "preview": "vite preview --host",
+    "preview:analyze": "vite preview --host --mode analyze",
     "test": "vitest run --reporter=verbose",
     "test:systems": "vitest run src/systems",
     "test:systems:watch": "vitest src/systems",
@@ -17,7 +23,9 @@
     "coverage": "vitest run --coverage --coverage.reportOnFailure --reporter=verbose",
     "test:ci": "vitest run --coverage --reporter=junit --outputFile=coverage/junit.xml",
     "test:e2e": "mkdir -p cypress/results && start-server-and-test dev http://localhost:5173 'cypress run --reporter cypress-multi-reporters --reporter-options configFile=cypress.config.reporter.json'",
-    "test:e2e:ci": "mkdir -p cypress/results && start-server-and-test dev http://localhost:5173 'cypress run --headless --reporter cypress-multi-reporters --reporter-options configFile=cypress.config.reporter.json'"
+    "test:e2e:ci": "mkdir -p cypress/results && start-server-and-test dev http://localhost:5173 'cypress run --headless --reporter cypress-multi-reporters --reporter-options configFile=cypress.config.reporter.json'",
+    "size-limit": "npx size-limit",
+    "compress": "gzip -k dist/assets/*.js && gzip -k dist/assets/*.css"
   },
   "dependencies": {
     "@pixi/react": "^8.0.2",
@@ -58,11 +66,37 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.2.0",
     "jsdom": "^26.1.0",
+    "rollup-plugin-analyzer": "^4.0.0",
+    "size-limit": "^11.2.0",
+    "@size-limit/preset-app": "^11.2.0",
     "start-server-and-test": "^2.0.12",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.33.0",
     "vite": "^6.3.5",
+    "vite-bundle-analyzer": "^0.22.2",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.3"
-  }
+  },
+  "size-limit": [
+    {
+      "path": "dist/assets/index-*.js",
+      "limit": "200 KB",
+      "gzip": true
+    },
+    {
+      "path": "dist/assets/pixi-core-*.js",
+      "limit": "300 KB",
+      "gzip": true
+    },
+    {
+      "path": "dist/assets/react-vendor-*.js",
+      "limit": "150 KB",
+      "gzip": true
+    },
+    {
+      "path": "dist/assets/screens-*.js",
+      "limit": "100 KB",
+      "gzip": true
+    }
+  ]
 }

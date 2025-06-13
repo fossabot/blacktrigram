@@ -32,6 +32,11 @@ declare global {
        * Mock PixiJS objects for testing
        */
       mockPixiObjects(): void;
+
+      /**
+       * Test PixiJS performance metrics
+       */
+      testPixiPerformance(): void;
     }
   }
 }
@@ -195,6 +200,51 @@ Cypress.Commands.add("mockPixiObjects", () => {
 
     cy.log("✅ PixiJS objects mocked successfully");
   });
+});
+
+Cypress.Commands.add("testPixiPerformance", () => {
+  cy.window().then((win) => {
+    const pixiApp = win.__PIXI_APP__;
+    expect(pixiApp).to.exist; // Fix: Use expect instead of expression
+
+    if (pixiApp?.ticker) {
+      const fps = pixiApp.ticker.FPS;
+      expect(fps).to.be.greaterThan(30); // Fix: Use expect instead of expression
+    }
+
+    expect(pixiApp?.stage).to.exist; // Fix: Use expect instead of expression
+  });
+});
+
+Cypress.Commands.add("getPixiApp", () => {
+  return cy.window().its("pixiApp").should("exist");
+});
+
+Cypress.Commands.add("getPixiStage", () => {
+  return cy
+    .window()
+    .its("pixiApp")
+    .then((app) => app.stage);
+});
+
+Cypress.Commands.add("getPixiContainer", (selector: string) => {
+  return cy
+    .window()
+    .its("pixiApp")
+    .then((app) => {
+      // Find container by name or data attribute
+      const container = app.stage.children.find(
+        (child: any) => child.name === selector || child.testId === selector
+      );
+      return container;
+    });
+});
+
+// Fixed: Remove standalone expressions - integrate into proper command structure
+Cypress.Commands.add("waitForKoreanComponents", () => {
+  // Wait for Korean martial arts components to be ready
+  cy.get('[data-testid="korean-text"]', { timeout: 10000 }).should("exist");
+  cy.get('[data-testid="trigram-wheel"]', { timeout: 5000 }).should("exist");
 });
 
 export {};

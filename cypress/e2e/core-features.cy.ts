@@ -79,6 +79,27 @@ describe("Black Trigram Core Features", () => {
         }
       });
     });
+
+    it("should support different screen sizes", () => {
+      // Test mobile size
+      cy.viewport(375, 667);
+      cy.get("[data-testid=intro-screen]").should("be.visible");
+
+      // Test tablet size
+      cy.viewport(768, 1024);
+      cy.get("[data-testid=intro-screen]").should("be.visible");
+
+      // Test desktop size
+      cy.viewport(1920, 1080);
+      cy.get("[data-testid=intro-screen]").should("be.visible");
+
+      // Verify buttons are positioned correctly on mobile
+      cy.viewport(375, 667);
+      cy.get("[data-testid=training-button]").then((_$body) => {
+        // Button positioning test
+        cy.get("[data-testid=training-button]").should("be.visible");
+      });
+    });
   });
 
   describe("Game Input Handling", () => {
@@ -132,7 +153,7 @@ describe("Black Trigram Core Features", () => {
       cy.annotate("Testing error resilience");
 
       // Test what happens when we try to access non-existent features
-      cy.get("body").then(($body) => {
+      cy.get("body").then((_$body) => {
         // Try to access philosophy section (might not be implemented)
         cy.get("body").type("4");
         cy.wait(1000);

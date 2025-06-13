@@ -2,7 +2,10 @@ import { defineConfig } from "cypress";
 
 export default defineConfig({
   e2e: {
-    setupNodeEvents(on, config) {
+    setupNodeEvents(
+      on: Cypress.PluginEvents,
+      _config: Cypress.PluginConfigOptions // Fixed: Add underscore prefix
+    ): Cypress.PluginConfigOptions {
       // Register custom tasks for testing
       on("task", {
         // Log messages to console
@@ -35,6 +38,8 @@ export default defineConfig({
         }
         return launchOptions;
       });
+
+      return _config; // Fixed: Use underscore prefixed variable
     },
     baseUrl: "http://localhost:5173",
     supportFile: "cypress/support/e2e.ts",

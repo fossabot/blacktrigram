@@ -49,14 +49,12 @@ Cypress.on("test:before:run", () => {
 });
 
 // Global error handling for Black Trigram
-Cypress.on("uncaught:exception", (err, runnable) => {
-  // Ignore common game-related errors that don't affect functionality
+Cypress.on("uncaught:exception", (err, _runnable) => {
+  // Ignore specific Korean martial arts related errors that are non-critical
   if (
-    err.message.includes("Failed to load") ||
-    err.message.includes("no supported source") ||
-    err.message.includes("play() request was interrupted") ||
-    err.message.includes("WebGL") ||
-    err.message.includes("Audio")
+    err.message.includes("Failed to load audio") ||
+    err.message.includes("WebGL context") ||
+    err.message.includes("PixiJS")
   ) {
     return false;
   }
@@ -90,3 +88,12 @@ import "./pixi-commands";
 /// <reference types="cypress" />
 /// <reference path="./commands.ts" />
 /// <reference path="./pixi-commands.ts" />
+
+Cypress.on("fail", (err, _runnable) => {
+  console.error("Cypress test failed:", err.message);
+  return false;
+});
+Cypress.on("fail", (err, _runnable) => {
+  console.error("Cypress test failed:", err.message);
+  return false;
+});

@@ -108,6 +108,24 @@ Examples:
   return { prompt, outputFile, durationSeconds, promptInfluence, outputFormat };
 };
 
+function generateSFX(category: string, name: string, variations: number = 4) {
+  // Fix: Remove unused variable or use underscore prefix
+  const _outputFormat = "webm"; // Prefix with underscore if not used
+
+  // ...existing code...
+}
+
+function _generateSFX(
+  soundType: string,
+  _variations = 3 // Fixed: Add underscore prefix for unused parameter
+): void {
+  const _outputFormat = "wav"; // Fixed: Add underscore prefix for unused variable
+  // Implementation would go here
+}
+
+// Export for potential future use
+export { _generateSFX };
+
 (async () => {
   const { prompt, outputFile, durationSeconds, promptInfluence, outputFormat } =
     parseArgs();
