@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   TrigramCalculator,
   STANCE_EFFECTIVENESS_MATRIX,
@@ -6,6 +6,16 @@ import {
 import { TrigramStance } from "../../types/enums";
 
 describe("TrigramCalculator", () => {
+  let calc: TrigramCalculator;
+
+  beforeEach(() => {
+    calc = new TrigramCalculator();
+  });
+
+  it("should be instantiable", () => {
+    expect(calc).toBeInstanceOf(TrigramCalculator);
+  });
+
   describe("calculateStanceEffectiveness", () => {
     it("should return effectiveness values from matrix", () => {
       const effectiveness = TrigramCalculator.calculateStanceEffectiveness(

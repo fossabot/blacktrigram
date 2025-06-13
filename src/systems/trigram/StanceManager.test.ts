@@ -13,6 +13,10 @@ describe("StanceManager", () => {
     player = createPlayerFromArchetype(PlayerArchetype.MUSA, 0);
   });
 
+  it("should initialize with no active stance", () => {
+    expect(stanceManager.getCurrent()).toBeUndefined();
+  });
+
   describe("changeStance", () => {
     it("should successfully change to a different stance", () => {
       const newStance = TrigramStance.TAE;

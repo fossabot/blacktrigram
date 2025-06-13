@@ -1,7 +1,9 @@
 import { TrigramStance } from "../types/enums";
-import type { PlayerState } from "../types/player"; // fix import
+import type { PlayerState } from "../types/player";
+import type { TrigramTransitionCost } from "../types";
+import { PLAYER_ARCHETYPES_DATA } from "../types/constants/player";
+
 import { TrigramCalculator } from "./trigram/TrigramCalculator";
-import type { TrigramTransitionCost } from "../types/anatomy";
 import { TRIGRAM_STANCES_ORDER } from "../types/constants";
 
 export class TrigramSystem {
@@ -21,7 +23,7 @@ export class TrigramSystem {
   ): boolean {
     if (fromStance === toStance) return true;
 
-    const cost = this.getTransitionCost(fromStance, toStance);
+    const cost = this.getTransitionCost(fromStance, toStance, player);
 
     // Check if player has sufficient resources
     const hasEnoughKi = player.ki >= cost.ki;
@@ -40,7 +42,7 @@ export class TrigramSystem {
 
     for (const to of TRIGRAM_STANCES_ORDER) {
       const costObj: TrigramTransitionCost = this.getTransitionCost(from, to);
-      const score = costObj.ki + costObj.stamina + costObj.timeMs;
+      const score = costObj.ki + costObj.stamina + costObj.timeMilliseconds;
       if (score < bestScore) {
         bestScore = score;
         best = to;
@@ -53,15 +55,16 @@ export class TrigramSystem {
   /**
    * Get transition cost between stances
    */
-  private getTransitionCost(
+  public getTransitionCost(
     from: TrigramStance,
-    to: TrigramStance
+    to: TrigramStance,
+    player?: PlayerState
   ): TrigramTransitionCost {
     if (from === to) {
       return {
         ki: 0,
         stamina: 0,
-        timeMs: 0, // Fix: Add missing property
+        timeMilliseconds: 0, // neutral
       };
     }
 
@@ -72,10 +75,22 @@ export class TrigramSystem {
     const baseCost = 10;
     const baseTime = 500;
 
+    let ki = Math.ceil(baseCost * difficulty);
+    let stamina = Math.ceil(baseCost * difficulty * 1.5);
+
+    // apply archetype stance‐change cost modifier if player provided
+    if (player) {
+      const archData = PLAYER_ARCHETYPES_DATA[player.archetype];
+      const favs = archData.favoredStances || [];
+      const mod = favs.includes(to) ? 0.8 : 1.0;
+      ki = Math.ceil(ki * mod);
+      stamina = Math.ceil(stamina * mod);
+    }
+
     return {
-      ki: Math.ceil(baseCost * difficulty),
-      stamina: Math.ceil(baseCost * difficulty * 1.5),
-      timeMs: Math.ceil(baseTime * difficulty), // Fix: Add missing property
+      ki,
+      stamina,
+      timeMilliseconds: Math.ceil(baseTime * difficulty),
     };
   }
 
@@ -135,7 +150,7 @@ export class TrigramSystem {
       return { valid: true };
     }
 
-    const cost = this.getTransitionCost(fromStance, toStance);
+    const cost = this.getTransitionCost(fromStance, toStance, player);
 
     if (player.ki < cost.ki) {
       return {

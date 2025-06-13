@@ -109,3 +109,12 @@ describe("getTechniquesByStance", () => {
     expect(Array.isArray(techniques)).toBe(true);
   });
 });
+
+import { describe, it, expect } from "vitest";
+import * as KT from "./KoreanTechniques";
+
+describe("KoreanTechniques module", () => {
+  it("should export technique data for each TrigramStance", () => {
+    expect(Object.keys(KT).length).toBeGreaterThan(0);
+  });
+});

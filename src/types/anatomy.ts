@@ -77,7 +77,7 @@ export interface PlayerArchetypeData {
 export interface TrigramTransitionCost {
   readonly ki: number;
   readonly stamina: number;
-  readonly timeMs: number;
+  readonly timeMilliseconds: number;
 }
 
 // Trigram transition rule
