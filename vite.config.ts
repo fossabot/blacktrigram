@@ -20,8 +20,13 @@ export default defineConfig(({ command, mode }) => ({
   },
   optimizeDeps: {
     include: ["@pixi/react", "pixi.js", "react-reconciler", "howler"],
-    // Exclude heavy dependencies from pre-bundling
-    exclude: ["@pixi/sound"],
+    // Exclude heavy modules from dev pre-bundling to reduce TBT
+    exclude: [
+      "@pixi/sound",
+      "src/types/constants/techniques.ts",
+      "src/types/constants/combat.ts",
+      "src/audio/placeholder-sounds.ts",
+    ],
   },
   build: {
     target: "esnext",
@@ -31,6 +36,12 @@ export default defineConfig(({ command, mode }) => ({
     minify: "esbuild",
     // Enable CSS minification
     cssMinify: true,
+    // Split CSS for better caching
+    cssCodeSplit: true,
+    // Enable Brotli size reporting
+    brotliSize: true,
+    // Inline smaller assets for fewer requests
+    assetsInlineLimit: 1024,
     // Disable sourcemaps in production
     sourcemap: false,
 
@@ -56,7 +67,10 @@ export default defineConfig(({ command, mode }) => ({
           }
 
           // Audio system
-          if (id.includes("node_modules/howler/") || id.includes("/src/audio/")) {
+          if (
+            id.includes("node_modules/howler/") ||
+            id.includes("/src/audio/")
+          ) {
             return "audio";
           }
 
@@ -91,6 +105,8 @@ export default defineConfig(({ command, mode }) => ({
         chunkFileNames: "assets/[name]-[hash:6].js", // Shorter hashes
         entryFileNames: "assets/[name]-[hash:6].js",
 
+        inlineDynamicImports: false, // Allow dynamic imports for lazy screens
+
         assetFileNames: (assetInfo): string => {
           // Organize Korean martial arts assets by type
           if (/\.(mp3|wav|ogg)$/i.test(assetInfo.name ?? "")) {
@@ -105,7 +121,6 @@ export default defineConfig(({ command, mode }) => ({
     },
 
     // Aggressive asset optimization
-    assetsInlineLimit: 2048, // Reduced from 4096
     reportCompressedSize: false, // Skip for faster builds
 
     // Tree shaking optimization
@@ -125,6 +140,7 @@ export default defineConfig(({ command, mode }) => ({
     minifyIdentifiers: true,
     minifyWhitespace: true,
     minifySyntax: true,
+    minify: true, // Enable minification in dev for better perf testing
     // Optimize for Korean text rendering
     charset: "utf8",
   },
@@ -134,8 +150,8 @@ export default defineConfig(({ command, mode }) => ({
     host: true,
     port: 5173,
     hmr: { overlay: false },
-    // Enable compression for dev server
     middlewareMode: false,
+    compress: true, // Enable gzip compression in dev
   },
 
   // Preview server optimizations
@@ -145,7 +161,7 @@ export default defineConfig(({ command, mode }) => ({
     // Production preview optimizations
     headers: {
       "Cache-Control": "public, max-age=31536000, immutable",
-      "Content-Encoding": "gzip",
+      "Content-Encoding": "br", // Prefer Brotli if available
     },
   },
 

@@ -340,3 +340,5 @@ canvas {
     padding: 8px 12px;
   }
 }
+
+/* If you add custom @font-face, add font-display: swap; */

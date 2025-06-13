@@ -1,8 +1,18 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  Suspense,
+  lazy,
+} from "react";
 import * as PIXI from "pixi.js";
 import { MenuSection } from "./components/MenuSection";
-import { PhilosophySection } from "./components/PhilosophySection";
-import { ControlsSection } from "./components/ControlsSection";
+
+// Lazy load heavy sections
+const PhilosophySection = lazy(() => import("./components/PhilosophySection"));
+const ControlsSection = lazy(() => import("./components/ControlsSection"));
+
 import { KoreanHeader } from "../ui/base/KoreanHeader";
 import { KOREAN_COLORS } from "../../types/constants";
 import { GameMode } from "../../types/enums";
@@ -63,8 +73,16 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
   // Enhanced asset loading with all available textures
   useEffect(() => {
     let destroyed = false;
+    // Use a low-res placeholder first
+    setBgTexture(
+      PIXI.Texture.from("/assets/visual/bg/intro/intro_bg_loop_low.webp")
+    );
     const loadAssets = async () => {
       try {
+        // Prefer WebP if supported
+        const bgUrl = window?.navigator?.userAgent.includes("Safari")
+          ? "/assets/visual/bg/intro/intro_bg_loop.png"
+          : "/assets/visual/bg/intro/intro_bg_loop.webp";
         const [
           bg,
           logo,
@@ -73,7 +91,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
           archetypeExplained,
           archetypeDynamics,
         ] = await Promise.all([
-          PIXI.Assets.load("/src/assets/visual/bg/intro/intro_bg_loop.png"),
+          PIXI.Assets.load(bgUrl),
           PIXI.Assets.load("/src/assets/visual/logo/black-trigram.png"), // Use larger logo
           PIXI.Assets.load("/src/assets/dojang_wall_neon_flicker.png"),
           PIXI.Assets.load(
@@ -99,7 +117,12 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
         console.warn("Failed to load intro assets", err);
       }
     };
-    loadAssets();
+    // Defer heavy image loading to idle time
+    if ("requestIdleCallback" in window) {
+      (window as any).requestIdleCallback(loadAssets);
+    } else {
+      setTimeout(loadAssets, 100);
+    }
     return () => {
       destroyed = true;
     };
@@ -758,25 +781,29 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
 
       {/* Philosophy and Controls sections remain similar but with responsive positioning */}
       {currentSection === "philosophy" && (
-        <PhilosophySection
-          onBack={handleBackToMenu}
-          width={screenWidth * 0.9}
-          height={screenHeight * 0.8}
-          x={screenWidth * 0.05}
-          y={screenHeight * 0.1}
-          data-testid="philosophy-section"
-        />
+        <Suspense fallback={<pixiText text="로딩 중..." />}>
+          <PhilosophySection
+            onBack={handleBackToMenu}
+            width={screenWidth * 0.9}
+            height={screenHeight * 0.8}
+            x={screenWidth * 0.05}
+            y={screenHeight * 0.1}
+            data-testid="philosophy-section"
+          />
+        </Suspense>
       )}
 
       {currentSection === "controls" && (
-        <ControlsSection
-          onBack={handleBackToMenu}
-          width={screenWidth * 0.9}
-          height={screenHeight * 0.8}
-          x={screenWidth * 0.05}
-          y={screenHeight * 0.1}
-          data-testid="controls-section"
-        />
+        <Suspense fallback={<pixiText text="로딩 중..." />}>
+          <ControlsSection
+            onBack={handleBackToMenu}
+            width={screenWidth * 0.9}
+            height={screenHeight * 0.8}
+            x={screenWidth * 0.05}
+            y={screenHeight * 0.1}
+            data-testid="controls-section"
+          />
+        </Suspense>
       )}
 
       {/* Enhanced Footer with Better Mobile Layout */}

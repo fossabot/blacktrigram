@@ -6,35 +6,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>Black Trigram (흑괘) - Korean Martial Arts Dojang</title>
-    
-    <!-- Critical meta tags only -->
     <meta name="description" content="Master authentic Korean martial arts through realistic 2D combat simulation." />
     <meta name="theme-color" content="#00ffd0" />
-    
-    <!-- Optimized font loading - critical fonts only -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    
-    <!-- Load only essential font weights with display=swap -->
-    <link
-      href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap"
-      rel="stylesheet"
-      media="print"
-      onload="this.media='all'"
-    />
-    
+    <!-- Inline only minimal critical CSS here -->
+    <style>
+      body { margin: 0; padding: 0; background: #000; font-family: system-ui, -apple-system, sans-serif; overflow: hidden; }
+      #root { width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; }
+      .loading { color: #00ffd0; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <!-- Preload only the main logo (LCP) in WebP and PNG -->
+    <link rel="preload" as="image" href="/assets/visual/logo/black-trigram.webp" type="image/webp" />
+    <link rel="preload" as="image" href="/assets/visual/logo/black-trigram.png" type="image/png" />
+    <!-- Defer Google Fonts loading -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap"
+      rel="stylesheet" media="print" onload="this.media='all'" />
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap"
+      rel="stylesheet" media="print" onload="this.media='all'" />
     <!-- Fallback for no-JS -->
     <noscript>
-      <link
-        href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap"
-        rel="stylesheet"
-      />
+      <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
     </noscript>
-
-    <!-- Defer non-critical meta tags -->
-    <script>
-      // Load non-critical meta tags after page load
-      window.addEventListener('load', function() {
+    <!-- Add robots.txt in /public for SEO -->
+    <!-- ...existing code... -->
+  </body>
+</html>
         const meta = [
           {name: "keywords", content: "Korean martial arts game, vital point training"},
           {name: "author", content: "Black Trigram Development Team"},
@@ -82,6 +82,23 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    
+    <!-- Preload main logo and font for faster LCP/FCP -->
+    <link rel="preload" as="image" href="/assets/visual/logo/black-trigram.png" />
+    <link rel="preload" as="font" href="https://fonts.gstatic.com/s/notosanskr/v37/PbykFmXiEBPT4ITbgNA5CgmOelzI.woff2" crossorigin />
+
+    <!-- Preload main background image for LCP if used -->
+    <link rel="preload" as="image" href="/assets/visual/bg/intro/intro_bg_loop.png" />
+
+    <!-- Game optimizations -->
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#00ffd0" />
+
+    <!-- Prevent zoom on mobile for game controls -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
   </body>
 </html>
     <meta name="language" content="English" />

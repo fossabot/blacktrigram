@@ -1,17 +1,31 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import {
+  useState,
+  useCallback,
+  useEffect,
+  useRef,
+  Suspense,
+  lazy,
+} from "react";
 import { Application } from "@pixi/react";
 import { exposePixiAppForTesting } from "./test/pixi-cypress-helpers";
 import { usePixiExtensions } from "./utils/pixiExtensions";
 import { AudioProvider } from "./audio/AudioProvider";
 import { IntroScreen } from "./components/intro/IntroScreen";
 import { CombatScreen } from "./components/combat/CombatScreen";
-import { EndScreen } from "./components/ui/EndScreen";
+// Remove direct import of EndScreen and TrainingScreen
+// import { EndScreen } from "./components/ui/EndScreen";
+// import { TrainingScreen } from "./components";
+
+// Lazy load heavy screens
+const EndScreen = lazy(() => import("./components/ui/EndScreen"));
+const TrainingScreen = lazy(
+  () => import("./components/training/TrainingScreen")
+);
 import { GameMode, PlayerArchetype } from "./types/enums";
 import { createPlayerFromArchetype } from "./utils/playerUtils";
 import type { PlayerState } from "./types/player";
 import type { MatchStatistics } from "./types/game";
 import "./App.css";
-import { TrainingScreen } from "./components";
 
 function App() {
   usePixiExtensions();
@@ -165,14 +179,16 @@ function App() {
     // Show end screen if game ended
     if (gameWinner && matchStats) {
       return (
-        <EndScreen
-          winner={gameWinner}
-          matchStatistics={matchStats}
-          onReturnToMenu={handleReturnToMenu}
-          onRestart={() => handleGameStart(gameMode!)}
-          width={screenSize.width}
-          height={screenSize.height}
-        />
+        <Suspense fallback={<div className="loading-screen">로딩 중...</div>}>
+          <EndScreen
+            winner={gameWinner}
+            matchStatistics={matchStats}
+            onReturnToMenu={handleReturnToMenu}
+            onRestart={() => handleGameStart(gameMode!)}
+            width={screenSize.width}
+            height={screenSize.height}
+          />
+        </Suspense>
       );
     }
 
@@ -181,16 +197,20 @@ function App() {
       switch (gameMode) {
         case GameMode.TRAINING:
           return (
-            <TrainingScreen
-              player={trainingPlayer}
-              onPlayerUpdate={(updates) => {
-                // Update training player state
-                console.log("Training player updated:", updates);
-              }}
-              onReturnToMenu={handleReturnToMenu}
-              width={screenSize.width}
-              height={screenSize.height}
-            />
+            <Suspense
+              fallback={<div className="loading-screen">로딩 중...</div>}
+            >
+              <TrainingScreen
+                player={trainingPlayer}
+                onPlayerUpdate={(updates) => {
+                  // Update training player state
+                  console.log("Training player updated:", updates);
+                }}
+                onReturnToMenu={handleReturnToMenu}
+                width={screenSize.width}
+                height={screenSize.height}
+              />
+            </Suspense>
           );
         case GameMode.VERSUS:
         case GameMode.PRACTICE:
