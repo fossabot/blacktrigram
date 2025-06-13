@@ -2,7 +2,7 @@ import { render } from "@testing-library/react";
 import { vi } from "vitest";
 import { Application } from "@pixi/react";
 import { TrigramWheel } from "./TrigramWheel";
-import { TrigramStance } from "../../../types/enums";
+import { TrigramStance } from "../../types/enums";
 
 describe("TrigramWheel", () => {
   it("renders without crashing", () => {

@@ -1,45 +1,13 @@
-// Test utilities for Black Trigram Korean martial arts game
-
-import { render, RenderOptions } from "@testing-library/react";
-import type { PlayerState } from "../types/player";
-import { vi } from "vitest";
 import React from "react";
-import { PlayerArchetype, TrigramStance } from "@/types";
-import { CombatState } from "@/types/enums";
+import { render } from "@testing-library/react";
+import type { PlayerState } from "../types/player";
+import { PlayerArchetype, TrigramStance } from "../types/enums";
+import type { RenderOptions } from "@testing-library/react";
+import { CombatState } from "../types/enums";
 
-// Mock audio manager interface
-interface IAudioManager {
-  playMusic(trackId: string): Promise<void>;
-  playSoundEffect(id: string): Promise<void>;
-  stopMusic(): void;
-  setMasterVolume(volume: number): void;
-  getMasterVolume(): number;
-  initialized: boolean;
-  isInitialized: boolean;
+export function renderWithPixi(ui: React.ReactElement) {
+  return render(ui);
 }
-
-// Create mock audio manager
-export function createMockAudioManager(): IAudioManager {
-  return {
-    playMusic: vi.fn().mockResolvedValue(undefined),
-    playSoundEffect: vi.fn().mockResolvedValue(undefined),
-    stopMusic: vi.fn(),
-    setMasterVolume: vi.fn(),
-    getMasterVolume: vi.fn().mockReturnValue(1.0),
-    initialized: true,
-    isInitialized: true,
-  };
-}
-
-// Fix: Remove unused parameters to fix TypeScript warnings
-export function renderWithPixi(
-  ui: React.ReactElement,
-  options?: RenderOptions
-) {
-  return render(ui, { ...options });
-}
-
-// Create mock player state
 export function createMockPlayerState(): PlayerState {
   return {
     id: "test",

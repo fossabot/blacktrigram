@@ -2,7 +2,7 @@ import { CombatState } from "../../types/enums";
 import { renderWithPixi, screen, fireEvent } from "../../test/test-utils";
 import { TrigramStance, PlayerArchetype } from "@/types/enums";
 import type { PlayerState } from "../../../types/player";
-import Player from "../Player"; // default export
+import Player from "./Player";
 
 const mockPlayerState: PlayerState = {
   id: "test-player",
