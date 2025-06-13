@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react";
 import { vi } from "vitest";
 import { Application } from "@pixi/react";
-import { TrigramWheel } from "../TrigramWheel";
+import { TrigramWheel } from "./TrigramWheel";
 import { TrigramStance } from "../../../types/enums";
 
 describe("TrigramWheel", () => {

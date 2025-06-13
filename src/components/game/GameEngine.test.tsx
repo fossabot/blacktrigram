@@ -5,18 +5,13 @@ import { GameEngine } from "./GameEngine"; // <- fixed path
 import { createMockPlayerState } from "../../../test/test-utils";
 
 // Mock PixiJS
-vi.mock("@pixi/react", () => ({
-  Stage: ({ children, ...props }: any) => (
-    <div data-testid="pixi-stage" {...props}>
-      {children}
-    </div>
-  ),
-  Container: ({ children, ...props }: any) => (
-    <div data-testid="pixi-container" {...props}>
-      {children}
-    </div>
-  ),
-}));
+vi.mock("@pixi/react", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    extend: vi.fn(), // stub out extend
+  };
+});
 
 describe("GameEngine", () => {
   const mockProps = {

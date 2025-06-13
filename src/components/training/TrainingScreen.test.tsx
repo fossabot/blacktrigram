@@ -1,6 +1,7 @@
 import { screen, fireEvent, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
 import { renderWithPixi } from "../../test/test-utils";
+import { AudioProvider } from "../../audio/AudioProvider";
 import TrainingScreen from "./TrainingScreen";
 import { TrigramStance, PlayerArchetype, CombatState } from "../../types/enums";
 import type { PlayerState } from "../../types/player";
@@ -57,7 +58,11 @@ const renderTrainingScreen = (props = {}) => {
   };
 
   // Use renderWithPixi instead of regular render
-  return renderWithPixi(<TrainingScreen {...defaultProps} {...props} />);
+  return renderWithPixi(
+    <AudioProvider>
+      <TrainingScreen {...defaultProps} {...props} />
+    </AudioProvider>
+  );
 };
 
 describe("TrainingScreen", () => {

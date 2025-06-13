@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react";
 import { Application } from "@pixi/react";
-import { BaseButton } from "../base/BaseButton";
-import { KoreanHeader } from "../KoreanHeader";
+import { BaseButton } from "./base/BaseButton";
+import { KoreanHeader } from "./KoreanHeader";
 
 describe("UI Components", () => {
   const koreanText = "버튼"; // Fix: Use string as expected by BaseButton
