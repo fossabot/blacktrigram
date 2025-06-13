@@ -184,18 +184,24 @@ src/index.css
 
 ## ART Image assets
 
-src/assets/black-trigram-256.png
-src/assets/black-trigram.png
-src/assets/CyberpunkTeamDynamics.png
-src/assets/dojang_wall_neon_flicker.png
-src/assets/PlayerArchetypesExplained.png
-src/assets/PlayerArchetypesOverview.png
+src/assets/visual
+src/assets/visual/archetypes
+src/assets/visual/archetypes/amsalja.png
+src/assets/visual/archetypes/hacker.png
+src/assets/visual/archetypes/jeongbo_yowon.png
+src/assets/visual/archetypes/jojik_pokryeokbae.png
+src/assets/visual/archetypes/musa.png
+src/assets/visual/bg
+src/assets/visual/bg/archetyples
 src/assets/visual/bg/archetyples/CyberpunkTeamDynamics.png
 src/assets/visual/bg/archetyples/PlayerArchetypesExplained.png
 src/assets/visual/bg/archetyples/PlayerArchetypesOverview.png
+src/assets/visual/bg/dojang
 src/assets/visual/bg/dojang/dojang_floor_tex.png
 src/assets/visual/bg/dojang/dojang_wall_tex.png
+src/assets/visual/bg/intro
 src/assets/visual/bg/intro/intro_bg_loop.png
+src/assets/visual/logo
 src/assets/visual/logo/black-trigram-256.png
 src/assets/visual/logo/black-trigram.png
 
