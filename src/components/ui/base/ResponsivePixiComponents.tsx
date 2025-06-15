@@ -12,9 +12,11 @@ export const ResponsivePixiButton: React.FC<ResponsivePixiButtonProps> = ({
   variant = "primary",
   onClick,
   disabled = false,
-  "data-testid": testId,
+  testId,
+  "data-testid": dataTestId,
 }) => {
   const sw = screenWidth ?? 0;
+  const containerTestId = dataTestId ?? testId;
   const [isHovered, setIsHovered] = useState(false);
 
   const fontSize = useMemo(() => {
@@ -43,13 +45,7 @@ export const ResponsivePixiButton: React.FC<ResponsivePixiButtonProps> = ({
   }, [variant, disabled]);
 
   return (
-    <pixiContainer
-      x={x}
-      y={y}
-      onClick={onClick}
-      data-testid={testId}
-      // removed invalid boolean interactive
-    >
+    <pixiContainer x={x} y={y} data-testid={containerTestId} onClick={onClick}>
       <pixiGraphics
         draw={(g) => {
           g.clear();
@@ -88,8 +84,7 @@ export const ResponsivePixiButton: React.FC<ResponsivePixiButtonProps> = ({
         x={(width || 120) / 2}
         y={(height || 40) / 2}
         anchor={0.5}
-        // wire through testId for text
-        data-testid={`${testId}-text`}
+        data-testid={`${containerTestId}-text`}
       />
     </pixiContainer>
   );
@@ -98,9 +93,10 @@ export const ResponsivePixiButton: React.FC<ResponsivePixiButtonProps> = ({
 // Responsive PixiJS Container that adapts to screen size
 export const ResponsivePixiContainer: React.FC<
   ResponsivePixiContainerProps
-> = ({ children, x = 0, y = 0, "data-testid": testId }) => {
+> = ({ children, x = 0, y = 0, testId, "data-testid": dataTestId }) => {
+  const containerTestId = dataTestId ?? testId;
   return (
-    <pixiContainer x={x} y={y} data-testid={testId}>
+    <pixiContainer x={x} y={y} data-testid={containerTestId}>
       {children}
     </pixiContainer>
   );
@@ -114,10 +110,13 @@ export const ResponsivePixiPanel: React.FC<ResponsivePixiPanelProps> = ({
   y = 0,
   width = 200,
   height = 150,
-  "data-testid": testId,
+  testId,
+  "data-testid": dataTestId,
 }) => {
+  const containerTestId = dataTestId ?? testId;
+
   return (
-    <pixiContainer x={x} y={y} data-testid={testId}>
+    <pixiContainer x={x} y={y} data-testid={containerTestId}>
       <pixiGraphics
         draw={(g) => {
           g.clear();
@@ -138,6 +137,7 @@ export const ResponsivePixiPanel: React.FC<ResponsivePixiPanelProps> = ({
       {title && (
         <pixiText
           text={title}
+          data-testid={`${containerTestId}-title`}
           style={{
             fontSize: 14,
             fill: KOREAN_COLORS.ACCENT_GOLD,
@@ -145,8 +145,6 @@ export const ResponsivePixiPanel: React.FC<ResponsivePixiPanelProps> = ({
           }}
           x={10}
           y={-20}
-          // wire through testId for title
-          data-testid={`${testId}-title`}
         />
       )}
 
@@ -155,6 +153,101 @@ export const ResponsivePixiPanel: React.FC<ResponsivePixiPanelProps> = ({
       </pixiContainer>
     </pixiContainer>
   );
+};
+
+// Simple Pixi-React wrappers that forward data-testid, positioning, text, children and click handlers.
+export interface ResponsivePixiButtonProps {
+  text: string;
+  testId: string;
+  x?: number;
+  y?: number;
+  onClick?: () => void;
+}
+
+export const ResponsivePixiButtonSimple: React.FC<
+  ResponsivePixiButtonProps
+> = ({ text, testId, x = 0, y = 0, onClick }) => {
+  const handleClick = useCallback(() => {
+    onClick?.();
+  }, [onClick]);
+
+  return (
+    <pixiContainer
+      data-testid={testId}
+      x={x}
+      y={y}
+      interactive
+      onClick={handleClick}
+    >
+      <pixiGraphics
+        draw={(g) => {
+          g.clear();
+          g.beginFill(0x444444);
+          g.drawRect(0, 0, 120, 40);
+          g.endFill();
+        }}
+      />
+      <pixiText
+        data-testid={`${testId}-text`}
+        text={text}
+        anchor={0.5}
+        x={60}
+        y={20}
+      />
+    </pixiContainer>
+  );
+};
+
+export interface ResponsivePixiPanelProps {
+  title: string;
+  testId: string;
+  x?: number;
+  y?: number;
+  children?: React.ReactNode;
+}
+
+export const ResponsivePixiPanelSimple: React.FC<ResponsivePixiPanelProps> = ({
+  title,
+  testId,
+  x = 0,
+  y = 0,
+  children,
+}) => (
+  <pixiContainer data-testid={testId} x={x} y={y}>
+    <pixiGraphics
+      draw={(g) => {
+        g.clear();
+        g.beginFill(0x222222, 0.8);
+        g.drawRect(0, 0, 300, 200);
+        g.endFill();
+      }}
+    />
+    <pixiText
+      data-testid={`${testId}-title`}
+      text={title}
+      anchor={0.5}
+      x={150}
+      y={20}
+      style={{ fontSize: 14, fontWeight: "bold", fill: 0xffffff }}
+    />
+    <pixiContainer x={10} y={40}>
+      {children}
+    </pixiContainer>
+  </pixiContainer>
+);
+
+export interface ResponsivePixiContainerProps {
+  testId?: string;
+  "data-testid"?: string;
+  x?: number;
+  y?: number;
+  children?: ReactNode;
+}
+
+export default {
+  ResponsivePixiContainer,
+  ResponsivePixiButton,
+  ResponsivePixiPanel,
 };
 
 // Props interfaces: make screenWidth/screenHeight optional
@@ -192,9 +285,3 @@ export interface ResponsivePixiPanelProps {
   readonly screenHeight?: number; // now optional
   readonly "data-testid"?: string;
 }
-
-export default {
-  ResponsivePixiContainer,
-  ResponsivePixiButton,
-  ResponsivePixiPanel,
-};

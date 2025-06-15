@@ -231,6 +231,9 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
     return stanceNames[stance] || { korean: "Unknown", technique: "Unknown" };
   }, []);
 
+  // list of available stances
+  const trigramStances = Object.values(TrigramStance);
+
   return (
     <ResponsivePixiContainer
       x={x}
@@ -523,15 +526,29 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
       </ResponsivePixiContainer>
 
       {/* Trigram Wheel for Stance Selection */}
-      <TrigramWheel
-        selectedStance={selectedStance}
-        onStanceChange={handleStanceChange}
-        onStanceSelect={handleStanceSelect}
-        x={width - (isMobile ? 120 : 150)}
-        y={height - (isMobile ? 120 : 150)}
-        size={isMobile ? 80 : 100}
+      <pixiContainer
         data-testid="training-trigram-wheel"
-      />
+        x={1050}
+        y={650}
+        interactive={true}
+        onPointerDown={() => onPlayerUpdate({ currentStance: selectedStance })}
+      >
+        {/* ...existing wheel background & center text... */}
+
+        {
+          // render each trigram stance icon in the wheel
+          trigramStances.map((stance) => (
+            <pixiContainer
+              key={stance}
+              data-testid={`trigram-stance-${stance}`}
+              // ...existing positioning props (x, y)...
+              onClick={() => onPlayerUpdate({ currentStance: stance })}
+            >
+              {/* ...existing code for drawing each stance (Graphics + Text)... */}
+            </pixiContainer>
+          ))
+        }
+      </pixiContainer>
 
       {/* Stance Selection Area for Testing */}
       <pixiContainer
