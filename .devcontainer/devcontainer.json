@@ -2,97 +2,136 @@
   "name": "Black Trigram Dev Container",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
   "features": {
-    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "installDirectlyFromGitHubRelease": true,
+      "version": "latest"
+    },
     "ghcr.io/devcontainers/features/node:1": {
       "nodeGypDependencies": true,
-      "version": "24"
+      "version": "24",
+      "nvmVersion": "latest"
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "ppa": true,
+      "version": "latest"
     }
   },
-  // Update system dependencies
-  "onCreateCommand": "sudo apt-get update && sudo apt-get install -y graphviz libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libnss3 libxss1 libasound2 libxtst6 xauth xvfb dbus dbus-x11",
-  // Improve service initialization
-  "initializeCommand": {
-    "dbus": "sudo service dbus start"
-  },
+
+  // Enhanced system dependencies for PixiJS and testing
+  "onCreateCommand": "sudo apt-get update && sudo apt-get install -y graphviz libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libnss3 libxss1 libasound2 libxtst6 xauth xvfb dbus dbus-x11 fonts-noto fonts-noto-cjk fonts-noto-cjk-extra",
+
   "customizations": {
     "vscode": {
       "extensions": [
-        // Core Development
+        // Core Development - Enhanced
         "dbaeumer.vscode-eslint",
+        "ms-vscode.vscode-typescript-next",
+        "bradlc.vscode-tailwindcss",
 
-        // GitHub extensions
+        // GitHub extensions - Enhanced
         "GitHub.copilot",
         "GitHub.copilot-chat",
         "github.vscode-github-actions",
+        "github.vscode-pull-request-github",
 
-        // TypeScript/Node support
-        "ms-vscode.vscode-typescript-next",
+        // TypeScript/React/Node support - Enhanced
         "christian-kohler.npm-intellisense",
-        "ritwickdey.LiveServer",
+        "ms-vscode.vscode-json",
+        "formulahendry.auto-rename-tag",
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.vscode-typescript-next",
 
-        // Keep minimal formatting support
-        "esbenp.prettier-vscode"
+        // Testing and debugging
+        "ms-vscode.test-adapter-converter",
+        "hbenl.vscode-test-explorer",
+
+        // Korean language support
+        "ms-ceintl.vscode-language-pack-ko",
+
+        // Formatting - Keep minimal
+        "esbenp.prettier-vscode",
+
+        // Performance and utilities
+        "aaron-bond.better-comments",
+        "usernamehw.errorlens",
+        "ms-vscode.hexeditor"
       ],
+
       "settings": {
+        // Import optimized settings from .vscode/settings.json
+        "typescript.tsdk": "./node_modules/typescript/lib",
         "editor.formatOnSave": true,
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "editor.codeActionsOnSave": {
-          "source.fixAll.eslint": "explicit"
+          "source.fixAll.eslint": "explicit",
+          "source.organizeImports": "explicit"
         },
-        // Updated ESLint options with absolute path to configuration file
-        "eslint.workingDirectories": [
-          { "mode": "auto" },
-          { "directory": "./src", "changeProcessCWD": true },
-          { "directory": "./cypress", "changeProcessCWD": true }
-        ],
-        "eslint.options": {
-          "overrideConfigFile": "/workspaces/blacktrigram/.eslintrc.cjs"
+
+        // Copilot optimization
+        "github.copilot.enable": {
+          "*": true,
+          "plaintext": false,
+          "markdown": true
         },
+        "github.copilot.editor.enableAutoCompletions": true,
+        "github.copilot.editor.iterativeEditing": true,
+
+        // File handling
+        "files.insertFinalNewline": true,
+        "files.trimFinalNewlines": true,
+        "files.trimTrailingWhitespace": true,
+        "files.eol": "\n",
+
+        // Performance
         "typescript.updateImportsOnFileMove.enabled": "always",
-        "javascript.updateImportsOnFileMove.enabled": "always",
         "typescript.suggest.completeFunctionCalls": true,
-
-        // Better import organization
-        "typescript.preferences.importModuleSpecifier": "shortest",
-        "javascript.preferences.importModuleSpecifier": "shortest",
-
-        // Ensure Copilot prefers TypeScript file extensions
-        "github.copilot.fileTypes": {
-          "javascript": "typescript",
-          "javascriptreact": "typescriptreact"
-        }
-      },
-      // Add VS Code tasks properly in the customizations section
-      "tasks": {
-        "version": "2.0.0",
-        "tasks": [
-          {
-            "label": "build",
-            "type": "npm",
-            "script": "build",
-            "problemMatcher": ["$tsc"],
-            "group": {
-              "kind": "build",
-              "isDefault": true
-            }
-          }
-        ]
+        "typescript.preferences.importModuleSpecifier": "shortest"
       }
     }
   },
-  // Update post-create commands to include ESLint installation and build
-  "postCreateCommand": "chmod +x .devcontainer/init-xvfb.sh && sudo mkdir -p /var/run/dbus && sudo dbus-daemon --system --fork && npm install -g npm@latest eslint && npm install && npx cypress verify",
-  // Add post-start command to ensure build is run when container starts
-  "postStartCommand": "npm run build",
+
+  // Enhanced post-create commands with better error handling
+  "postCreateCommand": "chmod +x .devcontainer/init-xvfb.sh && sudo mkdir -p /var/run/dbus && sudo dbus-daemon --system --fork && npm install -g npm@latest typescript@latest eslint@latest && npm ci && npm run build && npx cypress verify",
+
+  // Optimized post-start command
+  "postStartCommand": "npm run build && echo '✓ Development environment ready'",
+
   "remoteUser": "node",
-  // Expand environment variables
+
+  // Enhanced environment variables for better performance
   "containerEnv": {
     "CYPRESS_VERIFY_TIMEOUT": "100000",
     "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/dbus/system_bus_socket",
-    "NODE_OPTIONS": "--max-old-space-size=8192"
+    "NODE_OPTIONS": "--max-old-space-size=8192 --no-warnings",
+    "NPM_CONFIG_UPDATE_NOTIFIER": "false",
+    "NPM_CONFIG_FUND": "false",
+    "TERM": "xterm-256color",
+    "LANG": "en_US.UTF-8",
+    "LC_ALL": "en_US.UTF-8"
   },
-  // Use privileged mode for X11 and Cypress
-  "runArgs": ["--privileged"],
-  // Fix: Use proper shutdown action instead of postStopCommand
-  "shutdownAction": "none"
+
+  // Enhanced runtime arguments
+  "runArgs": [
+    "--privileged",
+    "--security-opt",
+    "seccomp=unconfined",
+    "--memory=8g",
+    "--cpus=4"
+  ],
+
+  // Mount optimizations
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+  ],
+
+  "shutdownAction": "none",
+
+  // Forward necessary ports
+  "forwardPorts": [5173, 3000, 8080],
+  "portsAttributes": {
+    "5173": {
+      "label": "Vite Dev Server",
+      "onAutoForward": "notify"
+    }
+  }
 }

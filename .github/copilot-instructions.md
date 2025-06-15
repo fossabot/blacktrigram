@@ -1,15 +1,68 @@
 # GitHub Copilot Instructions for Black Trigram (흑괘)
 
-PRIO 1, complete functional game.
-PRIO 2, Use graphics for all componets pixiJs and pixi react , react 19 style, strict typing,
-PRIO 3, ui/ux cyberpunk style should be cool.
+PRIO 1: Complete functional game with robust error handling
+PRIO 2: Use PixiJS graphics for all components with React 19 style and strict typing
+PRIO 3: Implement cyberpunk Korean aesthetic with excellent UX
+
+## 🔧 Code Completion Guidelines
+
+### TypeScript Best Practices
+
+- ALWAYS use explicit return types for functions
+- ALWAYS use readonly modifiers for props interfaces
+- ALWAYS use strict null checks and proper error handling
+- PREFER type unions over any/unknown when possible
+- USE existing type definitions from the type system extensively
+
+### File Structure Best Practices
+
+- ALWAYS add proper file headers with filepath comments
+- ALWAYS end files with a single newline character
+- ALWAYS use proper imports organization (external, internal, relative)
+- AVOID creating incomplete or truncated code blocks
+
+### React Component Patterns
+
+```typescript
+// Preferred component structure
+interface ComponentProps {
+  readonly prop: Type;
+  readonly onAction?: (data: Type) => void;
+}
+
+export const Component: React.FC<ComponentProps> = ({ prop, onAction }) => {
+  // Implementation with proper error boundaries
+  return <></>;
+};
+
+export default Component;
+```
+
+### PixiJS Integration Patterns
+
+```typescript
+// Always use this pattern for PixiJS components
+import { extend } from "@pixi/react";
+import { Graphics, Container } from "pixi.js";
+
+extend({ Graphics, Container });
+
+// Use proper callbacks with useCallback
+const drawCallback = useCallback(
+  (graphics: Graphics) => {
+    graphics.clear();
+    // Implementation
+  },
+  [dependencies]
+);
+```
 
 ## Project Overview
 
 Black Trigram is a **realistic 2D precision combat simulator** deeply rooted in Korean martial arts and the I Ching trigram philosophy. The game emphasizes anatomical realism, precise targeting, authentic martial techniques, and cyberpunk aesthetics.
 
-**Genre**: 2D Realistic Precision Combat Simulator / Traditional Korean Martial Arts Training  
-**Platform**: Web-based (HTML5/WebGL via PixiJS + React)  
+**Genre**: 2D Realistic Precision Combat Simulator / Traditional Korean Martial Arts Training
+**Platform**: Web-based (HTML5/WebGL via PixiJS + React)
 **Core Focus**: Anatomical targeting, authentic Korean martial arts, 5 player archetypes, 70 vital points
 
 ## 🎯 Core Game Concepts
@@ -33,200 +86,175 @@ Black Trigram is a **realistic 2D precision combat simulator** deeply rooted in 
 - **☶ 간 (Gan)** - Mountain: Defensive counters
 - **☷ 곤 (Gon)** - Earth: Ground techniques
 
-### Combat Mechanics
+### Combat Mechanics Requirements
 
 - **70 Anatomical Vital Points** for precise targeting
 - **Realistic Body Mechanics**: Health, consciousness, pain, balance, stamina
 - **Authentic Korean Techniques** with cultural accuracy
 - **Damage Calculation** based on technique precision and force
 
-## 🏗️ Current Architecture
+## 🏗️ Architecture Guidelines
 
-### System
+### Component Reuse Strategy
 
-src/audio/AudioAssetRegistry.ts
-src/audio/AudioManager.ts
-src/audio/AudioManager.tsx
-src/audio/AudioProvider.tsx
-src/audio/AudioUtils.ts
-src/audio/DefaultSoundGenerator.ts
-src/audio/index.ts
-src/audio/placeholder-sounds.ts
-src/audio/VariantSelector.ts
-src/components
-src/components/combat
-src/components/combat/CombatScreen.tsx
-src/components/combat/components
-src/components/combat/components/CombatArena.tsx
-src/components/combat/components/CombatControls.tsx
-src/components/combat/components/CombatHUD.tsx
-src/components/combat/components/index.ts
-src/components/combat/index.ts
-src/components/game
-src/components/game/DojangBackground.tsx
-src/components/game/GameEngine.tsx
-src/components/game/GameStarter.tsx
-src/components/game/GameUI.tsx
-src/components/game/HitEffectsLayer.tsx
-src/components/game/index.ts
-src/components/game/Player.tsx
-src/components/game/PlayerVisuals.tsx
-src/components/index.ts
-src/components/intro
-src/components/intro/components
-src/components/intro/components/ControlsSection.tsx
-src/components/intro/components/index.ts
-src/components/intro/components/MenuSection.tsx
-src/components/intro/components/PhilosophySection.tsx
-src/components/intro/index.ts
-src/components/intro/IntroScreen.css
-src/components/intro/IntroScreen.tsx
-src/components/intro/sections
-src/components/training
-src/components/training/index.ts
-src/components/training/TrainingScreen.tsx
-src/components/ui
-src/components/ui/ArchetypeDisplay.tsx
-src/components/ui/base
-src/components/ui/base/BackgroundGrid.tsx
-src/components/ui/base/BaseButton.tsx
-src/components/ui/base/index.ts
-src/components/ui/base/KoreanHeader.tsx
-src/components/ui/base/KoreanPixiComponents.tsx
-src/components/ui/base/korean-text
-src/components/ui/base/korean-text/components
-src/components/ui/base/korean-text/components/index.ts
-src/components/ui/base/korean-text/components/KoreanMartialText.tsx
-src/components/ui/base/korean-text/components/KoreanPixiTextUtils.ts
-src/components/ui/base/korean-text/components/KoreanPixiTextUtils.tsx
-src/components/ui/base/korean-text/components/KoreanStatusText.tsx
-src/components/ui/base/korean-text/components/KoreanTechniqueText.tsx
-src/components/ui/base/korean-text/components/KoreanText.tsx
-src/components/ui/base/korean-text/components/KoreanTitle.tsx
-src/components/ui/base/korean-text/constants.ts
-src/components/ui/base/korean-text/hooks
-src/components/ui/base/korean-text/hooks/useKoreanTextStyle.ts
-src/components/ui/base/korean-text/index.ts
-src/components/ui/base/korean-text/KoreanText.tsx
-src/components/ui/base/korean-text/types.ts
-src/components/ui/base/korean-text/utils.ts
-src/components/ui/base/PixiComponents.tsx
-src/components/ui/base/PixiTestableComponents.tsx
-src/components/ui/EndScreen.tsx
-src/components/ui/HealthBar.tsx
-src/components/ui/HitEffectsLayer.tsx
-src/components/ui/index.ts
-src/components/ui/KoreanHeader.tsx
-src/components/ui/Player.tsx
-src/components/ui/PlayerVisuals.tsx
-src/components/ui/ProgressTracker.tsx
-src/components/ui/RoundTimer.tsx
-src/components/ui/ScoreDisplay.tsx
-src/components/ui/StanceIndicator.tsx
-src/components/ui/TrigramWheel.tsx
-src/hooks/useTexture.ts
-src/main.tsx
-src/systems/CombatSystem.ts
-src/systems/combat/TrainingCombatSystem.ts
-src/systems/trigram/KoreanCulture.ts
-src/systems/trigram/KoreanTechniques.ts
-src/systems/trigram/StanceManager.ts
-src/systems/TrigramSystem.ts
-src/systems/trigram/TransitionCalculator.ts
-src/systems/trigram/TrigramCalculator.ts
-src/systems/vitalpoint/AnatomicalRegions.ts
-src/systems/vitalpoint/DamageCalculator.ts
-src/systems/vitalpoint/HitDetection.ts
-src/systems/vitalpoint/KoreanAnatomy.ts
-src/systems/vitalpoint/KoreanVitalPoints.ts
-src/systems/VitalPointSystem.ts
-src/types/anatomy.ts
-src/types/audio.ts
-src/types/combat.ts
-src/types/common.ts
-src/types/components.ts
-src/types/constants
-src/types/constants/animations.ts
-src/types/constants/colors.ts
-src/types/constants/combat.ts
-src/types/constants/controls.ts
-src/types/constants/game.ts
-src/types/constants/index.ts
-src/types/constants/player.ts
-src/types/constants/techniques.ts
-src/types/constants/trigram.ts
-src/types/constants.ts
-src/types/constants/typography.ts
-src/types/constants/ui.ts
-src/types/constants/vital-points.ts
-src/types/controls.ts
-src/types/effects.ts
-src/types/enums.ts
-src/types/game.ts
-src/types/index.ts
-src/types/korean-text.ts
-src/types/pixi-react.d.ts
-src/types/player.ts
-src/types/systems.ts
-src/types/trigram.ts
-src/types/ui.ts
-src/utils/colorUtils.ts
-src/utils/effectUtils.ts
-src/utils/pixiExtensions.ts
-src/utils/playerUtils.ts
-src/vite-env.d.ts
+ALWAYS check existing components before creating new ones:
 
-### css
+- Use `ResponsivePixiContainer` for layout
+- Extend from base UI components in `src/components/ui/base/`
+- Reuse Korean text components from `korean-text/` directory
+- Follow existing patterns in combat and training systems
 
-src/Game.css
-src/App.css
-src/index.css
+### Type System Usage
 
-## ART Image assets
+ALWAYS use explicit types from existing type system:
 
-src/assets/visual
-src/assets/visual/archetypes
-src/assets/visual/archetypes/amsalja.png
-src/assets/visual/archetypes/hacker.png
-src/assets/visual/archetypes/jeongbo_yowon.png
-src/assets/visual/archetypes/jojik_pokryeokbae.png
-src/assets/visual/archetypes/musa.png
-src/assets/visual/bg
-src/assets/visual/bg/archetyples
-src/assets/visual/bg/archetyples/CyberpunkTeamDynamics.png
-src/assets/visual/bg/archetyples/PlayerArchetypesExplained.png
-src/assets/visual/bg/archetyples/PlayerArchetypesOverview.png
-src/assets/visual/bg/dojang
-src/assets/visual/bg/dojang/dojang_floor_tex.png
-src/assets/visual/bg/dojang/dojang_wall_tex.png
-src/assets/visual/bg/intro
-src/assets/visual/bg/intro/intro_bg_loop.png
-src/assets/visual/logo
-src/assets/visual/logo/black-trigram-256.png
-src/assets/visual/logo/black-trigram.png
+```typescript
+import { TrigramStance, PlayerArchetype } from "../types/enums";
+import { CombatState, PlayerState } from "../types/combat";
+import { VitalPoint, AnatomicalRegion } from "../types/anatomy";
+```
 
-## AUDIO assets
+### Testing Requirements
 
-# Music
+- Add `data-testid` attributes to all interactive elements
+- Use existing test utilities from `src/test/test-utils.ts`
+- Follow patterns in `src/audio/__tests__/` for comprehensive coverage
+- Write resilient tests that don't break on implementation changes
 
-src/assets/audio/music/underground_theme.mp3
-src/assets/audio/music/intro_theme.webm
-src/assets/audio/music/intro_theme.mp3
-src/assets/audio/music/archetype_themes/amsalja_shadow.mp3
-src/assets/audio/music/archetype_themes/musa_warrior.mp3
-src/assets/audio/music/archetype_themes/hacker_cyber.mp3
-src/assets/audio/music/archetype_themes/jojik_street.mp3
-src/assets/audio/music/archetype_themes/jeongbo_intel.mp3
-src/assets/audio/music/archetype_themes
-src/assets/audio/music/cyberpunk_fusion.webm
-src/assets/audio/music/cyberpunk_fusion.mp3
-src/assets/audio/music/combat_theme.webm
-src/assets/audio/music/underground_theme.webm
-src/assets/audio/music/combat_theme.mp3
+## 🎨 Visual Design System
 
-# Sound effects
+### Cyberpunk Korean Aesthetic
 
-src/assets/audio/sfx/\*
+Apply to ALL visual components:
+
+```typescript
+import { KOREAN_COLORS } from "../types/constants/colors";
+
+// Use consistent color scheme
+const theme = {
+  primary: KOREAN_COLORS.ACCENT_NEON_BLUE,
+  secondary: KOREAN_COLORS.ACCENT_ELECTRIC_PURPLE,
+  accent: KOREAN_COLORS.ACCENT_GOLD,
+  background: KOREAN_COLORS.BG_DARK_METALLIC,
+  text: KOREAN_COLORS.TEXT_PRIMARY,
+};
+```
+
+### Korean Typography
+
+```typescript
+// Always use proper Korean font stacks
+const koreanTextStyle = {
+  fontFamily: "Noto Sans KR, NanumGothic, Malgun Gothic, sans-serif",
+  fontSize: 16,
+  fill: KOREAN_COLORS.TEXT_PRIMARY,
+};
+```
+
+## 🎮 Combat Controls Implementation
+
+### Primary Combat Controls Pattern
+
+```typescript
+const COMBAT_CONTROLS = {
+  // Trigram stance system (1-8 keys)
+  stanceControls: {
+    "1": { stance: TrigramStance.GEON, korean: "건", technique: "천둥벽력" },
+    "2": { stance: TrigramStance.TAE, korean: "태", technique: "유수연타" },
+    // ... continue for all 8 stances
+  },
+
+  combat: {
+    SPACE: "Execute current stance technique",
+    SHIFT: "Defensive guard/block position",
+    CTRL: "Precision vital point targeting mode",
+    TAB: "Cycle through player archetypes",
+  },
+};
+
+// Implement with proper event handling
+function handleCombatInput(
+  event: KeyboardEvent,
+  player: PlayerState
+): CombatAction | null {
+  const key = event.key;
+
+  if (key >= "1" && key <= "8") {
+    const stanceIndex = parseInt(key) - 1;
+    const stance = TRIGRAM_STANCES_ORDER[stanceIndex];
+    return executeStanceChange(player, stance);
+  }
+
+  switch (key) {
+    case " ":
+      return executeTechnique(player);
+    case "Shift":
+      return toggleGuard(player);
+    case "Control":
+      return enterVitalPointMode(player);
+    default:
+      return null;
+  }
+}
+```
+
+## 🧪 Code Quality Standards
+
+### Error Handling
+
+```typescript
+// Always include proper error boundaries
+try {
+  const result = await riskyOperation();
+  return result;
+} catch (error) {
+  console.error("Operation failed:", error);
+  // Handle gracefully without breaking the game
+  return fallbackValue;
+}
+```
+
+### Performance Considerations
+
+- Use `useCallback` for all PixiJS draw functions
+- Implement proper memoization with `useMemo` for expensive calculations
+- Use `React.memo` for components that render frequently
+- Optimize asset loading with proper preloading strategies
+
+### Korean Cultural Accuracy
+
+- Research proper Korean martial arts terminology
+- Use authentic Hanja (한자) characters where appropriate
+- Respect traditional Korean values in game mechanics
+- Include proper Korean-English bilingual support
+
+## 🌟 Success Criteria
+
+When following these guidelines, code should:
+
+- ✅ Compile without TypeScript errors
+- ✅ Complete file generation without truncation
+- ✅ Implement authentic Korean martial arts mechanics
+- ✅ Achieve 60fps performance for all combat sequences
+- ✅ Include comprehensive test coverage with proper test IDs
+- ✅ Maintain cyberpunk aesthetic while respecting Korean culture
+- ✅ Provide excellent accessibility and UX
+
+## 🎯 Philosophy Integration
+
+**Remember**: Black Trigram represents the intersection of traditional Korean martial arts wisdom and modern interactive technology. Every code completion should honor this balance while providing authentic, educational, and respectful gameplay.
+
+**흑괘의 길을 걸어라** - _Walk the Path of the Black Trigram_
+
+### Code Completion Anti-Patterns to Avoid
+
+- ❌ Truncated or incomplete function implementations
+- ❌ Missing return types on functions
+- ❌ Using `any` type instead of proper typing
+- ❌ Creating components without proper test IDs
+- ❌ Incomplete error handling
+- ❌ Missing Korean cultural context in martial arts code
+- ❌ Performance-heavy operations without optimization
 
 ## 🎯 Strict TypeScript Usage
 
