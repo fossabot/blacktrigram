@@ -1,5 +1,5 @@
 {
-  "name": "CIA Compliance Manager Dev Container",
+  "name": "Black Trigram Dev Container",
   "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {},
@@ -46,7 +46,7 @@
           { "directory": "./cypress", "changeProcessCWD": true }
         ],
         "eslint.options": {
-          "overrideConfigFile": "/workspaces/cia-compliance-manager/.eslintrc.cjs"
+          "overrideConfigFile": "/workspaces/blacktrigram/.eslintrc.cjs"
         },
         "typescript.updateImportsOnFileMove.enabled": "always",
         "javascript.updateImportsOnFileMove.enabled": "always",
