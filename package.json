@@ -28,7 +28,10 @@
     "test:e2e": "mkdir -p cypress/results && start-server-and-test dev http://localhost:5173 'cypress run --reporter cypress-multi-reporters --reporter-options configFile=cypress.config.reporter.json'",
     "test:e2e:ci": "mkdir -p cypress/results && start-server-and-test dev http://localhost:5173 'cypress run --headless --reporter cypress-multi-reporters --reporter-options configFile=cypress.config.reporter.json'",
     "size-limit": "npx size-limit",
-    "compress": "gzip -k dist/assets/*.js && gzip -k dist/assets/*.css"
+    "compress": "gzip -k dist/assets/*.js && gzip -k dist/assets/*.css",
+    "find:unused": "npm run knip",
+    "test:licenses": "license-compliance --direct --allow 'MIT;ISC;0BSD;BSD-2-Clause;BSD-3-Clause;Apache-2.0;Unlicense;CC0-1.0'",
+    "docs": "typedoc --options typedoc.json"
   },
   "dependencies": {
     "@pixi/react": "^8.0.2",
@@ -43,7 +46,7 @@
     "@cypress/react": "^9.0.1",
     "@cypress/webpack-dev-server": "^4.1.0",
     "@elevenlabs/elevenlabs-js": "^2.2.0",
-    "@eslint/js": "^9.28.0",
+    "@eslint/js": "^9.29.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",
@@ -76,9 +79,19 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.33.0",
     "vite": "^6.3.5",
-    "vite-bundle-analyzer": "^0.22.2",
+    "vite-bundle-analyzer": "^0.22.3",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.2.3"
+    "vitest": "^3.2.3",
+    "knip": "5.61.0",
+    "license-compliance": "3.0.1",
+    "madge": "^8.0.0",
+    "mocha-junit-reporter": "2.2.1",
+    "mochawesome": "7.1.3",
+    "mochawesome-merge": "5.0.0",
+    "mochawesome-report-generator": "6.2.0",
+    "typedoc": "^0.28.5",
+    "typedoc-plugin-markdown": "^4.6.4",
+    "typedoc-plugin-mermaid": "^1.12.0"
   },
   "size-limit": [
     {
