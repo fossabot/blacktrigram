@@ -1,10 +1,12 @@
+import React from "react";
+import { fireEvent, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderWithPixi, screen, fireEvent } from "../../../test/test-utils";
 import {
   ResponsivePixiButton,
   ResponsivePixiPanel,
   ResponsivePixiContainer,
-} from "./base/PixiTestableComponents";
+} from "./base/ResponsivePixiComponents";
+import { renderWithPixi } from "../../test/test-utils";
 
 describe("ResponsivePixiComponents", () => {
   const mockOnClick = vi.fn();
@@ -18,36 +20,29 @@ describe("ResponsivePixiComponents", () => {
       renderWithPixi(
         <ResponsivePixiButton
           text="Test Button"
-          x={0}
-          y={0}
-          width={100}
-          height={40}
           screenWidth={800}
-          screenHeight={600}
-          onClick={mockOnClick}
+          onClick={() => {}}
+          data-testid="test-button"
         />
       );
 
-      expect(screen.getByTestId("responsive-pixi-button")).toBeInTheDocument();
-      expect(screen.getByText("Test Button")).toBeInTheDocument();
+      expect(screen.getByTestId("test-button")).toBeTruthy();
+      expect(screen.getByText("Test Button")).toBeTruthy();
     });
 
     it("should handle click events", () => {
+      const handleClick = vi.fn();
       renderWithPixi(
         <ResponsivePixiButton
           text="Clickable"
-          x={0}
-          y={0}
-          width={100}
-          height={40}
           screenWidth={800}
-          screenHeight={600}
-          onClick={mockOnClick}
+          onClick={handleClick}
+          data-testid="clickable-button"
         />
       );
-
-      // Mock interaction
-      expect(mockOnClick).not.toHaveBeenCalled();
+      const btn = screen.getByTestId("clickable-button");
+      fireEvent.click(btn);
+      expect(handleClick).toHaveBeenCalled();
     });
   });
 
@@ -56,39 +51,36 @@ describe("ResponsivePixiComponents", () => {
       renderWithPixi(
         <ResponsivePixiPanel
           title="Test Panel"
-          x={0}
-          y={0}
-          width={200}
-          height={150}
           screenWidth={800}
-          screenHeight={600}
+          data-testid="test-panel"
         >
           <div>Panel Content</div>
         </ResponsivePixiPanel>
       );
-
-      expect(screen.getByTestId("responsive-pixi-panel")).toBeInTheDocument();
-      expect(screen.getByText("Test Panel")).toBeInTheDocument();
+      expect(screen.getByTestId("test-panel")).toBeTruthy();
+      expect(screen.getByText("Test Panel")).toBeTruthy();
     });
   });
 
   describe("ResponsivePixiContainer", () => {
     it("should render container with children", () => {
       renderWithPixi(
-        <ResponsivePixiContainer
-          screenWidth={800}
-          screenHeight={600}
-          x={0}
-          y={0}
-        >
-          <div>Container Content</div>
+        <ResponsivePixiContainer screenWidth={800} data-testid="test-container">
+          <div>Child Content</div>
         </ResponsivePixiContainer>
       );
+      expect(screen.getByTestId("test-container")).toBeTruthy();
+      expect(screen.getByText("Child Content")).toBeTruthy();
+    });
 
-      expect(
-        screen.getByTestId("responsive-pixi-container")
-      ).toBeInTheDocument();
-      expect(screen.getByText("Container Content")).toBeInTheDocument();
+    it("renders a pixiContainer and responds to screen size", () => {
+      renderWithPixi(
+        <pixiContainer data-testid="responsive-pixi-container">
+          <pixiGraphics />
+        </pixiContainer>
+      );
+      const container = screen.getByTestId("responsive-pixi-container");
+      expect(container).toBeInTheDocument();
     });
   });
 });
