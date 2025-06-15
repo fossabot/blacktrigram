@@ -517,28 +517,24 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
       </ResponsivePixiContainer>
 
       {/* Trigram Wheel for Stance Selection */}
-      <pixiContainer
-        data-testid="training-trigram-wheel"
-        x={1050}
-        y={650}
-        interactive={true}
-        onPointerDown={() => onPlayerUpdate({ currentStance: selectedStance })}
-      >
-        {/* ...existing wheel background & center text... */}
-
-        {
-          // render each trigram stance icon in the wheel
-          trigramStances.map((stance) => (
-            <pixiContainer
-              key={stance}
-              data-testid={`trigram-stance-${stance}`}
-              // ...existing positioning props (x, y)...
-              onClick={() => onPlayerUpdate({ currentStance: stance })}
-            >
-              {/* ...existing code for drawing each stance (Graphics + Text)... */}
-            </pixiContainer>
-          ))
-        }
+      <pixiContainer data-testid="training-trigram-wheel" x={1050} y={650}>
+        {/* Wheel background & center text could go here */}
+        {trigramStances.map((stance) => (
+          <pixiContainer
+            key={stance}
+            data-testid={`trigram-stance-${stance}`}
+            interactive={true}
+            onPointerDown={() => handleStanceChange(stance)}
+            onClick={() => handleStanceChange(stance)} // ← added
+          >
+            {/* Optionally draw a simple indicator */}
+            <pixiText
+              text={stance}
+              style={{ fontSize: 14, fill: KOREAN_COLORS.TEXT_PRIMARY }}
+              anchor={0.5}
+            />
+          </pixiContainer>
+        ))}
       </pixiContainer>
 
       {/* Stance Selection Area for Testing */}
