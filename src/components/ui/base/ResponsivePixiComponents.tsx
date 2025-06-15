@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, ReactNode } from "react";
 import { KOREAN_COLORS } from "../../../types/constants";
 
 // Responsive PixiJS Button with adaptive sizing
@@ -43,7 +43,13 @@ export const ResponsivePixiButton: React.FC<ResponsivePixiButtonProps> = ({
   }, [variant, disabled]);
 
   return (
-    <pixiContainer x={x} y={y} data-testid={testId}>
+    <pixiContainer
+      x={x}
+      y={y}
+      onClick={onClick}
+      data-testid={testId}
+      // removed invalid boolean interactive
+    >
       <pixiGraphics
         draw={(g) => {
           g.clear();
@@ -82,6 +88,8 @@ export const ResponsivePixiButton: React.FC<ResponsivePixiButtonProps> = ({
         x={(width || 120) / 2}
         y={(height || 40) / 2}
         anchor={0.5}
+        // wire through testId for text
+        data-testid={`${testId}-text`}
       />
     </pixiContainer>
   );
@@ -137,6 +145,8 @@ export const ResponsivePixiPanel: React.FC<ResponsivePixiPanelProps> = ({
           }}
           x={10}
           y={-20}
+          // wire through testId for title
+          data-testid={`${testId}-title`}
         />
       )}
 
@@ -163,7 +173,7 @@ export interface ResponsivePixiButtonProps {
 }
 
 export interface ResponsivePixiContainerProps {
-  readonly children?: React.ReactNode;
+  readonly children?: ReactNode;
   readonly x?: number;
   readonly y?: number;
   readonly screenWidth?: number; // now optional
@@ -173,7 +183,7 @@ export interface ResponsivePixiContainerProps {
 
 export interface ResponsivePixiPanelProps {
   readonly title?: string;
-  readonly children?: React.ReactNode;
+  readonly children?: ReactNode;
   readonly x?: number;
   readonly y?: number;
   readonly width?: number;

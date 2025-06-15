@@ -20,28 +20,27 @@ describe("ResponsivePixiComponents", () => {
       renderWithPixi(
         <ResponsivePixiButton
           text="Test Button"
-          screenWidth={800}
-          onClick={() => {}}
-          data-testid="test-button"
+          testId="test-button"
+          x={0}
+          y={0}
         />
       );
 
       expect(screen.getByTestId("test-button")).toBeTruthy();
-      expect(screen.getByText("Test Button")).toBeTruthy();
+      const txt = screen.getByTestId("test-button-text");
+      expect(txt.getAttribute("text")).toBe("Test Button");
     });
 
     it("should handle click events", () => {
       const handleClick = vi.fn();
       renderWithPixi(
         <ResponsivePixiButton
-          text="Clickable"
-          screenWidth={800}
+          text="Click"
+          testId="clickable-button"
           onClick={handleClick}
-          data-testid="clickable-button"
         />
       );
-      const btn = screen.getByTestId("clickable-button");
-      fireEvent.click(btn);
+      fireEvent.click(screen.getByTestId("clickable-button"));
       expect(handleClick).toHaveBeenCalled();
     });
   });
@@ -49,38 +48,26 @@ describe("ResponsivePixiComponents", () => {
   describe("ResponsivePixiPanel", () => {
     it("should render panel with title", () => {
       renderWithPixi(
-        <ResponsivePixiPanel
-          title="Test Panel"
-          screenWidth={800}
-          data-testid="test-panel"
-        >
+        <ResponsivePixiPanel title="Test Panel" testId="test-panel">
           <div>Panel Content</div>
         </ResponsivePixiPanel>
       );
       expect(screen.getByTestId("test-panel")).toBeTruthy();
-      expect(screen.getByText("Test Panel")).toBeTruthy();
+      const title = screen.getByTestId("test-panel-title");
+      expect(title.getAttribute("text")).toBe("Test Panel");
+      expect(screen.getByText("Panel Content")).toBeTruthy();
     });
   });
 
   describe("ResponsivePixiContainer", () => {
     it("should render container with children", () => {
       renderWithPixi(
-        <ResponsivePixiContainer screenWidth={800} data-testid="test-container">
-          <div>Child Content</div>
+        <ResponsivePixiContainer testId="test-container">
+          <div>Child</div>
         </ResponsivePixiContainer>
       );
       expect(screen.getByTestId("test-container")).toBeTruthy();
-      expect(screen.getByText("Child Content")).toBeTruthy();
-    });
-
-    it("renders a pixiContainer and responds to screen size", () => {
-      renderWithPixi(
-        <pixiContainer data-testid="responsive-pixi-container">
-          <pixiGraphics />
-        </pixiContainer>
-      );
-      const container = screen.getByTestId("responsive-pixi-container");
-      expect(container).toBeInTheDocument();
+      expect(screen.getByText("Child")).toBeTruthy();
     });
   });
 });
