@@ -517,15 +517,17 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
       </ResponsivePixiContainer>
 
       {/* Trigram Wheel for Stance Selection */}
-      <pixiContainer data-testid="training-trigram-wheel" x={1050} y={650}>
-        {/* Wheel background & center text could go here */}
+      <ResponsivePixiContainer
+        data-testid="training-trigram-wheel"
+        x={1050}
+        y={650}
+      >
         {trigramStances.map((stance) => (
           <pixiContainer
             key={stance}
             data-testid={`trigram-stance-${stance}`}
             interactive={true}
             onPointerDown={() => handleStanceChange(stance)}
-            onClick={() => handleStanceChange(stance)} // ← added
           >
             {/* Optionally draw a simple indicator */}
             <pixiText
@@ -535,7 +537,7 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
             />
           </pixiContainer>
         ))}
-      </pixiContainer>
+      </ResponsivePixiContainer>
 
       {/* Stance Selection Area for Testing */}
       <pixiContainer
