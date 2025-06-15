@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { DojangBackground } from "../game/DojangBackground";
-import { TrigramWheel } from "../ui/TrigramWheel";
 import { StanceIndicator } from "../ui/StanceIndicator";
 import {
   ResponsivePixiContainer,
@@ -173,14 +172,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
       audio.playSFX("stance_change");
     },
     [onPlayerUpdate, audio]
-  );
-
-  // Handle stance selection (for TrigramWheel compatibility)
-  const handleStanceSelect = useCallback(
-    (stance: TrigramStance) => {
-      handleStanceChange(stance);
-    },
-    [handleStanceChange]
   );
 
   // Toggle training mode

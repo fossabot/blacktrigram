@@ -3,19 +3,20 @@ import { KOREAN_COLORS } from "../../../types/constants";
 
 // Responsive PixiJS Button with adaptive sizing
 export const ResponsivePixiButton: React.FC<ResponsivePixiButtonProps> = ({
-  text,
   x = 0,
   y = 0,
+  text,
   width,
   height,
-  screenWidth,
   variant = "primary",
   onClick,
   disabled = false,
   testId,
   "data-testid": dataTestId,
+  screenWidth = 0,
+  screenHeight: _screenHeight = 0,
 }) => {
-  const sw = screenWidth ?? 0;
+  const sw = screenWidth;
   const containerTestId = dataTestId ?? testId;
   const [isHovered, setIsHovered] = useState(false);
 
@@ -93,7 +94,15 @@ export const ResponsivePixiButton: React.FC<ResponsivePixiButtonProps> = ({
 // Responsive PixiJS Container that adapts to screen size
 export const ResponsivePixiContainer: React.FC<
   ResponsivePixiContainerProps
-> = ({ children, x = 0, y = 0, testId, "data-testid": dataTestId }) => {
+> = ({
+  x = 0,
+  y = 0,
+  children,
+  testId,
+  "data-testid": dataTestId,
+  screenWidth: _screenWidth,
+  screenHeight: _screenHeight,
+}) => {
   const containerTestId = dataTestId ?? testId;
   return (
     <pixiContainer x={x} y={y} data-testid={containerTestId}>
@@ -104,14 +113,16 @@ export const ResponsivePixiContainer: React.FC<
 
 // Responsive PixiJS Panel with title bar
 export const ResponsivePixiPanel: React.FC<ResponsivePixiPanelProps> = ({
-  title,
-  children,
   x = 0,
   y = 0,
+  title,
+  children,
   width = 200,
   height = 150,
   testId,
   "data-testid": dataTestId,
+  screenWidth: _screenWidth,
+  screenHeight: _screenHeight,
 }) => {
   const containerTestId = dataTestId ?? testId;
 
@@ -158,9 +169,18 @@ export const ResponsivePixiPanel: React.FC<ResponsivePixiPanelProps> = ({
 // Simple Pixi-React wrappers that forward data-testid, positioning, text, children and click handlers.
 export interface ResponsivePixiButtonProps {
   text: string;
-  testId: string;
+  // allow both forms of test id
+  testId?: string;
+  "data-testid"?: string;
   x?: number;
   y?: number;
+  // sizing props
+  width?: number;
+  height?: number;
+  screenWidth?: number;
+  screenHeight?: number;
+  variant?: "primary" | "secondary" | "accent" | "ghost" | "danger";
+  disabled?: boolean;
   onClick?: () => void;
 }
 
@@ -200,41 +220,17 @@ export const ResponsivePixiButtonSimple: React.FC<
 
 export interface ResponsivePixiPanelProps {
   title: string;
-  testId: string;
+  testId?: string;
+  "data-testid"?: string;
   x?: number;
   y?: number;
   children?: React.ReactNode;
+  // sizing props
+  width?: number;
+  height?: number;
+  screenWidth?: number;
+  screenHeight?: number;
 }
-
-export const ResponsivePixiPanelSimple: React.FC<ResponsivePixiPanelProps> = ({
-  title,
-  testId,
-  x = 0,
-  y = 0,
-  children,
-}) => (
-  <pixiContainer data-testid={testId} x={x} y={y}>
-    <pixiGraphics
-      draw={(g) => {
-        g.clear();
-        g.beginFill(0x222222, 0.8);
-        g.drawRect(0, 0, 300, 200);
-        g.endFill();
-      }}
-    />
-    <pixiText
-      data-testid={`${testId}-title`}
-      text={title}
-      anchor={0.5}
-      x={150}
-      y={20}
-      style={{ fontSize: 14, fontWeight: "bold", fill: 0xffffff }}
-    />
-    <pixiContainer x={10} y={40}>
-      {children}
-    </pixiContainer>
-  </pixiContainer>
-);
 
 export interface ResponsivePixiContainerProps {
   testId?: string;
@@ -242,6 +238,9 @@ export interface ResponsivePixiContainerProps {
   x?: number;
   y?: number;
   children?: ReactNode;
+  // responsive context
+  screenWidth?: number;
+  screenHeight?: number;
 }
 
 export default {
@@ -249,39 +248,3 @@ export default {
   ResponsivePixiButton,
   ResponsivePixiPanel,
 };
-
-// Props interfaces: make screenWidth/screenHeight optional
-export interface ResponsivePixiButtonProps {
-  readonly text: string;
-  readonly x?: number;
-  readonly y?: number;
-  readonly width?: number;
-  readonly height?: number;
-  readonly screenWidth?: number; // now optional
-  readonly screenHeight?: number; // now optional
-  readonly variant?: "primary" | "secondary" | "accent" | "ghost" | "danger";
-  readonly onClick?: () => void;
-  readonly disabled?: boolean;
-  readonly "data-testid"?: string;
-}
-
-export interface ResponsivePixiContainerProps {
-  readonly children?: ReactNode;
-  readonly x?: number;
-  readonly y?: number;
-  readonly screenWidth?: number; // now optional
-  readonly screenHeight?: number; // now optional
-  readonly "data-testid"?: string;
-}
-
-export interface ResponsivePixiPanelProps {
-  readonly title?: string;
-  readonly children?: ReactNode;
-  readonly x?: number;
-  readonly y?: number;
-  readonly width?: number;
-  readonly height?: number;
-  readonly screenWidth?: number; // now optional
-  readonly screenHeight?: number; // now optional
-  readonly "data-testid"?: string;
-}
