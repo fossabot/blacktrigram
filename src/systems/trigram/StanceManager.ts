@@ -1,226 +1,176 @@
-import type {
-  PlayerState,
-  TrigramStance,
-  TransitionPath,
-  TrigramTransitionCost,
-} from "../../types";
-import type { TrigramCalculator } from "./TrigramCalculator";
+import type { PlayerState, TrigramTransitionCost } from "../../types";
+import { TrigramStance } from "../../types/enums";
+import { TrigramCalculator } from "./TrigramCalculator";
+import { PLAYER_ARCHETYPES_DATA } from "../../types/constants";
 
-// Import constants or define them if they are specific to this module
-import {
-  MAX_TRANSITION_COST_KI,
-  MAX_TRANSITION_COST_STAMINA,
-  MAX_TRANSITION_TIME_MILLISECONDS,
-} from "../../types/constants";
-
-const DEFAULT_STANCE_COOLDOWN_MS = 500;
-
-export interface StanceTransitionResult {
-  // Ensure this interface is defined or imported
-  readonly from: TrigramStance;
-  readonly to: TrigramStance;
-  readonly cost: TrigramTransitionCost;
-  readonly effectiveness: number; // Effectiveness of the new stance or transition
+export interface StanceChangeResult {
   readonly success: boolean;
-  readonly reason?: string; // Reason for failure
-  readonly newState: PlayerState; // Player state after transition attempt
-  readonly timestamp: number; // Timestamp of the transition attempt
+  readonly updatedPlayer: PlayerState;
+  readonly cost: TrigramTransitionCost;
+  readonly message?: string;
 }
 
+/**
+ * Manager for trigram stance changes and state
+ */
 export class StanceManager {
-  private trigramCalculator: TrigramCalculator;
+  private readonly minTransitionInterval = 500;
+  private currentStance?: TrigramStance;
 
-  constructor(trigramCalculator: TrigramCalculator) {
-    this.trigramCalculator = trigramCalculator;
+  // Fix: Remove constructor parameter requirement
+  constructor() {
+    // No initialization needed
   }
 
-  public changeStance(
-    playerState: PlayerState,
-    targetStance: TrigramStance
-  ): StanceTransitionResult {
-    const now = Date.now();
+  /**
+   * Return the last stance we set (undefined if none yet)
+   */
+  public getCurrent(): TrigramStance | undefined {
+    return this.currentStance;
+  }
 
-    if (playerState.stance === targetStance) {
+  /**
+   * Attempt to change stance
+   */
+  changeStance(
+    player: PlayerState,
+    newStance: TrigramStance
+  ): StanceChangeResult {
+    const cost = this.getStanceTransitionCost(
+      player.currentStance,
+      newStance,
+      player
+    );
+
+    // Check if transition is possible
+    if (!this.canChangeStance(player, newStance)) {
       return {
-        from: playerState.stance,
-        to: targetStance,
-        cost: { ki: 0, stamina: 0, timeMilliseconds: 0 },
-        effectiveness: 1, // No change, effectiveness is neutral or current
-        success: true, // Technically successful as already in stance
-        newState: playerState,
-        timestamp: now,
+        success: false,
+        updatedPlayer: player,
+        cost,
+        message:
+          "Cannot change stance - insufficient resources or cooldown active",
       };
+    }
+
+    // Same stance - no cost
+    if (player.currentStance === newStance) {
+      this.currentStance = newStance;
+      return {
+        success: true,
+        updatedPlayer: {
+          ...player,
+          lastStanceChangeTime: Date.now(),
+        },
+        cost: { ki: 0, stamina: 0, timeMilliseconds: 0 }, // Fix: Use timeMilliseconds
+      };
+    }
+
+    // Apply stance change
+    const updatedPlayer: PlayerState = {
+      ...player,
+      currentStance: newStance,
+      ki: Math.max(0, player.ki - cost.ki),
+      stamina: Math.max(0, player.stamina - cost.stamina),
+      lastStanceChangeTime: Date.now(),
+    };
+    this.currentStance = newStance;
+
+    return {
+      success: true,
+      updatedPlayer,
+      cost,
+    };
+  }
+
+  /**
+   * Check if player can change to the specified stance
+   */
+  canChangeStance(player: PlayerState, newStance: TrigramStance): boolean {
+    const cost = this.getStanceTransitionCost(
+      player.currentStance,
+      newStance,
+      player
+    );
+
+    // Check resources
+    if (player.ki < cost.ki || player.stamina < cost.stamina) {
+      return false;
     }
 
     // Check cooldown
-    if (
-      now - (playerState.lastStanceChangeTime || 0) <
-      DEFAULT_STANCE_COOLDOWN_MS
-    ) {
-      return {
-        from: playerState.stance,
-        to: targetStance,
-        cost: { ki: 0, stamina: 0, timeMilliseconds: 0 }, // No cost incurred for failed attempt due to cooldown
-        effectiveness: 0,
-        success: false,
-        reason: "Stance change on cooldown",
-        newState: playerState, // State remains unchanged
-        timestamp: now,
-      };
+    const timeSinceLastChange = Date.now() - (player.lastStanceChangeTime || 0);
+    if (timeSinceLastChange < this.minTransitionInterval) {
+      return false;
     }
 
-    const transitionCheck = this.canTransitionTo(playerState, targetStance);
-    if (!transitionCheck.possible) {
-      return {
-        from: playerState.stance,
-        to: targetStance,
-        cost: transitionCheck.cost || {
-          ki: 0,
-          stamina: 0,
-          timeMilliseconds: 0,
-        }, // Cost that would have been if possible
-        effectiveness: 0,
-        success: false,
-        reason: transitionCheck.reason || "Cannot transition",
-        newState: playerState,
-        timestamp: now,
-      };
+    // Check if player is stunned or incapacitated
+    if (player.isStunned || player.consciousness < 50) {
+      return false;
     }
 
-    const transitionCost = transitionCheck.cost!; // Cost is available if possible
+    return true;
+  }
 
-    // Successful transition
-    const newState: PlayerState = {
-      ...playerState,
-      stance: targetStance,
-      ki: playerState.ki - transitionCost.ki,
-      stamina: playerState.stamina - transitionCost.stamina,
-      lastStanceChangeTime: now,
-    };
+  /**
+   * Calculate the cost of transitioning between stances
+   */
+  getStanceTransitionCost(
+    fromStance: TrigramStance,
+    toStance: TrigramStance,
+    player: PlayerState
+  ): TrigramTransitionCost {
+    if (fromStance === toStance) {
+      return { ki: 0, stamina: 0, timeMilliseconds: 0 };
+    }
 
-    // Effectiveness could be related to the target stance or the transition itself
-    const effectiveness = this.trigramCalculator.getStanceEffectiveness(
-      targetStance,
-      playerState.stance
-    ); // Example: effectiveness of new stance vs old
+    const baseCost = { ki: 10, stamina: 15, timeMilliseconds: 500 };
+    const difficulty = TrigramCalculator.calculateTransitionDifficulty(
+      fromStance,
+      toStance
+    );
+    const difficultyMultiplier = 1 + difficulty;
+
+    // Apply archetype modifiers
+    const archetypeData = PLAYER_ARCHETYPES_DATA[player.archetype];
+    const favoredStances = archetypeData.favoredStances || [];
+    const archetypeModifier = favoredStances.includes(toStance) ? 0.8 : 1.0;
 
     return {
-      from: playerState.stance,
-      to: targetStance,
-      cost: transitionCost,
-      effectiveness: effectiveness, // Placeholder, calculate actual effectiveness
-      success: true,
-      newState,
-      timestamp: now,
+      ki: Math.floor(baseCost.ki * difficultyMultiplier * archetypeModifier),
+      stamina: Math.floor(
+        baseCost.stamina * difficultyMultiplier * archetypeModifier
+      ),
+      timeMilliseconds: Math.floor(
+        baseCost.timeMilliseconds * difficultyMultiplier
+      ),
     };
   }
 
-  public canTransitionTo(
-    playerState: PlayerState,
-    targetStance: TrigramStance
-  ): { possible: boolean; reason?: string; cost?: TrigramTransitionCost } {
-    if (playerState.stance === targetStance) {
-      return {
-        possible: true,
-        cost: { ki: 0, stamina: 0, timeMilliseconds: 0 },
-      };
-    }
-    const now = Date.now();
-    const cooldown = DEFAULT_STANCE_COOLDOWN_MS;
-
-    if (
-      playerState.lastStanceChangeTime &&
-      now - playerState.lastStanceChangeTime < cooldown
-    ) {
-      return { possible: false, reason: "cooldown_active" };
+  /**
+   * Get optimal stance recommendation
+   */
+  getOptimalStance(player: PlayerState, opponent?: PlayerState): TrigramStance {
+    if (opponent) {
+      // Get counter stance against opponent
+      return TrigramCalculator.getCounterStance(opponent.currentStance);
     }
 
-    const cost = this.trigramCalculator.calculateTransitionCost(
-      playerState.stance,
-      targetStance,
-      playerState
-    );
+    // Default to archetype preferred stance
+    const archetypeData = PLAYER_ARCHETYPES_DATA[player.archetype];
+    const favoredStances = archetypeData.favoredStances || [];
 
-    if (playerState.ki < cost.ki) {
-      return { possible: false, reason: "insufficient_ki", cost };
-    }
-    if (playerState.stamina < cost.stamina) {
-      return { possible: false, reason: "insufficient_stamina", cost };
-    }
-    if (cost.ki > MAX_TRANSITION_COST_KI) {
-      return { possible: false, reason: "exceeds_max_ki_cost", cost };
-    }
-    if (cost.stamina > MAX_TRANSITION_COST_STAMINA) {
-      return { possible: false, reason: "exceeds_max_stamina_cost", cost };
-    }
-    if (cost.timeMilliseconds > MAX_TRANSITION_TIME_MILLISECONDS) {
-      return { possible: false, reason: "exceeds_max_transition_time", cost };
-    }
-
-    return { possible: true, cost };
+    return favoredStances.length > 0 ? favoredStances[0] : TrigramStance.GEON; // Fix: Use enum value
   }
 
-  public findOptimalStancePath(
-    playerState: PlayerState,
-    targetStance: TrigramStance, // Changed from opponentStance to targetStance for clarity
-    _maxDepth: number = 3 // Mark as unused if not passed to calculator
-  ): TransitionPath | null {
-    // Delegate to TrigramCalculator, ensuring all parameters are passed correctly
-    return this.trigramCalculator.calculateOptimalPath(
-      playerState.stance,
-      targetStance, // Pass targetStance
-      playerState
-      // maxDepth // Pass maxDepth if calculateOptimalPath uses it
+  /**
+   * Get all valid transitions from current stance
+   */
+  getValidTransitions(player: PlayerState): TrigramStance[] {
+    return Object.values(TrigramStance).filter(
+      (
+        stance // Fix: Use enum values
+      ) => this.canChangeStance(player, stance)
     );
-  }
-
-  public executeStanceTransition(
-    // This method is very similar to changeStance, consider consolidating
-    playerState: PlayerState,
-    targetStance: TrigramStance
-  ): StanceTransitionResult {
-    // This is essentially the success path of changeStance.
-    // For DRY principle, changeStance should be the main method.
-    // If this has a different purpose (e.g., forcing transition ignoring some checks),
-    // its logic should reflect that. For now, assuming it's a direct execution.
-
-    const canTrans = this.canTransitionTo(playerState, targetStance);
-    if (!canTrans.possible) {
-      return {
-        from: playerState.stance,
-        to: targetStance,
-        cost: canTrans.cost || { ki: 0, stamina: 0, timeMilliseconds: 0 },
-        effectiveness: 0,
-        success: false,
-        reason: canTrans.reason || "Cannot execute transition",
-        newState: playerState,
-        timestamp: Date.now(),
-      };
-    }
-
-    const transitionCost = canTrans.cost!; // Should be defined if possible
-
-    const newPlayerState: PlayerState = {
-      ...playerState,
-      stance: targetStance,
-      ki: playerState.ki - transitionCost.ki,
-      stamina: playerState.stamina - transitionCost.stamina,
-      lastStanceChangeTime: Date.now(),
-    };
-
-    const effectiveness = this.trigramCalculator.getStanceEffectiveness(
-      targetStance,
-      playerState.stance
-    );
-
-    return {
-      from: playerState.stance,
-      to: targetStance,
-      cost: transitionCost,
-      effectiveness: effectiveness, // Placeholder
-      success: true,
-      newState: newPlayerState,
-      timestamp: Date.now(),
-    };
   }
 }

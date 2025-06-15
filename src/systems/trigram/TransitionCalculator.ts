@@ -3,205 +3,199 @@ import type {
   TrigramStance,
   TrigramTransitionRule,
   TrigramTransitionCost,
-  TransitionPath,
-  PlayerArchetype, // Added for archetype specific logic
-  StatusEffect, // Added for effect specific logic
-  EffectType, // Added for effect type checking
 } from "../../types";
-import {
-  TRIGRAM_DATA as AllTrigramDataImport,
-  STANCE_EFFECTIVENESS_MATRIX as GlobalEffectivenessMatrixImport,
-} from "../../types/constants";
+import { TrigramStance as TrigramStanceEnum } from "../../types/enums";
 
-type AllTrigramDataMap = typeof AllTrigramDataImport; // Renamed for clarity
-type GlobalEffectivenessMatrixType = typeof GlobalEffectivenessMatrixImport; // Renamed for clarity
-
+/**
+ * Calculator for trigram stance transition costs and validation
+ */
 export class TransitionCalculator {
-  private trigramData: AllTrigramDataMap;
-  private effectivenessMatrix: GlobalEffectivenessMatrixType;
-  private transitionRulesInternal: readonly TrigramTransitionRule[];
+  private calculateBaseCost(
+    from: TrigramStance,
+    to: TrigramStance
+  ): TrigramTransitionCost {
+    if (from === to) {
+      return { ki: 0, stamina: 0, timeMilliseconds: 0 };
+    }
 
-  constructor(
-    trigramData?: AllTrigramDataMap,
-    effectivenessMatrix?: GlobalEffectivenessMatrixType,
-    transitionRules?: readonly TrigramTransitionRule[]
-  ) {
-    this.trigramData = trigramData || AllTrigramDataImport;
-    this.effectivenessMatrix =
-      effectivenessMatrix || GlobalEffectivenessMatrixImport;
-    this.transitionRulesInternal =
-      transitionRules || this.generateDefaultRules();
+    return { ki: 10, stamina: 15, timeMilliseconds: 500 };
   }
 
-  private generateDefaultRules(): readonly TrigramTransitionRule[] {
-    const rules: TrigramTransitionRule[] = [];
-    const stances = Object.keys(this.trigramData) as TrigramStance[];
-    for (const from of stances) {
-      for (const to of stances) {
-        if (from === to) continue;
-        const kiCost = 10;
-        const staminaCost = 5;
-        const timeMs = 500;
-        const effectiveness = this.effectivenessMatrix[from]?.[to] || 1.0;
+  generateTransitionRule(
+    from: TrigramStance,
+    to: TrigramStance
+  ): TrigramTransitionRule {
+    const cost = this.calculateBaseCost(from, to);
 
-        rules.push({
+    return {
+      from,
+      to,
+      cost,
+      effectiveness: 1.0, // Fix: Add missing effectiveness property
+      conditions: [],
+      description: {
+        korean: `${from}에서 ${to}로 전환`,
+        english: `Transition from ${from} to ${to}`,
+      },
+    };
+  }
+
+  /**
+   * Calculate the cost of transitioning between stances
+   */
+  static calculateCost(
+    from: TrigramStance,
+    to: TrigramStance
+  ): TrigramTransitionCost {
+    if (from === to) {
+      return { ki: 0, stamina: 0, timeMilliseconds: 0 }; // Fix property name
+    }
+
+    const baseCost = { ki: 15, stamina: 10, timeMilliseconds: 500 };
+    const modifier = this.getAdjacencyModifier(from, to);
+
+    return {
+      ki: Math.floor(baseCost.ki * modifier),
+      stamina: Math.floor(baseCost.stamina * modifier),
+      timeMilliseconds: Math.floor(baseCost.timeMilliseconds * modifier), // Fix property name
+    };
+  }
+
+  /**
+   * Check if a transition is valid for a player
+   */
+  static canTransition(
+    from: TrigramStance,
+    to: TrigramStance,
+    player: PlayerState
+  ): boolean {
+    const cost = this.calculateCost(from, to);
+    return player.ki >= cost.ki && player.stamina >= cost.stamina;
+  }
+
+  /**
+   * Check if transition is valid based on player state
+   */
+  static isTransitionValid(
+    from: TrigramStance,
+    to: TrigramStance,
+    player: PlayerState
+  ): boolean {
+    return this.canTransition(from, to, player);
+  }
+
+  /**
+   * Get Ki cost for transition
+   */
+  static getKiCost(
+    from: TrigramStance,
+    to: TrigramStance,
+    _player: PlayerState
+  ): number {
+    return this.calculateCost(from, to).ki;
+  }
+
+  /**
+   * Get Stamina cost for transition
+   */
+  static getStaminaCost(
+    from: TrigramStance,
+    to: TrigramStance,
+    _player: PlayerState
+  ): number {
+    return this.calculateCost(from, to).stamina;
+  }
+
+  /**
+   * Get transition time
+   */
+  static getTransitionTime(
+    from: TrigramStance,
+    to: TrigramStance,
+    _player: PlayerState
+  ): number {
+    return this.calculateCost(from, to).timeMilliseconds; // Fix property name
+  }
+
+  /**
+   * Get adjacency modifier for stance transitions
+   */
+  private static getAdjacencyModifier(
+    from: TrigramStance,
+    to: TrigramStance
+  ): number {
+    const adjacencyMap: Record<TrigramStance, TrigramStance[]> = {
+      [TrigramStanceEnum.GEON]: [TrigramStanceEnum.TAE, TrigramStanceEnum.GON],
+      [TrigramStanceEnum.TAE]: [TrigramStanceEnum.GEON, TrigramStanceEnum.LI],
+      [TrigramStanceEnum.LI]: [TrigramStanceEnum.TAE, TrigramStanceEnum.JIN],
+      [TrigramStanceEnum.JIN]: [TrigramStanceEnum.LI, TrigramStanceEnum.SON],
+      [TrigramStanceEnum.SON]: [TrigramStanceEnum.JIN, TrigramStanceEnum.GAM],
+      [TrigramStanceEnum.GAM]: [TrigramStanceEnum.SON, TrigramStanceEnum.GAN],
+      [TrigramStanceEnum.GAN]: [TrigramStanceEnum.GAM, TrigramStanceEnum.GON],
+      [TrigramStanceEnum.GON]: [TrigramStanceEnum.GAN, TrigramStanceEnum.GEON],
+    };
+
+    return adjacencyMap[from]?.includes(to) ? 0.7 : 1.0;
+  }
+
+  /**
+   * Get the shortest transition path between stances
+   */
+  static getTransitionPath(
+    from: TrigramStance,
+    to: TrigramStance
+  ): TrigramStance[] {
+    if (from === to) return [from];
+    return [from, to];
+  }
+
+  /**
+   * Calculate total cost for a transition path
+   */
+  static calculatePathCost(path: TrigramStance[]): TrigramTransitionCost {
+    if (path.length <= 1) {
+      return { ki: 0, stamina: 0, timeMilliseconds: 0 }; // Fix: Use timeMilliseconds
+    }
+
+    let totalCost = { ki: 0, stamina: 0, timeMilliseconds: 0 };
+
+    for (let i = 0; i < path.length - 1; i++) {
+      const stepCost = this.calculateCost(path[i], path[i + 1]);
+      totalCost.ki += stepCost.ki;
+      totalCost.stamina += stepCost.stamina;
+      totalCost.timeMilliseconds += stepCost.timeMilliseconds;
+    }
+
+    return totalCost;
+  }
+
+  /**
+   * Get all valid transitions from a stance
+   */
+  static getValidTransitions(
+    from: TrigramStance,
+    player: PlayerState
+  ): TrigramTransitionRule[] {
+    const transitions: TrigramTransitionRule[] = [];
+
+    for (const to of Object.values(TrigramStanceEnum)) {
+      if (this.isTransitionValid(from, to, player)) {
+        const cost = this.calculateCost(from, to);
+
+        transitions.push({
           from,
           to,
-          cost: { ki: kiCost, stamina: staminaCost, timeMilliseconds: timeMs },
-          effectiveness: effectiveness,
+          cost,
+          effectiveness: 1.0, // Add missing property
           conditions: [],
           description: {
-            korean: `${this.trigramData[from].name.korean} 에서 ${this.trigramData[to].name.korean} 로`,
-            english: `From ${this.trigramData[from].name.english} to ${this.trigramData[to].name.english}`,
+            korean: `${from}에서 ${to}로`,
+            english: `From ${from} to ${to}`,
           },
         });
       }
     }
-    return rules;
-  }
 
-  public getTransitionRule(
-    from: TrigramStance,
-    to: TrigramStance
-  ): TrigramTransitionRule | undefined {
-    return this.transitionRulesInternal.find(
-      (r: TrigramTransitionRule) => r.from === from && r.to === to // Added type for r
-    );
-  }
-
-  private calculateRisk(
-    cost: TrigramTransitionCost
-    // path: readonly TrigramStance[] // path parameter was unused
-  ): number {
-    // Risk could be based on time, ki/stamina percentage cost, etc.
-    const timeRisk = (cost.timeMilliseconds / 1000) * 0.1; // Example: 10% risk factor per second
-    // const resourceRisk = (cost.ki / 100) * 0.05 + (cost.stamina / 100) * 0.05; // Example
-    return Math.min(timeRisk, 1.0); // Cap risk at 1.0
-  }
-
-  public calculateTransitionCost(
-    // Public method
-    fromStance: TrigramStance,
-    toStance: TrigramStance,
-    playerState: PlayerState
-  ): TrigramTransitionCost {
-    const rule = this.getTransitionRule(fromStance, toStance);
-    let baseCost = rule?.cost || { ki: 15, stamina: 10, timeMilliseconds: 700 };
-
-    let kiModifier = 1.0;
-    let staminaModifier = 1.0;
-    let timeModifier = 1.0;
-
-    if (playerState.ki / playerState.maxKi < 0.3) kiModifier *= 1.5;
-    if (playerState.stamina / playerState.maxStamina < 0.3)
-      staminaModifier *= 1.5;
-
-    playerState.activeEffects?.forEach((effect: StatusEffect) => {
-      // Added type for effect
-      if (effect.type === ("exhausted" as EffectType)) {
-        // Cast to EffectType
-        kiModifier *= 1.2;
-        staminaModifier *= 1.2;
-        timeModifier *= 1.1;
-      }
-    });
-
-    const archetype = playerState.archetype as PlayerArchetype; // Cast for type safety
-    if (
-      archetype === "amsalja" &&
-      (toStance === "son" || fromStance === "son")
-    ) {
-      timeModifier *= 0.8;
-      staminaModifier *= 0.9;
-    }
-
-    return {
-      ki: Math.round(baseCost.ki * kiModifier),
-      stamina: Math.round(baseCost.stamina * staminaModifier),
-      timeMilliseconds: Math.round(baseCost.timeMilliseconds * timeModifier),
-    };
-  }
-
-  public calculateTransitionEffectiveness(
-    _fromStance: TrigramStance, // Mark as unused if not used
-    toStance: TrigramStance,
-    playerState: PlayerState,
-    opponentStance?: TrigramStance
-  ): number {
-    let effectiveness = 1.0;
-    if (opponentStance) {
-      effectiveness =
-        this.effectivenessMatrix[toStance]?.[opponentStance] || 1.0;
-    } else {
-      // General effectiveness of being in 'toStance'
-      // Could be based on player's affinity, or inherent stance bonuses
-      effectiveness =
-        this.trigramData[toStance]?.offensiveBonus ||
-        this.trigramData[toStance]?.defensiveBonus ||
-        1.0;
-    }
-
-    if (playerState.health / playerState.maxHealth < 0.4) {
-      if (["geon", "jin", "li"].includes(toStance)) effectiveness *= 0.8;
-      if (["gan", "gon"].includes(toStance)) effectiveness *= 1.1;
-    }
-
-    // Example: Archetype influence on effectiveness of transitioning TO a stance
-    const archetype = playerState.archetype as PlayerArchetype;
-    if (archetype === "musa" && (toStance === "geon" || toStance === "jin")) {
-      effectiveness *= 1.1; // Musa more effective transitioning to their preferred stances
-    }
-
-    return Math.max(0.1, Math.min(2.0, effectiveness));
-  }
-
-  public findOptimalPath(
-    fromStance: TrigramStance,
-    toStance: TrigramStance,
-    playerState: PlayerState,
-    opponentStance?: TrigramStance
-  ): TransitionPath | null {
-    const cost = this.calculateTransitionCost(
-      fromStance,
-      toStance,
-      playerState
-    );
-
-    if (cost.ki > playerState.ki || cost.stamina > playerState.stamina) {
-      return null;
-    }
-
-    const overallEffectiveness = this.calculateTransitionEffectiveness(
-      fromStance,
-      toStance,
-      playerState,
-      opponentStance
-    );
-
-    const path = [fromStance, toStance];
-    const cumulativeRisk = this.calculateRisk(cost); // Pass only cost
-
-    const fromName = this.trigramData[fromStance]?.name;
-    const toName = this.trigramData[toStance]?.name;
-
-    return {
-      path,
-      totalCost: cost,
-      // overallEffectiveness, // This was causing an error, ensure TransitionPath type matches
-      // If overallEffectiveness is part of TransitionPath, it should be assigned here:
-      overallEffectiveness: overallEffectiveness,
-      cumulativeRisk,
-      name: `${fromName?.english || fromStance} → ${
-        toName?.english || toStance
-      }`,
-      description: {
-        korean: `${fromName?.korean || fromStance}에서 ${
-          toName?.korean || toStance
-        }로의 최적 경로`,
-        english: `Optimal path from ${fromName?.english || fromStance} to ${
-          toName?.english || toStance
-        }`,
-      },
-    };
+    return transitions;
   }
 }
