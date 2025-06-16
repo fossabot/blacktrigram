@@ -95,10 +95,7 @@ export interface VitalPointSystemInterface {
 export interface GameEngineInterface {
   initializeGame: (config: GameConfig) => GameState;
   updateGameState: (action: GameAction) => GameState;
-  processPlayerAction: (
-    playerId: string,
-    action: PlayerAction
-  ) => ActionResult;
+  processPlayerAction: (playerId: string, action: PlayerAction) => ActionResult;
   checkVictoryConditions: (gameState: GameState) => VictoryResult | null;
   saveGameState: (state: GameState) => void;
   loadGameState: (saveId: string) => GameState | null;
@@ -115,10 +112,7 @@ export interface TrainingSystemInterface extends CombatSystemInterface {
     player: PlayerState,
     difficulty: TrainingDifficulty
   ) => readonly TrainingExercise[];
-  recordTrainingProgress: (
-    playerId: string,
-    results: TrainingResults
-  ) => void;
+  recordTrainingProgress: (playerId: string, results: TrainingResults) => void;
 }
 
 // Fix: Add supporting types for the interfaces
@@ -191,7 +185,11 @@ export interface TrainingResults {
   readonly perfectTechniques: number;
 }
 
-export type TrainingDifficulty = "beginner" | "intermediate" | "advanced" | "master";
+export type TrainingDifficulty =
+  | "beginner"
+  | "intermediate"
+  | "advanced"
+  | "master";
 
 export interface GameRules {
   readonly roundDuration: number;

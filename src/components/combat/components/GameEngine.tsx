@@ -22,20 +22,20 @@ interface CombatGameState {
   readonly combatHistory: readonly KoreanTechnique[];
 }
 
-type CombatGameAction = 
+type CombatGameAction =
   | { type: "START_COMBAT" }
   | { type: "EXECUTE_TECHNIQUE"; payload: KoreanTechnique }
   | { type: "END_TURN" }
   | { type: "FINISH_COMBAT" };
 
 function combatGameReducer(
-  state: CombatGameState, 
+  state: CombatGameState,
   action: CombatGameAction
 ): CombatGameState {
   switch (action.type) {
     case "START_COMBAT":
       return { ...state, isActive: true, combatPhase: "execution" };
-    
+
     case "EXECUTE_TECHNIQUE":
       return {
         ...state,
@@ -43,7 +43,7 @@ function combatGameReducer(
         lastAction: action.payload,
         combatHistory: [...state.combatHistory, action.payload],
       };
-    
+
     case "END_TURN":
       return {
         ...state,
@@ -51,10 +51,10 @@ function combatGameReducer(
         combatPhase: "execution",
         lastAction: null,
       };
-    
+
     case "FINISH_COMBAT":
       return { ...state, isActive: false, combatPhase: "finished" };
-    
+
     default:
       return state;
   }
@@ -86,16 +86,16 @@ export const GameEngine: React.FC<GameEngineProps> = ({
 
   // Initialize combat systems
   useEffect(() => {
-    onGameEvent("engine_initialized", { 
-      mode: gameMode, 
-      playerCount: players.length 
+    onGameEvent("engine_initialized", {
+      mode: gameMode,
+      playerCount: players.length,
     });
   }, [gameMode, players.length, onGameEvent]);
 
   // Combat action processing
   const processCombatAction = useCallback(
     (playerId: string, technique: KoreanTechnique) => {
-      const playerIndex = players.findIndex(p => p.id === playerId);
+      const playerIndex = players.findIndex((p) => p.id === playerId);
       if (playerIndex === -1) return;
 
       const attacker = players[playerIndex];
@@ -143,7 +143,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({
   const renderCombatArena = useCallback(
     (g: any) => {
       g.clear();
-      
+
       // Arena background with combat state colors
       const backgroundColor = gameState.isActive ? 0x1a2040 : 0x1a1a2e;
       g.fill({ color: backgroundColor, alpha: 0.8 });
@@ -152,7 +152,8 @@ export const GameEngine: React.FC<GameEngineProps> = ({
 
       // Combat phase indicator
       if (gameState.isActive) {
-        const phaseColor = gameState.combatPhase === "execution" ? 0x00ff00 : 0xffaa00;
+        const phaseColor =
+          gameState.combatPhase === "execution" ? 0x00ff00 : 0xffaa00;
         g.stroke({ width: 3, color: phaseColor, alpha: 0.6 });
         g.rect(10, 10, width - 20, height - 20);
         g.stroke();
@@ -179,19 +180,19 @@ export const GameEngine: React.FC<GameEngineProps> = ({
     (player: PlayerState, index: number) => {
       const x = index === 0 ? width * 0.25 : width * 0.75;
       const y = height * 0.5;
-      
+
       return (
         <pixiContainer key={player.id} x={x} y={y}>
           {/* Player visual representation */}
           <pixiGraphics
             draw={(g) => {
               g.clear();
-              
+
               // Player body with archetype colors
               const bodyColor = index === 0 ? 0x00ccff : 0xff6600;
               const isActive = gameState.currentTurn % 2 === index;
               const alpha = isActive ? 1.0 : 0.7;
-              
+
               g.fill({ color: bodyColor, alpha });
               g.circle(0, -40, 15); // Head
               g.rect(-8, -25, 16, 40); // Body
@@ -210,8 +211,12 @@ export const GameEngine: React.FC<GameEngineProps> = ({
 
               // Health visualization
               const healthPercent = player.health / player.maxHealth;
-              const healthColor = healthPercent > 0.5 ? 0x00ff00 : 
-                                healthPercent > 0.25 ? 0xffaa00 : 0xff0000;
+              const healthColor =
+                healthPercent > 0.5
+                  ? 0x00ff00
+                  : healthPercent > 0.25
+                  ? 0xffaa00
+                  : 0xff0000;
               g.fill({ color: healthColor, alpha: 0.8 });
               g.rect(-30, -60, 60 * healthPercent, 5);
               g.fill();
@@ -222,11 +227,18 @@ export const GameEngine: React.FC<GameEngineProps> = ({
                 // Execute basic attack
                 const basicTechnique: KoreanTechnique = {
                   id: "basic_attack",
-                  name: { korean: "기본공격", english: "Basic Attack", romanized: "gibon_gonggyeok" },
+                  name: {
+                    korean: "기본공격",
+                    english: "Basic Attack",
+                    romanized: "gibon_gonggyeok",
+                  },
                   koreanName: "기본공격",
-                  englishName: "Basic Attack", 
+                  englishName: "Basic Attack",
                   romanized: "gibon_gonggyeok",
-                  description: { korean: "기본적인 공격", english: "Basic attack" },
+                  description: {
+                    korean: "기본적인 공격",
+                    english: "Basic attack",
+                  },
                   stance: player.currentStance,
                   type: "strike" as any,
                   damageType: "blunt" as any,
@@ -241,7 +253,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({
                   critMultiplier: 1.5,
                   effects: [],
                 };
-                
+
                 processCombatAction(player.id, basicTechnique);
               }
             }}
@@ -260,7 +272,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({
             y={-80}
             anchor={0.5}
           />
-          
+
           {/* Current stance display */}
           <pixiText
             text={`자세: ${player.currentStance}`}
@@ -295,7 +307,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({
           }}
           anchor={0.5}
         />
-        
+
         {gameState.lastAction && (
           <pixiText
             text={`마지막 기술: ${gameState.lastAction.name.korean}`}
@@ -319,7 +331,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({
         dispatch({ type: "START_COMBAT" });
         onGameEvent("combat_started", { players: players.length });
       }, 1000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [gameState.isActive, players.length, onGameEvent]);
@@ -330,7 +342,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({
       const timer = setTimeout(() => {
         dispatch({ type: "END_TURN" });
       }, 1500);
-      
+
       return () => clearTimeout(timer);
     }
   }, [gameState.combatPhase]);

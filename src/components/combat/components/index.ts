@@ -39,13 +39,6 @@ export { default as GameEngineDefault } from "./GameEngine";
 export { default as PlayerDefault } from "./Player";
 export { default as PlayerVisualsDefault } from "./PlayerVisuals";
 export { default as HitEffectsLayerDefault } from "./HitEffectsLayer";
-        text: entry,
-        style: { fontSize: 12, fill: 0xcccccc },
-        y: 20 + index * 15,
-      })
-    )
-  );
-};
 
 // Export types for combat components
 export type {

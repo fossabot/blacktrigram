@@ -1,4 +1,10 @@
-import React, { useState, useCallback, useMemo, useReducer, useEffect } from "react";
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  useReducer,
+  useEffect,
+} from "react";
 import type { CombatScreenProps } from "../../types/combat";
 import type { PlayerState } from "../../types/player";
 import type { Position } from "../../types/common";
@@ -65,10 +71,7 @@ function combatReducer(state: CombatState, action: CombatAction): CombatState {
     case "SWITCH_STANCE":
       return {
         ...state,
-        combatLog: [
-          ...state.combatLog,
-          `자세 변경: ${action.payload.stance}`,
-        ],
+        combatLog: [...state.combatLog, `자세 변경: ${action.payload.stance}`],
       };
 
     case "PAUSE":
@@ -86,7 +89,7 @@ function combatReducer(state: CombatState, action: CombatAction): CombatState {
     case "REMOVE_EFFECT":
       return {
         ...state,
-        effects: state.effects.filter(e => e.id !== action.payload.effectId),
+        effects: state.effects.filter((e) => e.id !== action.payload.effectId),
       };
 
     case "LOG_ACTION":
@@ -131,10 +134,15 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
       const baseDamage = technique.damage || 15;
       const critRoll = Math.random();
       const isCritical = critRoll <= (technique.critChance || 0.1);
-      const finalDamage = isCritical ? baseDamage * (technique.critMultiplier || 1.5) : baseDamage;
+      const finalDamage = isCritical
+        ? baseDamage * (technique.critMultiplier || 1.5)
+        : baseDamage;
 
       const targetIndex = attacker.id === validatedPlayers[0].id ? 1 : 0;
-      const newHealth = Math.max(0, validatedPlayers[targetIndex].health - finalDamage);
+      const newHealth = Math.max(
+        0,
+        validatedPlayers[targetIndex].health - finalDamage
+      );
 
       onPlayerUpdate(targetIndex, { health: newHealth });
 
@@ -161,7 +169,10 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
       });
 
       setTimeout(() => {
-        dispatchCombat({ type: "REMOVE_EFFECT", payload: { effectId: effect.id } });
+        dispatchCombat({
+          type: "REMOVE_EFFECT",
+          payload: { effectId: effect.id },
+        });
       }, effect.duration);
     },
     [onPlayerUpdate, validatedPlayers, width, height]
@@ -173,7 +184,11 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
     const attacker = validatedPlayers[combatState.activePlayer];
     const basicAttack: KoreanTechnique = {
       id: "basic_attack",
-      name: { korean: "기본 공격", english: "Basic Attack", romanized: "gibon_gonggyeok" },
+      name: {
+        korean: "기본 공격",
+        english: "Basic Attack",
+        romanized: "gibon_gonggyeok",
+      },
       koreanName: "기본 공격",
       englishName: "Basic Attack",
       romanized: "gibon_gonggyeok",
@@ -202,7 +217,9 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
 
     dispatchCombat({
       type: "LOG_ACTION",
-      payload: { message: `${activePlayer.name.korean}가 방어 자세를 취했습니다!` },
+      payload: {
+        message: `${activePlayer.name.korean}가 방어 자세를 취했습니다!`,
+      },
     });
 
     setTimeout(() => {
@@ -210,10 +227,13 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
     }, 1000);
   }, [combatState, validatedPlayers, onPlayerUpdate]);
 
-  const handleTechniqueExecute = useCallback((technique: KoreanTechnique) => {
-    const attacker = validatedPlayers[combatState.activePlayer];
-    executeKoreanTechnique(technique, attacker);
-  }, [combatState, validatedPlayers, executeKoreanTechnique]);
+  const handleTechniqueExecute = useCallback(
+    (technique: KoreanTechnique) => {
+      const attacker = validatedPlayers[combatState.activePlayer];
+      executeKoreanTechnique(technique, attacker);
+    },
+    [combatState, validatedPlayers, executeKoreanTechnique]
+  );
 
   const handleStanceSwitch = useCallback(
     (newStance: TrigramStance) => {
@@ -269,13 +289,13 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
     if (player1Dead && !player2Dead) {
       dispatchCombat({
         type: "LOG_ACTION",
-        payload: { message: `${validatedPlayers[1].name.korean} 승리!` }
+        payload: { message: `${validatedPlayers[1].name.korean} 승리!` },
       });
       onGameEnd(1);
     } else if (player2Dead && !player1Dead) {
       dispatchCombat({
         type: "LOG_ACTION",
-        payload: { message: `${validatedPlayers[0].name.korean} 승리!` }
+        payload: { message: `${validatedPlayers[0].name.korean} 승리!` },
       });
       onGameEnd(0);
     }
@@ -287,12 +307,15 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
     return { isMobile, isTablet };
   }, [width]);
 
-  const handlePlayerClick = useCallback((idx: number) => {
-    setSelectedPlayer(idx);
-    if (idx !== combatState.activePlayer) {
-      handleAttack();
-    }
-  }, [combatState.activePlayer, handleAttack]);
+  const handlePlayerClick = useCallback(
+    (idx: number) => {
+      setSelectedPlayer(idx);
+      if (idx !== combatState.activePlayer) {
+        handleAttack();
+      }
+    },
+    [combatState.activePlayer, handleAttack]
+  );
 
   return (
     <ResponsivePixiContainer x={x} y={y} data-testid="combat-screen">
@@ -300,7 +323,9 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
       <GameEngine
         players={validatedPlayers}
         onPlayerUpdate={(playerId, updates) => {
-          const playerIndex = validatedPlayers.findIndex(p => p.id === playerId);
+          const playerIndex = validatedPlayers.findIndex(
+            (p) => p.id === playerId
+          );
           if (playerIndex >= 0) {
             onPlayerUpdate(playerIndex, updates);
           }
