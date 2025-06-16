@@ -1,16 +1,17 @@
 /**
- * Game components export
+ * Shared game components export - keeping only truly shared components
  */
 
-export * from "./GameEngine";
+// Keep shared background component
 export * from "./DojangBackground";
-export * from "./Player";
-export * from "./PlayerVisuals";
+
+// Remove moved components - they're now in combat package
+// export * from "./GameEngine"; // -> moved to combat/components/
+// export * from "./Player";     // -> moved to combat/components/
+// export * from "./PlayerVisuals"; // -> moved to combat/components/
+// export * from "./HitEffectsLayer"; // -> moved to combat/components/
 
 // Re-export types for convenience
 export type {
-  GameEngineProps,
-  PlayerProps,
-  PlayerVisualsProps,
   DojangBackgroundProps,
 } from "../../types/components";

@@ -1,44 +1,44 @@
 /**
- * Combat component exports with proper typing
+ * Combat component exports with proper typing and organization
+ * Move combat-specific game components here for better organization
  */
 
-import React from "react";
-
+// Core combat UI components
 export { CombatArena } from "./CombatArena";
 export { CombatHUD } from "./CombatHUD";
 export { CombatControls } from "./CombatControls";
+export { CombatStats } from "./CombatStats";
+export { PlayerStatusPanel } from "./PlayerStatusPanel";
 
-// Fix: Create proper React functional components instead of invalid JSX
-export const PlayerStatusPanel: React.FC<any> = ({
-  player,
-  position,
-  ...props
-}) => {
-  return React.createElement(
-    "pixiContainer",
-    props,
-    React.createElement("pixiText", {
-      text: `${player.name.korean} - ${position}`,
-      style: { fontSize: 14, fill: 0xffffff },
-    })
-  );
-};
+// Combat engine and game logic - moved from game package
+export { GameEngine } from "./GameEngine";
+export { Player } from "./Player";
+export { PlayerVisuals } from "./PlayerVisuals";
+export { HitEffectsLayer } from "./HitEffectsLayer";
 
-export const CombatStats: React.FC<any> = ({
-  players,
-  combatLog,
-  ...props
-}) => {
-  return React.createElement(
-    "pixiContainer",
-    props,
-    React.createElement("pixiText", {
-      text: "Combat Stats",
-      style: { fontSize: 16, fill: 0xffd700 },
-    }),
-    ...(combatLog || []).slice(0, 3).map((entry: string, index: number) =>
-      React.createElement("pixiText", {
-        key: index,
+// Combat-specific types
+export type {
+  CombatArenaProps,
+  CombatHUDProps,
+  CombatControlsProps,
+  CombatStatsProps,
+  PlayerStatusPanelProps,
+  GameEngineProps,
+  PlayerProps,
+  PlayerVisualsProps,
+  HitEffectsLayerProps,
+} from "../../../types/combat";
+
+// Default exports for convenience
+export { default as CombatArenaDefault } from "./CombatArena";
+export { default as CombatHUDDefault } from "./CombatHUD";
+export { default as CombatControlsDefault } from "./CombatControls";
+export { default as CombatStatsDefault } from "./CombatStats";
+export { default as PlayerStatusPanelDefault } from "./PlayerStatusPanel";
+export { default as GameEngineDefault } from "./GameEngine";
+export { default as PlayerDefault } from "./Player";
+export { default as PlayerVisualsDefault } from "./PlayerVisuals";
+export { default as HitEffectsLayerDefault } from "./HitEffectsLayer";
         text: entry,
         style: { fontSize: 12, fill: 0xcccccc },
         y: 20 + index * 15,

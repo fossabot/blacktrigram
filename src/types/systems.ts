@@ -75,74 +75,129 @@ export interface CombatSystemInterface {
   getAvailableTechniques: (player: PlayerState) => readonly KoreanTechnique[];
 }
 
-// Vital point system interface
+// Fix: Add vital point system interface that was mentioned but missing
 export interface VitalPointSystemInterface {
-  getVitalPointsInRegion(region: string): readonly VitalPoint[];
-  getVitalPointById(id: string): VitalPoint | undefined;
-  getAllVitalPoints(): readonly VitalPoint[];
-  calculateVitalPointAccuracy(
-    targetPosition: Position,
-    attackAccuracy: number,
-    vitalPoint: VitalPoint
-  ): number;
-  calculateVitalPointDamage(
-    vitalPoint: VitalPoint,
-    baseDamage: number,
-    archetype: PlayerArchetype
-  ): number;
-  processHit: (
-    targetPosition: Position,
+  getVitalPoint: (id: string) => VitalPoint | null;
+  getVitalPointsByRegion: (region: AnatomicalRegion) => readonly VitalPoint[];
+  calculateVitalPointHit: (
+    targetId: string,
+    damage: number,
     technique: KoreanTechnique,
-    baseDamage: number,
-    attackerArchetype: PlayerArchetype,
-    targetDimensions: { width: number; height: number },
-    targetedVitalPointId?: string | null
-  ) => VitalPointHitResult;
-  calculateHit: (
-    technique: KoreanTechnique,
-    targetVitalPointId: string | null,
-    accuracyRoll: number,
-    attackerPosition: Position,
-    defenderPosition: Position,
-    defenderStance: TrigramStance
+    attacker: PlayerState
   ) => VitalPointHitResult;
   applyVitalPointEffects: (
-    player: PlayerState,
-    vitalPoint: VitalPoint,
-    intensityMultiplier?: number
+    result: VitalPointHitResult,
+    target: PlayerState
   ) => PlayerState;
 }
 
-// Trigram system interface
-export interface TrigramSystemInterface {
-  getCurrentStanceData(stance: TrigramStance): TrigramData | undefined;
-  getTechniqueForStance: (
-    stance: TrigramStance,
-    archetype?: PlayerArchetype
-  ) => KoreanTechnique | undefined;
-  calculateStanceEffectiveness: (
-    attackerStance: TrigramStance,
-    defenderStance: TrigramStance,
-    technique?: KoreanTechnique
-  ) => number;
-  isValidTransition: (from: TrigramStance, to: TrigramStance) => boolean;
-  getTransitionCost: (
-    from: TrigramStance,
-    to: TrigramStance,
-    player?: PlayerState
-  ) => { ki: number; stamina: number; timeMs: number };
-  recommendStance: (
-    player: PlayerState,
-    opponent?: PlayerState
-  ) => TrigramStance;
+// Fix: Add game engine interface for proper game state management
+export interface GameEngineInterface {
+  initializeGame: (config: GameConfig) => GameState;
+  updateGameState: (action: GameAction) => GameState;
+  processPlayerAction: (
+    playerId: string,
+    action: PlayerAction
+  ) => ActionResult;
+  checkVictoryConditions: (gameState: GameState) => VictoryResult | null;
+  saveGameState: (state: GameState) => void;
+  loadGameState: (saveId: string) => GameState | null;
 }
 
-// Input system interface
-export interface InputSystemInterface {
-  registerAction: (action: string, callback: () => void) => void;
-  unregisterAction: (action: string) => void;
-  clearActions: () => void;
-  isActionActive: (action: string) => boolean;
+// Fix: Add training system interface for training mode
+export interface TrainingSystemInterface extends CombatSystemInterface {
+  createTrainingDummy: () => PlayerState;
+  evaluatePerformance: (
+    player: PlayerState,
+    actions: readonly PlayerAction[]
+  ) => TrainingEvaluation;
+  generateTrainingExercises: (
+    player: PlayerState,
+    difficulty: TrainingDifficulty
+  ) => readonly TrainingExercise[];
+  recordTrainingProgress: (
+    playerId: string,
+    results: TrainingResults
+  ) => void;
+}
+
+// Fix: Add supporting types for the interfaces
+import type {
+  KoreanTechnique,
+  PlayerState,
+  VitalPointHitResult,
+  StatusEffect,
+  CombatResult,
+  VitalPoint,
+  AnatomicalRegion,
+} from "./index";
+
+export interface GameConfig {
+  readonly mode: "versus" | "training" | "practice";
+  readonly players: readonly PlayerState[];
+  readonly stage: string;
+  readonly rules: GameRules;
+}
+
+export interface GameAction {
+  readonly type: string;
+  readonly playerId: string;
+  readonly payload: any;
+  readonly timestamp: number;
+}
+
+export interface PlayerAction {
+  readonly type: "attack" | "defend" | "move" | "stance_change";
+  readonly technique?: KoreanTechnique;
+  readonly target?: string;
+  readonly direction?: "forward" | "backward" | "left" | "right";
+  readonly stance?: TrigramStance;
+}
+
+export interface ActionResult {
+  readonly success: boolean;
+  readonly effects: readonly any[];
+  readonly stateChanges: readonly any[];
+  readonly message?: string;
+}
+
+export interface VictoryResult {
+  readonly winner: PlayerState;
+  readonly method: "knockout" | "time" | "forfeit" | "points";
+  readonly statistics: MatchStatistics;
+}
+
+export interface TrainingEvaluation {
+  readonly overallScore: number;
+  readonly techniqueAccuracy: number;
+  readonly stanceEffectiveness: number;
+  readonly improvementAreas: readonly string[];
+  readonly recommendations: readonly string[];
+}
+
+export interface TrainingExercise {
+  readonly id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly objectives: readonly string[];
+  readonly difficulty: TrainingDifficulty;
+}
+
+export interface TrainingResults {
+  readonly exerciseId: string;
+  readonly score: number;
+  readonly completionTime: number;
+  readonly mistakeCount: number;
+  readonly perfectTechniques: number;
+}
+
+export type TrainingDifficulty = "beginner" | "intermediate" | "advanced" | "master";
+
+export interface GameRules {
+  readonly roundDuration: number;
+  readonly maxRounds: number;
+  readonly allowedTechniques: readonly string[];
+  readonly victoryConditions: readonly string[];
 }
 
 // Gamepad state

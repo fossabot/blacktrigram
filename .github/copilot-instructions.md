@@ -2,7 +2,7 @@
 
 PRIO 1: Complete functional game with robust error handling
 PRIO 2: Use PixiJS graphics for all components with React 19 style and strict typing
-PRIO 3: Implement cyberpunk Korean aesthetic with excellent UX
+PRIO 3: Implement cyberpunk Korean aesthetic with excellent UX/UI experience 
 
 ## 🔧 Code Completion Guidelines
 
