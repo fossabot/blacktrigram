@@ -242,8 +242,6 @@ export interface TrainingSession {
   readonly sessionId: string;
   readonly mode: "basics" | "advanced" | "free" | "vital_points" | "sparring" | "meditation";
   readonly duration: number; // seconds
-  readonly techniquesP practiced: readonly string[]; // Fix: Remove typo in "techniquesP"
-  readonly techniquesPracticed: readonly string[];
   readonly accuracy: number; // 0-1
   readonly improvement: number; // percentage improvement
   readonly masterInstructions: readonly KoreanText[];

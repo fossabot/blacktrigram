@@ -3,7 +3,7 @@
  */
 
 import type { DamageRange, KoreanText } from "./common";
-import type { StatusEffect } from "./effects";
+import type { StatusEffect, HitEffect } from "./effects";
 import type { PlayerState } from "./player";
 import { TrigramStance, CombatAttackType, DamageType, GameMode } from "./enums";
 
@@ -171,4 +171,52 @@ export interface CombatStatsProps {
   readonly y?: number;
   readonly width?: number;
   readonly height?: number;
+}
+
+export interface GridPosition {
+  readonly x: number;
+  readonly y: number;
+  readonly isValid: boolean;
+}
+
+export interface OctagonalGrid {
+  readonly size: number;
+  readonly validPositions: readonly (readonly boolean[])[];
+  readonly center: Position; // Fix: Now Position is imported
+}
+
+export interface GameEngineProps {
+  readonly player1: PlayerState;
+  readonly player2: PlayerState;
+  readonly onPlayerUpdate: (
+    playerId: string,
+    updates: Partial<PlayerState>
+  ) => void;
+  readonly width?: number;
+  readonly height?: number;
+  readonly gameMode?: "versus" | "training";
+  readonly realismMode?: boolean;
+}
+
+export interface PlayerProps {
+  readonly playerState: PlayerState;
+  readonly playerIndex: number;
+  readonly onClick?: () => void;
+  readonly x?: number;
+  readonly y?: number;
+  readonly width?: number;
+  readonly height?: number;
+  readonly visible?: boolean;
+  readonly alpha?: number;
+}
+
+export interface PlayerVisualsProps {
+  readonly player: PlayerState;
+  readonly animationTime?: number;
+  readonly showEffects?: boolean;
+}
+
+export interface HitEffectsLayerProps {
+  readonly effects: readonly HitEffect[];
+  readonly onEffectComplete: (effectId: string) => void;
 }

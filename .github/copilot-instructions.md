@@ -2,7 +2,7 @@
 
 PRIO 1: Complete functional game with robust error handling
 PRIO 2: Use PixiJS graphics for all components with React 19 style and strict typing
-PRIO 3: Implement cyberpunk Korean aesthetic with excellent UX/UI experience 
+PRIO 3: Implement cyberpunk Korean aesthetic with excellent UX/UI experience
 
 ## 🔧 Code Completion Guidelines
 
@@ -86,70 +86,78 @@ Black Trigram is a **realistic 2D precision combat simulator** deeply rooted in 
 - **☶ 간 (Gan)** - Mountain: Defensive counters
 - **☷ 곤 (Gon)** - Earth: Ground techniques
 
-### Combat Mechanics Requirements
+## Testing Requirements
 
-- **70 Anatomical Vital Points** for precise targeting
-- **Realistic Body Mechanics**: Health, consciousness, pain, balance, stamina
-- **Authentic Korean Techniques** with cultural accuracy
-- **Damage Calculation** based on technique precision and force
+### Test Coverage Goals
 
-## 🏗️ Architecture Guidelines
+- Component tests: >90% coverage
+- Combat system tests: >95% coverage
+- UI/UX interaction tests: >85% coverage
+- Korean cultural elements: 100% accuracy validation
 
-### Component Reuse Strategy
-
-ALWAYS check existing components before creating new ones:
-
-- Use `ResponsivePixiContainer` for layout
-- Extend from base UI components in `src/components/ui/base/`
-- Reuse Korean text components from `korean-text/` directory
-- Follow existing patterns in combat and training systems
-
-### Type System Usage
-
-ALWAYS use explicit types from existing type system:
+### Testing Patterns
 
 ```typescript
-import { TrigramStance, PlayerArchetype } from "../types/enums";
-import { CombatState, PlayerState } from "../types/combat";
-import { VitalPoint, AnatomicalRegion } from "../types/anatomy";
+// Always include proper test-ids
+<Component data-testid="component-name" />;
+
+// Use mock utilities from test/mocks/
+import { createMockPlayer } from "../test/mocks/playerMocks";
+
+// Test Korean content accuracy
+expect(koreanText).toMatch(/^[가-힣\s]+$/);
 ```
 
-### Testing Requirements
+## Quality & UI/UX Focus
 
-- Add `data-testid` attributes to all interactive elements
-- Use existing test utilities from `src/test/test-utils.ts`
-- Follow patterns in `src/audio/__tests__/` for comprehensive coverage
-- Write resilient tests that don't break on implementation changes
+### Performance Standards
 
-## 🎨 Visual Design System
+- 60fps target for all animations
+- <100ms component render times
+- <200ms combat calculations
+- Responsive design for all screen sizes
 
-### Cyberpunk Korean Aesthetic
+### Korean Cultural Accuracy
 
-Apply to ALL visual components:
+- All Korean text must be reviewed for accuracy
+- Martial arts techniques must reflect authentic practices
+- Color schemes must respect traditional Korean aesthetics
+- Typography must support Korean fonts properly
 
-```typescript
-import { KOREAN_COLORS } from "../types/constants/colors";
+### Accessibility Requirements
 
-// Use consistent color scheme
-const theme = {
-  primary: KOREAN_COLORS.ACCENT_NEON_BLUE,
-  secondary: KOREAN_COLORS.ACCENT_ELECTRIC_PURPLE,
-  accent: KOREAN_COLORS.ACCENT_GOLD,
-  background: KOREAN_COLORS.BG_DARK_METALLIC,
-  text: KOREAN_COLORS.TEXT_PRIMARY,
+- Keyboard navigation for all interactions
+- Screen reader compatibility
+- Color blind friendly palettes
+- Reduced motion support
+- Test IDs for all interactive elements
+
+## Combat System Testing
+
+### Required Test Scenarios
+
+1. All 8 trigram stances
+2. All 5 player archetypes
+3. Vital point targeting accuracy
+4. Combat result calculations
+5. Status effect applications
+6. Victory condition detection
+
+### UI Component Testing
+
+1. Responsive layout validation
+2. Korean text rendering
+3. PixiJS graphics performance
+4. User interaction flows
+5. Error boundary handling
+
+**흑괘의 길을 걸어라** - _Walk the Path of the Black Trigram_
+fontFamily: "Noto Sans KR, NanumGothic, Malgun Gothic, sans-serif",
+fontSize: 16,
+fill: KOREAN_COLORS.TEXT_PRIMARY,
 };
-```
 
-### Korean Typography
-
-```typescript
-// Always use proper Korean font stacks
-const koreanTextStyle = {
-  fontFamily: "Noto Sans KR, NanumGothic, Malgun Gothic, sans-serif",
-  fontSize: 16,
-  fill: KOREAN_COLORS.TEXT_PRIMARY,
-};
-```
+````
 
 ## 🎮 Combat Controls Implementation
 
@@ -196,7 +204,7 @@ function handleCombatInput(
       return null;
   }
 }
-```
+````
 
 ## 🧪 Code Quality Standards
 

@@ -1,12 +1,27 @@
 import React, { useCallback, useMemo } from "react";
 import { usePixiExtensions } from "../../../utils/pixiExtensions";
-import type { CombatControlsProps } from "../../../types/components";
+import type { PlayerState } from "../../../types/player";
 import type { KoreanTechnique } from "../../../types/combat";
-import type { TrigramStance } from "../../../types/trigram";
-import { KOREAN_COLORS } from "../../../types/constants/colors";
+import type { TrigramStance } from "../../../types/enums";
+import { KOREAN_COLORS } from "../../../types/constants";
 import { TRIGRAM_DATA } from "../../../types/constants/trigram";
 import { DamageType } from "../../../types/enums";
 import * as PIXI from "pixi.js";
+
+export interface CombatControlsProps {
+  readonly onAttack: () => void;
+  readonly onDefend: () => void;
+  readonly onSwitchStance: (stance: TrigramStance) => void;
+  readonly player: PlayerState;
+  readonly onTechniqueExecute?: (technique: KoreanTechnique) => void;
+  readonly isExecutingTechnique?: boolean;
+  readonly onPauseToggle?: () => void;
+  readonly isPaused?: boolean;
+  readonly width?: number;
+  readonly height?: number;
+  readonly x?: number;
+  readonly y?: number;
+}
 
 export const CombatControls: React.FC<CombatControlsProps> = ({
   onAttack,
@@ -15,6 +30,8 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
   player,
   onTechniqueExecute,
   isExecutingTechnique = false,
+  onPauseToggle,
+  isPaused = false,
   width = 300,
   height = 100,
   x = 0,
@@ -22,10 +39,11 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
 }) => {
   usePixiExtensions();
 
-  // Get current stance data safely
-  const currentStanceData = player
-    ? TRIGRAM_DATA[player.currentStance as TrigramStance]
-    : undefined;
+  // Fix: Safe access to stance data
+  const currentStanceData = useMemo(() => {
+    if (!player?.currentStance) return null;
+    return TRIGRAM_DATA[player.currentStance] || null;
+  }, [player?.currentStance]);
 
   const availableTechniques: KoreanTechnique[] = useMemo(() => {
     if (!currentStanceData?.techniques?.primary) return [];
@@ -217,8 +235,41 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
           />
         </pixiContainer>
       )}
+
+      {/* Pause button if provided */}
+      {onPauseToggle && (
+        <pixiContainer x={250} y={10}>
+          <pixiGraphics
+            draw={(g) => {
+              g.clear();
+              g.fill({
+                color: isPaused
+                  ? KOREAN_COLORS.ACCENT_GREEN
+                  : KOREAN_COLORS.WARNING_YELLOW,
+                alpha: 0.8,
+              });
+              g.roundRect(0, 0, 60, 30, 5);
+              g.fill();
+            }}
+            interactive={true}
+            onPointerDown={onPauseToggle}
+          />
+          <pixiText
+            text={isPaused ? "계속" : "정지"}
+            style={{
+              fontSize: 10,
+              fill: KOREAN_COLORS.BLACK_SOLID,
+              align: "center",
+            }}
+            x={30}
+            y={15}
+            anchor={0.5}
+          />
+        </pixiContainer>
+      )}
     </pixiContainer>
   );
 };
 
+export default CombatControls;
 export default CombatControls;

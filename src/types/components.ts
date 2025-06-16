@@ -1,7 +1,8 @@
 /**
- * Component props interfaces for Black Trigram Korean martial arts system
+ * @fileoverview Component prop interfaces for Korean martial arts game
  */
 
+import type { ReactNode } from "react";
 import type * as PIXI from "pixi.js";
 import type {
   PlayerState,
@@ -14,6 +15,18 @@ import type {
 } from "./index";
 import type { CombatResult as CombatResultType } from "./combat";
 import type { HitEffect } from "./effects";
+import type { TrigramStance } from "./enums";
+
+// Fix: Remove duplicate exports at top
+export interface UIComponentProps {
+  readonly x?: number;
+  readonly y?: number;
+  readonly width?: number;
+  readonly height?: number;
+  readonly visible?: boolean;
+  readonly alpha?: number;
+  readonly children?: ReactNode;
+}
 
 // Base component props interface
 export interface BaseComponentProps {
@@ -94,11 +107,10 @@ export interface CombatArenaProps extends BaseComponentProps {
 export interface CombatHUDProps {
   readonly player1: PlayerState;
   readonly player2: PlayerState;
-  readonly players?: readonly PlayerState[]; // Optional for backward compatibility
-  readonly timeRemaining: number;
   readonly currentRound: number;
+  readonly timeRemaining: number;
   readonly maxRounds: number;
-  readonly isPaused: boolean;
+  readonly isPaused?: boolean;
   readonly onPauseToggle?: () => void;
   readonly width?: number;
   readonly height?: number;
@@ -106,16 +118,24 @@ export interface CombatHUDProps {
   readonly y?: number;
 }
 
-export interface CombatControlsProps extends BaseComponentProps {
+export interface CombatControlsProps {
   readonly onAttack: () => void;
   readonly onDefend: () => void;
-  readonly onSwitchStance?: (stance: TrigramStance) => void;
-  readonly onPauseToggle: () => void;
-  readonly isPaused: boolean;
+  readonly onSwitchStance: (stance: TrigramStance) => void;
   readonly player: PlayerState;
   readonly onTechniqueExecute?: (technique: KoreanTechnique) => void;
-  readonly onGuard?: () => void;
   readonly isExecutingTechnique?: boolean;
+  readonly onPauseToggle?: () => void;
+  readonly isPaused?: boolean;
+  readonly width?: number;
+  readonly height?: number;
+  readonly x?: number;
+  readonly y?: number;
+}
+
+export interface HitEffectsLayerProps {
+  readonly effects: readonly HitEffect[];
+  readonly onEffectComplete: (effectId: string) => void;
 }
 
 // UI component props
@@ -272,8 +292,3 @@ export type CombatResult = CombatResultType;
 
 // Fix: Unify HitEffect interfaces - use the one from effects.ts
 export type { HitEffect } from "./effects";
-
-export interface HitEffectsLayerProps extends BaseComponentProps {
-  readonly effects: readonly HitEffect[]; // Fix: Now HitEffect is properly imported
-  readonly onEffectComplete: (effectId: string) => void;
-}

@@ -10,6 +10,7 @@ import { Container, Graphics, Text } from "pixi.js";
 import type { CombatScreenProps } from "../../types/combat";
 import type { PlayerState } from "../../types/player";
 import type { HitEffect } from "../../types/effects";
+import { HitEffectType } from "../../types/effects"; // Fix: Import as value, not type
 import type { KoreanTechnique } from "../../types/combat";
 import { CombatArena } from "./components/CombatArena";
 import { CombatControls } from "./components/CombatControls";
@@ -112,7 +113,6 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
   onPlayerUpdate,
   currentRound,
   timeRemaining,
-  isPaused,
   onReturnToMenu,
   onGameEnd,
   width = 1200,
@@ -120,6 +120,19 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
   x = 0,
   y = 0,
 }) => {
+  const validatedPlayers = useMemo(() => {
+    if (players.length < 2) {
+      console.warn("CombatScreen: Not enough players provided");
+      const dummyPlayer: PlayerState = {
+        ...players[0],
+        id: "dummy_player",
+        name: { korean: "더미", english: "Dummy" },
+      };
+      return [players[0], dummyPlayer] as const;
+    }
+    return [players[0], players[1]] as const;
+  }, [players]);
+
   const [combatState, dispatchCombat] = useReducer(combatReducer, {
     phase: "preparation",
     activePlayer: 0,
@@ -132,7 +145,7 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
   const [selectedPlayer, setSelectedPlayer] = useState<number | null>(null);
 
   const executeKoreanTechnique = useCallback(
-    (technique: KoreanTechnique, attacker: PlayerState, targetId?: string) => {
+    (technique: KoreanTechnique, attacker: PlayerState) => {
       dispatchCombat({ type: "EXECUTE_TECHNIQUE", payload: { technique } });
 
       const baseDamage = technique.damage || 15;
@@ -152,15 +165,15 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
 
       const effect: HitEffect = {
         id: `hit_${Date.now()}`,
-        type: isCritical ? "critical_hit" : "hit",
+        type: isCritical ? HitEffectType.CRITICAL_HIT : HitEffectType.HIT,
         attackerId: attacker.id,
         defenderId: validatedPlayers[targetIndex].id,
         timestamp: Date.now(),
         duration: 1000,
         position: { x: width * 0.5, y: height * 0.5 },
         intensity: isCritical ? 1.5 : 1.0,
-        startTime: Date.now(),
         text: isCritical ? "치명타!" : technique.name.korean,
+        startTime: Date.now(),
       };
 
       dispatchCombat({ type: "ADD_EFFECT", payload: { effect } });
@@ -216,13 +229,15 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
   }, [combatState, validatedPlayers, executeKoreanTechnique]);
 
   const handleDefend = useCallback(() => {
-    const activePlayer = validatedPlayers[combatState.activePlayer];
+    // Fix: Remove unused variable
     onPlayerUpdate(combatState.activePlayer, { isBlocking: true });
 
     dispatchCombat({
       type: "LOG_ACTION",
       payload: {
-        message: `${activePlayer.name.korean}가 방어 자세를 취했습니다!`,
+        message: `${
+          validatedPlayers[combatState.activePlayer].name.korean
+        }가 방어 자세를 취했습니다!`,
       },
     });
 
@@ -264,18 +279,10 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
     dispatchCombat({ type: "REMOVE_EFFECT", payload: { effectId } });
   }, []);
 
-  const validatedPlayers = useMemo(() => {
-    if (players.length < 2) {
-      console.warn("CombatScreen: Not enough players provided");
-      const dummyPlayer: PlayerState = {
-        ...players[0],
-        id: "dummy_player",
-        name: { korean: "더미", english: "Dummy" },
-      };
-      return [players[0], dummyPlayer] as const;
-    }
-    return [players[0], players[1]] as const;
-  }, [players]);
+  const { isMobile } = useMemo(() => {
+    const isMobile = width < 768;
+    return { isMobile };
+  }, [width]);
 
   useEffect(() => {
     if (combatState.phase === "preparation") {
@@ -304,12 +311,6 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
       onGameEnd(0);
     }
   }, [validatedPlayers, onGameEnd]);
-
-  const { isMobile, isTablet } = useMemo(() => {
-    const isMobile = width < 768;
-    const isTablet = width >= 768 && width < 1024;
-    return { isMobile, isTablet };
-  }, [width]);
 
   const handlePlayerClick = useCallback(
     (idx: number) => {
@@ -477,6 +478,8 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
           player={validatedPlayers[combatState.activePlayer]}
           onTechniqueExecute={handleTechniqueExecute}
           isExecutingTechnique={combatState.executingTechnique}
+          onPauseToggle={handlePauseToggle}
+          isPaused={combatState.phase === "paused"}
           width={isMobile ? width - 20 : 400}
           height={isMobile ? 40 : 120}
           x={0}

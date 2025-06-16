@@ -1,34 +1,65 @@
 import { useEffect } from "react";
 import { extend } from "@pixi/react";
-import {
-  Container,
-  Graphics,
-  Text,
-  Sprite,
-  AnimatedSprite,
-  TilingSprite,
-  BitmapText,
-  NineSliceSprite,
-} from "pixi.js";
+import { Container, Graphics, Text, Sprite } from "pixi.js";
 
-// Re-export useTick from @pixi/react for convenience
-export { useTick } from "@pixi/react";
-
-// Extend PIXI React with all components used in Black Trigram
+/**
+ * Custom hook to ensure PixiJS components are extended for use in React
+ */
 export function usePixiExtensions(): void {
   useEffect(() => {
     extend({
       Container,
       Graphics,
-      Text, // Fixed: Add Text to extensions
+      Text,
       Sprite,
-      AnimatedSprite,
-      TilingSprite,
-      BitmapText,
-      NineSliceSprite,
     });
   }, []);
 }
+
+/**
+ * Initialize all required PixiJS extensions for the game
+ */
+export function initializePixiExtensions(): void {
+  extend({
+    Container,
+    Graphics,
+    Text,
+    Sprite,
+  });
+}
+
+/**
+ * Simple tick hook placeholder - not using PIXI ticker for now
+ */
+export function useTick(callback?: (delta: number) => void): void {
+  useEffect(() => {
+    if (!callback) return;
+
+    let animationId: number;
+    let lastTime = 0;
+
+    const tick = (currentTime: number) => {
+      const delta = currentTime - lastTime;
+      lastTime = currentTime;
+
+      if (delta > 0) {
+        callback(delta);
+      }
+
+      animationId = requestAnimationFrame(tick);
+    };
+
+    animationId = requestAnimationFrame(tick);
+
+    return () => {
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
+    };
+  }, [callback]);
+}
+
+export default usePixiExtensions;
 
 // Enhanced Graphics API wrapper for v8 compatibility
 export const createKoreanGraphics = () => {

@@ -39,17 +39,3 @@ export { default as GameEngineDefault } from "./GameEngine";
 export { default as PlayerDefault } from "./Player";
 export { default as PlayerVisualsDefault } from "./PlayerVisuals";
 export { default as HitEffectsLayerDefault } from "./HitEffectsLayer";
-
-// Export types for combat components
-export type {
-  CombatArenaProps,
-  CombatHUDProps,
-  CombatControlsProps,
-  PlayerStatusPanelProps,
-  CombatStatsProps,
-} from "../../../types/combat";
-
-// Default exports
-export { default as CombatArenaDefault } from "./CombatArena";
-export { default as CombatHUDDefault } from "./CombatHUD";
-export { default as CombatControlsDefault } from "./CombatControls";

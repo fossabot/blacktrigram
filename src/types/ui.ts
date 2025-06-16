@@ -92,20 +92,44 @@ export interface TrainingScreenProps extends BaseUIProps {
 
 /**
  * @interface CombatScreenProps
- * @description Main combat interface with Korean martial arts mechanics
+ * @description Main combat interface props for Korean martial arts combat system
+ *
+ * @example
+ * ```tsx
+ * <CombatScreen
+ *   players={[player1, player2]}
+ *   currentRound={1}
+ *   timeRemaining={180}
+ *   isPaused={false}
+ *   onPlayerUpdate={handlePlayerUpdate}
+ *   onReturnToMenu={handleReturnToMenu}
+ *   onGameEnd={handleGameEnd}
+ *   matchStatistics={stats}
+ * />
+ * ```
  */
 export interface CombatScreenProps extends BaseUIProps {
+  /** Array of player states (minimum 2 required) */
   readonly players: readonly PlayerState[];
+  /** Callback for updating player state during combat */
   readonly onPlayerUpdate: (
     playerIndex: number,
     updates: Partial<PlayerState>
   ) => void;
+  /** Current round number (1-based) */
   readonly currentRound: number;
+  /** Time remaining in seconds for current round */
   readonly timeRemaining: number;
+  /** Whether the game is currently paused */
   readonly isPaused: boolean;
+  /** Callback for returning to main menu */
   readonly onReturnToMenu: () => void;
+  /** Callback when game ends with winner index */
   readonly onGameEnd: (winner: number) => void;
+  /** Optional game mode specification */
   readonly gameMode?: GameMode;
+  /** Match statistics for display and tracking */
+  readonly matchStatistics?: MatchStatistics;
 }
 
 /**
@@ -272,6 +296,21 @@ export interface PlayerProps extends BaseUIProps {
   readonly gridPosition?: { row: number; col: number };
   readonly gridSize?: number;
   readonly isActive?: boolean;
+}
+
+/**
+ * @interface RoundTimerProps
+ * @description Round timer display and control
+ */
+export interface RoundTimerProps extends BaseUIProps {
+  readonly timeRemaining: number;
+  readonly totalTime: number;
+  readonly currentRound: number;
+  readonly maxRounds: number;
+  readonly isPaused?: boolean;
+  readonly screenWidth: number;
+  readonly screenHeight: number;
+  readonly showMilliseconds?: boolean;
 }
 
 /**

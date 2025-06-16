@@ -1,8 +1,39 @@
-// Combat effects and status system for Korean martial arts
+/**
+ * @fileoverview Effect system types for Korean martial arts combat
+ */
 
-import type { KoreanText, Position } from "./index";
+import type { Position } from "./common";
+import type { KoreanText } from "./korean-text";
 
-// Hit effect for visual feedback
+/**
+ * Types of hit effects that can occur during combat
+ */
+export enum HitEffectType {
+  HIT = "hit",
+  CRITICAL_HIT = "critical_hit",
+  TECHNIQUE_HIT = "technique_hit",
+  VITAL_POINT_HIT = "vital_point_hit",
+  STUN = "stun",
+  KO = "ko",
+  BLOCK = "block",
+  COUNTER = "counter",
+  DODGE = "dodge",
+  ABSORB = "absorb",
+}
+
+/**
+ * Intensity levels for effects
+ */
+export enum EffectIntensity {
+  LOW = "low",
+  MEDIUM = "medium",
+  HIGH = "high",
+  EXTREME = "extreme",
+}
+
+/**
+ * Base hit effect interface
+ */
 export interface HitEffect {
   readonly id: string;
   readonly type: HitEffectType;
@@ -11,48 +42,34 @@ export interface HitEffect {
   readonly timestamp: number;
   readonly duration: number;
   readonly position?: Position;
-  readonly velocity?: { x: number; y: number };
-  readonly color?: number;
-  readonly size?: number;
-  readonly alpha?: number;
-  readonly lifespan?: number;
-  readonly text?: string | KoreanText;
-  readonly damageAmount?: number;
-  readonly vitalPointId?: string;
-  readonly statusEffect?: StatusEffect;
-  readonly yOffset?: number;
   readonly intensity: number;
-  readonly startTime: number; // Required property
+  readonly text?: string;
+  readonly startTime: number;
 }
 
-// Hit effect types
-export enum HitEffectType {
-  GENERAL_DAMAGE = "general_damage",
-  CRITICAL_HIT = "critical_hit",
-  VITAL_POINT_STRIKE = "vital_point_strike",
-  STATUS_EFFECT = "status_effect",
-  MISS = "miss",
-  BLOCK = "block",
-  PARRY = "parry",
-  COUNTER = "counter",
+/**
+ * Extended hit effect for display with animation properties
+ */
+export interface DisplayHitEffect extends HitEffect {
+  readonly opacity: number;
+  readonly scale: number;
+  readonly displayAlpha: number;
+  readonly displayY: number;
+  readonly displaySize: number;
 }
 
-// Fix: Add missing EffectIntensity values
-export type EffectIntensity =
-  | "weak" // Fix: Add weak
-  | "minor"
-  | "low"
-  | "medium"
-  | "moderate"
-  | "high"
-  | "severe"
-  | "critical"
-  | "extreme"; // Fix: Add extreme
-
-// Status effects that can be applied to players
+/**
+ * Status effect that can be applied to players
+ */
 export interface StatusEffect {
   readonly id: string;
-  readonly type: string; // Fix: Keep as string for flexibility
+  readonly type:
+    | "stun"
+    | "poison"
+    | "burn"
+    | "bleed"
+    | "strengthened"
+    | "weakened";
   readonly intensity: EffectIntensity;
   readonly duration: number;
   readonly description: KoreanText;
@@ -62,53 +79,13 @@ export interface StatusEffect {
   readonly endTime: number;
 }
 
-// Effect types
-export type EffectType =
-  | "stun"
-  | "poison"
-  | "burn"
-  | "bleed"
-  | "exhausted"
-  | "focused"
-  | "rage"
-  | "defensive"
-  | "weakened"
-  | "strengthened"
-  | "paralysis" // Add missing paralysis
-  | "confusion" // Add missing confusion
-  | "vulnerability" // Add missing vulnerability
-  | "stamina_drain"; // Add missing stamina_drain
-
-// Particle effect for visual feedback
-export interface ParticleEffect {
-  readonly id: string;
-  readonly type: ParticleType;
-  readonly position: Position;
-  readonly velocity: { x: number; y: number };
-  readonly acceleration?: { x: number; y: number };
-  readonly color: number;
-  readonly size: number;
-  readonly lifetime: number;
-  readonly fadeOut?: boolean;
-  readonly gravity?: number;
-}
-
-// Particle effect types
-export enum ParticleType {
-  SPARK = "spark",
-  BLOOD = "blood",
-  ENERGY = "energy",
-  DUST = "dust",
-  FLASH = "flash",
-  SMOKE = "smoke",
-  LIGHTNING = "lightning",
-  WIND = "wind",
-}
-
-// Environmental effect
+/**
+ * Environmental effect interface for dojang and arena conditions
+ */
 export interface EnvironmentalEffect {
   readonly id: string;
-  readonly type: EnvironmentalEffectType;
+  readonly type: "lighting" | "weather" | "terrain" | "atmosphere";
+  readonly name: KoreanText;
   readonly affectedArea: {
     readonly x: number;
     readonly y: number;
@@ -123,6 +100,19 @@ export interface EnvironmentalEffect {
   };
   readonly duration: number;
 }
+
+// Export types
+export type {
+  HitEffect,
+  DisplayHitEffect,
+  StatusEffect,
+  EnvironmentalEffect,
+  Position,
+  KoreanText,
+};
+
+// Default export should be the main interface, not HitEffect
+export default StatusEffect;
 
 // Environmental effect types
 export enum EnvironmentalEffectType {
@@ -165,5 +155,3 @@ export interface DisplayHitEffect extends HitEffect {
   readonly displayY: number;
   readonly displaySize: number;
 }
-
-export default HitEffect;

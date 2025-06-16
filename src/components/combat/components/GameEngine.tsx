@@ -1,9 +1,11 @@
-import React, { useCallback, useReducer, useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import { extend } from "@pixi/react";
 import { Container, Graphics, Text } from "pixi.js";
 import type { PlayerState } from "../../../types/player";
-import type { KoreanTechnique } from "../../../types/combat";
+import type { CombatResult } from "../../../types/combat";
 import { TrigramStance } from "../../../types/enums";
+import { KOREAN_COLORS } from "../../../types/constants";
+import { usePixiExtensions } from "../../../utils/pixiExtensions";
 
 // Extend PixiJS components
 extend({ Container, Graphics, Text });
@@ -96,14 +98,29 @@ export const GameEngine: React.FC<GameEngineProps> = ({
       g.circle(width / 2, height / 2, 80);
       g.stroke();
 
+      // Combat grid background
+      g.stroke({ width: 3, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.8 });
+      for (let i = 1; i < 3; i++) {
+        const x = (width / 3) * i;
+        g.moveTo(x, 100);
+        g.lineTo(x, height - 100);
+      }
+      for (let i = 1; i < 3; i++) {
+        const y = (height / 3) * i;
+        g.moveTo(50, y);
+        g.lineTo(width - 50, y);
+      }
+      g.stroke();
+
       // Draw trigram symbols around center
       const symbols = ["☰", "☱", "☲", "☳", "☴", "☵", "☶", "☷"];
-      symbols.forEach((symbol, index) => {
-        const angle = (index / 8) * Math.PI * 2;
-        const symbolX = width / 2 + Math.cos(angle) * 100;
-        const symbolY = height / 2 + Math.sin(angle) * 100;
-
-        // These would be drawn via text components in the render
+      symbols.forEach((_, index) => {
+        const angle = (index / symbols.length) * Math.PI * 2;
+        g.circle(
+          width / 2 + Math.cos(angle) * 100,
+          height / 2 + Math.sin(angle) * 100,
+          10
+        );
       });
     },
     [width, height]

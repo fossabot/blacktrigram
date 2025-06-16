@@ -1,157 +1,202 @@
-// Combat-focused game engine moved from game package
+/**
+ * @fileoverview Korean Martial Arts Game Engine Component
+ * @description Core game engine for Black Trigram combat simulation with authentic Korean martial arts mechanics
+ *
+ * @author Black Trigram Development Team
+ * @version 1.0.0
+ * @since 2024
+ *
+ * @remarks
+ * This engine implements the eight trigram (팔괘) combat system with realistic
+ * anatomical targeting, vital point strikes, and traditional Korean martial arts philosophy.
+ *
+ * @example
+ * ```tsx
+ * <GameEngine
+ *   player1={musaWarrior}
+ *   player2={shadowAssassin}
+ *   onPlayerUpdate={(playerId, updates) => updatePlayerState(playerId, updates)}
+ *   onCombatEnd={(winnerId) => handleVictory(winnerId)}
+ *   width={1200}
+ *   height={800}
+ * />
+ * ```
+ */
 
-import React, { useCallback, useEffect, useReducer, useMemo } from "react";
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  useEffect,
+  useRef,
+} from "react";
 import { extend } from "@pixi/react";
 import { Container, Graphics, Text } from "pixi.js";
-import { KOREAN_COLORS } from "../../../types/constants";
-import { TrigramStance, DamageType } from "../../../types/enums";
+import { usePixiExtensions } from "../../../utils/pixiExtensions";
+import { useAudio } from "../../../audio/AudioProvider"; // Fix: Add missing import
 import type { PlayerState } from "../../../types/player";
-import type { KoreanTechnique } from "../../../types/combat";
-import type { Position, Direction } from "../../../types/movement";
+import type { GridPosition, OctagonalGrid } from "../../../types/combat";
+import { KOREAN_COLORS } from "../../../types/constants";
+import { TrigramStance } from "../../../types/enums";
 
+// Extend PixiJS components
 extend({ Container, Graphics, Text });
 
+/**
+ * @interface GameEngineProps
+ * @description Properties for the Korean martial arts game engine
+ */
 export interface GameEngineProps {
+  /** First player (left side) - typically human player */
   readonly player1: PlayerState;
+  /** Second player (right side) - typically AI or second human player */
   readonly player2: PlayerState;
+  /** Callback when player state needs updating */
   readonly onPlayerUpdate: (
     playerId: string,
     updates: Partial<PlayerState>
   ) => void;
-  readonly onCombatEnd?: (winnerId: string) => void;
-  readonly width: number;
-  readonly height: number;
-  readonly gridSize?: number;
-  readonly turnDuration?: number;
+  /** Callback when combat ends with winner ID or "draw" */
+  readonly onCombatEnd?: (winnerId: string | "draw") => void;
+  /** Engine canvas width */
+  readonly width?: number;
+  /** Engine canvas height */
+  readonly height?: number;
+  /** X position offset */
+  readonly x?: number;
+  /** Y position offset */
+  readonly y?: number;
+  /** Game mode settings */
+  readonly gameMode?: "versus" | "training" | "practice";
+  /** AI difficulty level */
+  readonly aiDifficulty?: "beginner" | "intermediate" | "advanced" | "master";
+  /** Enable Korean martial arts realism mode */
+  readonly realismMode?: boolean;
+  /** Debug mode for development */
+  readonly debugMode?: boolean;
 }
 
-interface GameState {
-  readonly activePlayer: string;
-  readonly turnPhase: "movement" | "action" | "resolution";
-  readonly remainingActions: number;
-  readonly grid: readonly (readonly (string | null)[])[];
+/**
+ * @interface GameEngineState
+ * @description Internal state of the Korean martial arts game engine
+ */
+interface GameEngineState {
+  /** Current active player index (0 or 1) */
+  readonly activePlayerIndex: number;
+  /** Current game phase */
+  readonly phase: "preparation" | "combat" | "victory" | "defeat";
+  /** Turn counter for match tracking */
+  readonly turnCount: number;
+  /** Combat log entries in Korean and English */
   readonly combatLog: readonly string[];
-  readonly turnNumber: number;
-  readonly lastAction: string | null;
+  /** Active visual effects */
+  readonly activeEffects: readonly HitEffect[];
+  /** Current octagonal grid state */
+  readonly grid: OctagonalGrid;
+  /** Last action timestamp for timing */
+  readonly lastActionTime: number;
+  /** AI thinking state */
+  readonly aiThinking: boolean;
 }
 
-interface GameAction {
-  readonly type:
-    | "MOVE_PLAYER"
-    | "EXECUTE_TECHNIQUE"
-    | "SWITCH_STANCE"
-    | "NEXT_TURN"
-    | "END_COMBAT"
-    | "LOG_ACTION";
-  readonly payload?: any;
-}
-
-const GRID_SIZE = 10;
-const OCTAGONAL_GRID_BOUNDS = 4; // Distance from center for octagonal shape
-
-function createOctagonalGrid(): (string | null)[][] {
-  const grid: (string | null)[][] = Array(GRID_SIZE)
-    .fill(null)
-    .map(() => Array(GRID_SIZE).fill(null));
-
-  const center = Math.floor(GRID_SIZE / 2);
-
-  for (let row = 0; row < GRID_SIZE; row++) {
-    for (let col = 0; col < GRID_SIZE; col++) {
-      const distFromCenter = Math.max(
-        Math.abs(row - center),
-        Math.abs(col - center)
-      );
-
-      // Create octagonal arena by limiting corner spaces
-      if (distFromCenter <= OCTAGONAL_GRID_BOUNDS) {
-        grid[row][col] = "empty";
-      }
+/**
+ * @type GameEngineAction
+ * @description Available actions for the game engine state machine
+ */
+type GameEngineAction =
+  | { type: "SWITCH_PLAYER" }
+  | {
+      type: "EXECUTE_TECHNIQUE";
+      payload: { technique: KoreanTechnique; targetId: string };
     }
-  }
+  | {
+      type: "MOVE_PLAYER";
+      payload: { playerId: string; newPosition: GridPosition };
+    }
+  | { type: "ADD_EFFECT"; payload: { effect: HitEffect } }
+  | { type: "REMOVE_EFFECT"; payload: { effectId: string } }
+  | { type: "LOG_ACTION"; payload: { message: string } }
+  | { type: "SET_PHASE"; payload: { phase: GameEngineState["phase"] } }
+  | { type: "AI_START_THINKING" }
+  | { type: "AI_STOP_THINKING" };
 
-  return grid;
-}
-
-function isValidPosition(
-  pos: Position,
-  grid: readonly (readonly (string | null)[])[]
-): boolean {
-  return (
-    pos.row >= 0 &&
-    pos.row < GRID_SIZE &&
-    pos.col >= 0 &&
-    pos.col < GRID_SIZE &&
-    grid[pos.row][pos.col] !== null
-  );
-}
-
-function calculateNewPosition(
-  currentPos: Position,
-  direction: Direction
-): Position {
-  switch (direction) {
-    case "north":
-      return { ...currentPos, row: currentPos.row - 1 };
-    case "south":
-      return { ...currentPos, row: currentPos.row + 1 };
-    case "east":
-      return { ...currentPos, col: currentPos.col + 1 };
-    case "west":
-      return { ...currentPos, col: currentPos.col - 1 };
-    case "northeast":
-      return { row: currentPos.row - 1, col: currentPos.col + 1 };
-    case "northwest":
-      return { row: currentPos.row - 1, col: currentPos.col - 1 };
-    case "southeast":
-      return { row: currentPos.row + 1, col: currentPos.col + 1 };
-    case "southwest":
-      return { row: currentPos.row + 1, col: currentPos.col - 1 };
-    default:
-      return currentPos;
-  }
-}
-
-function gameReducer(state: GameState, action: GameAction): GameState {
+/**
+ * @function gameEngineReducer
+ * @description Manages game engine state transitions with Korean martial arts logic
+ *
+ * @param state - Current game engine state
+ * @param action - Action to process
+ * @returns Updated game engine state
+ */
+function gameEngineReducer(
+  state: GameEngineState,
+  action: GameEngineAction
+): GameEngineState {
   switch (action.type) {
-    case "MOVE_PLAYER":
+    case "SWITCH_PLAYER":
       return {
         ...state,
-        remainingActions: Math.max(0, state.remainingActions - 1),
-        combatLog: [
-          ...state.combatLog,
-          `${action.payload.playerName} 이동: ${action.payload.direction}`,
-        ],
+        activePlayerIndex: state.activePlayerIndex === 0 ? 1 : 0,
+        turnCount: state.turnCount + 1,
+        lastActionTime: Date.now(),
       };
 
     case "EXECUTE_TECHNIQUE":
       return {
         ...state,
-        turnPhase: "resolution",
-        remainingActions: 0,
         combatLog: [
-          ...state.combatLog,
-          `${action.payload.attacker} 기술 실행: ${action.payload.technique}`,
+          ...state.combatLog.slice(-9), // Keep last 10 entries
+          `${action.payload.technique.name.korean} 실행! - ${action.payload.technique.name.english} executed!`,
         ],
+        lastActionTime: Date.now(),
       };
 
-    case "NEXT_TURN":
+    case "MOVE_PLAYER":
       return {
         ...state,
-        activePlayer: action.payload.nextPlayer,
-        turnPhase: "movement",
-        remainingActions: 2,
-        turnNumber: state.turnNumber + 1,
         combatLog: [
-          ...state.combatLog.slice(-15),
-          `턴 ${state.turnNumber + 1}: ${action.payload.nextPlayerName} 차례`,
+          ...state.combatLog.slice(-9),
+          `플레이어 이동 - Player moved to ${action.payload.newPosition.row}, ${action.payload.newPosition.col}`,
         ],
+        lastActionTime: Date.now(),
+      };
+
+    case "ADD_EFFECT":
+      return {
+        ...state,
+        activeEffects: [...state.activeEffects, action.payload.effect],
+      };
+
+    case "REMOVE_EFFECT":
+      return {
+        ...state,
+        activeEffects: state.activeEffects.filter(
+          (effect) => effect.id !== action.payload.effectId
+        ),
       };
 
     case "LOG_ACTION":
       return {
         ...state,
-        combatLog: [...state.combatLog.slice(-15), action.payload.message],
+        combatLog: [...state.combatLog.slice(-9), action.payload.message],
+      };
+
+    case "SET_PHASE":
+      return {
+        ...state,
+        phase: action.payload.phase,
+      };
+
+    case "AI_START_THINKING":
+      return {
+        ...state,
+        aiThinking: true,
+      };
+
+    case "AI_STOP_THINKING":
+      return {
+        ...state,
+        aiThinking: false,
       };
 
     default:
@@ -159,523 +204,763 @@ function gameReducer(state: GameState, action: GameAction): GameState {
   }
 }
 
+/**
+ * @function createOctagonalGrid
+ * @description Creates an octagonal combat grid following Korean martial arts traditions
+ *
+ * @param size - Grid dimension (typically 9x9 for traditional Korean martial arts)
+ * @returns Octagonal grid with valid positions marked
+ */
+function createOctagonalGrid(size: number = 9): OctagonalGrid {
+  const grid: boolean[][] = Array(size)
+    .fill(null)
+    .map(() => Array(size).fill(false));
+  const center = Math.floor(size / 2);
+  const radius = center - 1;
+
+  // Create octagonal pattern
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      const dx = Math.abs(col - center);
+      const dy = Math.abs(row - center);
+
+      // Octagonal boundary calculation
+      if (dx + dy <= radius || (dx <= radius && dy <= radius)) {
+        grid[row][col] = true;
+      }
+    }
+  }
+
+  return {
+    size,
+    validPositions: grid,
+    centerPosition: { row: center, col: center },
+  };
+}
+
+/**
+ * @function getInitialPlayerPositions
+ * @description Sets initial positions for players according to Korean martial arts ceremony
+ *
+ * @param grid - The octagonal combat grid
+ * @returns Initial positions for both players
+ */
+function getInitialPlayerPositions(
+  grid: OctagonalGrid
+): [GridPosition, GridPosition] {
+  const center = Math.floor(grid.size / 2);
+
+  // Traditional starting positions - players face each other with respect
+  const player1Position: GridPosition = { row: center, col: 2 };
+  const player2Position: GridPosition = { row: center, col: grid.size - 3 };
+
+  return [player1Position, player2Position];
+}
+
+/**
+ * @component GameEngine
+ * @description Core Korean martial arts combat engine with authentic trigram system
+ *
+ * This component implements a complete combat simulation based on traditional Korean
+ * martial arts principles, featuring:
+ *
+ * - Eight trigram (팔괘) stance system
+ * - Anatomical vital point targeting
+ * - Realistic combat physics and damage calculation
+ * - AI opponents with Korean martial arts behavior
+ * - Traditional Korean martial arts ceremony and respect
+ *
+ * @param props - Game engine configuration and callbacks
+ * @returns React component rendering the combat engine
+ *
+ * @public
+ * @since 1.0.0
+ */
 export const GameEngine: React.FC<GameEngineProps> = ({
   player1,
   player2,
   onPlayerUpdate,
   onCombatEnd,
-  width,
-  height,
-  gridSize = 60,
-  turnDuration = 30000,
+  width = 1200,
+  height = 800,
+  x = 0,
+  y = 0,
+  gameMode = "versus",
+  aiDifficulty = "intermediate",
+  realismMode = true,
+  debugMode = false,
 }) => {
-  const [gameState, dispatch] = useReducer(gameReducer, {
-    activePlayer: player1.id,
-    turnPhase: "movement",
-    remainingActions: 2,
-    grid: createOctagonalGrid(),
-    combatLog: [`전투 시작! ${player1.name.korean} vs ${player2.name.korean}`],
-    turnNumber: 1,
-    lastAction: null,
+  const audio = useAudio();
+  const lastAIAction = useRef<number>(0);
+  const gameLoopRef = useRef<number>();
+
+  // Initialize octagonal grid and player positions
+  const [grid] = useState(() => createOctagonalGrid(9));
+  const [player1Position, setPlayer1Position] = useState<GridPosition>(
+    () => getInitialPlayerPositions(grid)[0]
+  );
+  const [player2Position, setPlayer2Position] = useState<GridPosition>(
+    () => getInitialPlayerPositions(grid)[1]
+  );
+
+  // Game engine state management
+  const [gameState, dispatch] = useReducer(gameEngineReducer, {
+    activePlayerIndex: 0,
+    phase: "preparation",
+    turnCount: 0,
+    combatLog: ["전투 준비 중... - Preparing for combat..."],
+    activeEffects: [],
+    grid,
+    lastActionTime: Date.now(),
+    aiThinking: false,
   });
 
-  // Initialize player positions if not set
-  useEffect(() => {
-    if (!player1.position) {
-      onPlayerUpdate(player1.id, { position: { row: 7, col: 2 } });
-    }
-    if (!player2.position) {
-      onPlayerUpdate(player2.id, { position: { row: 7, col: 7 } });
-    }
-  }, [
-    player1.position,
-    player2.position,
-    onPlayerUpdate,
-    player1.id,
-    player2.id,
-  ]);
-
-  // Check victory conditions
-  useEffect(() => {
-    const checkVictory = () => {
-      const p1Defeated = player1.health <= 0 || player1.consciousness <= 0;
-      const p2Defeated = player2.health <= 0 || player2.consciousness <= 0;
-
-      if (p1Defeated && !p2Defeated) {
-        dispatch({
-          type: "LOG_ACTION",
-          payload: { message: `${player2.name.korean} 승리!` },
-        });
-        onCombatEnd?.(player2.id);
-      } else if (p2Defeated && !p1Defeated) {
-        dispatch({
-          type: "LOG_ACTION",
-          payload: { message: `${player1.name.korean} 승리!` },
-        });
-        onCombatEnd?.(player1.id);
-      } else if (p1Defeated && p2Defeated) {
-        dispatch({ type: "LOG_ACTION", payload: { message: "무승부!" } });
-        onCombatEnd?.("draw");
+  /**
+   * @function validateAndUpdatePosition
+   * @description Validates and updates player position on the octagonal grid
+   *
+   * @param playerId - ID of the player to move
+   * @param newPosition - Proposed new position
+   * @returns Success status of the movement
+   */
+  const validateAndUpdatePosition = useCallback(
+    (playerId: string, newPosition: GridPosition): boolean => {
+      // Validate position is within grid bounds and valid
+      if (!validatePosition(newPosition, grid)) {
+        return false;
       }
-    };
 
-    checkVictory();
-  }, [
-    player1.health,
-    player1.consciousness,
-    player2.health,
-    player2.consciousness,
-    onCombatEnd,
-    player1.name.korean,
-    player2.name.korean,
-  ]);
-
-  // Handle player movement
-  const handlePlayerMovement = useCallback(
-    (playerId: string, direction: Direction) => {
-      const player = playerId === player1.id ? player1 : player2;
-      const currentPos = player.position || { row: 5, col: 5 };
-      const newPosition = calculateNewPosition(currentPos, direction);
-
+      // Check if position is occupied by the other player
+      const otherPosition =
+        playerId === player1.id ? player2Position : player1Position;
       if (
-        isValidPosition(newPosition, gameState.grid) &&
-        gameState.remainingActions > 0
+        otherPosition.row === newPosition.row &&
+        otherPosition.col === newPosition.col
       ) {
-        // Check if target position is occupied
-        const otherPlayer = playerId === player1.id ? player2 : player1;
-        const otherPos = otherPlayer.position;
-
-        if (
-          otherPos &&
-          otherPos.row === newPosition.row &&
-          otherPos.col === newPosition.col
-        ) {
-          dispatch({
-            type: "LOG_ACTION",
-            payload: { message: "이동 불가: 상대방이 있습니다!" },
-          });
-          return;
-        }
-
-        // Move player and consume stamina
-        onPlayerUpdate(playerId, {
-          position: newPosition,
-          stamina: Math.max(0, player.stamina - 3),
-        });
-
-        dispatch({
-          type: "MOVE_PLAYER",
-          payload: {
-            playerName: player.name.korean,
-            direction,
-          },
-        });
+        return false;
       }
+
+      // Update position
+      if (playerId === player1.id) {
+        setPlayer1Position(newPosition);
+      } else {
+        setPlayer2Position(newPosition);
+      }
+
+      // Update player state
+      onPlayerUpdate(playerId, {
+        position: { x: newPosition.col, y: newPosition.row },
+        stamina: Math.max(
+          0,
+          (playerId === player1.id ? player1.stamina : player2.stamina) - 2
+        ),
+      });
+
+      dispatch({ type: "MOVE_PLAYER", payload: { playerId, newPosition } });
+      return true;
     },
     [
-      player1,
-      player2,
-      gameState.grid,
-      gameState.remainingActions,
+      grid,
+      player1Position,
+      player2Position,
+      player1.id,
+      player1.stamina,
+      player2.stamina,
       onPlayerUpdate,
     ]
   );
 
-  // Execute combat technique
-  const executeTechnique = useCallback(
-    (technique: KoreanTechnique, attackerId: string, targetId: string) => {
+  /**
+   * @function executeKoreanTechnique
+   * @description Executes a Korean martial arts technique with authentic calculations
+   *
+   * @param technique - The Korean technique to execute
+   * @param attackerId - ID of the attacking player
+   * @param defenderId - ID of the defending player
+   */
+  const executeKoreanTechnique = useCallback(
+    async (
+      technique: KoreanTechnique,
+      attackerId: string,
+      defenderId: string
+    ): Promise<void> => {
       const attacker = attackerId === player1.id ? player1 : player2;
-      const target = targetId === player1.id ? player1 : player2;
+      const defender = defenderId === player1.id ? player1 : player2;
+      const attackerPos =
+        attackerId === player1.id ? player1Position : player2Position;
+      const defenderPos =
+        defenderId === player1.id ? player1Position : player2Position;
 
-      // Check range and ki/stamina costs
+      // Check if technique is in range
+      const distance = calculateDistance(attackerPos, defenderPos);
+      if (distance > technique.range) {
+        dispatch({
+          type: "LOG_ACTION",
+          payload: {
+            message:
+              "거리가 너무 멀어서 공격할 수 없습니다! - Too far to attack!",
+          },
+        });
+        return;
+      }
+
+      // Check if attacker has sufficient resources
       if (
         attacker.ki < technique.kiCost ||
         attacker.stamina < technique.staminaCost
       ) {
         dispatch({
           type: "LOG_ACTION",
-          payload: { message: "기력 또는 체력 부족!" },
+          payload: {
+            message:
+              "기력이나 체력이 부족합니다! - Insufficient Ki or Stamina!",
+          },
         });
         return;
       }
 
-      // Calculate damage
-      const baseAccuracy = technique.accuracy || 0.8;
-      const stanceBonus = 0.1; // Bonus for correct stance
-      const finalAccuracy = Math.min(0.95, baseAccuracy + stanceBonus);
+      try {
+        // Execute technique using trigram system
+        const result = await executeTrigramTechnique(
+          technique,
+          attacker,
+          defender
+        );
 
-      const hitRoll = Math.random();
-      const isHit = hitRoll <= finalAccuracy;
-
-      if (isHit) {
-        const baseDamage = technique.damage || 15;
-        const critRoll = Math.random();
-        const isCritical = critRoll <= (technique.critChance || 0.1);
-        const finalDamage = isCritical
-          ? baseDamage * (technique.critMultiplier || 1.5)
-          : baseDamage;
-
-        // Apply damage
-        onPlayerUpdate(targetId, {
-          health: Math.max(0, target.health - finalDamage),
-          consciousness: Math.max(
-            0,
-            target.consciousness - (isCritical ? 10 : 5)
-          ),
-        });
-
-        // Consume attacker resources
+        // Update attacker resources
         onPlayerUpdate(attackerId, {
           ki: Math.max(0, attacker.ki - technique.kiCost),
           stamina: Math.max(0, attacker.stamina - technique.staminaCost),
         });
 
-        const damageText = isCritical
-          ? `치명타 ${finalDamage}`
-          : `${finalDamage}`;
-        dispatch({
-          type: "EXECUTE_TECHNIQUE",
-          payload: {
-            attacker: attacker.name.korean,
-            technique: technique.name.korean,
-            damage: damageText,
+        // Update defender based on result
+        onPlayerUpdate(defenderId, {
+          health: Math.max(0, defender.health - result.damage),
+          consciousness: Math.max(
+            0,
+            defender.consciousness - result.damage * 0.5
+          ),
+          balance: Math.max(0, defender.balance - (result.impact || 0)),
+        });
+
+        // Create visual effect
+        const effect: HitEffect = {
+          id: `technique_${Date.now()}`,
+          type: result.isCritical ? "critical_hit" : "hit",
+          attackerId,
+          defenderId,
+          timestamp: Date.now(),
+          duration: result.isCritical ? 1500 : 1000,
+          position: {
+            x: defenderPos.col * (width / grid.size) + width / (grid.size * 2),
+            y:
+              defenderPos.row * (height / grid.size) + height / (grid.size * 2),
           },
-        });
-      } else {
-        dispatch({
-          type: "LOG_ACTION",
-          payload: { message: `${attacker.name.korean} 공격 빗나감!` },
-        });
-      }
-
-      // End turn after technique
-      const nextPlayer = attackerId === player1.id ? player2.id : player1.id;
-      const nextPlayerName =
-        attackerId === player1.id ? player2.name.korean : player1.name.korean;
-
-      setTimeout(() => {
-        dispatch({
-          type: "NEXT_TURN",
-          payload: { nextPlayer, nextPlayerName },
-        });
-      }, 1000);
-    },
-    [player1, player2, onPlayerUpdate]
-  );
-
-  // Comprehensive keyboard input handling
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (gameState.activePlayer !== player1.id) return; // Only handle input for active human player
-
-      const key = event.key.toLowerCase();
-
-      // Movement controls (WASD and Arrow keys)
-      const movementMap: Record<string, Direction> = {
-        w: "north",
-        arrowup: "north",
-        s: "south",
-        arrowdown: "south",
-        a: "west",
-        arrowleft: "west",
-        d: "east",
-        arrowright: "east",
-      };
-
-      if (movementMap[key] && gameState.turnPhase === "movement") {
-        event.preventDefault();
-        handlePlayerMovement(gameState.activePlayer, movementMap[key]);
-        return;
-      }
-
-      // Stance changes (1-8 for eight trigrams)
-      if (key >= "1" && key <= "8" && gameState.remainingActions > 0) {
-        event.preventDefault();
-        const stanceIndex = parseInt(key) - 1;
-        const stances = Object.values(TrigramStance);
-        const newStance = stances[stanceIndex];
-
-        if (newStance) {
-          onPlayerUpdate(gameState.activePlayer, { currentStance: newStance });
-          dispatch({
-            type: "LOG_ACTION",
-            payload: { message: `자세 변경: ${newStance}` },
-          });
-        }
-        return;
-      }
-
-      // Basic attack (Space)
-      if (key === " " && gameState.turnPhase === "action") {
-        event.preventDefault();
-        const basicAttack: KoreanTechnique = {
-          id: "basic_attack",
-          name: {
-            korean: "기본 공격",
-            english: "Basic Attack",
-            romanized: "gibon_gonggyeok",
-          },
-          koreanName: "기본 공격",
-          englishName: "Basic Attack",
-          romanized: "gibon_gonggyeok",
-          description: { korean: "기본적인 공격", english: "Basic attack" },
-          stance: player1.currentStance,
-          type: "strike" as any,
-          damageType: DamageType.BLUNT,
-          damage: 15,
-          kiCost: 5,
-          staminaCost: 8,
-          accuracy: 0.85,
-          range: 1.0,
-          executionTime: 400,
-          recoveryTime: 200,
-          critChance: 0.1,
-          critMultiplier: 1.5,
-          effects: [],
+          intensity: result.isCritical ? 1.5 : 1.0,
+          startTime: Date.now(),
+          text: result.isCritical ? "치명타!" : technique.name.korean,
         };
 
-        executeTechnique(basicAttack, player1.id, player2.id);
-        return;
-      }
-    };
+        dispatch({ type: "ADD_EFFECT", payload: { effect } });
+        dispatch({
+          type: "EXECUTE_TECHNIQUE",
+          payload: { technique, targetId: defenderId },
+        });
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [
-    gameState,
-    handlePlayerMovement,
-    executeTechnique,
-    onPlayerUpdate,
-    player1.id,
-    player2.id,
-    player1.currentStance,
-  ]);
-
-  // AI opponent logic for player 2
-  useEffect(() => {
-    if (
-      gameState.activePlayer === player2.id &&
-      gameState.turnPhase === "movement"
-    ) {
-      const aiTimer = setTimeout(() => {
-        // Simple AI: move toward player 1 or attack if in range
-        const p1Pos = player1.position;
-        const p2Pos = player2.position;
-
-        if (p1Pos && p2Pos) {
-          const distance =
-            Math.abs(p1Pos.row - p2Pos.row) + Math.abs(p1Pos.col - p2Pos.col);
-
-          if (distance <= 1) {
-            // In range, attack
-            const aiAttack: KoreanTechnique = {
-              id: "ai_attack",
-              name: {
-                korean: "AI 공격",
-                english: "AI Attack",
-                romanized: "ai_gonggyeok",
-              },
-              koreanName: "AI 공격",
-              englishName: "AI Attack",
-              romanized: "ai_gonggyeok",
-              description: { korean: "AI의 공격", english: "AI attack" },
-              stance: player2.currentStance,
-              type: "strike" as any,
-              damageType: DamageType.BLUNT,
-              damage: 12,
-              kiCost: 4,
-              staminaCost: 6,
-              accuracy: 0.7,
-              range: 1.0,
-              executionTime: 400,
-              recoveryTime: 200,
-              critChance: 0.05,
-              critMultiplier: 1.3,
-              effects: [],
-            };
-
-            executeTechnique(aiAttack, player2.id, player1.id);
+        // Play appropriate audio
+        try {
+          if (result.isCritical) {
+            audio.playSFX("critical_hit");
+          } else if (result.isVitalPoint) {
+            audio.playSFX("vital_point_hit");
           } else {
-            // Move toward player 1
-            let direction: Direction = "north";
-
-            if (p1Pos.row < p2Pos.row) direction = "north";
-            else if (p1Pos.row > p2Pos.row) direction = "south";
-            else if (p1Pos.col < p2Pos.col) direction = "west";
-            else if (p1Pos.col > p2Pos.col) direction = "east";
-
-            handlePlayerMovement(player2.id, direction);
-
-            // Switch to action phase after movement
-            setTimeout(() => {
-              dispatch({
-                type: "NEXT_TURN",
-                payload: {
-                  nextPlayer: player1.id,
-                  nextPlayerName: player1.name.korean,
-                },
-              });
-            }, 500);
+            audio.playSFX("attack_medium");
           }
+        } catch (audioError) {
+          console.warn("Audio playback failed:", audioError);
         }
-      }, 1000); // AI delay for human readability
 
-      return () => clearTimeout(aiTimer);
-    }
-  }, [
-    gameState.activePlayer,
-    gameState.turnPhase,
-    player1.position,
-    player2.position,
-    player1.name.korean,
-    executeTechnique,
-    handlePlayerMovement,
-    player1.id,
-    player2.id,
-    player2.currentStance,
-  ]);
+        // Remove effect after duration
+        setTimeout(() => {
+          dispatch({ type: "REMOVE_EFFECT", payload: { effectId: effect.id } });
+        }, effect.duration);
 
-  // Grid visualization
-  const drawGrid = useCallback(
-    (g: any) => {
-      g.clear();
-
-      const offsetX = (width - GRID_SIZE * gridSize) / 2;
-      const offsetY = (height - GRID_SIZE * gridSize) / 2;
-
-      // Draw grid cells
-      for (let row = 0; row < GRID_SIZE; row++) {
-        for (let col = 0; col < GRID_SIZE; col++) {
-          const cellX = offsetX + col * gridSize;
-          const cellY = offsetY + row * gridSize;
-
-          if (gameState.grid[row][col] !== null) {
-            // Valid cell
-            g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_MEDIUM, alpha: 0.3 });
-            g.rect(cellX, cellY, gridSize, gridSize);
-            g.fill();
-
-            // Cell border
-            g.stroke({
-              width: 1,
-              color: KOREAN_COLORS.ACCENT_GOLD,
-              alpha: 0.4,
-            });
-            g.rect(cellX, cellY, gridSize, gridSize);
-            g.stroke();
-
-            // Grid coordinates (for debugging)
-            g.fill({ color: KOREAN_COLORS.TEXT_TERTIARY, alpha: 0.5 });
-            // Add coordinate text if needed
-          }
-        }
-      }
-
-      // Highlight active player's possible moves
-      if (
-        gameState.remainingActions > 0 &&
-        gameState.turnPhase === "movement"
-      ) {
-        const activePlayer =
-          gameState.activePlayer === player1.id ? player1 : player2;
-        const pos = activePlayer.position;
-
-        if (pos) {
-          const directions: Direction[] = [
-            "north",
-            "south",
-            "east",
-            "west",
-            "northeast",
-            "northwest",
-            "southeast",
-            "southwest",
-          ];
-
-          directions.forEach((direction) => {
-            const newPos = calculateNewPosition(pos, direction);
-            if (isValidPosition(newPos, gameState.grid)) {
-              const cellX = offsetX + newPos.col * gridSize;
-              const cellY = offsetY + newPos.row * gridSize;
-
-              g.fill({ color: KOREAN_COLORS.ACCENT_GREEN, alpha: 0.3 });
-              g.rect(cellX + 2, cellY + 2, gridSize - 4, gridSize - 4);
-              g.fill();
-            }
-          });
-        }
+        // Switch active player
+        dispatch({ type: "SWITCH_PLAYER" });
+      } catch (error) {
+        console.error("Technique execution failed:", error);
+        dispatch({
+          type: "LOG_ACTION",
+          payload: { message: "기술 실행 실패! - Technique execution failed!" },
+        });
       }
     },
     [
-      width,
-      height,
-      gridSize,
-      gameState.grid,
-      gameState.remainingActions,
-      gameState.turnPhase,
-      gameState.activePlayer,
       player1,
       player2,
+      player1Position,
+      player2Position,
+      onPlayerUpdate,
+      grid,
+      width,
+      height,
+      audio,
     ]
   );
 
-  return (
-    <pixiContainer data-testid="game-engine">
-      {/* Grid visualization */}
-      <pixiGraphics draw={drawGrid} />
+  /**
+   * @function executeAITurn
+   * @description Executes AI opponent turn with Korean martial arts strategy
+   */
+  const executeAITurn = useCallback(async (): Promise<void> => {
+    if (gameState.activePlayerIndex !== 1 || gameState.aiThinking) return;
 
-      {/* Game state display */}
-      <pixiContainer x={20} y={20} data-testid="game-state-display">
+    dispatch({ type: "AI_START_THINKING" });
+
+    // AI decision making based on Korean martial arts principles
+    const aiPlayer = player2;
+    const humanPlayer = player1;
+    const aiPos = player2Position;
+    const humanPos = player1Position;
+
+    try {
+      // Calculate optimal action based on current situation
+      const distance = calculateDistance(aiPos, humanPos);
+      const healthRatio = aiPlayer.health / aiPlayer.maxHealth;
+      const kiRatio = aiPlayer.ki / aiPlayer.maxKi;
+
+      // Decision tree based on Korean martial arts strategy
+      if (distance > 2 && healthRatio > 0.7) {
+        // Move closer when healthy and far
+        const possibleMoves = [
+          { row: aiPos.row, col: Math.max(0, aiPos.col - 1) },
+          { row: aiPos.row, col: Math.min(grid.size - 1, aiPos.col + 1) },
+          { row: Math.max(0, aiPos.row - 1), col: aiPos.col },
+          { row: Math.min(grid.size - 1, aiPos.row + 1), col: aiPos.col },
+        ].filter(
+          (pos) =>
+            validatePosition(pos, grid) &&
+            !(pos.row === humanPos.row && pos.col === humanPos.col)
+        );
+
+        if (possibleMoves.length > 0) {
+          const bestMove = possibleMoves.reduce((best, current) =>
+            calculateDistance(current, humanPos) <
+            calculateDistance(best, humanPos)
+              ? current
+              : best
+          );
+
+          validateAndUpdatePosition(aiPlayer.id, bestMove);
+        }
+      } else if (distance <= 2 && kiRatio > 0.3) {
+        // Attack when in range and have ki
+        const currentStanceData = TRIGRAM_DATA[aiPlayer.currentStance];
+        if (currentStanceData?.techniques?.primary) {
+          const technique: KoreanTechnique = {
+            id: `${aiPlayer.currentStance}_ai_primary`,
+            name: currentStanceData.techniques.primary,
+            koreanName: currentStanceData.techniques.primary.korean,
+            englishName: currentStanceData.techniques.primary.english,
+            romanized: currentStanceData.techniques.primary.korean,
+            description: currentStanceData.techniques.primary.description,
+            stance: aiPlayer.currentStance,
+            type: "strike" as any,
+            damageType: "blunt" as any,
+            damage: currentStanceData.techniques.primary.damage,
+            kiCost: currentStanceData.techniques.primary.kiCost,
+            staminaCost: currentStanceData.techniques.primary.staminaCost,
+            accuracy: currentStanceData.techniques.primary.hitChance,
+            range: 2.0,
+            executionTime: 600,
+            recoveryTime: 800,
+            critChance: currentStanceData.techniques.primary.criticalChance,
+            critMultiplier: 1.5,
+            effects: [],
+          };
+
+          await executeKoreanTechnique(technique, aiPlayer.id, humanPlayer.id);
+        }
+      } else {
+        // Change stance for better positioning
+        const stances = Object.values(TrigramStance);
+        const newStance = stances[Math.floor(Math.random() * stances.length)];
+        onPlayerUpdate(aiPlayer.id, { currentStance: newStance });
+
+        dispatch({
+          type: "LOG_ACTION",
+          payload: {
+            message: `AI가 ${newStance} 자세로 변경! - AI changed to ${newStance} stance!`,
+          },
+        });
+        dispatch({ type: "SWITCH_PLAYER" });
+      }
+    } catch (error) {
+      console.error("AI turn execution failed:", error);
+      dispatch({ type: "SWITCH_PLAYER" });
+    } finally {
+      dispatch({ type: "AI_STOP_THINKING" });
+    }
+  }, [
+    gameState.activePlayerIndex,
+    gameState.aiThinking,
+    player1,
+    player2,
+    player1Position,
+    player2Position,
+    grid,
+    onPlayerUpdate,
+    validateAndUpdatePosition,
+    executeKoreanTechnique,
+  ]);
+
+  /**
+   * @function handleKeyboardInput
+   * @description Handles keyboard input for Korean martial arts controls
+   */
+  const handleKeyboardInput = useCallback(
+    (event: KeyboardEvent): void => {
+      if (gameState.phase !== "combat" || gameState.activePlayerIndex !== 0)
+        return;
+
+      const key = event.key;
+      const activePlayer = player1;
+      const currentPos = player1Position;
+
+      // Movement controls (WASD)
+      let newPosition: GridPosition | null = null;
+      switch (key.toLowerCase()) {
+        case "w": // Move up
+          newPosition = {
+            row: Math.max(0, currentPos.row - 1),
+            col: currentPos.col,
+          };
+          break;
+        case "s": // Move down
+          newPosition = {
+            row: Math.min(grid.size - 1, currentPos.row + 1),
+            col: currentPos.col,
+          };
+          break;
+        case "a": // Move left
+          newPosition = {
+            row: currentPos.row,
+            col: Math.max(0, currentPos.col - 1),
+          };
+          break;
+        case "d": // Move right
+          newPosition = {
+            row: currentPos.row,
+            col: Math.min(grid.size - 1, currentPos.col + 1),
+          };
+          break;
+      }
+
+      if (newPosition && isValidMove(currentPos, newPosition, grid)) {
+        event.preventDefault();
+        validateAndUpdatePosition(activePlayer.id, newPosition);
+        dispatch({ type: "SWITCH_PLAYER" });
+        return;
+      }
+
+      // Stance changes (1-8 keys for eight trigrams)
+      if (key >= "1" && key <= "8") {
+        event.preventDefault();
+        const stanceIndex = parseInt(key) - 1;
+        const stances = Object.values(TrigramStance);
+        if (stances[stanceIndex]) {
+          onPlayerUpdate(activePlayer.id, {
+            currentStance: stances[stanceIndex],
+            stamina: Math.max(0, activePlayer.stamina - 3),
+          });
+
+          dispatch({
+            type: "LOG_ACTION",
+            payload: {
+              message: `${stances[stanceIndex]} 자세로 변경! - Changed to ${stances[stanceIndex]} stance!`,
+            },
+          });
+          dispatch({ type: "SWITCH_PLAYER" });
+        }
+        return;
+      }
+
+      // Combat actions
+      switch (key) {
+        case " ": // Space for basic attack
+          event.preventDefault();
+          const currentStanceData = TRIGRAM_DATA[activePlayer.currentStance];
+          if (currentStanceData?.techniques?.primary) {
+            const technique: KoreanTechnique = {
+              id: `${activePlayer.currentStance}_basic`,
+              name: currentStanceData.techniques.primary,
+              koreanName: currentStanceData.techniques.primary.korean,
+              englishName: currentStanceData.techniques.primary.english,
+              romanized: currentStanceData.techniques.primary.korean,
+              description: currentStanceData.techniques.primary.description,
+              stance: activePlayer.currentStance,
+              type: "strike" as any,
+              damageType: "blunt" as any,
+              damage: currentStanceData.techniques.primary.damage,
+              kiCost: currentStanceData.techniques.primary.kiCost,
+              staminaCost: currentStanceData.techniques.primary.staminaCost,
+              accuracy: currentStanceData.techniques.primary.hitChance,
+              range: 2.0,
+              executionTime: 500,
+              recoveryTime: 600,
+              critChance: currentStanceData.techniques.primary.criticalChance,
+              critMultiplier: 1.5,
+              effects: [],
+            };
+
+            executeKoreanTechnique(technique, activePlayer.id, player2.id);
+          }
+          break;
+
+        case "Shift": // Guard/block
+          event.preventDefault();
+          onPlayerUpdate(activePlayer.id, {
+            isBlocking: true,
+            stamina: Math.max(0, activePlayer.stamina - 5),
+          });
+
+          dispatch({
+            type: "LOG_ACTION",
+            payload: { message: "방어 자세! - Defensive stance!" },
+          });
+
+          setTimeout(() => {
+            onPlayerUpdate(activePlayer.id, { isBlocking: false });
+          }, 1000);
+
+          dispatch({ type: "SWITCH_PLAYER" });
+          break;
+      }
+    },
+    [
+      gameState.phase,
+      gameState.activePlayerIndex,
+      player1,
+      player1Position,
+      grid,
+      onPlayerUpdate,
+      validateAndUpdatePosition,
+      executeKoreanTechnique,
+      player2.id,
+    ]
+  );
+
+  // Victory condition checking
+  useEffect(() => {
+    const checkVictoryConditions = (): void => {
+      const player1Dead = player1.health <= 0 || player1.consciousness <= 0;
+      const player2Dead = player2.health <= 0 || player2.consciousness <= 0;
+
+      if (player1Dead && player2Dead) {
+        dispatch({ type: "SET_PHASE", payload: { phase: "victory" } });
+        onCombatEnd?.("draw");
+      } else if (player1Dead) {
+        dispatch({ type: "SET_PHASE", payload: { phase: "defeat" } });
+        onCombatEnd?.(player2.id);
+      } else if (player2Dead) {
+        dispatch({ type: "SET_PHASE", payload: { phase: "victory" } });
+        onCombatEnd?.(player1.id);
+      }
+    };
+
+    if (gameState.phase === "combat") {
+      checkVictoryConditions();
+    }
+  }, [
+    player1.health,
+    player1.consciousness,
+    player2.health,
+    player2.consciousness,
+    gameState.phase,
+    onCombatEnd,
+    player1.id,
+    player2.id,
+  ]);
+
+  // Initialize combat phase
+  useEffect(() => {
+    if (gameState.phase === "preparation") {
+      const timer = setTimeout(() => {
+        dispatch({ type: "SET_PHASE", payload: { phase: "combat" } });
+        dispatch({
+          type: "LOG_ACTION",
+          payload: {
+            message:
+              "전투 시작! 팔괘의 힘을 보여라! - Combat begins! Show the power of the Eight Trigrams!",
+          },
+        });
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [gameState.phase]);
+
+  // AI turn management
+  useEffect(() => {
+    if (gameState.activePlayerIndex === 1 && gameState.phase === "combat") {
+      const aiDelay =
+        aiDifficulty === "master"
+          ? 800
+          : aiDifficulty === "advanced"
+          ? 1200
+          : 1500;
+      const timer = setTimeout(() => {
+        executeAITurn();
+      }, aiDelay);
+      return () => clearTimeout(timer);
+    }
+  }, [
+    gameState.activePlayerIndex,
+    gameState.phase,
+    aiDifficulty,
+    executeAITurn,
+  ]);
+
+  // Keyboard input handling
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyboardInput);
+    return () => window.removeEventListener("keydown", handleKeyboardInput);
+  }, [handleKeyboardInput]);
+
+  // Resource regeneration game loop
+  useEffect(() => {
+    const gameLoop = (): void => {
+      // Regenerate ki and stamina slowly
+      if (gameState.phase === "combat") {
+        onPlayerUpdate(player1.id, {
+          ki: Math.min(player1.maxKi, player1.ki + 0.5),
+          stamina: Math.min(player1.maxStamina, player1.stamina + 0.3),
+        });
+
+        onPlayerUpdate(player2.id, {
+          ki: Math.min(player2.maxKi, player2.ki + 0.5),
+          stamina: Math.min(player2.maxStamina, player2.stamina + 0.3),
+        });
+      }
+
+      gameLoopRef.current = requestAnimationFrame(gameLoop);
+    };
+
+    gameLoopRef.current = requestAnimationFrame(gameLoop);
+    return () => {
+      if (gameLoopRef.current) {
+        cancelAnimationFrame(gameLoopRef.current);
+      }
+    };
+  }, [
+    gameState.phase,
+    player1.id,
+    player1.maxKi,
+    player1.ki,
+    player1.maxStamina,
+    player1.stamina,
+    player2.id,
+    player2.maxKi,
+    player2.ki,
+    player2.maxStamina,
+    player2.stamina,
+    onPlayerUpdate,
+  ]);
+
+  // Grid visualization calculations
+  const cellSize = useMemo(
+    () => Math.min(width / grid.size, height / grid.size),
+    [width, height, grid.size]
+  );
+  const gridOffsetX = useMemo(
+    () => (width - grid.size * cellSize) / 2,
+    [width, grid.size, cellSize]
+  );
+  const gridOffsetY = useMemo(
+    () => (height - grid.size * cellSize) / 2,
+    [height, grid.size, cellSize]
+  );
+
+  return (
+    <pixiContainer x={x} y={y} data-testid="game-engine">
+      {/* Combat Grid Visualization */}
+      <pixiGraphics
+        draw={(g) => {
+          g.clear();
+
+          // Draw octagonal grid
+          g.stroke({ width: 1, color: KOREAN_COLORS.UI_BORDER, alpha: 0.3 });
+          for (let row = 0; row < grid.size; row++) {
+            for (let col = 0; col < grid.size; col++) {
+              if (grid.validPositions[row][col]) {
+                const x = gridOffsetX + col * cellSize;
+                const y = gridOffsetY + row * cellSize;
+                g.rect(x, y, cellSize, cellSize);
+              }
+            }
+          }
+          g.stroke();
+
+          // Highlight active positions
+          g.fill({ color: KOREAN_COLORS.PLAYER_1_COLOR, alpha: 0.3 });
+          g.rect(
+            gridOffsetX + player1Position.col * cellSize,
+            gridOffsetY + player1Position.row * cellSize,
+            cellSize,
+            cellSize
+          );
+          g.fill();
+
+          g.fill({ color: KOREAN_COLORS.PLAYER_2_COLOR, alpha: 0.3 });
+          g.rect(
+            gridOffsetX + player2Position.col * cellSize,
+            gridOffsetY + player2Position.row * cellSize,
+            cellSize,
+            cellSize
+          );
+          g.fill();
+        }}
+        data-testid="combat-grid"
+      />
+
+      {/* Game State Display */}
+      <pixiContainer x={10} y={10} data-testid="game-state-display">
         <pixiText
-          text={`턴 ${gameState.turnNumber}: ${
-            gameState.activePlayer === player1.id
+          text={`라운드 ${gameState.turnCount + 1} | ${
+            gameState.activePlayerIndex === 0
               ? player1.name.korean
               : player2.name.korean
-          }`}
+          }의 차례`}
           style={{
             fontSize: 16,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
+            fontWeight: "bold",
+          }}
+        />
+
+        <pixiText
+          text={`Phase: ${gameState.phase} | Active: Player ${
+            gameState.activePlayerIndex + 1
+          }`}
+          style={{
+            fontSize: 12,
+            fill: KOREAN_COLORS.TEXT_SECONDARY,
+          }}
+          y={20}
+        />
+      </pixiContainer>
+
+      {/* Combat Log Display */}
+      <pixiContainer x={10} y={height - 120} data-testid="combat-log-display">
+        <pixiText
+          text="전투 기록 - Combat Log"
+          style={{
+            fontSize: 14,
             fill: KOREAN_COLORS.ACCENT_GOLD,
             fontWeight: "bold",
           }}
         />
 
-        <pixiText
-          text={`단계: ${
-            gameState.turnPhase === "movement"
-              ? "이동"
-              : gameState.turnPhase === "action"
-              ? "행동"
-              : "해결"
-          }`}
-          style={{
-            fontSize: 12,
-            fill: KOREAN_COLORS.TEXT_PRIMARY,
-          }}
-          y={20}
-        />
-
-        <pixiText
-          text={`남은 행동: ${gameState.remainingActions}`}
-          style={{
-            fontSize: 12,
-            fill: KOREAN_COLORS.TEXT_SECONDARY,
-          }}
-          y={35}
-        />
-      </pixiContainer>
-
-      {/* Combat log display */}
-      <pixiContainer x={20} y={height - 120} data-testid="combat-log-display">
-        <pixiText
-          text="전투 기록:"
-          style={{
-            fontSize: 12,
-            fill: KOREAN_COLORS.ACCENT_CYAN,
-            fontWeight: "bold",
-          }}
-        />
-
-        {gameState.combatLog.slice(-4).map((entry, index) => (
+        {gameState.combatLog.slice(-5).map((entry, index) => (
           <pixiText
             key={index}
             text={entry}
@@ -683,10 +968,55 @@ export const GameEngine: React.FC<GameEngineProps> = ({
               fontSize: 10,
               fill: KOREAN_COLORS.TEXT_PRIMARY,
             }}
-            y={15 + index * 12}
+            y={20 + index * 15}
           />
         ))}
       </pixiContainer>
+
+      {/* AI Thinking Indicator */}
+      {gameState.aiThinking && (
+        <pixiContainer x={width - 150} y={10} data-testid="ai-thinking">
+          <pixiText
+            text="AI 사고 중... - AI Thinking..."
+            style={{
+              fontSize: 12,
+              fill: KOREAN_COLORS.WARNING_YELLOW,
+            }}
+          />
+        </pixiContainer>
+      )}
+
+      {/* Debug Information */}
+      {debugMode && (
+        <pixiContainer x={width - 200} y={50} data-testid="debug-info">
+          <pixiText
+            text={`P1 Pos: ${player1Position.row},${player1Position.col}`}
+            style={{
+              fontSize: 10,
+              fill: KOREAN_COLORS.TEXT_TERTIARY,
+            }}
+          />
+          <pixiText
+            text={`P2 Pos: ${player2Position.row},${player2Position.col}`}
+            style={{
+              fontSize: 10,
+              fill: KOREAN_COLORS.TEXT_TERTIARY,
+            }}
+            y={15}
+          />
+          <pixiText
+            text={`Distance: ${calculateDistance(
+              player1Position,
+              player2Position
+            ).toFixed(1)}`}
+            style={{
+              fontSize: 10,
+              fill: KOREAN_COLORS.TEXT_TERTIARY,
+            }}
+            y={30}
+          />
+        </pixiContainer>
+      )}
     </pixiContainer>
   );
 };
