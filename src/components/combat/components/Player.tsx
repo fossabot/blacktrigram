@@ -71,7 +71,7 @@ export const Player: React.FC<PlayerProps> = ({
     return (
       playerState.isBlocking ||
       playerState.isCountering ||
-      playerState.statusEffects.length > 0
+      (playerState.statusEffects?.length ?? 0) > 0
     );
   }, [
     playerState.isBlocking,
@@ -218,10 +218,11 @@ export const Player: React.FC<PlayerProps> = ({
     (g: PIXI.Graphics) => {
       g.clear();
 
-      if (playerState.statusEffects.length === 0) return;
+      const statusEffects = playerState.statusEffects ?? [];
+      if (statusEffects.length === 0) return;
 
       // Draw status effect indicators
-      playerState.statusEffects.forEach((effect, index) => {
+      statusEffects.forEach((effect, index) => {
         const effectX = 5 + index * 12;
         const effectY = height - 15;
 
@@ -427,6 +428,45 @@ export const Player: React.FC<PlayerProps> = ({
           anchor={0.5}
           data-testid={`player-${playerIndex}-unconscious`}
         />
+      )}
+
+      {/* Status Effects Display */}
+      {playerState.statusEffects && playerState.statusEffects.length > 0 && (
+        <pixiContainer x={12} y={height - 50}>
+          <pixiText
+            text="상태 효과 Status Effects"
+            style={{
+              fontSize: 9,
+              fill: KOREAN_COLORS.WARNING_YELLOW,
+              fontWeight: "bold",
+            }}
+          />
+          <pixiContainer y={12}>
+            {playerState.statusEffects.slice(0, 4).map((effect, index) => (
+              <pixiGraphics
+                key={effect.id}
+                draw={(g) => {
+                  g.clear();
+                  const effectColor =
+                    effect.type === "stun"
+                      ? KOREAN_COLORS.WARNING_YELLOW
+                      : effect.type === "poison"
+                      ? KOREAN_COLORS.POSITIVE_GREEN
+                      : KOREAN_COLORS.NEGATIVE_RED;
+
+                  // Effect icon background
+                  g.beginFill(effectColor, 0.8);
+                  g.drawRoundedRect(index * 25, 0, 20, 20, 4);
+                  g.endFill();
+
+                  // Border
+                  g.lineStyle(1, effectColor, 1.0);
+                  g.drawRoundedRect(index * 25, 0, 20, 20, 4);
+                }}
+              />
+            ))}
+          </pixiContainer>
+        </pixiContainer>
       )}
     </pixiContainer>
   );

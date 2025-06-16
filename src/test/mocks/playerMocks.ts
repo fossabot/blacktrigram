@@ -11,48 +11,33 @@ import { PlayerArchetype, TrigramStance, CombatState } from "../../types/enums";
 export function createMockPlayer(
   overrides: Partial<PlayerState> = {}
 ): PlayerState {
-  const defaultPlayer: PlayerState = {
-    id: "mock-player",
+  return {
+    id: "test-player",
     name: { korean: "테스트 플레이어", english: "Test Player" },
     archetype: PlayerArchetype.MUSA,
+    currentStance: TrigramStance.GEON,
     health: 100,
     maxHealth: 100,
     ki: 100,
     maxKi: 100,
     stamina: 100,
     maxStamina: 100,
-    energy: 100,
-    maxEnergy: 100,
-    attackPower: 75,
-    defense: 75,
-    speed: 75,
-    technique: 75,
-    pain: 0,
-    consciousness: 100,
     balance: 100,
-    momentum: 0,
-    currentStance: TrigramStance.GEON,
-    combatState: CombatState.IDLE,
-    position: { x: 0, y: 0 },
+    consciousness: 100,
+    pain: 0,
     isBlocking: false,
     isStunned: false,
     isCountering: false,
-    lastActionTime: 0,
-    recoveryTime: 0,
-    lastStanceChangeTime: 0,
     statusEffects: [],
-    activeEffects: [],
-    vitalPoints: [],
-    totalDamageReceived: 0,
-    totalDamageDealt: 0,
-    hitsTaken: 0,
-    hitsLanded: 0,
-    perfectStrikes: 0,
-    vitalPointHits: 0,
     experiencePoints: 0,
+    hitsLanded: 0,
+    hitsTaken: 0,
+    totalDamageDealt: 0,
+    totalDamageReceived: 0,
+    lastStanceChangeTime: 0,
+    position: { row: 3, col: 3 }, // Add default position
+    ...overrides,
   };
-
-  return { ...defaultPlayer, ...overrides };
 }
 
 /**
@@ -186,6 +171,21 @@ export function createWoundedMockPlayer(
   });
 }
 
+/**
+ * Creates a defeated mock player for testing victory conditions
+ */
+export function createDefeatedMockPlayer(
+  overrides: Partial<PlayerState> = {}
+): PlayerState {
+  return createMockPlayer({
+    health: 0,
+    consciousness: 0,
+    isStunned: true,
+    ...overrides,
+  });
+}
+
+export default createMockPlayer;
 /**
  * Creates a defeated mock player for testing victory conditions
  */

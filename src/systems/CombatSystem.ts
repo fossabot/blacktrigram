@@ -120,14 +120,39 @@ export class CombatSystem implements CombatSystemInterface {
   }
 
   /**
-   * Fix: Make applyCombatResult non-static instance method
+   * Apply combat result to update player states
    */
   applyCombatResult(
     result: CombatResult,
     attacker: PlayerState,
     defender: PlayerState
   ): { updatedAttacker: PlayerState; updatedDefender: PlayerState } {
-    return CombatSystem.applyCombatResult(result, attacker, defender);
+    const updatedAttacker: PlayerState = {
+      ...attacker,
+      ki: Math.max(0, attacker.ki - (result.technique?.kiCost || 0)),
+      stamina: Math.max(
+        0,
+        attacker.stamina - (result.technique?.staminaCost || 0)
+      ),
+      hitsLanded: (attacker.hitsLanded || 0) + (result.hit ? 1 : 0),
+      totalDamageDealt: (attacker.totalDamageDealt || 0) + result.damage,
+    };
+
+    const updatedDefender: PlayerState = {
+      ...defender,
+      health: Math.max(0, defender.health - result.damage),
+      consciousness: Math.max(0, defender.consciousness - result.damage * 0.1),
+      balance: Math.max(0, defender.balance - result.damage * 0.05),
+      pain: Math.min(100, (defender.pain || 0) + result.damage * 0.2),
+      hitsTaken: (defender.hitsTaken || 0) + (result.hit ? 1 : 0),
+      totalDamageReceived: (defender.totalDamageReceived || 0) + result.damage,
+      statusEffects: [
+        ...(defender.statusEffects || []),
+        ...(result.effects || []),
+      ],
+    };
+
+    return { updatedAttacker, updatedDefender };
   }
 
   /**

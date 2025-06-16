@@ -33,7 +33,7 @@ export class StanceManager {
     player: PlayerState,
     newStance: TrigramStance
   ): StanceTransitionResult {
-    // Check if stance is the same
+    // Check if stance is the same - Fix: Return proper cost structure
     if (player.currentStance === newStance) {
       return {
         success: true,
@@ -119,7 +119,7 @@ export class StanceManager {
     readonly stamina: number;
     readonly timeMilliseconds: number;
   } {
-    // Same stance has no cost
+    // Same stance has no cost - Fix: Actually return zero cost
     if (fromStance === toStance) {
       return { ki: 0, stamina: 0, timeMilliseconds: 0 };
     }
