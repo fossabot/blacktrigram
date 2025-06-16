@@ -1,169 +1,367 @@
-import type { PlayerState, TrigramTransitionCost } from "../../types";
-import { TrigramStance } from "../../types/enums";
-import { TrigramCalculator } from "./TrigramCalculator";
-import { PLAYER_ARCHETYPES_DATA } from "../../types/constants";
+import type { PlayerState } from "../../types/player";
+import type { TrigramStance } from "../../types/enums";
+import { TRIGRAM_DATA } from "../../types/constants/trigram";
+import { PLAYER_ARCHETYPES_DATA } from "../../types/constants/player";
 
-export interface StanceChangeResult {
+export interface StanceTransitionResult {
   readonly success: boolean;
-  readonly updatedPlayer: PlayerState;
-  readonly cost: TrigramTransitionCost;
-  readonly message?: string;
+  readonly cost?: {
+    readonly ki: number;
+    readonly stamina: number;
+    readonly timeMilliseconds: number;
+  };
+  readonly message: string;
+  readonly updatedPlayer?: PlayerState;
 }
 
-/**
- * Manager for trigram stance changes and state
- */
 export class StanceManager {
-  private readonly minTransitionInterval = 500;
-  private currentStance?: TrigramStance;
-
-  // Fix: Remove constructor parameter requirement
-  constructor() {
-    // No initialization needed
-  }
+  private activeStance: TrigramStance | null = null;
+  private lastTransitionTime = 0;
+  private readonly cooldownDuration = 1000; // 1 second cooldown
 
   /**
-   * Return the last stance we set (undefined if none yet)
+   * Gets the current active stance
    */
-  public getCurrent(): TrigramStance | undefined {
-    return this.currentStance;
+  getCurrent(): TrigramStance | null {
+    return this.activeStance;
   }
 
   /**
-   * Attempt to change stance
+   * Changes the player's stance if they have sufficient resources
    */
   changeStance(
     player: PlayerState,
     newStance: TrigramStance
-  ): StanceChangeResult {
+  ): StanceTransitionResult {
+    // Check if stance is the same
     if (player.currentStance === newStance) {
       return {
         success: true,
+        cost: { ki: 0, stamina: 0, timeMilliseconds: 0 },
+        message: "Already in this stance",
         updatedPlayer: player,
-        message: "이미 해당 자세입니다",
       };
     }
 
-    const cost = this.getStanceTransitionCost(
-      player.currentStance,
-      newStance,
-      player.archetype
-    );
-
-    // Fix: Ensure player has ki and stamina properties with defaults
-    const currentKi = player.ki ?? 100;
-    const currentStamina = player.stamina ?? 100;
-
-    if (currentKi < cost.ki || currentStamina < cost.stamina) {
+    // Check cooldown
+    const now = Date.now();
+    if (now - this.lastTransitionTime < this.cooldownDuration) {
       return {
         success: false,
+        message: "Stance change on cooldown",
         updatedPlayer: player,
-        message: "자세 변경에 필요한 기력이나 체력이 부족합니다",
       };
     }
+
+    // Calculate transition cost
+    const cost = this.getStanceTransitionCost(
+      player,
+      player.currentStance,
+      newStance
+    );
+
+    // Check if player has sufficient resources
+    if (player.ki < cost.ki || player.stamina < cost.stamina) {
+      return {
+        success: false,
+        message: "Insufficient resources for stance change",
+        updatedPlayer: player,
+      };
+    }
+
+    // Perform the stance change
+    this.activeStance = newStance;
+    this.lastTransitionTime = now;
 
     const updatedPlayer: PlayerState = {
       ...player,
       currentStance: newStance,
-      ki: Math.max(0, currentKi - cost.ki),
-      stamina: Math.max(0, currentStamina - cost.stamina),
+      ki: player.ki - cost.ki,
+      stamina: player.stamina - cost.stamina,
+      lastStanceChangeTime: now,
     };
 
     return {
       success: true,
+      cost,
+      message: `Successfully changed to ${newStance} stance`,
       updatedPlayer,
-      message: `${newStance} 자세로 변경되었습니다`,
     };
   }
 
   /**
-   * Check if player can change to the specified stance
+   * Checks if a stance change is possible
    */
   canChangeStance(player: PlayerState, newStance: TrigramStance): boolean {
+    if (player.currentStance === newStance) return true;
+
+    const now = Date.now();
+    if (now - this.lastTransitionTime < this.cooldownDuration) return false;
+
     const cost = this.getStanceTransitionCost(
+      player,
       player.currentStance,
-      newStance,
-      player
+      newStance
     );
 
-    // Check resources
-    if (player.ki < cost.ki || player.stamina < cost.stamina) {
-      return false;
-    }
-
-    // Check cooldown
-    const timeSinceLastChange = Date.now() - (player.lastStanceChangeTime || 0);
-    if (timeSinceLastChange < this.minTransitionInterval) {
-      return false;
-    }
-
-    // Check if player is stunned or incapacitated
-    if (player.isStunned || player.consciousness < 50) {
-      return false;
-    }
-
-    return true;
+    return player.ki >= cost.ki && player.stamina >= cost.stamina;
   }
 
   /**
-   * Calculate the cost of transitioning between stances
+   * Calculates the cost of transitioning between stances
    */
   getStanceTransitionCost(
+    player: PlayerState,
     fromStance: TrigramStance,
-    toStance: TrigramStance,
-    player: PlayerState
-  ): TrigramTransitionCost {
+    toStance: TrigramStance
+  ): {
+    readonly ki: number;
+    readonly stamina: number;
+    readonly timeMilliseconds: number;
+  } {
+    // Same stance has no cost
     if (fromStance === toStance) {
       return { ki: 0, stamina: 0, timeMilliseconds: 0 };
     }
 
-    const baseCost = { ki: 10, stamina: 15, timeMilliseconds: 500 };
-    const difficulty = TrigramCalculator.calculateTransitionDifficulty(
+    // Base transition cost
+    const baseCost = {
+      ki: 15,
+      stamina: 10,
+      timeMilliseconds: 500,
+    };
+
+    // Get stance data for difficulty calculation
+    const fromData = TRIGRAM_DATA[fromStance];
+    const toData = TRIGRAM_DATA[toStance];
+
+    if (!fromData || !toData) {
+      return baseCost;
+    }
+
+    // Calculate difficulty modifier based on stance compatibility
+    const difficultyModifier = this.calculateDifficultyModifier(
       fromStance,
       toStance
     );
-    const difficultyMultiplier = 1 + difficulty;
 
-    // Apply archetype modifiers
-    const archetypeData = PLAYER_ARCHETYPES_DATA[player.archetype];
+    // Apply archetype modifiers - Fix: Safe access with fallback
+    const archetypeData = PLAYER_ARCHETYPES_DATA[player.archetype] || {
+      favoredStances: [],
+    };
     const favoredStances = archetypeData.favoredStances || [];
     const archetypeModifier = favoredStances.includes(toStance) ? 0.8 : 1.0;
 
+    // Calculate final costs
+    const finalKiCost = Math.round(
+      baseCost.ki * difficultyModifier * archetypeModifier
+    );
+    const finalStaminaCost = Math.round(
+      baseCost.stamina * difficultyModifier * archetypeModifier
+    );
+    const finalTimeCost = Math.round(
+      baseCost.timeMilliseconds * difficultyModifier
+    );
+
     return {
-      ki: Math.floor(baseCost.ki * difficultyMultiplier * archetypeModifier),
-      stamina: Math.floor(
-        baseCost.stamina * difficultyMultiplier * archetypeModifier
-      ),
-      timeMilliseconds: Math.floor(
-        baseCost.timeMilliseconds * difficultyMultiplier
-      ),
+      ki: finalKiCost,
+      stamina: finalStaminaCost,
+      timeMilliseconds: finalTimeCost,
     };
   }
 
   /**
-   * Get optimal stance recommendation
+   * Gets the optimal stance against an opponent
    */
   getOptimalStance(player: PlayerState, opponent?: PlayerState): TrigramStance {
-    if (opponent) {
-      // Get counter stance against opponent
-      return TrigramCalculator.getCounterStance(opponent.currentStance);
-    }
-
-    // Default to archetype preferred stance
-    const archetypeData = PLAYER_ARCHETYPES_DATA[player.archetype];
+    // Get archetype preferences
+    const archetypeData = PLAYER_ARCHETYPES_DATA[player.archetype] || {
+      favoredStances: [],
+    };
     const favoredStances = archetypeData.favoredStances || [];
 
-    return favoredStances.length > 0 ? favoredStances[0] : TrigramStance.GEON; // Fix: Use enum value
+    // If no opponent, return first favored stance or default
+    if (!opponent) {
+      return favoredStances.length > 0
+        ? (favoredStances[0] as TrigramStance)
+        : player.currentStance;
+    }
+
+    // If player has a favored stance that's effective, use it
+    for (const stance of favoredStances) {
+      const effectiveness = this.calculateStanceEffectiveness(
+        stance as TrigramStance,
+        opponent.currentStance
+      );
+      if (effectiveness > 1.0) {
+        return stance as TrigramStance;
+      }
+    }
+
+    // Otherwise, find the most effective stance
+    const stances = Object.keys(TRIGRAM_DATA) as TrigramStance[];
+    let bestStance = player.currentStance;
+    let bestEffectiveness = 0;
+
+    for (const stance of stances) {
+      const effectiveness = this.calculateStanceEffectiveness(
+        stance,
+        opponent.currentStance
+      );
+
+      if (effectiveness > bestEffectiveness) {
+        bestEffectiveness = effectiveness;
+        bestStance = stance;
+      }
+    }
+
+    return bestStance;
   }
 
   /**
-   * Get all valid transitions from current stance
+   * Calculates difficulty modifier based on stance transition
    */
-  getValidTransitions(player: PlayerState): TrigramStance[] {
-    return Object.values(TrigramStance).filter(
-      (
-        stance // Fix: Use enum values
-      ) => this.canChangeStance(player, stance)
+  private calculateDifficultyModifier(
+    fromStance: TrigramStance,
+    toStance: TrigramStance
+  ): number {
+    // Define stance relationships (simplified)
+    const stanceOrder = [
+      "geon",
+      "tae",
+      "li",
+      "jin",
+      "son",
+      "gam",
+      "gan",
+      "gon",
+    ];
+
+    const fromIndex = stanceOrder.indexOf(fromStance);
+    const toIndex = stanceOrder.indexOf(toStance);
+
+    if (fromIndex === -1 || toIndex === -1) return 1.0;
+
+    // Adjacent stances are easier to transition to
+    const distance = Math.min(
+      Math.abs(toIndex - fromIndex),
+      stanceOrder.length - Math.abs(toIndex - fromIndex)
     );
+
+    switch (distance) {
+      case 1:
+        return 0.8; // Adjacent stances
+      case 2:
+        return 1.0; // Two steps away
+      case 3:
+        return 1.2; // Three steps away
+      case 4:
+        return 1.5; // Opposite stance (maximum difficulty)
+      default:
+        return 1.0;
+    }
+  }
+
+  /**
+   * Calculates stance effectiveness (simplified)
+   */
+  private calculateStanceEffectiveness(
+    attackerStance: TrigramStance,
+    defenderStance: TrigramStance
+  ): number {
+    // Simplified effectiveness matrix
+    const effectiveness: Record<string, Record<string, number>> = {
+      geon: {
+        tae: 1.2,
+        li: 1.0,
+        jin: 0.8,
+        son: 1.1,
+        gam: 0.9,
+        gan: 1.3,
+        gon: 0.7,
+      },
+      tae: {
+        geon: 0.8,
+        li: 1.2,
+        jin: 1.0,
+        son: 0.9,
+        gam: 1.1,
+        gan: 0.7,
+        gon: 1.3,
+      },
+      li: {
+        geon: 1.0,
+        tae: 0.8,
+        jin: 1.2,
+        son: 1.3,
+        gam: 0.7,
+        gan: 0.9,
+        gon: 1.1,
+      },
+      jin: {
+        geon: 1.2,
+        tae: 1.0,
+        li: 0.8,
+        son: 0.7,
+        gam: 1.3,
+        gan: 1.1,
+        gon: 0.9,
+      },
+      son: {
+        geon: 0.9,
+        tae: 1.1,
+        li: 0.7,
+        jin: 1.3,
+        gam: 1.2,
+        gan: 1.0,
+        gon: 0.8,
+      },
+      gam: {
+        geon: 1.1,
+        tae: 0.9,
+        li: 1.3,
+        jin: 0.7,
+        son: 0.8,
+        gan: 1.2,
+        gon: 1.0,
+      },
+      gan: {
+        geon: 0.7,
+        tae: 1.3,
+        li: 1.1,
+        jin: 0.9,
+        son: 1.0,
+        gam: 0.8,
+        gan: 1.2,
+      },
+      gon: {
+        geon: 1.3,
+        tae: 0.7,
+        li: 0.9,
+        jin: 1.1,
+        son: 1.2,
+        gam: 1.0,
+        gan: 0.8,
+      },
+    };
+
+    return effectiveness[attackerStance]?.[defenderStance] || 1.0;
+  }
+
+  /**
+   * Gets the current active stance
+   */
+  getActiveStance(): TrigramStance | null {
+    return this.activeStance;
+  }
+
+  /**
+   * Resets the stance manager
+   */
+  reset(): void {
+    this.activeStance = null;
+    this.lastTransitionTime = 0;
   }
 }
+
+export const stanceManager = new StanceManager();

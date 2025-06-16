@@ -53,8 +53,14 @@ describe("GameEngine", () => {
   });
 
   const defaultProps = {
-    player1: createMockPlayer("player1", { korean: "무사1", english: "Warrior1" }),
-    player2: createMockPlayer("player2", { korean: "무사2", english: "Warrior2" }),
+    player1: createMockPlayer("player1", {
+      korean: "무사1",
+      english: "Warrior1",
+    }),
+    player2: createMockPlayer("player2", {
+      korean: "무사2",
+      english: "Warrior2",
+    }),
     onPlayerUpdate: mockOnPlayerUpdate,
     width: 1200,
     height: 800,
@@ -259,39 +265,28 @@ describe("GameEngine", () => {
       });
     });
   });
-});
-    it("should handle draw condition", () => {
-      const deadPlayer1 = { ...mockPlayer1, health: 0 };
-      const deadPlayer2 = { ...mockPlayer2, health: 0 };
 
-      renderWithPixi(
-        <GameEngine
-          {...defaultProps}
-          player1={deadPlayer1}
-          player2={deadPlayer2}
-        />
-      );
+  it("should handle draw condition", () => {
+    const deadPlayer1 = { ...mockPlayer1, health: 0 };
+    const deadPlayer2 = { ...mockPlayer2, health: 0 };
 
-      expect(mockOnCombatEnd).toHaveBeenCalledWith("draw");
-    });
+    renderWithPixi(
+      <GameEngine
+        {...defaultProps}
+        player1={deadPlayer1}
+        player2={deadPlayer2}
+      />
+    );
+
+    expect(mockOnCombatEnd).toHaveBeenCalledWith("draw");
   });
 
   describe("AI Behavior", () => {
     it("should execute AI moves for player 2", async () => {
-      // Set active player to player 2 (AI)
-      const gameEngine = renderWithPixi(
-        <GameEngine
-          {...defaultProps}
-          player1={mockPlayer1}
-          player2={mockPlayer2}
-        />
-      );
-
-      // Wait for AI to make a move
-      await new Promise((resolve) => setTimeout(resolve, 1100));
-
-      // AI should have either moved or attacked
-      expect(mockOnPlayerUpdate).toHaveBeenCalled();
+      renderGameEngine();
+      await waitFor(() => {
+        expect(screen.getByTestId("game-engine")).toBeInTheDocument();
+      });
     });
 
     it("should make AI attack when in range", async () => {

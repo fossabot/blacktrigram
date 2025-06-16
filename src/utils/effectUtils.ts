@@ -71,16 +71,19 @@ export function getEffectText(type: HitEffectType): string {
 /**
  * Converts a hit effect to display hit effect with animation properties
  */
-export function createDisplayHitEffect(hitEffect: HitEffect, currentTime: number): DisplayHitEffect {
+export function createDisplayHitEffect(
+  hitEffect: HitEffect,
+  currentTime: number
+): DisplayHitEffect {
   const elapsed = currentTime - hitEffect.startTime;
   const progress = Math.min(elapsed / hitEffect.duration, 1.0);
 
   // Animation curves for different properties
   const opacity = Math.max(0, 1.0 - progress);
-  const scale = 1.0 + (progress * 0.5); // Grows by 50% over time
+  const scale = 1.0 + progress * 0.5; // Grows by 50% over time
   const displayAlpha = opacity * 0.8; // Slightly more transparent
-  const displayY = hitEffect.position?.y || 0 - (progress * 30); // Floats upward
-  const displaySize = 12 + (hitEffect.intensity * 8); // Size based on intensity
+  const displayY = hitEffect.position?.y || 0 - progress * 30; // Floats upward
+  const displaySize = 12 + hitEffect.intensity * 8; // Size based on intensity
 
   return {
     ...hitEffect,
@@ -124,7 +127,10 @@ export function getStatusEffectDescription(
   type: StatusEffect["type"],
   intensity: EffectIntensity
 ): KoreanText {
-  const descriptions: Record<StatusEffect["type"], Record<EffectIntensity, KoreanText>> = {
+  const descriptions: Record<
+    StatusEffect["type"],
+    Record<EffectIntensity, KoreanText>
+  > = {
     stun: {
       low: { korean: "가벼운 기절", english: "Light Stun" },
       medium: { korean: "기절", english: "Stun" },
@@ -163,7 +169,12 @@ export function getStatusEffectDescription(
     },
   };
 
-  return descriptions[type]?.[intensity] || { korean: "알 수 없는 효과", english: "Unknown Effect" };
+  return (
+    descriptions[type]?.[intensity] || {
+      korean: "알 수 없는 효과",
+      english: "Unknown Effect",
+    }
+  );
 }
 
 /**
@@ -193,14 +204,20 @@ export function getStatusEffectColor(type: StatusEffect["type"]): number {
 /**
  * Calculates if a status effect has expired
  */
-export function isStatusEffectExpired(effect: StatusEffect, currentTime: number): boolean {
+export function isStatusEffectExpired(
+  effect: StatusEffect,
+  currentTime: number
+): boolean {
   return currentTime >= effect.endTime;
 }
 
 /**
  * Gets remaining duration for a status effect in seconds
  */
-export function getStatusEffectRemainingDuration(effect: StatusEffect, currentTime: number): number {
+export function getStatusEffectRemainingDuration(
+  effect: StatusEffect,
+  currentTime: number
+): number {
   const remaining = Math.max(0, effect.endTime - currentTime);
   return Math.round(remaining / 1000);
 }
@@ -217,13 +234,13 @@ export function calculateTrigramEffectIntensity(
   // Effects are modified based on trigram relationships
   const stanceMultipliers: Record<string, number> = {
     geon: 1.2, // Heaven - Strong effects
-    tae: 0.9,  // Lake - Gentle effects
-    li: 1.1,   // Fire - Intense effects
-    jin: 1.3,  // Thunder - Shocking effects
-    son: 0.8,  // Wind - Light effects
-    gam: 1.0,  // Water - Balanced effects
-    gan: 0.7,  // Mountain - Defensive effects
-    gon: 1.1,  // Earth - Grounding effects
+    tae: 0.9, // Lake - Gentle effects
+    li: 1.1, // Fire - Intense effects
+    jin: 1.3, // Thunder - Shocking effects
+    son: 0.8, // Wind - Light effects
+    gam: 1.0, // Water - Balanced effects
+    gan: 0.7, // Mountain - Defensive effects
+    gon: 1.1, // Earth - Grounding effects
   };
 
   const attackerMultiplier = stanceMultipliers[attackerStance] || 1.0;
@@ -241,15 +258,18 @@ export function updateDisplayEffects(
   currentTime: number
 ): DisplayHitEffect[] {
   return effects
-    .filter(effect => !isEffectExpired(effect, currentTime))
-    .map(effect => createDisplayHitEffect(effect, currentTime));
+    .filter((effect) => !isEffectExpired(effect, currentTime))
+    .map((effect) => createDisplayHitEffect(effect, currentTime));
 }
 
 /**
  * Checks if an effect has expired
  */
-export function isEffectExpired(effect: HitEffect, currentTime: number): boolean {
-  return currentTime >= (effect.startTime + effect.duration);
+export function isEffectExpired(
+  effect: HitEffect,
+  currentTime: number
+): boolean {
+  return currentTime >= effect.startTime + effect.duration;
 }
 
 /**
@@ -259,40 +279,7 @@ export function removeExpiredEffects<T extends HitEffect>(
   effects: readonly T[],
   currentTime: number
 ): T[] {
-  return effects.filter(effect => !isEffectExpired(effect, currentTime));
-}
-      moderate: { korean: "혼란", english: "Confusion" },
-      high: { korean: "심한 혼란", english: "Severe Confusion" },
-      severe: { korean: "심한 혼란", english: "Severe Confusion" },
-      critical: { korean: "완전 혼란", english: "Complete Confusion" },
-      extreme: { korean: "완전 혼란", english: "Complete Confusion" },
-      low: { korean: "약한 혼란", english: "Weak Confusion" },
-    },
-    vulnerability: {
-      weak: { korean: "약간 취약", english: "Slightly Vulnerable" },
-      minor: { korean: "경미한 취약", english: "Minor Vulnerability" },
-      medium: { korean: "취약", english: "Vulnerable" },
-      moderate: { korean: "취약", english: "Vulnerable" },
-      high: { korean: "매우 취약", english: "Very Vulnerable" },
-      severe: { korean: "매우 취약", english: "Very Vulnerable" },
-      critical: { korean: "극도로 취약", english: "Extremely Vulnerable" },
-      extreme: { korean: "극도로 취약", english: "Extremely Vulnerable" },
-      low: { korean: "약한 취약", english: "Weak Vulnerability" },
-    },
-    stamina_drain: {
-      weak: { korean: "체력 소모", english: "Stamina Drain" },
-      minor: { korean: "경미한 체력 소모", english: "Minor Stamina Drain" },
-      medium: { korean: "체력 고갈", english: "Stamina Depletion" },
-      moderate: { korean: "체력 고갈", english: "Stamina Depletion" },
-      high: { korean: "심한 체력 고갈", english: "Severe Stamina Loss" },
-      severe: { korean: "심한 체력 고갈", english: "Severe Stamina Loss" },
-      critical: { korean: "완전 체력 고갈", english: "Complete Stamina Loss" },
-      extreme: { korean: "완전 체력 고갈", english: "Complete Stamina Loss" },
-      low: { korean: "약한 체력 소모", english: "Weak Stamina Drain" },
-    },
-  };
-
-  return descriptions[type]?.[intensity] || { korean: "알 수 없는 효과", english: "Unknown Effect" };
+  return effects.filter((effect) => !isEffectExpired(effect, currentTime));
 }
 
 /**
@@ -467,15 +454,6 @@ export function groupEffectsByType(
       effectsByType.set(effect.type, []);
     }
     effectsByType.get(effect.type)!.push(effect);
-  }
-
-  return effectsByType;
-}
-    const effectType = effect.type as EffectType;
-    if (!effectsByType.has(effectType)) {
-      effectsByType.set(effectType, []);
-    }
-    effectsByType.get(effectType)!.push(effect);
   }
 
   return effectsByType;

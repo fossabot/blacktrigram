@@ -11,6 +11,7 @@ export interface PlayerState {
   readonly id: string;
   readonly name: KoreanText;
   readonly archetype: PlayerArchetype;
+  readonly currentStance: TrigramStance;
 
   // Combat stats
   readonly health: number;
@@ -33,7 +34,6 @@ export interface PlayerState {
   readonly momentum: number;
 
   // Combat state
-  readonly currentStance: TrigramStance;
   readonly combatState: CombatState;
   readonly position: Position;
   readonly isBlocking: boolean;
@@ -41,7 +41,7 @@ export interface PlayerState {
   readonly isCountering: boolean;
   readonly lastActionTime: number;
   readonly recoveryTime: number;
-  readonly lastStanceChangeTime: number;
+  readonly lastStanceChangeTime: number; // Add missing property
 
   // Status and effects
   readonly statusEffects: readonly StatusEffect[];

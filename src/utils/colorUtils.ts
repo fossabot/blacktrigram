@@ -3,7 +3,21 @@
  * @description Helper functions for color manipulation, Korean traditional colors, and UI theming
  */
 
+import { PlayerArchetype } from "../types/enums";
 import { KOREAN_COLORS } from "../types/constants";
+
+/**
+ * Color utility functions for Korean martial arts game aesthetics
+ * Provides consistent color management with Korean traditional color theory
+ */
+
+export interface ArchetypeColorScheme {
+  readonly primary: number;
+  readonly secondary: number;
+  readonly accent: number;
+  readonly background: number;
+  readonly text: number;
+}
 
 /**
  * Converts hex color to RGB values
@@ -81,55 +95,66 @@ export function getTrigramColor(trigram: string): number {
 }
 
 /**
- * Gets health-based color
- */
-export function getHealthColor(healthPercentage: number): number {
-  if (healthPercentage > 0.7) return KOREAN_COLORS.POSITIVE_GREEN;
-  if (healthPercentage > 0.4) return KOREAN_COLORS.WARNING_YELLOW;
-  if (healthPercentage > 0.2) return KOREAN_COLORS.WARNING_ORANGE;
-  return KOREAN_COLORS.NEGATIVE_RED;
-}
-
-/**
  * Gets archetype-specific color scheme
  */
-export function getArchetypeColorScheme(archetype: string): {
-  primary: number;
-  secondary: number;
-  accent: number;
-} {
-  const schemes: Record<
-    string,
-    { primary: number; secondary: number; accent: number }
-  > = {
-    musa: {
-      primary: KOREAN_COLORS.TRIGRAM_GEON_PRIMARY,
-      secondary: KOREAN_COLORS.TRIGRAM_GEON_SECONDARY,
-      accent: KOREAN_COLORS.ACCENT_GOLD,
-    },
-    amsalja: {
-      primary: KOREAN_COLORS.TRIGRAM_SON_PRIMARY,
-      secondary: KOREAN_COLORS.TRIGRAM_SON_SECONDARY,
-      accent: KOREAN_COLORS.ACCENT_PURPLE,
-    },
-    hacker: {
-      primary: KOREAN_COLORS.PRIMARY_CYAN,
-      secondary: KOREAN_COLORS.SECONDARY_CYAN,
-      accent: KOREAN_COLORS.ACCENT_CYAN,
-    },
-    jeongbo_yowon: {
-      primary: KOREAN_COLORS.TRIGRAM_TAE_PRIMARY,
-      secondary: KOREAN_COLORS.TRIGRAM_TAE_SECONDARY,
-      accent: KOREAN_COLORS.ACCENT_BLUE,
-    },
-    jojik_pokryeokbae: {
-      primary: KOREAN_COLORS.TRIGRAM_JIN_PRIMARY,
-      secondary: KOREAN_COLORS.TRIGRAM_JIN_SECONDARY,
-      accent: KOREAN_COLORS.ACCENT_RED,
-    },
-  };
+export function getArchetypeColors(
+  archetype: PlayerArchetype
+): ArchetypeColorScheme {
+  switch (archetype) {
+    case PlayerArchetype.MUSA:
+      return {
+        primary: KOREAN_COLORS.TRIGRAM_GEON_PRIMARY,
+        secondary: KOREAN_COLORS.TRIGRAM_GEON_SECONDARY,
+        accent: KOREAN_COLORS.ACCENT_GOLD,
+        background: KOREAN_COLORS.UI_BACKGROUND_DARK,
+        text: KOREAN_COLORS.TEXT_PRIMARY,
+      };
 
-  return schemes[archetype.toLowerCase()] || schemes.musa;
+    case PlayerArchetype.AMSALJA:
+      return {
+        primary: KOREAN_COLORS.TRIGRAM_SON_PRIMARY,
+        secondary: KOREAN_COLORS.TRIGRAM_SON_SECONDARY,
+        accent: KOREAN_COLORS.ACCENT_PURPLE,
+        background: KOREAN_COLORS.UI_BACKGROUND_DARK,
+        text: KOREAN_COLORS.TEXT_PRIMARY,
+      };
+
+    case PlayerArchetype.HACKER:
+      return {
+        primary: KOREAN_COLORS.PRIMARY_CYAN,
+        secondary: KOREAN_COLORS.ACCENT_CYAN,
+        accent: KOREAN_COLORS.ACCENT_BLUE,
+        background: KOREAN_COLORS.UI_BACKGROUND_DARK,
+        text: KOREAN_COLORS.TEXT_PRIMARY,
+      };
+
+    case PlayerArchetype.JEONGBO_YOWON:
+      return {
+        primary: KOREAN_COLORS.TRIGRAM_TAE_PRIMARY,
+        secondary: KOREAN_COLORS.TRIGRAM_TAE_SECONDARY,
+        accent: KOREAN_COLORS.ACCENT_MAGENTA,
+        background: KOREAN_COLORS.UI_BACKGROUND_DARK,
+        text: KOREAN_COLORS.TEXT_PRIMARY,
+      };
+
+    case PlayerArchetype.JOJIK_POKRYEOKBAE:
+      return {
+        primary: KOREAN_COLORS.TRIGRAM_JIN_PRIMARY,
+        secondary: KOREAN_COLORS.TRIGRAM_JIN_SECONDARY,
+        accent: KOREAN_COLORS.ACCENT_RED,
+        background: KOREAN_COLORS.UI_BACKGROUND_DARK,
+        text: KOREAN_COLORS.TEXT_PRIMARY,
+      };
+
+    default:
+      return {
+        primary: KOREAN_COLORS.NEUTRAL_GRAY,
+        secondary: KOREAN_COLORS.UI_GRAY,
+        accent: KOREAN_COLORS.ACCENT_GOLD,
+        background: KOREAN_COLORS.UI_BACKGROUND_DARK,
+        text: KOREAN_COLORS.TEXT_PRIMARY,
+      };
+  }
 }
 
 /**
@@ -199,4 +224,43 @@ export function generateKoreanPalette(baseColor: number): {
     tertiary: hexToPixiColor(blendColors(baseHex, "#000000", 0.3)),
     accent: hexToPixiColor(blendColors(baseHex, "#FFD700", 0.5)), // Gold accent
   };
+}
+
+/**
+ * Gets health-based color with Korean aesthetic
+ */
+export function getHealthColor(healthPercentage: number): number {
+  if (healthPercentage > 0.7) return KOREAN_COLORS.POSITIVE_GREEN;
+  if (healthPercentage > 0.4) return KOREAN_COLORS.WARNING_YELLOW;
+  if (healthPercentage > 0.2) return KOREAN_COLORS.WARNING_ORANGE;
+  return KOREAN_COLORS.NEGATIVE_RED;
+}
+
+/**
+ * Gets combat state color
+ */
+export function getCombatStateColor(state: string): number {
+  switch (state) {
+    case "attacking":
+      return KOREAN_COLORS.ACCENT_RED;
+    case "defending":
+      return KOREAN_COLORS.ACCENT_BLUE;
+    case "stunned":
+      return KOREAN_COLORS.WARNING_YELLOW;
+    case "countering":
+      return KOREAN_COLORS.ACCENT_PURPLE;
+    default:
+      return KOREAN_COLORS.NEUTRAL_GRAY;
+  }
+}
+
+/**
+ * Applies Korean traditional color harmony principles
+ */
+export function applyKoreanColorHarmony(
+  baseColor: number,
+  intensity: number = 1.0
+): number {
+  // Implement traditional Korean color theory adjustments
+  return baseColor;
 }
