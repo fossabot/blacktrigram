@@ -13,10 +13,10 @@ import type { KoreanTechnique } from "../../types/combat";
 import { CombatArena } from "./components/CombatArena";
 import { CombatControls } from "./components/CombatControls";
 import { CombatHUD } from "./components/CombatHUD";
-import { HitEffectsLayer } from "./components/HitEffectsLayer"; // moved from ui
+import { HitEffectsLayer } from "./components/HitEffectsLayer";
 import { CombatStats, PlayerStatusPanel } from "./components/";
-import { GameEngine } from "./components/GameEngine"; // moved from game
-import { DojangBackground } from "../game/DojangBackground"; // still shared
+import { GameEngine } from "./components/engine/GameEngine";
+import { DojangBackground } from "./components/backgrounds/DojangBackground";
 import {
   ResponsivePixiContainer,
   ResponsivePixiButton,
