@@ -5,9 +5,10 @@ import React, {
   useReducer,
   useEffect,
 } from "react";
+import { extend } from "@pixi/react";
+import { Container, Graphics, Text } from "pixi.js";
 import type { CombatScreenProps } from "../../types/combat";
 import type { PlayerState } from "../../types/player";
-import type { Position } from "../../types/common";
 import type { HitEffect } from "../../types/effects";
 import type { KoreanTechnique } from "../../types/combat";
 import { CombatArena } from "./components/CombatArena";
@@ -15,8 +16,8 @@ import { CombatControls } from "./components/CombatControls";
 import { CombatHUD } from "./components/CombatHUD";
 import { HitEffectsLayer } from "./components/HitEffectsLayer";
 import { CombatStats, PlayerStatusPanel } from "./components/";
-import { GameEngine } from "./components/engine/GameEngine";
-import { DojangBackground } from "./components/backgrounds/DojangBackground";
+import { GameEngine } from "./components/GameEngine";
+import { DojangBackground } from "./components/DojangBackground";
 import {
   ResponsivePixiContainer,
   ResponsivePixiButton,
@@ -24,6 +25,9 @@ import {
 } from "../ui/base/ResponsivePixiComponents";
 import { KOREAN_COLORS } from "../../types/constants";
 import { TrigramStance } from "../../types/enums";
+
+// Extend PixiJS components for CombatScreen
+extend({ Container, Graphics, Text });
 
 interface CombatState {
   readonly phase: "preparation" | "combat" | "victory" | "defeat" | "paused";
@@ -317,11 +321,54 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
     [combatState.activePlayer, handleAttack]
   );
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (combatState.phase === "paused") return;
+
+      const key = event.key;
+
+      // Trigram stance changes (1-8 keys for 8 trigrams)
+      if (key >= "1" && key <= "8") {
+        const stanceIndex = parseInt(key) - 1;
+        const stances = Object.values(TrigramStance);
+        if (stances[stanceIndex]) {
+          handleStanceSwitch(stances[stanceIndex]);
+        }
+      }
+
+      // Combat actions
+      switch (key) {
+        case " ": // Space for attack
+          event.preventDefault();
+          handleAttack();
+          break;
+        case "Shift": // Shift for defend
+          event.preventDefault();
+          handleDefend();
+          break;
+        case "Escape": // Escape for pause
+          event.preventDefault();
+          handlePauseToggle();
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [
+    combatState.phase,
+    handleStanceSwitch,
+    handleAttack,
+    handleDefend,
+    handlePauseToggle,
+  ]);
+
   return (
     <ResponsivePixiContainer x={x} y={y} data-testid="combat-screen">
-      {/* Use combat-focused GameEngine */}
+      {/* Fixed GameEngine with proper props */}
       <GameEngine
-        players={validatedPlayers}
+        player1={validatedPlayers[0]}
+        player2={validatedPlayers[1]}
         onPlayerUpdate={(playerId, updates) => {
           const playerIndex = validatedPlayers.findIndex(
             (p) => p.id === playerId
@@ -330,16 +377,6 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
             onPlayerUpdate(playerIndex, updates);
           }
         }}
-        onCombatResult={(result) => {
-          // Handle combat results
-          console.log("Combat result:", result);
-        }}
-        onGameEvent={(event, data) => {
-          // Handle game events
-          console.log("Game event:", event, data);
-        }}
-        isPaused={combatState.phase === "paused"}
-        gameMode="versus"
         width={width}
         height={height}
       />
@@ -498,6 +535,30 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
           />
         </ResponsivePixiContainer>
       )}
+
+      {/* Add visual instruction overlay for Korean controls */}
+      <ResponsivePixiContainer
+        x={10}
+        y={height - 120}
+        data-testid="korean-controls-guide"
+      >
+        <pixiText
+          text="조작: 1-8 자세변경, 스페이스 공격, 시프트 방어"
+          style={{
+            fontSize: isMobile ? 10 : 12,
+            fill: KOREAN_COLORS.TEXT_SECONDARY,
+            fontFamily: "Noto Sans KR",
+          }}
+        />
+        <pixiText
+          text="Controls: 1-8 Stance, Space Attack, Shift Defend"
+          style={{
+            fontSize: isMobile ? 8 : 10,
+            fill: KOREAN_COLORS.TEXT_TERTIARY,
+          }}
+          y={15}
+        />
+      </ResponsivePixiContainer>
     </ResponsivePixiContainer>
   );
 };

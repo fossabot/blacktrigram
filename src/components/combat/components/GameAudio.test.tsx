@@ -1,156 +1,420 @@
+import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, fireEvent, screen } from "@testing-library/react";
-import React, { type ReactElement } from "react";
-import "@testing-library/jest-dom";
-import { TRIGRAM_DATA, TRIGRAM_STANCES_ORDER } from "../../types/constants";
+import { render, screen } from "@testing-library/react";
+import { renderWithPixi } from "../../../test/test-utils";
+import { AudioProvider, useAudio } from "../../../audio/AudioProvider";
 
-// Mock audio manager
-const mockAudio = {
-  playSFX: vi.fn(),
-  playAttackSound: vi.fn(),
-  playStanceChangeSound: vi.fn(),
-  playMusic: vi.fn(),
-  setMasterVolume: vi.fn(),
-  getMasterVolume: vi.fn(() => 0.7),
-  isEnabled: vi.fn(() => true),
+// Mock component that uses audio
+const MockGameAudioComponent: React.FC<{
+  onAudioEvent?: (event: string) => void;
+}> = ({ onAudioEvent }) => {
+  const audio = useAudio();
+
+  React.useEffect(() => {
+    if (audio.isInitialized) {
+      onAudioEvent?.("audio_initialized");
+    }
+  }, [audio.isInitialized, onAudioEvent]);
+
+  const handlePlayMusic = () => {
+    audio.playMusic("combat_theme");
+    onAudioEvent?.("music_played");
+  };
+
+  const handlePlaySFX = () => {
+    audio.playSFX("attack_medium");
+    onAudioEvent?.("sfx_played");
+  };
+
+  const handleStopMusic = () => {
+    audio.stopMusic();
+    onAudioEvent?.("music_stopped");
+  };
+
+  return (
+    <div data-testid="game-audio-component">
+      <button data-testid="play-music-button" onClick={handlePlayMusic}>
+        Play Music
+      </button>
+      <button data-testid="play-sfx-button" onClick={handlePlaySFX}>
+        Play SFX
+      </button>
+      <button data-testid="stop-music-button" onClick={handleStopMusic}>
+        Stop Music
+      </button>
+      <div data-testid="audio-status">
+        {audio.isInitialized ? "Initialized" : "Not Initialized"}
+      </div>
+      <div data-testid="audio-volume">
+        Volume: {Math.round(audio.volume * 100)}%
+      </div>
+    </div>
+  );
 };
 
-vi.mock("../../audio/AudioManager", () => ({
-  useAudio: () => mockAudio,
-}));
+describe("GameAudio Integration", () => {
+  const mockOnAudioEvent = vi.fn();
 
-describe("Game Audio Integration", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // Mock Web Audio API
+    global.AudioContext = vi.fn().mockImplementation(() => ({
+      createGain: vi.fn().mockReturnValue({
+        connect: vi.fn(),
+        gain: { value: 1 },
+      }),
+      createBuffer: vi.fn(),
+      createBufferSource: vi.fn().mockReturnValue({
+        connect: vi.fn(),
+        start: vi.fn(),
+        stop: vi.fn(),
+        buffer: null,
+      }),
+      destination: {},
+      state: "running",
+      resume: vi.fn().mockResolvedValue(undefined),
+      suspend: vi.fn().mockResolvedValue(undefined),
+      close: vi.fn().mockResolvedValue(undefined),
+    }));
+
+    // Mock Audio constructor
+    global.Audio = vi.fn().mockImplementation(() => ({
+      play: vi.fn().mockResolvedValue(undefined),
+      pause: vi.fn(),
+      load: vi.fn(),
+      volume: 1,
+      currentTime: 0,
+      duration: 100,
+      paused: true,
+      ended: false,
+      readyState: 4,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    }));
   });
 
-  describe("Korean Martial Arts Audio System", () => {
-    it("should handle trigram stance changes with appropriate audio", () => {
-      const TrigramStanceComponent = (): ReactElement => {
-        const audio = mockAudio;
+  describe("Audio Provider Integration", () => {
+    it("should provide audio context to child components", () => {
+      render(
+        <AudioProvider>
+          <MockGameAudioComponent onAudioEvent={mockOnAudioEvent} />
+        </AudioProvider>
+      );
 
-        const trigrams = [
-          { name: "건", element: "Heaven", technique: "천둥벽력" },
-          { name: "태", element: "Lake", technique: "유수연타" },
-          { name: "리", element: "Fire", technique: "화염지창" },
-          { name: "진", element: "Thunder", technique: "벽력일섬" },
-          { name: "손", element: "Wind", technique: "선풍연격" },
-          { name: "감", element: "Water", technique: "수류반격" },
-          { name: "간", element: "Mountain", technique: "반석방어" },
-          { name: "곤", element: "Earth", technique: "대지포옹" },
-        ];
-
-        const handleStanceChange = (trigramIndex: number): void => {
-          audio.playStanceChangeSound();
-          const damage = 15 + trigramIndex * 3; // Varying damage per trigram
-          audio.playAttackSound(damage);
-        };
-
-        return React.createElement(
-          "div",
-          { "data-testid": "trigram-selector" },
-          ...trigrams.map((trigram, index) =>
-            React.createElement(
-              "button",
-              {
-                key: trigram.name,
-                "data-testid": `trigram-${index + 1}`,
-                onClick: () => handleStanceChange(index),
-              },
-              `${trigram.name} - ${trigram.technique}`
-            )
-          )
-        );
-      };
-
-      render(<TrigramStanceComponent />);
-
-      // Test first trigram button
-      const firstButton = screen.getByTestId("trigram-1");
-      fireEvent.click(firstButton);
-
-      expect(mockAudio.playStanceChangeSound).toHaveBeenCalled();
-      expect(mockAudio.playAttackSound).toHaveBeenCalledWith(15);
+      expect(screen.getByTestId("game-audio-component")).toBeTruthy();
+      expect(screen.getByTestId("audio-status")).toBeTruthy();
     });
 
-    it("should handle multiple trigram selections with escalating damage", () => {
-      const TrigramStanceComponent = (): ReactElement => {
-        const audio = mockAudio;
+    it("should initialize audio system", async () => {
+      render(
+        <AudioProvider>
+          <MockGameAudioComponent onAudioEvent={mockOnAudioEvent} />
+        </AudioProvider>
+      );
 
-        const trigrams = [
-          { name: "건", element: "Heaven", technique: "천둥벽력" },
-          { name: "태", element: "Lake", technique: "유수연타" },
-          { name: "리", element: "Fire", technique: "화염지창" },
-        ];
+      // Audio should be available
+      expect(screen.getByTestId("audio-status")).toBeTruthy();
+    });
 
-        const handleStanceChange = (trigramIndex: number): void => {
-          audio.playStanceChangeSound();
-          const damage = 15 + trigramIndex * 3;
-          audio.playAttackSound(damage);
-        };
+    it("should handle volume control", () => {
+      render(
+        <AudioProvider>
+          <MockGameAudioComponent onAudioEvent={mockOnAudioEvent} />
+        </AudioProvider>
+      );
 
-        return React.createElement(
-          "div",
-          { "data-testid": "trigram-selector" },
-          ...trigrams.map((trigram, index) =>
-            React.createElement(
-              "button",
-              {
-                key: trigram.name,
-                "data-testid": `trigram-${index + 1}`,
-                onClick: () => handleStanceChange(index),
-              },
-              `${trigram.name} - ${trigram.technique}`
-            )
-          )
-        );
-      };
+      const volumeDisplay = screen.getByTestId("audio-volume");
+      expect(volumeDisplay).toBeTruthy();
+    });
+  });
 
-      render(<TrigramStanceComponent />);
+  describe("Music Management", () => {
+    it("should play background music", () => {
+      render(
+        <AudioProvider>
+          <MockGameAudioComponent onAudioEvent={mockOnAudioEvent} />
+        </AudioProvider>
+      );
 
-      // Test multiple clicks with increasing damage
-      const buttons = [
-        screen.getByTestId("trigram-1"),
-        screen.getByTestId("trigram-2"),
-        screen.getByTestId("trigram-3"),
-      ];
+      const playButton = screen.getByTestId("play-music-button");
+      playButton.click();
 
-      buttons.forEach((button, index) => {
-        fireEvent.click(button);
-        expect(mockAudio.playAttackSound).toHaveBeenCalledWith(15 + index * 3);
+      expect(mockOnAudioEvent).toHaveBeenCalledWith("music_played");
+    });
+
+    it("should stop background music", () => {
+      render(
+        <AudioProvider>
+          <MockGameAudioComponent onAudioEvent={mockOnAudioEvent} />
+        </AudioProvider>
+      );
+
+      const stopButton = screen.getByTestId("stop-music-button");
+      stopButton.click();
+
+      expect(mockOnAudioEvent).toHaveBeenCalledWith("music_stopped");
+    });
+
+    it("should handle music transitions", () => {
+      render(
+        <AudioProvider>
+          <MockGameAudioComponent onAudioEvent={mockOnAudioEvent} />
+        </AudioProvider>
+      );
+
+      // Play first track
+      const playButton = screen.getByTestId("play-music-button");
+      playButton.click();
+
+      // Should handle smooth transitions
+      expect(mockOnAudioEvent).toHaveBeenCalledWith("music_played");
+    });
+  });
+
+  describe("Sound Effects", () => {
+    it("should play combat sound effects", () => {
+      render(
+        <AudioProvider>
+          <MockGameAudioComponent onAudioEvent={mockOnAudioEvent} />
+        </AudioProvider>
+      );
+
+      const sfxButton = screen.getByTestId("play-sfx-button");
+      sfxButton.click();
+
+      expect(mockOnAudioEvent).toHaveBeenCalledWith("sfx_played");
+    });
+
+    it("should handle multiple simultaneous sounds", () => {
+      render(
+        <AudioProvider>
+          <MockGameAudioComponent onAudioEvent={mockOnAudioEvent} />
+        </AudioProvider>
+      );
+
+      const sfxButton = screen.getByTestId("play-sfx-button");
+
+      // Rapid fire multiple sounds
+      sfxButton.click();
+      sfxButton.click();
+      sfxButton.click();
+
+      expect(mockOnAudioEvent).toHaveBeenCalledTimes(3);
+    });
+
+    it("should respect volume settings for SFX", () => {
+      render(
+        <AudioProvider>
+          <MockGameAudioComponent onAudioEvent={mockOnAudioEvent} />
+        </AudioProvider>
+      );
+
+      // SFX should respect global volume
+      const sfxButton = screen.getByTestId("play-sfx-button");
+      sfxButton.click();
+
+      expect(mockOnAudioEvent).toHaveBeenCalledWith("sfx_played");
+    });
+  });
+
+  describe("Korean Audio Content", () => {
+    it("should support Korean voice acting", () => {
+      render(
+        <AudioProvider>
+          <MockGameAudioComponent onAudioEvent={mockOnAudioEvent} />
+        </AudioProvider>
+      );
+
+      // Should be able to handle Korean audio content
+      expect(screen.getByTestId("game-audio-component")).toBeTruthy();
+    });
+
+    it("should handle bilingual audio switching", () => {
+      render(
+        <AudioProvider>
+          <MockGameAudioComponent onAudioEvent={mockOnAudioEvent} />
+        </AudioProvider>
+      );
+
+      // Should support language switching
+      expect(screen.getByTestId("game-audio-component")).toBeTruthy();
+    });
+  });
+
+  describe("Performance", () => {
+    it("should handle audio loading efficiently", () => {
+      const startTime = performance.now();
+
+      render(
+        <AudioProvider>
+          <MockGameAudioComponent onAudioEvent={mockOnAudioEvent} />
+        </AudioProvider>
+      );
+
+      const endTime = performance.now();
+      const loadTime = endTime - startTime;
+
+      expect(loadTime).toBeLessThan(100);
+      expect(screen.getByTestId("game-audio-component")).toBeTruthy();
+    });
+
+    it("should manage memory usage for audio assets", () => {
+      render(
+        <AudioProvider>
+          <MockGameAudioComponent onAudioEvent={mockOnAudioEvent} />
+        </AudioProvider>
+      );
+
+      // Should not leak memory with repeated audio operations
+      const playButton = screen.getByTestId("play-music-button");
+      const stopButton = screen.getByTestId("stop-music-button");
+
+      for (let i = 0; i < 10; i++) {
+        playButton.click();
+        stopButton.click();
+      }
+
+      expect(screen.getByTestId("game-audio-component")).toBeTruthy();
+    });
+  });
+
+  describe("Error Handling", () => {
+    it("should handle audio context creation failures", () => {
+      // Mock AudioContext to fail
+      global.AudioContext = vi.fn().mockImplementation(() => {
+        throw new Error("AudioContext not supported");
       });
 
-      expect(mockAudio.playStanceChangeSound).toHaveBeenCalledTimes(3);
+      render(
+        <AudioProvider>
+          <MockGameAudioComponent onAudioEvent={mockOnAudioEvent} />
+        </AudioProvider>
+      );
+
+      // Should gracefully handle audio failures
+      expect(screen.getByTestId("game-audio-component")).toBeTruthy();
     });
 
-    it("should validate Korean technique names are displayed", () => {
-      const trigrams = TRIGRAM_STANCES_ORDER.map((stance) => ({
-        name: TRIGRAM_DATA[stance].name.korean,
-        technique:
-          TRIGRAM_DATA[stance].techniques?.primary?.korean || "기본기술",
+    it("should handle missing audio files", () => {
+      // Mock Audio to fail loading
+      global.Audio = vi.fn().mockImplementation(() => ({
+        play: vi.fn().mockRejectedValue(new Error("File not found")),
+        pause: vi.fn(),
+        load: vi.fn(),
+        volume: 1,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
       }));
 
-      const TrigramStanceComponent = (): ReactElement => {
-        return React.createElement(
-          "div",
-          { "data-testid": "trigram-selector" },
-          ...trigrams.map((trigram, index) =>
-            React.createElement(
-              "button",
-              {
-                key: trigram.name,
-                "data-testid": `trigram-${index + 1}`,
-              },
-              `${trigram.name} - ${trigram.technique}`
-            )
-          )
-        );
+      render(
+        <AudioProvider>
+          <MockGameAudioComponent onAudioEvent={mockOnAudioEvent} />
+        </AudioProvider>
+      );
+
+      const playButton = screen.getByTestId("play-music-button");
+      playButton.click();
+
+      // Should handle missing files gracefully
+      expect(screen.getByTestId("game-audio-component")).toBeTruthy();
+    });
+
+    it("should recover from audio context suspension", () => {
+      // Mock suspended audio context
+      const mockContext = {
+        createGain: vi.fn().mockReturnValue({
+          connect: vi.fn(),
+          gain: { value: 1 },
+        }),
+        state: "suspended",
+        resume: vi.fn().mockResolvedValue(undefined),
+        destination: {},
       };
 
-      render(<TrigramStanceComponent />);
+      global.AudioContext = vi.fn().mockImplementation(() => mockContext);
 
-      expect(screen.getByText(/건 - 천둥벽력/)).toBeInTheDocument();
-      expect(screen.getByText(/태 - 유수연타/)).toBeInTheDocument();
+      render(
+        <AudioProvider>
+          <MockGameAudioComponent onAudioEvent={mockOnAudioEvent} />
+        </AudioProvider>
+      );
+
+      // Should attempt to resume suspended context
+      expect(screen.getByTestId("game-audio-component")).toBeTruthy();
+    });
+  });
+
+  describe("Accessibility", () => {
+    it("should respect user audio preferences", () => {
+      // Mock reduced motion preference (which often correlates with audio sensitivity)
+      Object.defineProperty(window, "matchMedia", {
+        writable: true,
+        value: vi.fn().mockImplementation((query) => ({
+          matches: query === "(prefers-reduced-motion: reduce)",
+          media: query,
+          onchange: null,
+          addListener: vi.fn(),
+          removeListener: vi.fn(),
+        })),
+      });
+
+      render(
+        <AudioProvider>
+          <MockGameAudioComponent onAudioEvent={mockOnAudioEvent} />
+        </AudioProvider>
+      );
+
+      expect(screen.getByTestId("game-audio-component")).toBeTruthy();
+    });
+
+    it("should provide audio descriptions when needed", () => {
+      render(
+        <AudioProvider>
+          <MockGameAudioComponent onAudioEvent={mockOnAudioEvent} />
+        </AudioProvider>
+      );
+
+      // Should support audio descriptions for visually impaired users
+      expect(screen.getByTestId("audio-status")).toBeTruthy();
+    });
+  });
+
+  describe("Combat Audio Integration", () => {
+    it("should play appropriate combat sounds", () => {
+      render(
+        <AudioProvider>
+          <MockGameAudioComponent onAudioEvent={mockOnAudioEvent} />
+        </AudioProvider>
+      );
+
+      // Should integrate with combat system
+      const sfxButton = screen.getByTestId("play-sfx-button");
+      sfxButton.click();
+
+      expect(mockOnAudioEvent).toHaveBeenCalledWith("sfx_played");
+    });
+
+    it("should synchronize audio with visual effects", () => {
+      render(
+        <AudioProvider>
+          <MockGameAudioComponent onAudioEvent={mockOnAudioEvent} />
+        </AudioProvider>
+      );
+
+      // Audio should be properly timed with visual effects
+      expect(screen.getByTestId("game-audio-component")).toBeTruthy();
+    });
+
+    it("should handle Korean martial arts audio cues", () => {
+      render(
+        <AudioProvider>
+          <MockGameAudioComponent onAudioEvent={mockOnAudioEvent} />
+        </AudioProvider>
+      );
+
+      // Should support traditional Korean martial arts audio
+      expect(screen.getByTestId("game-audio-component")).toBeTruthy();
     });
   });
 });

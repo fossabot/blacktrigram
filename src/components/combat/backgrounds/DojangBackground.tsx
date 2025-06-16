@@ -1,251 +1,355 @@
 // Underground dojang background for Korean martial arts
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useMemo } from "react";
 import { extend } from "@pixi/react";
-import { Container, Graphics, Text, Sprite, Texture } from "pixi.js";
-import { KOREAN_COLORS } from "../../types/constants";
+import { Container, Graphics, Text } from "pixi.js";
+import { KOREAN_COLORS } from "../../../types/constants";
 import * as PIXI from "pixi.js";
 
-extend({
-  Container,
-  Graphics,
-  Text,
-  Sprite,
-});
+extend({ Container, Graphics, Text });
 
 export interface DojangBackgroundProps {
-  width: number;
-  height: number;
-  lighting?: "normal" | "dim" | "bright" | "cyberpunk" | "traditional";
-  animate?: boolean;
-  "data-testid"?: string;
+  readonly width: number;
+  readonly height: number;
+  readonly lighting?: "normal" | "cyberpunk" | "traditional";
+  readonly animate?: boolean;
+  readonly showPattern?: boolean;
 }
 
 export const DojangBackground: React.FC<DojangBackgroundProps> = ({
   width,
   height,
   lighting = "normal",
-  animate = true,
-  ...props
+  animate = false,
+  showPattern = true,
 }) => {
-  const [floorTexture, setFloorTexture] = useState<Texture | null>(null);
-  const [wallTexture, setWallTexture] = useState<Texture | null>(null);
+  // Animation time for dynamic effects
+  const animationTime = useMemo(() => {
+    return animate ? Date.now() * 0.001 : 0;
+  }, [animate]);
 
-  // Enhanced texture loading with proper async/await pattern like IntroScreen
-  useEffect(() => {
-    let destroyed = false;
-    const loadTextures = async () => {
-      try {
-        const [floor, wall] = await Promise.all([
-          PIXI.Assets.load("/src/assets/visual/bg/dojang/dojang_floor_tex.png"),
-          PIXI.Assets.load("/src/assets/visual/bg/dojang/dojang_wall_tex.png"),
-        ]);
-
-        if (!destroyed) {
-          setFloorTexture(floor as Texture);
-          setWallTexture(wall as Texture);
-        }
-      } catch (error) {
-        console.warn("Failed to load dojang textures:", error);
-        // Continue without textures - fallback graphics will be used
-      }
-    };
-
-    loadTextures();
-    return () => {
-      destroyed = true;
-    };
-  }, []);
-
-  const getLightingSettings = useCallback((lightingMode: string) => {
-    switch (lightingMode) {
-      case "dim":
-        return {
-          backgroundAlpha: 0.7,
-          gridAlpha: 0.2,
-          accentAlpha: 0.3,
-          ambientColor: KOREAN_COLORS.UI_BACKGROUND_DARK,
-          tintColor: 0x444444,
-        };
-      case "bright":
-        return {
-          backgroundAlpha: 1.0,
-          gridAlpha: 0.5,
-          accentAlpha: 0.7,
-          ambientColor: KOREAN_COLORS.UI_BACKGROUND_LIGHT,
-          tintColor: 0xffffff,
-        };
-      case "cyberpunk":
-        return {
-          backgroundAlpha: 0.95,
-          gridAlpha: 0.4,
-          accentAlpha: 0.8,
-          ambientColor: KOREAN_COLORS.NEON_CYAN,
-          tintColor: 0x00ffff,
-        };
-      case "traditional":
-        return {
-          backgroundAlpha: 0.9,
-          gridAlpha: 0.3,
-          accentAlpha: 0.6,
-          ambientColor: KOREAN_COLORS.KOREAN_RED,
-          tintColor: 0xaa8866,
-        };
-      default: // "normal"
-        return {
-          backgroundAlpha: 0.9,
-          gridAlpha: 0.3,
-          accentAlpha: 0.4,
-          ambientColor: KOREAN_COLORS.UI_BACKGROUND_DARK,
-          tintColor: 0xffffff,
-        };
-    }
-  }, []);
-
-  const drawFallbackBackground = useCallback(
-    (g: any) => {
+  // Main background with Korean traditional colors
+  const drawMainBackground = useCallback(
+    (g: PIXI.Graphics) => {
       g.clear();
 
-      const settings = getLightingSettings(lighting);
+      // Create gradient based on lighting mode
+      let gradient: PIXI.FillGradient;
 
-      // Fallback solid background
-      g.fill({ color: settings.ambientColor, alpha: settings.backgroundAlpha });
+      switch (lighting) {
+        case "cyberpunk":
+          gradient = new PIXI.FillGradient(0, 0, width, height);
+          gradient.addColorStop(0, 0x0a0a0f);
+          gradient.addColorStop(0.5, 0x1a1a2e);
+          gradient.addColorStop(1, 0x0f0f23);
+          break;
+
+        case "traditional":
+          gradient = new PIXI.FillGradient(0, 0, width, height);
+          gradient.addColorStop(0, 0x2d1810);
+          gradient.addColorStop(0.5, 0x1a1a1a);
+          gradient.addColorStop(1, 0x0f0f0f);
+          break;
+
+        default: // normal
+          gradient = new PIXI.FillGradient(0, 0, width, height);
+          gradient.addColorStop(0, 0x1a1a2e);
+          gradient.addColorStop(0.5, 0x16213e);
+          gradient.addColorStop(1, 0x0f0f23);
+      }
+
+      g.fill(gradient);
       g.rect(0, 0, width, height);
       g.fill();
     },
-    [width, height, lighting, getLightingSettings]
+    [width, height, lighting]
   );
 
-  const drawOverlay = useCallback(
-    (g: any) => {
+  // Traditional Korean patterns
+  const drawKoreanPatterns = useCallback(
+    (g: PIXI.Graphics) => {
+      if (!showPattern) return;
+
       g.clear();
 
-      const settings = getLightingSettings(lighting);
+      // Taegeuk (태극) pattern in corners
+      const taegeukSize = 40;
+      const corners = [
+        [50, 50],
+        [width - 50, 50],
+        [50, height - 50],
+        [width - 50, height - 50],
+      ];
 
-      // Traditional Korean mat pattern overlay
-      g.stroke({
-        width: 1,
-        color:
-          lighting === "cyberpunk"
-            ? KOREAN_COLORS.NEON_CYAN
-            : KOREAN_COLORS.ACCENT_GOLD,
-        alpha: settings.gridAlpha,
+      corners.forEach(([x, y]) => {
+        // Outer circle
+        g.stroke({ width: 2, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.4 });
+        g.circle(x, y, taegeukSize);
+        g.stroke();
+
+        // Yin-yang pattern
+        g.fill({ color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.3 });
+        g.arc(x, y, taegeukSize - 5, 0, Math.PI);
+        g.arc(
+          x,
+          y - (taegeukSize - 5) / 2,
+          (taegeukSize - 5) / 2,
+          Math.PI,
+          0,
+          true
+        );
+        g.arc(
+          x,
+          y + (taegeukSize - 5) / 2,
+          (taegeukSize - 5) / 2,
+          0,
+          Math.PI,
+          true
+        );
+        g.fill();
+
+        // Small circles
+        g.fill({ color: KOREAN_COLORS.PRIMARY_CYAN, alpha: 0.6 });
+        g.circle(x, y - (taegeukSize - 5) / 4, 5);
+        g.fill();
+
+        g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 0.8 });
+        g.circle(x, y + (taegeukSize - 5) / 4, 5);
+        g.fill();
       });
-      const gridSize = 60;
-      for (let i = 0; i < width; i += gridSize) {
-        g.moveTo(i, 0);
-        g.lineTo(i, height);
-      }
-      for (let j = 0; j < height; j += gridSize) {
-        g.moveTo(0, j);
-        g.lineTo(width, j);
-      }
-      g.stroke();
 
-      // Center circle for training with lighting-appropriate color
-      const centerColor =
-        lighting === "cyberpunk"
-          ? KOREAN_COLORS.NEON_PURPLE
-          : lighting === "traditional"
-          ? KOREAN_COLORS.KOREAN_BLUE
-          : KOREAN_COLORS.PRIMARY_CYAN;
+      // Trigram symbols on walls
+      const trigrams = ["☰", "☱", "☲", "☳", "☴", "☵", "☶", "☷"];
+      const trigramSpacing = width / (trigrams.length + 1);
 
-      g.stroke({ width: 3, color: centerColor, alpha: 0.6 });
-      g.circle(width / 2, height / 2, Math.min(width, height) * 0.2);
-      g.stroke();
+      trigrams.forEach((symbol, index) => {
+        const x = trigramSpacing * (index + 1);
+        const alpha = animate
+          ? 0.3 + Math.sin(animationTime + index) * 0.2
+          : 0.4;
 
-      // Corner decorations with lighting-appropriate styling
-      const cornerSize = 40;
-      const cornerColor =
-        lighting === "cyberpunk"
-          ? KOREAN_COLORS.NEON_PINK
-          : lighting === "traditional"
-          ? KOREAN_COLORS.KOREAN_RED
-          : KOREAN_COLORS.ACCENT_GOLD;
+        // Top wall
+        g.fill({ color: KOREAN_COLORS.ACCENT_GOLD, alpha });
+        // Note: In a real implementation, you'd use proper text rendering
+        // For this example, we'll draw simple lines to represent trigrams
 
-      g.fill({ color: cornerColor, alpha: settings.accentAlpha });
-      g.rect(0, 0, cornerSize, cornerSize);
-      g.rect(width - cornerSize, 0, cornerSize, cornerSize);
-      g.rect(0, height - cornerSize, cornerSize, cornerSize);
-      g.rect(width - cornerSize, height - cornerSize, cornerSize, cornerSize);
-      g.fill();
-
-      // Additional cyberpunk effects
-      if (lighting === "cyberpunk") {
-        // Neon strips along edges
-        g.stroke({ width: 2, color: KOREAN_COLORS.NEON_CYAN, alpha: 0.8 });
-        g.moveTo(0, height * 0.25);
-        g.lineTo(width, height * 0.25);
-        g.moveTo(0, height * 0.75);
-        g.lineTo(width, height * 0.75);
-        g.stroke();
-
-        // Glowing center accent
-        g.fill({ color: KOREAN_COLORS.NEON_PURPLE, alpha: 0.2 });
-        g.circle(width / 2, height / 2, Math.min(width, height) * 0.1);
-        g.fill();
-      }
-
-      // Additional traditional effects
-      if (lighting === "traditional") {
-        // Traditional Korean border pattern
-        g.stroke({ width: 4, color: KOREAN_COLORS.KOREAN_BLUE, alpha: 0.6 });
-        g.rect(20, 20, width - 40, height - 40);
-        g.stroke();
-
-        // Yin-yang symbol in center
-        g.fill({ color: KOREAN_COLORS.KOREAN_BLACK, alpha: 0.3 });
-        g.circle(width / 2, height / 2, 30);
-        g.fill();
-        g.fill({ color: KOREAN_COLORS.KOREAN_WHITE, alpha: 0.3 });
-        g.arc(width / 2, height / 2, 30, 0, Math.PI);
-        g.fill();
-      }
+        // Bottom wall
+        g.fill({ color: KOREAN_COLORS.ACCENT_GOLD, alpha });
+      });
     },
-    [width, height, lighting, getLightingSettings]
+    [width, height, showPattern, animate, animationTime]
   );
 
-  const settings = getLightingSettings(lighting);
+  // Dojang floor pattern
+  const drawFloorPattern = useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+
+      // Traditional Korean floor tiles pattern
+      const tileSize = 60;
+      const tilesX = Math.ceil(width / tileSize);
+      const tilesY = Math.ceil(height / tileSize);
+
+      for (let x = 0; x < tilesX; x++) {
+        for (let y = 0; y < tilesY; y++) {
+          const tileX = x * tileSize;
+          const tileY = y * tileSize;
+
+          // Alternating tile pattern
+          const isAlternate = (x + y) % 2 === 0;
+          const tileAlpha = isAlternate ? 0.1 : 0.05;
+
+          g.fill({
+            color: KOREAN_COLORS.UI_BACKGROUND_LIGHT,
+            alpha: tileAlpha,
+          });
+          g.rect(tileX, tileY, tileSize, tileSize);
+          g.fill();
+
+          // Tile borders
+          g.stroke({ width: 1, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.1 });
+          g.rect(tileX, tileY, tileSize, tileSize);
+          g.stroke();
+        }
+      }
+
+      // Center arena marking - octagonal combat area
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const arenaRadius = Math.min(width, height) * 0.3;
+
+      // Octagonal arena boundary
+      g.stroke({ width: 3, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.8 });
+
+      const octagonPoints: number[] = [];
+      for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2 - Math.PI / 8;
+        octagonPoints.push(
+          centerX + Math.cos(angle) * arenaRadius,
+          centerY + Math.sin(angle) * arenaRadius
+        );
+      }
+
+      g.poly(octagonPoints);
+      g.stroke();
+
+      // Inner circle for precise positioning
+      g.stroke({ width: 2, color: KOREAN_COLORS.PRIMARY_CYAN, alpha: 0.6 });
+      g.circle(centerX, centerY, arenaRadius * 0.8);
+      g.stroke();
+
+      // Center point
+      g.fill({ color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.8 });
+      g.circle(centerX, centerY, 8);
+      g.fill();
+    },
+    [width, height]
+  );
+
+  // Lighting effects
+  const drawLightingEffects = useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+
+      if (lighting === "cyberpunk") {
+        // Neon grid overlay
+        g.stroke({ width: 1, color: KOREAN_COLORS.PRIMARY_CYAN, alpha: 0.15 });
+
+        const gridSpacing = 40;
+        for (let x = 0; x < width; x += gridSpacing) {
+          g.moveTo(x, 0);
+          g.lineTo(x, height);
+        }
+        for (let y = 0; y < height; y += gridSpacing) {
+          g.moveTo(0, y);
+          g.lineTo(width, y);
+        }
+        g.stroke();
+
+        // Pulsing neon accents
+        if (animate) {
+          const pulse = Math.sin(animationTime * 2) * 0.3 + 0.7;
+
+          // Top and bottom accent lines
+          g.stroke({
+            width: 2,
+            color: KOREAN_COLORS.ACCENT_CYAN,
+            alpha: pulse * 0.6,
+          });
+          g.moveTo(0, 50);
+          g.lineTo(width, 50);
+          g.moveTo(0, height - 50);
+          g.lineTo(width, height - 50);
+          g.stroke();
+        }
+      }
+
+      if (lighting === "traditional") {
+        // Warm traditional lighting from paper lanterns
+        const lanternPositions = [
+          [width * 0.2, height * 0.2],
+          [width * 0.8, height * 0.2],
+          [width * 0.2, height * 0.8],
+          [width * 0.8, height * 0.8],
+        ];
+
+        lanternPositions.forEach(([x, y]) => {
+          const lightRadius = animate
+            ? 80 + Math.sin(animationTime + x) * 20
+            : 80;
+
+          // Warm light glow
+          g.fill({ color: 0xffaa00, alpha: 0.1 });
+          g.circle(x, y, lightRadius);
+          g.fill();
+
+          // Lantern representation
+          g.fill({ color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.6 });
+          g.rect(x - 8, y - 12, 16, 24);
+          g.fill();
+        });
+      }
+    },
+    [width, height, lighting, animate, animationTime]
+  );
+
+  // Atmospheric particles/effects
+  const drawAtmosphericEffects = useCallback(
+    (g: PIXI.Graphics) => {
+      if (!animate) return;
+
+      g.clear();
+
+      // Floating particles or energy wisps
+      for (let i = 0; i < 20; i++) {
+        const x = Math.sin(animationTime * 0.5 + i) * width * 0.4 + width / 2;
+        const y = Math.cos(animationTime * 0.3 + i) * height * 0.3 + height / 2;
+        const alpha = Math.sin(animationTime * 2 + i) * 0.3 + 0.3;
+
+        g.fill({ color: KOREAN_COLORS.PRIMARY_CYAN, alpha: alpha * 0.4 });
+        g.circle(x, y, 2);
+        g.fill();
+      }
+
+      // Energy flow lines for cyberpunk mode
+      if (lighting === "cyberpunk") {
+        g.stroke({ width: 1, color: KOREAN_COLORS.ACCENT_CYAN, alpha: 0.3 });
+
+        for (let i = 0; i < 5; i++) {
+          const offset = animationTime * 50 + i * 100;
+          const y = offset % height;
+
+          g.moveTo(0, y);
+          g.lineTo(width, y);
+        }
+        g.stroke();
+      }
+    },
+    [animate, animationTime, width, height, lighting]
+  );
 
   return (
-    <pixiContainer {...props}>
-      {/* Background Layer */}
-      {floorTexture ? (
-        // Dojang Floor Texture Background
-        <pixiSprite
-          texture={floorTexture}
-          x={0}
-          y={0}
-          width={width}
-          height={height}
-          alpha={settings.backgroundAlpha}
-          tint={settings.tintColor}
-          data-testid="dojang-floor-texture"
-        />
-      ) : (
-        // Fallback solid background if texture fails to load
-        <pixiGraphics
-          draw={drawFallbackBackground}
-          data-testid="dojang-fallback-background"
-        />
-      )}
+    <pixiContainer data-testid="dojang-background">
+      {/* Main background */}
+      <pixiGraphics draw={drawMainBackground} />
 
-      {/* Wall accent texture (if available) */}
-      {wallTexture && lighting === "traditional" && (
-        <pixiSprite
-          texture={wallTexture}
-          x={width * 0.8}
-          y={0}
-          width={width * 0.3}
-          height={height}
-          alpha={0.3}
-          tint={settings.tintColor}
-          data-testid="dojang-wall-texture"
-        />
-      )}
+      {/* Floor pattern */}
+      <pixiGraphics draw={drawFloorPattern} />
 
-      {/* Overlay graphics for grid lines and decorative elements */}
-      <pixiGraphics draw={drawOverlay} data-testid="dojang-overlay" />
+      {/* Korean traditional patterns */}
+      <pixiGraphics draw={drawKoreanPatterns} />
+
+      {/* Lighting effects */}
+      <pixiGraphics draw={drawLightingEffects} />
+
+      {/* Atmospheric effects */}
+      <pixiGraphics draw={drawAtmosphericEffects} />
+
+      {/* Dojang nameplate */}
+      <pixiContainer x={width / 2} y={30} data-testid="dojang-nameplate">
+        <pixiText
+          text="흑괘 무술 도장"
+          style={{
+            fontSize: 16,
+            fill: KOREAN_COLORS.ACCENT_GOLD,
+            fontWeight: "bold",
+            align: "center",
+            fontFamily: '"Noto Sans KR", Arial, sans-serif',
+          }}
+          anchor={0.5}
+        />
+
+        <pixiText
+          text="Black Trigram Martial Arts Dojang"
+          style={{
+            fontSize: 10,
+            fill: KOREAN_COLORS.TEXT_SECONDARY,
+            align: "center",
+          }}
+          anchor={0.5}
+          y={20}
+        />
+      </pixiContainer>
     </pixiContainer>
   );
 };
