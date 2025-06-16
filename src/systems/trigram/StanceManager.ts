@@ -36,50 +36,43 @@ export class StanceManager {
     player: PlayerState,
     newStance: TrigramStance
   ): StanceChangeResult {
+    if (player.currentStance === newStance) {
+      return {
+        success: true,
+        updatedPlayer: player,
+        message: "이미 해당 자세입니다",
+      };
+    }
+
     const cost = this.getStanceTransitionCost(
       player.currentStance,
       newStance,
-      player
+      player.archetype
     );
 
-    // Check if transition is possible
-    if (!this.canChangeStance(player, newStance)) {
+    // Fix: Ensure player has ki and stamina properties with defaults
+    const currentKi = player.ki ?? 100;
+    const currentStamina = player.stamina ?? 100;
+
+    if (currentKi < cost.ki || currentStamina < cost.stamina) {
       return {
         success: false,
         updatedPlayer: player,
-        cost,
-        message:
-          "Cannot change stance - insufficient resources or cooldown active",
+        message: "자세 변경에 필요한 기력이나 체력이 부족합니다",
       };
     }
 
-    // Same stance - no cost
-    if (player.currentStance === newStance) {
-      this.currentStance = newStance;
-      return {
-        success: true,
-        updatedPlayer: {
-          ...player,
-          lastStanceChangeTime: Date.now(),
-        },
-        cost: { ki: 0, stamina: 0, timeMilliseconds: 0 }, // Fix: Use timeMilliseconds
-      };
-    }
-
-    // Apply stance change
     const updatedPlayer: PlayerState = {
       ...player,
       currentStance: newStance,
-      ki: Math.max(0, player.ki - cost.ki),
-      stamina: Math.max(0, player.stamina - cost.stamina),
-      lastStanceChangeTime: Date.now(),
+      ki: Math.max(0, currentKi - cost.ki),
+      stamina: Math.max(0, currentStamina - cost.stamina),
     };
-    this.currentStance = newStance;
 
     return {
       success: true,
       updatedPlayer,
-      cost,
+      message: `${newStance} 자세로 변경되었습니다`,
     };
   }
 

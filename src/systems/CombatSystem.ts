@@ -43,7 +43,7 @@ export class CombatSystem implements CombatSystemInterface {
         attacker,
         defender,
         success: false,
-        isCritical : false,
+        isCritical: false,
         isBlocked: false,
       };
     }
@@ -71,7 +71,7 @@ export class CombatSystem implements CombatSystemInterface {
         attacker,
         defender,
         success: false,
-        isCritical : false,
+        isCritical: false,
         isBlocked: false,
       };
     }
@@ -114,7 +114,7 @@ export class CombatSystem implements CombatSystemInterface {
       attacker,
       defender,
       success: true,
-      isCritical : vitalPointResult?.hit || false,
+      isCritical: vitalPointResult?.hit || false,
       isBlocked: false,
     };
   }
@@ -134,34 +134,55 @@ export class CombatSystem implements CombatSystemInterface {
    * Static version for backwards compatibility
    */
   static applyCombatResult(
-    result: CombatResult,
-    attacker: PlayerState,
-    defender: PlayerState
-  ): { updatedAttacker: PlayerState; updatedDefender: PlayerState } {
-    // Apply damage and effects
-    let updatedDefender = defender;
-    let updatedAttacker = attacker;
+    combatResult: CombatResult,
+    attackerState: PlayerState,
+    defenderState: PlayerState
+  ): { attacker: PlayerState; defender: PlayerState } {
+    const attacker = { ...attackerState };
+    const defender = { ...defenderState };
 
-    if (result.hit) {
-      updatedDefender = {
-        ...defender,
-        health: Math.max(0, defender.health - result.damage),
-        totalDamageReceived: defender.totalDamageReceived + result.damage,
-        hitsTaken: defender.hitsTaken + 1,
-      };
+    // Apply damage to defender
+    defender.health = Math.max(0, defender.health - combatResult.damage);
+
+    // Apply status effects
+    if (combatResult.statusEffects) {
+      defender.statusEffects = [
+        ...(defender.statusEffects || []),
+        ...combatResult.statusEffects,
+      ];
     }
 
-    // Apply technique costs to attacker
-    updatedAttacker = {
-      ...attacker,
-      ki: Math.max(0, attacker.ki - 5),
-      stamina: Math.max(0, attacker.stamina - 10),
+    // Fix: Ensure attacker has ki and stamina properties
+    attacker.ki = Math.max(
+      0,
+      (attacker.ki || 100) - (combatResult.kiCost || 0)
+    );
+    attacker.stamina = Math.max(
+      0,
+      (attacker.stamina || 100) - (combatResult.staminaCost || 0)
+    );
+
+    // Update combat stats
+    attacker.combatStats = {
+      ...attacker.combatStats,
+      hitsLanded:
+        (attacker.combatStats?.hitsLanded || 0) + (combatResult.hit ? 1 : 0),
       totalDamageDealt:
-        attacker.totalDamageDealt + (result.hit ? result.damage : 0),
-      hitsLanded: attacker.hitsLanded + (result.hit ? 1 : 0),
+        (attacker.combatStats?.totalDamageDealt || 0) + combatResult.damage,
+      criticalHits:
+        (attacker.combatStats?.criticalHits || 0) +
+        (combatResult.critical ? 1 : 0),
     };
 
-    return { updatedAttacker, updatedDefender };
+    defender.combatStats = {
+      ...defender.combatStats,
+      hitsTaken:
+        (defender.combatStats?.hitsTaken || 0) + (combatResult.hit ? 1 : 0),
+      totalDamageReceived:
+        (defender.combatStats?.totalDamageReceived || 0) + combatResult.damage,
+    };
+
+    return { attacker, defender };
   }
 
   /**
@@ -374,7 +395,7 @@ export class CombatSystem implements CombatSystemInterface {
         attacker,
         defender,
         success: false,
-        isCritical : false,
+        isCritical: false,
         isBlocked: false,
       };
     }
@@ -405,7 +426,7 @@ export class CombatSystem implements CombatSystemInterface {
       attacker,
       defender,
       success: true,
-      isCritical : false,
+      isCritical: false,
       isBlocked: false,
     };
   }
