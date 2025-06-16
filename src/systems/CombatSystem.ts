@@ -129,11 +129,8 @@ export class CombatSystem implements CombatSystemInterface {
   ): { updatedAttacker: PlayerState; updatedDefender: PlayerState } {
     const updatedAttacker: PlayerState = {
       ...attacker,
-      ki: Math.max(0, attacker.ki - (result.technique?.kiCost || 0)),
-      stamina: Math.max(
-        0,
-        attacker.stamina - (result.technique?.staminaCost || 0)
-      ),
+      ki: Math.max(0, (attacker.ki || attacker.maxKi) - (result.technique?.kiCost || 0)),
+      stamina: Math.max(0, (attacker.stamina || attacker.maxStamina) - (result.technique?.staminaCost || 0)),
       hitsLanded: (attacker.hitsLanded || 0) + (result.hit ? 1 : 0),
       totalDamageDealt: (attacker.totalDamageDealt || 0) + result.damage,
     };
@@ -141,9 +138,9 @@ export class CombatSystem implements CombatSystemInterface {
     const updatedDefender: PlayerState = {
       ...defender,
       health: Math.max(0, defender.health - result.damage),
-      consciousness: Math.max(0, defender.consciousness - result.damage * 0.1),
-      balance: Math.max(0, defender.balance - result.damage * 0.05),
-      pain: Math.min(100, (defender.pain || 0) + result.damage * 0.2),
+      consciousness: Math.max(0, defender.consciousness - (result.damage * 0.1)),
+      balance: Math.max(0, defender.balance - (result.damage * 0.05)),
+      pain: Math.min(100, (defender.pain || 0) + (result.damage * 0.2)),
       hitsTaken: (defender.hitsTaken || 0) + (result.hit ? 1 : 0),
       totalDamageReceived: (defender.totalDamageReceived || 0) + result.damage,
       statusEffects: [

@@ -33,7 +33,7 @@ export class StanceManager {
     player: PlayerState,
     newStance: TrigramStance
   ): StanceTransitionResult {
-    // Check if stance is the same - Fix: Return proper cost structure
+    // Check if stance is the same
     if (player.currentStance === newStance) {
       return {
         success: true,
@@ -76,8 +76,8 @@ export class StanceManager {
     const updatedPlayer: PlayerState = {
       ...player,
       currentStance: newStance,
-      ki: player.ki - cost.ki,
-      stamina: player.stamina - cost.stamina,
+      ki: Math.max(0, player.ki - cost.ki),
+      stamina: Math.max(0, player.stamina - cost.stamina),
       lastStanceChangeTime: now,
     };
 
@@ -92,7 +92,10 @@ export class StanceManager {
   /**
    * Checks if a stance change is possible
    */
-  canChangeStance(player: PlayerState, newStance: TrigramStance): boolean {
+  canChangeStance(
+    player: PlayerState,
+    newStance: TrigramStance
+  ): boolean {
     if (player.currentStance === newStance) return true;
 
     const now = Date.now();
@@ -114,12 +117,8 @@ export class StanceManager {
     player: PlayerState,
     fromStance: TrigramStance,
     toStance: TrigramStance
-  ): {
-    readonly ki: number;
-    readonly stamina: number;
-    readonly timeMilliseconds: number;
-  } {
-    // Same stance has no cost - Fix: Actually return zero cost
+  ): { readonly ki: number; readonly stamina: number; readonly timeMilliseconds: number } {
+    // Same stance has no cost
     if (fromStance === toStance) {
       return { ki: 0, stamina: 0, timeMilliseconds: 0 };
     }
@@ -140,28 +139,17 @@ export class StanceManager {
     }
 
     // Calculate difficulty modifier based on stance compatibility
-    const difficultyModifier = this.calculateDifficultyModifier(
-      fromStance,
-      toStance
-    );
+    const difficultyModifier = this.calculateDifficultyModifier(fromStance, toStance);
 
-    // Apply archetype modifiers - Fix: Safe access with fallback
-    const archetypeData = PLAYER_ARCHETYPES_DATA[player.archetype] || {
-      favoredStances: [],
-    };
-    const favoredStances = archetypeData.favoredStances || [];
+    // Apply archetype modifiers with safety check
+    const archetypeData = PLAYER_ARCHETYPES_DATA[player.archetype];
+    const favoredStances = archetypeData?.favoredStances || [];
     const archetypeModifier = favoredStances.includes(toStance) ? 0.8 : 1.0;
 
     // Calculate final costs
-    const finalKiCost = Math.round(
-      baseCost.ki * difficultyModifier * archetypeModifier
-    );
-    const finalStaminaCost = Math.round(
-      baseCost.stamina * difficultyModifier * archetypeModifier
-    );
-    const finalTimeCost = Math.round(
-      baseCost.timeMilliseconds * difficultyModifier
-    );
+    const finalKiCost = Math.round(baseCost.ki * difficultyModifier * archetypeModifier);
+    const finalStaminaCost = Math.round(baseCost.stamina * difficultyModifier * archetypeModifier);
+    const finalTimeCost = Math.round(baseCost.timeMilliseconds * difficultyModifier);
 
     return {
       ki: finalKiCost,

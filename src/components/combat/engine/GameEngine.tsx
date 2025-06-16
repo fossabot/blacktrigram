@@ -23,7 +23,13 @@
  * ```
  */
 
-import React, { useCallback, useEffect, useReducer, useMemo } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useReducer,
+  useMemo,
+  useRef,
+} from "react";
 import { extend } from "@pixi/react";
 import { Container, Graphics, Text } from "pixi.js";
 import { usePixiExtensions } from "../../../utils/pixiExtensions";
