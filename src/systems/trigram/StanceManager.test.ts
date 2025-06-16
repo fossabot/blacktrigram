@@ -71,10 +71,15 @@ describe("StanceManager", () => {
 
   describe("canChangeStance", () => {
     it("should return true for valid stance changes", () => {
-      // Reset the cooldown to ensure valid timing
-      vi.spyOn(Date, "now").mockReturnValue(0);
-      stanceManager = new StanceManager(); // Reset instance
-      vi.spyOn(Date, "now").mockReturnValue(2000); // 2 seconds later
+      const stanceManager = new StanceManager();
+      const player = createMockPlayer({
+        ki: 50,
+        stamina: 50,
+      });
+
+      // Mock Date.now to ensure no cooldown issues
+      const mockNow = Date.now();
+      vi.spyOn(Date, "now").mockReturnValue(mockNow);
 
       const canChange = stanceManager.canChangeStance(
         player,

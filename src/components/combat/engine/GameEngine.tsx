@@ -1017,6 +1017,30 @@ export const GameEngine: React.FC<GameEngineProps> = ({
           />
         </pixiContainer>
       )}
+
+      {/* Victory overlay */}
+      {victory && (
+        <pixiContainer x={width / 2} y={height / 2}>
+          <pixiGraphics
+            draw={(g) => {
+              g.clear();
+              g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 0.9 });
+              g.rect(-200, -100, 400, 200);
+              g.fill();
+            }}
+          />
+          <pixiText
+            text={`${victory.winner.name.korean} 승리!`}
+            style={{
+              fontSize: 32,
+              fill: KOREAN_COLORS.ACCENT_GOLD,
+              fontWeight: "bold",
+              align: "center",
+            }}
+            anchor={0.5}
+          />
+        </pixiContainer>
+      )}
     </pixiContainer>
   );
 };

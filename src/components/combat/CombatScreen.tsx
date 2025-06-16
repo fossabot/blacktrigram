@@ -12,6 +12,7 @@ import type { PlayerState } from "../../types/player";
 import type { HitEffect } from "../../types/effects";
 import { HitEffectType } from "../../types/effects"; // Fix: Import as value, not type
 import type { KoreanTechnique } from "../../types/combat";
+import { PlayerArchetype, TrigramStance } from "../../types/enums"; // Fix: Add PlayerArchetype import
 import { CombatArena } from "./components/CombatArena";
 import { CombatControls } from "./components/CombatControls";
 import { CombatHUD } from "./components/CombatHUD";
@@ -25,7 +26,6 @@ import {
   ResponsivePixiPanel,
 } from "../ui/base/ResponsivePixiComponents";
 import { KOREAN_COLORS } from "../../types/constants";
-import { TrigramStance } from "../../types/enums";
 
 // Extend PixiJS components for CombatScreen
 extend({ Container, Graphics, Text });
@@ -148,12 +148,25 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
     (technique: KoreanTechnique, attacker: PlayerState) => {
       dispatchCombat({ type: "EXECUTE_TECHNIQUE", payload: { technique } });
 
+      // Enhanced Korean martial arts damage calculation
       const baseDamage = technique.damage || 15;
+      const stanceMultiplier = getStanceEffectiveness(
+        attacker.currentStance,
+        validatedPlayers[targetIndex].currentStance
+      );
+      const archetypeMultiplier = getArchetypeBonus(
+        attacker.archetype,
+        technique.type
+      );
+
       const critRoll = Math.random();
       const isCritical = critRoll <= (technique.critChance || 0.1);
-      const finalDamage = isCritical
-        ? baseDamage * (technique.critMultiplier || 1.5)
-        : baseDamage;
+      const finalDamage = Math.round(
+        baseDamage *
+          stanceMultiplier *
+          archetypeMultiplier *
+          (isCritical ? technique.critMultiplier || 1.5 : 1)
+      );
 
       const targetIndex = attacker.id === validatedPlayers[0].id ? 1 : 0;
       const newHealth = Math.max(
@@ -161,7 +174,17 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         validatedPlayers[targetIndex].health - finalDamage
       );
 
+      // Apply Korean martial arts principles
+      const kiDrain = Math.round(technique.kiCost * (1 + Math.random() * 0.2));
+      const staminaDrain = Math.round(
+        technique.staminaCost * (1 + Math.random() * 0.2)
+      );
+
       onPlayerUpdate(targetIndex, { health: newHealth });
+      onPlayerUpdate(attacker.id === validatedPlayers[0].id ? 0 : 1, {
+        ki: Math.max(0, attacker.ki - kiDrain),
+        stamina: Math.max(0, attacker.stamina - staminaDrain),
+      });
 
       const effect: HitEffect = {
         id: `hit_${Date.now()}`,
@@ -169,7 +192,7 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         attackerId: attacker.id,
         defenderId: validatedPlayers[targetIndex].id,
         timestamp: Date.now(),
-        duration: 1000,
+        duration: isCritical ? 1500 : 1000,
         position: { x: width * 0.5, y: height * 0.5 },
         intensity: isCritical ? 1.5 : 1.0,
         text: isCritical ? "치명타!" : technique.name.korean,
@@ -178,11 +201,14 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
 
       dispatchCombat({ type: "ADD_EFFECT", payload: { effect } });
 
+      // Enhanced Korean combat log
+      const combatMessage = isCritical
+        ? `${attacker.name.korean}가 ${technique.name.korean}으로 치명적인 ${finalDamage} 피해를 입혔습니다!`
+        : `${attacker.name.korean}가 ${technique.name.korean}으로 ${finalDamage} 피해를 입혔습니다.`;
+
       dispatchCombat({
         type: "LOG_ACTION",
-        payload: {
-          message: `${attacker.name.korean}가 ${technique.name.korean}으로 ${finalDamage} 피해!`,
-        },
+        payload: { message: combatMessage },
       });
 
       setTimeout(() => {
@@ -194,6 +220,38 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
     },
     [onPlayerUpdate, validatedPlayers, width, height]
   );
+
+  // Helper functions for Korean martial arts mechanics
+  const getStanceEffectiveness = (
+    attackerStance: TrigramStance,
+    defenderStance: TrigramStance
+  ): number => {
+    // Implementation based on trigram philosophy
+    const effectiveness = {
+      [TrigramStance.GEON]: {
+        [TrigramStance.GAM]: 1.2,
+        [TrigramStance.GON]: 0.8,
+      },
+      [TrigramStance.TAE]: {
+        [TrigramStance.GAN]: 1.2,
+        [TrigramStance.SON]: 0.8,
+      },
+      // Add more stance interactions
+    };
+    return effectiveness[attackerStance]?.[defenderStance] || 1.0;
+  };
+
+  const getArchetypeBonus = (
+    archetype: PlayerArchetype,
+    techniqueType: string
+  ): number => {
+    const bonuses = {
+      [PlayerArchetype.MUSA]: { strike: 1.1, block: 1.2 },
+      [PlayerArchetype.AMSALJA]: { strike: 1.3, stealth: 1.5 },
+      // Add more archetype bonuses
+    };
+    return bonuses[archetype]?.[techniqueType] || 1.0;
+  };
 
   const handleAttack = useCallback(() => {
     if (combatState.executingTechnique) return;

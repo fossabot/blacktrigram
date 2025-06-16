@@ -2,15 +2,13 @@
  * @fileoverview Mock player data for testing Korean martial arts game
  */
 
-import type { PlayerState } from "../../types/player";
-import { PlayerArchetype, TrigramStance, CombatState } from "../../types/enums";
+import { PlayerState } from "../../types/player";
+import { PlayerArchetype, TrigramStance } from "../../types/enums";
 
 /**
- * Create a mock player for testing with sensible defaults
+ * Creates a mock player with default values for testing
  */
-export function createMockPlayer(
-  overrides: Partial<PlayerState> = {}
-): PlayerState {
+export function createMockPlayer(overrides: Partial<PlayerState> = {}): PlayerState {
   return {
     id: "test-player",
     name: { korean: "테스트 플레이어", english: "Test Player" },
@@ -35,89 +33,91 @@ export function createMockPlayer(
     totalDamageDealt: 0,
     totalDamageReceived: 0,
     lastStanceChangeTime: 0,
-    position: { row: 3, col: 3 }, // Add default position
+    position: { row: 3, col: 3 },
     ...overrides,
   };
 }
 
 /**
- * Create a pair of mock players for combat testing
+ * Creates a mock player with low resources for testing resource constraints
  */
-export function createMockPlayerPair(): [PlayerState, PlayerState] {
-  const player1 = createMockPlayer({
-    id: "player1",
-    name: { korean: "플레이어1", english: "Player 1" },
-    archetype: PlayerArchetype.MUSA,
-    currentStance: TrigramStance.GEON,
-    position: { x: 100, y: 300 },
-  });
-
-  const player2 = createMockPlayer({
-    id: "player2",
-    name: { korean: "플레이어2", english: "Player 2" },
-    archetype: PlayerArchetype.AMSALJA,
-    currentStance: TrigramStance.SON,
-    position: { x: 700, y: 300 },
-  });
-
-  return [player1, player2];
-}
-
-/**
- * Create a damaged player for testing victory conditions
- */
-export function createDamagedPlayer(healthPercent: number = 0.5): PlayerState {
+export function createLowResourceMockPlayer(
+  overrides: Partial<PlayerState> = {}
+): PlayerState {
   return createMockPlayer({
-    health: Math.floor(100 * healthPercent),
-    consciousness: Math.floor(100 * healthPercent),
-    stamina: Math.floor(100 * healthPercent),
+    ki: 5,
+    stamina: 10,
+    health: 25,
+    ...overrides,
   });
 }
 
 /**
- * Create a player with specific archetype for testing
+ * Creates a high-level mock player for testing advanced scenarios
  */
-export function createArchetypePlayer(archetype: PlayerArchetype): PlayerState {
-  const archetypeStances = {
-    [PlayerArchetype.MUSA]: TrigramStance.GEON,
-    [PlayerArchetype.AMSALJA]: TrigramStance.SON,
-    [PlayerArchetype.HACKER]: TrigramStance.LI,
-    [PlayerArchetype.JEONGBO_YOWON]: TrigramStance.TAE,
-    [PlayerArchetype.JOJIK_POKRYEOKBAE]: TrigramStance.JIN,
-  };
-
+export function createHighLevelMockPlayer(
+  overrides: Partial<PlayerState> = {}
+): PlayerState {
   return createMockPlayer({
-    archetype,
-    currentStance: archetypeStances[archetype],
+    experiencePoints: 10000,
+    health: 200,
+    maxHealth: 200,
+    ki: 150,
+    maxKi: 150,
+    stamina: 150,
+    maxStamina: 150,
+    ...overrides,
   });
 }
 
 /**
  * Creates a mock player with specific archetype
  */
-export function createMockPlayerByArchetype(
+export function createArchetypeMockPlayer(
   archetype: PlayerArchetype,
   overrides: Partial<PlayerState> = {}
 ): PlayerState {
-  const archetypeData = {
-    [PlayerArchetype.MUSA]: {
-      name: { korean: "무사", english: "Warrior" },
-      health: 120,
-      maxHealth: 120,
-      ki: 80,
-      maxKi: 80,
+  return createMockPlayer({
+    archetype,
+    name: {
+      korean: getArchetypeName(archetype),
+      english: archetype,
     },
-    [PlayerArchetype.AMSALJA]: {
-      name: { korean: "암살자", english: "Assassin" },
-      health: 80,
-      maxHealth: 80,
-      ki: 120,
-      maxKi: 120,
-    },
-    [PlayerArchetype.HACKER]: {
-      name: { korean: "해커", english: "Hacker" },
-      health: 90,
-      maxHealth: 90,
+    ...overrides,
+  });
+}
+
+/**
+ * Creates a defeated mock player for testing victory conditions
+ */
+export function createDefeatedMockPlayer(
+  overrides: Partial<PlayerState> = {}
+): PlayerState {
+  return createMockPlayer({
+    health: 0,
+    consciousness: 0,
+    ...overrides,
+  });
+}
+
+function getArchetypeName(archetype: PlayerArchetype): string {
+  switch (archetype) {
+    case PlayerArchetype.MUSA:
+      return "무사";
+    case PlayerArchetype.AMSALJA:
+      return "암살자";
+    case PlayerArchetype.HACKER:
+      return "해커";
+    case PlayerArchetype.JEONGBO_YOWON:
+      return "정보요원";
+    case PlayerArchetype.JOJIK_POKRYEOKBAE:
+      return "조직폭력배";
+    default:
+      return "테스트";
+  }
+}
+
+export default createMockPlayer;
       ki: 110,
       maxKi: 110,
     },

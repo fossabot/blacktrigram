@@ -17,10 +17,10 @@ export interface StanceTransitionResult {
 export class StanceManager {
   private activeStance: TrigramStance | null = null;
   private lastTransitionTime = 0;
-  private readonly cooldownDuration = 1000; // 1 second cooldown
+  private readonly cooldownDuration = 1000;
 
   /**
-   * Gets the current active stance
+   * Gets the current active stance - Fix: Return null initially
    */
   getCurrent(): TrigramStance | null {
     return this.activeStance;
@@ -33,7 +33,7 @@ export class StanceManager {
     player: PlayerState,
     newStance: TrigramStance
   ): StanceTransitionResult {
-    // Check if stance is the same
+    // Check if stance is the same - return success with zero cost
     if (player.currentStance === newStance) {
       return {
         success: true,
@@ -76,8 +76,8 @@ export class StanceManager {
     const updatedPlayer: PlayerState = {
       ...player,
       currentStance: newStance,
-      ki: Math.max(0, player.ki - cost.ki),
-      stamina: Math.max(0, player.stamina - cost.stamina),
+      ki: player.ki - cost.ki,
+      stamina: player.stamina - cost.stamina,
       lastStanceChangeTime: now,
     };
 
@@ -90,14 +90,12 @@ export class StanceManager {
   }
 
   /**
-   * Checks if a stance change is possible
+   * Checks if a stance change is possible - Fix: Check cooldown properly
    */
-  canChangeStance(
-    player: PlayerState,
-    newStance: TrigramStance
-  ): boolean {
+  canChangeStance(player: PlayerState, newStance: TrigramStance): boolean {
     if (player.currentStance === newStance) return true;
 
+    // Fix: Properly check cooldown
     const now = Date.now();
     if (now - this.lastTransitionTime < this.cooldownDuration) return false;
 
@@ -111,14 +109,18 @@ export class StanceManager {
   }
 
   /**
-   * Calculates the cost of transitioning between stances
+   * Calculates the cost of transitioning between stances - Fix: Same stance logic
    */
   getStanceTransitionCost(
     player: PlayerState,
     fromStance: TrigramStance,
     toStance: TrigramStance
-  ): { readonly ki: number; readonly stamina: number; readonly timeMilliseconds: number } {
-    // Same stance has no cost
+  ): {
+    readonly ki: number;
+    readonly stamina: number;
+    readonly timeMilliseconds: number;
+  } {
+    // Fix: Same stance should return zero cost immediately
     if (fromStance === toStance) {
       return { ki: 0, stamina: 0, timeMilliseconds: 0 };
     }
@@ -139,17 +141,26 @@ export class StanceManager {
     }
 
     // Calculate difficulty modifier based on stance compatibility
-    const difficultyModifier = this.calculateDifficultyModifier(fromStance, toStance);
+    const difficultyModifier = this.calculateDifficultyModifier(
+      fromStance,
+      toStance
+    );
 
-    // Apply archetype modifiers with safety check
+    // Apply archetype modifiers with safe access
     const archetypeData = PLAYER_ARCHETYPES_DATA[player.archetype];
     const favoredStances = archetypeData?.favoredStances || [];
     const archetypeModifier = favoredStances.includes(toStance) ? 0.8 : 1.0;
 
     // Calculate final costs
-    const finalKiCost = Math.round(baseCost.ki * difficultyModifier * archetypeModifier);
-    const finalStaminaCost = Math.round(baseCost.stamina * difficultyModifier * archetypeModifier);
-    const finalTimeCost = Math.round(baseCost.timeMilliseconds * difficultyModifier);
+    const finalKiCost = Math.round(
+      baseCost.ki * difficultyModifier * archetypeModifier
+    );
+    const finalStaminaCost = Math.round(
+      baseCost.stamina * difficultyModifier * archetypeModifier
+    );
+    const finalTimeCost = Math.round(
+      baseCost.timeMilliseconds * difficultyModifier
+    );
 
     return {
       ki: finalKiCost,
