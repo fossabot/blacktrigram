@@ -1,5 +1,5 @@
 /**
- * Combat system types
+ * @fileoverview Combat system types for Korean martial arts game
  */
 
 import type { DamageRange, KoreanText } from "./common";
@@ -178,16 +178,21 @@ export interface Position {
   readonly y: number;
 }
 
+/**
+ * Grid position for octagonal combat arena
+ */
 export interface GridPosition {
   readonly x: number;
   readonly y: number;
-  readonly isValid: boolean;
+  readonly isValid?: boolean;
 }
 
+/**
+ * Octagonal grid for traditional Korean martial arts combat
+ */
 export interface OctagonalGrid {
   readonly size: number;
   readonly validPositions: readonly (readonly boolean[])[];
-  readonly center: Position; // Fix: Use Position instead of undefined type
 }
 
 export interface GameEngineProps {

@@ -23,7 +23,7 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
   animate = false,
   showPattern = true,
 }) => {
-  // Animation time for dynamic effects
+  // Animation time for effects
   const animationTime = useMemo(() => {
     return animate ? Date.now() * 0.001 : 0;
   }, [animate]);
@@ -34,33 +34,24 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
       g.clear();
 
       // Create gradient based on lighting mode
-      let gradient: PIXI.FillGradient;
-
       switch (lighting) {
         case "cyberpunk":
-          gradient = new PIXI.FillGradient(0, 0, width, height);
-          gradient.addColorStop(0, 0x0a0a0f);
-          gradient.addColorStop(0.5, 0x1a1a2e);
-          gradient.addColorStop(1, 0x0f0f23);
+          g.fill({ color: 0x0a0a0f });
+          g.rect(0, 0, width, height);
+          g.fill();
           break;
 
         case "traditional":
-          gradient = new PIXI.FillGradient(0, 0, width, height);
-          gradient.addColorStop(0, 0x2d1810);
-          gradient.addColorStop(0.5, 0x1a1a1a);
-          gradient.addColorStop(1, 0x0f0f0f);
+          g.fill({ color: 0x2d1810 });
+          g.rect(0, 0, width, height);
+          g.fill();
           break;
 
         default: // normal
-          gradient = new PIXI.FillGradient(0, 0, width, height);
-          gradient.addColorStop(0, 0x1a1a2e);
-          gradient.addColorStop(0.5, 0x16213e);
-          gradient.addColorStop(1, 0x0f0f23);
+          g.fill({ color: 0x1a1a2e });
+          g.rect(0, 0, width, height);
+          g.fill();
       }
-
-      g.fill(gradient);
-      g.rect(0, 0, width, height);
-      g.fill();
     },
     [width, height, lighting]
   );
@@ -122,22 +113,22 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
       const trigrams = ["☰", "☱", "☲", "☳", "☴", "☵", "☶", "☷"];
       const trigramSpacing = width / (trigrams.length + 1);
 
-      trigrams.forEach((symbol, index) => {
-        const x = trigramSpacing * (index + 1);
+      trigrams.forEach((_, index) => {
+        const trigramX = trigramSpacing * (index + 1);
         const alpha = animate
-          ? 0.3 + Math.sin(animationTime + index) * 0.2
+          ? 0.3 + Math.sin(Date.now() * 0.001 + index) * 0.2
           : 0.4;
 
-        // Top wall
-        g.fill({ color: KOREAN_COLORS.ACCENT_GOLD, alpha });
-        // Note: In a real implementation, you'd use proper text rendering
-        // For this example, we'll draw simple lines to represent trigrams
-
-        // Bottom wall
-        g.fill({ color: KOREAN_COLORS.ACCENT_GOLD, alpha });
+        // Simple decorative lines representing trigrams
+        g.stroke({ width: 2, color: KOREAN_COLORS.ACCENT_GOLD, alpha });
+        for (let i = 0; i < 3; i++) {
+          g.moveTo(trigramX - 10, 20 + i * 8);
+          g.lineTo(trigramX + 10, 20 + i * 8);
+        }
+        g.stroke();
       });
     },
-    [width, height, showPattern, animate, animationTime]
+    [width, height, showPattern, animate]
   );
 
   // Dojang floor pattern
@@ -206,31 +197,17 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
     [width, height]
   );
 
-  // Lighting effects
+  // Enhanced lighting effects
   const drawLightingEffects = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
 
       if (lighting === "cyberpunk") {
-        // Neon grid overlay
-        g.stroke({ width: 1, color: KOREAN_COLORS.PRIMARY_CYAN, alpha: 0.15 });
+        // Cyberpunk neon grid overlay
+        const pulse = animate ? 0.5 + Math.sin(animationTime * 2) * 0.3 : 0.5;
 
-        const gridSpacing = 40;
-        for (let x = 0; x < width; x += gridSpacing) {
-          g.moveTo(x, 0);
-          g.lineTo(x, height);
-        }
-        for (let y = 0; y < height; y += gridSpacing) {
-          g.moveTo(0, y);
-          g.lineTo(width, y);
-        }
-        g.stroke();
-
-        // Pulsing neon accents
+        // Neon grid lines
         if (animate) {
-          const pulse = Math.sin(animationTime * 2) * 0.3 + 0.7;
-
-          // Top and bottom accent lines
           g.stroke({
             width: 2,
             color: KOREAN_COLORS.ACCENT_CYAN,

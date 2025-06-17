@@ -9,11 +9,7 @@ import type { TrigramStance } from "../../../types/enums";
 import { KOREAN_COLORS } from "../../../types/constants";
 import { TRIGRAM_DATA } from "../../../types/constants/trigram";
 import { DamageType } from "../../../types/enums";
-import {
-  KoreanButton,
-  KOREAN_LAYOUTS,
-} from "../../ui/base/KoreanLayoutComponents";
-import * as PIXI from "pixi.js";
+import { KoreanButton } from "../../ui/base/KoreanLayoutComponents";
 
 extend({ Container, Graphics, Text });
 
@@ -35,7 +31,6 @@ export interface CombatControlsProps {
 export const CombatControls: React.FC<CombatControlsProps> = ({
   onAttack,
   onDefend,
-  onSwitchStance,
   player,
   onTechniqueExecute,
   isExecutingTechnique = false,
@@ -50,7 +45,7 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
 
   const isMobile = width < 500;
 
-  // Fix: Safe access to stance data
+  // Safe access to stance data
   const currentStanceData = useMemo(() => {
     if (!player?.currentStance) return null;
     return TRIGRAM_DATA[player.currentStance] || null;
@@ -101,29 +96,13 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
     [onTechniqueExecute]
   );
 
-  // Enhanced layout with responsive design
-  const mainLayout = {
-    width,
-    height,
-    padding: 10,
-    flexDirection: isMobile ? "column" : ("row" as const),
-    gap: isMobile ? 8 : 12,
-    justifyContent: "space-between" as const,
-    alignItems: "center" as const,
-  };
-
   const buttonLayout = {
     width: isMobile ? width - 20 : (width - 40) / 4,
     height: isMobile ? 35 : 45,
   };
 
   return (
-    <pixiContainer
-      x={x}
-      y={y}
-      layout={mainLayout}
-      data-testid="combat-controls"
-    >
+    <pixiContainer x={x} y={y} data-testid="combat-controls">
       {/* Control Panel Background with Korean aesthetics */}
       <pixiGraphics
         draw={(g) => {
@@ -144,14 +123,8 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
         }}
       />
 
-      {/* Action Buttons Row/Column */}
-      <pixiContainer
-        layout={
-          isMobile
-            ? KOREAN_LAYOUTS.CONTROLS_COLUMN
-            : KOREAN_LAYOUTS.CONTROLS_ROW
-        }
-      >
+      {/* Action Buttons */}
+      <pixiContainer x={10} y={10}>
         {/* Attack Button */}
         <KoreanButton
           text={{ korean: "공격", english: "Attack" }}
@@ -164,57 +137,56 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
         />
 
         {/* Defend Button */}
-        <KoreanButton
-          text={{ korean: "방어", english: "Defend" }}
-          onClick={onDefend}
-          width={buttonLayout.width}
-          height={buttonLayout.height}
-          variant="stance"
-          disabled={isExecutingTechnique}
-          data-testid="defend-button"
-        />
+        <pixiContainer x={buttonLayout.width + 10}>
+          <KoreanButton
+            text={{ korean: "방어", english: "Defend" }}
+            onClick={onDefend}
+            width={buttonLayout.width}
+            height={buttonLayout.height}
+            variant="stance"
+            disabled={isExecutingTechnique}
+            data-testid="defend-button"
+          />
+        </pixiContainer>
 
         {/* Technique Button */}
         {availableTechniques.length > 0 && (
-          <KoreanButton
-            text={{
-              korean: availableTechniques[0].name.korean,
-              english: availableTechniques[0].name.english,
-            }}
-            onClick={() => handleTechniqueExecute(availableTechniques[0])}
-            width={buttonLayout.width * 1.2}
-            height={buttonLayout.height}
-            variant="primary"
-            disabled={isExecutingTechnique}
-            data-testid="technique-button"
-          />
+          <pixiContainer x={(buttonLayout.width + 10) * 2}>
+            <KoreanButton
+              text={{
+                korean: availableTechniques[0].name.korean,
+                english: availableTechniques[0].name.english,
+              }}
+              onClick={() => handleTechniqueExecute(availableTechniques[0])}
+              width={buttonLayout.width * 1.2}
+              height={buttonLayout.height}
+              variant="primary"
+              disabled={isExecutingTechnique}
+              data-testid="technique-button"
+            />
+          </pixiContainer>
         )}
 
         {/* Pause Button */}
         {onPauseToggle && (
-          <KoreanButton
-            text={{
-              korean: isPaused ? "계속" : "정지",
-              english: isPaused ? "Resume" : "Pause",
-            }}
-            onClick={onPauseToggle}
-            width={buttonLayout.width}
-            height={buttonLayout.height}
-            variant="secondary"
-            data-testid="pause-button"
-          />
+          <pixiContainer x={width - buttonLayout.width - 20}>
+            <KoreanButton
+              text={{
+                korean: isPaused ? "계속" : "정지",
+                english: isPaused ? "Resume" : "Pause",
+              }}
+              onClick={onPauseToggle}
+              width={buttonLayout.width}
+              height={buttonLayout.height}
+              variant="secondary"
+              data-testid="pause-button"
+            />
+          </pixiContainer>
         )}
       </pixiContainer>
 
-      {/* Status Display with Korean layout */}
-      <pixiContainer
-        layout={{
-          flexDirection: "column",
-          alignItems: isMobile ? "center" : "flex-start",
-          gap: 4,
-          marginTop: isMobile ? 8 : 0,
-        }}
-      >
+      {/* Status Display */}
+      <pixiContainer x={10} y={height - 25}>
         {/* Current Stance Display */}
         <pixiText
           text={`현재 자세: ${currentStanceData?.name.korean || "없음"}`}
@@ -235,17 +207,12 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
               fontWeight: "bold",
               fontFamily: "Noto Sans KR",
             }}
+            x={200}
           />
         )}
 
         {/* Resource Status */}
-        <pixiContainer
-          layout={{
-            flexDirection: "row",
-            gap: 10,
-            alignItems: "center",
-          }}
-        >
+        <pixiContainer x={width - 200}>
           <pixiText
             text={`기력: ${Math.round(player.ki)}/${player.maxKi}`}
             style={{
@@ -259,6 +226,7 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
               fontSize: isMobile ? 7 : 8,
               fill: KOREAN_COLORS.SECONDARY_YELLOW,
             }}
+            x={80}
           />
         </pixiContainer>
       </pixiContainer>
