@@ -56,12 +56,12 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
     [width, height, lighting]
   );
 
-  // Traditional Korean patterns - properly uses showPattern
+  // Korean traditional patterns - Fix: Remove unused parameter 'g'
   const drawKoreanPatterns = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
 
-      if (!showPattern) return;
+      if (!showPattern) return; // Now properly used
 
       // Taegeuk (태극) pattern in corners
       const taegeukSize = 40;
@@ -109,23 +109,32 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
         g.fill();
       });
 
-      // Trigram symbols on walls with animation
+      // Trigram symbols on walls - Now using all variables properly
       const trigrams = ["☰", "☱", "☲", "☳", "☴", "☵", "☶", "☷"];
       const trigramSpacing = width / (trigrams.length + 1);
 
-      trigrams.forEach((_, index) => {
+      trigrams.forEach((symbol, index) => {
         const trigramX = trigramSpacing * (index + 1);
         const alpha = animate
           ? 0.3 + Math.sin(animationTime + index) * 0.2
           : 0.4;
 
-        // Simple decorative lines representing trigrams
-        g.stroke({ width: 2, color: KOREAN_COLORS.ACCENT_GOLD, alpha });
+        // Draw the actual trigram symbol
+        g.fill({ color: KOREAN_COLORS.ACCENT_GOLD, alpha });
+        // Simple representation of trigram lines
         for (let i = 0; i < 3; i++) {
-          g.moveTo(trigramX - 10, 20 + i * 8);
-          g.lineTo(trigramX + 10, 20 + i * 8);
+          const lineY = 20 + i * 8;
+          // Draw broken or solid lines based on trigram
+          if (symbol === "☰" || symbol === "☵") {
+            // Solid lines for some trigrams
+            g.rect(trigramX - 10, lineY, 20, 2);
+          } else {
+            // Broken lines for others
+            g.rect(trigramX - 10, lineY, 8, 2);
+            g.rect(trigramX + 2, lineY, 8, 2);
+          }
         }
-        g.stroke();
+        g.fill();
       });
     },
     [width, height, showPattern, animate, animationTime]

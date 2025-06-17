@@ -66,24 +66,6 @@ export type {
 /**
  * @namespace CombatSystem
  * @description Complete Korean martial arts combat system with authentic mechanics
- */
-export const COMBAT_FEATURES = {
-  GRID_MOVEMENT: "octagonal_10x10_grid",
-  TRIGRAM_STANCES: "eight_trigram_system",
-  BODY_MECHANICS: "health_consciousness_balance_stamina",
-  AI_SYSTEM: "smart_computer_opponents",
-  KOREAN_AUTHENTICITY: "proper_terminology_and_respect",
-  CYBERPUNK_AESTHETICS: "neon_korean_futurism",
-} as const;
-
-export const SUPPORTED_GAME_MODES = {
-  VERSUS: "human_vs_human",
-  PRACTICE: "human_vs_ai",
-  TRAINING: "skill_development",
-} as const;
-/**
- * @namespace CombatSystem
- * @description Complete Korean martial arts combat system with authentic mechanics
  *
  * Key Features:
  * - **Grid-based movement**: 10x10 octagonal arena with position validation
