@@ -6,33 +6,39 @@ import type { Position } from "./common";
 import type { KoreanText } from "./korean-text";
 
 /**
- * Types of hit effects that can occur during combat
+ * @enum HitEffectType
+ * @description Types of hit effects that can occur during combat
  */
 export enum HitEffectType {
   HIT = "hit",
   CRITICAL_HIT = "critical_hit",
-  TECHNIQUE_HIT = "technique_hit",
-  VITAL_POINT_HIT = "vital_point_hit",
-  STUN = "stun",
-  KO = "ko",
   BLOCK = "block",
-  COUNTER = "counter",
-  DODGE = "dodge",
-  ABSORB = "absorb",
+  MISS = "miss", // Fix: Add missing MISS type
 }
 
 /**
- * Intensity levels for effects
+ * @enum EffectIntensity
+ * @description Intensity levels for status effects
  */
 export enum EffectIntensity {
   LOW = "low",
   MEDIUM = "medium",
   HIGH = "high",
-  EXTREME = "extreme",
+  CRITICAL = "critical",
 }
 
 /**
- * Base hit effect interface
+ * @interface Position
+ * @description Basic position interface
+ */
+export interface Position {
+  readonly x: number;
+  readonly y: number;
+}
+
+/**
+ * @interface HitEffect
+ * @description Visual effect displayed when attacks hit
  */
 export interface HitEffect {
   readonly id: string;
@@ -41,35 +47,19 @@ export interface HitEffect {
   readonly defenderId: string;
   readonly timestamp: number;
   readonly duration: number;
-  readonly position?: Position;
+  readonly position: Position; // Fix: Make required
   readonly intensity: number;
   readonly text?: string;
   readonly startTime: number;
 }
 
 /**
- * Extended hit effect for display with animation properties
- */
-export interface DisplayHitEffect extends HitEffect {
-  readonly opacity: number;
-  readonly scale: number;
-  readonly displayAlpha: number;
-  readonly displayY: number;
-  readonly displaySize: number;
-}
-
-/**
- * Status effect that can be applied to players
+ * @interface StatusEffect
+ * @description Status effects that can be applied to players
  */
 export interface StatusEffect {
   readonly id: string;
-  readonly type:
-    | "stun"
-    | "poison"
-    | "burn"
-    | "bleed"
-    | "strengthened"
-    | "weakened";
+  readonly type: string; // Changed from EffectType to string
   readonly intensity: EffectIntensity;
   readonly duration: number;
   readonly description: KoreanText;
@@ -80,28 +70,30 @@ export interface StatusEffect {
 }
 
 /**
- * Environmental effect interface for dojang and arena conditions
+ * @interface DisplayHitEffect
+ * @description Extended hit effect for display purposes
+ */
+export interface DisplayHitEffect extends HitEffect {
+  readonly displayDuration: number;
+  readonly fadeOutTime: number;
+  readonly scale: number;
+}
+
+/**
+ * @interface EnvironmentalEffect
+ * @description Environmental effects in the combat arena
  */
 export interface EnvironmentalEffect {
   readonly id: string;
-  readonly type: "lighting" | "weather" | "terrain" | "atmosphere";
-  readonly name: KoreanText;
-  readonly affectedArea: {
-    readonly x: number;
-    readonly y: number;
-    readonly width: number;
-    readonly height: number;
-  };
-  readonly effects: {
-    readonly visibilityModifier?: number;
-    readonly accuracyModifier?: number;
-    readonly movementModifier?: number;
-    readonly damageModifier?: number;
-  };
+  readonly type: string;
+  readonly position: Position;
+  readonly radius: number;
   readonly duration: number;
+  readonly intensity: number;
+  readonly startTime: number;
 }
 
-// Export types
+// Export all types
 export type {
   HitEffect,
   DisplayHitEffect,
@@ -147,6 +139,14 @@ export interface EffectSystem {
 // Fix: Remove duplicate HitEffect interface - use the complete one above
 
 // Fix: Update DisplayHitEffect interface to extend the main HitEffect
+export interface DisplayHitEffect extends HitEffect {
+  readonly opacity: number;
+  readonly scale: number;
+  readonly startTime: number;
+  readonly displayAlpha: number;
+  readonly displayY: number;
+  readonly displaySize: number;
+}
 export interface DisplayHitEffect extends HitEffect {
   readonly opacity: number;
   readonly scale: number;

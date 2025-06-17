@@ -3,13 +3,14 @@
  * @description Provides comprehensive mock functions for Black Trigram combat testing
  */
 
+import type { PlayerState } from "../../types/player";
 import {
   PlayerArchetype,
   TrigramStance,
   CombatAttackType,
   DamageType,
 } from "../../types/enums";
-import type { PlayerState, KoreanTechnique } from "../../types";
+import type { KoreanTechnique } from "../../types";
 
 const ARCHETYPE_STAT_MODIFIERS = {
   [PlayerArchetype.MUSA]: {
@@ -45,30 +46,26 @@ const ARCHETYPE_STAT_MODIFIERS = {
 } as const;
 
 /**
- * Creates a mock player with Korean martial arts attributes
+ * Creates a mock player with default or custom properties
  */
 export function createMockPlayer(
   overrides: Partial<PlayerState> = {}
 ): PlayerState {
-  const archetype = overrides.archetype || PlayerArchetype.MUSA;
-  const modifiers = ARCHETYPE_STAT_MODIFIERS[archetype];
-
   return {
-    id: overrides.id || "mock_player",
-    name: overrides.name || { korean: "테스트 무사", english: "Test Warrior" },
-    archetype,
-    currentStance: overrides.currentStance || TrigramStance.GEON,
-    health: overrides.health ?? modifiers.health,
-    maxHealth: overrides.maxHealth ?? modifiers.maxHealth,
-    ki: overrides.ki ?? modifiers.ki,
-    maxKi: overrides.maxKi ?? modifiers.maxKi,
+    id: overrides.id ?? "test-player",
+    name: overrides.name ?? { korean: "테스트 무사", english: "Test Warrior" },
+    archetype: overrides.archetype ?? PlayerArchetype.MUSA,
+    currentStance: overrides.currentStance ?? TrigramStance.GEON,
+    health: overrides.health ?? 100,
+    maxHealth: overrides.maxHealth ?? 100,
+    ki: overrides.ki ?? 100,
+    maxKi: overrides.maxKi ?? 100,
     stamina: overrides.stamina ?? 100,
     maxStamina: overrides.maxStamina ?? 100,
     balance: overrides.balance ?? 100,
     consciousness: overrides.consciousness ?? 100,
     pain: overrides.pain ?? 0,
     experiencePoints: overrides.experiencePoints ?? 0,
-    level: overrides.level ?? 1,
     isBlocking: overrides.isBlocking ?? false,
     isStunned: overrides.isStunned ?? false,
     isCountering: overrides.isCountering ?? false,
@@ -135,6 +132,17 @@ export function createArchetypePlayer(archetype: PlayerArchetype): PlayerState {
   return createMockPlayer({ archetype });
 }
 
+// Helper function to create players with specific levels
+export function createPlayerWithLevel(
+  level: number,
+  archetype: PlayerArchetype = PlayerArchetype.MUSA
+): PlayerState {
+  return createMockPlayer({
+    archetype,
+    experiencePoints: level * 100, // Fix: Remove level property
+  });
+}
+
 /**
  * Creates a basic Korean technique for testing
  */
@@ -164,14 +172,6 @@ export function createBasicTechnique(): KoreanTechnique {
     effects: [],
   };
 }
-
-export default createMockPlayer;
-return createMockPlayer({
-  health: 0,
-  consciousness: 0,
-  isStunned: true,
-  ...overrides,
-});
 
 export default createMockPlayer;
 export function createPlayerFromArchetype(

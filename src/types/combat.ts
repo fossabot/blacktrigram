@@ -173,6 +173,11 @@ export interface CombatStatsProps {
   readonly height?: number;
 }
 
+export interface Position {
+  readonly x: number;
+  readonly y: number;
+}
+
 export interface GridPosition {
   readonly x: number;
   readonly y: number;
@@ -182,7 +187,7 @@ export interface GridPosition {
 export interface OctagonalGrid {
   readonly size: number;
   readonly validPositions: readonly (readonly boolean[])[];
-  readonly center: Position; // Fix: Now Position is imported
+  readonly center: Position; // Fix: Use Position instead of undefined type
 }
 
 export interface GameEngineProps {

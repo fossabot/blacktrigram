@@ -3,100 +3,57 @@
  * @description Reusable layout primitives with Korean martial arts aesthetics
  */
 
-import React, { useCallback, useMemo } from "react";
+import React, { useMemo } from "react";
 import { extend } from "@pixi/react";
 import { Container, Graphics, Text } from "pixi.js";
 import "@pixi/layout";
-import { usePixiExtensions } from "../../../utils/pixiExtensions";
 import { KOREAN_COLORS } from "../../../types/constants";
 import type { KoreanText } from "../../../types/korean-text";
-import * as PIXI from "pixi.js";
 
 extend({ Container, Graphics, Text });
 
 /**
- * @interface KoreanPanelProps
- * @description Properties for Korean-themed panel components with layout support
+ * @description Korean-themed layout components with responsive design using @pixi/layout
  */
-export interface KoreanPanelProps {
-  readonly title?: KoreanText;
-  readonly x?: number;
-  readonly y?: number;
-  readonly width?: number;
-  readonly height?: number;
-  readonly variant?: "status" | "combat" | "menu" | "info";
-  readonly responsive?: boolean;
-  readonly children?: React.ReactNode;
-  readonly "data-testid"?: string;
-}
 
-/**
- * @interface KoreanButtonProps
- * @description Properties for Korean-themed button components
- */
-export interface KoreanButtonProps {
-  readonly text: KoreanText;
-  readonly onClick: () => void;
-  readonly x?: number;
-  readonly y?: number;
-  readonly width?: number;
-  readonly height?: number;
-  readonly variant?: "primary" | "secondary" | "combat" | "stance";
-  readonly disabled?: boolean;
-  readonly "data-testid"?: string;
-}
-
-/**
- * @interface ResponsiveCombatLayoutProps
- * @description Properties for responsive combat layout container
- */
-export interface ResponsiveCombatLayoutProps {
-  readonly screenWidth: number;
-  readonly screenHeight: number;
-  readonly children?: React.ReactNode;
-  readonly "data-testid"?: string;
-}
-
-/**
- * @constant KOREAN_LAYOUTS
- * @description Predefined layout configurations for Korean martial arts UI
- */
+// Layout constants for Korean martial arts UI
 export const KOREAN_LAYOUTS = {
-  // Combat HUD layouts
+  // Main layouts
+  MAIN_CONTAINER: {
+    width: "100%",
+    height: "100%",
+    flexDirection: "column" as const,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 20,
+  },
+
+  // Combat layouts
   COMBAT_HUD: {
     width: "100%",
     height: 80,
     flexDirection: "row" as const,
-    justifyContent: "space-between" as const,
-    alignItems: "center" as const,
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: { left: 20, right: 20, top: 10, bottom: 10 },
   },
 
-  MOBILE_COMBAT_HUD: {
-    width: "100%",
-    height: 60,
-    flexDirection: "column" as const,
-    alignItems: "center" as const,
-    gap: 5,
-    padding: 10,
-  },
-
-  // Control layouts
   CONTROLS_ROW: {
     flexDirection: "row" as const,
     gap: 12,
-    alignItems: "center" as const,
-    justifyContent: "center" as const,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   CONTROLS_COLUMN: {
     flexDirection: "column" as const,
     gap: 8,
-    alignItems: "center" as const,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   // Panel layouts
-  STATUS_PANEL: {
+  PLAYER_STATUS_PANEL: {
     width: 200,
     flexDirection: "column" as const,
     gap: 12,
@@ -105,259 +62,302 @@ export const KOREAN_LAYOUTS = {
     borderRadius: 8,
   },
 
-  // Trigram selector grid
-  TRIGRAM_GRID: {
-    display: "flex",
+  // Mobile responsive layouts
+  MOBILE_CONTAINER: {
+    width: "100%",
+    flexDirection: "column" as const,
+    gap: 10,
+    padding: 10,
+  },
+
+  MOBILE_CONTROLS: {
+    width: "100%",
     flexDirection: "row" as const,
-    flexWrap: "wrap" as const,
-    justifyContent: "center" as const,
-    gap: 15,
-    maxWidth: 400,
-    padding: 20,
+    gap: 8,
+    justifyContent: "space-around",
   },
 } as const;
 
-/**
- * @component KoreanPanel
- * @description A themed panel component with Korean aesthetics and responsive layout
- */
-export const KoreanPanel: React.FC<KoreanPanelProps> = ({
-  title,
-  x = 0,
-  y = 0,
-  width = 200,
-  height = 300,
-  variant = "status",
-  responsive = false,
-  children,
-  "data-testid": testId = "korean-panel",
+// Korean Button Component
+export interface KoreanButtonProps {
+  readonly text: KoreanText;
+  readonly onClick: () => void;
+  readonly width?: number;
+  readonly height?: number;
+  readonly variant?: "primary" | "secondary" | "combat" | "stance";
+  readonly disabled?: boolean;
+  readonly "data-testid"?: string;
+}
+
+export const KoreanButton: React.FC<KoreanButtonProps> = ({
+  text,
+  onClick,
+  width = 120,
+  height = 40,
+  variant = "primary",
+  disabled = false,
+  "data-testid": testId,
 }) => {
-  usePixiExtensions();
-
-  const panelLayout = useMemo(() => {
-    const baseLayout = {
-      x,
-      y,
-      width: responsive ? "fit-content" : width,
-      height: responsive ? "fit-content" : height,
-      padding: 15,
-      flexDirection: "column" as const,
-      gap: 10,
-    };
-
+  const buttonColors = useMemo(() => {
     switch (variant) {
       case "combat":
         return {
-          ...baseLayout,
-          backgroundColor: KOREAN_COLORS.UI_BACKGROUND_DARK,
-          borderColor: KOREAN_COLORS.NEGATIVE_RED,
-          borderWidth: 2,
+          background: KOREAN_COLORS.NEGATIVE_RED,
+          hover: KOREAN_COLORS.WARNING_YELLOW,
+          text: KOREAN_COLORS.TEXT_PRIMARY,
         };
-      case "menu":
+      case "stance":
         return {
-          ...baseLayout,
-          backgroundColor: KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
-          borderColor: KOREAN_COLORS.ACCENT_GOLD,
-          borderWidth: 1,
+          background: KOREAN_COLORS.ACCENT_BLUE,
+          hover: KOREAN_COLORS.PRIMARY_CYAN,
+          text: KOREAN_COLORS.TEXT_PRIMARY,
         };
-      case "info":
+      case "secondary":
         return {
-          ...baseLayout,
-          backgroundColor: KOREAN_COLORS.UI_BACKGROUND_LIGHT,
-          borderColor: KOREAN_COLORS.PRIMARY_CYAN,
-          borderWidth: 1,
+          background: KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
+          hover: KOREAN_COLORS.UI_BACKGROUND_LIGHT,
+          text: KOREAN_COLORS.TEXT_SECONDARY,
         };
-      default: // status
+      default: // primary
         return {
-          ...baseLayout,
-          backgroundColor: KOREAN_COLORS.UI_BACKGROUND_DARK,
-          borderColor: KOREAN_COLORS.ACCENT_GOLD,
-          borderWidth: 2,
+          background: KOREAN_COLORS.ACCENT_GOLD,
+          hover: KOREAN_COLORS.SECONDARY_YELLOW,
+          text: KOREAN_COLORS.UI_BACKGROUND_DARK,
         };
     }
-  }, [x, y, width, height, variant, responsive]);
-
-  const drawPanel = useCallback(
-    (g: PIXI.Graphics) => {
-      g.clear();
-
-      // Background
-      g.fill({ color: panelLayout.backgroundColor, alpha: 0.9 });
-      g.roundRect(0, 0, width, height, 8);
-      g.fill();
-
-      // Border
-      g.stroke({
-        width: panelLayout.borderWidth,
-        color: panelLayout.borderColor,
-        alpha: 0.8,
-      });
-      g.roundRect(0, 0, width, height, 8);
-      g.stroke();
-
-      // Korean corner decorations
-      if (variant === "status" || variant === "combat") {
-        g.fill({ color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.6 });
-        // Top left
-        g.rect(8, 8, 12, 2);
-        g.rect(8, 8, 2, 12);
-        // Top right
-        g.rect(width - 20, 8, 12, 2);
-        g.rect(width - 10, 8, 2, 12);
-        g.fill();
-      }
-    },
-    [width, height, variant, panelLayout]
-  );
+  }, [variant]);
 
   return (
-    <pixiContainer layout={panelLayout} data-testid={testId}>
-      <pixiGraphics draw={drawPanel} />
+    <pixiContainer
+      layout={{
+        width,
+        height,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+      data-testid={testId}
+    >
+      <pixiGraphics
+        draw={(g) => {
+          g.clear();
+          const alpha = disabled ? 0.5 : 1.0;
 
-      {/* Title */}
+          g.fill({ color: buttonColors.background, alpha });
+          g.roundRect(0, 0, width, height, 6);
+          g.fill();
+
+          g.stroke({ width: 2, color: buttonColors.hover, alpha: alpha * 0.8 });
+          g.roundRect(0, 0, width, height, 6);
+          g.stroke();
+        }}
+        interactive={!disabled}
+        onclick={disabled ? undefined : onClick}
+      />
+
+      <pixiText
+        text={text.korean}
+        style={{
+          fontSize: Math.min(14, height * 0.35),
+          fill: buttonColors.text,
+          fontWeight: "bold",
+          align: "center",
+          fontFamily: "Noto Sans KR",
+        }}
+        anchor={0.5}
+        x={width / 2}
+        y={height / 2 - 2}
+      />
+
+      <pixiText
+        text={text.english}
+        style={{
+          fontSize: Math.min(10, height * 0.25),
+          fill: buttonColors.text,
+          align: "center",
+          alpha: 0.8,
+        }}
+        anchor={0.5}
+        x={width / 2}
+        y={height / 2 + 8}
+      />
+    </pixiContainer>
+  );
+};
+
+// Korean Panel Component
+export interface KoreanPanelProps {
+  readonly children: React.ReactNode;
+  readonly width: number;
+  readonly height: number;
+  readonly title?: KoreanText;
+  readonly variant?: "default" | "combat" | "status";
+}
+
+export const KoreanPanel: React.FC<KoreanPanelProps> = ({
+  children,
+  width,
+  height,
+  title,
+  variant = "default",
+}) => {
+  const panelColors = useMemo(() => {
+    switch (variant) {
+      case "combat":
+        return {
+          background: KOREAN_COLORS.UI_BACKGROUND_DARK,
+          border: KOREAN_COLORS.NEGATIVE_RED,
+          title: KOREAN_COLORS.WARNING_YELLOW,
+        };
+      case "status":
+        return {
+          background: KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
+          border: KOREAN_COLORS.ACCENT_BLUE,
+          title: KOREAN_COLORS.PRIMARY_CYAN,
+        };
+      default:
+        return {
+          background: KOREAN_COLORS.UI_BACKGROUND_DARK,
+          border: KOREAN_COLORS.ACCENT_GOLD,
+          title: KOREAN_COLORS.ACCENT_GOLD,
+        };
+    }
+  }, [variant]);
+
+  return (
+    <pixiContainer
+      layout={{
+        width,
+        height,
+        flexDirection: "column",
+        gap: title ? 15 : 0,
+        padding: 10,
+      }}
+    >
+      <pixiGraphics
+        draw={(g) => {
+          g.clear();
+
+          // Panel background
+          g.fill({ color: panelColors.background, alpha: 0.9 });
+          g.roundRect(0, 0, width, height, 8);
+          g.fill();
+
+          // Panel border
+          g.stroke({ width: 2, color: panelColors.border, alpha: 0.8 });
+          g.roundRect(0, 0, width, height, 8);
+          g.stroke();
+
+          // Korean corner decorations
+          g.fill({ color: panelColors.border, alpha: 0.6 });
+          const cornerSize = 12;
+          // Top-left
+          g.rect(8, 8, cornerSize, 2);
+          g.rect(8, 8, 2, cornerSize);
+          // Top-right
+          g.rect(width - 20, 8, cornerSize, 2);
+          g.rect(width - 10, 8, 2, cornerSize);
+          // Bottom-left
+          g.rect(8, height - 10, cornerSize, 2);
+          g.rect(8, height - 20, 2, cornerSize);
+          // Bottom-right
+          g.rect(width - 20, height - 10, cornerSize, 2);
+          g.rect(width - 10, height - 20, 2, cornerSize);
+          g.fill();
+        }}
+      />
+
       {title && (
-        <pixiContainer layout={{ marginBottom: 10, alignSelf: "center" }}>
+        <pixiContainer
+          layout={{
+            width: "100%",
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: 10,
+          }}
+        >
           <pixiText
             text={title.korean}
             style={{
-              fontSize: 14,
-              fill: KOREAN_COLORS.ACCENT_GOLD,
+              fontSize: 16,
+              fill: panelColors.title,
               fontWeight: "bold",
               align: "center",
               fontFamily: "Noto Sans KR",
             }}
             anchor={0.5}
+            x={width / 2}
           />
           <pixiText
             text={title.english}
             style={{
-              fontSize: 10,
-              fill: KOREAN_COLORS.TEXT_SECONDARY,
+              fontSize: 12,
+              fill: panelColors.title,
               align: "center",
+              alpha: 0.8,
             }}
             anchor={0.5}
-            y={16}
+            x={width / 2}
+            y={20}
           />
         </pixiContainer>
       )}
 
-      {/* Content */}
       {children}
     </pixiContainer>
   );
 };
 
-/**
- * @component KoreanButton
- * @description A themed button component with Korean styling and hover effects
- */
-export const KoreanButton: React.FC<KoreanButtonProps> = ({
-  text,
-  onClick,
-  x = 0,
-  y = 0,
-  width = 120,
-  height = 40,
-  variant = "primary",
-  disabled = false,
-  "data-testid": testId = "korean-button",
+// Responsive Combat Layout Component
+export interface ResponsiveCombatLayoutProps {
+  readonly children: React.ReactNode;
+  readonly width: number;
+  readonly height: number;
+}
+
+export const ResponsiveCombatLayout: React.FC<ResponsiveCombatLayoutProps> = ({
+  children,
+  width,
+  height,
 }) => {
-  usePixiExtensions();
+  const isMobile = width < 768;
+  const isTablet = width >= 768 && width < 1024;
 
-  const [isHovered, setIsHovered] = React.useState(false);
-  const [isPressed, setIsPressed] = React.useState(false);
-
-  const buttonColors = useMemo(() => {
-    const baseColors = {
-      primary: {
-        bg: KOREAN_COLORS.ACCENT_GOLD,
-        text: KOREAN_COLORS.BLACK_SOLID,
-        border: KOREAN_COLORS.ACCENT_GOLD,
-      },
-      secondary: {
-        bg: KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
-        text: KOREAN_COLORS.TEXT_PRIMARY,
-        border: KOREAN_COLORS.ACCENT_BLUE,
-      },
-      combat: {
-        bg: KOREAN_COLORS.NEGATIVE_RED,
-        text: KOREAN_COLORS.WHITE_SOLID,
-        border: KOREAN_COLORS.NEGATIVE_RED,
-      },
-      stance: {
-        bg: KOREAN_COLORS.PRIMARY_CYAN,
-        text: KOREAN_COLORS.BLACK_SOLID,
-        border: KOREAN_COLORS.PRIMARY_CYAN,
-      },
-    };
-
-    return baseColors[variant];
-  }, [variant]);
-
-  const drawButton = useCallback(
-    (g: PIXI.Graphics) => {
-      g.clear();
-
-      const alpha = disabled ? 0.5 : isPressed ? 0.8 : isHovered ? 1.0 : 0.9;
-      const scale = isPressed ? 0.95 : 1.0;
-
-      // Button background
-      g.fill({ color: buttonColors.bg, alpha });
-      g.roundRect(0, 0, width * scale, height * scale, 6);
-      g.fill();
-
-      // Button border
-      g.stroke({
-        width: 2,
-        color: buttonColors.border,
-        alpha: alpha + 0.1,
-      });
-      g.roundRect(0, 0, width * scale, height * scale, 6);
-      g.stroke();
-
-      // Hover effect
-      if (isHovered && !disabled) {
-        g.fill({ color: KOREAN_COLORS.WHITE_SOLID, alpha: 0.1 });
-        g.roundRect(0, 0, width * scale, height * scale, 6);
-        g.fill();
-      }
-    },
-    [width, height, isHovered, isPressed, disabled, buttonColors]
-  );
-
-  const handlePointerDown = useCallback(() => {
-    if (!disabled) {
-      setIsPressed(true);
+  const layoutConfig = useMemo(() => {
+    if (isMobile) {
+      return {
+        flexDirection: "column" as const,
+        gap: 8,
+        padding: 10,
+      };
+    } else if (isTablet) {
+      return {
+        flexDirection: "row" as const,
+        gap: 12,
+        padding: 15,
+        flexWrap: "wrap" as const,
+      };
+    } else {
+      return {
+        flexDirection: "row" as const,
+        gap: 20,
+        padding: 20,
+        justifyContent: "space-between" as const,
+      };
     }
-  }, [disabled]);
-
-  const handlePointerUp = useCallback(() => {
-    if (!disabled) {
-      setIsPressed(false);
-      onClick();
-    }
-  }, [disabled, onClick]);
-
-  const handlePointerEnter = useCallback(() => {
-    if (!disabled) {
-      setIsHovered(true);
-    }
-  }, [disabled]);
-
-  const handlePointerLeave = useCallback(() => {
-    setIsHovered(false);
-    setIsPressed(false);
-  }, []);
+  }, [isMobile, isTablet]);
 
   return (
     <pixiContainer
-      x={x}
-      y={y}
       layout={{
         width,
         height,
-        justifyContent: "center",
-        alignItems: "center",
+        ...layoutConfig,
+      }}
+    >
+      {children}
+    </pixiContainer>
+  );
+};
       }}
       data-testid={testId}
     >

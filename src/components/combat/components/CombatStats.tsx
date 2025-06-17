@@ -83,28 +83,9 @@ export const CombatStats: React.FC<CombatStatsProps> = ({
       </pixiContainer>
 
       {/* Player stats comparison */}
-      <pixiContainer x={10} y={height - 40}>
+      <pixiContainer x={10} y={height - 60}>
         <pixiText
-          text={`${player1.name.korean}: ${player1.health}/${player1.maxHealth}`}
-          style={{
-            fontSize: 8,
-            fill: KOREAN_COLORS.PLAYER_1_COLOR,
-          }}
-        />
-        <pixiText
-          text={`${player2.name.korean}: ${player2.health}/${player2.maxHealth}`}
-          style={{
-            fontSize: 8,
-            fill: KOREAN_COLORS.PLAYER_2_COLOR,
-          }}
-          y={12}
-        />
-      </pixiContainer>
-
-      {/* Performance Comparison */}
-      <pixiContainer x={10} y={height - 30}>
-        <pixiText
-          text="성능 비교"
+          text="통계 - Statistics"
           style={{
             fontSize: 9,
             fill: KOREAN_COLORS.TEXT_SECONDARY,
@@ -129,10 +110,29 @@ export const CombatStats: React.FC<CombatStatsProps> = ({
           x={width - 80}
           y={12}
         />
+
+        <pixiText
+          text={`${player1.name.korean}: ${player1.health}/${player1.maxHealth}`}
+          style={{
+            fontSize: 8,
+            fill: KOREAN_COLORS.PLAYER_1_COLOR,
+          }}
+          y={24}
+        />
+
+        <pixiText
+          text={`${player2.name.korean}: ${player2.health}/${player2.maxHealth}`}
+          style={{
+            fontSize: 8,
+            fill: KOREAN_COLORS.PLAYER_2_COLOR,
+          }}
+          y={36}
+        />
       </pixiContainer>
     </pixiContainer>
   );
 };
 
+export default CombatStats;
 export default CombatStats;
 export default CombatStats;
