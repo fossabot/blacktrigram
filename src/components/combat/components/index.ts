@@ -49,7 +49,6 @@ export type {
 // Layout component exports
 export {
   ResponsiveCombatLayout,
-  KoreanPanel,
   KoreanButton,
   KOREAN_LAYOUTS,
 } from "../../ui/base/KoreanLayoutComponents";

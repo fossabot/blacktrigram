@@ -3,7 +3,7 @@
  * @description Reusable layout primitives with Korean martial arts aesthetics
  */
 
-import React, { useMemo } from "react";
+import React from "react";
 import { extend } from "@pixi/react";
 import { Container, Graphics, Text } from "pixi.js";
 import "@pixi/layout";
@@ -139,8 +139,6 @@ export const ResponsiveCombatLayout: React.FC<KoreanLayoutProps> = ({
   children,
   testId = "responsive-combat-layout",
 }) => {
-  const isMobile = width < 768;
-
   return (
     <pixiContainer
       layout={{
@@ -163,12 +161,10 @@ export const ResponsiveCombatLayout: React.FC<KoreanLayoutProps> = ({
 export const KoreanButton: React.FC<KoreanButtonProps> = ({
   text,
   onClick,
-  variant = "primary",
   disabled = false,
-  size = "medium",
+  variant = "primary",
   width = 120,
   height = 40,
-  testId = "korean-button",
 }) => {
   const getVariantColors = () => {
     switch (variant) {
@@ -210,9 +206,9 @@ export const KoreanButton: React.FC<KoreanButtonProps> = ({
 
   return (
     <pixiContainer
-      data-testid={testId}
+      data-testid="korean-button"
       interactive={!disabled}
-      onclick={disabled ? undefined : onClick}
+      onClick={disabled ? undefined : onClick}
     >
       <pixiGraphics
         draw={(g) => {
@@ -230,30 +226,15 @@ export const KoreanButton: React.FC<KoreanButtonProps> = ({
       <pixiText
         text={text.korean}
         style={{
-          fontSize: size === "small" ? 10 : size === "large" ? 16 : 12,
-          fill: colors.text,
+          fontSize: 12,
+          fill: KOREAN_COLORS.TEXT_PRIMARY,
           fontWeight: "bold",
           align: "center",
           fontFamily: "Noto Sans KR",
         }}
         anchor={0.5}
         x={width / 2}
-        y={height / 2 - 6}
-        alpha={alpha}
-      />
-
-      <pixiText
-        text={text.english}
-        style={{
-          fontSize: size === "small" ? 7 : size === "large" ? 10 : 8,
-          fill: colors.text,
-          align: "center",
-          alpha: 0.8,
-        }}
-        anchor={0.5}
-        x={width / 2}
-        y={height / 2 + 6}
-        alpha={alpha}
+        y={height / 2}
       />
     </pixiContainer>
   );

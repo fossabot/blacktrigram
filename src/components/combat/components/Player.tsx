@@ -6,7 +6,11 @@ import { Container, Graphics, Text } from "pixi.js";
 import { usePixiExtensions } from "../../../utils/pixiExtensions";
 import type { PlayerState } from "../../../types/player";
 import type { GridPosition } from "../../../types/combat";
-import { KOREAN_COLORS, PLAYER_ARCHETYPES_DATA, TRIGRAM_DATA } from "../../../types/constants";
+import {
+  KOREAN_COLORS,
+  PLAYER_ARCHETYPES_DATA,
+  TRIGRAM_DATA,
+} from "../../../types/constants";
 import { lightenColor } from "../../../utils/colorUtils";
 import * as PIXI from "pixi.js";
 
@@ -16,12 +20,12 @@ extend({ Container, Graphics, Text });
 export interface PlayerProps {
   readonly playerState: PlayerState;
   readonly playerIndex: number;
-  readonly onClick: () => void;
+  readonly onClick: (playerIndex: number) => void;
   readonly x?: number;
   readonly y?: number;
-  readonly gridPosition?: GridPosition;
-  readonly gridSize?: number;
   readonly isActive?: boolean;
+  readonly gridPosition?: { row: number; col: number }; // Fix type
+  readonly gridSize?: number;
   readonly showDetails?: boolean;
 }
 
@@ -31,9 +35,9 @@ export const Player: React.FC<PlayerProps> = ({
   onClick,
   x = 0,
   y = 0,
+  isActive = false,
   gridPosition,
   gridSize = 60,
-  isActive = false,
   showDetails = true,
 }) => {
   usePixiExtensions();
@@ -68,11 +72,12 @@ export const Player: React.FC<PlayerProps> = ({
       }
 
       // Health-based body color
-      const bodyColor = healthPercent > 0.6
-        ? archetypeData.colors.primary
-        : healthPercent > 0.3
-        ? lightenColor(archetypeData.colors.primary, -0.3)
-        : KOREAN_COLORS.NEGATIVE_RED;
+      const bodyColor =
+        healthPercent > 0.6
+          ? archetypeData.colors.primary
+          : healthPercent > 0.3
+          ? lightenColor(archetypeData.colors.primary, -0.3)
+          : KOREAN_COLORS.NEGATIVE_RED;
 
       const bodyAlpha = playerState.consciousness > 0 ? 0.9 : 0.4;
 
@@ -112,13 +117,7 @@ export const Player: React.FC<PlayerProps> = ({
         g.stroke();
       }
     },
-    [
-      playerState,
-      archetypeData,
-      stanceData,
-      healthPercent,
-      isActive,
-    ]
+    [playerState, archetypeData, stanceData, healthPercent, isActive]
   );
 
   const drawResourceBars = useCallback(
@@ -136,11 +135,12 @@ export const Player: React.FC<PlayerProps> = ({
       g.rect(-barWidth / 2, -80, barWidth, barHeight);
       g.fill();
 
-      const healthColor = healthPercent > 0.6
-        ? KOREAN_COLORS.POSITIVE_GREEN
-        : healthPercent > 0.3
-        ? KOREAN_COLORS.WARNING_YELLOW
-        : KOREAN_COLORS.NEGATIVE_RED;
+      const healthColor =
+        healthPercent > 0.6
+          ? KOREAN_COLORS.POSITIVE_GREEN
+          : healthPercent > 0.3
+          ? KOREAN_COLORS.WARNING_YELLOW
+          : KOREAN_COLORS.NEGATIVE_RED;
 
       g.fill({ color: healthColor, alpha: 0.9 });
       g.rect(-barWidth / 2, -80, barWidth * healthPercent, barHeight);
@@ -161,7 +161,12 @@ export const Player: React.FC<PlayerProps> = ({
       g.fill();
 
       g.fill({ color: KOREAN_COLORS.SECONDARY_YELLOW, alpha: 0.9 });
-      g.rect(-barWidth / 2, -80 + barSpacing * 2, barWidth * staminaPercent, barHeight);
+      g.rect(
+        -barWidth / 2,
+        -80 + barSpacing * 2,
+        barWidth * staminaPercent,
+        barHeight
+      );
       g.fill();
     },
     [showDetails, healthPercent, kiPercent, staminaPercent]
@@ -169,7 +174,8 @@ export const Player: React.FC<PlayerProps> = ({
 
   const drawStatusEffects = useCallback(
     (g: PIXI.Graphics) => {
-      if (!playerState.statusEffects || playerState.statusEffects.length === 0) return;
+      if (!playerState.statusEffects || playerState.statusEffects.length === 0)
+        return;
 
       g.clear();
 
@@ -177,11 +183,12 @@ export const Player: React.FC<PlayerProps> = ({
         const effectX = -30 + index * 15;
         const effectY = 65;
 
-        const effectColor = effect.type === "stun"
-          ? KOREAN_COLORS.WARNING_YELLOW
-          : effect.type === "poison"
-          ? KOREAN_COLORS.POSITIVE_GREEN
-          : KOREAN_COLORS.NEGATIVE_RED;
+        const effectColor =
+          effect.type === "stun"
+            ? KOREAN_COLORS.WARNING_YELLOW
+            : effect.type === "poison"
+            ? KOREAN_COLORS.POSITIVE_GREEN
+            : KOREAN_COLORS.NEGATIVE_RED;
 
         g.fill({ color: effectColor, alpha: 0.8 });
         g.circle(effectX, effectY, 6);
@@ -200,7 +207,7 @@ export const Player: React.FC<PlayerProps> = ({
       x={finalPosition.x}
       y={finalPosition.y}
       interactive={true}
-      onPointerDown={onClick}
+      onPointerDown={() => onClick(playerIndex)}
       data-testid={`player-${playerIndex}`}
     >
       <pixiGraphics draw={drawPlayerBody} />

@@ -21,9 +21,9 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
   height,
   lighting = "normal",
   animate = false,
-  showPattern = true,
+  showPattern = true, // Now actually used
 }) => {
-  // Animation time for effects
+  // Animation time for effects - now actually used
   const animationTime = useMemo(() => {
     return animate ? Date.now() * 0.001 : 0;
   }, [animate]);

@@ -13,7 +13,14 @@ export enum HitEffectType {
   HIT = "hit",
   CRITICAL_HIT = "critical_hit",
   BLOCK = "block",
-  MISS = "miss", // Fix: Add missing MISS type
+  MISS = "miss",
+  VITAL_POINT_HIT = "vital_point_hit", // Add missing type
+  TECHNIQUE_HIT = "technique_hit",
+  STUN = "stun",
+  KO = "ko",
+  COUNTER = "counter",
+  DODGE = "dodge",
+  ABSORB = "absorb",
 }
 
 /**
@@ -74,8 +81,12 @@ export interface StatusEffect {
  * @description Extended hit effect for display purposes
  */
 export interface DisplayHitEffect extends HitEffect {
-  readonly displayDuration: number;
-  readonly fadeOutTime: number;
+  readonly displayDuration: number; // Add missing property
+  readonly fadeOutTime: number; // Add missing property
+  readonly displayAlpha: number;
+  readonly displayY: number;
+  readonly displaySize: number;
+  readonly opacity: number;
   readonly scale: number;
 }
 
@@ -139,14 +150,6 @@ export interface EffectSystem {
 // Fix: Remove duplicate HitEffect interface - use the complete one above
 
 // Fix: Update DisplayHitEffect interface to extend the main HitEffect
-export interface DisplayHitEffect extends HitEffect {
-  readonly opacity: number;
-  readonly scale: number;
-  readonly startTime: number;
-  readonly displayAlpha: number;
-  readonly displayY: number;
-  readonly displaySize: number;
-}
 export interface DisplayHitEffect extends HitEffect {
   readonly opacity: number;
   readonly scale: number;

@@ -184,7 +184,8 @@ export interface Position {
 export interface GridPosition {
   readonly x: number;
   readonly y: number;
-  readonly isValid?: boolean;
+  readonly row?: number; // Add for compatibility
+  readonly col?: number; // Add for compatibility
 }
 
 /**
@@ -193,6 +194,7 @@ export interface GridPosition {
 export interface OctagonalGrid {
   readonly size: number;
   readonly validPositions: readonly (readonly boolean[])[];
+  readonly centerPosition?: GridPosition; // Add missing property
 }
 
 export interface GameEngineProps {

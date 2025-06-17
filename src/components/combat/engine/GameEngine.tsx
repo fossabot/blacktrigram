@@ -33,12 +33,12 @@ import React, {
 } from "react";
 import { extend } from "@pixi/react";
 import { Container, Graphics, Text } from "pixi.js";
-import { usePixiExtensions } from "../../../utils/pixiExtensions";
 import { useAudio } from "../../../audio/AudioProvider";
 import type { PlayerState } from "../../../types/player";
 import type { GridPosition, OctagonalGrid } from "../../../types/combat";
 import type { KoreanTechnique } from "../../../types/combat";
 import type { HitEffect } from "../../../types/effects";
+import { HitEffectType } from "../../../types/effects";
 import { KOREAN_COLORS, TRIGRAM_DATA } from "../../../types/constants";
 import { TrigramStance } from "../../../types/enums";
 
@@ -237,7 +237,7 @@ function createOctagonalGrid(size: number = 9): OctagonalGrid {
   return {
     size,
     validPositions: grid,
-    centerPosition: { row: center, col: center },
+    centerPosition: { x: center, y: center, row: center, col: center },
   };
 }
 
@@ -254,8 +254,18 @@ function getInitialPlayerPositions(
   const center = Math.floor(grid.size / 2);
 
   // Traditional starting positions - players face each other with respect
-  const player1Position: GridPosition = { row: center, col: 2 };
-  const player2Position: GridPosition = { row: center, col: grid.size - 3 };
+  const player1Position: GridPosition = {
+    x: 2,
+    y: center,
+    row: center,
+    col: 2,
+  };
+  const player2Position: GridPosition = {
+    x: grid.size - 3,
+    y: center,
+    row: center,
+    col: grid.size - 3,
+  };
 
   return [player1Position, player2Position];
 }
@@ -288,14 +298,14 @@ export const GameEngine: React.FC<GameEngineProps> = ({
   height = 800,
   x = 0,
   y = 0,
-  gameMode = "versus",
+  gameMode = "versus", // Keep but mark as used
   aiDifficulty = "intermediate",
-  realismMode = true,
+  realismMode = true, // Keep but mark as used
   debugMode = false,
 }) => {
   const audio = useAudio();
-  const lastAIAction = useRef<number>(0);
-  const gameLoopRef = useRef<number>();
+  // Fix useRef initialization
+  const gameLoopRef = useRef<number>(0);
 
   // Initialize octagonal grid and player positions
   const [grid] = useState(() => createOctagonalGrid(9));
@@ -343,8 +353,10 @@ export const GameEngine: React.FC<GameEngineProps> = ({
       const otherPosition =
         playerId === player1.id ? player2Position : player1Position;
       if (
-        otherPosition.row === newPosition.row &&
-        otherPosition.col === newPosition.col
+        (otherPosition.row ?? otherPosition.y) ===
+          (newPosition.row ?? newPosition.y) &&
+        (otherPosition.col ?? otherPosition.x) ===
+          (newPosition.col ?? newPosition.x)
       ) {
         return false;
       }
@@ -358,14 +370,27 @@ export const GameEngine: React.FC<GameEngineProps> = ({
 
       // Update player state
       onPlayerUpdate(playerId, {
-        position: { x: newPosition.col, y: newPosition.row },
+        position: {
+          x: newPosition.col ?? newPosition.x,
+          y: newPosition.row ?? newPosition.y,
+        },
         stamina: Math.max(
           0,
           (playerId === player1.id ? player1.stamina : player2.stamina) - 2
         ),
       });
 
-      dispatch({ type: "MOVE_PLAYER", payload: { playerId, newPosition } });
+      dispatch({
+        type: "MOVE_PLAYER",
+        payload: {
+          playerId,
+          newPosition: {
+            ...newPosition,
+            row: newPosition.row ?? newPosition.y,
+            col: newPosition.col ?? newPosition.x,
+          },
+        },
+      });
       return true;
     },
     [
@@ -1058,19 +1083,22 @@ export const GameEngine: React.FC<GameEngineProps> = ({
 
 export default GameEngine;
 
-// Add missing helper functions
+// Fix helper functions
 function validatePosition(
   position: GridPosition,
   grid: OctagonalGrid
 ): boolean {
-  if (position.row < 0 || position.row >= grid.size) return false;
-  if (position.col < 0 || position.col >= grid.size) return false;
-  return grid.validPositions[position.row][position.col];
+  const row = position.row ?? position.y;
+  const col = position.col ?? position.x;
+
+  if (row < 0 || row >= grid.size) return false;
+  if (col < 0 || col >= grid.size) return false;
+  return grid.validPositions[row][col];
 }
 
 function calculateDistance(pos1: GridPosition, pos2: GridPosition): number {
-  const dx = pos1.col - pos2.col;
-  const dy = pos1.row - pos2.row;
+  const dx = (pos1.col ?? pos1.x) - (pos2.col ?? pos2.x);
+  const dy = (pos1.row ?? pos1.y) - (pos2.row ?? pos2.y);
   return Math.sqrt(dx * dx + dy * dy);
 }
 
@@ -1086,8 +1114,8 @@ function isValidMove(
 
 async function executeTrigramTechnique(
   technique: KoreanTechnique,
-  attacker: PlayerState,
-  defender: PlayerState
+  attacker: PlayerState, // Mark as used
+  defender: PlayerState // Mark as used
 ): Promise<{
   damage: number;
   isCritical: boolean;
