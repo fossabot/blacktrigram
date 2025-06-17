@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback } from "react";
 import { extend } from "@pixi/react";
 import { Container, Graphics, Text } from "pixi.js";
 import { KOREAN_COLORS } from "../../../types/constants";
@@ -20,8 +20,10 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
   lighting = "normal",
   animate = false,
   showPattern = true,
-  ...props
 }) => {
+  // Animation time for effects
+  const animationTime = animate ? Date.now() * 0.001 : 0;
+
   const drawKoreanDojang = useCallback(
     (g: any) => {
       g.clear();

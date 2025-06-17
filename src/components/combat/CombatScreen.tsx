@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useCallback,
-  useMemo,
-  useReducer,
-  useEffect,
-} from "react";
+import React, { useCallback, useMemo, useReducer, useEffect } from "react";
 import { extend } from "@pixi/react";
 import { Container, Graphics, Text } from "pixi.js";
 import "@pixi/layout";

@@ -2,10 +2,8 @@ import React, { useCallback, useEffect } from "react";
 import { extend } from "@pixi/react";
 import { Container, Graphics, Text } from "pixi.js";
 import type { PlayerState } from "../../../types/player";
-import type { CombatResult } from "../../../types/combat";
 import { TrigramStance } from "../../../types/enums";
 import { KOREAN_COLORS } from "../../../types/constants";
-import { usePixiExtensions } from "../../../utils/pixiExtensions";
 
 // Extend PixiJS components
 extend({ Container, Graphics, Text });

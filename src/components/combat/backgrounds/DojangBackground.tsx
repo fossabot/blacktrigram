@@ -56,12 +56,12 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
     [width, height, lighting]
   );
 
-  // Traditional Korean patterns
+  // Traditional Korean patterns - Fix: Use showPattern variable
   const drawKoreanPatterns = useCallback(
     (g: PIXI.Graphics) => {
-      if (!showPattern) return;
-
       g.clear();
+
+      if (!showPattern) return; // Now properly used
 
       // Taegeuk (태극) pattern in corners
       const taegeukSize = 40;
@@ -109,14 +109,14 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
         g.fill();
       });
 
-      // Trigram symbols on walls
+      // Trigram symbols on walls - Fix: Use animationTime variable
       const trigrams = ["☰", "☱", "☲", "☳", "☴", "☵", "☶", "☷"];
       const trigramSpacing = width / (trigrams.length + 1);
 
       trigrams.forEach((_, index) => {
         const trigramX = trigramSpacing * (index + 1);
         const alpha = animate
-          ? 0.3 + Math.sin(Date.now() * 0.001 + index) * 0.2
+          ? 0.3 + Math.sin(animationTime + index) * 0.2 // Now uses animationTime
           : 0.4;
 
         // Simple decorative lines representing trigrams
@@ -128,7 +128,7 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
         g.stroke();
       });
     },
-    [width, height, showPattern, animate]
+    [width, height, showPattern, animate, animationTime] // Fix: Added missing dependencies
   );
 
   // Dojang floor pattern
@@ -197,7 +197,7 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
     [width, height]
   );
 
-  // Enhanced lighting effects
+  // Enhanced lighting effects - Fix: Use animationTime properly
   const drawLightingEffects = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
@@ -232,7 +232,7 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
 
         lanternPositions.forEach(([x, y]) => {
           const lightRadius = animate
-            ? 80 + Math.sin(animationTime + x) * 20
+            ? 80 + Math.sin(animationTime + x) * 20 // Now uses animationTime
             : 80;
 
           // Warm light glow
@@ -250,7 +250,7 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
     [width, height, lighting, animate, animationTime]
   );
 
-  // Atmospheric particles/effects
+  // Atmospheric particles/effects - Fix: Use animationTime throughout
   const drawAtmosphericEffects = useCallback(
     (g: PIXI.Graphics) => {
       if (!animate) return;
@@ -273,7 +273,7 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
         g.stroke({ width: 1, color: KOREAN_COLORS.ACCENT_CYAN, alpha: 0.3 });
 
         for (let i = 0; i < 5; i++) {
-          const offset = animationTime * 50 + i * 100;
+          const offset = animationTime * 50 + i * 100; // Now uses animationTime
           const y = offset % height;
 
           g.moveTo(0, y);
@@ -293,14 +293,14 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
       {/* Floor pattern */}
       <pixiGraphics draw={drawFloorPattern} />
 
-      {/* Korean traditional patterns */}
-      <pixiGraphics draw={drawKoreanPatterns} />
+      {/* Korean traditional patterns - Fix: Only show when showPattern is true */}
+      {showPattern && <pixiGraphics draw={drawKoreanPatterns} />}
 
       {/* Lighting effects */}
       <pixiGraphics draw={drawLightingEffects} />
 
-      {/* Atmospheric effects */}
-      <pixiGraphics draw={drawAtmosphericEffects} />
+      {/* Atmospheric effects - Fix: Only show when animate is true */}
+      {animate && <pixiGraphics draw={drawAtmosphericEffects} />}
 
       {/* Dojang nameplate */}
       <pixiContainer x={width / 2} y={30} data-testid="dojang-nameplate">
