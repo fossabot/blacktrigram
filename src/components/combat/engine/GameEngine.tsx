@@ -1,26 +1,6 @@
 /**
  * @fileoverview Korean Martial Arts Game Engine Component
  * @description Core game engine for Black Trigram combat simulation with authentic Korean martial arts mechanics
- *
- * @author Black Trigram Development Team
- * @version 1.0.0
- * @since 2024
- *
- * @remarks
- * This engine implements the eight trigram (팔괘) combat system with realistic
- * anatomical targeting, vital point strikes, and traditional Korean martial arts philosophy.
- *
- * @example
- * ```tsx
- * <GameEngine
- *   player1={musaWarrior}
- *   player2={shadowAssassin}
- *   onPlayerUpdate={(playerId, updates) => updatePlayerState(playerId, updates)}
- *   onCombatEnd={(winnerId) => handleVictory(winnerId)}
- *   width={1200}
- *   height={800}
- * />
- * ```
  */
 
 import React, {
@@ -41,14 +21,11 @@ import type { HitEffect } from "../../../types/effects";
 import { HitEffectType } from "../../../types/effects";
 import { KOREAN_COLORS, TRIGRAM_DATA } from "../../../types/constants";
 import { TrigramStance } from "../../../types/enums";
+import { createGridPosition } from "../../../types/combat";
 
 // Extend PixiJS components
 extend({ Container, Graphics, Text });
 
-/**
- * @interface GameEngineProps
- * @description Properties for the Korean martial arts game engine
- */
 export interface GameEngineProps {
   /** First player (left side) - typically human player */
   readonly player1: PlayerState;
@@ -148,7 +125,7 @@ function gameEngineReducer(
       return {
         ...state,
         combatLog: [
-          ...state.combatLog.slice(-9), // Keep last 10 entries
+          ...state.combatLog.slice(-9),
           `${action.payload.technique.name.korean} 실행! - ${action.payload.technique.name.english} executed!`,
         ],
         lastActionTime: Date.now(),
@@ -237,7 +214,7 @@ function createOctagonalGrid(size: number = 9): OctagonalGrid {
   return {
     size,
     validPositions: grid,
-    centerPosition: { x: center, y: center, row: center, col: center },
+    centerPosition: createGridPosition(center, center),
   };
 }
 
@@ -254,20 +231,10 @@ function getInitialPlayerPositions(
   const center = Math.floor(grid.size / 2);
 
   // Traditional starting positions - players face each other with respect
-  const player1Position: GridPosition = {
-    x: 2,
-    y: center,
-    row: center,
-    col: 2,
-  };
-  const player2Position: GridPosition = {
-    x: grid.size - 3,
-    y: center,
-    row: center,
-    col: grid.size - 3,
-  };
-
-  return [player1Position, player2Position];
+  return [
+    createGridPosition(center, 2),
+    createGridPosition(center, grid.size - 3),
+  ];
 }
 
 /**
@@ -298,13 +265,12 @@ export const GameEngine: React.FC<GameEngineProps> = ({
   height = 800,
   x = 0,
   y = 0,
-  gameMode = "versus", // Keep but mark as used
+  gameMode = "versus",
   aiDifficulty = "intermediate",
-  realismMode = true, // Keep but mark as used
+  realismMode = true,
   debugMode = false,
 }) => {
   const audio = useAudio();
-  // Fix useRef initialization
   const gameLoopRef = useRef<number>(0);
 
   // Initialize octagonal grid and player positions
@@ -316,13 +282,11 @@ export const GameEngine: React.FC<GameEngineProps> = ({
     () => getInitialPlayerPositions(grid)[1]
   );
 
-  // Add victory state
   const [victory, setVictory] = useState<{
     winner: PlayerState;
     method: string;
   } | null>(null);
 
-  // Game engine state management
   const [gameState, dispatch] = useReducer(gameEngineReducer, {
     activePlayerIndex: 0,
     phase: "preparation",
@@ -333,6 +297,26 @@ export const GameEngine: React.FC<GameEngineProps> = ({
     lastActionTime: Date.now(),
     aiThinking: false,
   });
+
+  // Apply game mode and realism settings
+  const gameSettings = useMemo(() => {
+    const baseSettings = {
+      realismMode,
+      showDebug: debugMode,
+      aiEnabled: gameMode !== "versus",
+      kiRegenRate: realismMode ? 0.5 : 1.0,
+      staminaRegenRate: realismMode ? 0.3 : 0.6,
+    };
+
+    switch (gameMode) {
+      case "training":
+        return { ...baseSettings, allowPause: true, slowMotion: true };
+      case "practice":
+        return { ...baseSettings, aiDifficulty: "beginner" };
+      default:
+        return baseSettings;
+    }
+  }, [gameMode, realismMode, debugMode]);
 
   /**
    * @function validateAndUpdatePosition
@@ -353,10 +337,8 @@ export const GameEngine: React.FC<GameEngineProps> = ({
       const otherPosition =
         playerId === player1.id ? player2Position : player1Position;
       if (
-        (otherPosition.row ?? otherPosition.y) ===
-          (newPosition.row ?? newPosition.y) &&
-        (otherPosition.col ?? otherPosition.x) ===
-          (newPosition.col ?? newPosition.x)
+        otherPosition.row === newPosition.row &&
+        otherPosition.col === newPosition.col
       ) {
         return false;
       }
@@ -371,8 +353,8 @@ export const GameEngine: React.FC<GameEngineProps> = ({
       // Update player state
       onPlayerUpdate(playerId, {
         position: {
-          x: newPosition.col ?? newPosition.x,
-          y: newPosition.row ?? newPosition.y,
+          x: newPosition.col,
+          y: newPosition.row,
         },
         stamina: Math.max(
           0,
@@ -382,14 +364,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({
 
       dispatch({
         type: "MOVE_PLAYER",
-        payload: {
-          playerId,
-          newPosition: {
-            ...newPosition,
-            row: newPosition.row ?? newPosition.y,
-            col: newPosition.col ?? newPosition.x,
-          },
-        },
+        payload: { playerId, newPosition },
       });
       return true;
     },
@@ -477,18 +452,17 @@ export const GameEngine: React.FC<GameEngineProps> = ({
           balance: Math.max(0, defender.balance - (result.impact || 0)),
         });
 
-        // Create visual effect
+        // Fix: Use proper HitEffectType enum
         const effect: HitEffect = {
           id: `technique_${Date.now()}`,
-          type: result.isCritical ? "critical_hit" : "hit",
+          type: result.isCritical ? HitEffectType.CRITICAL_HIT : HitEffectType.HIT,
           attackerId,
           defenderId,
           timestamp: Date.now(),
           duration: result.isCritical ? 1500 : 1000,
           position: {
             x: defenderPos.col * (width / grid.size) + width / (grid.size * 2),
-            y:
-              defenderPos.row * (height / grid.size) + height / (grid.size * 2),
+            y: defenderPos.row * (height / grid.size) + height / (grid.size * 2),
           },
           intensity: result.isCritical ? 1.5 : 1.0,
           startTime: Date.now(),
@@ -567,10 +541,10 @@ export const GameEngine: React.FC<GameEngineProps> = ({
       if (distance > 2 && healthRatio > 0.7) {
         // Move closer when healthy and far
         const possibleMoves = [
-          { row: aiPos.row, col: Math.max(0, aiPos.col - 1) },
-          { row: aiPos.row, col: Math.min(grid.size - 1, aiPos.col + 1) },
-          { row: Math.max(0, aiPos.row - 1), col: aiPos.col },
-          { row: Math.min(grid.size - 1, aiPos.row + 1), col: aiPos.col },
+          createGridPosition(aiPos.row, Math.max(0, aiPos.col - 1)),
+          createGridPosition(aiPos.row, Math.min(grid.size - 1, aiPos.col + 1)),
+          createGridPosition(Math.max(0, aiPos.row - 1), aiPos.col),
+          createGridPosition(Math.min(grid.size - 1, aiPos.row + 1), aiPos.col),
         ].filter(
           (pos) =>
             validatePosition(pos, grid) &&
@@ -665,28 +639,28 @@ export const GameEngine: React.FC<GameEngineProps> = ({
       let newPosition: GridPosition | null = null;
       switch (key.toLowerCase()) {
         case "w": // Move up
-          newPosition = {
-            row: Math.max(0, currentPos.row - 1),
-            col: currentPos.col,
-          };
+          newPosition = createGridPosition(
+            Math.max(0, currentPos.row - 1),
+            currentPos.col
+          );
           break;
         case "s": // Move down
-          newPosition = {
-            row: Math.min(grid.size - 1, currentPos.row + 1),
-            col: currentPos.col,
-          };
+          newPosition = createGridPosition(
+            Math.min(grid.size - 1, currentPos.row + 1),
+            currentPos.col
+          );
           break;
         case "a": // Move left
-          newPosition = {
-            row: currentPos.row,
-            col: Math.max(0, currentPos.col - 1),
-          };
+          newPosition = createGridPosition(
+            currentPos.row,
+            Math.max(0, currentPos.col - 1)
+          );
           break;
         case "d": // Move right
-          newPosition = {
-            row: currentPos.row,
-            col: Math.min(grid.size - 1, currentPos.col + 1),
-          };
+          newPosition = createGridPosition(
+            currentPos.row,
+            Math.min(grid.size - 1, currentPos.col + 1)
+          );
           break;
       }
 
@@ -837,7 +811,11 @@ export const GameEngine: React.FC<GameEngineProps> = ({
 
   // AI turn management
   useEffect(() => {
-    if (gameState.activePlayerIndex === 1 && gameState.phase === "combat") {
+    if (
+      gameState.activePlayerIndex === 1 &&
+      gameState.phase === "combat" &&
+      gameSettings.aiEnabled
+    ) {
       const aiDelay =
         aiDifficulty === "master"
           ? 800
@@ -853,6 +831,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({
     gameState.activePlayerIndex,
     gameState.phase,
     aiDifficulty,
+    gameSettings.aiEnabled,
     executeAITurn,
   ]);
 
@@ -865,16 +844,27 @@ export const GameEngine: React.FC<GameEngineProps> = ({
   // Resource regeneration game loop
   useEffect(() => {
     const gameLoop = (): void => {
-      // Regenerate ki and stamina slowly
       if (gameState.phase === "combat") {
         onPlayerUpdate(player1.id, {
-          ki: Math.min(player1.maxKi, player1.ki + 0.5),
-          stamina: Math.min(player1.maxStamina, player1.stamina + 0.3),
+          ki: Math.min(
+            player1.maxKi,
+            player1.ki + gameSettings.kiRegenRate
+          ),
+          stamina: Math.min(
+            player1.maxStamina,
+            player1.stamina + gameSettings.staminaRegenRate
+          ),
         });
 
         onPlayerUpdate(player2.id, {
-          ki: Math.min(player2.maxKi, player2.ki + 0.5),
-          stamina: Math.min(player2.maxStamina, player2.stamina + 0.3),
+          ki: Math.min(
+            player2.maxKi,
+            player2.ki + gameSettings.kiRegenRate
+          ),
+          stamina: Math.min(
+            player2.maxStamina,
+            player2.stamina + gameSettings.staminaRegenRate
+          ),
         });
       }
 
@@ -900,9 +890,9 @@ export const GameEngine: React.FC<GameEngineProps> = ({
     player2.maxStamina,
     player2.stamina,
     onPlayerUpdate,
+    gameSettings,
   ]);
 
-  // Grid visualization calculations
   const cellSize = useMemo(
     () => Math.min(width / grid.size, height / grid.size),
     [width, height, grid.size]
@@ -1023,7 +1013,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({
       )}
 
       {/* Debug Information */}
-      {debugMode && (
+      {gameSettings.showDebug && (
         <pixiContainer x={width - 200} y={50} data-testid="debug-info">
           <pixiText
             text={`P1 Pos: ${player1Position.row},${player1Position.col}`}
@@ -1083,22 +1073,20 @@ export const GameEngine: React.FC<GameEngineProps> = ({
 
 export default GameEngine;
 
-// Fix helper functions
+// Helper functions with proper type safety
 function validatePosition(
   position: GridPosition,
   grid: OctagonalGrid
 ): boolean {
-  const row = position.row ?? position.y;
-  const col = position.col ?? position.x;
-
+  const { row, col } = position;
   if (row < 0 || row >= grid.size) return false;
   if (col < 0 || col >= grid.size) return false;
   return grid.validPositions[row][col];
 }
 
 function calculateDistance(pos1: GridPosition, pos2: GridPosition): number {
-  const dx = (pos1.col ?? pos1.x) - (pos2.col ?? pos2.x);
-  const dy = (pos1.row ?? pos1.y) - (pos2.row ?? pos2.y);
+  const dx = pos1.col - pos2.col;
+  const dy = pos1.row - pos2.row;
   return Math.sqrt(dx * dx + dy * dy);
 }
 
@@ -1109,25 +1097,30 @@ function isValidMove(
 ): boolean {
   if (!validatePosition(to, grid)) return false;
   const distance = calculateDistance(from, to);
-  return distance <= 1.5; // Allow diagonal moves
+  return distance <= 1.5;
 }
 
 async function executeTrigramTechnique(
   technique: KoreanTechnique,
-  attacker: PlayerState, // Mark as used
-  defender: PlayerState // Mark as used
+  attacker: PlayerState,
+  defender: PlayerState
 ): Promise<{
   damage: number;
   isCritical: boolean;
   isVitalPoint: boolean;
   impact?: number;
 }> {
+  // Use technique and player data for realistic calculations
   const baseDamage = technique.damage || 15;
+  const attackerSkill = attacker.level * 2;
+  const defenderDefense = defender.defense || 5;
+
   const critRoll = Math.random();
   const isCritical = critRoll <= (technique.critChance || 0.1);
   const critMultiplier = isCritical ? technique.critMultiplier || 1.5 : 1.0;
 
-  const finalDamage = Math.round(baseDamage * critMultiplier);
+  const skillBonus = Math.max(0, attackerSkill - defenderDefense) * 0.5;
+  const finalDamage = Math.round((baseDamage + skillBonus) * critMultiplier);
 
   return {
     damage: finalDamage,

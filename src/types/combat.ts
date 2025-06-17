@@ -178,15 +178,21 @@ export interface Position {
   readonly y: number;
 }
 
-/**
- * Grid position for octagonal combat arena
- */
+// Fix GridPosition to ensure all properties are required
 export interface GridPosition {
   readonly x: number;
   readonly y: number;
-  readonly row?: number; // Add for compatibility
-  readonly col?: number; // Add for compatibility
+  readonly row: number;
+  readonly col: number;
 }
+
+// Add helper to create complete GridPosition
+export const createGridPosition = (row: number, col: number): GridPosition => ({
+  x: col,
+  y: row,
+  row,
+  col,
+});
 
 /**
  * Octagonal grid for traditional Korean martial arts combat

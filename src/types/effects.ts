@@ -14,13 +14,9 @@ export enum HitEffectType {
   CRITICAL_HIT = "critical_hit",
   BLOCK = "block",
   MISS = "miss",
-  VITAL_POINT_HIT = "vital_point_hit", // Add missing type
-  TECHNIQUE_HIT = "technique_hit",
-  STUN = "stun",
-  KO = "ko",
+  VITAL_POINT = "vital_point",
   COUNTER = "counter",
   DODGE = "dodge",
-  ABSORB = "absorb",
 }
 
 /**
@@ -54,7 +50,7 @@ export interface HitEffect {
   readonly defenderId: string;
   readonly timestamp: number;
   readonly duration: number;
-  readonly position: Position; // Fix: Make required
+  readonly position: { readonly x: number; readonly y: number }; // Fix: Make required
   readonly intensity: number;
   readonly text?: string;
   readonly startTime: number;
@@ -78,16 +74,15 @@ export interface StatusEffect {
 
 /**
  * @interface DisplayHitEffect
- * @description Extended hit effect for display purposes
+ * @description Enhanced hit effect interface for display purposes with calculated properties
  */
 export interface DisplayHitEffect extends HitEffect {
-  readonly displayDuration: number; // Add missing property
-  readonly fadeOutTime: number; // Add missing property
+  readonly opacity: number;
+  readonly scale: number;
+  readonly startTime: number;
   readonly displayAlpha: number;
   readonly displayY: number;
   readonly displaySize: number;
-  readonly opacity: number;
-  readonly scale: number;
 }
 
 /**

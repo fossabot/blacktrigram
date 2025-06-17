@@ -109,7 +109,6 @@ const koreanLabel = new Text("무사 (Musa)", {
 ### File Structure Best Practices
 
 - ALWAYS add proper file headers with filepath comments
-- ALWAYS end files with a single newline character
 - ALWAYS use proper imports organization (external, internal, relative)
 - AVOID creating incomplete or truncated code blocks
 
