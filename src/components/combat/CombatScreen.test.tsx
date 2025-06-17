@@ -14,9 +14,7 @@ import { PlayerArchetype, TrigramStance } from "../../types/enums";
 // Mock PixiJS components
 vi.mock("@pixi/react", () => ({
   extend: vi.fn(),
-  Container: "pixiContainer",
-  Graphics: "pixiGraphics",
-  Text: "pixiText",
+  Application: "Application",
 }));
 
 describe("CombatScreen", () => {
@@ -44,6 +42,11 @@ describe("CombatScreen", () => {
     isStunned: false,
     isCountering: false,
     statusEffects: [],
+    position: { x: 0, y: 0 },
+    hitsLanded: 0,
+    hitsTaken: 0,
+    totalDamageDealt: 0,
+    totalDamageReceived: 0,
     combatStats: {
       hitsLanded: 0,
       hitsTaken: 0,
@@ -52,6 +55,10 @@ describe("CombatScreen", () => {
       perfectStrikes: 0,
       criticalHits: 0,
     },
+    attackPower: 10,
+    defense: 5,
+    lastActionTime: 0,
+    recoveryTime: 500,
   });
 
   const defaultProps = {
@@ -178,181 +185,181 @@ describe("CombatScreen Features", () => {
   const mockOnPlayerUpdate = vi.fn();
   const mockOnGameEnd = vi.fn();
   const mockOnReturnToMenu = vi.fn();
-    it("should handle return to menu", () => {
-      renderCombatScreen();
-      const returnButton = screen.getByTestId("return-menu-button");
-      fireEvent.click(returnButton);
-      expect(mockOnReturnToMenu).toHaveBeenCalled();
-    });
+  it("should handle return to menu", () => {
+    renderCombatScreen();
+    const returnButton = screen.getByTestId("return-menu-button");
+    fireEvent.click(returnButton);
+    expect(mockOnReturnToMenu).toHaveBeenCalled();
+  });
+});
+
+describe("Combat Effects", () => {
+  it("should display hit effects", () => {
+    renderCombatScreen();
+    expect(screen.getByTestId("hit-effects-layer")).toBeInTheDocument();
   });
 
-  describe("Combat Effects", () => {
-    it("should display hit effects", () => {
-      renderCombatScreen();
-      expect(screen.getByTestId("hit-effects-layer")).toBeInTheDocument();
-    });
+  it("should handle effect completion", () => {
+    renderCombatScreen();
+    expect(screen.getByTestId("combat-screen")).toBeInTheDocument();
+  });
+});
 
-    it("should handle effect completion", () => {
-      renderCombatScreen();
+describe("Korean Martial Arts Features", () => {
+  it("should display Korean controls guide", () => {
+    renderCombatScreen();
+    expect(screen.getByTestId("korean-controls-guide")).toBeInTheDocument();
+  });
+
+  it("should use Korean terminology in combat", () => {
+    renderCombatScreen();
+    expect(screen.getByTestId("combat-log-panel")).toBeInTheDocument();
+  });
+
+  it("should handle all trigram stances", () => {
+    renderCombatScreen();
+
+    // Test all 8 trigram stance keys
+    for (let i = 1; i <= 8; i++) {
+      fireEvent.keyDown(document, { key: i.toString() });
+    }
+
+    expect(screen.getByTestId("combat-screen")).toBeInTheDocument();
+  });
+});
+
+describe("Responsive Design", () => {
+  it("should adapt to mobile dimensions", () => {
+    const mobileProps = { ...defaultProps, width: 400, height: 600 };
+    renderCombatScreen(mobileProps);
+    expect(screen.getByTestId("combat-screen")).toBeInTheDocument();
+  });
+
+  it("should adapt to desktop dimensions", () => {
+    const desktopProps = { ...defaultProps, width: 1920, height: 1080 };
+    renderCombatScreen(desktopProps);
+    expect(screen.getByTestId("combat-screen")).toBeInTheDocument();
+  });
+});
+
+describe("Performance", () => {
+  it("should handle rapid combat actions", async () => {
+    renderCombatScreen();
+
+    // Simulate rapid key presses
+    for (let i = 0; i < 10; i++) {
+      fireEvent.keyDown(document, { key: " " });
+      fireEvent.keyDown(document, { key: "Shift" });
+    }
+
+    await waitFor(() => {
       expect(screen.getByTestId("combat-screen")).toBeInTheDocument();
     });
   });
 
-  describe("Korean Martial Arts Features", () => {
-    it("should display Korean controls guide", () => {
-      renderCombatScreen();
-      expect(screen.getByTestId("korean-controls-guide")).toBeInTheDocument();
+  it("should maintain performance with many effects", () => {
+    renderCombatScreen();
+    expect(screen.getByTestId("combat-screen")).toBeInTheDocument();
+  });
+});
+
+describe("Error Handling", () => {
+  it("should handle missing player data gracefully", () => {
+    const invalidProps = {
+      ...defaultProps,
+      players: [],
+    };
+
+    expect(() => renderCombatScreen(invalidProps)).not.toThrow();
+  });
+
+  it("should handle invalid combat actions", () => {
+    renderCombatScreen();
+
+    // Test invalid key press
+    fireEvent.keyDown(document, { key: "InvalidKey" });
+
+    expect(screen.getByTestId("combat-screen")).toBeInTheDocument();
+  });
+});
+
+describe("Performance", () => {
+  it("should render efficiently with proper memoization", () => {
+    const { rerender } = renderWithPixi(
+      <AudioProvider>
+        <CombatScreen {...defaultProps} />
+      </AudioProvider>
+    );
+
+    // Re-render with same props should not cause issues
+    rerender(
+      <AudioProvider>
+        <CombatScreen {...defaultProps} />
+      </AudioProvider>
+    );
+
+    expect(screen.getByTestId("combat-screen")).toBeInTheDocument();
+  });
+
+  it("should handle rapid key presses without errors", async () => {
+    renderWithPixi(
+      <AudioProvider>
+        <CombatScreen {...defaultProps} />
+      </AudioProvider>
+    );
+
+    // Rapid fire key presses
+    for (let i = 1; i <= 8; i++) {
+      fireEvent.keyDown(window, { key: i.toString() });
+    }
+
+    await waitFor(() => {
+      expect(mockOnPlayerUpdate).toHaveBeenCalled();
     });
+  });
+});
 
-    it("should use Korean terminology in combat", () => {
-      renderCombatScreen();
-      expect(screen.getByTestId("combat-log-panel")).toBeInTheDocument();
-    });
+describe("Accessibility", () => {
+  it("should have proper test IDs for all interactive elements", () => {
+    renderWithPixi(
+      <AudioProvider>
+        <CombatScreen {...defaultProps} />
+      </AudioProvider>
+    );
 
-    it("should handle all trigram stances", () => {
-      renderCombatScreen();
+    // Essential test IDs should be present
+    const requiredTestIds = [
+      "combat-screen",
+      "combat-arena",
+      "combat-controls-container",
+      "return-menu-button",
+      "player1-status",
+      "player2-status",
+      "combat-log-panel",
+    ];
 
-      // Test all 8 trigram stance keys
-      for (let i = 1; i <= 8; i++) {
-        fireEvent.keyDown(document, { key: i.toString() });
-      }
-
-      expect(screen.getByTestId("combat-screen")).toBeInTheDocument();
+    requiredTestIds.forEach((testId) => {
+      expect(screen.getByTestId(testId)).toBeInTheDocument();
     });
   });
 
-  describe("Responsive Design", () => {
-    it("should adapt to mobile dimensions", () => {
-      const mobileProps = { ...defaultProps, width: 400, height: 600 };
-      renderCombatScreen(mobileProps);
-      expect(screen.getByTestId("combat-screen")).toBeInTheDocument();
-    });
+  it("should support keyboard navigation", () => {
+    renderWithPixi(
+      <AudioProvider>
+        <CombatScreen {...defaultProps} />
+      </AudioProvider>
+    );
 
-    it("should adapt to desktop dimensions", () => {
-      const desktopProps = { ...defaultProps, width: 1920, height: 1080 };
-      renderCombatScreen(desktopProps);
-      expect(screen.getByTestId("combat-screen")).toBeInTheDocument();
-    });
-  });
+    // All important keyboard controls should work
+    const keyTests = [
+      { key: " ", description: "space for attack" },
+      { key: "Shift", description: "shift for defend" },
+      { key: "Escape", description: "escape for pause" },
+      { key: "1", description: "number keys for stance" },
+    ];
 
-  describe("Performance", () => {
-    it("should handle rapid combat actions", async () => {
-      renderCombatScreen();
-
-      // Simulate rapid key presses
-      for (let i = 0; i < 10; i++) {
-        fireEvent.keyDown(document, { key: " " });
-        fireEvent.keyDown(document, { key: "Shift" });
-      }
-
-      await waitFor(() => {
-        expect(screen.getByTestId("combat-screen")).toBeInTheDocument();
-      });
-    });
-
-    it("should maintain performance with many effects", () => {
-      renderCombatScreen();
-      expect(screen.getByTestId("combat-screen")).toBeInTheDocument();
+    keyTests.forEach(({ key }) => {
+      expect(() => fireEvent.keyDown(window, { key })).not.toThrow();
     });
   });
-
-  describe("Error Handling", () => {
-    it("should handle missing player data gracefully", () => {
-      const invalidProps = {
-        ...defaultProps,
-        players: [],
-      };
-
-      expect(() => renderCombatScreen(invalidProps)).not.toThrow();
-    });
-
-    it("should handle invalid combat actions", () => {
-      renderCombatScreen();
-
-      // Test invalid key press
-      fireEvent.keyDown(document, { key: "InvalidKey" });
-
-      expect(screen.getByTestId("combat-screen")).toBeInTheDocument();
-    });
-  });
-
-  describe("Performance", () => {
-    it("should render efficiently with proper memoization", () => {
-      const { rerender } = renderWithPixi(
-        <AudioProvider>
-          <CombatScreen {...defaultProps} />
-        </AudioProvider>
-      );
-
-      // Re-render with same props should not cause issues
-      rerender(
-        <AudioProvider>
-          <CombatScreen {...defaultProps} />
-        </AudioProvider>
-      );
-
-      expect(screen.getByTestId("combat-screen")).toBeInTheDocument();
-    });
-
-    it("should handle rapid key presses without errors", async () => {
-      renderWithPixi(
-        <AudioProvider>
-          <CombatScreen {...defaultProps} />
-        </AudioProvider>
-      );
-
-      // Rapid fire key presses
-      for (let i = 1; i <= 8; i++) {
-        fireEvent.keyDown(window, { key: i.toString() });
-      }
-
-      await waitFor(() => {
-        expect(mockOnPlayerUpdate).toHaveBeenCalled();
-      });
-    });
-  });
-
-  describe("Accessibility", () => {
-    it("should have proper test IDs for all interactive elements", () => {
-      renderWithPixi(
-        <AudioProvider>
-          <CombatScreen {...defaultProps} />
-        </AudioProvider>
-      );
-
-      // Essential test IDs should be present
-      const requiredTestIds = [
-        "combat-screen",
-        "combat-arena",
-        "combat-controls-container",
-        "return-menu-button",
-        "player1-status",
-        "player2-status",
-        "combat-log-panel",
-      ];
-
-      requiredTestIds.forEach((testId) => {
-        expect(screen.getByTestId(testId)).toBeInTheDocument();
-      });
-    });
-
-    it("should support keyboard navigation", () => {
-      renderWithPixi(
-        <AudioProvider>
-          <CombatScreen {...defaultProps} />
-        </AudioProvider>
-      );
-
-      // All important keyboard controls should work
-      const keyTests = [
-        { key: " ", description: "space for attack" },
-        { key: "Shift", description: "shift for defend" },
-        { key: "Escape", description: "escape for pause" },
-        { key: "1", description: "number keys for stance" },
-      ];
-
-      keyTests.forEach(({ key }) => {
-        expect(() => fireEvent.keyDown(window, { key })).not.toThrow();
-      });
-    });
-  });
+});

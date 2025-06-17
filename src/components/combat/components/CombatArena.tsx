@@ -1,8 +1,13 @@
-import React from "react";
+import React, { useCallback } from "react";
+import { extend } from "@pixi/react";
+import { Container, Graphics } from "pixi.js";
 import { usePixiExtensions } from "../../../utils/pixiExtensions";
-import { Player } from "./Player"; // Fix: Use local Player component
+import { Player } from "./Player";
 import type { PlayerState } from "../../../types/player";
 import { KOREAN_COLORS } from "../../../types/constants";
+import * as PIXI from "pixi.js";
+
+extend({ Container, Graphics });
 
 /**
  * @interface CombatArenaProps
@@ -38,90 +43,75 @@ export interface CombatArenaProps {
  */
 export const CombatArena: React.FC<CombatArenaProps> = ({
   players,
-  onPlayerClick,
-  width = 1200,
-  height = 800,
+  onPlayerClick = () => {},
+  width = 800,
+  height = 600,
   x = 0,
   y = 0,
 }) => {
   usePixiExtensions();
 
+  const drawArenaBackground = useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+
+      // Arena floor
+      g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 0.3 });
+      g.rect(0, 0, width, height);
+      g.fill();
+
+      // Center line
+      g.stroke({ width: 2, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.5 });
+      g.moveTo(width / 2, 50);
+      g.lineTo(width / 2, height - 50);
+      g.stroke();
+
+      // Combat boundaries
+      g.stroke({ width: 3, color: KOREAN_COLORS.PRIMARY_CYAN, alpha: 0.4 });
+      g.rect(50, 50, width - 100, height - 100);
+      g.stroke();
+    },
+    [width, height]
+  );
+
+  const drawOctagonalBoundary = useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+
+      // Octagonal boundary for traditional Korean martial arts
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const radius = Math.min(width, height) * 0.35;
+      const sides = 8;
+
+      const points: [number, number][] = [];
+      for (let i = 0; i < sides; i++) {
+        const angle = (i * 2 * Math.PI) / sides;
+        points.push([
+          centerX + radius * Math.cos(angle),
+          centerY + radius * Math.sin(angle),
+        ]);
+      }
+
+      g.stroke({ width: 3, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.8 });
+      g.moveTo(points[0][0], points[0][1]);
+      for (let i = 1; i < points.length; i++) {
+        g.lineTo(points[i][0], points[i][1]);
+      }
+      g.lineTo(points[0][0], points[0][1]); // Close the octagon
+      g.stroke();
+    },
+    [width, height]
+  );
+
   return (
     <pixiContainer x={x} y={y} data-testid="combat-arena">
-      {/* Arena Floor with Korean Traditional Pattern */}
+      {/* Arena background */}
+      <pixiGraphics draw={drawArenaBackground} />
+
+      {/* Octagonal arena boundaries */}
       <pixiGraphics
-        draw={(g) => {
-          g.clear();
-
-          // Main arena background
-          g.fill({ color: KOREAN_COLORS.ARENA_BACKGROUND, alpha: 0.3 });
-          g.rect(0, 0, width, height);
-          g.fill();
-
-          // Traditional Korean floor pattern
-          g.stroke({ width: 1, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.2 });
-          const patternSize = 40;
-          for (let i = 0; i < width; i += patternSize) {
-            for (let j = 0; j < height; j += patternSize) {
-              g.moveTo(i, j);
-              g.lineTo(i + patternSize / 2, j + patternSize / 2);
-              g.lineTo(i, j + patternSize);
-              g.lineTo(i - patternSize / 2, j + patternSize / 2);
-              g.lineTo(i, j);
-            }
-          }
-          g.stroke();
-
-          // Center dividing line with Korean aesthetics
-          g.stroke({ width: 3, color: KOREAN_COLORS.UI_BORDER, alpha: 0.6 });
-          g.moveTo(width / 2, height * 0.1);
-          g.lineTo(width / 2, height * 0.9);
-          g.stroke();
-        }}
-        data-testid="arena-floor"
-      />
-
-      {/* Player Rendering */}
-      {players.map((player, index) => (
-        <Player
-          key={player.id}
-          playerState={player}
-          playerIndex={index}
-          x={index === 0 ? width * 0.25 : width * 0.75}
-          y={height * 0.7}
-          onClick={() => onPlayerClick?.(index)}
-          data-testid={`arena-player-${index}`}
-        />
-      ))}
-
-      {/* Octagonal Arena Boundaries (Korean Martial Arts Style) */}
-      <pixiGraphics
-        draw={(g) => {
-          g.clear();
-          g.stroke({ width: 4, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.9 });
-
-          // Octagonal boundary for traditional Korean martial arts
-          const centerX = width / 2;
-          const centerY = height / 2;
-          const radius = Math.min(width, height) * 0.35;
-          const sides = 8;
-
-          const points: [number, number][] = [];
-          for (let i = 0; i < sides; i++) {
-            const angle = (i * 2 * Math.PI) / sides;
-            points.push([
-              centerX + radius * Math.cos(angle),
-              centerY + radius * Math.sin(angle),
-            ]);
-          }
-
-          g.moveTo(points[0][0], points[0][1]);
-          for (let i = 1; i < points.length; i++) {
-            g.lineTo(points[i][0], points[i][1]);
-          }
-          g.lineTo(points[0][0], points[0][1]); // Close the octagon
-          g.stroke();
-        }}
+        draw={drawOctagonalBoundary}
         data-testid="arena-boundaries"
       />
 
@@ -196,6 +186,23 @@ export const CombatArena: React.FC<CombatArenaProps> = ({
           }}
         />
       </pixiContainer>
+
+      {/* Players */}
+      {players.map((player, index) => {
+        const playerX = index === 0 ? width * 0.25 : width * 0.75;
+        const playerY = height * 0.5;
+
+        return (
+          <Player
+            key={player.id}
+            playerState={player}
+            playerIndex={index}
+            onClick={() => onPlayerClick(index)}
+            x={playerX}
+            y={playerY}
+          />
+        );
+      })}
     </pixiContainer>
   );
 };

@@ -1,473 +1,316 @@
 // Complete Player UI component with Korean martial arts character rendering
 
-import React, { useMemo, useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
+import { extend } from "@pixi/react";
+import { Container, Graphics, Text } from "pixi.js";
 import { usePixiExtensions } from "../../../utils/pixiExtensions";
-import type { PlayerProps } from "../../../types/components";
-import {
-  KOREAN_COLORS,
-  PLAYER_ARCHETYPES_DATA,
-} from "../../../types/constants";
-import { getArchetypeColors } from "../../../utils/colorUtils";
+import type { PlayerState } from "../../../types/player";
+import type { GridPosition } from "../../../types/combat";
+import { KOREAN_COLORS, PLAYER_ARCHETYPES_DATA, TRIGRAM_DATA } from "../../../types/constants";
 import * as PIXI from "pixi.js";
 
-/**
- * Korean Martial Arts Player Visual Component
- * Renders a player with full Korean martial arts aesthetics and combat information
- */
+// Extend PixiJS components
+extend({ Container, Graphics, Text });
+
+export interface PlayerProps {
+  readonly playerState: PlayerState;
+  readonly playerIndex: number;
+  readonly onClick: () => void;
+  readonly x?: number;
+  readonly y?: number;
+  readonly gridPosition?: GridPosition;
+  readonly gridSize?: number;
+  readonly isActive?: boolean;
+}
+
 export const Player: React.FC<PlayerProps> = ({
   playerState,
   playerIndex,
   onClick,
   x = 0,
   y = 0,
-  width = 80,
-  height = 140,
-  visible = true,
-  alpha = 1.0,
+  gridPosition,
+  gridSize = 60,
+  isActive = false,
 }) => {
   usePixiExtensions();
 
-  // Get archetype-specific data and colors
-  const archetypeData = useMemo(() => {
-    return PLAYER_ARCHETYPES_DATA[playerState.archetype];
-  }, [playerState.archetype]);
+  const archetypeData = PLAYER_ARCHETYPES_DATA[playerState.archetype];
+  const stanceData = TRIGRAM_DATA[playerState.currentStance];
 
-  const archetypeColors = useMemo(() => {
-    return getArchetypeColors(playerState.archetype);
-  }, [playerState.archetype]);
+  // Calculate health and resource percentages
+  const healthPercent = playerState.health / playerState.maxHealth;
+  const kiPercent = playerState.ki / playerState.maxKi;
+  const staminaPercent = playerState.stamina / playerState.maxStamina;
 
-  // Calculate health-based visual states
-  const healthPercentage = useMemo(() => {
-    return playerState.health / playerState.maxHealth;
-  }, [playerState.health, playerState.maxHealth]);
+  // Position calculations for grid-based positioning
+  const finalX = useMemo(() => {
+    if (gridPosition) {
+      return gridPosition.col * gridSize + gridSize / 2;
+    }
+    return x;
+  }, [gridPosition, gridSize, x]);
 
-  const kiPercentage = useMemo(() => {
-    return playerState.ki / playerState.maxKi;
-  }, [playerState.ki, playerState.maxKi]);
+  const finalY = useMemo(() => {
+    if (gridPosition) {
+      return gridPosition.row * gridSize + gridSize / 2;
+    }
+    return y;
+  }, [gridPosition, gridSize, y]);
 
-  const staminaPercentage = useMemo(() => {
-    return playerState.stamina / playerState.maxStamina;
-  }, [playerState.stamina, playerState.maxStamina]);
-
-  // Determine player body color based on health and status
-  const playerBodyColor = useMemo(() => {
-    if (playerState.isStunned) return KOREAN_COLORS.WARNING_YELLOW;
-    if (healthPercentage > 0.7) return archetypeColors.primary;
-    if (healthPercentage > 0.4) return KOREAN_COLORS.WARNING_ORANGE;
-    if (healthPercentage > 0.15) return KOREAN_COLORS.WARNING_YELLOW;
-    return KOREAN_COLORS.NEGATIVE_RED;
-  }, [healthPercentage, playerState.isStunned, archetypeColors.primary]);
-
-  // Player body outline color based on combat state
-  const outlineColor = useMemo(() => {
-    if (playerState.isBlocking) return KOREAN_COLORS.PRIMARY_BLUE;
-    if (playerState.isCountering) return KOREAN_COLORS.ACCENT_PURPLE;
-    if (playerState.isStunned) return KOREAN_COLORS.NEGATIVE_RED;
-    return KOREAN_COLORS.TEXT_PRIMARY;
-  }, [playerState.isBlocking, playerState.isCountering, playerState.isStunned]);
-
-  // Combat status glow effect
-  const shouldGlow = useMemo(() => {
-    return (
-      playerState.isBlocking ||
-      playerState.isCountering ||
-      (playerState.statusEffects?.length ?? 0) > 0
-    );
-  }, [
-    playerState.isBlocking,
-    playerState.isCountering,
-    playerState.statusEffects,
-  ]);
-
-  // Main graphics drawing callback
+  // Player body rendering with Korean martial arts aesthetics
   const drawPlayerBody = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
 
-      // Body background
-      g.beginFill(playerBodyColor, 0.9);
-      g.drawRoundedRect(0, 0, width, height, 8);
-      g.endFill();
+      // Base body color from archetype
+      const bodyColor = archetypeData.colors.primary;
+      const alpha = healthPercent > 0.2 ? 0.9 : 0.5;
 
-      // Player outline with combat state indication
-      const lineWidth = shouldGlow ? 3 : 2;
-      g.lineStyle(lineWidth, outlineColor, 1);
-      g.drawRoundedRect(0, 0, width, height, 8);
+      // Active player highlight
+      if (isActive) {
+        g.stroke({ width: 3, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.8 });
+        g.circle(0, 0, 45);
+        g.stroke();
+      }
 
-      // Archetype symbol background
-      const symbolSize = 24;
-      const symbolX = width / 2 - symbolSize / 2;
-      const symbolY = 10;
+      // Main body
+      g.fill({ color: bodyColor, alpha });
+      g.circle(0, -30, 12); // Head
+      g.rect(-8, -18, 16, 30); // Torso
+      g.rect(-6, 12, 4, 20); // Left leg
+      g.rect(2, 12, 4, 20); // Right leg
+      g.rect(-18, -10, 8, 4); // Left arm
+      g.rect(10, -10, 8, 4); // Right arm
+      g.fill();
 
-      g.beginFill(archetypeColors.secondary, 0.8);
-      g.drawCircle(
-        symbolX + symbolSize / 2,
-        symbolY + symbolSize / 2,
-        symbolSize / 2
-      );
-      g.endFill();
+      // Stance aura effect
+      if (stanceData) {
+        g.stroke({ width: 2, color: stanceData.theme.primary, alpha: 0.6 });
+        g.circle(0, 0, 35);
+        g.stroke();
+      }
 
       // Combat state indicators
       if (playerState.isBlocking) {
-        g.lineStyle(2, KOREAN_COLORS.PRIMARY_BLUE, 0.8);
-        g.drawRect(5, 5, width - 10, height - 10);
+        g.stroke({ width: 3, color: KOREAN_COLORS.ACCENT_BLUE, alpha: 0.8 });
+        g.rect(-20, -25, 40, 50);
+        g.stroke();
       }
 
       if (playerState.isStunned) {
-        // Draw stun effect
+        // Stun effect with rotating symbols
+        g.fill({ color: KOREAN_COLORS.WARNING_YELLOW, alpha: 0.8 });
         for (let i = 0; i < 3; i++) {
-          g.lineStyle(1, KOREAN_COLORS.WARNING_YELLOW, 0.6);
-          g.drawCircle(width / 2, height / 2, 15 + i * 8);
+          const angle = (i / 3) * Math.PI * 2;
+          const x = Math.cos(angle) * 25;
+          const y = Math.sin(angle) * 25;
+          g.star(x, y, 4, 3, 6);
         }
+        g.fill();
       }
     },
     [
-      width,
-      height,
-      playerBodyColor,
-      outlineColor,
-      shouldGlow,
-      archetypeColors,
+      archetypeData,
+      stanceData,
+      healthPercent,
+      isActive,
       playerState.isBlocking,
       playerState.isStunned,
     ]
   );
 
-  // Health bar drawing
+  // Health bar above player
   const drawHealthBar = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
-      const barWidth = width - 8;
-      const barHeight = 8;
-      const barX = 4;
-      const barY = height + 10;
+
+      const barWidth = 40;
+      const barHeight = 4;
+      const barY = -45;
 
       // Background
-      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.8);
-      g.drawRoundedRect(barX, barY, barWidth, barHeight, 3);
-      g.endFill();
+      g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 0.8 });
+      g.rect(-barWidth / 2, barY, barWidth, barHeight);
+      g.fill();
 
       // Health fill
-      const healthWidth = barWidth * healthPercentage;
       const healthColor =
-        healthPercentage > 0.6
+        healthPercent > 0.6
           ? KOREAN_COLORS.POSITIVE_GREEN
-          : healthPercentage > 0.3
+          : healthPercent > 0.3
           ? KOREAN_COLORS.WARNING_YELLOW
           : KOREAN_COLORS.NEGATIVE_RED;
 
-      g.beginFill(healthColor, 0.9);
-      g.drawRoundedRect(barX, barY, healthWidth, barHeight, 3);
-      g.endFill();
-
-      // Border
-      g.lineStyle(1, KOREAN_COLORS.UI_BORDER, 0.8);
-      g.drawRoundedRect(barX, barY, barWidth, barHeight, 3);
+      g.fill({ color: healthColor, alpha: 0.9 });
+      g.rect(-barWidth / 2, barY, barWidth * healthPercent, barHeight);
+      g.fill();
     },
-    [width, height, healthPercentage]
+    [healthPercent]
   );
 
-  // Ki bar drawing
-  const drawKiBar = useCallback(
-    (g: PIXI.Graphics) => {
-      g.clear();
-      const barWidth = width - 8;
-      const barHeight = 6;
-      const barX = 4;
-      const barY = height + 22;
-
-      // Background
-      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.6);
-      g.drawRoundedRect(barX, barY, barWidth, barHeight, 2);
-      g.endFill();
-
-      // Ki fill
-      const kiWidth = barWidth * kiPercentage;
-      g.beginFill(KOREAN_COLORS.PRIMARY_CYAN, 0.8);
-      g.drawRoundedRect(barX, barY, kiWidth, barHeight, 2);
-      g.endFill();
-    },
-    [width, height, kiPercentage]
-  );
-
-  // Stamina bar drawing
-  const drawStaminaBar = useCallback(
-    (g: PIXI.Graphics) => {
-      g.clear();
-      const barWidth = width - 8;
-      const barHeight = 4;
-      const barX = 4;
-      const barY = height + 32;
-
-      // Background
-      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.4);
-      g.drawRoundedRect(barX, barY, barWidth, barHeight, 1);
-      g.endFill();
-
-      // Stamina fill
-      const staminaWidth = barWidth * staminaPercentage;
-      g.beginFill(KOREAN_COLORS.SECONDARY_YELLOW, 0.7);
-      g.drawRoundedRect(barX, barY, staminaWidth, barHeight, 1);
-      g.endFill();
-    },
-    [width, height, staminaPercentage]
-  );
-
-  // Status effects drawing
+  // Status effects visualization
   const drawStatusEffects = useCallback(
     (g: PIXI.Graphics) => {
+      if (!playerState.statusEffects || playerState.statusEffects.length === 0) {
+        return;
+      }
+
       g.clear();
 
-      const statusEffects = playerState.statusEffects ?? [];
-      if (statusEffects.length === 0) return;
+      playerState.statusEffects.slice(0, 3).forEach((effect, index) => {
+        const effectX = -15 + index * 10;
+        const effectY = -55;
 
-      // Draw status effect indicators
-      statusEffects.forEach((effect, index) => {
-        const effectX = 5 + index * 12;
-        const effectY = height - 15;
+        // Effect icon based on type
+        let effectColor = KOREAN_COLORS.WARNING_YELLOW;
+        if (effect.type === "burn") effectColor = KOREAN_COLORS.NEGATIVE_RED;
+        if (effect.type === "poison") effectColor = KOREAN_COLORS.POSITIVE_GREEN;
+        if (effect.type === "stun") effectColor = KOREAN_COLORS.ACCENT_BLUE;
 
-        // Fix: Use PIXI.ColorSource type for all effect colors
-        let effectColor: PIXI.ColorSource = KOREAN_COLORS.NEUTRAL_GRAY;
-        switch (effect.type) {
-          case "stun":
-            effectColor = KOREAN_COLORS.WARNING_YELLOW as PIXI.ColorSource;
-            break;
-          case "poison":
-            effectColor = KOREAN_COLORS.POSITIVE_GREEN as PIXI.ColorSource;
-            break;
-          case "burn":
-            effectColor = KOREAN_COLORS.ACCENT_RED as PIXI.ColorSource;
-            break;
-          case "bleed":
-            effectColor = KOREAN_COLORS.NEGATIVE_RED as PIXI.ColorSource;
-            break;
-          case "strengthened":
-            effectColor = KOREAN_COLORS.ACCENT_GOLD as PIXI.ColorSource;
-            break;
-          case "weakened":
-            effectColor = KOREAN_COLORS.UI_GRAY as PIXI.ColorSource;
-            break;
-        }
-
-        g.beginFill(effectColor, 0.8);
-        g.drawCircle(effectX, effectY, 4);
-        g.endFill();
+        g.fill({ color: effectColor, alpha: 0.8 });
+        g.circle(effectX, effectY, 3);
+        g.fill();
       });
     },
-    [height, playerState.statusEffects]
-  );
-
-  // Text styles with proper PIXI color typing
-  const nameTextStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontSize: 12,
-        fill: KOREAN_COLORS.TEXT_PRIMARY as PIXI.ColorSource,
-        fontFamily: '"Noto Sans KR", Arial, sans-serif',
-        align: "center",
-        fontWeight: "bold",
-      }),
-    []
-  );
-
-  const stanceTextStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontSize: 10,
-        fill: KOREAN_COLORS.ACCENT_GOLD as PIXI.ColorSource,
-        fontFamily: '"Noto Sans KR", Arial, sans-serif',
-        align: "center",
-      }),
-    []
-  );
-
-  const archetypeTextStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontSize: 8,
-        fill: archetypeColors.primary as PIXI.ColorSource,
-        fontFamily: '"Noto Sans KR", Arial, sans-serif',
-        align: "center",
-      }),
-    [archetypeColors.primary]
-  );
-
-  const healthTextStyle = useMemo(
-    () =>
-      new PIXI.TextStyle({
-        fontSize: 8,
-        fill: KOREAN_COLORS.TEXT_PRIMARY as PIXI.ColorSource,
-        fontFamily: "Arial, sans-serif",
-        align: "center",
-      }),
-    []
+    [playerState.statusEffects]
   );
 
   return (
     <pixiContainer
-      x={x}
-      y={y}
-      visible={visible}
-      alpha={alpha}
+      x={finalX}
+      y={finalY}
       interactive={true}
-      onPointerDown={onClick}
+      pointerdown={onClick}
       data-testid={`player-${playerIndex}`}
     >
       {/* Main player body */}
       <pixiGraphics draw={drawPlayerBody} />
 
-      {/* Player name (Korean) */}
-      <pixiText
-        text={playerState.name.korean}
-        style={nameTextStyle}
-        x={width / 2}
-        y={-25}
-        anchor={0.5}
-        data-testid={`player-${playerIndex}-name`}
-      />
-
-      {/* Archetype name */}
-      <pixiText
-        text={archetypeData.name.korean}
-        style={archetypeTextStyle}
-        x={width / 2}
-        y={-12}
-        anchor={0.5}
-      />
-
-      {/* Current stance indicator */}
-      <pixiText
-        text={`${playerState.currentStance} 자세`}
-        style={stanceTextStyle}
-        x={width / 2}
-        y={height + 45}
-        anchor={0.5}
-        data-testid={`player-${playerIndex}-stance`}
-      />
-
       {/* Health bar */}
       <pixiGraphics draw={drawHealthBar} />
-
-      {/* Ki bar */}
-      <pixiGraphics draw={drawKiBar} />
-
-      {/* Stamina bar */}
-      <pixiGraphics draw={drawStaminaBar} />
-
-      {/* Health value text */}
-      <pixiText
-        text={`${Math.round(playerState.health)}/${playerState.maxHealth}`}
-        style={healthTextStyle}
-        x={width / 2}
-        y={height + 14}
-        anchor={0.5}
-      />
 
       {/* Status effects */}
       <pixiGraphics draw={drawStatusEffects} />
 
-      {/* Combat state text */}
-      {(playerState.isBlocking ||
-        playerState.isStunned ||
-        playerState.isCountering) && (
-        <pixiText
-          text={
-            playerState.isBlocking
-              ? "방어"
-              : playerState.isStunned
-              ? "기절"
-              : playerState.isCountering
-              ? "반격"
-              : ""
-          }
-          style={
-            new PIXI.TextStyle({
-              fontSize: 10,
-              fill: KOREAN_COLORS.WARNING_YELLOW as PIXI.ColorSource,
-              fontFamily: '"Noto Sans KR", Arial, sans-serif',
-              align: "center",
-              fontWeight: "bold",
-            })
-          }
-          x={width / 2}
-          y={height / 2 + 20}
-          anchor={0.5}
-        />
-      )}
-
-      {/* Player index indicator (for debugging/development) */}
+      {/* Player name */}
       <pixiText
-        text={`P${playerIndex + 1}`}
-        style={
-          new PIXI.TextStyle({
-            fontSize: 8,
-            fill: KOREAN_COLORS.TEXT_TERTIARY as PIXI.ColorSource,
-            fontFamily: "Arial, sans-serif",
-          })
-        }
-        x={2}
-        y={2}
-        data-testid={`player-${playerIndex}-debug`}
+        text={playerState.name.korean}
+        style={{
+          fontSize: 8,
+          fill: KOREAN_COLORS.TEXT_PRIMARY,
+          align: "center",
+          fontFamily: "Noto Sans KR",
+        }}
+        anchor={0.5}
+        y={-60}
+        data-testid={`player-${playerIndex}-name`}
       />
 
-      {/* Consciousness indicator (if unconscious) */}
+      {/* Current stance display */}
+      <pixiText
+        text={`${stanceData.symbol} ${stanceData.name.korean}`}
+        style={{
+          fontSize: 6,
+          fill: stanceData.theme.primary,
+          align: "center",
+        }}
+        anchor={0.5}
+        y={40}
+        data-testid={`player-${playerIndex}-stance`}
+      />
+
+      {/* Unconscious indicator */}
+      {playerState.consciousness <= 0 && (
+        <pixiContainer data-testid={`player-${playerIndex}-unconscious`}>
+          <pixiGraphics
+            draw={(g) => {
+              g.clear();
+              g.fill({ color: KOREAN_COLORS.NEGATIVE_RED, alpha: 0.8 });
+              g.rect(-20, -5, 40, 10);
+              g.fill();
+            }}
+          />
+          <pixiText
+            text="기절"
+            style={{
+              fontSize: 8,
+              fill: KOREAN_COLORS.TEXT_PRIMARY,
+              align: "center",
+            }}
+            anchor={0.5}
+          />
+        </pixiContainer>
+      )}
+
+      {/* Debug info */}
+      <pixiText
+        text={`P${playerIndex + 1}`}
+        style={{
+          fontSize: 6,
+          fill: KOREAN_COLORS.TEXT_TERTIARY,
+          align: "center",
+        }}
+        anchor={0.5}
+        y={50}
+        data-testid={`player-${playerIndex}-debug`}
+      />
+    </pixiContainer>
+  );
+};
+
+export default Player;
+          {playerState.statusEffects.slice(0, 3).map((effect, index) => (
+            <pixiGraphics
+              key={effect.id}
+              draw={(g) => {
+                g.clear();
+                const effectColor =
+                  effect.type === "stun"
+                    ? KOREAN_COLORS.WARNING_YELLOW
+                    : effect.type === "poison"
+                    ? KOREAN_COLORS.POSITIVE_GREEN
+                    : KOREAN_COLORS.NEGATIVE_RED;
+
+                g.fill({ color: effectColor, alpha: 0.7 });
+                g.circle(index * 15, 0, 5);
+                g.fill();
+              }}
+            />
+          ))}
+        </pixiContainer>
+      )}
+
+      {/* Unconscious indicator */}
       {playerState.consciousness <= 0 && (
         <pixiText
-          text="의식잃음"
-          style={
-            new PIXI.TextStyle({
-              fontSize: 12,
-              fill: KOREAN_COLORS.NEGATIVE_RED as PIXI.ColorSource,
-              fontFamily: '"Noto Sans KR", Arial, sans-serif',
-              align: "center",
-              fontWeight: "bold",
-            })
-          }
-          x={width / 2}
-          y={height / 2}
+          text="기절"
+          style={{
+            fontSize: 8,
+            fill: KOREAN_COLORS.NEGATIVE_RED,
+            align: "center",
+            fontWeight: "bold",
+          }}
+          x={0}
+          y={55}
           anchor={0.5}
           data-testid={`player-${playerIndex}-unconscious`}
         />
       )}
 
-      {/* Status Effects Display */}
-      {playerState.statusEffects && playerState.statusEffects.length > 0 && (
-        <pixiContainer x={12} y={height - 50}>
-          <pixiText
-            text="상태 효과 Status Effects"
-            style={{
-              fontSize: 9,
-              fill: KOREAN_COLORS.WARNING_YELLOW,
-              fontWeight: "bold",
-            }}
-          />
-          <pixiContainer y={12}>
-            {playerState.statusEffects.slice(0, 4).map((effect, index) => (
-              <pixiGraphics
-                key={effect.id}
-                draw={(g) => {
-                  g.clear();
-                  const effectColor =
-                    effect.type === "stun"
-                      ? KOREAN_COLORS.WARNING_YELLOW
-                      : effect.type === "poison"
-                      ? KOREAN_COLORS.POSITIVE_GREEN
-                      : KOREAN_COLORS.NEGATIVE_RED;
-
-                  // Effect icon background
-                  g.beginFill(effectColor, 0.8);
-                  g.drawRoundedRect(index * 25, 0, 20, 20, 4);
-                  g.endFill();
-
-                  // Border
-                  g.lineStyle(1, effectColor, 1.0);
-                  g.drawRoundedRect(index * 25, 0, 20, 20, 4);
-                }}
-              />
-            ))}
-          </pixiContainer>
-        </pixiContainer>
-      )}
+      {/* Debug info */}
+      <pixiText
+        text={`P${playerIndex + 1}`}
+        style={{
+          fontSize: 6,
+          fill: KOREAN_COLORS.TEXT_TERTIARY,
+          align: "center",
+        }}
+        x={0}
+        y={65}
+        anchor={0.5}
+        data-testid={`player-${playerIndex}-debug`}
+      />
     </pixiContainer>
   );
 };

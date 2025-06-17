@@ -29,14 +29,17 @@ import React, {
   useReducer,
   useMemo,
   useRef,
+  useState,
 } from "react";
 import { extend } from "@pixi/react";
 import { Container, Graphics, Text } from "pixi.js";
 import { usePixiExtensions } from "../../../utils/pixiExtensions";
-import { useAudio } from "../../../audio/AudioProvider"; // Fix: Add missing import
+import { useAudio } from "../../../audio/AudioProvider";
 import type { PlayerState } from "../../../types/player";
 import type { GridPosition, OctagonalGrid } from "../../../types/combat";
-import { KOREAN_COLORS } from "../../../types/constants";
+import type { KoreanTechnique } from "../../../types/combat";
+import type { HitEffect } from "../../../types/effects";
+import { KOREAN_COLORS, TRIGRAM_DATA } from "../../../types/constants";
 import { TrigramStance } from "../../../types/enums";
 
 // Extend PixiJS components
@@ -302,6 +305,12 @@ export const GameEngine: React.FC<GameEngineProps> = ({
   const [player2Position, setPlayer2Position] = useState<GridPosition>(
     () => getInitialPlayerPositions(grid)[1]
   );
+
+  // Add victory state
+  const [victory, setVictory] = useState<{
+    winner: PlayerState;
+    method: string;
+  } | null>(null);
 
   // Game engine state management
   const [gameState, dispatch] = useReducer(gameEngineReducer, {
@@ -760,9 +769,11 @@ export const GameEngine: React.FC<GameEngineProps> = ({
         dispatch({ type: "SET_PHASE", payload: { phase: "victory" } });
         onCombatEnd?.("draw");
       } else if (player1Dead) {
+        setVictory({ winner: player2, method: "knockout" });
         dispatch({ type: "SET_PHASE", payload: { phase: "defeat" } });
         onCombatEnd?.(player2.id);
       } else if (player2Dead) {
+        setVictory({ winner: player1, method: "knockout" });
         dispatch({ type: "SET_PHASE", payload: { phase: "victory" } });
         onCombatEnd?.(player1.id);
       }
@@ -1046,3 +1057,54 @@ export const GameEngine: React.FC<GameEngineProps> = ({
 };
 
 export default GameEngine;
+
+// Add missing helper functions
+function validatePosition(
+  position: GridPosition,
+  grid: OctagonalGrid
+): boolean {
+  if (position.row < 0 || position.row >= grid.size) return false;
+  if (position.col < 0 || position.col >= grid.size) return false;
+  return grid.validPositions[position.row][position.col];
+}
+
+function calculateDistance(pos1: GridPosition, pos2: GridPosition): number {
+  const dx = pos1.col - pos2.col;
+  const dy = pos1.row - pos2.row;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function isValidMove(
+  from: GridPosition,
+  to: GridPosition,
+  grid: OctagonalGrid
+): boolean {
+  if (!validatePosition(to, grid)) return false;
+  const distance = calculateDistance(from, to);
+  return distance <= 1.5; // Allow diagonal moves
+}
+
+async function executeTrigramTechnique(
+  technique: KoreanTechnique,
+  attacker: PlayerState,
+  defender: PlayerState
+): Promise<{
+  damage: number;
+  isCritical: boolean;
+  isVitalPoint: boolean;
+  impact?: number;
+}> {
+  const baseDamage = technique.damage || 15;
+  const critRoll = Math.random();
+  const isCritical = critRoll <= (technique.critChance || 0.1);
+  const critMultiplier = isCritical ? technique.critMultiplier || 1.5 : 1.0;
+
+  const finalDamage = Math.round(baseDamage * critMultiplier);
+
+  return {
+    damage: finalDamage,
+    isCritical,
+    isVitalPoint: false,
+    impact: finalDamage * 0.3,
+  };
+}

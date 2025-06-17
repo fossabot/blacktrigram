@@ -3,12 +3,16 @@ import CombatSystem from "./CombatSystem";
 import { TrainingCombatSystem } from "./combat/TrainingCombatSystem";
 import { createPlayerFromArchetype } from "../utils/playerUtils";
 import {
+  createMockPlayer,
+  createBasicTechnique,
+} from "../test/mocks/playerMocks"; // Fix: Add missing import
+import {
   TrigramStance,
   PlayerArchetype,
   CombatAttackType,
   DamageType,
 } from "../types/enums";
-import type { PlayerState, KoreanTechnique } from "../types";
+import type { PlayerState, KoreanTechnique, CombatResult } from "../types"; // Fix: Add CombatResult import
 
 describe("CombatSystem", () => {
   let combatSystem: CombatSystem;
@@ -134,8 +138,12 @@ describe("CombatSystem", () => {
         effects: [],
         isCritical: false,
         isBlocked: false,
-        attackerId: player1.id,
-        defenderId: player2.id,
+        criticalHit: false,
+        vitalPointHit: false,
+        success: true,
+        timestamp: Date.now(),
+        attacker: player1,
+        defender: player2,
       };
 
       const { updatedAttacker, updatedDefender } = system.applyCombatResult(

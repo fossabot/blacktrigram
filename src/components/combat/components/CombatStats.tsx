@@ -1,8 +1,12 @@
-import React, { useCallback } from "react";
-import * as PIXI from "pixi.js";
+import React, { useCallback, useMemo } from "react";
+import { extend } from "@pixi/react";
+import { Container, Graphics, Text } from "pixi.js";
 import { usePixiExtensions } from "../../../utils/pixiExtensions";
-import { KOREAN_COLORS } from "../../../types/constants";
 import type { PlayerState } from "../../../types/player";
+import { KOREAN_COLORS } from "../../../types/constants";
+import * as PIXI from "pixi.js";
+
+extend({ Container, Graphics, Text });
 
 export interface CombatStatsProps {
   readonly players: readonly [PlayerState, PlayerState];
@@ -12,6 +16,12 @@ export interface CombatStatsProps {
   readonly width?: number;
   readonly height?: number;
 }
+
+const calculateAccuracy = (player: PlayerState): number => {
+  const totalAttempts = (player.hitsLanded || 0) + (player.hitsTaken || 0);
+  if (totalAttempts === 0) return 0;
+  return Math.round(((player.hitsLanded || 0) / totalAttempts) * 100);
+};
 
 export const CombatStats: React.FC<CombatStatsProps> = ({
   players,
@@ -23,82 +33,72 @@ export const CombatStats: React.FC<CombatStatsProps> = ({
 }) => {
   usePixiExtensions();
 
-  const panelDraw = useCallback(
+  const [player1, player2] = players;
+
+  const drawBackground = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
-      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.92);
-      g.lineStyle(2, KOREAN_COLORS.ACCENT_CYAN, 0.6);
-      g.drawRoundedRect(0, 0, width, height, 10);
-      g.endFill();
+      g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 0.9 });
+      g.roundRect(0, 0, width, height, 8);
+      g.fill();
 
-      // Traditional Korean pattern
-      g.lineStyle(1, KOREAN_COLORS.ACCENT_GOLD, 0.2);
-      g.drawCircle(width / 2, 25, 15);
-      g.moveTo(width / 2 - 15, 25);
-      g.arc(width / 2, 25, 15, Math.PI, 0);
+      g.stroke({ width: 2, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.6 });
+      g.roundRect(0, 0, width, height, 8);
+      g.stroke();
     },
     [width, height]
   );
 
-  const logPanelDraw = useCallback(
-    (g: PIXI.Graphics) => {
-      g.clear();
-      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.7);
-      g.drawRoundedRect(0, 0, width - 20, 80, 5);
-      g.endFill();
-    },
-    [width]
-  );
-
-  // Calculate accuracy safely
-  const calculateAccuracy = (player: PlayerState) => {
-    const hits = player.hitsLanded || 0;
-    const total = hits + (player.hitsTaken || 0);
-    return total > 0 ? Math.round((hits / total) * 100) : 0;
-  };
+  const visibleLog = useMemo(() => combatLog.slice(-5), [combatLog]);
 
   return (
     <pixiContainer x={x} y={y} data-testid="combat-stats">
-      {/* Main Panel */}
-      <pixiGraphics draw={panelDraw} />
+      <pixiGraphics draw={drawBackground} />
 
-      {/* Title */}
-      <pixiText
-        text="전투 현황 Combat Status"
-        style={{
-          fontSize: 14,
-          fill: KOREAN_COLORS.ACCENT_GOLD,
-          fontWeight: "bold",
-          align: "center",
-        }}
-        x={width / 2}
-        y={8}
-        anchor={0.5}
-      />
-
-      {/* Combat Log */}
-      <pixiContainer x={10} y={45}>
+      {/* Combat log */}
+      <pixiContainer x={10} y={10}>
         <pixiText
           text="전투 기록"
           style={{
-            fontSize: 10,
-            fill: KOREAN_COLORS.TEXT_SECONDARY,
+            fontSize: 12,
+            fill: KOREAN_COLORS.ACCENT_GOLD,
+            fontWeight: "bold",
           }}
         />
-        <pixiGraphics draw={logPanelDraw} y={12} />
 
-        {combatLog.slice(-4).map((entry, index) => (
+        {visibleLog.map((entry, index) => (
           <pixiText
             key={index}
             text={entry}
             style={{
-              fontSize: 8,
+              fontSize: 9,
               fill: KOREAN_COLORS.TEXT_PRIMARY,
+              wordWrap: true,
+              wordWrapWidth: width - 20,
             }}
-            x={5}
+            x={0}
             y={20 + index * 12}
           />
         ))}
+      </pixiContainer>
+
+      {/* Player stats comparison */}
+      <pixiContainer x={10} y={height - 40}>
+        <pixiText
+          text={`${player1.name.korean}: ${player1.health}/${player1.maxHealth}`}
+          style={{
+            fontSize: 8,
+            fill: KOREAN_COLORS.PLAYER_1_COLOR,
+          }}
+        />
+        <pixiText
+          text={`${player2.name.korean}: ${player2.health}/${player2.maxHealth}`}
+          style={{
+            fontSize: 8,
+            fill: KOREAN_COLORS.PLAYER_2_COLOR,
+          }}
+          y={12}
+        />
       </pixiContainer>
 
       {/* Performance Comparison */}
@@ -111,7 +111,6 @@ export const CombatStats: React.FC<CombatStatsProps> = ({
           }}
         />
 
-        {/* Accuracy comparison */}
         <pixiText
           text={`정확도: P1 ${calculateAccuracy(players[0])}%`}
           style={{
@@ -135,4 +134,5 @@ export const CombatStats: React.FC<CombatStatsProps> = ({
   );
 };
 
+export default CombatStats;
 export default CombatStats;

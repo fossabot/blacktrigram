@@ -99,16 +99,20 @@ export interface EndScreenProps extends BaseComponentProps {
 }
 
 // Combat component props
-export interface CombatArenaProps extends BaseComponentProps {
-  readonly players: readonly [PlayerState, PlayerState];
-  readonly onPlayerClick?: (playerIndex: number) => void;
+export interface CombatArenaProps {
+  readonly players: readonly PlayerState[];
+  readonly onPlayerClick?: (idx: number) => void;
+  readonly width?: number;
+  readonly height?: number;
+  readonly x?: number;
+  readonly y?: number;
 }
 
 export interface CombatHUDProps {
   readonly player1: PlayerState;
   readonly player2: PlayerState;
-  readonly currentRound: number;
   readonly timeRemaining: number;
+  readonly currentRound: number;
   readonly maxRounds: number;
   readonly isPaused?: boolean;
   readonly onPauseToggle?: () => void;
@@ -133,9 +137,84 @@ export interface CombatControlsProps {
   readonly y?: number;
 }
 
+export interface CombatStatsProps {
+  readonly players: readonly [PlayerState, PlayerState];
+  readonly combatLog: readonly string[];
+  readonly x?: number;
+  readonly y?: number;
+  readonly width?: number;
+  readonly height?: number;
+}
+
+export interface PlayerStatusPanelProps {
+  readonly player: PlayerState;
+  readonly position: "left" | "right";
+  readonly x?: number;
+  readonly y?: number;
+  readonly width?: number;
+  readonly height?: number;
+  readonly isSelected?: boolean;
+}
+
+export interface GameEngineProps {
+  readonly player1: PlayerState;
+  readonly player2: PlayerState;
+  readonly onPlayerUpdate: (
+    playerId: string,
+    updates: Partial<PlayerState>
+  ) => void;
+  readonly width: number;
+  readonly height: number;
+  readonly isPaused?: boolean;
+  readonly gameMode?: string;
+}
+
+export interface PlayerProps {
+  readonly playerState: PlayerState;
+  readonly playerIndex: number;
+  readonly onClick: () => void;
+  readonly x?: number;
+  readonly y?: number;
+  readonly gridPosition?: GridPosition;
+  readonly gridSize?: number;
+  readonly isActive?: boolean;
+}
+
+export interface PlayerVisualsProps {
+  readonly playerState: PlayerState;
+  readonly x?: number;
+  readonly y?: number;
+  readonly animationState?: string;
+  readonly scale?: number;
+  readonly showDetails?: boolean;
+  readonly showHitboxes?: boolean;
+}
+
 export interface HitEffectsLayerProps {
   readonly effects: readonly HitEffect[];
   readonly onEffectComplete: (effectId: string) => void;
+}
+
+/**
+ * Props for combat-related UI components
+ */
+export interface CombatStatsProps {
+  readonly players: readonly [PlayerState, PlayerState];
+  readonly combatLog: readonly string[];
+  readonly x?: number;
+  readonly y?: number;
+  readonly width?: number;
+  readonly height?: number;
+}
+
+export interface PlayerStatusPanelProps {
+  readonly player: PlayerState;
+  readonly position: "left" | "right";
+  readonly x?: number;
+  readonly y?: number;
+  readonly width?: number;
+  readonly height?: number;
+  readonly isSelected?: boolean;
 }
 
 // UI component props

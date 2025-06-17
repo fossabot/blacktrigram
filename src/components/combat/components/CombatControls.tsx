@@ -272,4 +272,3 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
 };
 
 export default CombatControls;
-export default CombatControls;
