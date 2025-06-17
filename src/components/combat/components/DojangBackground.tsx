@@ -1,23 +1,25 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { extend } from "@pixi/react";
 import { Container, Graphics, Text } from "pixi.js";
 import { KOREAN_COLORS } from "../../../types/constants";
+import * as PIXI from "pixi.js";
 
 extend({ Container, Graphics, Text });
 
 export interface DojangBackgroundProps {
   readonly width: number;
   readonly height: number;
-  readonly lighting?: "normal" | "dim" | "bright" | "cyberpunk" | "traditional";
+  readonly lighting?: "normal" | "cyberpunk" | "traditional";
   readonly animate?: boolean;
-  readonly "data-testid"?: string;
+  readonly showPattern?: boolean;
 }
 
 export const DojangBackground: React.FC<DojangBackgroundProps> = ({
   width,
   height,
   lighting = "normal",
-  animate = true,
+  animate = false,
+  showPattern = true,
   ...props
 }) => {
   const drawKoreanDojang = useCallback(
@@ -84,9 +86,42 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
     [width, height, lighting]
   );
 
+  const drawMainBackground = useCallback(
+    (g: PIXI.Graphics) => {
+      g.clear();
+
+      let gradient: PIXI.FillGradient;
+      switch (lighting) {
+        case "cyberpunk":
+          gradient = new PIXI.FillGradient(0, 0, width, height);
+          gradient.addColorStop(0, 0x0a0a0f);
+          gradient.addColorStop(0.5, 0x1a1a2e);
+          gradient.addColorStop(1, 0x0f0f23);
+          break;
+        case "traditional":
+          gradient = new PIXI.FillGradient(0, 0, width, height);
+          gradient.addColorStop(0, 0x2d1810);
+          gradient.addColorStop(0.5, 0x1a1a1a);
+          gradient.addColorStop(1, 0x0f0f0f);
+          break;
+        default:
+          gradient = new PIXI.FillGradient(0, 0, width, height);
+          gradient.addColorStop(0, 0x1a1a2e);
+          gradient.addColorStop(0.5, 0x16213e);
+          gradient.addColorStop(1, 0x0f0f23);
+      }
+
+      g.fill(gradient);
+      g.rect(0, 0, width, height);
+      g.fill();
+    },
+    [width, height, lighting]
+  );
+
   return (
-    <pixiContainer {...props}>
-      <pixiGraphics draw={drawKoreanDojang} data-testid="dojang-background" />
+    <pixiContainer data-testid="dojang-background">
+      <pixiGraphics draw={drawMainBackground} />
+      <pixiGraphics draw={drawKoreanDojang} />
     </pixiContainer>
   );
 };

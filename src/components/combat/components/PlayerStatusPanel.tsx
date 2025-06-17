@@ -137,9 +137,9 @@ export const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({
           y={12}
         />
         <pixiText
-          text={`${Math.round(player.health)}/${
-            player.maxHealth
-          } (${Math.round(healthPercent * 100)}%)`}
+          text={`${Math.round(player.health)}/${player.maxHealth} (${Math.round(
+            healthPercent * 100
+          )}%)`}
           style={{
             fontSize: 8,
             fill: KOREAN_COLORS.TEXT_PRIMARY,
@@ -174,9 +174,9 @@ export const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({
           y={12}
         />
         <pixiText
-          text={`${Math.round(player.ki)}/${
-            player.maxKi
-          } (${Math.round(kiPercent * 100)}%)`}
+          text={`${Math.round(player.ki)}/${player.maxKi} (${Math.round(
+            kiPercent * 100
+          )}%)`}
           style={{
             fontSize: 8,
             fill: KOREAN_COLORS.TEXT_PRIMARY,
@@ -360,108 +360,6 @@ export const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({
         />
 
         {/* Stats grid */}
-        <pixiContainer y={15}>
-          {/* Hits landed */}
-          <pixiText
-            text={`명중: ${player.hitsLanded || 0}`}
-            style={{
-              fontSize: 8,
-              fill: KOREAN_COLORS.POSITIVE_GREEN,
-            }}
-          />
-
-          {/* Hits taken */}
-          <pixiText
-            text={`피격: ${player.hitsTaken || 0}`}
-            style={{
-              fontSize: 8,
-              fill: KOREAN_COLORS.NEGATIVE_RED,
-            }}
-            x={75}
-          />
-
-          {/* Damage dealt */}
-          <pixiText
-            text={`가한 피해: ${Math.round(player.totalDamageDealt || 0)}`}
-            style={{
-              fontSize: 8,
-              fill: KOREAN_COLORS.TEXT_SECONDARY,
-            }}
-            y={12}
-          />
-
-          {/* Damage received */}
-          <pixiText
-            text={`받은 피해: ${Math.round(player.totalDamageReceived || 0)}`}
-            style={{
-              fontSize: 8,
-              fill: KOREAN_COLORS.TEXT_SECONDARY,
-            }}
-            y={24}
-          />
-
-          {/* Accuracy percentage - Fix safe calculation */}
-          <pixiText
-            text={`정확도: ${Math.round(
-              ((player.hitsLanded || 0) /
-                Math.max(
-                  1,
-                  (player.hitsLanded || 0) + (player.hitsTaken || 0)
-                )) *
-                100
-            )}%`}
-            style={{
-              fontSize: 8,
-              fill: KOREAN_COLORS.ACCENT_CYAN,
-            }}
-            y={36}
-          />
-        </pixiContainer>
-      </pixiContainer>
-
-      {/* Status Effects Display */}
-      {player.statusEffects && player.statusEffects.length > 0 && (
-        <pixiContainer x={12} y={height - 50}>
-          <pixiText
-            text="상태 효과 Status Effects"
-            style={{
-              fontSize: 9,
-              fill: KOREAN_COLORS.WARNING_YELLOW,
-              fontWeight: "bold",
-            }}
-          />
-          <pixiContainer y={12}>
-            {player.statusEffects.slice(0, 4).map((effect, index) => (
-              <pixiGraphics
-                key={effect.id}
-                draw={(g) => {
-                  g.clear();
-                  const effectColor =
-                    effect.type === "stun"
-                      ? KOREAN_COLORS.WARNING_YELLOW
-                      : effect.type === "poison"
-                      ? KOREAN_COLORS.POSITIVE_GREEN
-                      : KOREAN_COLORS.NEGATIVE_RED;
-
-                  // Effect icon background
-                  g.beginFill(effectColor, 0.8);
-                  g.drawRoundedRect(index * 25, 0, 20, 20, 4);
-                  g.endFill();
-
-                  // Border
-                  g.lineStyle(1, effectColor, 1.0);
-                  g.drawRoundedRect(index * 25, 0, 20, 20, 4);
-                }}
-              />
-            ))}
-          </pixiContainer>
-        </pixiContainer>
-      )}
-    </pixiContainer>
-  );
-};
-
-export default PlayerStatusPanel;
         <pixiContainer y={15}>
           {/* Hits landed */}
           <pixiText

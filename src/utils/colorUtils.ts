@@ -264,3 +264,174 @@ export function applyKoreanColorHarmony(
   // Implement traditional Korean color theory adjustments
   return baseColor;
 }
+
+/**
+ * @function lightenColor
+ * @description Lightens a hex color by a specified amount
+ *
+ * @param color - Hex color value (0xRRGGBB format)
+ * @param amount - Amount to lighten (0.0 to 1.0)
+ * @returns Lightened color value
+ *
+ * @example
+ * ```typescript
+ * const lighterGold = lightenColor(KOREAN_COLORS.ACCENT_GOLD, 0.3);
+ * ```
+ */
+export const lightenColor = (color: number, amount: number): number => {
+  // Extract RGB components
+  const r = (color >> 16) & 0xff;
+  const g = (color >> 8) & 0xff;
+  const b = color & 0xff;
+
+  // Calculate lightened values
+  const newR = Math.min(255, Math.floor(r + (255 - r) * amount));
+  const newG = Math.min(255, Math.floor(g + (255 - g) * amount));
+  const newB = Math.min(255, Math.floor(b + (255 - b) * amount));
+
+  // Combine back to hex
+  return (newR << 16) | (newG << 8) | newB;
+};
+
+/**
+ * @function darkenColor
+ * @description Darkens a hex color by a specified amount
+ *
+ * @param color - Hex color value (0xRRGGBB format)
+ * @param amount - Amount to darken (0.0 to 1.0)
+ * @returns Darkened color value
+ */
+export const darkenColor = (color: number, amount: number): number => {
+  // Extract RGB components
+  const r = (color >> 16) & 0xff;
+  const g = (color >> 8) & 0xff;
+  const b = color & 0xff;
+
+  // Calculate darkened values
+  const newR = Math.max(0, Math.floor(r * (1 - amount)));
+  const newG = Math.max(0, Math.floor(g * (1 - amount)));
+  const newB = Math.max(0, Math.floor(b * (1 - amount)));
+
+  // Combine back to hex
+  return (newR << 16) | (newG << 8) | newB;
+};
+
+/**
+ * @function interpolateColor
+ * @description Interpolates between two colors
+ *
+ * @param color1 - Starting color
+ * @param color2 - Ending color
+ * @param factor - Interpolation factor (0.0 to 1.0)
+ * @returns Interpolated color value
+ */
+export const interpolateColor = (
+  color1: number,
+  color2: number,
+  factor: number
+): number => {
+  const r1 = (color1 >> 16) & 0xff;
+  const g1 = (color1 >> 8) & 0xff;
+  const b1 = color1 & 0xff;
+
+  const r2 = (color2 >> 16) & 0xff;
+  const g2 = (color2 >> 8) & 0xff;
+  const b2 = color2 & 0xff;
+
+  const r = Math.floor(r1 + (r2 - r1) * factor);
+  const g = Math.floor(g1 + (g2 - g1) * factor);
+  const b = Math.floor(b1 + (b2 - b1) * factor);
+
+  return (r << 16) | (g << 8) | b;
+};
+
+/**
+ * @function getHealthColor
+ * @description Gets appropriate color for health percentage based on Korean martial arts theming
+ *
+ * @param healthPercent - Health as percentage (0.0 to 1.0)
+ * @returns Color value for health display
+ */
+export const getHealthColor = (healthPercent: number): number => {
+  if (healthPercent > 0.6) {
+    return KOREAN_COLORS.POSITIVE_GREEN;
+  } else if (healthPercent > 0.3) {
+    return KOREAN_COLORS.WARNING_YELLOW;
+  } else {
+    return KOREAN_COLORS.NEGATIVE_RED;
+  }
+};
+
+/**
+ * @function getArchetypeColor
+ * @description Gets primary color for a player archetype
+ *
+ * @param archetype - Player archetype
+ * @returns Primary color for the archetype
+ */
+export const getArchetypeColor = (archetype: string): number => {
+  const archetypeColors: Record<string, number> = {
+    musa: KOREAN_COLORS.ACCENT_GOLD,
+    amsalja: KOREAN_COLORS.UI_DARK_GRAY,
+    hacker: KOREAN_COLORS.PRIMARY_CYAN,
+    jeongbo_yowon: KOREAN_COLORS.ACCENT_BLUE,
+    jojik_pokryeokbae: KOREAN_COLORS.NEGATIVE_RED,
+  };
+
+  return archetypeColors[archetype] || KOREAN_COLORS.TEXT_PRIMARY;
+};
+
+/**
+ * @function hexToRgb
+ * @description Converts hex color to RGB object
+ *
+ * @param hex - Hex color value
+ * @returns RGB color object
+ */
+export const hexToRgb = (hex: number): { r: number; g: number; b: number } => {
+  return {
+    r: (hex >> 16) & 0xff,
+    g: (hex >> 8) & 0xff,
+    b: hex & 0xff,
+  };
+};
+
+/**
+ * @function rgbToHex
+ * @description Converts RGB values to hex color
+ *
+ * @param r - Red component (0-255)
+ * @param g - Green component (0-255)
+ * @param b - Blue component (0-255)
+ * @returns Hex color value
+ */
+export const rgbToHex = (r: number, g: number, b: number): number => {
+  return (r << 16) | (g << 8) | b;
+};
+
+/**
+ * @constant KOREAN_COLOR_THEMES
+ * @description Predefined Korean martial arts color themes
+ */
+export const KOREAN_COLOR_THEMES = {
+  traditional: {
+    primary: KOREAN_COLORS.ACCENT_GOLD,
+    secondary: KOREAN_COLORS.CARDINAL_EAST,
+    accent: KOREAN_COLORS.CARDINAL_SOUTH,
+    background: KOREAN_COLORS.CARDINAL_NORTH,
+  },
+  cyberpunk: {
+    primary: KOREAN_COLORS.PRIMARY_CYAN,
+    secondary: KOREAN_COLORS.ACCENT_BLUE,
+    accent: KOREAN_COLORS.ACCENT_PURPLE,
+    background: KOREAN_COLORS.UI_BACKGROUND_DARK,
+  },
+  combat: {
+    primary: KOREAN_COLORS.NEGATIVE_RED,
+    secondary: KOREAN_COLORS.WARNING_YELLOW,
+    accent: KOREAN_COLORS.POSITIVE_GREEN,
+    background: KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
+  },
+} as const;
+
+export type ColorTheme = keyof typeof KOREAN_COLOR_THEMES;

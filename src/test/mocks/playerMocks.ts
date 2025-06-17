@@ -3,7 +3,12 @@
  * @description Provides comprehensive mock functions for Black Trigram combat testing
  */
 
-import { PlayerArchetype, TrigramStance, CombatAttackType, DamageType } from "../../types/enums";
+import {
+  PlayerArchetype,
+  TrigramStance,
+  CombatAttackType,
+  DamageType,
+} from "../../types/enums";
 import type { PlayerState, KoreanTechnique } from "../../types";
 
 const ARCHETYPE_STAT_MODIFIERS = {
@@ -161,18 +166,25 @@ export function createBasicTechnique(): KoreanTechnique {
 }
 
 export default createMockPlayer;
-    critMultiplier: 1.3,
-    effects: [],
-  };
-}
+return createMockPlayer({
+  health: 0,
+  consciousness: 0,
+  isStunned: true,
+  ...overrides,
+});
 
 export default createMockPlayer;
+export function createPlayerFromArchetype(
+  archetype: PlayerArchetype,
+  level: number = 1
+): PlayerState {
+  const baseStats = ARCHETYPE_STAT_MODIFIERS[archetype];
   return createMockPlayer({
-    health: 0,
-    consciousness: 0,
-    isStunned: true,
-    ...overrides,
+    archetype,
+    level,
+    health: baseStats.health + level * 10,
+    maxHealth: baseStats.maxHealth + level * 10,
+    ki: baseStats.ki + level * 5,
+    maxKi: baseStats.maxKi + level * 5,
   });
 }
-
-export default createMockPlayer;

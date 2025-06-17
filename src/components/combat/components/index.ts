@@ -1,51 +1,55 @@
 /**
- * @fileoverview Combat components export index for Black Trigram Korean martial arts game
- * @description Centralized exports for all combat-related UI components
- *
- * @author Black Trigram Development Team
- * @version 1.0.0
- * @since 2024
+ * @fileoverview Combat Components Index - Centralized exports for all combat-related components
+ * @description Provides organized access to all Korean martial arts combat components
  */
 
-// Core combat components - named exports
+// Core combat components
 export { CombatArena } from "./CombatArena";
 export { CombatHUD } from "./CombatHUD";
 export { CombatControls } from "./CombatControls";
 export { CombatStats } from "./CombatStats";
 export { PlayerStatusPanel } from "./PlayerStatusPanel";
-export { GameEngine } from "./GameEngine";
 
-// Player components
+// Player and visual components
 export { Player } from "./Player";
 export { PlayerVisuals } from "./PlayerVisuals";
-
-// Effects and visual components
 export { HitEffectsLayer } from "./HitEffectsLayer";
 
-// Background components
-export { DojangBackground } from "./DojangBackground";
+// Game engine component
+export { GameEngine } from "./GameEngine";
 
-// Default exports for convenience (removing duplicates)
+// Background components
+export { DojangBackground } from "../backgrounds/DojangBackground";
+
+// Default exports for backward compatibility
 export { default as CombatArenaDefault } from "./CombatArena";
 export { default as CombatHUDDefault } from "./CombatHUD";
 export { default as CombatControlsDefault } from "./CombatControls";
 export { default as CombatStatsDefault } from "./CombatStats";
 export { default as PlayerStatusPanelDefault } from "./PlayerStatusPanel";
-export { default as GameEngineDefault } from "./GameEngine";
 export { default as PlayerDefault } from "./Player";
 export { default as PlayerVisualsDefault } from "./PlayerVisuals";
 export { default as HitEffectsLayerDefault } from "./HitEffectsLayer";
-export { default as DojangBackgroundDefault } from "./DojangBackground";
+export { default as GameEngineDefault } from "./GameEngine";
+export { default as DojangBackgroundDefault } from "../backgrounds/DojangBackground";
 
-// Re-export types for convenience
+// Type exports
 export type {
   CombatArenaProps,
   CombatHUDProps,
   CombatControlsProps,
   CombatStatsProps,
   PlayerStatusPanelProps,
-  GameEngineProps,
   PlayerProps,
   PlayerVisualsProps,
   HitEffectsLayerProps,
-} from "../../../types/components";
+  GameEngineProps,
+} from "../../../types/combat";
+
+// Layout component exports
+export {
+  ResponsiveCombatLayout,
+  KoreanPanel,
+  KoreanButton,
+  KOREAN_LAYOUTS,
+} from "../../ui/base/KoreanLayoutComponents";

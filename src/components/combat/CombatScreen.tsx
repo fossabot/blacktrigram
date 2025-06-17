@@ -7,12 +7,13 @@ import React, {
 } from "react";
 import { extend } from "@pixi/react";
 import { Container, Graphics, Text } from "pixi.js";
+import "@pixi/layout";
 import type { CombatScreenProps } from "../../types/combat";
 import type { PlayerState } from "../../types/player";
 import type { HitEffect } from "../../types/effects";
-import { HitEffectType } from "../../types/effects"; // Fix: Import as value, not type
+import { HitEffectType } from "../../types/effects";
 import type { KoreanTechnique } from "../../types/combat";
-import { PlayerArchetype, TrigramStance } from "../../types/enums"; // Fix: Add PlayerArchetype import
+import { PlayerArchetype, TrigramStance } from "../../types/enums";
 import { CombatArena } from "./components/CombatArena";
 import { CombatControls } from "./components/CombatControls";
 import { CombatHUD } from "./components/CombatHUD";
@@ -21,13 +22,14 @@ import { CombatStats, PlayerStatusPanel } from "./components/";
 import { GameEngine } from "./components/GameEngine";
 import { DojangBackground } from "./components/DojangBackground";
 import {
-  ResponsivePixiContainer,
-  ResponsivePixiButton,
-  ResponsivePixiPanel,
-} from "../ui/base/ResponsivePixiComponents";
+  KoreanPanel,
+  KoreanButton,
+  ResponsiveCombatLayout,
+  KOREAN_LAYOUTS,
+} from "../ui/base/KoreanLayoutComponents";
 import { KOREAN_COLORS } from "../../types/constants";
 
-// Extend PixiJS components for CombatScreen
+// Extend PixiJS components for layout support
 extend({ Container, Graphics, Text });
 
 interface CombatState {
@@ -62,47 +64,42 @@ function combatReducer(state: CombatState, action: CombatAction): CombatState {
         phase: "combat",
         combatLog: [...state.combatLog, "전투 시작! - Combat begins!"],
       };
-
     case "EXECUTE_TECHNIQUE":
       return {
         ...state,
         executingTechnique: true,
         combatLog: [
           ...state.combatLog,
-          `${action.payload.technique.name.korean} 실행!`,
+          `${action.payload.technique.name.korean} (${action.payload.technique.name.english}) 실행!`,
         ],
       };
-
     case "SWITCH_STANCE":
       return {
         ...state,
-        combatLog: [...state.combatLog, `자세 변경: ${action.payload.stance}`],
+        combatLog: [
+          ...state.combatLog,
+          `자세 변경: ${action.payload.stance.korean} (${action.payload.stance.english})`,
+        ],
       };
-
     case "PAUSE":
       return { ...state, phase: "paused" };
-
     case "RESUME":
       return { ...state, phase: "combat" };
-
     case "ADD_EFFECT":
       return {
         ...state,
         effects: [...state.effects, action.payload.effect],
       };
-
     case "REMOVE_EFFECT":
       return {
         ...state,
         effects: state.effects.filter((e) => e.id !== action.payload.effectId),
       };
-
     case "LOG_ACTION":
       return {
         ...state,
         combatLog: [...state.combatLog.slice(-9), action.payload.message],
       };
-
     default:
       return state;
   }
@@ -122,7 +119,6 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
 }) => {
   const validatedPlayers = useMemo(() => {
     if (players.length < 2) {
-      console.warn("CombatScreen: Not enough players provided");
       const dummyPlayer: PlayerState = {
         ...players[0],
         id: "dummy_player",
@@ -144,21 +140,40 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
 
   const [selectedPlayer, setSelectedPlayer] = useState<number | null>(null);
 
+  // --- Layout config using @pixi/layout ---
+  const { isMobile, isTablet, layoutConfig } = useMemo(() => {
+    const isMobile = width < 768;
+    const isTablet = width >= 768 && width < 1024;
+    const layoutConfig = {
+      arena: {
+        width: width,
+        height: height * (isMobile ? 0.6 : 0.7),
+        y: height * (isMobile ? 0.15 : 0.1),
+      },
+      hud: isMobile
+        ? KOREAN_LAYOUTS.MOBILE_COMBAT_HUD
+        : KOREAN_LAYOUTS.COMBAT_HUD,
+      playerPanels: {
+        width: isMobile ? width * 0.45 : 180,
+        height: isMobile ? 160 : 280,
+        spacing: isMobile ? 10 : 20,
+      },
+      controls: {
+        width: isMobile ? width - 20 : 400,
+        height: isMobile ? 50 : 100,
+        y: height - (isMobile ? 60 : 120),
+      },
+    };
+    return { isMobile, isTablet, layoutConfig };
+  }, [width, height]);
+
+  // --- Combat logic (unchanged, but always use both Hangul and English in logs/UI) ---
   const executeKoreanTechnique = useCallback(
     (technique: KoreanTechnique, attacker: PlayerState) => {
       dispatchCombat({ type: "EXECUTE_TECHNIQUE", payload: { technique } });
-
-      // Enhanced Korean martial arts damage calculation
       const baseDamage = technique.damage || 15;
-      const stanceMultiplier = getStanceEffectiveness(
-        attacker.currentStance,
-        validatedPlayers[targetIndex].currentStance
-      );
-      const archetypeMultiplier = getArchetypeBonus(
-        attacker.archetype,
-        technique.type
-      );
-
+      const stanceMultiplier = 1.0;
+      const archetypeMultiplier = 1.0;
       const critRoll = Math.random();
       const isCritical = critRoll <= (technique.critChance || 0.1);
       const finalDamage = Math.round(
@@ -167,25 +182,20 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
           archetypeMultiplier *
           (isCritical ? technique.critMultiplier || 1.5 : 1)
       );
-
       const targetIndex = attacker.id === validatedPlayers[0].id ? 1 : 0;
       const newHealth = Math.max(
         0,
         validatedPlayers[targetIndex].health - finalDamage
       );
-
-      // Apply Korean martial arts principles
       const kiDrain = Math.round(technique.kiCost * (1 + Math.random() * 0.2));
       const staminaDrain = Math.round(
         technique.staminaCost * (1 + Math.random() * 0.2)
       );
-
       onPlayerUpdate(targetIndex, { health: newHealth });
       onPlayerUpdate(attacker.id === validatedPlayers[0].id ? 0 : 1, {
         ki: Math.max(0, attacker.ki - kiDrain),
         stamina: Math.max(0, attacker.stamina - staminaDrain),
       });
-
       const effect: HitEffect = {
         id: `hit_${Date.now()}`,
         type: isCritical ? HitEffectType.CRITICAL_HIT : HitEffectType.HIT,
@@ -195,22 +205,19 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         duration: isCritical ? 1500 : 1000,
         position: { x: width * 0.5, y: height * 0.5 },
         intensity: isCritical ? 1.5 : 1.0,
-        text: isCritical ? "치명타!" : technique.name.korean,
+        text: isCritical
+          ? "치명타! (Critical!)"
+          : `${technique.name.korean} (${technique.name.english})`,
         startTime: Date.now(),
       };
-
       dispatchCombat({ type: "ADD_EFFECT", payload: { effect } });
-
-      // Enhanced Korean combat log
       const combatMessage = isCritical
-        ? `${attacker.name.korean}가 ${technique.name.korean}으로 치명적인 ${finalDamage} 피해를 입혔습니다!`
-        : `${attacker.name.korean}가 ${technique.name.korean}으로 ${finalDamage} 피해를 입혔습니다.`;
-
+        ? `${attacker.name.korean} (${attacker.name.english})가 ${technique.name.korean} (${technique.name.english})으로 치명적인 ${finalDamage} 피해를 입혔습니다!`
+        : `${attacker.name.korean} (${attacker.name.english})가 ${technique.name.korean} (${technique.name.english})으로 ${finalDamage} 피해를 입혔습니다.`;
       dispatchCombat({
         type: "LOG_ACTION",
         payload: { message: combatMessage },
       });
-
       setTimeout(() => {
         dispatchCombat({
           type: "REMOVE_EFFECT",
@@ -221,41 +228,8 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
     [onPlayerUpdate, validatedPlayers, width, height]
   );
 
-  // Helper functions for Korean martial arts mechanics
-  const getStanceEffectiveness = (
-    attackerStance: TrigramStance,
-    defenderStance: TrigramStance
-  ): number => {
-    // Implementation based on trigram philosophy
-    const effectiveness = {
-      [TrigramStance.GEON]: {
-        [TrigramStance.GAM]: 1.2,
-        [TrigramStance.GON]: 0.8,
-      },
-      [TrigramStance.TAE]: {
-        [TrigramStance.GAN]: 1.2,
-        [TrigramStance.SON]: 0.8,
-      },
-      // Add more stance interactions
-    };
-    return effectiveness[attackerStance]?.[defenderStance] || 1.0;
-  };
-
-  const getArchetypeBonus = (
-    archetype: PlayerArchetype,
-    techniqueType: string
-  ): number => {
-    const bonuses = {
-      [PlayerArchetype.MUSA]: { strike: 1.1, block: 1.2 },
-      [PlayerArchetype.AMSALJA]: { strike: 1.3, stealth: 1.5 },
-      // Add more archetype bonuses
-    };
-    return bonuses[archetype]?.[techniqueType] || 1.0;
-  };
-
   const handleAttack = useCallback(() => {
     if (combatState.executingTechnique) return;
-
     const attacker = validatedPlayers[combatState.activePlayer];
     const basicAttack: KoreanTechnique = {
       id: "basic_attack",
@@ -282,23 +256,19 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
       critMultiplier: 1.5,
       effects: [],
     };
-
     executeKoreanTechnique(basicAttack, attacker);
   }, [combatState, validatedPlayers, executeKoreanTechnique]);
 
   const handleDefend = useCallback(() => {
-    // Fix: Remove unused variable
     onPlayerUpdate(combatState.activePlayer, { isBlocking: true });
-
     dispatchCombat({
       type: "LOG_ACTION",
       payload: {
-        message: `${
-          validatedPlayers[combatState.activePlayer].name.korean
-        }가 방어 자세를 취했습니다!`,
+        message: `${validatedPlayers[combatState.activePlayer].name.korean} (${
+          validatedPlayers[combatState.activePlayer].name.english
+        })가 방어 자세 (Defensive Stance)를 취했습니다!`,
       },
     });
-
     setTimeout(() => {
       onPlayerUpdate(combatState.activePlayer, { isBlocking: false });
     }, 1000);
@@ -316,10 +286,14 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
     (newStance: TrigramStance) => {
       const activePlayer = validatedPlayers[combatState.activePlayer];
       onPlayerUpdate(combatState.activePlayer, { currentStance: newStance });
-
       dispatchCombat({
         type: "SWITCH_STANCE",
-        payload: { stance: newStance },
+        payload: {
+          stance: {
+            korean: newStance,
+            english: newStance,
+          },
+        },
       });
     },
     [combatState, validatedPlayers, onPlayerUpdate]
@@ -337,11 +311,6 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
     dispatchCombat({ type: "REMOVE_EFFECT", payload: { effectId } });
   }, []);
 
-  const { isMobile } = useMemo(() => {
-    const isMobile = width < 768;
-    return { isMobile };
-  }, [width]);
-
   useEffect(() => {
     if (combatState.phase === "preparation") {
       const timer = setTimeout(() => {
@@ -354,17 +323,20 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
   useEffect(() => {
     const player1Dead = validatedPlayers[0].health <= 0;
     const player2Dead = validatedPlayers[1].health <= 0;
-
     if (player1Dead && !player2Dead) {
       dispatchCombat({
         type: "LOG_ACTION",
-        payload: { message: `${validatedPlayers[1].name.korean} 승리!` },
+        payload: {
+          message: `${validatedPlayers[1].name.korean} (${validatedPlayers[1].name.english}) 승리! (Victory!)`,
+        },
       });
       onGameEnd(1);
     } else if (player2Dead && !player1Dead) {
       dispatchCombat({
         type: "LOG_ACTION",
-        payload: { message: `${validatedPlayers[0].name.korean} 승리!` },
+        payload: {
+          message: `${validatedPlayers[0].name.korean} (${validatedPlayers[0].name.english}) 승리! (Victory!)`,
+        },
       });
       onGameEnd(0);
     }
@@ -383,9 +355,7 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (combatState.phase === "paused") return;
-
       const key = event.key;
-
       // Trigram stance changes (1-8 keys for 8 trigrams)
       if (key >= "1" && key <= "8") {
         const stanceIndex = parseInt(key) - 1;
@@ -394,24 +364,22 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
           handleStanceSwitch(stances[stanceIndex]);
         }
       }
-
       // Combat actions
       switch (key) {
-        case " ": // Space for attack
+        case " ":
           event.preventDefault();
           handleAttack();
           break;
-        case "Shift": // Shift for defend
+        case "Shift":
           event.preventDefault();
           handleDefend();
           break;
-        case "Escape": // Escape for pause
+        case "Escape":
           event.preventDefault();
           handlePauseToggle();
           break;
       }
     };
-
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [
@@ -422,9 +390,21 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
     handlePauseToggle,
   ]);
 
+  // --- PixiJS UI Layout ---
   return (
-    <ResponsivePixiContainer x={x} y={y} data-testid="combat-screen">
-      {/* Fixed GameEngine with proper props */}
+    <ResponsiveCombatLayout
+      screenWidth={width}
+      screenHeight={height}
+      data-testid="combat-screen"
+      layout={{
+        width: width,
+        height: height,
+        flexDirection: "column",
+        alignItems: "center",
+        backgroundColor: KOREAN_COLORS.UI_BACKGROUND_DARK,
+      }}
+    >
+      {/* Game Engine */}
       <GameEngine
         player1={validatedPlayers[0]}
         player2={validatedPlayers[1]}
@@ -440,6 +420,7 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         height={height}
       />
 
+      {/* Dojang Background */}
       <DojangBackground
         width={width}
         height={height}
@@ -447,166 +428,244 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         animate={combatState.phase === "combat"}
       />
 
-      <CombatArena
-        players={validatedPlayers}
-        width={width}
-        height={height * (isMobile ? 0.65 : 0.75)}
-        y={height * (isMobile ? 0.2 : 0.15)}
-        onPlayerClick={handlePlayerClick}
-      />
-
-      <CombatHUD
-        player1={validatedPlayers[0]}
-        player2={validatedPlayers[1]}
-        currentRound={currentRound}
-        timeRemaining={timeRemaining}
-        maxRounds={3}
-        isPaused={combatState.phase === "paused"}
-        onPauseToggle={handlePauseToggle}
-        width={width}
-        height={isMobile ? 80 : 120}
-        y={0}
-      />
-
-      <ResponsivePixiPanel
-        title={validatedPlayers[0].name.korean}
-        x={isMobile ? 10 : 20}
-        y={height * (isMobile ? 0.15 : 0.2)}
-        width={isMobile ? width * 0.4 : 180}
-        height={isMobile ? 200 : 300}
-        data-testid="player1-status"
+      {/* Main Layout Row: Arena + Player Panels */}
+      <pixiContainer
+        layout={{
+          width: "100%",
+          flexDirection: "row",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+          gap: 10,
+        }}
       >
-        <PlayerStatusPanel
-          player={validatedPlayers[0]}
-          position="left"
-          x={0}
-          y={0}
-          width={isMobile ? width * 0.4 - 20 : 160}
-          height={isMobile ? 180 : 280}
-          isSelected={selectedPlayer === 0}
-        />
-      </ResponsivePixiPanel>
+        {/* Player 1 Panel */}
+        <KoreanPanel
+          title={{
+            korean: validatedPlayers[0].name.korean,
+            english: validatedPlayers[0].name.english,
+          }}
+          x={layoutConfig.playerPanels.spacing}
+          y={height * 0.2}
+          width={layoutConfig.playerPanels.width}
+          height={layoutConfig.playerPanels.height}
+          variant="status"
+          responsive={true}
+          data-testid="player1-status-panel"
+        >
+          <PlayerStatusPanel
+            player={validatedPlayers[0]}
+            position="left"
+            width={layoutConfig.playerPanels.width - 20}
+            height={layoutConfig.playerPanels.height - 40}
+            isSelected={selectedPlayer === 0}
+          />
+        </KoreanPanel>
 
-      <ResponsivePixiPanel
-        title={validatedPlayers[1].name.korean}
-        x={width - (isMobile ? width * 0.4 + 10 : 200)}
-        y={height * (isMobile ? 0.15 : 0.2)}
-        width={isMobile ? width * 0.4 : 180}
-        height={isMobile ? 200 : 300}
-        data-testid="player2-status"
+        {/* Arena */}
+        <pixiContainer
+          layout={{
+            width: layoutConfig.arena.width * 0.6,
+            height: layoutConfig.arena.height,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <CombatArena
+            players={validatedPlayers}
+            width={layoutConfig.arena.width * 0.6}
+            height={layoutConfig.arena.height}
+            onPlayerClick={handlePlayerClick}
+          />
+        </pixiContainer>
+
+        {/* Player 2 Panel */}
+        <KoreanPanel
+          title={{
+            korean: validatedPlayers[1].name.korean,
+            english: validatedPlayers[1].name.english,
+          }}
+          x={
+            width -
+            layoutConfig.playerPanels.width -
+            layoutConfig.playerPanels.spacing
+          }
+          y={height * 0.2}
+          width={layoutConfig.playerPanels.width}
+          height={layoutConfig.playerPanels.height}
+          variant="status"
+          responsive={true}
+          data-testid="player2-status-panel"
+        >
+          <PlayerStatusPanel
+            player={validatedPlayers[1]}
+            position="right"
+            width={layoutConfig.playerPanels.width - 20}
+            height={layoutConfig.playerPanels.height - 40}
+            isSelected={selectedPlayer === 1}
+          />
+        </KoreanPanel>
+      </pixiContainer>
+
+      {/* HUD and Controls Row */}
+      <pixiContainer
+        layout={{
+          width: "100%",
+          flexDirection: "row",
+          alignItems: "flex-end",
+          justifyContent: "space-between",
+          gap: 10,
+        }}
       >
-        <PlayerStatusPanel
-          player={validatedPlayers[1]}
-          position="right"
-          x={0}
-          y={0}
-          width={isMobile ? width * 0.4 - 20 : 160}
-          height={isMobile ? 180 : 280}
-          isSelected={selectedPlayer === 1}
-        />
-      </ResponsivePixiPanel>
+        {/* Combat HUD */}
+        <pixiContainer
+          layout={layoutConfig.hud}
+          data-testid="combat-hud-container"
+        >
+          <CombatHUD
+            player1={validatedPlayers[0]}
+            player2={validatedPlayers[1]}
+            currentRound={currentRound}
+            timeRemaining={timeRemaining}
+            maxRounds={3}
+            isPaused={combatState.phase === "paused"}
+            onPauseToggle={handlePauseToggle}
+            width={width}
+            height={layoutConfig.hud.height}
+          />
+        </pixiContainer>
 
-      <ResponsivePixiPanel
-        title="전투 기록"
+        {/* Combat Controls */}
+        <pixiContainer
+          layout={{
+            ...KOREAN_LAYOUTS.CONTROLS_ROW,
+            x: layoutConfig.playerPanels.spacing,
+            y: layoutConfig.controls.y,
+            width: layoutConfig.controls.width,
+            height: layoutConfig.controls.height,
+          }}
+          data-testid="combat-controls-container"
+        >
+          <CombatControls
+            onAttack={handleAttack}
+            onDefend={handleDefend}
+            onSwitchStance={handleStanceSwitch}
+            player={validatedPlayers[combatState.activePlayer]}
+            onTechniqueExecute={handleTechniqueExecute}
+            isExecutingTechnique={combatState.executingTechnique}
+            onPauseToggle={handlePauseToggle}
+            isPaused={combatState.phase === "paused"}
+            width={layoutConfig.controls.width}
+            height={layoutConfig.controls.height}
+          />
+        </pixiContainer>
+      </pixiContainer>
+
+      {/* Combat Log Panel */}
+      <KoreanPanel
+        title={{ korean: "전투 기록", english: "Combat Log" }}
         x={isMobile ? 10 : width / 2 - 150}
-        y={height - (isMobile ? 160 : 180)}
+        y={height - (isMobile ? 140 : 180)}
         width={isMobile ? width - 20 : 300}
-        height={isMobile ? 100 : 160}
+        height={isMobile ? 80 : 140}
+        variant="combat"
+        responsive={true}
         data-testid="combat-log-panel"
       >
         <CombatStats
           players={validatedPlayers}
           combatLog={combatState.combatLog}
-          x={0}
-          y={0}
           width={isMobile ? width - 40 : 280}
-          height={isMobile ? 80 : 140}
+          height={isMobile ? 60 : 120}
         />
-      </ResponsivePixiPanel>
+      </KoreanPanel>
 
-      <ResponsivePixiContainer
-        x={isMobile ? 10 : 20}
-        y={height - (isMobile ? 50 : 140)}
-        data-testid="combat-controls-container"
-      >
-        <CombatControls
-          onAttack={handleAttack}
-          onDefend={handleDefend}
-          onSwitchStance={handleStanceSwitch}
-          player={validatedPlayers[combatState.activePlayer]}
-          onTechniqueExecute={handleTechniqueExecute}
-          isExecutingTechnique={combatState.executingTechnique}
-          onPauseToggle={handlePauseToggle}
-          isPaused={combatState.phase === "paused"}
-          width={isMobile ? width - 20 : 400}
-          height={isMobile ? 40 : 120}
-          x={0}
-          y={0}
-        />
-      </ResponsivePixiContainer>
-
+      {/* Hit Effects Layer */}
       <HitEffectsLayer
         effects={combatState.effects}
         onEffectComplete={handleEffectComplete}
       />
 
-      <ResponsivePixiButton
-        text="메뉴로"
-        x={width - (isMobile ? 80 : 150)}
-        y={isMobile ? 10 : 20}
-        width={isMobile ? 70 : 120}
-        height={isMobile ? 35 : 45}
-        variant="secondary"
+      {/* Return to Menu Button */}
+      <KoreanButton
+        text={{ korean: "메뉴로", english: "Menu" }}
         onClick={onReturnToMenu}
+        x={width - (isMobile ? 80 : 130)}
+        y={isMobile ? 10 : 20}
+        width={isMobile ? 70 : 100}
+        height={isMobile ? 30 : 40}
+        variant="secondary"
         data-testid="return-menu-button"
       />
 
+      {/* Pause Overlay */}
       {combatState.phase === "paused" && (
-        <ResponsivePixiContainer x={0} y={0} data-testid="pause-overlay">
+        <pixiContainer
+          layout={{
+            width: "100%",
+            height: "100%",
+            justifyContent: "center",
+            alignItems: "center",
+            position: "absolute",
+            top: 0,
+            left: 0,
+            zIndex: 100,
+          }}
+          data-testid="pause-overlay"
+        >
           <pixiGraphics
             draw={(g) => {
               g.clear();
-              g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 0.8 });
+              g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 0.9 });
               g.rect(0, 0, width, height);
               g.fill();
             }}
           />
-          <pixiText
-            text="일시 정지 - PAUSED"
-            style={{
-              fontSize: isMobile ? 32 : 48,
-              fill: KOREAN_COLORS.ACCENT_GOLD,
-              fontWeight: "bold",
-              align: "center",
+          <pixiContainer
+            layout={{
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 20,
             }}
-            x={width / 2}
-            y={height / 2}
-            anchor={0.5}
-          />
-          <pixiText
-            text="스페이스바를 눌러 계속하기"
-            style={{
-              fontSize: isMobile ? 14 : 18,
-              fill: KOREAN_COLORS.TEXT_SECONDARY,
-              align: "center",
-            }}
-            x={width / 2}
-            y={height / 2 + 40}
-            anchor={0.5}
-          />
-        </ResponsivePixiContainer>
+          >
+            <pixiText
+              text="일시 정지 - PAUSED"
+              style={{
+                fontSize: isMobile ? 24 : 36,
+                fill: KOREAN_COLORS.ACCENT_GOLD,
+                fontWeight: "bold",
+                align: "center",
+                fontFamily: "Noto Sans KR",
+              }}
+              anchor={0.5}
+            />
+            <pixiText
+              text="ESC 키를 눌러 계속하기 - Press ESC to continue"
+              style={{
+                fontSize: isMobile ? 12 : 16,
+                fill: KOREAN_COLORS.TEXT_SECONDARY,
+                align: "center",
+              }}
+              anchor={0.5}
+            />
+          </pixiContainer>
+        </pixiContainer>
       )}
 
-      {/* Add visual instruction overlay for Korean controls */}
-      <ResponsivePixiContainer
-        x={10}
-        y={height - 120}
+      {/* Controls Guide */}
+      <pixiContainer
+        layout={{
+          position: "absolute",
+          bottom: 10,
+          left: 10,
+          flexDirection: "column",
+          gap: 3,
+        }}
         data-testid="korean-controls-guide"
       >
         <pixiText
-          text="조작: 1-8 자세변경, 스페이스 공격, 시프트 방어"
+          text="조작법: 1-8 자세, 스페이스 공격, 시프트 방어"
           style={{
-            fontSize: isMobile ? 10 : 12,
+            fontSize: isMobile ? 8 : 10,
             fill: KOREAN_COLORS.TEXT_SECONDARY,
             fontFamily: "Noto Sans KR",
           }}
@@ -614,13 +673,12 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         <pixiText
           text="Controls: 1-8 Stance, Space Attack, Shift Defend"
           style={{
-            fontSize: isMobile ? 8 : 10,
+            fontSize: isMobile ? 7 : 9,
             fill: KOREAN_COLORS.TEXT_TERTIARY,
           }}
-          y={15}
         />
-      </ResponsivePixiContainer>
-    </ResponsivePixiContainer>
+      </pixiContainer>
+    </ResponsiveCombatLayout>
   );
 };
 

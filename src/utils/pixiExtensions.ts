@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { extend } from "@pixi/react";
-import { Container, Graphics, Text, Sprite } from "pixi.js";
+import { Container, Graphics, Text, Sprite, AnimatedSprite } from "pixi.js";
+import "@pixi/layout";
 
 /**
  * Custom hook to ensure PixiJS components are extended for use in React
@@ -12,6 +13,7 @@ export function usePixiExtensions(): void {
       Graphics,
       Text,
       Sprite,
+      AnimatedSprite,
     });
   }, []);
 }
@@ -25,6 +27,7 @@ export function initializePixiExtensions(): void {
     Graphics,
     Text,
     Sprite,
+    AnimatedSprite,
   });
 }
 
@@ -111,3 +114,31 @@ export const drawTrigramSymbol = (
   graphics.rect(x, y + (2 * size) / 3, size, size / 8);
   graphics.fill({ color: 0x00ffff });
 };
+
+/**
+ * @function createPixiElement
+ * @description Helper to create PixiJS elements with proper typing
+ */
+export const createPixiElement = <T extends keyof JSX.IntrinsicElements>(
+  type: T,
+  props: JSX.IntrinsicElements[T]
+): JSX.Element => {
+  // This would be implemented based on specific PixiJS element creation needs
+  // For now, it serves as a placeholder for future enhancements
+  throw new Error("createPixiElement not yet implemented");
+};
+
+/**
+ * @constant PIXI_ELEMENT_TYPES
+ * @description Available PixiJS element types for React components
+ */
+export const PIXI_ELEMENT_TYPES = {
+  CONTAINER: "pixiContainer",
+  GRAPHICS: "pixiGraphics",
+  TEXT: "pixiText",
+  SPRITE: "pixiSprite",
+  ANIMATED_SPRITE: "pixiAnimatedSprite",
+} as const;
+
+export type PixiElementType =
+  (typeof PIXI_ELEMENT_TYPES)[keyof typeof PIXI_ELEMENT_TYPES];

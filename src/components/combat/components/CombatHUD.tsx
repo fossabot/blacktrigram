@@ -1,12 +1,17 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo } from "react";
 import { extend } from "@pixi/react";
 import { Container, Graphics, Text } from "pixi.js";
+import { Button, ProgressBar, Label } from "@pixi/ui";
+import "@pixi/layout";
 import { usePixiExtensions } from "../../../utils/pixiExtensions";
 import type { PlayerState } from "../../../types/player";
-import { KOREAN_COLORS } from "../../../types/constants";
+import {
+  KOREAN_COLORS,
+  PLAYER_ARCHETYPES_DATA,
+} from "../../../types/constants";
 import * as PIXI from "pixi.js";
 
-extend({ Container, Graphics, Text });
+extend({ Container, Graphics, Text, Button, ProgressBar, Label });
 
 export interface CombatHUDProps {
   readonly player1: PlayerState;
@@ -21,6 +26,12 @@ export interface CombatHUDProps {
   readonly x?: number;
   readonly y?: number;
 }
+
+const formatTime = (seconds: number): string => {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+};
 
 export const CombatHUD: React.FC<CombatHUDProps> = ({
   player1,
@@ -37,167 +48,189 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
 }) => {
   usePixiExtensions();
 
-  const drawHUDBackground = useCallback(
-    (g: PIXI.Graphics) => {
-      g.clear();
-      g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 0.9 });
-      g.rect(0, 0, width, height);
-      g.fill();
-
-      g.stroke({ width: 2, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.6 });
-      g.rect(0, 0, width, height);
-      g.stroke();
-    },
-    [width, height]
-  );
-
-  const formatTime = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  // Archetype color data for player names
+  const archetype1Data = PLAYER_ARCHETYPES_DATA[player1.archetype] || {
+    colors: { primary: KOREAN_COLORS.PLAYER_1_COLOR },
+    name: { korean: "", english: "" },
+  };
+  const archetype2Data = PLAYER_ARCHETYPES_DATA[player2.archetype] || {
+    colors: { primary: KOREAN_COLORS.PLAYER_2_COLOR },
+    name: { korean: "", english: "" },
   };
 
-  return (
-    <pixiContainer x={x} y={y} data-testid="combat-hud">
-      <pixiGraphics draw={drawHUDBackground} />
+  // Health bar width
+  const healthBarWidth = Math.max(160, width * 0.18);
 
-      {/* Player 1 info */}
-      <pixiContainer x={20} y={10}>
-        <pixiText
-          text={player1.name.korean}
-          style={{
-            fontSize: 16,
-            fill: KOREAN_COLORS.PLAYER_1_COLOR,
-            fontWeight: "bold",
+  // Responsive layout
+  const isMobile = width < 600;
+  const hudLayout = useMemo(
+    () => ({
+      width,
+      height,
+      flexDirection: isMobile ? "column" : "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: 10,
+      gap: isMobile ? 8 : 16,
+      backgroundColor: KOREAN_COLORS.UI_BACKGROUND_DARK,
+      borderRadius: 10,
+    }),
+    [width, height, isMobile]
+  );
+
+  // Player info panel
+  const renderPlayerPanel = useCallback(
+    (
+      player: PlayerState,
+      archetypeData: any,
+      align: "left" | "right" = "left"
+    ) => {
+      const barColor = archetypeData.colors.primary;
+      const alignSelf = align === "left" ? "flex-start" : "flex-end";
+      return (
+        <Container
+          layout={{
+            width: isMobile ? width - 40 : 320,
+            flexDirection: "column",
+            alignItems: alignSelf,
+            gap: 4,
           }}
-        />
-
-        <pixiText
-          text={`${Math.round(player1.health)}/${player1.maxHealth}`}
-          style={{
-            fontSize: 12,
-            fill: KOREAN_COLORS.TEXT_PRIMARY,
-          }}
-          y={25}
-        />
-      </pixiContainer>
-
-      {/* Center info */}
-      <pixiContainer x={width / 2} y={10}>
-        <pixiText
-          text={`라운드 ${currentRound}/${maxRounds}`}
-          style={{
-            fontSize: 14,
-            fill: KOREAN_COLORS.ACCENT_GOLD,
-            fontWeight: "bold",
-            align: "center",
-          }}
-          anchor={0.5}
-        />
-
-        <pixiText
-          text={formatTime(timeRemaining)}
-          style={{
-            fontSize: 18,
-            fill: timeRemaining < 30 ? KOREAN_COLORS.NEGATIVE_RED : KOREAN_COLORS.TEXT_PRIMARY,
-            fontWeight: "bold",
-            align: "center",
-          }}
-          anchor={0.5}
-          y={25}
-        />
-
-        {isPaused && (
-          <pixiText
-            text="일시정지"
+        >
+          <Label
+            text={player.name.korean}
+            style={{
+              fontSize: 18,
+              fill: barColor,
+              fontWeight: "bold",
+              fontFamily: "Noto Sans KR",
+              align: align,
+            }}
+            layout={{ marginBottom: 2 }}
+          />
+          <Label
+            text={archetypeData.name.korean}
             style={{
               fontSize: 12,
-              fill: KOREAN_COLORS.WARNING_YELLOW,
-              align: "center",
+              fill: KOREAN_COLORS.TEXT_SECONDARY,
+              fontFamily: "Noto Sans KR",
+              align: align,
             }}
-            anchor={0.5}
-            y={50}
+            layout={{ marginBottom: 6 }}
           />
-        )}
-      </pixiContainer>
-
-      {/* Player 2 info */}
-      <pixiContainer x={width - 20} y={10}>
-        <pixiText
-          text={player2.name.korean}
-          style={{
-            fontSize: 16,
-            fill: KOREAN_COLORS.PLAYER_2_COLOR,
-            fontWeight: "bold",
-            align: "right",
-          }}
-          anchor={[1, 0]}
-        />
-
-        <pixiText
-          text={`${Math.round(player2.health)}/${player2.maxHealth}`}
-          style={{
-            fontSize: 12,
-            fill: KOREAN_COLORS.TEXT_PRIMARY,
-            align: "right",
-          }}
-          anchor={[1, 0]}
-          y={25}
-        />
-      </pixiContainer>
-
-      {/* Pause button */}
-      {onPauseToggle && (
-        <pixiContainer x={width - 80} y={height - 30}>
-          <pixiGraphics
-            interactive={true}
-            pointerdown={onPauseToggle}
-            draw={(g) => {
-              g.clear();
-              g.fill({ color: KOREAN_COLORS.ACCENT_BLUE, alpha: 0.8 });
-              g.roundRect(0, 0, 60, 20, 5);
-              g.fill();
-            }}
+          <ProgressBar
+            value={player.health}
+            maxValue={player.maxHealth}
+            width={healthBarWidth}
+            height={18}
+            background={KOREAN_COLORS.UI_BACKGROUND_MEDIUM}
+            fill={barColor}
+            border={KOREAN_COLORS.UI_BORDER}
+            borderRadius={6}
+            layout={{ marginBottom: 2 }}
           />
-          <pixiText
-            text={isPaused ? "계속" : "정지"}
+          <Label
+            text={`${Math.round(player.health)}/${player.maxHealth}`}
             style={{
               fontSize: 10,
-              fill: KOREAN_COLORS.BLACK_SOLID,
-              align: "center",
+              fill: KOREAN_COLORS.TEXT_PRIMARY,
+              align: align,
             }}
-            anchor={0.5}
-            x={30}
-            y={10}
+            layout={{ marginBottom: 2 }}
           />
-        </pixiContainer>
-      )}
-    </pixiContainer>
+          <Container
+            layout={{
+              flexDirection: "row",
+              gap: 8,
+              alignItems: "center",
+              marginBottom: 2,
+            }}
+          >
+            <ProgressBar
+              value={player.ki}
+              maxValue={player.maxKi}
+              width={70}
+              height={8}
+              background={KOREAN_COLORS.UI_BACKGROUND_MEDIUM}
+              fill={KOREAN_COLORS.PRIMARY_CYAN}
+              border={KOREAN_COLORS.UI_BORDER}
+              borderRadius={3}
+            />
+            <Label
+              text={`기력: ${Math.round(player.ki)}`}
+              style={{
+                fontSize: 8,
+                fill: KOREAN_COLORS.PRIMARY_CYAN,
+              }}
+            />
+            <ProgressBar
+              value={player.stamina}
+              maxValue={player.maxStamina}
+              width={70}
+              height={8}
+              background={KOREAN_COLORS.UI_BACKGROUND_MEDIUM}
+              fill={KOREAN_COLORS.SECONDARY_YELLOW}
+              border={KOREAN_COLORS.UI_BORDER}
+              borderRadius={3}
+            />
+            <Label
+              text={`체력: ${Math.round(player.stamina)}`}
+              style={{
+                fontSize: 8,
+                fill: KOREAN_COLORS.SECONDARY_YELLOW,
+              }}
+            />
+          </Container>
+        </Container>
+      );
+    },
+    [healthBarWidth, isMobile, width]
   );
-};
 
-export default CombatHUD;
-          screenWidth={width}
-          screenHeight={height}
-          data-testid="round-timer"
-        />
-
-        <pixiText
-          text={`라운드 ${currentRound}/${maxRounds}`}
-          style={{
-            fontSize: 14,
-            fill: KOREAN_COLORS.ACCENT_GOLD,
-            align: "center",
-            fontWeight: "bold",
-          }}
-          x={80}
-          y={45}
-          anchor={0.5}
-        />
-
-        {/* Traditional Korean round markers */}
+  // Center panel (round, timer, rounds)
+  const renderCenterPanel = useCallback(() => (
+    <Container
+      layout={{
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 4,
+        width: isMobile ? width - 40 : 220,
+      }}
+    >
+      <Label
+        text={`라운드 ${currentRound}/${maxRounds}`}
+        style={{
+          fontSize: 14,
+          fill: KOREAN_COLORS.ACCENT_GOLD,
+          fontWeight: "bold",
+          fontFamily: "Noto Sans KR",
+          align: "center",
+        }}
+        layout={{ marginBottom: 2 }}
+      />
+      <Label
+        text={formatTime(timeRemaining)}
+        style={{
+          fontSize: 18,
+          fill:
+            timeRemaining < 30
+              ? KOREAN_COLORS.NEGATIVE_RED
+              : KOREAN_COLORS.TEXT_PRIMARY,
+          fontWeight: "bold",
+          fontFamily: "Noto Sans KR",
+          align: "center",
+        }}
+        layout={{ marginBottom: 2 }}
+      />
+      <Container
+        layout={{
+          flexDirection: "row",
+          gap: 6,
+          alignItems: "center",
+          marginBottom: 2,
+        }}
+      >
         {Array.from({ length: maxRounds }, (_, i) => (
-          <pixiGraphics
+          <Graphics
             key={i}
             draw={(g) => {
               g.clear();
@@ -206,143 +239,77 @@ export default CombatHUD;
                 isActive ? KOREAN_COLORS.ACCENT_GOLD : KOREAN_COLORS.UI_GRAY,
                 0.8
               );
-              g.drawCircle(40 + i * 20, 65, 6);
+              g.drawCircle(0, 0, 6);
               g.endFill();
             }}
+            x={i * 18}
           />
         ))}
-      </pixiContainer>
-
-      {/* Player 2 Section */}
-      <pixiContainer x={width - 320} y={15}>
-        {/* Player 2 Name */}
-        <pixiText
-          text={player2.name.korean}
-          style={{
-            fontSize: 18,
-            fill: archetype2Data.colors.primary,
-            fontWeight: "bold",
-            align: "right",
-          }}
-          x={280}
-          anchor={{ x: 1, y: 0 }}
-        />
-        <pixiText
-          text={archetype2Data.name.korean}
+      </Container>
+      {isPaused && (
+        <Label
+          text="일시정지"
           style={{
             fontSize: 12,
-            fill: KOREAN_COLORS.TEXT_SECONDARY,
-            align: "right",
+            fill: KOREAN_COLORS.WARNING_YELLOW,
+            align: "center",
+            fontFamily: "Noto Sans KR",
           }}
-          x={280}
-          y={20}
-          anchor={{ x: 1, y: 0 }}
         />
-
-        {/* Player 2 Health Bar */}
-        <HealthBar
-          current={player2.health}
-          max={player2.maxHealth}
-          width={healthBarWidth}
-          height={25}
-          showText={true}
-          x={width - healthBarWidth - 20}
-          y={35}
-          position="right"
-          playerName={player2.name.korean}
-          screenWidth={width}
-          screenHeight={height}
-          data-testid="player2-health-bar"
-        />
-
-        {/* Player 2 Ki and Stamina */}
-        <pixiContainer y={70}>
-          <pixiText
-            text="기력"
-            style={{
-              fontSize: 8,
-              fill: KOREAN_COLORS.TEXT_SECONDARY,
-            }}
-            x={30}
-          />
-          <pixiGraphics
-            draw={(g) => {
-              g.clear();
-              g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.8);
-              g.drawRect(55, 0, 100, 8);
-              g.endFill();
-              g.beginFill(KOREAN_COLORS.PRIMARY_CYAN, 0.9);
-              g.drawRect(55, 0, 100 * (player2.ki / player2.maxKi), 8);
-              g.endFill();
-            }}
-          />
-
-          <pixiText
-            text="체력"
-            style={{
-              fontSize: 8,
-              fill: KOREAN_COLORS.TEXT_SECONDARY,
-            }}
-            x={165}
-          />
-          <pixiGraphics
-            draw={(g) => {
-              g.clear();
-              g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.8);
-              g.drawRect(190, 0, 100, 8);
-              g.endFill();
-              g.beginFill(KOREAN_COLORS.SECONDARY_YELLOW, 0.9);
-              g.drawRect(
-                190,
-                0,
-                100 * (player2.stamina / player2.maxStamina),
-                8
-              );
-              g.endFill();
-            }}
-          />
-        </pixiContainer>
-
-        {/* Player 2 Stance */}
-        <StanceIndicator
-          stance={player2.currentStance}
-          x={width - 60}
-          y={60}
-          size={40}
-          data-testid="player2-stance-indicator"
-        />
-      </pixiContainer>
-
-      {/* Enhanced Pause Button */}
-      {onPauseToggle && (
-        <pixiContainer x={width - 80} y={height - 40}>
-          <pixiGraphics
-            draw={(g) => {
-              g.clear();
-              g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.9);
-              g.lineStyle(2, KOREAN_COLORS.ACCENT_GOLD, 0.8);
-              g.drawRoundedRect(0, 0, 60, 30, 5);
-              g.endFill();
-            }}
-            interactive={true}
-            onPointerDown={onPauseToggle}
-          />
-          <pixiText
-            text={isPaused ? "계속" : "정지"}
-            style={{
-              fontSize: 10,
-              fill: KOREAN_COLORS.TEXT_PRIMARY,
-              align: "center",
-              fontWeight: "bold",
-            }}
-            x={30}
-            y={15}
-            anchor={0.5}
-          />
-        </pixiContainer>
       )}
-    </pixiContainer>
+    </Container>
+  ), [currentRound, maxRounds, timeRemaining, isPaused, isMobile, width]);
+
+  // Pause button
+  const renderPauseButton = useCallback(() => {
+    if (!onPauseToggle) return null;
+    return (
+      <Button
+        text={isPaused ? "계속" : "정지"}
+        width={isMobile ? 60 : 80}
+        height={isMobile ? 28 : 36}
+        style={{
+          fontFamily: "Noto Sans KR",
+          fontSize: isMobile ? 10 : 12,
+          fill: KOREAN_COLORS.TEXT_PRIMARY,
+          fontWeight: "bold",
+        }}
+        background={{
+          default: KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
+          hover: KOREAN_COLORS.ACCENT_GOLD,
+          pressed: KOREAN_COLORS.ACCENT_GOLD,
+        }}
+        border={KOREAN_COLORS.ACCENT_GOLD}
+        borderRadius={6}
+        onPress={onPauseToggle}
+        layout={{
+          alignSelf: "center",
+          marginTop: isMobile ? 4 : 0,
+        }}
+        data-testid="pause-button"
+      />
+    );
+  }, [onPauseToggle, isPaused, isMobile]);
+
+  return (
+    <Container
+      x={x}
+      y={y}
+      layout={hudLayout}
+      data-testid="combat-hud"
+      backgroundColor={KOREAN_COLORS.UI_BACKGROUND_DARK}
+      borderRadius={10}
+    >
+      {renderPlayerPanel(player1, archetype1Data, "left")}
+      {renderCenterPanel()}
+      {renderPlayerPanel(player2, archetype2Data, "right")}
+      {renderPauseButton()}
+    </Container>
   );
 };
 
 export default CombatHUD;
+            player2.health,
+            player2.maxHealth,
+            archetype2Data.colors.primary,
+            healthBarWidth;

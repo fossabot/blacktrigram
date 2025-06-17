@@ -116,30 +116,3 @@ export const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({
 };
 
 export default HitEffectsLayer;
-                g.circle(0, 0, 30 * effect.scale);
-                g.stroke();
-              }}
-            />
-          )}
-
-          {effect.type === HET.VITAL_POINT_HIT && (
-            <pixiGraphics
-              draw={(g) => {
-                g.clear();
-                g.stroke({
-                  width: 3,
-                  color: KOREAN_COLORS.ACCENT_PURPLE,
-                  alpha: effect.opacity,
-                });
-                g.star(0, 0, 5, 20 * effect.scale, 10 * effect.scale);
-                g.stroke();
-              }}
-            />
-          )}
-        </pixiContainer>
-      ))}
-    </pixiContainer>
-  );
-};
-
-export default HitEffectsLayer;
