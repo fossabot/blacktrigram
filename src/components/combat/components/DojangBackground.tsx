@@ -23,7 +23,7 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
   animate = false,
   showPattern = true,
 }) => {
-  // Animation time for effects - properly integrated
+  // Animation time for effects
   const animationTime = useMemo(() => {
     return animate ? Date.now() * 0.001 : 0;
   }, [animate]);
@@ -56,12 +56,12 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
     [width, height, lighting]
   );
 
-  // Korean traditional patterns - Fix: Remove unused parameter 'g'
+  // Traditional Korean patterns
   const drawKoreanPatterns = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
 
-      if (!showPattern) return; // Now properly used
+      if (!showPattern) return;
 
       // Taegeuk (태극) pattern in corners
       const taegeukSize = 40;
@@ -109,46 +109,95 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
         g.fill();
       });
 
-      // Trigram symbols on walls - Now using all variables properly
+      // Trigram symbols on walls
       const trigrams = ["☰", "☱", "☲", "☳", "☴", "☵", "☶", "☷"];
       const trigramSpacing = width / (trigrams.length + 1);
 
-      trigrams.forEach((symbol, index) => {
+      trigrams.forEach((_, index) => {
         const trigramX = trigramSpacing * (index + 1);
         const alpha = animate
           ? 0.3 + Math.sin(animationTime + index) * 0.2
           : 0.4;
 
-        // Draw the actual trigram symbol
-        g.fill({ color: KOREAN_COLORS.ACCENT_GOLD, alpha });
-        // Simple representation of trigram lines
+        // Simple decorative lines representing trigrams
+        g.stroke({ width: 2, color: KOREAN_COLORS.ACCENT_GOLD, alpha });
         for (let i = 0; i < 3; i++) {
-          const lineY = 20 + i * 8;
-          // Draw broken or solid lines based on trigram
-          if (symbol === "☰" || symbol === "☵") {
-            // Solid lines for some trigrams
-            g.rect(trigramX - 10, lineY, 20, 2);
-          } else {
-            // Broken lines for others
-            g.rect(trigramX - 10, lineY, 8, 2);
-            g.rect(trigramX + 2, lineY, 8, 2);
-          }
+          g.moveTo(trigramX - 10, 20 + i * 8);
+          g.lineTo(trigramX + 10, 20 + i * 8);
         }
-        g.fill();
+        g.stroke();
       });
     },
     [width, height, showPattern, animate, animationTime]
   );
 
-  // ...existing drawFloorPattern code...
+  // Dojang floor pattern
   const drawFloorPattern = useCallback(
     (g: PIXI.Graphics) => {
-      // ...existing code...
+      g.clear();
+
+      // Traditional Korean floor tiles pattern
+      const tileSize = 60;
+      const tilesX = Math.ceil(width / tileSize);
+      const tilesY = Math.ceil(height / tileSize);
+
+      for (let x = 0; x < tilesX; x++) {
+        for (let y = 0; y < tilesY; y++) {
+          const tileX = x * tileSize;
+          const tileY = y * tileSize;
+
+          // Alternating tile pattern
+          const isAlternate = (x + y) % 2 === 0;
+          const tileAlpha = isAlternate ? 0.1 : 0.05;
+
+          g.fill({
+            color: KOREAN_COLORS.UI_BACKGROUND_LIGHT,
+            alpha: tileAlpha,
+          });
+          g.rect(tileX, tileY, tileSize, tileSize);
+          g.fill();
+
+          // Tile borders
+          g.stroke({ width: 1, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.1 });
+          g.rect(tileX, tileY, tileSize, tileSize);
+          g.stroke();
+        }
+      }
+
+      // Center arena marking - octagonal combat area
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const arenaRadius = Math.min(width, height) * 0.3;
+
+      // Octagonal arena boundary
+      g.stroke({ width: 3, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.8 });
+
+      const octagonPoints: number[] = [];
+      for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2 - Math.PI / 8;
+        octagonPoints.push(
+          centerX + Math.cos(angle) * arenaRadius,
+          centerY + Math.sin(angle) * arenaRadius
+        );
+      }
+
+      g.poly(octagonPoints);
+      g.stroke();
+
+      // Inner circle for precise positioning
+      g.stroke({ width: 2, color: KOREAN_COLORS.PRIMARY_CYAN, alpha: 0.6 });
+      g.circle(centerX, centerY, arenaRadius * 0.8);
+      g.stroke();
+
+      // Center point
+      g.fill({ color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.8 });
+      g.circle(centerX, centerY, 8);
+      g.fill();
     },
     [width, height]
   );
 
-  // Enhanced lighting effects using animationTime
+  // Enhanced lighting effects
   const drawLightingEffects = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
@@ -158,16 +207,18 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
         const pulse = animate ? 0.5 + Math.sin(animationTime * 2) * 0.3 : 0.5;
 
         // Neon grid lines
-        g.stroke({
-          width: 2,
-          color: KOREAN_COLORS.ACCENT_CYAN,
-          alpha: pulse * 0.6,
-        });
-        g.moveTo(0, 50);
-        g.lineTo(width, 50);
-        g.moveTo(0, height - 50);
-        g.lineTo(width, height - 50);
-        g.stroke();
+        if (animate) {
+          g.stroke({
+            width: 2,
+            color: KOREAN_COLORS.ACCENT_CYAN,
+            alpha: pulse * 0.6,
+          });
+          g.moveTo(0, 50);
+          g.lineTo(width, 50);
+          g.moveTo(0, height - 50);
+          g.lineTo(width, height - 50);
+          g.stroke();
+        }
       }
 
       if (lighting === "traditional") {
@@ -199,7 +250,7 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
     [width, height, lighting, animate, animationTime]
   );
 
-  // Atmospheric particles/effects using animationTime
+  // Atmospheric particles/effects
   const drawAtmosphericEffects = useCallback(
     (g: PIXI.Graphics) => {
       if (!animate) return;
@@ -242,13 +293,13 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
       {/* Floor pattern */}
       <pixiGraphics draw={drawFloorPattern} />
 
-      {/* Korean traditional patterns - conditional rendering */}
+      {/* Korean traditional patterns */}
       {showPattern && <pixiGraphics draw={drawKoreanPatterns} />}
 
       {/* Lighting effects */}
       <pixiGraphics draw={drawLightingEffects} />
 
-      {/* Atmospheric effects - conditional rendering */}
+      {/* Atmospheric effects */}
       {animate && <pixiGraphics draw={drawAtmosphericEffects} />}
 
       {/* Dojang nameplate */}

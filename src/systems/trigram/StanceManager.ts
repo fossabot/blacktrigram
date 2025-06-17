@@ -1,208 +1,329 @@
 /**
- * @fileoverview Korean Trigram Stance Management System
- * @description Manages the eight trigram stances (팔괘) with authentic Korean martial arts mechanics
+ * @fileoverview Stance Manager for Korean Martial Arts Eight Trigram System
+ * @description Manages trigram stance transitions, effectiveness calculations, and Korean martial arts mechanics
  */
 
-import type { TrigramStance } from "../../types/enums";
 import type { PlayerState } from "../../types/player";
-import type {
-  StanceTransition,
-  StanceEffectiveness,
-} from "../../types/trigram";
+import type { TrigramStance } from "../../types/enums";
+import type { StanceBonuses, StanceTransition } from "../../types/trigram";
 import { TRIGRAM_DATA } from "../../types/constants/trigram";
 
+/**
+ * @class StanceManager
+ * @description Manages the eight trigram stance system for Korean martial arts combat
+ *
+ * Handles:
+ * - Stance effectiveness calculations using I Ching principles
+ * - Transition costs and timing validation
+ * - Korean martial arts stance bonuses and penalties
+ * - Traditional eight trigram philosophy integration
+ */
 export class StanceManager {
-  private readonly stanceTransitions: Map<string, StanceTransition>;
-  private readonly stanceEffectiveness: Map<string, number>;
+  /** Stance change cooldown in milliseconds */
+  private readonly stanceChangeCooldown: number = 1000;
 
+  /** Last stance change timestamps per player */
+  private readonly lastStanceChanges: Map<string, number> = new Map();
+
+  /**
+   * @constructor
+   * Initializes the stance manager with Korean martial arts principles
+   */
   constructor() {
-    this.stanceTransitions = new Map();
-    this.stanceEffectiveness = new Map();
-    this.initializeStanceSystem();
+    // Initialize with traditional Korean martial arts timing
   }
 
   /**
-   * Initialize the authentic Korean trigram stance system
-   */
-  private initializeStanceSystem(): void {
-    // I Ching based stance effectiveness matrix
-    const stanceInteractions = {
-      [TrigramStance.GEON]: {
-        // ☰ Heaven
-        strong: [TrigramStance.GAM, TrigramStance.GAN], // Overcomes Water, Mountain
-        weak: [TrigramStance.GON, TrigramStance.SON], // Weak to Earth, Wind
-      },
-      [TrigramStance.TAE]: {
-        // ☱ Lake
-        strong: [TrigramStance.LI, TrigramStance.GAN],
-        weak: [TrigramStance.JIN, TrigramStance.SON],
-      },
-      [TrigramStance.LI]: {
-        // ☲ Fire
-        strong: [TrigramStance.GAN, TrigramStance.GEON],
-        weak: [TrigramStance.GAM, TrigramStance.TAE],
-      },
-      [TrigramStance.JIN]: {
-        // ☳ Thunder
-        strong: [TrigramStance.GON, TrigramStance.GAM],
-        weak: [TrigramStance.GEON, TrigramStance.GAN],
-      },
-      [TrigramStance.SON]: {
-        // ☴ Wind
-        strong: [TrigramStance.GEON, TrigramStance.LI],
-        weak: [TrigramStance.GAN, TrigramStance.JIN],
-      },
-      [TrigramStance.GAM]: {
-        // ☵ Water
-        strong: [TrigramStance.LI, TrigramStance.TAE],
-        weak: [TrigramStance.GEON, TrigramStance.GON],
-      },
-      [TrigramStance.GAN]: {
-        // ☶ Mountain
-        strong: [TrigramStance.TAE, TrigramStance.SON],
-        weak: [TrigramStance.JIN, TrigramStance.LI],
-      },
-      [TrigramStance.GON]: {
-        // ☷ Earth
-        strong: [TrigramStance.GEON, TrigramStance.JIN],
-        weak: [TrigramStance.GAM, TrigramStance.LI],
-      },
-    };
-
-    // Build effectiveness matrix
-    Object.entries(stanceInteractions).forEach(([attacker, relations]) => {
-      relations.strong.forEach((defender) => {
-        this.stanceEffectiveness.set(`${attacker}-${defender}`, 1.3);
-      });
-      relations.weak.forEach((defender) => {
-        this.stanceEffectiveness.set(`${attacker}-${defender}`, 0.7);
-      });
-    });
-  }
-
-  /**
-   * Change player stance with Korean martial arts validation
-   */
-  public changeStance(
-    player: PlayerState,
-    newStance: TrigramStance
-  ): { success: boolean; message: string; cost: number } {
-    const currentStance = player.currentStance;
-
-    // Check if player has sufficient ki and stamina for stance change
-    const stanceCost = this.calculateStanceCost(currentStance, newStance);
-
-    if (player.ki < stanceCost.ki || player.stamina < stanceCost.stamina) {
-      return {
-        success: false,
-        message: "기력이나 체력이 부족합니다 - Insufficient Ki or Stamina",
-        cost: 0,
-      };
-    }
-
-    // Check stance transition rules
-    if (!this.isValidTransition(currentStance, newStance)) {
-      return {
-        success: false,
-        message: "잘못된 자세 전환입니다 - Invalid stance transition",
-        cost: 0,
-      };
-    }
-
-    const stanceData = TRIGRAM_DATA[newStance];
-    return {
-      success: true,
-      message: `${stanceData.name.korean} 자세로 변경 - Changed to ${stanceData.name.english} stance`,
-      cost: stanceCost.ki + stanceCost.stamina,
-    };
-  }
-
-  /**
-   * Calculate stance change costs based on Korean martial arts principles
-   */
-  private calculateStanceCost(
-    from: TrigramStance,
-    to: TrigramStance
-  ): { ki: number; stamina: number } {
-    // Same stance - no cost
-    if (from === to) {
-      return { ki: 0, stamina: 0 };
-    }
-
-    // Adjacent trigrams in I Ching order cost less
-    const trigrams = Object.values(TrigramStance);
-    const fromIndex = trigrams.indexOf(from);
-    const toIndex = trigrams.indexOf(to);
-    const distance = Math.min(
-      Math.abs(toIndex - fromIndex),
-      trigrams.length - Math.abs(toIndex - fromIndex)
-    );
-
-    const baseCost = {
-      ki: 5 + distance * 2,
-      stamina: 3 + distance * 1.5,
-    };
-
-    return {
-      ki: Math.round(baseCost.ki),
-      stamina: Math.round(baseCost.stamina),
-    };
-  }
-
-  /**
-   * Check if stance transition follows Korean martial arts principles
-   */
-  private isValidTransition(from: TrigramStance, to: TrigramStance): boolean {
-    // All transitions are valid in Korean martial arts, but some are more natural
-    return true;
-  }
-
-  /**
-   * Get stance effectiveness multiplier for combat
+   * @method getStanceEffectiveness
+   * @description Calculates stance effectiveness using traditional Korean martial arts and I Ching principles
+   *
+   * @param attackerStance - The attacker's current trigram stance
+   * @param defenderStance - The defender's current trigram stance
+   * @returns Effectiveness multiplier (0.5 to 2.0)
+   *
+   * @example
+   * ```typescript
+   * const effectiveness = stanceManager.getStanceEffectiveness(
+   *   TrigramStance.GEON, // Heaven ☰
+   *   TrigramStance.GON   // Earth ☷
+   * );
+   * // Returns 1.8 (Heaven overcomes Earth in traditional philosophy)
+   * ```
    */
   public getStanceEffectiveness(
     attackerStance: TrigramStance,
     defenderStance: TrigramStance
   ): number {
-    const key = `${attackerStance}-${defenderStance}`;
-    return this.stanceEffectiveness.get(key) || 1.0;
+    const attackerData = TRIGRAM_DATA[attackerStance];
+    const defenderData = TRIGRAM_DATA[defenderStance];
+
+    if (!attackerData || !defenderData) {
+      return 1.0; // Neutral effectiveness if data missing
+    }
+
+    // Get effectiveness from trigram data
+    const effectiveness = attackerData.effectiveness[defenderStance];
+
+    if (effectiveness !== undefined) {
+      return effectiveness;
+    }
+
+    // Default to neutral effectiveness
+    return 1.0;
   }
 
   /**
-   * Get available techniques for current stance
+   * @method getStanceBonuses
+   * @description Retrieves stance-specific bonuses for Korean martial arts combat
+   *
+   * @param stance - The trigram stance to get bonuses for
+   * @returns StanceBonuses object with combat modifiers
    */
-  public getAvailableTechniques(stance: TrigramStance): readonly string[] {
+  public getStanceBonuses(stance: TrigramStance): StanceBonuses {
     const stanceData = TRIGRAM_DATA[stance];
-    return stanceData?.availableTechniques || [];
-  }
 
-  /**
-   * Get stance bonus modifiers
-   */
-  public getStanceBonuses(stance: TrigramStance): {
-    attack: number;
-    defense: number;
-    speed: number;
-    criticalChance: number;
-  } {
-    const stanceData = TRIGRAM_DATA[stance];
-    return (
-      stanceData?.combatBonuses || {
+    if (!stanceData) {
+      // Default neutral bonuses
+      return {
         attack: 1.0,
         defense: 1.0,
         speed: 1.0,
-        criticalChance: 0.1,
-      }
-    );
+        balance: 1.0,
+        kiRegeneration: 1.0,
+        staminaRegeneration: 1.0,
+      };
+    }
+
+    return stanceData.bonuses;
   }
 
   /**
-   * Validate stance change timing (can't change during technique execution)
+   * @method validateStanceTransition
+   * @description Validates if a stance transition is allowed according to Korean martial arts principles
+   *
+   * @param player - The player attempting the stance change
+   * @param newStance - The desired new stance
+   * @param currentTime - Current timestamp in milliseconds
+   * @returns Validation result with success status and reason
+   */
+  public validateStanceTransition(
+    player: PlayerState,
+    newStance: TrigramStance,
+    currentTime: number = Date.now()
+  ): { valid: boolean; reason?: string; cost: number } {
+    // Check if player is already in the desired stance
+    if (player.currentStance === newStance) {
+      return {
+        valid: false,
+        reason: "이미 해당 자세입니다 - Already in that stance",
+        cost: 0,
+      };
+    }
+
+    // Check cooldown period
+    const lastChange = this.lastStanceChanges.get(player.id) || 0;
+    const timeSinceLastChange = currentTime - lastChange;
+
+    if (timeSinceLastChange < this.stanceChangeCooldown) {
+      const remaining = this.stanceChangeCooldown - timeSinceLastChange;
+      return {
+        valid: false,
+        reason: `자세 변경 대기 중... ${Math.ceil(
+          remaining / 1000
+        )}초 - Stance change cooldown: ${Math.ceil(remaining / 1000)}s`,
+        cost: 0,
+      };
+    }
+
+    // Calculate transition cost
+    const transitionCost = this.calculateTransitionCost(
+      player.currentStance,
+      newStance
+    );
+
+    // Check if player has sufficient resources
+    if (player.ki < transitionCost.ki) {
+      return {
+        valid: false,
+        reason: "기력 부족 - Insufficient Ki",
+        cost: transitionCost.ki,
+      };
+    }
+
+    if (player.stamina < transitionCost.stamina) {
+      return {
+        valid: false,
+        reason: "체력 부족 - Insufficient Stamina",
+        cost: transitionCost.stamina,
+      };
+    }
+
+    // Check if player is in a state that prevents stance changes
+    if (player.isStunned) {
+      return {
+        valid: false,
+        reason:
+          "기절 상태로 자세 변경 불가 - Cannot change stance while stunned",
+        cost: transitionCost.ki,
+      };
+    }
+
+    if (player.consciousness < 20) {
+      return {
+        valid: false,
+        reason:
+          "의식 불명으로 자세 변경 불가 - Cannot change stance while unconscious",
+        cost: transitionCost.ki,
+      };
+    }
+
+    return {
+      valid: true,
+      cost: transitionCost.ki,
+    };
+  }
+
+  /**
+   * @method calculateTransitionCost
+   * @description Calculates the Ki and Stamina cost for transitioning between stances
+   *
+   * @param fromStance - Current stance
+   * @param toStance - Desired stance
+   * @returns Resource costs for the transition
+   */
+  public calculateTransitionCost(
+    fromStance: TrigramStance,
+    toStance: TrigramStance
+  ): { ki: number; stamina: number } {
+    const fromData = TRIGRAM_DATA[fromStance];
+    const toData = TRIGRAM_DATA[toStance];
+
+    if (!fromData || !toData) {
+      // Default transition cost
+      return { ki: 10, stamina: 15 };
+    }
+
+    // Base cost from target stance
+    const baseCost = toData.transitionCost || { ki: 10, stamina: 15 };
+
+    // Calculate philosophical distance between stances
+    // Opposite stances (like Heaven ☰ and Earth ☷) cost more
+    const stanceOrder = [
+      "geon",
+      "tae",
+      "li",
+      "jin",
+      "son",
+      "gam",
+      "gan",
+      "gon",
+    ];
+
+    const fromIndex = stanceOrder.indexOf(fromStance);
+    const toIndex = stanceOrder.indexOf(toStance);
+
+    if (fromIndex === -1 || toIndex === -1) {
+      return baseCost;
+    }
+
+    // Calculate circular distance (shortest path around the octagon)
+    const directDistance = Math.abs(toIndex - fromIndex);
+    const wrapDistance = 8 - directDistance;
+    const distance = Math.min(directDistance, wrapDistance);
+
+    // Increase cost based on philosophical distance
+    const distanceMultiplier = 1 + distance * 0.2;
+
+    return {
+      ki: Math.round(baseCost.ki * distanceMultiplier),
+      stamina: Math.round(baseCost.stamina * distanceMultiplier),
+    };
+  }
+
+  /**
+   * @method executeStanceChange
+   * @description Executes a validated stance change and updates player state
+   *
+   * @param player - The player changing stance
+   * @param newStance - The new stance to adopt
+   * @param currentTime - Current timestamp
+   * @returns Updated player state with new stance and resource costs applied
+   */
+  public executeStanceChange(
+    player: PlayerState,
+    newStance: TrigramStance,
+    currentTime: number = Date.now()
+  ): PlayerState {
+    // Validate the transition first
+    const validation = this.validateStanceTransition(
+      player,
+      newStance,
+      currentTime
+    );
+
+    if (!validation.valid) {
+      throw new Error(validation.reason || "Stance transition not allowed");
+    }
+
+    // Calculate costs
+    const costs = this.calculateTransitionCost(player.currentStance, newStance);
+
+    // Record stance change time
+    this.lastStanceChanges.set(player.id, currentTime);
+
+    // Return updated player state
+    return {
+      ...player,
+      currentStance: newStance,
+      ki: Math.max(0, player.ki - costs.ki),
+      stamina: Math.max(0, player.stamina - costs.stamina),
+      lastActionTime: currentTime,
+    };
+  }
+
+  /**
+   * @method getAvailableTechniques
+   * @description Gets available techniques for the current stance
+   *
+   * @param stance - The current stance
+   * @returns Array of technique IDs available for this stance
+   */
+  public getAvailableTechniques(stance: TrigramStance): readonly string[] {
+    const stanceData = TRIGRAM_DATA[stance];
+
+    if (!stanceData || !stanceData.techniques) {
+      return [];
+    }
+
+    const techniques: string[] = [];
+
+    if (stanceData.techniques.primary) {
+      techniques.push(`${stance}_primary`);
+    }
+
+    if (stanceData.techniques.secondary) {
+      techniques.push(`${stance}_secondary`);
+    }
+
+    if (stanceData.techniques.special) {
+      techniques.push(`${stance}_special`);
+    }
+
+    return techniques;
+  }
+
+  /**
+   * @method canChangeStance
+   * @description Quick check if player can change stance right now
    */
   public canChangeStance(player: PlayerState, currentTime: number): boolean {
-    return currentTime >= player.lastActionTime + player.recoveryTime;
+    if (player.isStunned || player.consciousness < 20) {
+      return false;
+    }
+
+    const lastChange = this.lastStanceChanges.get(player.id) || 0;
+    const timeSinceLastChange = currentTime - lastChange;
+
+    return timeSinceLastChange >= this.stanceChangeCooldown;
   }
 }
-
-export default StanceManager;
-export const stanceManager = new StanceManager();

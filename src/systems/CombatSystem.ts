@@ -78,15 +78,17 @@ export class CombatSystem {
 
     // Apply Korean martial arts combat effects
     const combatResult: CombatResult = {
-      success: true,
-      damage: damageResult.totalDamage,
       hit: true,
-      critical: damageResult.isCritical,
-      vitalPointsHit: damageResult.vitalPointsHit,
-      message: this.generateCombatMessage(technique, damageResult),
-      effects: damageResult.effects,
-      stanceEffectiveness: stanceMultiplier,
-      techniqueAccuracy: hitChance,
+      damage: damageResult.totalDamage,
+      technique,
+      effects: [],
+      isCritical: damageResult.isCritical, // Fix: Use correct property name
+      isBlocked: false,
+      success: true,
+      timestamp: Date.now(),
+      attacker,
+      defender,
+      // Remove duplicate properties that are spread in later
       ...damageResult,
     };
 
@@ -249,17 +251,22 @@ export class CombatSystem {
   /**
    * Change player stance
    */
-  public changeStance(player: PlayerState, newStance: TrigramStance): boolean {
-    const result = this.stanceManager.changeStance(player, newStance);
-
-    if (result.success) {
-      player.currentStance = newStance;
-      player.ki -= result.cost * 0.6;
-      player.stamina -= result.cost * 0.4;
-      player.lastActionTime = Date.now();
+  public changeStance(
+    player: PlayerState,
+    newStance: TrigramStance
+  ): PlayerState {
+    const result = this.validateStanceChange(player, newStance);
+    if (!result.valid) {
+      return player;
     }
 
-    return result.success;
+    return {
+      ...player,
+      currentStance: newStance,
+      ki: player.ki - result.cost * 0.6,
+      stamina: player.stamina - result.cost * 0.4,
+      lastActionTime: Date.now(),
+    };
   }
 }
 
@@ -335,10 +342,14 @@ export class TrainingCombatSystem extends CombatSystem {
     return result;
   }
 
+  // Fix training dummy reset
   public resetTrainingDummy(): void {
-    this.trainingDummy.health = this.trainingDummy.maxHealth;
-    this.trainingDummy.consciousness = 100;
-    this.trainingDummy.balance = 100;
+    this.trainingDummy = {
+      ...this.trainingDummy,
+      health: this.trainingDummy.maxHealth,
+      consciousness: 100,
+      balance: 100,
+    };
   }
 
   public getTrainingDummy(): PlayerState {

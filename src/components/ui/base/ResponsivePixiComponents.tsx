@@ -104,31 +104,29 @@ export const ResponsivePixiButton: React.FC<ResponsivePixiButtonProps> = ({
       : KOREAN_COLORS.UI_BACKGROUND_MEDIUM;
 
   // Fix: Proper click handler that actually gets called
-  const handleClick = useCallback(
-    (event: any) => {
-      console.log("Button clicked:", text);
-      if (onClick) {
-        onClick();
-      }
-    },
-    [onClick, text]
-  );
+  const handleClick = useCallback(() => {
+    onClick?.();
+  }, [onClick]);
+
+  const drawButton = (g: any) => {
+    g.clear();
+    g.fill({ color: buttonColor, alpha: 0.8 });
+    g.roundRect(0, 0, width, height, 6);
+    g.fill();
+    g.stroke({ width: 2, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.8 });
+    g.roundRect(0, 0, width, height, 6);
+    g.stroke();
+  };
+
+  const testId = `${text.toLowerCase().replace(/\s+/g, "-")}-button`;
 
   return (
     <pixiContainer x={x} y={y} {...props}>
       <pixiGraphics
-        draw={(g) => {
-          g.clear();
-          g.fill({ color: buttonColor, alpha: 0.8 });
-          g.roundRect(0, 0, width, height, 6);
-          g.fill();
-          g.stroke({ width: 2, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.8 });
-          g.roundRect(0, 0, width, height, 6);
-          g.stroke();
-        }}
+        draw={drawButton}
         interactive={true}
-        pointerdown={handleClick}
-        data-testid="button-graphics"
+        onPointerDown={handleClick}
+        data-testid={testId}
       />
       <pixiText
         text={text}

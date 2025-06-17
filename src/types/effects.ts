@@ -14,9 +14,11 @@ export enum HitEffectType {
   CRITICAL_HIT = "critical_hit",
   BLOCK = "block",
   MISS = "miss",
-  VITAL_POINT = "vital_point",
-  COUNTER = "counter",
-  DODGE = "dodge",
+  VITAL_POINT = "vital_point", // Fix: Use consistent naming
+  TECHNIQUE_HIT = "technique_hit",
+  STUN = "stun",
+  KO = "ko",
+  ABSORB = "absorb",
 }
 
 /**
@@ -28,6 +30,7 @@ export enum EffectIntensity {
   MEDIUM = "medium",
   HIGH = "high",
   CRITICAL = "critical",
+  // Add missing intensity levels
 }
 
 /**
