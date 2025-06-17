@@ -446,7 +446,11 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
 
       {/* Pause Overlay */}
       {combatState.phase === "paused" && (
-        <pixiContainer x={width / 2} y={height / 2} data-testid="pause-overlay">
+        <pixiContainer
+          x={width / 2}
+          y={height / 2}
+          data-testid="pause-overlay"
+        >
           <pixiGraphics
             draw={(g) => {
               g.clear();
@@ -560,125 +564,6 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         />
       </pixiContainer>
     </pixiContainer>
-  );
-};
-
-export default CombatScreen;
-          y={height / 2}
-          data-testid="pause-overlay"
-        >
-          <pixiGraphics
-            draw={(g) => {
-              g.clear();
-              g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 0.9 });
-              g.rect(-200, -100, 400, 200);
-              g.fill();
-            }}
-          />
-          <pixiContainer>
-            <pixiText
-              text="일시 정지 - PAUSED"
-              style={{
-                fontSize: isMobile ? 24 : 36,
-                fill: KOREAN_COLORS.ACCENT_GOLD,
-                fontWeight: "bold",
-                align: "center",
-                fontFamily: "Noto Sans KR",
-              }}
-              anchor={0.5}
-            />
-            <pixiText
-              text="ESC 키를 눌러 계속하기 - Press ESC to continue"
-              style={{
-                fontSize: isMobile ? 12 : 16,
-                fill: KOREAN_COLORS.TEXT_SECONDARY,
-                align: "center",
-              }}
-              anchor={0.5}
-            />
-          </pixiContainer>
-        </pixiContainer>
-      )}
-
-      {/* Controls Guide */}
-      <pixiContainer data-testid="korean-controls-guide">
-        <pixiText
-          text="조작법: 1-8 자세, 스페이스 공격, 시프트 방어"
-          style={{
-            fontSize: isMobile ? 8 : 10,
-            fill: KOREAN_COLORS.TEXT_SECONDARY,
-            fontFamily: "Noto Sans KR",
-          }}
-        />
-        <pixiText
-          text="Controls: 1-8 Stance, Space Attack, Shift Defend"
-          style={{
-            fontSize: isMobile ? 7 : 9,
-            fill: KOREAN_COLORS.TEXT_TERTIARY,
-          }}
-        />
-      </pixiContainer>
-    </pixiContainer>
-  );
-};
-
-export default CombatScreen;
-              alignItems: "center",
-              gap: 20,
-            }}
-          >
-            <pixiText
-              text="일시 정지 - PAUSED"
-              style={{
-                fontSize: isMobile ? 24 : 36,
-                fill: KOREAN_COLORS.ACCENT_GOLD,
-                fontWeight: "bold",
-                align: "center",
-                fontFamily: "Noto Sans KR",
-              }}
-              anchor={0.5}
-            />
-            <pixiText
-              text="ESC 키를 눌러 계속하기 - Press ESC to continue"
-              style={{
-                fontSize: isMobile ? 12 : 16,
-                fill: KOREAN_COLORS.TEXT_SECONDARY,
-                align: "center",
-              }}
-              anchor={0.5}
-            />
-          </pixiContainer>
-        </pixiContainer>
-      )}
-
-      {/* Controls Guide */}
-      <pixiContainer
-        layout={{
-          position: "absolute",
-          bottom: 10,
-          left: 10,
-          flexDirection: "column",
-          gap: 3,
-        }}
-        data-testid="korean-controls-guide"
-      >
-        <pixiText
-          text="조작법: 1-8 자세, 스페이스 공격, 시프트 방어"
-          style={{
-            fontSize: isMobile ? 8 : 10,
-            fill: KOREAN_COLORS.TEXT_SECONDARY,
-            fontFamily: "Noto Sans KR",
-          }}
-        />
-        <pixiText
-          text="Controls: 1-8 Stance, Space Attack, Shift Defend"
-          style={{
-            fontSize: isMobile ? 7 : 9,
-            fill: KOREAN_COLORS.TEXT_TERTIARY,
-          }}
-        />
-      </pixiContainer>
-    </ResponsiveCombatLayout>
   );
 };
 
