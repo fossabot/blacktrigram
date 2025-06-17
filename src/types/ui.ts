@@ -384,3 +384,15 @@ export type UITheme = {
     large: number;
   };
 };
+
+/**
+ * @type KoreanButtonVariant
+ * @description Korean button variant types for UI components
+ */
+export type KoreanButtonVariant =
+  | "primary"
+  | "secondary"
+  | "danger"
+  | "stance"
+  | "combat"
+  | "disabled";

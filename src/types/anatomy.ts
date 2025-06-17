@@ -215,3 +215,53 @@ export interface KoreanTechnique {
   critMultiplier: number;
   effects: any[];
 }
+
+export enum VitalPointCategory {
+  HEAD = "head",
+  NECK = "neck",
+  TORSO = "torso",
+  ARMS = "arms",
+  LEGS = "legs",
+}
+
+export enum VitalPointSeverity {
+  LOW = "low",
+  MEDIUM = "medium",
+  HIGH = "high",
+  CRITICAL = "critical",
+}
+
+export interface Position {
+  readonly x: number;
+  readonly y: number;
+  readonly z?: number; // Optional for 3D positioning
+}
+
+export interface VitalPointEffect {
+  readonly type: string;
+  readonly intensity: string;
+  readonly duration: number;
+  readonly damage?: number;
+  readonly stunning?: number;
+  readonly consciousness?: number;
+  readonly balance?: number;
+}
+
+export interface VitalPoint {
+  readonly id: string;
+  readonly name: KoreanText;
+  readonly category: VitalPointCategory;
+  readonly severity: VitalPointSeverity;
+  readonly location?: Position;
+  readonly effects: readonly VitalPointEffect[];
+  readonly hitChance: number;
+  readonly description: KoreanText;
+}
+
+export {
+  VitalPointCategory,
+  VitalPointSeverity,
+  type Position,
+  type VitalPoint,
+  type VitalPointEffect,
+};

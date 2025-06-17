@@ -10,15 +10,15 @@ import type { KoreanText } from "./korean-text";
  * @description Types of hit effects that can occur during combat
  */
 export enum HitEffectType {
-  HIT = "hit",
-  CRITICAL_HIT = "critical_hit",
-  BLOCK = "block",
-  MISS = "miss",
-  VITAL_POINT = "vital_point", // Fix: Use consistent naming
-  TECHNIQUE_HIT = "technique_hit",
+  DAMAGE = "damage",
+  CRITICAL = "critical",
   STUN = "stun",
-  KO = "ko",
-  ABSORB = "absorb",
+  KNOCKDOWN = "knockdown",
+  VITAL_POINT = "vital_point", // Fixed naming
+  COUNTER = "counter",
+  DODGE = "dodge",
+  BLOCK = "block",
+  PARRY = "parry",
 }
 
 /**
@@ -26,11 +26,10 @@ export enum HitEffectType {
  * @description Intensity levels for status effects
  */
 export enum EffectIntensity {
-  LOW = "low",
-  MEDIUM = "medium",
-  HIGH = "high",
+  MINOR = "minor",
+  MODERATE = "moderate",
+  MAJOR = "major",
   CRITICAL = "critical",
-  // Add missing intensity levels
 }
 
 /**
@@ -103,13 +102,14 @@ export interface EnvironmentalEffect {
 }
 
 // Export all types
-export type {
-  HitEffect,
-  DisplayHitEffect,
-  StatusEffect,
-  EnvironmentalEffect,
-  Position,
-  KoreanText,
+export {
+  HitEffectType,
+  EffectIntensity,
+  type HitEffect,
+  type DisplayHitEffect,
+  type StatusEffect,
+  type EnvironmentalEffect,
+  type Position,
 };
 
 // Default export should be the main interface, not HitEffect

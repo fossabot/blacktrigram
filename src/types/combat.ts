@@ -35,18 +35,22 @@ export interface KoreanTechnique {
 
 // Combat result - Fix: Ensure all properties are properly defined
 export interface CombatResult {
-  readonly success: boolean;
-  readonly damage: number;
+  readonly totalDamage: number;
   readonly isCritical: boolean;
-  readonly hit: boolean;
-  readonly isBlocked: boolean;
-  readonly vitalPointHit: boolean;
-  readonly effects: readonly any[];
-  readonly attacker?: any;
-  readonly defender?: any;
-  readonly technique?: KoreanTechnique;
-  readonly criticalHit: boolean;
-  readonly timestamp: number; // <-- Ensure this property exists
+  readonly critical: boolean; // Legacy property for backward compatibility
+  readonly vitalPointsHit: readonly VitalPoint[];
+  readonly vitalPointHit: boolean; // Legacy property for backward compatibility
+  readonly criticalHit: boolean; // Legacy property for backward compatibility
+  readonly effects: readonly HitEffect[];
+  readonly stunChance: number;
+  readonly consciousnessLoss: number;
+  readonly balanceLoss: number;
+  readonly techniqueEffectiveness: number;
+  readonly hitType: HitType;
+  readonly hitLocation: Position;
+  readonly hitDirection: number;
+  readonly attacker: PlayerState;
+  readonly defender: PlayerState;
 }
 
 // Training-specific combat result extension
