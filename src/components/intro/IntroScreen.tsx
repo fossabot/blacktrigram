@@ -589,7 +589,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                 {
                   id: "hacker",
                   korean: "해커",
-                  english: " (Hacker) Cyber Warrior",
+                  english: "(Hacker) Cyber Warrior",
                   color: KOREAN_COLORS.PRIMARY_CYAN,
                 },
                 {
