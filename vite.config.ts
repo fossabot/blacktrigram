@@ -66,21 +66,10 @@ export default defineConfig(({ command, mode }) => ({
 
     rollupOptions: {
       output: {
-        // Combine all JS into a single file
-        // inlineDynamicImports: true, // REMOVED to enable code splitting
-
         // Add manualChunks for code splitting
         manualChunks(id: string) {
-          // Group node_modules into a vendor chunk
+          // Group all node_modules into a single vendor chunk for stability
           if (id.includes("node_modules")) {
-            // Group pixi and react into their own chunks
-            if (id.includes("pixi")) {
-              return "vendor-pixi";
-            }
-            if (id.includes("react")) {
-              return "vendor-react";
-            }
-            // All other node_modules
             return "vendor";
           }
           // Group game systems into a chunk
@@ -116,12 +105,12 @@ export default defineConfig(({ command, mode }) => ({
     // Aggressive asset optimization
     reportCompressedSize: false, // Skip for faster builds
 
-    // Tree shaking optimization
-    treeshake: {
-      moduleSideEffects: false,
-      propertyReadSideEffects: false,
-      unknownGlobalSideEffects: false,
-    },
+    // Tree shaking optimization (Reverted to default for stability)
+    // treeshake: {
+    //   moduleSideEffects: false,
+    //   propertyReadSideEffects: false,
+    //   unknownGlobalSideEffects: false,
+    // },
   },
 
   esbuild: {
