@@ -18,7 +18,7 @@ const packageJson: PackageJson = JSON.parse(
 );
 
 export default defineConfig(({ command, mode }) => ({
-    plugins: [
+  plugins: [
     // Enable React features
     react(),
     // Support for TypeScript paths
@@ -67,58 +67,39 @@ export default defineConfig(({ command, mode }) => ({
 
     rollupOptions: {
       output: {
-        // Aggressive chunking for better caching
+        // Simplified chunking to prevent initialization errors
         manualChunks: (id): string | undefined => {
-          // Critical React libraries (smallest possible)
-          if (
-            id.includes("node_modules/react/") ||
-            id.includes("node_modules/react-dom/")
-          ) {
-            return "react-vendor";
+          if (id.includes("node_modules")) {
+            if (id.includes("pixi.js") || id.includes("@pixi")) {
+              return "pixi-vendor";
+            }
+            if (
+              id.includes("react") ||
+              id.includes("react-dom") ||
+              id.includes("react-error-boundary")
+            ) {
+              return "react-vendor";
+            }
+            // Group other vendors
+            return "vendor";
           }
-
-          // PixiJS core - split into smaller chunks
-          if (id.includes("node_modules/pixi.js/")) {
-            // Split PixiJS by functionality
-            if (id.includes("/rendering/")) return "pixi-rendering";
-            if (id.includes("/scene/")) return "pixi-scene";
-            if (id.includes("/filters/")) return "pixi-filters";
-            return "pixi-core";
-          }
-
-          // Audio system
-          if (
-            id.includes("node_modules/howler/") ||
-            id.includes("/src/audio/")
-          ) {
+          // Application code chunking
+          if (id.includes("/src/audio/")) {
             return "audio";
           }
-
-          // Lazy load large Korean data
+          if (id.includes("/src/systems/") || id.includes("/src/utils/")) {
+            return "game-core";
+          }
+          if (id.includes("/TrainingScreen") || id.includes("/EndScreen")) {
+            return "screens";
+          }
           if (
             id.includes("/constants/techniques.ts") ||
             id.includes("/constants/combat.ts") ||
             id.includes("/placeholder-sounds.ts")
           ) {
-            return "korean-data"; // Will be lazy loaded
+            return "korean-data";
           }
-
-          // UI components - defer non-critical screens
-          if (id.includes("/TrainingScreen") || id.includes("/EndScreen")) {
-            return "screens"; // Lazy loaded
-          }
-
-          // Core game systems
-          if (id.includes("/src/systems/") || id.includes("/src/utils/")) {
-            return "game-core";
-          }
-
-          // All other vendor
-          if (id.includes("node_modules/")) {
-            return "vendor";
-          }
-
-          return undefined;
         },
 
         // Optimize chunk and asset naming for better caching
