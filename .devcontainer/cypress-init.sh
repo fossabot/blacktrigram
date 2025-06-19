@@ -1,6 +1,7 @@
 #!/bin/bash
-# Start Xvfb
-Xvfb :99 &
-export DISPLAY=:99
-# Verify Cypress installation
+set -e
+# reuse init script for Xvfb + D-Bus
+. "$(dirname "$0")/init-xvfb.sh"
+
+echo "Verifying Cypress installation..."
 npx cypress verify

@@ -112,6 +112,7 @@
   // Terminal settings
   "terminal.integrated.defaultProfile.linux": "bash",
   "terminal.integrated.env.linux": {
-    "NODE_OPTIONS": "--max-old-space-size=8192"
+    "NODE_OPTIONS": "--max-old-space-size=8192",
+    "DISPLAY": ":99"
   }
 }

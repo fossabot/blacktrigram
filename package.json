@@ -96,4 +96,5 @@
     "vite-bundle-analyzer": "^0.22.3",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.4"
-  }}
+  }
+}

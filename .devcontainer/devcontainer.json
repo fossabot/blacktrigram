@@ -20,6 +20,8 @@
   // Enhanced system dependencies for PixiJS and testing
   "onCreateCommand": "sudo apt-get update && sudo apt-get install -y graphviz libgtk2.0-0 libgtk-3-0 libgbm-dev libnotify-dev libnss3 libxss1 libasound2 libxtst6 xauth xvfb dbus dbus-x11 fonts-noto fonts-noto-cjk fonts-noto-cjk-extra",
 
+  "initializeCommand": ".devcontainer/init-xvfb.sh",
+
   "customizations": {
     "vscode": {
       "extensions": [
@@ -73,7 +75,6 @@
           "plaintext": false,
           "markdown": true
         },
-        "github.copilot.editor.enableAutoCompletions": true,
         "github.copilot.editor.iterativeEditing": true,
 
         // File handling
@@ -91,7 +92,7 @@
   },
 
   // Enhanced post-create commands with better error handling
-  "postCreateCommand": "chmod +x .devcontainer/init-xvfb.sh && sudo mkdir -p /var/run/dbus && sudo dbus-daemon --system --fork && npm install -g npm@latest typescript@latest eslint@latest && npm ci && npm run build && npx cypress verify",
+  "postCreateCommand": "npm install -g npm@latest typescript@latest eslint@latest && npm ci && npm run build && npx cypress verify",
 
   // Optimized post-start command
   "postStartCommand": "npm run build && echo '✓ Development environment ready'",
@@ -102,6 +103,7 @@
   "containerEnv": {
     "CYPRESS_VERIFY_TIMEOUT": "100000",
     "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/dbus/system_bus_socket",
+    "DISPLAY": ":99",
     "NODE_OPTIONS": "--max-old-space-size=8192 --no-warnings",
     "NPM_CONFIG_UPDATE_NOTIFIER": "false",
     "NPM_CONFIG_FUND": "false",

@@ -653,3 +653,8 @@ When following these guidelines, code should:
 **Remember**: Black Trigram represents the intersection of traditional Korean martial arts wisdom and modern interactive technology. Every implementation should honor this balance while providing authentic, educational, and respectful gameplay.
 
 **흑괘의 길을 걸어라** - _Walk the Path of the Black Trigram_
+
+- Ensure any headless browser testing picks up DISPLAY from init-xvfb.sh.
+- Do not duplicate Xvfb/dbus startup in postCreate/postStart – use `initializeCommand`.
+- cypress-init.sh now sources init-xvfb.sh for consistent setup.
+- Remember to export DISPLAY in containerEnv as well.
