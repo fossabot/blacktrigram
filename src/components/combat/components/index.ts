@@ -1,60 +1,22 @@
 /**
- * Combat component exports with proper typing
+ * Combat components exports
  */
 
-import React from "react";
 
+// Combat area and player representation
 export { CombatArena } from "./CombatArena";
-export { CombatHUD } from "./CombatHUD";
+
+// Combat UI components
 export { CombatControls } from "./CombatControls";
+export { CombatHUD } from "./CombatHUD";
+export { PlayerStatusPanel } from "./PlayerStatusPanel";
 
-// Fix: Create proper React functional components instead of invalid JSX
-export const PlayerStatusPanel: React.FC<any> = ({
-  player,
-  position,
-  ...props
-}) => {
-  return React.createElement(
-    "pixiContainer",
-    props,
-    React.createElement("pixiText", {
-      text: `${player.name.korean} - ${position}`,
-      style: { fontSize: 14, fill: 0xffffff },
-    })
-  );
-};
-
-export const CombatStats: React.FC<any> = ({
-  players,
-  combatLog,
-  ...props
-}) => {
-  return React.createElement(
-    "pixiContainer",
-    props,
-    React.createElement("pixiText", {
-      text: "Combat Stats",
-      style: { fontSize: 16, fill: 0xffd700 },
-    }),
-    ...(combatLog || []).slice(0, 3).map((entry: string, index: number) =>
-      React.createElement("pixiText", {
-        key: index,
-        text: entry,
-        style: { fontSize: 12, fill: 0xcccccc },
-        y: 20 + index * 15,
-      })
-    )
-  );
-};
-
-// Export types for combat components
-export type {
-  CombatArenaProps,
-  CombatHUDProps,
-  CombatControlsProps,
-  PlayerStatusPanelProps,
-  CombatStatsProps,
-} from "../../../types/combat";
+// Type exports (to avoid errors when importing types)
+export type { CombatArenaProps } from "./CombatArena";
+export type { CombatControlsProps } from "./CombatControls";
+export type { CombatStatsProps } from "./CombatStats";
+export type { PlayerStatusPanelProps } from './PlayerStatusPanel';
+ 
 
 // Default exports
 export { default as CombatArenaDefault } from "./CombatArena";

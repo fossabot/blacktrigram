@@ -1,8 +1,8 @@
-import React from "react";
 import * as PIXI from "pixi.js";
-import { usePixiExtensions } from "../../utils/pixiExtensions";
-import { KOREAN_COLORS, FONT_FAMILY } from "../../types/constants";
+import React from "react";
+import { FONT_FAMILY, KOREAN_COLORS } from "../../types/constants";
 import type { KoreanText } from "../../types/korean-text";
+import { usePixiExtensions } from "../../utils/pixiExtensions";
 
 export interface KoreanHeaderProps {
   readonly title: KoreanText;
@@ -54,18 +54,6 @@ export const KoreanHeader: React.FC<KoreanHeaderProps> = ({
   const anchorValue =
     alignment === "center" ? 0.5 : alignment === "right" ? 1 : 0;
 
-  const drawUnderline = React.useCallback(
-    (g: PIXI.Graphics) => {
-      if (!showUnderline) return;
-
-      g.clear();
-      g.lineStyle(2, KOREAN_COLORS.ACCENT_GOLD, 0.8);
-      g.moveTo(-50, 0);
-      g.lineTo(50, 0);
-    },
-    [showUnderline]
-  );
-
   return (
     <pixiContainer x={x} y={y} data-testid="korean-header">
       <pixiText text={title.korean} style={titleStyle} anchor={anchorValue} />
@@ -84,7 +72,27 @@ export const KoreanHeader: React.FC<KoreanHeaderProps> = ({
       />
 
       {showUnderline && (
-        <pixiGraphics draw={drawUnderline} y={titleSize + 15} />
+        <pixiGraphics
+          draw={(g) => {
+            g.clear();
+            g.stroke({
+              width: 2,
+              color: KOREAN_COLORS.ACCENT_GOLD,
+              alpha: 0.6,
+            });
+            g.roundRect(0, 0, 100, 10, 8);
+            g.stroke();
+
+            g.stroke({
+              width: 1,
+              color: KOREAN_COLORS.PRIMARY_CYAN,
+              alpha: 0.4,
+            });
+            g.circle(50, 5, 20);
+            g.stroke();
+          }}
+          y={titleSize + 15}
+        />
       )}
 
       {subtitle && (

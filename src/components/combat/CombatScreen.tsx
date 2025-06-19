@@ -7,10 +7,11 @@ import type { PlayerState } from "../../types/player";
 import { DojangBackground } from "../game/DojangBackground";
 import { ResponsivePixiPanel } from "../ui/base/ResponsivePixiComponents";
 import { HitEffectsLayer } from "../ui/HitEffectsLayer";
-import { CombatStats, PlayerStatusPanel } from "./components/";
+import { PlayerStatusPanel } from "./components/";
 import { CombatArena } from "./components/CombatArena";
 import { CombatControls } from "./components/CombatControls";
 import { CombatHUD } from "./components/CombatHUD";
+import CombatStats from "./components/CombatStats";
 
 export const CombatScreen: React.FC<CombatScreenProps> = ({
   players,

@@ -125,71 +125,74 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
   // Enhanced asset loading with proper error handling
   useEffect(() => {
     let destroyed = false;
-    // Use a low-res placeholder first
-    setBgTexture(
-      PIXI.Texture.from("/assets/visual/bg/intro/intro_bg_loop_low.webp")
-    );
+    // Use proper asset path that exists in the project
+    try {
+      setBgTexture(
+        PIXI.Texture.from("/assets/visual/bg/intro/intro_bg_placeholder.png")
+      );
+    } catch (err) {
+      console.warn("Failed to load placeholder texture", err);
+    }
+
     const loadAssets = async () => {
       try {
-        // Prefer WebP if supported
-        const bgUrl = window?.navigator?.userAgent.includes("Safari")
-          ? "/assets/visual/bg/intro/intro_bg_loop.png"
-          : "/assets/visual/bg/intro/intro_bg_loop.webp";
-        const [
-          bg,
-          logo,
-          dojangWall,
-          amsaljaPng,
-          hackerPng,
-          jeongboYowonPng,
-          jojikPokryeokbaePng,
-          musaPng,
-        ] = await Promise.all([
-          PIXI.Assets.load(bgUrl).catch(() => null),
-          PIXI.Assets.load("/assets/visual/logo/black-trigram.png").catch(
-            () => null
-          ),
-          PIXI.Assets.load(
-            "/assets/visual/bg/dojang/dojang_wall_tex.png"
-          ).catch(() => null),
-          PIXI.Assets.load("/assets/visual/archetypes/amsalja.png").catch(
-            () => null
-          ),
-          PIXI.Assets.load("/assets/visual/archetypes/hacker.png").catch(
-            () => null
-          ),
-          PIXI.Assets.load("/assets/visual/archetypes/jeongbo_yowon.png").catch(
-            () => null
-          ),
-          PIXI.Assets.load(
-            "/assets/visual/archetypes/jojik_pokryeokbae.png"
-          ).catch(() => null),
-          PIXI.Assets.load("/assets/visual/archetypes/musa.png").catch(
-            () => null
-          ),
+        // Use more reliable asset paths
+        const bgPath = "/assets/visual/bg/intro/intro_bg_loop.png";
+        const logoPath = "/assets/visual/logo/black-trigram.png";
+        const dojangWallPath = "/assets/visual/bg/dojang/dojang_wall_tex.png";
+
+        const archetypePaths = {
+          amsalja: "/assets/visual/archetypes/amsalja.png",
+          hacker: "/assets/visual/archetypes/hacker.png",
+          jeongboYowon: "/assets/visual/archetypes/jeongbo_yowon.png",
+          jojikPokryeokbae: "/assets/visual/archetypes/jojik_pokryeokbae.png",
+          musa: "/assets/visual/archetypes/musa.png",
+        };
+
+        // Load main assets first
+        const bgTexture = await PIXI.Assets.load(bgPath).catch(() => null);
+        if (bgTexture && !destroyed) setBgTexture(bgTexture);
+
+        // Load other assets in parallel
+        const [logo, dojangWall] = await Promise.all([
+          PIXI.Assets.load(logoPath).catch(() => null),
+          PIXI.Assets.load(dojangWallPath).catch(() => null),
         ]);
+
         if (destroyed) return;
-        if (bg) setBgTexture(bg as PIXI.Texture);
-        if (logo) setLogoTexture(logo as PIXI.Texture);
-        if (dojangWall) setDojangWallTexture(dojangWall as PIXI.Texture);
-        setArchetypeTextures({
-          amsalja: amsaljaPng as PIXI.Texture | null,
-          hacker: hackerPng as PIXI.Texture | null,
-          jeongboYowon: jeongboYowonPng as PIXI.Texture | null,
-          jojikPokryeokbae: jojikPokryeokbaePng as PIXI.Texture | null,
-          musa: musaPng as PIXI.Texture | null,
+        if (logo) setLogoTexture(logo);
+        if (dojangWall) setDojangWallTexture(dojangWall);
+
+        // Load archetype textures
+        const archetypeResults = await Promise.all(
+          Object.entries(archetypePaths).map(async ([key, path]) => {
+            const texture = await PIXI.Assets.load(path).catch(() => null);
+            return { key, texture };
+          })
+        );
+
+        if (destroyed) return;
+
+        // Update archetype textures
+        const newArchetypeTextures = { ...archetypeTextures };
+        archetypeResults.forEach(({ key, texture }) => {
+          if (texture) {
+            newArchetypeTextures[key as keyof typeof archetypeTextures] =
+              texture;
+          }
         });
+
+        setArchetypeTextures(newArchetypeTextures);
       } catch (err) {
         console.warn("Failed to load intro assets", err);
       }
     };
-    // Defer heavy image loading to idle time
-    if ("requestIdleCallback" in window) {
-      (window as any).requestIdleCallback(loadAssets);
-    } else {
-      setTimeout(loadAssets, 100);
-    }
+
+    // Load assets after a short delay
+    const timeoutId = setTimeout(loadAssets, 100);
+
     return () => {
+      clearTimeout(timeoutId);
       destroyed = true;
     };
   }, []);
