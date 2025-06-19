@@ -6,65 +6,80 @@ import type { Position } from "./common";
 import type { KoreanText } from "./korean-text";
 
 /**
- * @enum HitEffectType
- * @description Types of hit effects that can occur during combat
+ * Types of hit effects that can occur during combat
  */
 export enum HitEffectType {
-  HIT_NORMAL = "hit_normal",
+  HIT = "hit",
   CRITICAL = "critical",
-  TECHNIQUE = "technique",
-  COUNTER = "counter",
-  BLOCK = "block",
-  VITAL_POINT = "vital_point", // Fixed naming
-  MISS = "miss",
-  KO = "ko",
-  ABSORB = "absorb",
+  TECHNIQUE_HIT = "technique_hit",
+  VITAL_POINT_HIT = "vital_point_hit",
+  STUN = "stun",
+  PARALYSIS = "paralysis",
+  WEAKENED = "weakened",
+  STAMINA_DRAIN = "stamina_drain",
+  CONFUSION = "confusion",
+  BLEED = "bleed",
+  VULNERABILITY = "vulnerability",
+  DODGE = "dodge",
 }
 
 /**
- * @enum EffectIntensity
- * @description Intensity levels for status effects
+ * Intensity levels for effects
  */
 export enum EffectIntensity {
   MINOR = "minor",
   MODERATE = "moderate",
-  MAJOR = "major",
+  SEVERE = "severe",
   CRITICAL = "critical",
 }
 
 /**
- * @interface Position
- * @description Basic position interface
+ * Status effect types for gameplay mechanics
  */
-export interface Position {
-  readonly x: number;
-  readonly y: number;
+export enum StatusEffectType {
+  STUN = "stun",
+  POISON = "poison",
+  BURN = "burn",
+  BLEED = "bleed",
+  STRENGTHENED = "strengthened",
+  WEAKENED = "weakened",
+  PARALYSIS = "paralysis",
+  CONFUSION = "confusion",
+  REGENERATION = "regeneration",
+  STAMINA_DRAIN = "stamina_drain",
 }
 
 /**
- * @interface HitEffect
- * @description Visual effect displayed when attacks hit
+ * Hit effect for display and gameplay
  */
 export interface HitEffect {
   readonly id: string;
   readonly type: HitEffectType;
-  readonly attackerId: string;
-  readonly defenderId: string;
-  readonly timestamp: number;
+  readonly intensity: "minor" | "moderate" | "critical" | "severe";
   readonly duration: number;
-  readonly position: { readonly x: number; readonly y: number }; // Fix: Make required
-  readonly intensity: number;
-  readonly text?: string;
-  readonly startTime: number;
+  readonly damage?: number;
+  readonly position: Position;
+  readonly timestamp: number;
+  readonly text: string;
+  readonly color: number;
 }
 
 /**
- * @interface StatusEffect
- * @description Status effects that can be applied to players
+ * Display-specific hit effect properties
+ */
+export interface DisplayHitEffect extends HitEffect {
+  readonly scale: number;
+  readonly alpha: number;
+  readonly velocity: { x: number; y: number };
+  readonly fontSize: number;
+}
+
+/**
+ * Status effect that persists over time
  */
 export interface StatusEffect {
   readonly id: string;
-  readonly type: string; // Changed from EffectType to string
+  readonly type: StatusEffectType;
   readonly intensity: EffectIntensity;
   readonly duration: number;
   readonly description: KoreanText;
@@ -75,36 +90,25 @@ export interface StatusEffect {
 }
 
 /**
- * @interface DisplayHitEffect
- * @description Enhanced hit effect interface for display purposes with calculated properties
- */
-export interface DisplayHitEffect extends HitEffect {
-  readonly opacity: number;
-  readonly scale: number;
-  readonly startTime: number;
-  readonly displayAlpha: number;
-  readonly displayY: number;
-  readonly displaySize: number;
-}
-
-/**
- * @interface EnvironmentalEffect
- * @description Environmental effects in the combat arena
+ * Environmental effect that affects the combat area
  */
 export interface EnvironmentalEffect {
   readonly id: string;
   readonly type: string;
-  readonly position: Position;
-  readonly radius: number;
+  readonly area: {
+    readonly center: Position;
+    readonly radius: number;
+  };
   readonly duration: number;
   readonly intensity: number;
-  readonly startTime: number;
+  readonly effects: readonly StatusEffect[];
 }
 
-// Export all types
+// Export all types and enums
 export {
   HitEffectType,
   EffectIntensity,
+  StatusEffectType,
   type HitEffect,
   type DisplayHitEffect,
   type StatusEffect,

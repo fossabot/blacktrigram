@@ -34,13 +34,11 @@ export class CombatSystem {
     const validation = this.validateTechnique(attacker, technique);
     if (!validation.valid) {
       return {
-        success: false,
+        hit: false, // Add this
         damage: 0,
-        hit: false,
-        critical: false,
-        vitalPointsHit: [],
-        message: validation.message,
+        isCritical: false,
         effects: [],
+        message: validation.message,
       };
     }
 
@@ -57,13 +55,11 @@ export class CombatSystem {
 
     if (!hit) {
       return {
-        success: true,
+        hit: false, // Add this
         damage: 0,
-        hit: false,
-        critical: false,
-        vitalPointsHit: [],
-        message: `${technique.name.korean} 빗나감 - ${technique.name.english} missed`,
+        isCritical: false,
         effects: [],
+        message: `${technique.name.korean} 빗나감 - ${technique.name.english} missed`,
       };
     }
 
@@ -79,16 +75,10 @@ export class CombatSystem {
     // Apply Korean martial arts combat effects
     const combatResult: CombatResult = {
       hit: true,
-      damage: damageResult.totalDamage,
-      technique,
-      effects: [],
-      isCritical: damageResult.isCritical, // Fix: Use correct property name
-      isBlocked: false,
-      success: true,
-      timestamp: Date.now(),
-      attacker,
-      defender,
-      // Remove duplicate properties that are spread in later
+      damage: damageResult.damage,
+      isCritical: damageResult.isCritical,
+      effects: damageResult.effects,
+      // Remove duplicate effects and isCritical properties
       ...damageResult,
     };
 
@@ -213,31 +203,7 @@ export class CombatSystem {
 
     // Update player recovery and regeneration
     players.forEach((player) => {
-      // Ki regeneration (slower in combat)
-      if (currentTime > player.lastActionTime + 1000) {
-        player.ki = Math.min(player.maxKi, player.ki + deltaTime * 0.5);
-      }
-
-      // Stamina regeneration
-      if (!player.isBlocking && currentTime > player.lastActionTime + 500) {
-        player.stamina = Math.min(
-          player.maxStamina,
-          player.stamina + deltaTime * 0.8
-        );
-      }
-
-      // Balance recovery
-      if (player.balance < 100) {
-        player.balance = Math.min(100, player.balance + deltaTime * 1.2);
-      }
-
-      // Consciousness recovery (very slow)
-      if (player.consciousness < 100 && player.consciousness > 0) {
-        player.consciousness = Math.min(
-          100,
-          player.consciousness + deltaTime * 0.1
-        );
-      }
+      this.regenerateResources(player, deltaTime);
     });
   }
 
@@ -267,6 +233,37 @@ export class CombatSystem {
       stamina: player.stamina - result.cost * 0.4,
       lastActionTime: Date.now(),
     };
+  }
+
+  // Fix the regeneration methods to handle readonly properties
+  private regenerateResources(player: PlayerState, deltaTime: number): void {
+    // Create a mutable copy to update
+    const updates: Partial<PlayerState> = {};
+
+    if (player.ki < player.maxKi) {
+      updates.ki = Math.min(player.maxKi, player.ki + deltaTime * 0.5);
+    }
+
+    if (player.stamina < player.maxStamina) {
+      updates.stamina = Math.min(
+        player.maxStamina,
+        player.stamina + deltaTime * 0.8
+      );
+    }
+
+    if (player.balance < 100) {
+      updates.balance = Math.min(100, player.balance + deltaTime * 1.2);
+    }
+
+    if (player.consciousness < 100) {
+      updates.consciousness = Math.min(
+        100,
+        player.consciousness + deltaTime * 0.3
+      );
+    }
+
+    // Apply updates through the player update system
+    Object.assign(player as any, updates);
   }
 }
 

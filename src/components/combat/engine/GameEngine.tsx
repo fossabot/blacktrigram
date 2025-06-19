@@ -455,14 +455,15 @@ export const GameEngine: React.FC<GameEngineProps> = ({
         // Fix: Use proper HitEffectType enum
         const effect: HitEffect = {
           id: `technique_${Date.now()}`,
-          type: result.isCritical ? HitEffectType.CRITICAL_HIT : HitEffectType.HIT,
+          type: result.isCritical ? HitEffectType.CRITICAL : HitEffectType.HIT,
           attackerId,
           defenderId,
           timestamp: Date.now(),
           duration: result.isCritical ? 1500 : 1000,
           position: {
             x: defenderPos.col * (width / grid.size) + width / (grid.size * 2),
-            y: defenderPos.row * (height / grid.size) + height / (grid.size * 2),
+            y:
+              defenderPos.row * (height / grid.size) + height / (grid.size * 2),
           },
           intensity: result.isCritical ? 1.5 : 1.0,
           startTime: Date.now(),
@@ -846,10 +847,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({
     const gameLoop = (): void => {
       if (gameState.phase === "combat") {
         onPlayerUpdate(player1.id, {
-          ki: Math.min(
-            player1.maxKi,
-            player1.ki + gameSettings.kiRegenRate
-          ),
+          ki: Math.min(player1.maxKi, player1.ki + gameSettings.kiRegenRate),
           stamina: Math.min(
             player1.maxStamina,
             player1.stamina + gameSettings.staminaRegenRate
@@ -857,10 +855,7 @@ export const GameEngine: React.FC<GameEngineProps> = ({
         });
 
         onPlayerUpdate(player2.id, {
-          ki: Math.min(
-            player2.maxKi,
-            player2.ki + gameSettings.kiRegenRate
-          ),
+          ki: Math.min(player2.maxKi, player2.ki + gameSettings.kiRegenRate),
           stamina: Math.min(
             player2.maxStamina,
             player2.stamina + gameSettings.staminaRegenRate

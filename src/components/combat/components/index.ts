@@ -5,21 +5,18 @@
  */
 
 // Core combat screens and systems
-export { CombatScreen } from "./CombatScreen";
-export { default as CombatScreenDefault } from "./CombatScreen";
 
 // Combat components
 export { CombatArena } from "./CombatArena";
-export { CombatHUD } from "./CombatHUD";
 export { CombatControls } from "./CombatControls";
+export { CombatHUD } from "./CombatHUD";
 export { CombatStats } from "./CombatStats";
+export { HitEffectsLayer } from "./HitEffectsLayer";
+export { Player } from "./Player";
 export { PlayerStatusPanel } from "./PlayerStatusPanel";
+export { PlayerVisuals } from "./PlayerVisuals";
 
 // Enhanced game components
-export { Player } from "./Player";
-export { PlayerVisuals } from "./PlayerVisuals";
-export { HitEffectsLayer } from "./HitEffectsLayer";
-
 // Fix: Import from correct locations
 export { GameEngine } from "../engine/GameEngine";
 export { default as GameEngineDefault } from "../engine/GameEngine";
@@ -58,5 +55,3 @@ export type {
   HitEffect,
   DisplayHitEffect,
 } from "../../../types/";
-
-// ...existing combat features documentation...

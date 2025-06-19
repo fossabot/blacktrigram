@@ -183,10 +183,17 @@ export const KoreanButton: React.FC<KoreanButtonProps> = ({
   }, [disabled, onClick]);
 
   // Fix TEXT_DISABLED color constant
-  const getButtonTextColor = (
+  type KoreanButtonVariant =
+    | "primary"
+    | "secondary"
+    | "combat"
+    | "stance"
+    | "disabled";
+
+  function getVariantTextColor(
     variant: KoreanButtonVariant,
     disabled: boolean
-  ): number => {
+  ): number {
     if (disabled) {
       return KOREAN_COLORS.TEXT_SECONDARY; // Fix: Use existing color constant
     }
@@ -203,7 +210,7 @@ export const KoreanButton: React.FC<KoreanButtonProps> = ({
       default:
         return KOREAN_COLORS.TEXT_PRIMARY;
     }
-  };
+  }
 
   return (
     <pixiContainer
@@ -221,14 +228,12 @@ export const KoreanButton: React.FC<KoreanButtonProps> = ({
       <pixiText
         text={text.korean}
         style={{
-          fontSize: 14,
-          fill: getButtonTextColor(variant, disabled || false),
+          fontSize: 12,
+          fill: getVariantTextColor(variant, disabled),
           fontWeight: "bold",
-          fontFamily: "Noto Sans KR",
-          // Remove alpha property - not supported in TextStyle
+          align: "center",
         }}
         anchor={0.5}
-        y={-5}
       />
 
       {/* English text */}
@@ -238,7 +243,6 @@ export const KoreanButton: React.FC<KoreanButtonProps> = ({
           fontSize: Math.max(8, Math.min(12, height * 0.25)),
           fill: colors.text,
           align: "center",
-          alpha: 0.8,
         }}
         anchor={0.5}
         x={width / 2}
@@ -308,12 +312,14 @@ export const ResponsiveContainer: React.FC<ResponsiveContainerProps> = ({
 
   // Fix layout properties type issues
   const containerLayout = {
-    width: typeof width === "number" ? width : 200,
-    height: typeof height === "number" ? height : 100,
-    flexDirection: "column" as const,
-    alignItems: "center" as const,
-    justifyContent: "center" as const,
-    padding: 10, // Fix: Use simple number instead of object
+    width: typeof width === "number" ? width : parseFloat(width),
+    height: typeof height === "number" ? height : parseFloat(height),
+    padding: {
+      top: normalizedPadding.top,
+      right: normalizedPadding.right,
+      bottom: normalizedPadding.bottom,
+      left: normalizedPadding.left,
+    },
   };
 
   return (
@@ -483,7 +489,7 @@ export const KoreanPanel: React.FC<KoreanPanelProps> = ({
               fill: colors.text,
               alpha: 0.8,
             }}
-            y={18}
+            y={20}
           />
         </pixiContainer>
       )}

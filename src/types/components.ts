@@ -4,29 +4,9 @@
 
 import type { ReactNode } from "react";
 import type * as PIXI from "pixi.js";
-import type {
-  PlayerState,
-  GameMode,
-  MatchStatistics,
-  KoreanText,
-  KoreanTechnique,
-  TrigramStance,
-  PlayerArchetype,
-} from "./index";
-import type { CombatResult as CombatResultType } from "./combat";
-import type { HitEffect } from "./effects";
+import type { PlayerState } from "./player";
+import type { GameMode } from "./game";
 import type { TrigramStance } from "./enums";
-
-// Fix: Remove duplicate exports at top
-export interface UIComponentProps {
-  readonly x?: number;
-  readonly y?: number;
-  readonly width?: number;
-  readonly height?: number;
-  readonly visible?: boolean;
-  readonly alpha?: number;
-  readonly children?: ReactNode;
-}
 
 // Base component props interface
 export interface BaseComponentProps {
@@ -351,6 +331,26 @@ export interface GameUIProps {
 // Export common PIXI components for convenience
 export type PixiContainer = PIXI.Container;
 export type PixiGraphics = PIXI.Graphics;
+export type PixiText = PIXI.Text;
+export type PixiSprite = PIXI.Sprite;
+export type PixiTextStyle = PIXI.TextStyle;
+
+// Re-export useful types
+export type {
+  PlayerState,
+  GameMode,
+  MatchStatistics,
+  KoreanText,
+  KoreanTechnique,
+  TrigramStance,
+  PlayerArchetype,
+} from "./index";
+
+// Fix: Remove duplicate CombatResult interface - use the one from combat.ts
+export type CombatResult = CombatResultType;
+
+// Fix: Unify HitEffect interfaces - use the one from effects.ts
+export type { HitEffect } from "./effects";
 export type PixiText = PIXI.Text;
 export type PixiSprite = PIXI.Sprite;
 export type PixiTextStyle = PIXI.TextStyle;
