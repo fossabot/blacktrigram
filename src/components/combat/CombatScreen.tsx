@@ -13,6 +13,7 @@ import { CombatControls } from "./components/CombatControls";
 import { CombatHUD } from "./components/CombatHUD";
 import { HitEffectsLayer } from "./components/HitEffectsLayer";
 import { CombatStats } from "./components/CombatStats";
+// Fix: Import from correct locations
 import { GameEngine } from "./engine/GameEngine";
 import { DojangBackground } from "./backgrounds/DojangBackground";
 import { KOREAN_COLORS } from "../../types/constants";
@@ -186,7 +187,7 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
       });
       const effect: HitEffect = {
         id: `hit_${Date.now()}`,
-        type: isCritical ? HitEffectType.CRITICAL_HIT : HitEffectType.HIT,
+        type: isCritical ? HitEffectType.CRITICAL : HitEffectType.HIT_NORMAL,
         attackerId: attacker.id,
         defenderId: validatedPlayers[targetIndex].id,
         timestamp: Date.now(),

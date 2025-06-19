@@ -4,26 +4,23 @@
  */
 
 export const KOREAN_COLORS = {
-  // Existing colors
+  // Text Colors
+  TEXT_PRIMARY: 0xffffff,
+  TEXT_SECONDARY: 0xcccccc,
+  TEXT_TERTIARY: 0x999999,
   TEXT_DISABLED: 0x666666,
+
+  // Basic Colors
+  BLACK_SOLID: 0x000000,
+  WHITE_SOLID: 0xffffff,
+  TRANSPARENT: 0x000000, // With alpha 0
+
+  // Cardinal Direction Colors
   CARDINAL_EAST: 0x00ff68,
   CARDINAL_WEST: 0xffffff,
   CARDINAL_SOUTH: 0xfd4a64,
   CARDINAL_NORTH: 0x000000,
   CARDINAL_CENTER: 0xffcc00,
-  PRIMARY_RED: 0xcf1b1b,
-  PRIMARY_GOLD: 0xffcc00,
-  PRIMARY_BLUE: 0x1e3a8a,
-  UI_LIGHT_GRAY: 0xcccccc,
-  UI_DARK_GRAY: 0x2d2d2d,
-
-  // Missing core colors
-  TEXT_PRIMARY: 0xffffff,
-  TEXT_SECONDARY: 0xcccccc,
-  TEXT_TERTIARY: 0x999999,
-  BLACK_SOLID: 0x000000,
-  WHITE_SOLID: 0xffffff,
-  TRANSPARENT: 0x000000, // With alpha 0
 
   // UI Colors
   UI_BACKGROUND_DARK: 0x1a1a2e,
@@ -32,14 +29,18 @@ export const KOREAN_COLORS = {
   UI_BORDER: 0x666680,
   UI_GRAY: 0x808080,
   UI_STEEL_GRAY: 0x6b7280,
+  UI_LIGHT_GRAY: 0xcccccc,
+  UI_DARK_GRAY: 0x2d2d2d,
   UI_DISABLED_BG: 0x374151,
   UI_DISABLED_FILL: 0x4b5563,
   UI_DISABLED_BORDER: 0x6b7280,
   UI_DISABLED_TEXT: 0x9ca3af,
 
   // Primary Colors
-  PRIMARY_CYAN: 0x00bfff,
+  PRIMARY_RED: 0xcf1b1b,
+  PRIMARY_GOLD: 0xffcc00,
   PRIMARY_BLUE: 0x1e40af,
+  PRIMARY_CYAN: 0x00bfff,
 
   // Accent Colors
   ACCENT_GOLD: 0xffd700,

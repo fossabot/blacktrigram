@@ -254,7 +254,7 @@ export class DamageCalculator {
     // Main hit effect
     effects.push({
       id: `hit_${timestamp}`,
-      type: isCritical ? HitEffectType.CRITICAL_HIT : HitEffectType.HIT,
+      type: isCritical ? HitEffectType.CRITICAL : HitEffectType.HIT_NORMAL,
       attackerId: "attacker",
       defenderId: "defender",
       timestamp,
@@ -269,7 +269,7 @@ export class DamageCalculator {
     vitalPointsHit.forEach((vitalPoint, index) => {
       effects.push({
         id: `vital_${timestamp}_${index}`,
-        type: HitEffectType.VITAL_POINT_HIT,
+        type: HitEffectType.VITAL_POINT,
         attackerId: "attacker",
         defenderId: "defender",
         timestamp,

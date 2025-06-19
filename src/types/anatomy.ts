@@ -2,16 +2,8 @@
  * Anatomical and vital point system types
  */
 
-import type { KoreanText, Position, DamageRange } from "./common";
-import { StatusEffect } from "./effects";
-import {
-  TrigramStance,
-  PlayerArchetype,
-  VitalPointCategory,
-  VitalPointSeverity,
-  VitalPointEffectType,
-  EffectIntensity,
-} from "./enums";
+import type { KoreanText, DamageRange } from "./common";
+import type { EffectIntensity } from "./effects";
 
 // Vital point definition
 export interface VitalPoint {
@@ -36,13 +28,11 @@ export interface VitalPoint {
 
 // Vital point effect
 export interface VitalPointEffect {
-  readonly id: string;
   readonly type: VitalPointEffectType;
   readonly intensity: EffectIntensity;
-  readonly duration: number;
+  readonly damage?: number;
+  readonly duration?: number;
   readonly description: KoreanText;
-  readonly stackable: boolean;
-  readonly source?: string; // Add missing source property
 }
 
 // Player archetype data
@@ -222,6 +212,9 @@ export enum VitalPointCategory {
   TORSO = "torso",
   ARMS = "arms",
   LEGS = "legs",
+  NEUROLOGICAL = "neurological",
+  RESPIRATORY = "respiratory",
+  CIRCULATORY = "circulatory",
 }
 
 export enum VitalPointSeverity {
@@ -234,28 +227,6 @@ export enum VitalPointSeverity {
 export interface Position {
   readonly x: number;
   readonly y: number;
-  readonly z?: number; // Optional for 3D positioning
-}
-
-export interface VitalPointEffect {
-  readonly type: string;
-  readonly intensity: string;
-  readonly duration: number;
-  readonly damage?: number;
-  readonly stunning?: number;
-  readonly consciousness?: number;
-  readonly balance?: number;
-}
-
-export interface VitalPoint {
-  readonly id: string;
-  readonly name: KoreanText;
-  readonly category: VitalPointCategory;
-  readonly severity: VitalPointSeverity;
-  readonly location?: Position;
-  readonly effects: readonly VitalPointEffect[];
-  readonly hitChance: number;
-  readonly description: KoreanText;
 }
 
 export {

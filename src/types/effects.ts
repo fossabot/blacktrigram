@@ -10,15 +10,15 @@ import type { KoreanText } from "./korean-text";
  * @description Types of hit effects that can occur during combat
  */
 export enum HitEffectType {
-  DAMAGE = "damage",
+  HIT_NORMAL = "hit_normal",
   CRITICAL = "critical",
-  STUN = "stun",
-  KNOCKDOWN = "knockdown",
-  VITAL_POINT = "vital_point", // Fixed naming
+  TECHNIQUE = "technique",
   COUNTER = "counter",
-  DODGE = "dodge",
   BLOCK = "block",
-  PARRY = "parry",
+  VITAL_POINT = "vital_point", // Fixed naming
+  MISS = "miss",
+  KO = "ko",
+  ABSORB = "absorb",
 }
 
 /**

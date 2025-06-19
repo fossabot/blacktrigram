@@ -33,9 +33,9 @@ export const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({
 
   const getEffectColor = (type: HitEffectType): number => {
     switch (type) {
-      case HitEffectType.CRITICAL_HIT:
+      case HitEffectType.CRITICAL:
         return KOREAN_COLORS.NEGATIVE_RED;
-      case HitEffectType.HIT:
+      case HitEffectType.HIT_NORMAL:
         return KOREAN_COLORS.WARNING_YELLOW;
       case HitEffectType.BLOCK:
         return KOREAN_COLORS.ACCENT_BLUE;
@@ -57,7 +57,7 @@ export const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({
 
       const color = getEffectColor(effect.type);
 
-      if (effect.type === HitEffectType.CRITICAL_HIT) {
+      if (effect.type === HitEffectType.CRITICAL) {
         // Explosive effect for critical hits
         g.fill({ color, alpha: alpha * 0.8 });
         for (let i = 0; i < 8; i++) {
