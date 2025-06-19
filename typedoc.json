@@ -67,20 +67,20 @@
     "alphabetical"
   ],
   "tsconfig": "tsconfig.json", // Path to your tsconfig.json
-  "htmlLang": "en", // Language for the generated HTML
+  "lang": "en", // Language for the generated HTML
   "githubPages": true, // Optimizes output for GitHub Pages (if you plan to host there)
-  // Replace YOUR_USERNAME and YOUR_REPO with your actual GitHub details
-  "sourceLinkTemplate": "https://github.com/YOUR_USERNAME/YOUR_REPO/blob/{gitRevision}/{path}#L{line}",
+  // Replace YOUR_USERNAME with your actual GitHub username
+  "sourceLinkTemplate": "https://github.com/YOUR_USERNAME/blacktrigram/blob/{gitRevision}/{path}#L{line}",
   "disableSources": false, // Set to true to not link to source files
   "navigationLinks": {
     // Add custom links to the documentation header
-    "GitHub": "https://github.com/YOUR_USERNAME/YOUR_REPO", // Replace with your repo URL
+    "GitHub": "https://github.com/YOUR_USERNAME/blacktrigram", // Replace with your repo URL
     "Game Website": "https://blacktrigram.com" // Example, replace with actual URL if any
   },
   "searchInComments": true, // Enables searching within JSDoc comments
   "logLevel": "Verbose", // Use "Warn" or "Error" for less output, "Verbose" for debugging
   "treatWarningsAsErrors": false,
-  "pretty": true, // Nicely formats the generated JSON (if any) and HTML
+  "pretty": true // Nicely formats the generated JSON (if any) and HTML
   // "customCss": "./path/to/your/custom.css", // Uncomment to add custom CSS for the HTML theme
-  "media": "public/assets/visual/logo" // Example: if you want to reference images from JSDoc like ![Logo](media/black-trigram.png)
+  // "media": "public/assets/visual/logo" // This option caused an "Unknown option" error and was removed to fix the build.
 }
