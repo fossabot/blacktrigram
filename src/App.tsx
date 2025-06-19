@@ -17,6 +17,7 @@ import type { MatchStatistics } from "./types/game";
 import type { PlayerState } from "./types/player";
 import { usePixiExtensions } from "./utils/pixiExtensions";
 import { createPlayerFromArchetype } from "./utils/playerUtils";
+
 // Remove direct import of EndScreen and TrainingScreen
 // import { EndScreen } from "./components/ui/EndScreen";
 // import { TrainingScreen } from "./components";

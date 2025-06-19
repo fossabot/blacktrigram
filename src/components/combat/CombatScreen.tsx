@@ -1,17 +1,20 @@
-import React, { useCallback, useMemo, useState } from "react";
+import { Position } from "@/types";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import type { CombatScreenProps } from "../../types/combat";
-import type { Position } from "../../types/common";
 import { KOREAN_COLORS } from "../../types/constants";
-import type { HitEffect } from "../../types/effects";
-import type { PlayerState } from "../../types/player";
+import { HitEffect, HitEffectType } from "../../types/effects"; // Fix: Import HitEffectType from effects.ts
+import { extendPixiComponents } from "../../utils/pixiExtensions";
 import { DojangBackground } from "../game/DojangBackground";
 import { ResponsivePixiPanel } from "../ui/base/ResponsivePixiComponents";
 import { HitEffectsLayer } from "../ui/HitEffectsLayer";
-import { PlayerStatusPanel } from "./components/";
 import { CombatArena } from "./components/CombatArena";
 import { CombatControls } from "./components/CombatControls";
 import { CombatHUD } from "./components/CombatHUD";
-import CombatStats from "./components/CombatStats";
+import { CombatStats } from "./components/CombatStats";
+import { PlayerStatusPanel } from "./components/PlayerStatusPanel";
+
+// Ensure PixiJS components are extended
+extendPixiComponents();
 
 export const CombatScreen: React.FC<CombatScreenProps> = ({
   players,
@@ -31,15 +34,16 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
   const [selectedPlayer, setSelectedPlayer] = useState<number | null>(null);
   const [combatLog] = useState<string[]>([]);
 
+  // Create hit effect
   const createHitEffect = useCallback(
     (
       id: string,
-      type: "hit" | "critical" | "block" | "miss",
+      type: HitEffectType,
       position: Position,
       intensity: number
     ): HitEffect => ({
       id,
-      type: type as any,
+      type, // Now using the imported HitEffectType
       attackerId: "player1",
       defenderId: "player2",
       timestamp: Date.now(),
@@ -51,100 +55,96 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
     []
   );
 
+  // Handle attack
   const handleAttack = useCallback(() => {
     const effect = createHitEffect(
       `attack_${Date.now()}`,
-      "hit",
+      HitEffectType.HIT,
       { x: 400, y: 300 },
-      1.0
+      1
     );
     setHitEffects((prev) => [...prev, effect]);
   }, [createHitEffect]);
 
+  // Handle defend
   const handleDefend = useCallback(() => {
-    console.log("Defending");
+    // Defend logic
   }, []);
 
-  const handleTechniqueExecute = useCallback((technique: any) => {
+  // Handle technique execution
+  const handleTechniqueExecute = useCallback(() => {
     setIsExecutingTechnique(true);
-    console.log("Executing technique:", technique.name);
     setTimeout(() => setIsExecutingTechnique(false), 500);
   }, []);
 
+  // Handle stance switch
   const handleStanceSwitch = useCallback(
     (stance: any) => {
       setIsExecutingTechnique(true);
-      console.log("Switching to stance:", stance);
       onPlayerUpdate(0, { currentStance: stance });
     },
     [onPlayerUpdate]
   );
 
-  const handleGuard = useCallback(() => {
-    console.log("Guarding");
-  }, []);
-
-  const handlePauseToggle = useCallback(() => {
-    setIsExecutingTechnique(true);
-    setTimeout(() => setIsExecutingTechnique(false), 800);
-  }, []);
-
+  // Handle effect completion
   const handleEffectComplete = useCallback((effectId: string) => {
     setHitEffects((prev) => prev.filter((effect) => effect.id !== effectId));
   }, []);
 
-  const validatedPlayers = useMemo(() => {
+  // Ensure we have valid players
+  const validPlayers = useMemo(() => {
     if (players.length < 2) {
-      console.warn("CombatScreen: Not enough players provided");
-      const dummyPlayer: PlayerState = {
+      const dummyPlayer = {
         ...players[0],
         id: "dummy_player",
         name: { korean: "더미", english: "Dummy" },
       };
-      return [players[0], dummyPlayer] as const;
+      return [players[0], dummyPlayer];
     }
-    return [players[0], players[1]] as const;
+    return [players[0], players[1]];
   }, [players]);
 
+  // Add hit effect
   const addHitEffect = useCallback(
-    (type: "hit" | "critical" | "block" | "miss", position: Position) => {
-      const effect = createHitEffect(
-        `effect_${Date.now()}`,
-        type,
-        position,
-        1.0
-      );
+    (type: HitEffectType, position: Position) => {
+      const effect = createHitEffect(`effect_${Date.now()}`, type, position, 1);
       setHitEffects((prev) => [...prev, effect]);
     },
     [createHitEffect]
   );
 
-  const handleGameEndLogic = useCallback(() => {
-    if (validatedPlayers[0].health <= 0) {
+  // Check game end conditions
+  const checkGameEnd = useCallback(() => {
+    if (validPlayers[0].health <= 0) {
       onGameEnd(1);
-    } else if (validatedPlayers[1].health <= 0) {
+    } else if (validPlayers[1].health <= 0) {
       onGameEnd(0);
     }
-  }, [validatedPlayers, onGameEnd]);
+  }, [validPlayers, onGameEnd]);
 
-  React.useEffect(() => {
-    handleGameEndLogic();
-  }, [handleGameEndLogic]);
+  // Check game end on player health changes
+  useEffect(() => {
+    checkGameEnd();
+  }, [validPlayers[0].health, validPlayers[1].health, checkGameEnd]);
 
-  const { isMobile, isTablet } = useMemo(() => {
-    const isMobile = width < 768;
-    const isTablet = width >= 768 && width < 1024;
+  // Responsive layout
+  const { isMobile, isTablet } = useMemo(
+    () => ({
+      isMobile: width < 768,
+      isTablet: width >= 768 && width < 1024,
+    }),
+    [width]
+  );
 
-    return { isMobile, isTablet };
-  }, [width, height]);
-
+  // Handle player click
   const handlePlayerClick = (idx: number) => {
     setSelectedPlayer(idx);
-    addHitEffect("hit", { x: 100 + idx * 200, y: 200 });
+    addHitEffect(HitEffectType.HIT, { x: 100 + idx * 200, y: 200 }); // Fix: Use enum value
   };
 
   return (
-    <pixiContainer x={x} y={y} interactive={true} data-testid="combat-screen">
+    <pixiContainer x={x} y={y} data-testid="combat-screen">
+      {/* Background */}
       <DojangBackground
         width={width}
         height={height}
@@ -152,6 +152,7 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         animate={true}
       />
 
+      {/* Grid overlay */}
       <pixiGraphics
         draw={(g) => {
           g.clear();
@@ -159,26 +160,28 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
           const patternSize = isMobile ? 100 : isTablet ? 125 : 150;
           const circleSize = isMobile ? 25 : isTablet ? 32 : 40;
 
-          for (let i = 0; i < width; i += patternSize) {
-            for (let j = 0; j < height; j += patternSize) {
-              g.circle(i + patternSize / 2, j + patternSize / 2, circleSize);
+          for (let x = 0; x < width; x += patternSize) {
+            for (let y = 0; y < height; y += patternSize) {
+              g.circle(x + patternSize / 2, y + patternSize / 2, circleSize);
               g.stroke();
             }
           }
         }}
       />
 
+      {/* Combat Arena */}
       <CombatArena
-        players={validatedPlayers}
+        players={validPlayers}
         width={width}
         height={height * (isMobile ? 0.65 : 0.75)}
         y={height * (isMobile ? 0.2 : 0.15)}
         onPlayerClick={handlePlayerClick}
       />
 
+      {/* Combat HUD */}
       <CombatHUD
-        player1={validatedPlayers[0]}
-        player2={validatedPlayers[1]}
+        player1={validPlayers[0]}
+        player2={validPlayers[1]}
         currentRound={currentRound}
         timeRemaining={timeRemaining}
         maxRounds={3}
@@ -188,16 +191,19 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         y={0}
       />
 
+      {/* Player 1 Status Panel */}
       <ResponsivePixiPanel
-        title={validatedPlayers[0].name.korean}
+        title={validPlayers[0].name.korean}
         x={isMobile ? 10 : 20}
         y={height * (isMobile ? 0.15 : 0.2)}
         width={isMobile ? width * 0.4 : 180}
         height={isMobile ? 200 : 300}
         data-testid="player1-status"
+        screenWidth={width}
+        screenHeight={height}
       >
         <PlayerStatusPanel
-          player={validatedPlayers[0]}
+          player={validPlayers[0]}
           position="left"
           x={0}
           y={0}
@@ -207,16 +213,19 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         />
       </ResponsivePixiPanel>
 
+      {/* Player 2 Status Panel */}
       <ResponsivePixiPanel
-        title={validatedPlayers[1].name.korean}
+        title={validPlayers[1].name.korean}
         x={width - (isMobile ? width * 0.4 + 10 : 200)}
         y={height * (isMobile ? 0.15 : 0.2)}
         width={isMobile ? width * 0.4 : 180}
         height={isMobile ? 200 : 300}
         data-testid="player2-status"
+        screenWidth={width}
+        screenHeight={height}
       >
         <PlayerStatusPanel
-          player={validatedPlayers[1]}
+          player={validPlayers[1]}
           position="right"
           x={0}
           y={0}
@@ -226,6 +235,7 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         />
       </ResponsivePixiPanel>
 
+      {/* Combat Stats Panel */}
       <ResponsivePixiPanel
         title="전투 통계"
         x={isMobile ? 10 : width / 2 - 150}
@@ -233,33 +243,39 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         width={isMobile ? width - 20 : 300}
         height={isMobile ? 100 : 160}
         data-testid="combat-stats-panel"
+        screenWidth={width}
+        screenHeight={height}
       >
         <CombatStats
-          players={validatedPlayers}
+          players={validPlayers}
           combatLog={combatLog}
           x={0}
           y={0}
           width={isMobile ? width - 40 : 280}
-          height={isMobile ? 80 : 140}
         />
       </ResponsivePixiPanel>
 
-      <CombatControls
-        onAttack={handleAttack}
-        onDefend={handleDefend}
-        onSwitchStance={handleStanceSwitch}
-        onPauseToggle={handlePauseToggle}
-        isPaused={isPaused}
-        player={validatedPlayers[0]}
-        onTechniqueExecute={handleTechniqueExecute}
-        onGuard={handleGuard}
-        isExecutingTechnique={isExecutingTechnique}
-        width={isMobile ? width - 20 : 400}
-        height={isMobile ? 40 : 120}
+      {/* Combat Controls */}
+      <pixiContainer
         x={isMobile ? 10 : 20}
         y={height - (isMobile ? 50 : 140)}
-      />
+        data-testid="combat-controls-container"
+      >
+        <CombatControls
+          onAttack={handleAttack}
+          onDefend={handleDefend}
+          onSwitchStance={handleStanceSwitch}
+          player={validPlayers[0]}
+          onTechniqueExecute={handleTechniqueExecute}
+          isExecutingTechnique={isExecutingTechnique}
+          width={isMobile ? width - 20 : 400}
+          height={isMobile ? 40 : 120}
+          x={0}
+          y={0}
+        />
+      </pixiContainer>
 
+      {/* Hit Effects Layer */}
       <HitEffectsLayer
         effects={hitEffects}
         onEffectComplete={handleEffectComplete}
@@ -271,32 +287,38 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         y={isMobile ? 10 : 20}
         interactive={true}
         onPointerDown={onReturnToMenu}
-        data-testid="return-menu-button-container"
+        data-testid="return-menu-button"
       >
         <pixiGraphics
           draw={(g) => {
             g.clear();
-            g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_MEDIUM, alpha: 0.8 });
-            g.roundRect(0, 0, isMobile ? 70 : 120, isMobile ? 35 : 45, 5);
+            g.fill({ color: KOREAN_COLORS.UI_STEEL_GRAY, alpha: 0.8 });
+            g.roundRect(0, 0, isMobile ? 70 : 120, isMobile ? 35 : 45, 8);
             g.fill();
-            g.stroke({ width: 1, color: KOREAN_COLORS.ACCENT_RED, alpha: 0.8 });
-            g.roundRect(0, 0, isMobile ? 70 : 120, isMobile ? 35 : 45, 5);
-            g.stroke();
+            g.stroke({
+              width: 2,
+              color: KOREAN_COLORS.ACCENT_GOLD,
+              alpha: 0.8,
+            });
+            g.roundRect(0, 0, isMobile ? 70 : 120, isMobile ? 35 : 45, 8);
           }}
         />
         <pixiText
           text="메뉴로"
           style={{
-            fontSize: isMobile ? 12 : 14,
+            fontSize: isMobile ? 12 : 16,
             fill: KOREAN_COLORS.TEXT_PRIMARY,
             align: "center",
+            fontWeight: "bold",
           }}
           x={(isMobile ? 70 : 120) / 2}
           y={(isMobile ? 35 : 45) / 2}
           anchor={0.5}
+          data-testid="return-menu-button-text"
         />
       </pixiContainer>
 
+      {/* Pause Overlay */}
       {isPaused && (
         <pixiContainer x={0} y={0} data-testid="pause-overlay">
           <pixiGraphics

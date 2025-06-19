@@ -1,7 +1,7 @@
 import React from "react";
-import { usePixiExtensions } from "../../../utils/pixiExtensions";
 import type { KoreanHeaderProps } from "../../../types/components";
 import { KOREAN_COLORS } from "../../../types/constants";
+import usePixiExtensions from "../../../utils/pixiExtensions";
 
 export const KoreanHeader: React.FC<KoreanHeaderProps> = ({
   title,

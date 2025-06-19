@@ -1,5 +1,5 @@
 import React from "react";
-import { usePixiExtensions } from "../../../utils/pixiExtensions";
+import usePixiExtensions from "../../../utils/pixiExtensions";
 
 interface PixiTestData {
   readonly type: string;

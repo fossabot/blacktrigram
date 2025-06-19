@@ -1,14 +1,28 @@
 import React, { useCallback } from "react";
-import * as PIXI from "pixi.js";
-import { usePixiExtensions } from "../../../utils/pixiExtensions";
-import type { CombatHUDProps } from "../../../types/components";
+import { KOREAN_COLORS } from "../../../types/constants";
+import { PLAYER_ARCHETYPES_DATA } from "../../../types/constants/player";
+import type { PlayerState } from "../../../types/player";
+import { extendPixiComponents } from "../../../utils/pixiExtensions";
 import { HealthBar } from "../../ui/HealthBar";
 import { RoundTimer } from "../../ui/RoundTimer";
 import { StanceIndicator } from "../../ui/StanceIndicator";
-import {
-  KOREAN_COLORS,
-  PLAYER_ARCHETYPES_DATA,
-} from "../../../types/constants";
+
+// Ensure PixiJS components are extended
+extendPixiComponents();
+
+export interface CombatHUDProps {
+  readonly player1: PlayerState;
+  readonly player2: PlayerState;
+  readonly timeRemaining: number;
+  readonly currentRound: number;
+  readonly maxRounds: number;
+  readonly isPaused?: boolean;
+  readonly onPauseToggle?: () => void;
+  readonly width?: number;
+  readonly height?: number;
+  readonly x?: number;
+  readonly y?: number;
+}
 
 export const CombatHUD: React.FC<CombatHUDProps> = ({
   player1,
@@ -16,45 +30,39 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
   timeRemaining,
   currentRound,
   maxRounds,
-  isPaused,
+  isPaused = false,
   onPauseToggle,
   width = 1200,
   height = 120,
   x = 0,
   y = 0,
 }) => {
-  usePixiExtensions();
-
-  // Calculate responsive dimensions
   const isMobile = width < 768;
   const healthBarWidth = isMobile ? 180 : 250;
   const timerWidth = isMobile ? 140 : 160;
   const centerX = width / 2;
 
-  const hudBackgroundDraw = useCallback(
+  // Draw background
+  const drawBackground = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
-
-      // Main HUD background with Korean traditional gradient
       g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.95);
       g.drawRect(0, 0, width, height);
       g.endFill();
 
-      // Traditional Korean decorative border
+      // Gold border
       g.lineStyle(3, KOREAN_COLORS.ACCENT_GOLD, 0.8);
       g.drawRect(5, 5, width - 10, height - 10);
 
-      // Center divider with taegeuk symbol
+      // Center divider
       g.lineStyle(2, KOREAN_COLORS.PRIMARY_CYAN, 0.6);
       g.moveTo(width / 2, 10);
       g.lineTo(width / 2, height - 10);
 
-      // Taegeuk symbol in center
+      // Yin-yang inspired circle at center
       g.beginFill(KOREAN_COLORS.ACCENT_GOLD, 0.3);
       g.drawCircle(width / 2, height / 2, 25);
       g.endFill();
-
-      // Yin-yang pattern
       g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.8);
       g.arc(width / 2, height / 2, 25, 0, Math.PI);
       g.arc(width / 2, height / 2 - 12.5, 12.5, Math.PI, 0, true);
@@ -64,27 +72,28 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
     [width, height]
   );
 
-  const archetype1Data = PLAYER_ARCHETYPES_DATA[player1.archetype];
-  const archetype2Data = PLAYER_ARCHETYPES_DATA[player2.archetype];
+  // Get archetype data
+  const player1Archetype = PLAYER_ARCHETYPES_DATA[player1.archetype];
+  const player2Archetype = PLAYER_ARCHETYPES_DATA[player2.archetype];
 
   return (
     <pixiContainer x={x} y={y} data-testid="combat-hud">
-      {/* Enhanced Background */}
-      <pixiGraphics draw={hudBackgroundDraw} />
+      {/* Background */}
+      <pixiGraphics draw={drawBackground} />
 
-      {/* Player 1 Section */}
+      {/* Player 1 Info (Left Side) */}
       <pixiContainer x={20} y={15}>
-        {/* Player 1 Name with Archetype Colors */}
+        {/* Player Name & Archetype */}
         <pixiText
           text={player1.name.korean}
           style={{
             fontSize: 18,
-            fill: archetype1Data.colors.primary,
+            fill: player1Archetype.colors.primary,
             fontWeight: "bold",
           }}
         />
         <pixiText
-          text={archetype1Data.name.korean}
+          text={player1Archetype.name.korean}
           style={{
             fontSize: 12,
             fill: KOREAN_COLORS.TEXT_SECONDARY,
@@ -92,7 +101,7 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
           y={20}
         />
 
-        {/* Enhanced Health Bar with Segments */}
+        {/* Health Bar */}
         <HealthBar
           current={player1.health}
           max={player1.maxHealth}
@@ -108,8 +117,9 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
           data-testid="player1-health-bar"
         />
 
-        {/* Ki and Stamina Mini Bars */}
+        {/* Resource Bars */}
         <pixiContainer y={70}>
+          {/* Ki Bar Label */}
           <pixiText
             text="기력"
             style={{
@@ -117,6 +127,8 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
               fill: KOREAN_COLORS.TEXT_SECONDARY,
             }}
           />
+
+          {/* Ki Bar */}
           <pixiGraphics
             draw={(g) => {
               g.clear();
@@ -129,6 +141,7 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
             }}
           />
 
+          {/* Stamina Bar Label */}
           <pixiText
             text="체력"
             style={{
@@ -137,6 +150,8 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
             }}
             x={135}
           />
+
+          {/* Stamina Bar */}
           <pixiGraphics
             draw={(g) => {
               g.clear();
@@ -155,7 +170,7 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
           />
         </pixiContainer>
 
-        {/* Player 1 Stance */}
+        {/* Stance Indicator */}
         <StanceIndicator
           stance={player1.currentStance}
           x={20}
@@ -165,8 +180,9 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
         />
       </pixiContainer>
 
-      {/* Center Section - Timer and Round */}
+      {/* Center Timer */}
       <pixiContainer x={centerX - timerWidth / 2} y={20}>
+        {/* Round Timer */}
         <RoundTimer
           currentRound={currentRound}
           maxRounds={maxRounds}
@@ -182,6 +198,7 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
           data-testid="round-timer"
         />
 
+        {/* Round Label */}
         <pixiText
           text={`라운드 ${currentRound}/${maxRounds}`}
           style={{
@@ -190,20 +207,20 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
             align: "center",
             fontWeight: "bold",
           }}
-          x={80}
+          x={timerWidth / 2}
           y={45}
           anchor={0.5}
         />
 
-        {/* Traditional Korean round markers */}
-        {Array.from({ length: maxRounds }, (_, i) => (
+        {/* Round Indicators */}
+        {Array.from({ length: maxRounds }).map((_, i) => (
           <pixiGraphics
             key={i}
             draw={(g) => {
               g.clear();
-              const isActive = i < currentRound;
+              const isCompleted = i < currentRound;
               g.beginFill(
-                isActive ? KOREAN_COLORS.ACCENT_GOLD : KOREAN_COLORS.UI_GRAY,
+                isCompleted ? KOREAN_COLORS.ACCENT_GOLD : KOREAN_COLORS.UI_GRAY,
                 0.8
               );
               g.drawCircle(40 + i * 20, 65, 6);
@@ -213,14 +230,14 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
         ))}
       </pixiContainer>
 
-      {/* Player 2 Section */}
+      {/* Player 2 Info (Right Side) */}
       <pixiContainer x={width - 320} y={15}>
-        {/* Player 2 Name */}
+        {/* Player Name & Archetype (Right-aligned) */}
         <pixiText
           text={player2.name.korean}
           style={{
             fontSize: 18,
-            fill: archetype2Data.colors.primary,
+            fill: player2Archetype.colors.primary,
             fontWeight: "bold",
             align: "right",
           }}
@@ -228,7 +245,7 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
           anchor={{ x: 1, y: 0 }}
         />
         <pixiText
-          text={archetype2Data.name.korean}
+          text={player2Archetype.name.korean}
           style={{
             fontSize: 12,
             fill: KOREAN_COLORS.TEXT_SECONDARY,
@@ -239,14 +256,14 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
           anchor={{ x: 1, y: 0 }}
         />
 
-        {/* Player 2 Health Bar */}
+        {/* Health Bar */}
         <HealthBar
           current={player2.health}
           max={player2.maxHealth}
           width={healthBarWidth}
           height={25}
           showText={true}
-          x={width - healthBarWidth - 20}
+          x={width - healthBarWidth - 40}
           y={35}
           position="right"
           playerName={player2.name.korean}
@@ -255,8 +272,9 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
           data-testid="player2-health-bar"
         />
 
-        {/* Player 2 Ki and Stamina */}
+        {/* Resource Bars */}
         <pixiContainer y={70}>
+          {/* Ki Bar Label */}
           <pixiText
             text="기력"
             style={{
@@ -265,6 +283,8 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
             }}
             x={30}
           />
+
+          {/* Ki Bar */}
           <pixiGraphics
             draw={(g) => {
               g.clear();
@@ -277,6 +297,7 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
             }}
           />
 
+          {/* Stamina Bar Label */}
           <pixiText
             text="체력"
             style={{
@@ -285,6 +306,8 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
             }}
             x={165}
           />
+
+          {/* Stamina Bar */}
           <pixiGraphics
             draw={(g) => {
               g.clear();
@@ -303,7 +326,7 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
           />
         </pixiContainer>
 
-        {/* Player 2 Stance */}
+        {/* Stance Indicator */}
         <StanceIndicator
           stance={player2.currentStance}
           x={width - 60}
@@ -313,7 +336,7 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
         />
       </pixiContainer>
 
-      {/* Enhanced Pause Button */}
+      {/* Pause Toggle Button */}
       {onPauseToggle && (
         <pixiContainer x={width - 80} y={height - 40}>
           <pixiGraphics

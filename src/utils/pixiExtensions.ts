@@ -1,36 +1,139 @@
-import { useEffect } from "react";
-import { extend } from "@pixi/react";
-import {
-  Container,
-  Graphics,
-  Text,
-  Sprite,
-  AnimatedSprite,
-  TilingSprite,
-  BitmapText,
-  NineSliceSprite,
-} from "pixi.js";
+/**
+ * PixiJS extensions and utilities for Black Trigram
+ */
+import { extend, useTick } from "@pixi/react";
+import * as PIXI from "pixi.js";
+import { Container, Graphics, Sprite, Text } from "pixi.js";
 
-// Re-export useTick from @pixi/react for convenience
-export { useTick } from "@pixi/react";
+/**
+ * Extend PIXI components for use with React
+ */
+export const extendPixiComponents = () => {
+  extend({ Container, Graphics, Text, Sprite });
+};
 
-// Extend PIXI React with all components used in Black Trigram
-export function usePixiExtensions(): void {
-  useEffect(() => {
-    extend({
-      Container,
-      Graphics,
-      Text, // Fixed: Add Text to extensions
-      Sprite,
-      AnimatedSprite,
-      TilingSprite,
-      BitmapText,
-      NineSliceSprite,
-    });
-  }, []);
-}
+/**
+ * Hook to use PixiJS extensions
+ */
+export const usePixiExtensions = () => {
+  // Extend PIXI components on first call
+  extendPixiComponents();
 
-// Enhanced Graphics API wrapper for v8 compatibility
+  return {
+    extendPixiComponents,
+  };
+};
+
+// Export useTick from @pixi/react for convenience
+export { useTick };
+
+// Default export for backward compatibility
+export default usePixiExtensions;
+
+/**
+ * Create a PIXI.TextStyle with appropriate fallbacks
+ */
+export const createTextStyle = (
+  style: Partial<PIXI.TextStyleOptions>
+): PIXI.TextStyle => {
+  return new PIXI.TextStyle(style);
+};
+
+/**
+ * Create a responsive text style based on screen width
+ */
+export const createResponsiveTextStyle = (
+  baseStyle: Partial<PIXI.TextStyleOptions>,
+  screenWidth: number
+): PIXI.TextStyle => {
+  const isMobile = screenWidth < 768;
+  const isTablet = screenWidth >= 768 && screenWidth < 1024;
+
+  // Adjust font size based on screen size
+  const fontSize = baseStyle.fontSize as number;
+  const responsiveFontSize = isMobile
+    ? fontSize * 0.7
+    : isTablet
+    ? fontSize * 0.85
+    : fontSize;
+
+  return new PIXI.TextStyle({
+    ...baseStyle,
+    fontSize: responsiveFontSize,
+  });
+};
+
+/**
+ * Draw a simple rounded button
+ */
+export const drawButton = (
+  g: PIXI.Graphics,
+  width: number,
+  height: number,
+  options: {
+    fillColor?: number;
+    strokeColor?: number;
+    strokeWidth?: number;
+    alpha?: number;
+    cornerRadius?: number;
+  } = {}
+) => {
+  const {
+    fillColor = 0x333333,
+    strokeColor = 0x666666,
+    strokeWidth = 2,
+    alpha = 1,
+    cornerRadius = 8,
+  } = options;
+
+  g.clear();
+  g.fill({ color: fillColor, alpha });
+  g.roundRect(0, 0, width, height, cornerRadius);
+  g.fill();
+
+  if (strokeWidth > 0) {
+    g.stroke({ width: strokeWidth, color: strokeColor, alpha });
+    g.roundRect(0, 0, width, height, cornerRadius);
+    g.stroke();
+  }
+};
+
+/**
+ * Draw a Korean-style panel
+ */
+export const drawKoreanPanel = (
+  g: PIXI.Graphics,
+  width: number,
+  height: number,
+  options: {
+    fillColor?: number;
+    borderColor?: number;
+    borderWidth?: number;
+    alpha?: number;
+    cornerRadius?: number;
+  } = {}
+) => {
+  const {
+    fillColor = 0x1a1a2e,
+    borderColor = 0x00ffff,
+    borderWidth = 2,
+    alpha = 0.9,
+    cornerRadius = 8,
+  } = options;
+
+  g.clear();
+  g.fill({ color: fillColor, alpha });
+  g.roundRect(0, 0, width, height, cornerRadius);
+  g.fill();
+
+  g.stroke({ width: borderWidth, color: borderColor, alpha: 0.8 });
+  g.roundRect(0, 0, width, height, cornerRadius);
+  g.stroke();
+};
+
+/**
+ * Enhanced Graphics API wrapper for v8 compatibility
+ */
 export const createKoreanGraphics = () => {
   const graphics = new Graphics();
 
@@ -61,7 +164,9 @@ export const createKoreanGraphics = () => {
   };
 };
 
-// Korean martial arts specific drawing utilities
+/**
+ * Korean martial arts specific drawing utilities
+ */
 export const drawTrigramSymbol = (
   graphics: Graphics,
   x: number,

@@ -1,9 +1,9 @@
 // Hit effects layer for combat feedback
 
 import React from "react";
-import { usePixiExtensions } from "../../utils/pixiExtensions";
 import { KOREAN_COLORS } from "../../types/constants";
 import type { HitEffect } from "../../types/effects";
+import usePixiExtensions from "../../utils/pixiExtensions";
 
 export interface HitEffectsLayerProps {
   readonly effects: readonly HitEffect[];

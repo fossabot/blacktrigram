@@ -1,8 +1,8 @@
-import React from "react";
-import { usePixiExtensions } from "../../../../../utils/pixiExtensions";
-import type { KoreanText } from "../../../../../types/korean-text";
-import { KOREAN_TEXT_CONSTANTS } from "../constants";
 import * as PIXI from "pixi.js";
+import React from "react";
+import type { KoreanText } from "../../../../../types/korean-text";
+import usePixiExtensions from "../../../../../utils/pixiExtensions";
+import { KOREAN_TEXT_CONSTANTS } from "../constants";
 
 // Fix: Export all required functions properly
 export const createKoreanPixiText = (

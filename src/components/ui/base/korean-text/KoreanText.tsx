@@ -1,8 +1,8 @@
-import React from "react";
-import { usePixiExtensions } from "../../../../utils/pixiExtensions";
-import type { KoreanPixiTextProps } from "./types";
-import { KOREAN_TEXT_CONSTANTS } from "./constants";
 import * as PIXI from "pixi.js";
+import React from "react";
+import usePixiExtensions from "../../../../utils/pixiExtensions";
+import { KOREAN_TEXT_CONSTANTS } from "./constants";
+import type { KoreanPixiTextProps } from "./types";
 
 export const KoreanText: React.FC<KoreanPixiTextProps> = ({
   text,
