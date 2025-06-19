@@ -58,10 +58,18 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
   const [dojangWallTexture, setDojangWallTexture] =
     useState<PIXI.Texture | null>(null);
   const [archetypeTextures, setArchetypeTextures] = useState<{
-    overview: PIXI.Texture | null;
-    explained: PIXI.Texture | null;
-    dynamics: PIXI.Texture | null;
-  }>({ overview: null, explained: null, dynamics: null });
+    amsalja: PIXI.Texture | null;
+    hacker: PIXI.Texture | null;
+    jeongboYowon: PIXI.Texture | null;
+    jojikPokryeokbae: PIXI.Texture | null;
+    musa: PIXI.Texture | null;
+  }>({
+    amsalja: null,
+    hacker: null,
+    jeongboYowon: null,
+    jojikPokryeokbae: null,
+    musa: null,
+  });
   const [selectedArchetype, setSelectedArchetype] = useState(0);
   const [selectedMenuIndex, setSelectedMenuIndex] = useState(0);
   const { width, height } = useWindowSize();
@@ -87,31 +95,31 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
           bg,
           logo,
           dojangWall,
-          archetypeOverview,
-          archetypeExplained,
-          archetypeDynamics,
+          amsaljaPng,
+          hackerPng,
+          jeongboYowonPng,
+          jojikPokryeokbaePng,
+          musaPng,
         ] = await Promise.all([
           PIXI.Assets.load(bgUrl),
           PIXI.Assets.load("assets/visual/logo/black-trigram.png"), // Use larger logo
           PIXI.Assets.load("assets/dojang_wall_neon_flicker.png"),
-          PIXI.Assets.load(
-            "assets/visual/bg/archetyples/PlayerArchetypesOverview.png"
-          ),
-          PIXI.Assets.load(
-            "assets/visual/bg/archetyples/PlayerArchetypesExplained.png"
-          ),
-          PIXI.Assets.load(
-            "assets/visual/bg/archetyples/CyberpunkTeamDynamics.png"
-          ),
+          PIXI.Assets.load("/assets/visual/archetypes/amsalja.png"),
+          PIXI.Assets.load("/assets/visual/archetypes/hacker.png"),
+          PIXI.Assets.load("/assets/visual/archetypes/jeongbo_yowon.png"),
+          PIXI.Assets.load("/assets/visual/archetypes/jojik_pokryeokbae.png"),
+          PIXI.Assets.load("/assets/visual/archetypes/musa.png"),
         ]);
         if (destroyed) return;
         setBgTexture(bg as PIXI.Texture);
         setLogoTexture(logo as PIXI.Texture);
         setDojangWallTexture(dojangWall as PIXI.Texture);
         setArchetypeTextures({
-          overview: archetypeOverview as PIXI.Texture,
-          explained: archetypeExplained as PIXI.Texture,
-          dynamics: archetypeDynamics as PIXI.Texture,
+          amsalja: amsaljaPng as PIXI.Texture,
+          hacker: hackerPng as PIXI.Texture,
+          jeongboYowon: jeongboYowonPng as PIXI.Texture,
+          jojikPokryeokbae: jojikPokryeokbaePng as PIXI.Texture,
+          musa: musaPng as PIXI.Texture,
         });
       } catch (err) {
         console.warn("Failed to load intro assets", err);
@@ -575,25 +583,25 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                 {
                   id: "amsalja",
                   korean: "암살자",
-                  english: "Assassin",
+                  english: "(Amsalja) Shadow Assassin",
                   color: KOREAN_COLORS.TRIGRAM_SON_PRIMARY,
                 },
                 {
                   id: "hacker",
                   korean: "해커",
-                  english: "Hacker",
+                  english: " (Hacker) Cyber Warrior",
                   color: KOREAN_COLORS.PRIMARY_CYAN,
                 },
                 {
                   id: "jeongbo_yowon",
                   korean: "정보요원",
-                  english: "Agent",
+                  english: "(Jeongbo Yowon) Intelligence Operative",
                   color: KOREAN_COLORS.TRIGRAM_TAE_PRIMARY,
                 },
                 {
                   id: "jojik_pokryeokbae",
                   korean: "조직폭력배",
-                  english: "Gangster",
+                  english: "(Jojik Pokryeokbae) Organized Crime",
                   color: KOREAN_COLORS.TRIGRAM_JIN_PRIMARY,
                 },
               ].map((archetype, index) => (
