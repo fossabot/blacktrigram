@@ -10,6 +10,8 @@ export enum GameMode {
   PRACTICE = "practice",
   STORY = "story",
   ARCADE = "arcade",
+  CONTROLS = "controls", // Added for controls section
+  PHILOSOPHY = "philosophy", // Added for philosophy section
 }
 
 // Game phases
@@ -191,8 +193,6 @@ export enum CombatState {
   COUNTERING = "countering",
   TRANSITIONING = "transitioning",
 }
-
-
 
 // Body regions for anatomical targeting
 export enum BodyRegion {

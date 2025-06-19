@@ -16,7 +16,7 @@ const ControlsSection = lazy(() => import("./components/ControlsSection"));
 import { useAudio } from "../../audio/AudioProvider";
 import { KOREAN_COLORS } from "../../types/constants";
 import { GameMode } from "../../types/enums";
-import { KoreanHeader } from "../ui/base/KoreanHeader";
+import { KoreanHeader } from "../ui/KoreanHeader";
 
 // Responsive dimensions
 function useWindowSize() {
@@ -42,6 +42,8 @@ export interface IntroScreenProps {
 const MENU_ITEMS: { mode: GameMode; korean: string; english: string }[] = [
   { mode: GameMode.VERSUS, korean: "대전", english: "Combat" },
   { mode: GameMode.TRAINING, korean: "훈련", english: "Training" },
+  { mode: GameMode.CONTROLS, korean: "조작", english: "Controls" },
+  { mode: GameMode.PHILOSOPHY, korean: "철학", english: "Philosophy" },
 ];
 
 const ARCHETYPE_DATA = [
@@ -239,9 +241,9 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
             return next;
           });
         } else if (event.key === " " || event.key === "Enter") {
-          // Directly launch the selected menu item
+          // Select the current menu item
           audio.playSFX("menu_select");
-          onMenuSelect(MENU_ITEMS[selectedMenuIndex].mode);
+          handleMenuItemSelect(MENU_ITEMS[selectedMenuIndex].mode);
         } else if (event.key === "ArrowLeft") {
           // Navigate archetype selection
           setSelectedArchetype((prev) =>
@@ -258,12 +260,22 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
             case "1":
               setSelectedMenuIndex(0);
               audio.playSFX("menu_select");
-              onMenuSelect(GameMode.VERSUS);
+              handleMenuItemSelect(GameMode.VERSUS);
               break;
             case "2":
               setSelectedMenuIndex(1);
               audio.playSFX("menu_select");
-              onMenuSelect(GameMode.TRAINING);
+              handleMenuItemSelect(GameMode.TRAINING);
+              break;
+            case "3":
+              setSelectedMenuIndex(2);
+              audio.playSFX("menu_select");
+              handleMenuItemSelect(GameMode.CONTROLS);
+              break;
+            case "4":
+              setSelectedMenuIndex(3);
+              audio.playSFX("menu_select");
+              handleMenuItemSelect(GameMode.PHILOSOPHY);
               break;
             case "c":
             case "C":
@@ -283,26 +295,32 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onMenuSelect, currentSection, audio, selectedMenuIndex]);
 
+  // Handle menu item selection
+  const handleMenuItemSelect = useCallback(
+    (mode: GameMode) => {
+      if (mode === GameMode.CONTROLS) {
+        setCurrentSection("controls");
+      } else if (mode === GameMode.PHILOSOPHY) {
+        setCurrentSection("philosophy");
+      } else {
+        onMenuSelect(mode);
+      }
+    },
+    [onMenuSelect]
+  );
+
   // Menu click handler with audio feedback
   const handleMenuClick = useCallback(
     (mode: GameMode) => {
       const idx = MENU_ITEMS.findIndex((item) => item.mode === mode);
       setSelectedMenuIndex(idx >= 0 ? idx : 0);
       audio.playSFX("menu_select");
-      onMenuSelect(mode);
+      handleMenuItemSelect(mode);
     },
-    [onMenuSelect, audio]
+    [audio, handleMenuItemSelect]
   );
 
   // Section navigation with audio feedback
-  const handleShowPhilosophy = useCallback(() => {
-    setCurrentSection("philosophy");
-    audio.playSFX("menu_select");
-  }, [audio]);
-  const handleShowControls = useCallback(() => {
-    setCurrentSection("controls");
-    audio.playSFX("menu_select");
-  }, [audio]);
   const handleBackToMenu = useCallback(() => {
     setCurrentSection("menu");
     audio.playSFX("menu_back");
@@ -311,13 +329,16 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
   // Responsive logo and layout calculations
   const isMobile = screenWidth < 768;
   const isTablet = screenWidth >= 768 && screenWidth < 1024;
-  const logoSize = isMobile
-    ? Math.min(screenWidth, screenHeight) * 0.35
-    : isTablet
-    ? Math.min(screenWidth, screenHeight) * 0.25
-    : Math.min(screenWidth, screenHeight) * 0.2;
 
-  const menuStartY = screenHeight * (isMobile ? 0.55 : isTablet ? 0.5 : 0.45);
+  // Reduce logo size to 75% of current
+  const logoSize = isMobile
+    ? Math.min(screenWidth, screenHeight) * 0.35 * 0.75
+    : isTablet
+    ? Math.min(screenWidth, screenHeight) * 0.25 * 0.75
+    : Math.min(screenWidth, screenHeight) * 0.2 * 0.75;
+
+  // Adjust layout for better positioning
+  const menuStartY = screenHeight * (isMobile ? 0.48 : isTablet ? 0.43 : 0.38);
   const archetypeStartY = menuStartY + (isMobile ? 260 : isTablet ? 280 : 300);
 
   // Enhanced cyberpunk background with neon grid
@@ -358,12 +379,12 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
     [screenWidth, screenHeight, isMobile]
   );
 
-  // Calculate optimal archetype image dimensions
+  // Calculate optimal archetype image dimensions - increased for more visibility
   const getArchetypeImageDimensions = () => {
-    const baseWidth = isMobile ? 120 : isTablet ? 160 : 200;
-    const baseHeight = isMobile ? 200 : isTablet ? 266 : 333;
+    // Increased size by approximately 20%
+    const baseWidth = isMobile ? 140 : isTablet ? 180 : 220;
+    const baseHeight = isMobile ? 230 : isTablet ? 290 : 360;
 
-    // Maintain aspect ratio for the tall portrait images (roughly 1:2.8)
     return {
       width: baseWidth,
       height: baseHeight,
@@ -371,13 +392,93 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
     };
   };
 
+  // Increased archetype display width
   const archetypeDisplayWidth = isMobile
-    ? screenWidth * 0.9
+    ? screenWidth * 0.95
     : isTablet
-    ? screenWidth * 0.7
-    : 400;
+    ? screenWidth * 0.8
+    : screenWidth * 0.5;
 
   const archImageDims = getArchetypeImageDimensions();
+
+  // Function to render selected section content with proper fallback
+  const renderSectionContent = () => {
+    if (currentSection === "philosophy") {
+      return (
+        <Suspense
+          fallback={
+            <pixiContainer>
+              <pixiGraphics
+                draw={(g) => {
+                  g.clear();
+                  g.fill({
+                    color: KOREAN_COLORS.UI_BACKGROUND_DARK,
+                    alpha: 0.8,
+                  });
+                  g.roundRect(0, 0, screenWidth * 0.9, screenHeight * 0.5, 8);
+                  g.fill();
+                }}
+              />
+              <pixiText
+                text="로딩 중..."
+                style={{ fontSize: 24, fill: KOREAN_COLORS.TEXT_PRIMARY }}
+                x={screenWidth * 0.45}
+                y={screenHeight * 0.25}
+                anchor={0.5}
+              />
+            </pixiContainer>
+          }
+        >
+          <PhilosophySection
+            onBack={handleBackToMenu}
+            width={screenWidth * 0.9}
+            height={screenHeight * 0.8}
+            x={screenWidth * 0.05}
+            y={screenHeight * 0.1}
+            data-testid="philosophy-section"
+          />
+        </Suspense>
+      );
+    } else if (currentSection === "controls") {
+      return (
+        <Suspense
+          fallback={
+            <pixiContainer>
+              <pixiGraphics
+                draw={(g) => {
+                  g.clear();
+                  g.fill({
+                    color: KOREAN_COLORS.UI_BACKGROUND_DARK,
+                    alpha: 0.8,
+                  });
+                  g.roundRect(0, 0, screenWidth * 0.9, screenHeight * 0.5, 8);
+                  g.fill();
+                }}
+              />
+              <pixiText
+                text="로딩 중..."
+                style={{ fontSize: 24, fill: KOREAN_COLORS.TEXT_PRIMARY }}
+                x={screenWidth * 0.45}
+                y={screenHeight * 0.25}
+                anchor={0.5}
+              />
+            </pixiContainer>
+          }
+        >
+          <ControlsSection
+            onBack={handleBackToMenu}
+            width={screenWidth * 0.9}
+            height={screenHeight * 0.8}
+            x={screenWidth * 0.05}
+            y={screenHeight * 0.1}
+            data-testid="controls-section"
+          />
+        </Suspense>
+      );
+    }
+
+    return null;
+  };
 
   return (
     <pixiContainer
@@ -417,10 +518,10 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
         />
       )}
 
-      {/* Large Logo Section - Responsive positioning */}
+      {/* Logo Section - Centered at top and reduced to 75% size */}
       <pixiContainer
         x={screenWidth / 2}
-        y={screenHeight * (isMobile ? 0.25 : 0.3)}
+        y={screenHeight * 0.16} // Positioned higher
         data-testid="logo-section"
       >
         {logoTexture && (
@@ -439,17 +540,19 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
         <pixiGraphics
           draw={(g) => {
             g.clear();
-            g.circle(0, 0, logoSize * 0.6);
             g.fill({
               color: KOREAN_COLORS.PRIMARY_CYAN,
               alpha: 0.1,
             });
-            g.circle(0, 0, logoSize * 0.8);
+            g.circle(0, 0, logoSize * 0.6);
+            g.fill();
             g.stroke({
               width: 2,
               color: KOREAN_COLORS.ACCENT_GOLD,
               alpha: 0.6,
             });
+            g.circle(0, 0, logoSize * 0.8);
+            g.stroke();
           }}
           data-testid="logo-glow-effect"
         />
@@ -477,25 +580,23 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
           korean: "한국 무술 시뮬레이터",
           english: "Korean Martial Arts Simulator",
         }}
-        align="center"
         x={screenWidth / 2}
-        y={screenHeight * (isMobile ? 0.45 : 0.48)}
+        y={screenHeight * (isMobile ? 0.33 : 0.3)} // Adjusted position
         data-testid="main-title"
       />
 
       {/* Main Menu Section - Only shown when in menu mode */}
       {currentSection === "menu" && (
         <>
-          {/* Simplified Menu Section - Centered and Prominent */}
+          {/* Menu Section */}
           <MenuSection
-            selectedMode={MENU_ITEMS[selectedMenuIndex].mode}
+            menuItems={MENU_ITEMS}
+            selectedIndex={selectedMenuIndex}
             onModeSelect={handleMenuClick}
-            onShowPhilosophy={handleShowPhilosophy}
-            onShowControls={handleShowControls}
             width={
               isMobile ? screenWidth * 0.9 : isTablet ? screenWidth * 0.6 : 400
             }
-            height={240} // Reduced height without start button
+            height={320} // Increased height
             x={
               screenWidth / 2 -
               (isMobile
@@ -508,7 +609,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
             data-testid="main-menu-section"
           />
 
-          {/* Archetype Selection - Now positioned below menu */}
+          {/* Archetype Selection - Now positioned below menu with increased size */}
           <pixiContainer
             x={screenWidth / 2 - archetypeDisplayWidth / 2}
             y={archetypeStartY}
@@ -548,9 +649,9 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
               />
             </pixiContainer>
 
-            {/* Archetype Display - Side by Side Layout */}
+            {/* Archetype Display - Side by Side Layout with increased size */}
             <pixiContainer y={50} data-testid="archetype-display">
-              {/* Image and Info Side by Side */}
+              {/* Background panel */}
               <pixiGraphics
                 draw={(g) => {
                   g.clear();
@@ -563,7 +664,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                     0,
                     0,
                     archetypeDisplayWidth,
-                    isMobile ? 260 : 200,
+                    isMobile ? 300 : 240, // Increased height
                     8
                   );
                   g.fill();
@@ -576,7 +677,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                     0,
                     0,
                     archetypeDisplayWidth,
-                    isMobile ? 260 : 200,
+                    isMobile ? 300 : 240, // Increased height
                     8
                   );
                   g.stroke();
@@ -595,12 +696,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                         .textureKey as keyof typeof archetypeTextures
                     ]!
                   }
-                  width={
-                    isMobile ? archImageDims.width : archImageDims.width * 0.7
-                  }
-                  height={
-                    isMobile ? archImageDims.height : archImageDims.height * 0.7
-                  }
+                  width={archImageDims.width}
+                  height={archImageDims.height}
                   x={
                     isMobile
                       ? (archetypeDisplayWidth - archImageDims.width) / 2
@@ -620,7 +717,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
 
               {/* Archetype Info positioned based on screen size */}
               <pixiContainer
-                x={isMobile ? 0 : archImageDims.width * 0.7 + 60}
+                x={isMobile ? 0 : archImageDims.width + 60}
                 y={isMobile ? archImageDims.height + 20 : 20}
                 data-testid="archetype-info"
               >
@@ -646,7 +743,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                     wordWrap: true,
                     wordWrapWidth: isMobile
                       ? archetypeDisplayWidth - 40
-                      : archetypeDisplayWidth - archImageDims.width * 0.7 - 90,
+                      : archetypeDisplayWidth - archImageDims.width - 90,
                   }}
                   x={isMobile ? archetypeDisplayWidth / 2 : 0}
                   y={isMobile ? 30 : 30}
@@ -669,7 +766,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
 
             {/* Archetype Navigation Buttons with responsive positioning */}
             <pixiContainer
-              y={isMobile ? 320 : 260}
+              y={isMobile ? 360 : 300}
               data-testid="archetype-navigation"
             >
               {/* Previous Button */}
@@ -749,31 +846,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
       )}
 
       {/* Philosophy and Controls sections */}
-      {currentSection === "philosophy" && (
-        <Suspense fallback={<pixiText text="로딩 중..." />}>
-          <PhilosophySection
-            onBack={handleBackToMenu}
-            width={screenWidth * 0.9}
-            height={screenHeight * 0.8}
-            x={screenWidth * 0.05}
-            y={screenHeight * 0.1}
-            data-testid="philosophy-section"
-          />
-        </Suspense>
-      )}
-
-      {currentSection === "controls" && (
-        <Suspense fallback={<pixiText text="Controls loading..." />}>
-          <ControlsSection
-            onBack={handleBackToMenu}
-            width={screenWidth * 0.9}
-            height={screenHeight * 0.8}
-            x={screenWidth * 0.05}
-            y={screenHeight * 0.1}
-            data-testid="controls-section"
-          />
-        </Suspense>
-      )}
+      {currentSection !== "menu" && renderSectionContent()}
 
       {/* Enhanced Footer with Better Mobile Layout */}
       <pixiContainer

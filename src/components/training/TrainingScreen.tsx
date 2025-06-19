@@ -1,18 +1,15 @@
-import React, { useState, useCallback, useMemo, useEffect } from "react";
-import { DojangBackground } from "../game/DojangBackground";
-import { StanceIndicator } from "../ui/StanceIndicator";
-import {
-  ResponsivePixiContainer,
-  ResponsivePixiButton,
-  ResponsivePixiPanel,
-} from "../ui/base/ResponsivePixiComponents";
+import { extend } from "@pixi/react";
+import { Container, Graphics, Text } from "pixi.js";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { AudioProvider, useAudio } from "../../audio/AudioProvider";
 import { KOREAN_COLORS } from "../../types/constants";
 import { TrigramStance } from "../../types/enums";
 import type { PlayerState } from "../../types/player";
-import { AudioProvider, useAudio } from "../../audio/AudioProvider";
-import { extend } from "@pixi/react";
-import { Container, Graphics, Text } from "pixi.js";
+import { DojangBackground } from "../game/DojangBackground";
+import { StanceIndicator } from "../ui/StanceIndicator";
+import { ResponsivePixiPanel } from "../ui/base/ResponsivePixiComponents";
 
+// Extend PIXI components for use with React
 extend({
   Container,
   Graphics,
@@ -226,11 +223,10 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
   const trigramStances = Object.values(TrigramStance);
 
   return (
-    <ResponsivePixiContainer
+    <pixiContainer
       x={x}
       y={y}
-      screenWidth={width}
-      screenHeight={height}
+      interactive={true} /* Make the entire container interactive */
       data-testid="training-screen"
     >
       {/* Dojang Background */}
@@ -315,45 +311,108 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
           data-testid="mode-title"
         />
 
-        {/* Mode Selection Buttons */}
-        <ResponsivePixiButton
-          text="기초"
+        {/* Mode Selection Buttons - Fixed with proper interactive pointerdown handlers */}
+        <pixiContainer
           x={10}
           y={30}
-          width={60}
-          height={25}
-          screenWidth={width}
-          screenHeight={height}
-          variant={trainingMode === "basics" ? "primary" : "secondary"}
-          onClick={() => setTrainingMode("basics")}
-          data-testid="mode-basics"
-        />
+          data-testid="mode-basics-container"
+          interactive={true}
+          onPointerDown={() => setTrainingMode("basics")}
+        >
+          <pixiGraphics
+            draw={(g) => {
+              g.clear();
+              g.fill({
+                color:
+                  trainingMode === "basics"
+                    ? KOREAN_COLORS.PRIMARY_CYAN
+                    : KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
+                alpha: 0.8,
+              });
+              g.roundRect(0, 0, 60, 25, 5);
+              g.fill();
+            }}
+          />
+          <pixiText
+            text="기초"
+            style={{
+              fontSize: isMobile ? 10 : 12,
+              fill: KOREAN_COLORS.TEXT_PRIMARY,
+              align: "center",
+            }}
+            x={30}
+            y={12.5}
+            anchor={0.5}
+          />
+        </pixiContainer>
 
-        <ResponsivePixiButton
-          text="고급"
+        <pixiContainer
           x={80}
           y={30}
-          width={60}
-          height={25}
-          screenWidth={width}
-          screenHeight={height}
-          variant={trainingMode === "advanced" ? "primary" : "secondary"}
-          onClick={() => setTrainingMode("advanced")}
-          data-testid="mode-advanced"
-        />
+          data-testid="mode-advanced-container"
+          interactive={true}
+          onPointerDown={() => setTrainingMode("advanced")}
+        >
+          <pixiGraphics
+            draw={(g) => {
+              g.clear();
+              g.fill({
+                color:
+                  trainingMode === "advanced"
+                    ? KOREAN_COLORS.PRIMARY_CYAN
+                    : KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
+                alpha: 0.8,
+              });
+              g.roundRect(0, 0, 60, 25, 5);
+              g.fill();
+            }}
+          />
+          <pixiText
+            text="고급"
+            style={{
+              fontSize: isMobile ? 10 : 12,
+              fill: KOREAN_COLORS.TEXT_PRIMARY,
+              align: "center",
+            }}
+            x={30}
+            y={12.5}
+            anchor={0.5}
+          />
+        </pixiContainer>
 
-        <ResponsivePixiButton
-          text="자유"
+        <pixiContainer
           x={150}
           y={30}
-          width={60}
-          height={25}
-          screenWidth={width}
-          screenHeight={height}
-          variant={trainingMode === "free" ? "primary" : "secondary"}
-          onClick={() => setTrainingMode("free")}
-          data-testid="mode-free"
-        />
+          data-testid="mode-free-container"
+          interactive={true}
+          onPointerDown={() => setTrainingMode("free")}
+        >
+          <pixiGraphics
+            draw={(g) => {
+              g.clear();
+              g.fill({
+                color:
+                  trainingMode === "free"
+                    ? KOREAN_COLORS.PRIMARY_CYAN
+                    : KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
+                alpha: 0.8,
+              });
+              g.roundRect(0, 0, 60, 25, 5);
+              g.fill();
+            }}
+          />
+          <pixiText
+            text="자유"
+            style={{
+              fontSize: isMobile ? 10 : 12,
+              fill: KOREAN_COLORS.TEXT_PRIMARY,
+              align: "center",
+            }}
+            x={30}
+            y={12.5}
+            anchor={0.5}
+          />
+        </pixiContainer>
 
         {/* Display current mode for testing */}
         <pixiText
@@ -422,12 +481,12 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
         />
       </pixiContainer>
 
-      {/* Training Dummy Container */}
-      <ResponsivePixiContainer
+      {/* Training Dummy Container - Fixed interactive pointer event */}
+      <pixiContainer
         x={dummy.position.x}
         y={dummy.position.y}
-        screenWidth={width}
-        screenHeight={height}
+        interactive={true}
+        onPointerDown={handleTechniqueExecute}
         data-testid="training-dummy-container"
       >
         <pixiGraphics
@@ -463,8 +522,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
               g.fill();
             }
           }}
-          interactive={true}
-          onPointerDown={handleTechniqueExecute}
           data-testid="training-dummy"
         />
 
@@ -514,14 +571,10 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
           y={-115}
           anchor={0.5}
         />
-      </ResponsivePixiContainer>
+      </pixiContainer>
 
       {/* Trigram Wheel for Stance Selection */}
-      <ResponsivePixiContainer
-        data-testid="training-trigram-wheel"
-        x={1050}
-        y={650}
-      >
+      <pixiContainer x={1050} y={650} data-testid="training-trigram-wheel">
         {trigramStances.map((stance) => (
           <pixiContainer
             key={stance}
@@ -537,7 +590,7 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
             />
           </pixiContainer>
         ))}
-      </ResponsivePixiContainer>
+      </pixiContainer>
 
       {/* Stance Selection Area for Testing */}
       <pixiContainer
@@ -555,21 +608,40 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
           anchor={0.5}
         />
 
-        {/* Individual stance buttons for testing */}
-        <ResponsivePixiButton
-          text="건"
+        {/* Individual stance buttons for testing - Fixed interactive pointer events */}
+        <pixiContainer
           x={-40}
           y={20}
-          width={25}
-          height={25}
-          screenWidth={width}
-          screenHeight={height}
-          variant={
-            selectedStance === TrigramStance.GEON ? "primary" : "secondary"
-          }
-          onClick={() => handleStanceChange(TrigramStance.GEON)}
-          data-testid="stance-geon-button"
-        />
+          interactive={true}
+          onPointerDown={() => handleStanceChange(TrigramStance.GEON)}
+          data-testid="stance-geon-button-container"
+        >
+          <pixiGraphics
+            draw={(g) => {
+              g.clear();
+              g.fill({
+                color:
+                  selectedStance === TrigramStance.GEON
+                    ? KOREAN_COLORS.PRIMARY_CYAN
+                    : KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
+                alpha: 0.8,
+              });
+              g.roundRect(0, 0, 25, 25, 5);
+              g.fill();
+            }}
+          />
+          <pixiText
+            text="건"
+            style={{
+              fontSize: isMobile ? 10 : 12,
+              fill: KOREAN_COLORS.TEXT_PRIMARY,
+              align: "center",
+            }}
+            x={12.5}
+            y={12.5}
+            anchor={0.5}
+          />
+        </pixiContainer>
       </pixiContainer>
 
       {/* Current Stance Indicator */}
@@ -591,63 +663,128 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
         screenHeight={height}
         data-testid="training-controls"
       >
-        {/* Training Toggle Button */}
-        <ResponsivePixiButton
-          text={isTraining ? "훈련 정지" : "훈련 시작"}
+        {/* Training Toggle Button - Fixed for interactive mouse events */}
+        <pixiContainer
           x={10}
           y={10}
-          width={isMobile ? width * 0.35 : 200}
-          height={35}
-          screenWidth={width}
-          screenHeight={height}
-          variant={isTraining ? "secondary" : "primary"}
-          onClick={handleToggleTraining}
-          data-testid="start-training-button"
-        />
+          interactive={true}
+          onPointerDown={handleToggleTraining}
+          data-testid="start-training-button-container"
+        >
+          <pixiGraphics
+            draw={(g) => {
+              g.clear();
+              g.fill({
+                color: isTraining
+                  ? KOREAN_COLORS.ACCENT_RED
+                  : KOREAN_COLORS.ACCENT_GREEN,
+                alpha: 0.8,
+              });
+              g.roundRect(0, 0, isMobile ? width * 0.35 : 200, 35, 5);
+              g.fill();
+            }}
+          />
+          <pixiText
+            text={isTraining ? "훈련 정지" : "훈련 시작"}
+            style={{
+              fontSize: isMobile ? 12 : 14,
+              fill: KOREAN_COLORS.TEXT_PRIMARY,
+              align: "center",
+            }}
+            x={(isMobile ? width * 0.35 : 200) / 2}
+            y={17.5}
+            anchor={0.5}
+          />
+        </pixiContainer>
 
         {/* Execute Technique Button */}
         {isTraining && (
-          <ResponsivePixiButton
-            text={`${getStanceNames(selectedStance).technique} 실행`}
+          <pixiContainer
             x={10}
             y={55}
-            width={isMobile ? width * 0.35 : 200}
-            height={35}
-            screenWidth={width}
-            screenHeight={height}
-            variant="primary"
-            onClick={handleTechniqueExecute}
-            data-testid="execute-technique-button"
-          />
+            interactive={true}
+            onPointerDown={handleTechniqueExecute}
+            data-testid="execute-technique-button-container"
+          >
+            <pixiGraphics
+              draw={(g) => {
+                g.clear();
+                g.fill({ color: KOREAN_COLORS.ACCENT_CYAN, alpha: 0.8 });
+                g.roundRect(0, 0, isMobile ? width * 0.35 : 200, 35, 5);
+                g.fill();
+              }}
+            />
+            <pixiText
+              text={`${getStanceNames(selectedStance).technique} 실행`}
+              style={{
+                fontSize: isMobile ? 12 : 14,
+                fill: KOREAN_COLORS.TEXT_PRIMARY,
+                align: "center",
+              }}
+              x={(isMobile ? width * 0.35 : 200) / 2}
+              y={17.5}
+              anchor={0.5}
+            />
+          </pixiContainer>
         )}
 
         {/* Reset Dummy Button */}
-        <ResponsivePixiButton
-          text="더미 리셋"
+        <pixiContainer
           x={10}
           y={100}
-          width={isMobile ? width * 0.35 : 200}
-          height={30}
-          screenWidth={width}
-          screenHeight={height}
-          variant="secondary"
-          onClick={handleResetDummy}
-          data-testid="reset-dummy-button"
-        />
+          interactive={true}
+          onPointerDown={handleResetDummy}
+          data-testid="reset-dummy-button-container"
+        >
+          <pixiGraphics
+            draw={(g) => {
+              g.clear();
+              g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_MEDIUM, alpha: 0.8 });
+              g.roundRect(0, 0, isMobile ? width * 0.35 : 200, 30, 5);
+              g.fill();
+            }}
+          />
+          <pixiText
+            text="더미 리셋"
+            style={{
+              fontSize: isMobile ? 12 : 14,
+              fill: KOREAN_COLORS.TEXT_PRIMARY,
+              align: "center",
+            }}
+            x={(isMobile ? width * 0.35 : 200) / 2}
+            y={15}
+            anchor={0.5}
+          />
+        </pixiContainer>
 
         {/* Evaluate Button */}
-        <ResponsivePixiButton
-          text="평가"
+        <pixiContainer
           x={10}
           y={140}
-          width={isMobile ? width * 0.35 : 200}
-          height={30}
-          screenWidth={width}
-          screenHeight={height}
-          variant="secondary"
-          onClick={handleEvaluate}
-          data-testid="evaluate-button"
-        />
+          interactive={true}
+          onPointerDown={handleEvaluate}
+          data-testid="evaluate-button-container"
+        >
+          <pixiGraphics
+            draw={(g) => {
+              g.clear();
+              g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_MEDIUM, alpha: 0.8 });
+              g.roundRect(0, 0, isMobile ? width * 0.35 : 200, 30, 5);
+              g.fill();
+            }}
+          />
+          <pixiText
+            text="평가"
+            style={{
+              fontSize: isMobile ? 12 : 14,
+              fill: KOREAN_COLORS.TEXT_PRIMARY,
+              align: "center",
+            }}
+            x={(isMobile ? width * 0.35 : 200) / 2}
+            y={15}
+            anchor={0.5}
+          />
+        </pixiContainer>
       </ResponsivePixiPanel>
 
       {/* Training Statistics Panel */}
@@ -764,19 +901,41 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
         />
       </ResponsivePixiPanel>
 
-      {/* Return to Menu Button */}
-      <ResponsivePixiButton
-        text="메뉴로 돌아가기"
+      {/* Return to Menu Button - Fixed interactive pointer event */}
+      <pixiContainer
         x={isMobile ? width / 2 - 80 : width / 2 - 100}
         y={height - (isMobile ? 40 : 50)}
-        width={isMobile ? 160 : 200}
-        height={isMobile ? 30 : 40}
-        screenWidth={width}
-        screenHeight={height}
-        variant="secondary"
-        onClick={onReturnToMenu}
-        data-testid="return-to-menu-button" // Fix: Consistent naming
-      />
+        interactive={true}
+        onPointerDown={onReturnToMenu}
+        data-testid="return-to-menu-button-container"
+      >
+        <pixiGraphics
+          draw={(g) => {
+            g.clear();
+            g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_MEDIUM, alpha: 0.8 });
+            g.roundRect(0, 0, isMobile ? 160 : 200, isMobile ? 30 : 40, 5);
+            g.fill();
+            g.stroke({
+              width: 1,
+              color: KOREAN_COLORS.PRIMARY_CYAN,
+              alpha: 0.8,
+            });
+            g.roundRect(0, 0, isMobile ? 160 : 200, isMobile ? 30 : 40, 5);
+            g.stroke();
+          }}
+        />
+        <pixiText
+          text="메뉴로 돌아가기"
+          style={{
+            fontSize: isMobile ? 12 : 14,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
+            align: "center",
+          }}
+          x={(isMobile ? 160 : 200) / 2}
+          y={(isMobile ? 30 : 40) / 2}
+          anchor={0.5}
+        />
+      </pixiContainer>
 
       {/* Training Status Overlay */}
       {isTraining && (
@@ -801,7 +960,7 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
           />
         </pixiContainer>
       )}
-    </ResponsivePixiContainer>
+    </pixiContainer>
   );
 };
 

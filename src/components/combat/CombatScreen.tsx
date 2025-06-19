@@ -1,20 +1,16 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import type { CombatScreenProps } from "../../types/combat";
-import type { PlayerState } from "../../types/player";
 import type { Position } from "../../types/common";
+import { KOREAN_COLORS } from "../../types/constants";
 import type { HitEffect } from "../../types/effects";
+import type { PlayerState } from "../../types/player";
+import { DojangBackground } from "../game/DojangBackground";
+import { ResponsivePixiPanel } from "../ui/base/ResponsivePixiComponents";
+import { HitEffectsLayer } from "../ui/HitEffectsLayer";
+import { CombatStats, PlayerStatusPanel } from "./components/";
 import { CombatArena } from "./components/CombatArena";
 import { CombatControls } from "./components/CombatControls";
 import { CombatHUD } from "./components/CombatHUD";
-import { HitEffectsLayer } from "../ui/HitEffectsLayer";
-import { DojangBackground } from "../game/DojangBackground";
-import { CombatStats, PlayerStatusPanel } from "./components/";
-import {
-  ResponsivePixiContainer,
-  ResponsivePixiButton,
-  ResponsivePixiPanel,
-} from "../ui/base/ResponsivePixiComponents";
-import { KOREAN_COLORS } from "../../types/constants";
 
 export const CombatScreen: React.FC<CombatScreenProps> = ({
   players,
@@ -147,7 +143,7 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
   };
 
   return (
-    <ResponsivePixiContainer x={x} y={y} data-testid="combat-screen">
+    <pixiContainer x={x} y={y} interactive={true} data-testid="combat-screen">
       <DojangBackground
         width={width}
         height={height}
@@ -247,46 +243,61 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         />
       </ResponsivePixiPanel>
 
-      <ResponsivePixiContainer
+      <CombatControls
+        onAttack={handleAttack}
+        onDefend={handleDefend}
+        onSwitchStance={handleStanceSwitch}
+        onPauseToggle={handlePauseToggle}
+        isPaused={isPaused}
+        player={validatedPlayers[0]}
+        onTechniqueExecute={handleTechniqueExecute}
+        onGuard={handleGuard}
+        isExecutingTechnique={isExecutingTechnique}
+        width={isMobile ? width - 20 : 400}
+        height={isMobile ? 40 : 120}
         x={isMobile ? 10 : 20}
         y={height - (isMobile ? 50 : 140)}
-        data-testid="combat-controls-container"
-      >
-        <CombatControls
-          onAttack={handleAttack}
-          onDefend={handleDefend}
-          onSwitchStance={handleStanceSwitch}
-          onPauseToggle={handlePauseToggle}
-          isPaused={isPaused}
-          player={validatedPlayers[0]}
-          onTechniqueExecute={handleTechniqueExecute}
-          onGuard={handleGuard}
-          isExecutingTechnique={isExecutingTechnique}
-          width={isMobile ? width - 20 : 400}
-          height={isMobile ? 40 : 120}
-          x={0}
-          y={0}
-        />
-      </ResponsivePixiContainer>
+      />
 
       <HitEffectsLayer
         effects={hitEffects}
         onEffectComplete={handleEffectComplete}
       />
 
-      <ResponsivePixiButton
-        text="메뉴로"
+      {/* Return to Menu Button */}
+      <pixiContainer
         x={width - (isMobile ? 80 : 150)}
         y={isMobile ? 10 : 20}
-        width={isMobile ? 70 : 120}
-        height={isMobile ? 35 : 45}
-        variant="secondary"
-        onClick={onReturnToMenu}
-        data-testid="return-menu-button"
-      />
+        interactive={true}
+        onPointerDown={onReturnToMenu}
+        data-testid="return-menu-button-container"
+      >
+        <pixiGraphics
+          draw={(g) => {
+            g.clear();
+            g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_MEDIUM, alpha: 0.8 });
+            g.roundRect(0, 0, isMobile ? 70 : 120, isMobile ? 35 : 45, 5);
+            g.fill();
+            g.stroke({ width: 1, color: KOREAN_COLORS.ACCENT_RED, alpha: 0.8 });
+            g.roundRect(0, 0, isMobile ? 70 : 120, isMobile ? 35 : 45, 5);
+            g.stroke();
+          }}
+        />
+        <pixiText
+          text="메뉴로"
+          style={{
+            fontSize: isMobile ? 12 : 14,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
+            align: "center",
+          }}
+          x={(isMobile ? 70 : 120) / 2}
+          y={(isMobile ? 35 : 45) / 2}
+          anchor={0.5}
+        />
+      </pixiContainer>
 
       {isPaused && (
-        <ResponsivePixiContainer x={0} y={0} data-testid="pause-overlay">
+        <pixiContainer x={0} y={0} data-testid="pause-overlay">
           <pixiGraphics
             draw={(g) => {
               g.clear();
@@ -318,9 +329,9 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
             y={height / 2 + 20}
             anchor={0.5}
           />
-        </ResponsivePixiContainer>
+        </pixiContainer>
       )}
-    </ResponsivePixiContainer>
+    </pixiContainer>
   );
 };
 

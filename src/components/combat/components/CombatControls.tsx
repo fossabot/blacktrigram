@@ -1,12 +1,24 @@
-import React, { useCallback, useMemo } from "react";
-import { usePixiExtensions } from "../../../utils/pixiExtensions";
-import type { CombatControlsProps } from "../../../types/components";
-import type { KoreanTechnique } from "../../../types/combat";
-import type { TrigramStance } from "../../../types/trigram";
-import { KOREAN_COLORS } from "../../../types/constants/colors";
+import React, { useCallback } from "react";
+import { KOREAN_COLORS } from "../../../types/constants";
+import type { PlayerState } from "../../../types/player";
+import type { TrigramStance } from "../../../types/enums";
 import { TRIGRAM_DATA } from "../../../types/constants/trigram";
-import { DamageType } from "../../../types/enums";
-import * as PIXI from "pixi.js";
+
+export interface CombatControlsProps {
+  readonly onAttack?: () => void;
+  readonly onDefend?: () => void;
+  readonly onSwitchStance?: (stance: TrigramStance) => void;
+  readonly onPauseToggle?: () => void;
+  readonly onTechniqueExecute?: (technique: any) => void;
+  readonly onGuard?: () => void;
+  readonly isPaused?: boolean;
+  readonly player: PlayerState;
+  readonly isExecutingTechnique?: boolean;
+  readonly width?: number;
+  readonly height?: number;
+  readonly x?: number;
+  readonly y?: number;
+}
 
 export const CombatControls: React.FC<CombatControlsProps> = ({
   onAttack,
@@ -20,54 +32,24 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
   x = 0,
   y = 0,
 }) => {
-  usePixiExtensions();
+  // Get available techniques based on player stance
+  const availableTechniques = React.useMemo(() => {
+    if (!player.currentStance) return [];
+    return [{ name: { korean: "기본 공격", english: "Basic Attack" } }];
+  }, [player.currentStance]);
 
-  // Get current stance data safely
-  const currentStanceData = player
-    ? TRIGRAM_DATA[player.currentStance as TrigramStance]
-    : undefined;
+  // Get current stance data
+  const currentStanceData = React.useMemo(() => {
+    if (!player.currentStance) return null;
+    return TRIGRAM_DATA[player.currentStance];
+  }, [player.currentStance]);
 
-  const availableTechniques: KoreanTechnique[] = useMemo(() => {
-    if (!currentStanceData?.techniques?.primary) return [];
-
-    const stanceTechnique = currentStanceData.techniques.primary;
-    const koreanTechnique: KoreanTechnique = {
-      id: `${player.currentStance}_primary`,
-      name: {
-        korean: stanceTechnique.korean,
-        english: stanceTechnique.english,
-        romanized: stanceTechnique.korean,
-      },
-      koreanName: stanceTechnique.korean,
-      englishName: stanceTechnique.english,
-      romanized: stanceTechnique.korean,
-      description: stanceTechnique.description,
-      stance: player.currentStance,
-      type: "strike" as any,
-      damageType: DamageType.BLUNT,
-      damage: stanceTechnique.damage,
-      damageRange: {
-        min: stanceTechnique.damage - 5,
-        max: stanceTechnique.damage + 5,
-      },
-      range: 1.0,
-      kiCost: stanceTechnique.kiCost,
-      staminaCost: stanceTechnique.staminaCost,
-      accuracy: stanceTechnique.hitChance,
-      executionTime: 500,
-      recoveryTime: 800,
-      critChance: stanceTechnique.criticalChance,
-      critMultiplier: 1.5,
-      effects: [],
-    };
-
-    return [koreanTechnique];
-  }, [currentStanceData, player.currentStance]);
-
+  // Handle technique execution
   const handleTechniqueExecute = useCallback(
-    (technique: KoreanTechnique) => {
-      console.log("Executing technique:", technique.name.korean);
-      onTechniqueExecute?.(technique);
+    (technique: any) => {
+      if (onTechniqueExecute) {
+        onTechniqueExecute(technique);
+      }
     },
     [onTechniqueExecute]
   );
@@ -75,10 +57,12 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
   const controlsPanelDraw = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
-      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.9);
-      g.lineStyle(2, KOREAN_COLORS.PRIMARY_CYAN, 0.8);
-      g.drawRoundedRect(0, 0, width, height, 10);
-      g.endFill();
+      g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 0.7 });
+      g.roundRect(0, 0, width, height, 8);
+      g.fill();
+      g.stroke({ width: 1, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.5 });
+      g.roundRect(0, 0, width, height, 8);
+      g.stroke();
     },
     [width, height]
   );
@@ -88,17 +72,15 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
       {/* Control Panel Background */}
       <pixiGraphics draw={controlsPanelDraw} />
 
-      {/* Attack Button */}
-      <pixiContainer x={10} y={10}>
+      {/* Attack Button - Fixed for interactive pointer events */}
+      <pixiContainer x={10} y={10} interactive={true} onPointerDown={onAttack} data-testid="attack-button">
         <pixiGraphics
           draw={(g) => {
             g.clear();
-            g.beginFill(KOREAN_COLORS.ACCENT_RED, 0.8);
-            g.drawRoundedRect(0, 0, 60, 30, 5);
-            g.endFill();
+            g.fill({ color: KOREAN_COLORS.ACCENT_RED, alpha: 0.8 });
+            g.roundRect(0, 0, 60, 30, 5);
+            g.fill();
           }}
-          interactive={true}
-          onPointerDown={onAttack}
         />
         <pixiText
           text="공격"
@@ -113,17 +95,15 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
         />
       </pixiContainer>
 
-      {/* Defend Button */}
-      <pixiContainer x={80} y={10}>
+      {/* Defend Button - Fixed for interactive pointer events */}
+      <pixiContainer x={80} y={10} interactive={true} onPointerDown={onDefend} data-testid="defend-button">
         <pixiGraphics
           draw={(g) => {
             g.clear();
-            g.beginFill(KOREAN_COLORS.ACCENT_BLUE, 0.8);
-            g.drawRoundedRect(0, 0, 60, 30, 5);
-            g.endFill();
+            g.fill({ color: KOREAN_COLORS.ACCENT_BLUE, alpha: 0.8 });
+            g.roundRect(0, 0, 60, 30, 5);
+            g.fill();
           }}
-          interactive={true}
-          onPointerDown={onDefend}
         />
         <pixiText
           text="방어"
@@ -140,16 +120,20 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
 
       {/* Current Technique Button */}
       {availableTechniques.length > 0 && (
-        <pixiContainer x={150} y={10}>
+        <pixiContainer 
+          x={150} 
+          y={10} 
+          interactive={true}
+          onPointerDown={() => handleTechniqueExecute(availableTechniques[0])}
+          data-testid="technique-button"
+        >
           <pixiGraphics
             draw={(g) => {
               g.clear();
-              g.beginFill(KOREAN_COLORS.ACCENT_GOLD, 0.8);
-              g.drawRoundedRect(0, 0, 80, 30, 5);
-              g.endFill();
+              g.fill({ color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.8 });
+              g.roundRect(0, 0, 80, 30, 5);
+              g.fill();
             }}
-            interactive={true}
-            onPointerDown={() => handleTechniqueExecute(availableTechniques[0])}
           />
           <pixiText
             text={availableTechniques[0].name.korean}
@@ -176,18 +160,22 @@ export const CombatControls: React.FC<CombatControlsProps> = ({
         />
       </pixiContainer>
 
-      {/* Stance Change Button */}
+      {/* Stance Change Button - Fix for interactive pointer events */}
       {onSwitchStance && (
-        <pixiContainer x={150} y={50}>
+        <pixiContainer 
+          x={150} 
+          y={50} 
+          interactive={true} 
+          onPointerDown={() => onSwitchStance(player.currentStance)}
+          data-testid="stance-change-button"
+        >
           <pixiGraphics
             draw={(g) => {
               g.clear();
-              g.beginFill(KOREAN_COLORS.ACCENT_CYAN, 0.8);
-              g.drawRoundedRect(0, 0, 80, 20, 3);
-              g.endFill();
+              g.fill({ color: KOREAN_COLORS.ACCENT_CYAN, alpha: 0.8 });
+              g.roundRect(0, 0, 80, 20, 3);
+              g.fill();
             }}
-            interactive={true}
-            onPointerDown={() => onSwitchStance(player.currentStance)}
           />
           <pixiText
             text="자세 변경"
