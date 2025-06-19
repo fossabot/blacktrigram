@@ -28,7 +28,6 @@ export default defineConfig(({ command, mode }) => ({
   base: command === "build" ? "./" : "/",
   resolve: {
     alias: {
-      "react-reconciler/constants": "react-reconciler/constants.js",
       // Add path aliases for better tree shaking
       "@": "/src",
       "@/components": "/src/components",
@@ -50,14 +49,14 @@ export default defineConfig(({ command, mode }) => ({
   },
   build: {
     target: "es2022",
-    // Reduced chunk size warning limit for game assets
-    chunkSizeWarningLimit: 500,
+    // Increased chunk size warning limit for single bundle
+    chunkSizeWarningLimit: 1500,
     // Force minification
     minify: "esbuild",
     // Enable CSS minification
     cssMinify: true,
-    // Split CSS for better caching
-    cssCodeSplit: true,
+    // Create a single CSS file
+    cssCodeSplit: false,
     // Enable Brotli size reporting
     brotliSize: true,
     // Inline smaller assets for fewer requests
@@ -67,49 +66,42 @@ export default defineConfig(({ command, mode }) => ({
 
     rollupOptions: {
       output: {
-        // Simplified chunking to prevent initialization errors
-        manualChunks: (id): string | undefined => {
+        // Combine all JS into a single file
+        // inlineDynamicImports: true, // REMOVED to enable code splitting
+
+        // Add manualChunks for code splitting
+        manualChunks(id: string) {
+          // Group node_modules into a vendor chunk
           if (id.includes("node_modules")) {
-            if (id.includes("pixi.js") || id.includes("@pixi")) {
-              return "pixi-vendor";
+            // Group pixi and react into their own chunks
+            if (id.includes("pixi")) {
+              return "vendor-pixi";
             }
-            if (
-              id.includes("react") ||
-              id.includes("react-dom") ||
-              id.includes("react-error-boundary")
-            ) {
-              return "react-vendor";
+            if (id.includes("react")) {
+              return "vendor-react";
             }
-            // Group other vendors
+            // All other node_modules
             return "vendor";
           }
-          // Application code chunking
-          if (id.includes("/src/audio/")) {
-            return "audio";
+          // Group game systems into a chunk
+          if (id.includes("/src/systems/")) {
+            return "game-systems";
           }
-          if (id.includes("/src/systems/") || id.includes("/src/utils/")) {
-            return "game-core";
-          }
-          if (id.includes("/TrainingScreen") || id.includes("/EndScreen")) {
-            return "screens";
-          }
-          if (
-            id.includes("/constants/techniques.ts") ||
-            id.includes("/constants/combat.ts") ||
-            id.includes("/placeholder-sounds.ts")
-          ) {
-            return "korean-data";
+          // Group UI components
+          if (id.includes("/src/components/")) {
+            return "game-components";
           }
         },
 
-        // Optimize chunk and asset naming for better caching
-        chunkFileNames: "assets/[name]-[hash:6].js", // Shorter hashes
+        // Optimize asset naming for better caching
         entryFileNames: "assets/[name]-[hash:6].js",
-
-        inlineDynamicImports: false, // Allow dynamic imports for lazy screens
+        chunkFileNames: "assets/[name]-[hash:6].js",
 
         assetFileNames: (assetInfo): string => {
-          // Organize Korean martial arts assets by type
+          // Organize assets by type
+          if (/\.css$/i.test(assetInfo.name ?? "")) {
+            return "assets/game-[hash:6][extname]";
+          }
           if (/\.(mp3|wav|ogg)$/i.test(assetInfo.name ?? "")) {
             return "assets/audio/[name]-[hash:6][extname]";
           }

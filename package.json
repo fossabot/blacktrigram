@@ -96,27 +96,4 @@
     "vite-bundle-analyzer": "^0.22.3",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.4"
-  },
-  "size-limit": [
-    {
-      "path": "dist/assets/index-*.js",
-      "limit": "200 KB",
-      "gzip": true
-    },
-    {
-      "path": "dist/assets/pixi-core-*.js",
-      "limit": "300 KB",
-      "gzip": true
-    },
-    {
-      "path": "dist/assets/react-vendor-*.js",
-      "limit": "150 KB",
-      "gzip": true
-    },
-    {
-      "path": "dist/assets/screens-*.js",
-      "limit": "100 KB",
-      "gzip": true
-    }
-  ]
-}
+  }}

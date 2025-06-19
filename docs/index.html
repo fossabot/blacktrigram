@@ -14,30 +14,27 @@
       #root { width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; }
       .loading { color: #00ffd0; text-align: center; }
     </style>
-    <script type="module" crossorigin src="./assets/index-ByQNdX.js"></script>
-    <link rel="modulepreload" crossorigin href="./assets/vendor-B8FTWQ.js">
-    <link rel="modulepreload" crossorigin href="./assets/react-vendor-JTlySM.js">
-    <link rel="modulepreload" crossorigin href="./assets/pixi-vendor-CIJP7N.js">
-    <link rel="modulepreload" crossorigin href="./assets/korean-data-MM66We.js">
-    <link rel="modulepreload" crossorigin href="./assets/game-core-CB5abc.js">
-    <link rel="modulepreload" crossorigin href="./assets/audio-XllvSq.js">
-    <link rel="modulepreload" crossorigin href="./assets/screens-DnjLBe.js">
-    <link rel="stylesheet" crossorigin href="./assets/index-D4Ohx9.css">
+    <script type="module" crossorigin src="./assets/index-CHe49x.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/vendor-C4JHFr.js">
+    <link rel="modulepreload" crossorigin href="./assets/vendor-react-CGo4xw.js">
+    <link rel="modulepreload" crossorigin href="./assets/vendor-pixi-Dyo-us.js">
+    <link rel="modulepreload" crossorigin href="./assets/game-components-4S1Y-Z.js">
+    <link rel="stylesheet" crossorigin href="./assets/game-D4Ohx9.css">
   </head>
   <body>
     <div id="root"></div>
     <!-- Preload only the main logo (LCP) in WebP and PNG -->
     <link rel="preload" as="image" href="/assets/visual/logo/black-trigram.webp" type="image/webp" />
     <link rel="preload" as="image" href="./assets/visual/logo/black-trigram.png" type="image/png" />
-    <!-- Defer Google Fonts loading -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap"
-      rel="stylesheet" media="print" onload="this.media='all'" />
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap"
+    <!-- Preconnect to Google Fonts for faster loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Defer and combine Google Fonts loading into a single request -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Orbitron:wght@400;700;900&display=swap"
       rel="stylesheet" media="print" onload="this.media='all'" />
     <!-- Fallback for no-JS -->
     <noscript>
-      <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet" />
-      <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
     </noscript>
     <!-- Add robots.txt in /public for SEO -->
     <!-- ...existing code... -->
@@ -50,7 +47,7 @@
           {property: "og:title", content: "Black Trigram (흑괘)"},
           {name: "twitter:card", content: "summary_large_image"}
         ];
-        
+
         meta.forEach(({name, property, content}) => {
           const m = document.createElement('meta');
           if (name) m.name = name;
@@ -64,32 +61,32 @@
     <!-- Game optimizations -->
     <meta name="format-detection" content="telephone=no" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    
+
     <!-- Critical CSS inline -->
     <style>
-      body { 
-        margin: 0; 
-        padding: 0; 
-        background: #000; 
+      body {
+        margin: 0;
+        padding: 0;
+        background: #000;
         font-family: system-ui, -apple-system, sans-serif;
         overflow: hidden;
       }
-      #root { 
-        width: 100vw; 
-        height: 100vh; 
-        display: flex; 
-        justify-content: center; 
-        align-items: center; 
+      #root {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
-      .loading { 
-        color: #00ffd0; 
-        text-align: center; 
+      .loading {
+        color: #00ffd0;
+        text-align: center;
       }
     </style>
   </head>
   <body>
     <div id="root"></div>
-    
+
     <!-- Preload main logo and font for faster LCP/FCP -->
     <link rel="preload" as="image" href="./assets/visual/logo/black-trigram.png" />
     <link rel="preload" as="font" href="https://fonts.gstatic.com/s/notosanskr/v37/PbykFmXiEBPT4ITbgNA5CgmOelzI.woff2" crossorigin />
