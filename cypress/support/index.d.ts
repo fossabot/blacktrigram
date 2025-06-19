@@ -1,4 +1,5 @@
 /// <reference types="cypress" />
+/// <reference types="pixi.js" />
 
 declare namespace Cypress {
   interface Chainable {
@@ -14,8 +15,16 @@ declare namespace Cypress {
     annotate(message: string): Chainable<void>;
 
     // PixiJS testing commands
-    getPixiApp(): Chainable<any>;
-    getPixiObject(selector: string): Chainable<any>;
+    getPixiApp(): Chainable<PIXI.Application>;
+    findPixiObject(data: Record<string, any>): Chainable<PIXI.DisplayObject>;
+    waitForPixiObject(
+      data: Record<string, any>,
+      timeout?: number
+    ): Chainable<PIXI.DisplayObject>;
+    waitForNoPixiObject(
+      data: Record<string, any>,
+      timeout?: number
+    ): Chainable<void>;
     clickPixiObject(selector: string): Chainable<void>;
     testPixiStance(stance: string): Chainable<void>;
     testPixiPlayer(playerId: string): Chainable<void>;

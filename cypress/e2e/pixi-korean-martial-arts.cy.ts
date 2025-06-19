@@ -236,4 +236,26 @@ describe("Black Trigram PixiJS Integration Tests", () => {
       });
     });
   });
+
+  describe("Pixi & Korean Martial Arts Canvas", () => {
+    it("should expose PIXI application on window", () => {
+      cy.visit("/");
+      cy.window().its("pixiApp").should("exist");
+    });
+
+    it("should render UI overlay container", () => {
+      cy.get("[data-testid=ui-overlay]").should("exist");
+    });
+
+    it("should render trigram symbols and title", () => {
+      cy.get("[data-testid=trigram-symbols-text]").should(
+        "contain.text",
+        "☰ ☱ ☲ ☳ ☴ ☵ ☶ ☷"
+      );
+      cy.get("[data-testid=main-title]").within(() => {
+        cy.contains("흑괘").should("exist");
+        cy.contains("Black Trigram").should("exist");
+      });
+    });
+  });
 });

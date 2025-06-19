@@ -92,16 +92,16 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
           archetypeDynamics,
         ] = await Promise.all([
           PIXI.Assets.load(bgUrl),
-          PIXI.Assets.load("/src/assets/visual/logo/black-trigram.png"), // Use larger logo
-          PIXI.Assets.load("/src/assets/dojang_wall_neon_flicker.png"),
+          PIXI.Assets.load("assets/visual/logo/black-trigram.png"), // Use larger logo
+          PIXI.Assets.load("assets/dojang_wall_neon_flicker.png"),
           PIXI.Assets.load(
-            "/src/assets/visual/bg/archetyples/PlayerArchetypesOverview.png"
+            "assets/visual/bg/archetyples/PlayerArchetypesOverview.png"
           ),
           PIXI.Assets.load(
-            "/src/assets/visual/bg/archetyples/PlayerArchetypesExplained.png"
+            "assets/visual/bg/archetyples/PlayerArchetypesExplained.png"
           ),
           PIXI.Assets.load(
-            "/src/assets/visual/bg/archetyples/CyberpunkTeamDynamics.png"
+            "assets/visual/bg/archetyples/CyberpunkTeamDynamics.png"
           ),
         ]);
         if (destroyed) return;

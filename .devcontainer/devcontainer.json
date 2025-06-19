@@ -77,12 +77,6 @@
         },
         "github.copilot.editor.iterativeEditing": true,
 
-        // File handling
-        "files.insertFinalNewline": true,
-        "files.trimFinalNewlines": true,
-        "files.trimTrailingWhitespace": true,
-        "files.eol": "\n",
-
         // Performance
         "typescript.updateImportsOnFileMove.enabled": "always",
         "typescript.suggest.completeFunctionCalls": true,

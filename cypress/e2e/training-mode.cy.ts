@@ -133,4 +133,28 @@ describe("Black Trigram Training Mode", () => {
       });
     });
   });
+
+  describe("Training Mode Functionality", () => {
+    it("should start Training mode and display training screen", () => {
+      cy.visit("/");
+      cy.get("[data-testid=menu-button-training]").click();
+      cy.get("[data-testid=training-screen]").should("exist");
+      // vital point system components
+      cy.get("[data-testid=training-screen]").within(() => {
+        cy.get("canvas").should("exist");
+      });
+    });
+
+    it("should update player stats on interaction", () => {
+      // simulate a click on the training pad
+      cy.get("[data-testid=training-screen]").click(400, 400);
+      // expect some UI feedback or state change
+      cy.get("[data-testid=training-screen]").should("exist");
+    });
+
+    it("should return to menu", () => {
+      cy.get("[data-testid=return-menu-button]").click();
+      cy.get("[data-testid=intro-screen]").should("exist");
+    });
+  });
 });

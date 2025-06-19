@@ -1,3 +1,20 @@
+describe("Full Game Flow", () => {
+  it("should navigate from Menu → Training → Menu → Versus → Menu", () => {
+    cy.visit("/");
+    // Training
+    cy.get("[data-testid=menu-button-training]").click();
+    cy.get("[data-testid=training-screen]").should("exist");
+    cy.get("[data-testid=return-menu-button]").click();
+    cy.get("[data-testid=intro-screen]").should("exist");
+
+    // Versus
+    cy.get("[data-testid=menu-button-versus]").click();
+    cy.get("[data-testid=combat-screen]").should("exist");
+    cy.get("[data-testid=return-menu-button]").click();
+    cy.get("[data-testid=intro-screen]").should("exist");
+  });
+});
+
 describe("Black Trigram - Game Flow", () => {
   beforeEach(() => {
     // Use the new visitWithWebGLMock command

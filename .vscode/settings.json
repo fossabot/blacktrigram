@@ -23,7 +23,6 @@
     "markdown": true,
     "scminput": false
   },
-  "github.copilot.editor.enableAutoCompletions": true,
   "github.copilot.editor.enableCodeActions": true,
   "github.copilot.editor.iterativeEditing": true,
   "github.copilot.advanced": {
@@ -32,13 +31,6 @@
     "top_p": 1,
     "inlineSuggestEnable": true
   },
-
-  // File handling to prevent EOF issues
-  "files.insertFinalNewline": true,
-  "files.trimFinalNewlines": true,
-  "files.trimTrailingWhitespace": true,
-  "files.eol": "\n",
-  "files.encoding": "utf8",
 
   // Editor settings for better completion
   "editor.formatOnSave": true,

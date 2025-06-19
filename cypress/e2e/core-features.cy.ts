@@ -1,3 +1,26 @@
+describe("Core Intro & Menu Features", () => {
+  beforeEach(() => {
+    cy.visit("/");
+  });
+
+  it("should display intro background and logo", () => {
+    cy.get("[data-testid=intro-background]").should("exist");
+    cy.get("[data-testid=main-logo]").should("exist");
+  });
+
+  it("should render menu items and respond to hover/select", () => {
+    cy.get("[data-testid=menu-item-versus]").trigger("mouseover");
+    cy.get("[data-testid=menu-item-versus]").click();
+    cy.get("[data-testid=combat-screen]").should("exist");
+  });
+
+  it("should have working footer link", () => {
+    cy.get("[data-testid=footer-link]")
+      .should("have.attr", "onpointertap")
+      .and("include", "github.com/Hack23/blacktrigram");
+  });
+});
+
 describe("Black Trigram Core Features", () => {
   beforeEach(() => {
     // Use the enhanced visitWithWebGLMock command

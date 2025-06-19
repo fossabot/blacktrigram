@@ -37,6 +37,37 @@ declare global {
        * Test PixiJS performance metrics
        */
       testPixiPerformance(): void;
+
+      /**
+       * Get the PixiJS application instance
+       */
+      getPixiApp(): Chainable<PIXI.Application>;
+
+      /**
+       * Find a PixiJS object by data attributes
+       * @param data Object containing data attributes to match
+       */
+      findPixiObject(data: Record<string, any>): Chainable<PIXI.DisplayObject>;
+
+      /**
+       * Wait for a PixiJS object to appear in the scene
+       * @param data Object containing data attributes to match
+       * @param timeout Timeout in milliseconds
+       */
+      waitForPixiObject(
+        data: Record<string, any>,
+        timeout?: number
+      ): Chainable<PIXI.DisplayObject>;
+
+      /**
+       * Wait for a PixiJS object to be removed from the scene
+       * @param data Object containing data attributes to match
+       * @param timeout Timeout in milliseconds
+       */
+      waitForNoPixiObject(
+        data: Record<string, any>,
+        timeout?: number
+      ): Chainable<void>;
     }
   }
 }
@@ -216,28 +247,47 @@ Cypress.Commands.add("testPixiPerformance", () => {
   });
 });
 
-Cypress.Commands.add("getPixiApp", () => {
-  return cy.window().its("pixiApp").should("exist");
+function pixiMatches(node: any, data: Record<string, any>) {
+  const meta = (node as any).pixiData ?? {};
+  return Object.entries(data).every(([k, v]) => meta[k] === v);
+}
+
+function findInContainer(
+  container: any,
+  data: Record<string, any>
+): any | null {
+  if (pixiMatches(container, data)) return container;
+  if (!("children" in container)) return null;
+  for (const c of container.children) {
+    const found = findInContainer(c, data);
+    if (found) return found;
+  }
+  return null;
+}
+
+Cypress.Commands.add("findPixiObject", { prevSubject: false }, (data) => {
+  return cy.getPixiApp().then((app) => {
+    const match = findInContainer(app.stage, data);
+    if (!match)
+      throw new Error(`No PixiJS object with ${JSON.stringify(data)}`);
+    return match;
+  });
 });
 
-Cypress.Commands.add("getPixiStage", () => {
+Cypress.Commands.add("waitForPixiObject", (data, timeout = 5000) => {
   return cy
-    .window()
-    .its("pixiApp")
-    .then((app) => app.stage);
+    .waitUntil(
+      () => cy.getPixiApp().then((app) => !!findInContainer(app.stage, data)),
+      { timeout }
+    )
+    .then(() => cy.findPixiObject(data));
 });
 
-Cypress.Commands.add("getPixiContainer", (selector: string) => {
-  return cy
-    .window()
-    .its("pixiApp")
-    .then((app) => {
-      // Find container by name or data attribute
-      const container = app.stage.children.find(
-        (child: any) => child.name === selector || child.testId === selector
-      );
-      return container;
-    });
+Cypress.Commands.add("waitForNoPixiObject", (data, timeout = 5000) => {
+  return cy.waitUntil(
+    () => cy.getPixiApp().then((app) => !findInContainer(app.stage, data)),
+    { timeout }
+  );
 });
 
 // Fixed: Remove standalone expressions - integrate into proper command structure
