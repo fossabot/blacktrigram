@@ -36,6 +36,9 @@ export default defineConfig(({ command, mode }) => ({
       "@/audio": "/src/audio",
       "@/utils": "/src/utils",
     },
+    // Deduplicate React to prevent multiple instances in the bundle,
+    // which can cause "Cannot read properties of undefined (reading 'createContext')"
+    dedupe: ["react", "react-dom"],
   },
   optimizeDeps: {
     include: ["@pixi/react", "pixi.js", "react-reconciler", "howler"],
@@ -66,21 +69,8 @@ export default defineConfig(({ command, mode }) => ({
 
     rollupOptions: {
       output: {
-        // Add manualChunks for code splitting
-        manualChunks(id: string) {
-          // Group all node_modules into a single vendor chunk for stability
-          if (id.includes("node_modules")) {
-            return "vendor";
-          }
-          // Group game systems into a chunk
-          if (id.includes("/src/systems/")) {
-            return "game-systems";
-          }
-          // Group UI components
-          if (id.includes("/src/components/")) {
-            return "game-components";
-          }
-        },
+        // Inline all dynamic imports to create a single JS file
+        inlineDynamicImports: true,
 
         // Optimize asset naming for better caching
         entryFileNames: "assets/[name]-[hash:6].js",
@@ -116,8 +106,8 @@ export default defineConfig(({ command, mode }) => ({
   esbuild: {
     target: "es2022",
     jsx: "automatic",
-    // Remove console logs in production
-    drop: mode === "production" ? ["console", "debugger"] : [],
+    // Remove console logs in production and development to align with production behavior
+    drop: ["console", "debugger"],
     // Optimize for smaller bundle
     legalComments: "none",
     minifyIdentifiers: true,
