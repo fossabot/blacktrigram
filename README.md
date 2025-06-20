@@ -294,8 +294,8 @@ npm run test:combat
 
 ## 📚 Documentation & Further Reading
 
-Game/frontend will be open source with commercial backend supporting multiplayer functionality, rankings, charachter development and subscriptions to fund development and runtime of backend.
-S
+Game/frontend will be open source with commercial backend supporting multiplayer functionality, rankings and subscriptions to fund development and runtime of backend. Will enable progressions and persistent state of game.
+
 
 🔗 **Architecture & Design**
 
