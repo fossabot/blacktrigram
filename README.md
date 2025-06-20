@@ -294,6 +294,9 @@ npm run test:combat
 
 ## 📚 Documentation & Further Reading
 
+Game/frontend will be open source with commercial backend supporting multiplayer functionality, rankings, charachter development and subscriptions to fund development and runtime of backend.
+S
+
 🔗 **Architecture & Design**
 
 - [📐 ARCHITECTURE.md](https://github.com/Hack23/blacktrigram/blob/main/ARCHITECTURE.md)
