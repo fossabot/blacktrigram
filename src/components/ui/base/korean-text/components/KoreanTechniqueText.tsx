@@ -1,8 +1,8 @@
-import React from "react";
 import * as PIXI from "pixi.js";
-import { usePixiExtensions } from "../../../../../utils/pixiExtensions";
-import { KOREAN_COLORS } from "../../../../../types/constants";
+import React from "react";
 import type { KoreanTechnique } from "../../../../../types/combat";
+import { KOREAN_COLORS } from "../../../../../types/constants";
+import usePixiExtensions from "../../../../../utils/pixiExtensions";
 
 export interface KoreanTechniqueTextProps {
   readonly technique: KoreanTechnique;

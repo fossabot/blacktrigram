@@ -1,220 +1,406 @@
-import React, { useCallback, useMemo } from "react";
-import { usePixiExtensions } from "../../../utils/pixiExtensions";
-import type { CombatControlsProps } from "../../../types/components";
-import type { KoreanTechnique } from "../../../types/combat";
-import type { TrigramStance } from "../../../types/trigram";
-import { KOREAN_COLORS } from "../../../types/constants/colors";
-import { TRIGRAM_DATA } from "../../../types/constants/trigram";
-import { DamageType } from "../../../types/enums";
-import * as PIXI from "pixi.js";
+import React, { useCallback, useState } from "react";
+import type { PlayerState } from "../../../types/player";
+import { TrigramStance } from "../../../types/enums";
+import { KOREAN_COLORS } from "../../../types/constants";
+import { TRIGRAM_TECHNIQUES } from "../../../types/constants/techniques";
+
+// Import extendPixiComponents to ensure proper component registration
+import { extendPixiComponents } from "../../../utils/pixiExtensions";
+
+// Ensure PixiJS components are extended
+extendPixiComponents();
+
+export interface CombatControlsProps {
+  readonly onAttack: () => void;
+  readonly onDefend: () => void;
+  readonly onSwitchStance: (stance: TrigramStance) => void;
+  readonly onTechniqueExecute: () => void;
+  readonly player: PlayerState;
+  readonly isExecutingTechnique: boolean;
+  readonly width?: number;
+  readonly height?: number;
+  readonly x?: number;
+  readonly y?: number;
+}
 
 export const CombatControls: React.FC<CombatControlsProps> = ({
   onAttack,
   onDefend,
   onSwitchStance,
-  player,
   onTechniqueExecute,
-  isExecutingTechnique = false,
-  width = 300,
-  height = 100,
+  player,
+  isExecutingTechnique,
+  width = 400,
+  height = 120,
   x = 0,
   y = 0,
 }) => {
-  usePixiExtensions();
+  const [showStanceMenu, setShowStanceMenu] = useState(false);
 
-  // Get current stance data safely
-  const currentStanceData = player
-    ? TRIGRAM_DATA[player.currentStance as TrigramStance]
-    : undefined;
+  const availableTechniques = player.currentStance
+    ? TRIGRAM_TECHNIQUES[player.currentStance]
+    : TRIGRAM_TECHNIQUES[TrigramStance.GEON];
 
-  const availableTechniques: KoreanTechnique[] = useMemo(() => {
-    if (!currentStanceData?.techniques?.primary) return [];
+  const toggleStanceMenu = useCallback(() => {
+    setShowStanceMenu((prev) => !prev);
+  }, []);
 
-    const stanceTechnique = currentStanceData.techniques.primary;
-    const koreanTechnique: KoreanTechnique = {
-      id: `${player.currentStance}_primary`,
-      name: {
-        korean: stanceTechnique.korean,
-        english: stanceTechnique.english,
-        romanized: stanceTechnique.korean,
-      },
-      koreanName: stanceTechnique.korean,
-      englishName: stanceTechnique.english,
-      romanized: stanceTechnique.korean,
-      description: stanceTechnique.description,
-      stance: player.currentStance,
-      type: "strike" as any,
-      damageType: DamageType.BLUNT,
-      damage: stanceTechnique.damage,
-      damageRange: {
-        min: stanceTechnique.damage - 5,
-        max: stanceTechnique.damage + 5,
-      },
-      range: 1.0,
-      kiCost: stanceTechnique.kiCost,
-      staminaCost: stanceTechnique.staminaCost,
-      accuracy: stanceTechnique.hitChance,
-      executionTime: 500,
-      recoveryTime: 800,
-      critChance: stanceTechnique.criticalChance,
-      critMultiplier: 1.5,
-      effects: [],
-    };
-
-    return [koreanTechnique];
-  }, [currentStanceData, player.currentStance]);
-
-  const handleTechniqueExecute = useCallback(
-    (technique: KoreanTechnique) => {
-      console.log("Executing technique:", technique.name.korean);
-      onTechniqueExecute?.(technique);
+  const handleStanceSelect = useCallback(
+    (stance: TrigramStance) => {
+      onSwitchStance(stance);
+      setShowStanceMenu(false);
     },
-    [onTechniqueExecute]
+    [onSwitchStance]
   );
 
-  const controlsPanelDraw = useCallback(
-    (g: PIXI.Graphics) => {
-      g.clear();
-      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.9);
-      g.lineStyle(2, KOREAN_COLORS.PRIMARY_CYAN, 0.8);
-      g.drawRoundedRect(0, 0, width, height, 10);
-      g.endFill();
-    },
-    [width, height]
-  );
+  const handleTechniqueExecute = useCallback(() => {
+    onTechniqueExecute();
+  }, [onTechniqueExecute]);
+
+  // Responsive layout adjustments
+  const isMobile = width < 400;
 
   return (
     <pixiContainer x={x} y={y} data-testid="combat-controls">
-      {/* Control Panel Background */}
-      <pixiGraphics draw={controlsPanelDraw} />
+      {/* Controls Background */}
+      <pixiGraphics
+        draw={(g) => {
+          g.clear();
+          g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 0.6 });
+          g.roundRect(0, 0, width, height, 8);
+          g.fill();
+          g.stroke({
+            width: 2,
+            color: KOREAN_COLORS.PRIMARY_CYAN,
+            alpha: 0.6,
+          });
+          g.roundRect(0, 0, width, height, 8);
+          g.stroke();
+        }}
+      />
 
-      {/* Attack Button */}
-      <pixiContainer x={10} y={10}>
-        <pixiGraphics
-          draw={(g) => {
-            g.clear();
-            g.beginFill(KOREAN_COLORS.ACCENT_RED, 0.8);
-            g.drawRoundedRect(0, 0, 60, 30, 5);
-            g.endFill();
-          }}
-          interactive={true}
-          onPointerDown={onAttack}
-        />
-        <pixiText
-          text="공격"
-          style={{
-            fontSize: 12,
-            fill: KOREAN_COLORS.TEXT_PRIMARY,
-            align: "center",
-          }}
-          x={30}
-          y={15}
-          anchor={0.5}
-        />
-      </pixiContainer>
+      {/* Controls Layout - Different for mobile and desktop */}
+      {isMobile ? (
+        // Mobile Layout - Stack buttons horizontally
+        <pixiContainer x={10} y={height / 2} data-testid="mobile-controls">
+          {/* Attack Button */}
+          <pixiContainer x={0} y={0} data-testid="attack-button">
+            <pixiGraphics
+              draw={(g) => {
+                g.clear();
+                g.fill({ color: KOREAN_COLORS.ACCENT_RED, alpha: 0.8 });
+                g.roundRect(0, 0, 70, 30, 5);
+                g.fill();
+              }}
+              interactive={true}
+              onPointerDown={onAttack}
+            />
+            <pixiText
+              text="공격"
+              style={{
+                fontSize: 12,
+                fill: KOREAN_COLORS.TEXT_PRIMARY,
+              }}
+              x={35}
+              y={15}
+              anchor={0.5}
+            />
+          </pixiContainer>
 
-      {/* Defend Button */}
-      <pixiContainer x={80} y={10}>
-        <pixiGraphics
-          draw={(g) => {
-            g.clear();
-            g.beginFill(KOREAN_COLORS.ACCENT_BLUE, 0.8);
-            g.drawRoundedRect(0, 0, 60, 30, 5);
-            g.endFill();
-          }}
-          interactive={true}
-          onPointerDown={onDefend}
-        />
-        <pixiText
-          text="방어"
-          style={{
-            fontSize: 12,
-            fill: KOREAN_COLORS.TEXT_PRIMARY,
-            align: "center",
-          }}
-          x={30}
-          y={15}
-          anchor={0.5}
-        />
-      </pixiContainer>
+          {/* Defend Button */}
+          <pixiContainer x={80} y={0} data-testid="defend-button">
+            <pixiGraphics
+              draw={(g) => {
+                g.clear();
+                g.fill({ color: KOREAN_COLORS.ACCENT_GREEN, alpha: 0.8 });
+                g.roundRect(0, 0, 70, 30, 5);
+                g.fill();
+              }}
+              interactive={true}
+              onPointerDown={onDefend}
+            />
+            <pixiText
+              text="방어"
+              style={{
+                fontSize: 12,
+                fill: KOREAN_COLORS.TEXT_PRIMARY,
+              }}
+              x={35}
+              y={15}
+              anchor={0.5}
+            />
+          </pixiContainer>
 
-      {/* Current Technique Button */}
-      {availableTechniques.length > 0 && (
-        <pixiContainer x={150} y={10}>
-          <pixiGraphics
-            draw={(g) => {
-              g.clear();
-              g.beginFill(KOREAN_COLORS.ACCENT_GOLD, 0.8);
-              g.drawRoundedRect(0, 0, 80, 30, 5);
-              g.endFill();
-            }}
-            interactive={true}
-            onPointerDown={() => handleTechniqueExecute(availableTechniques[0])}
-          />
-          <pixiText
-            text={availableTechniques[0].name.korean}
-            style={{
-              fontSize: 10,
-              fill: KOREAN_COLORS.BLACK_SOLID,
-              align: "center",
-            }}
-            x={40}
-            y={15}
-            anchor={0.5}
-          />
+          {/* Technique Button */}
+          <pixiContainer x={160} y={0} data-testid="technique-button">
+            <pixiGraphics
+              draw={(g) => {
+                g.clear();
+                g.fill({
+                  color: isExecutingTechnique
+                    ? KOREAN_COLORS.ACCENT_GOLD
+                    : KOREAN_COLORS.PRIMARY_CYAN,
+                  alpha: 0.8,
+                });
+                g.roundRect(0, 0, 70, 30, 5);
+                g.fill();
+              }}
+              interactive={!isExecutingTechnique}
+              onPointerDown={() => handleTechniqueExecute()}
+            />
+            <pixiText
+              text="기술"
+              style={{
+                fontSize: 12,
+                fill: KOREAN_COLORS.TEXT_PRIMARY,
+              }}
+              x={35}
+              y={15}
+              anchor={0.5}
+            />
+          </pixiContainer>
+
+          {/* Stance Button */}
+          <pixiContainer x={240} y={0} data-testid="stance-button">
+            <pixiGraphics
+              draw={(g) => {
+                g.clear();
+                g.fill({
+                  color: KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
+                  alpha: 0.8,
+                });
+                g.roundRect(0, 0, 70, 30, 5);
+                g.fill();
+              }}
+              interactive={true}
+              onPointerDown={toggleStanceMenu}
+            />
+            <pixiText
+              text="자세"
+              style={{
+                fontSize: 12,
+                fill: KOREAN_COLORS.TEXT_PRIMARY,
+              }}
+              x={35}
+              y={15}
+              anchor={0.5}
+            />
+          </pixiContainer>
+        </pixiContainer>
+      ) : (
+        // Desktop Layout - Full controls
+        <pixiContainer x={10} y={10} data-testid="desktop-controls">
+          {/* Left Side - Action Buttons */}
+          <pixiContainer x={0} y={0} data-testid="action-buttons">
+            {/* Attack Button */}
+            <pixiContainer x={0} y={0} data-testid="attack-button">
+              <pixiGraphics
+                draw={(g) => {
+                  g.clear();
+                  g.fill({ color: KOREAN_COLORS.ACCENT_RED, alpha: 0.8 });
+                  g.roundRect(0, 0, 100, 40, 5);
+                  g.fill();
+                }}
+                interactive={true}
+                onPointerDown={onAttack}
+              />
+              <pixiText
+                text="공격"
+                style={{
+                  fontSize: 16,
+                  fill: KOREAN_COLORS.TEXT_PRIMARY,
+                }}
+                x={50}
+                y={20}
+                anchor={0.5}
+              />
+            </pixiContainer>
+
+            {/* Defend Button */}
+            <pixiContainer x={0} y={50} data-testid="defend-button">
+              <pixiGraphics
+                draw={(g) => {
+                  g.clear();
+                  g.fill({ color: KOREAN_COLORS.ACCENT_GREEN, alpha: 0.8 });
+                  g.roundRect(0, 0, 100, 40, 5);
+                  g.fill();
+                }}
+                interactive={true}
+                onPointerDown={onDefend}
+              />
+              <pixiText
+                text="방어"
+                style={{
+                  fontSize: 16,
+                  fill: KOREAN_COLORS.TEXT_PRIMARY,
+                }}
+                x={50}
+                y={20}
+                anchor={0.5}
+              />
+            </pixiContainer>
+          </pixiContainer>
+
+          {/* Center - Technique Button */}
+          <pixiContainer
+            x={width / 2 - 50}
+            y={height / 2 - 30}
+            data-testid="technique-button"
+          >
+            <pixiGraphics
+              draw={(g) => {
+                g.clear();
+                g.fill({
+                  color: isExecutingTechnique
+                    ? KOREAN_COLORS.ACCENT_GOLD
+                    : KOREAN_COLORS.PRIMARY_CYAN,
+                  alpha: 0.8,
+                });
+                g.roundRect(0, 0, 100, 60, 5);
+                g.fill();
+              }}
+              interactive={!isExecutingTechnique}
+              onPointerDown={() => handleTechniqueExecute()}
+            />
+            <pixiText
+              text="기술 실행"
+              style={{
+                fontSize: 16,
+                fill: KOREAN_COLORS.TEXT_PRIMARY,
+              }}
+              x={50}
+              y={20}
+              anchor={0.5}
+            />
+            <pixiText
+              text={
+                player.currentStance
+                  ? availableTechniques[0]?.name?.korean || "기본 기술"
+                  : "기본 기술"
+              }
+              style={{
+                fontSize: 12,
+                fill: KOREAN_COLORS.TEXT_SECONDARY,
+              }}
+              x={50}
+              y={40}
+              anchor={0.5}
+            />
+          </pixiContainer>
+
+          {/* Right Side - Stance Button */}
+          <pixiContainer
+            x={width - 110}
+            y={height / 2 - 30}
+            data-testid="stance-button"
+          >
+            <pixiGraphics
+              draw={(g) => {
+                g.clear();
+                g.fill({
+                  color: KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
+                  alpha: 0.8,
+                });
+                g.roundRect(0, 0, 100, 60, 5);
+                g.fill();
+              }}
+              interactive={true}
+              onPointerDown={toggleStanceMenu}
+            />
+            <pixiText
+              text="자세 변경"
+              style={{
+                fontSize: 16,
+                fill: KOREAN_COLORS.TEXT_PRIMARY,
+              }}
+              x={50}
+              y={20}
+              anchor={0.5}
+            />
+            <pixiText
+              text={player.currentStance || "기본 자세"}
+              style={{
+                fontSize: 12,
+                fill: KOREAN_COLORS.TEXT_SECONDARY,
+              }}
+              x={50}
+              y={40}
+              anchor={0.5}
+            />
+          </pixiContainer>
         </pixiContainer>
       )}
 
-      {/* Current Stance Display */}
-      <pixiContainer x={10} y={50}>
-        <pixiText
-          text={`현재 자세: ${currentStanceData?.name.korean || "없음"}`}
-          style={{
-            fontSize: 10,
-            fill: KOREAN_COLORS.TEXT_SECONDARY,
-          }}
-        />
-      </pixiContainer>
-
-      {/* Stance Change Button */}
-      {onSwitchStance && (
-        <pixiContainer x={150} y={50}>
+      {/* Stance Selection Menu - Appears when showStanceMenu is true */}
+      {showStanceMenu && (
+        <pixiContainer
+          x={isMobile ? width / 2 - 150 : width - 220}
+          y={isMobile ? 40 : -60}
+          data-testid="stance-menu"
+        >
           <pixiGraphics
             draw={(g) => {
               g.clear();
-              g.beginFill(KOREAN_COLORS.ACCENT_CYAN, 0.8);
-              g.drawRoundedRect(0, 0, 80, 20, 3);
-              g.endFill();
+              g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 0.9 });
+              g.roundRect(0, 0, 200, 210, 8);
+              g.fill();
+              g.stroke({
+                width: 2,
+                color: KOREAN_COLORS.ACCENT_GOLD,
+                alpha: 0.6,
+              });
+              g.roundRect(0, 0, 200, 210, 8);
+              g.stroke();
             }}
-            interactive={true}
-            onPointerDown={() => onSwitchStance(player.currentStance)}
           />
           <pixiText
-            text="자세 변경"
+            text="팔괘 자세 선택"
             style={{
-              fontSize: 8,
-              fill: KOREAN_COLORS.BLACK_SOLID,
+              fontSize: 16,
+              fill: KOREAN_COLORS.ACCENT_GOLD,
               align: "center",
             }}
-            x={40}
-            y={10}
+            x={100}
+            y={20}
             anchor={0.5}
           />
-        </pixiContainer>
-      )}
 
-      {/* Execution Status */}
-      {isExecutingTechnique && (
-        <pixiContainer x={width / 2} y={height / 2}>
-          <pixiText
-            text="기술 실행 중..."
-            style={{
-              fontSize: 12,
-              fill: KOREAN_COLORS.WARNING_YELLOW,
-              align: "center",
-            }}
-            anchor={0.5}
-          />
+          {/* Stance Options */}
+          {Object.values(TrigramStance).map((stance, index) => (
+            <pixiContainer
+              key={stance}
+              x={10}
+              y={40 + index * 30}
+              interactive={true}
+              onPointerDown={() => handleStanceSelect(stance)}
+              data-testid={`stance-option-${stance}`}
+            >
+              <pixiGraphics
+                draw={(g) => {
+                  g.clear();
+                  g.fill({
+                    color:
+                      player.currentStance === stance
+                        ? KOREAN_COLORS.PRIMARY_CYAN
+                        : KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
+                    alpha: 0.8,
+                  });
+                  g.roundRect(0, 0, 180, 25, 4);
+                  g.fill();
+                }}
+              />
+              <pixiText
+                text={`${stance}`}
+                style={{
+                  fontSize: 14,
+                  fill: KOREAN_COLORS.TEXT_PRIMARY,
+                }}
+                x={10}
+                y={12.5}
+                anchor={{ x: 0, y: 0.5 }}
+              />
+            </pixiContainer>
+          ))}
         </pixiContainer>
       )}
     </pixiContainer>

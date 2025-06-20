@@ -1,7 +1,5 @@
 import React from "react";
-import { usePixiExtensions } from "../../../utils/pixiExtensions";
 import { KOREAN_COLORS } from "../../../types/constants";
-import * as PIXI from "pixi.js";
 
 export interface PhilosophySectionProps {
   readonly onBack: () => void;
@@ -18,8 +16,6 @@ export const PhilosophySection: React.FC<PhilosophySectionProps> = ({
   width = 800,
   height = 600,
 }) => {
-  usePixiExtensions();
-
   const philosophyText = `
 흑괘 (Black Trigram) - 한국 무술의 철학
 
@@ -47,26 +43,25 @@ export const PhilosophySection: React.FC<PhilosophySectionProps> = ({
       <pixiGraphics
         draw={(g) => {
           g.clear();
-          g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.95);
-          g.drawRoundedRect(0, 0, width, height, 10);
-          g.endFill();
+          g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 0.95 });
+          g.roundRect(0, 0, width, height, 10);
+          g.fill();
 
-          g.lineStyle(2, KOREAN_COLORS.ACCENT_GOLD, 0.6);
-          g.drawRoundedRect(0, 0, width, height, 10);
+          g.stroke({ width: 2, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.6 });
+          g.roundRect(0, 0, width, height, 10);
+          g.stroke();
         }}
       />
 
       {/* Title */}
       <pixiText
         text="무술 철학 (Martial Philosophy)"
-        style={
-          new PIXI.TextStyle({
-            fontSize: 32,
-            fill: KOREAN_COLORS.ACCENT_GOLD,
-            fontFamily: "Arial, sans-serif",
-            align: "center",
-          })
-        }
+        style={{
+          fontSize: 32,
+          fill: KOREAN_COLORS.ACCENT_GOLD,
+          fontFamily: "Arial, sans-serif",
+          align: "center",
+        }}
         x={width / 2}
         y={40}
         anchor={0.5}
@@ -75,17 +70,15 @@ export const PhilosophySection: React.FC<PhilosophySectionProps> = ({
       {/* Philosophy Text */}
       <pixiText
         text={philosophyText}
-        style={
-          new PIXI.TextStyle({
-            fontSize: 16,
-            fill: KOREAN_COLORS.TEXT_PRIMARY,
-            fontFamily: "Arial, sans-serif",
-            align: "left",
-            wordWrap: true,
-            wordWrapWidth: width - 80,
-            lineHeight: 24,
-          })
-        }
+        style={{
+          fontSize: 16,
+          fill: KOREAN_COLORS.TEXT_PRIMARY,
+          fontFamily: "Arial, sans-serif",
+          align: "left",
+          wordWrap: true,
+          wordWrapWidth: width - 80,
+          lineHeight: 24,
+        }}
         x={40}
         y={100}
       />
@@ -95,22 +88,20 @@ export const PhilosophySection: React.FC<PhilosophySectionProps> = ({
         <pixiGraphics
           draw={(g) => {
             g.clear();
-            g.beginFill(KOREAN_COLORS.ACCENT_RED, 0.8);
-            g.drawRoundedRect(0, 0, 120, 40, 5);
-            g.endFill();
+            g.fill({ color: KOREAN_COLORS.ACCENT_RED, alpha: 0.8 });
+            g.roundRect(0, 0, 120, 40, 5);
+            g.fill();
           }}
           interactive={true}
           onPointerDown={onBack}
         />
         <pixiText
           text="돌아가기"
-          style={
-            new PIXI.TextStyle({
-              fontSize: 16,
-              fill: KOREAN_COLORS.TEXT_PRIMARY,
-              align: "center",
-            })
-          }
+          style={{
+            fontSize: 16,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
+            align: "center",
+          }}
           x={60}
           y={20}
           anchor={0.5}
@@ -121,3 +112,4 @@ export const PhilosophySection: React.FC<PhilosophySectionProps> = ({
 };
 
 export default PhilosophySection;
+ 

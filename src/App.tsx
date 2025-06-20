@@ -1,17 +1,23 @@
+import { Application } from "@pixi/react";
 import {
-  useState,
+  Suspense,
+  lazy,
   useCallback,
   useEffect,
   useRef,
-  Suspense,
-  lazy,
+  useState,
 } from "react";
-import { Application } from "@pixi/react";
-import { exposePixiAppForTesting } from "./test/pixi-cypress-helpers";
-import { usePixiExtensions } from "./utils/pixiExtensions";
+import "./App.css";
 import { AudioProvider } from "./audio/AudioProvider";
-import { IntroScreen } from "./components/intro/IntroScreen";
 import { CombatScreen } from "./components/combat/CombatScreen";
+import { IntroScreen } from "./components/intro/IntroScreen";
+import { exposePixiAppForTesting } from "./test/pixi-cypress-helpers";
+import { GameMode, PlayerArchetype } from "./types/enums";
+import type { MatchStatistics } from "./types/game";
+import type { PlayerState } from "./types/player";
+import { usePixiExtensions } from "./utils/pixiExtensions";
+import { createPlayerFromArchetype } from "./utils/playerUtils";
+
 // Remove direct import of EndScreen and TrainingScreen
 // import { EndScreen } from "./components/ui/EndScreen";
 // import { TrainingScreen } from "./components";
@@ -21,11 +27,6 @@ const EndScreen = lazy(() => import("./components/ui/EndScreen"));
 const TrainingScreen = lazy(
   () => import("./components/training/TrainingScreen")
 );
-import { GameMode, PlayerArchetype } from "./types/enums";
-import { createPlayerFromArchetype } from "./utils/playerUtils";
-import type { PlayerState } from "./types/player";
-import type { MatchStatistics } from "./types/game";
-import "./App.css";
 
 function App() {
   usePixiExtensions();
@@ -323,177 +324,6 @@ function App() {
         >
           {renderCurrentScreen()}
         </Application>
-
-        {/* Enhanced Full-Screen Overlay with Better Test IDs */}
-        <div
-          className="test-overlay"
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            pointerEvents: "none",
-            zIndex: 100, // Reduced z-index
-          }}
-          data-testid="ui-overlay"
-        >
-          {/* Intro Screen Test Elements */}
-          {gameMode === null && (
-            <>
-              <div
-                className="intro-screen"
-                data-testid="intro-screen"
-                style={{
-                  pointerEvents: "none",
-                  width: "100%",
-                  height: "100%",
-                  position: "absolute",
-                }}
-              />
-
-              {/* Fix: Better positioning for mobile buttons with lower z-index */}
-              <button
-                className="training-button"
-                data-testid="training-button"
-                style={{
-                  position: "absolute",
-                  top: screenSize.isMobile ? "65%" : "60%", // Moved down
-                  left: screenSize.isMobile ? "5%" : "25%",
-                  padding: "12px 24px",
-                  backgroundColor: "rgba(0, 212, 255, 0.9)",
-                  color: "white",
-                  border: "2px solid #00d4ff",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  pointerEvents: "auto",
-                  fontSize: screenSize.isMobile ? "14px" : "16px",
-                  fontWeight: "bold",
-                  zIndex: 50, // Reduced z-index
-                  boxShadow: "0 0 20px rgba(0, 212, 255, 0.5)",
-                  transform: "none",
-                  maxWidth: "200px",
-                }}
-                onClick={() => handleGameStart(GameMode.TRAINING)}
-              >
-                훈련 모드 - Training
-              </button>
-
-              <button
-                className="combat-button"
-                data-testid="combat-button"
-                style={{
-                  position: "absolute",
-                  top: screenSize.isMobile ? "75%" : "70%", // Moved down
-                  left: screenSize.isMobile ? "5%" : "25%",
-                  padding: "12px 24px",
-                  backgroundColor: "rgba(255, 107, 53, 0.9)",
-                  color: "white",
-                  border: "2px solid #ff6b35",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  pointerEvents: "auto",
-                  fontSize: screenSize.isMobile ? "14px" : "16px",
-                  fontWeight: "bold",
-                  zIndex: 50, // Reduced z-index
-                  boxShadow: "0 0 20px rgba(255, 107, 53, 0.5)",
-                  transform: "none",
-                  maxWidth: "200px",
-                }}
-                onClick={() => handleGameStart(GameMode.VERSUS)}
-              >
-                대전 모드 - Combat
-              </button>
-            </>
-          )}
-
-          {/* Training Screen Test Elements */}
-          {gameMode === GameMode.TRAINING && (
-            <>
-              <div
-                className="training-screen"
-                data-testid="training-screen"
-                style={{
-                  pointerEvents: "none",
-                  width: "100%",
-                  height: "100%",
-                  position: "absolute",
-                }}
-              />
-              <button
-                data-testid="return-to-menu-button"
-                style={{
-                  position: "absolute",
-                  bottom: "10%",
-                  right: "10%",
-                  padding: "10px 20px",
-                  backgroundColor: "rgba(74, 85, 104, 0.8)",
-                  color: "white",
-                  border: "2px solid #4a5568",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                  pointerEvents: "auto",
-                  fontSize: "14px",
-                  zIndex: 50, // Reduced z-index
-                }}
-                onClick={handleReturnToMenu}
-              >
-                메뉴로 돌아가기 - Return to Menu
-              </button>
-            </>
-          )}
-
-          {/* Combat Screen Test Elements */}
-          {(gameMode === GameMode.VERSUS || gameMode === GameMode.PRACTICE) && (
-            <>
-              <div
-                className="combat-screen"
-                data-testid="combat-screen"
-                style={{
-                  pointerEvents: "none",
-                  width: "100%",
-                  height: "100%",
-                  position: "absolute",
-                }}
-              />
-              <div
-                style={{
-                  position: "absolute",
-                  top: "50%",
-                  left: "50%",
-                  transform: "translate(-50%, -50%)",
-                  color: "white",
-                  fontSize: "24px",
-                  fontWeight: "bold",
-                  pointerEvents: "none",
-                  zIndex: 50, // Reduced z-index
-                }}
-              >
-                Combat - 전투
-              </div>
-              <button
-                data-testid="return-to-menu-button"
-                style={{
-                  position: "absolute",
-                  top: "20px",
-                  right: "20px",
-                  padding: "10px 20px",
-                  backgroundColor: "rgba(74, 85, 104, 0.8)",
-                  color: "white",
-                  border: "2px solid #4a5568",
-                  borderRadius: "6px",
-                  cursor: "pointer",
-                  pointerEvents: "auto",
-                  fontSize: "14px",
-                  zIndex: 50, // Reduced z-index
-                }}
-                onClick={handleReturnToMenu}
-              >
-                메뉴
-              </button>
-            </>
-          )}
-        </div>
       </div>
     </AudioProvider>
   );

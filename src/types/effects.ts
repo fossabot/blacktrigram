@@ -35,6 +35,7 @@ export enum HitEffectType {
   BLOCK = "block",
   PARRY = "parry",
   COUNTER = "counter",
+  HIT = "hit",
 }
 
 // Fix: Add missing EffectIntensity values

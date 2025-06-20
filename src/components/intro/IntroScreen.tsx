@@ -1,22 +1,22 @@
+import * as PIXI from "pixi.js";
 import React, {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
   Suspense,
   lazy,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
 } from "react";
-import * as PIXI from "pixi.js";
 import { MenuSection } from "./components/MenuSection";
 
 // Lazy load heavy sections
 const PhilosophySection = lazy(() => import("./components/PhilosophySection"));
 const ControlsSection = lazy(() => import("./components/ControlsSection"));
 
-import { KoreanHeader } from "../ui/base/KoreanHeader";
+import { useAudio } from "../../audio/AudioProvider";
 import { KOREAN_COLORS } from "../../types/constants";
 import { GameMode } from "../../types/enums";
-import { useAudio } from "../../audio/AudioProvider";
+import { KoreanHeader } from "../ui/KoreanHeader";
 
 // Responsive dimensions
 function useWindowSize() {
@@ -42,6 +42,8 @@ export interface IntroScreenProps {
 const MENU_ITEMS: { mode: GameMode; korean: string; english: string }[] = [
   { mode: GameMode.VERSUS, korean: "대전", english: "Combat" },
   { mode: GameMode.TRAINING, korean: "훈련", english: "Training" },
+  { mode: GameMode.CONTROLS, korean: "조작", english: "Controls" },
+  { mode: GameMode.PHILOSOPHY, korean: "철학", english: "Philosophy" },
 ];
 
 const ARCHETYPE_DATA = [
@@ -123,71 +125,74 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
   // Enhanced asset loading with proper error handling
   useEffect(() => {
     let destroyed = false;
-    // Use a low-res placeholder first
-    setBgTexture(
-      PIXI.Texture.from("/assets/visual/bg/intro/intro_bg_loop_low.webp")
-    );
+    // Use proper asset path that exists in the project
+    try {
+      setBgTexture(
+        PIXI.Texture.from("/assets/visual/bg/intro/intro_bg_placeholder.png")
+      );
+    } catch (err) {
+      console.warn("Failed to load placeholder texture", err);
+    }
+
     const loadAssets = async () => {
       try {
-        // Prefer WebP if supported
-        const bgUrl = window?.navigator?.userAgent.includes("Safari")
-          ? "/assets/visual/bg/intro/intro_bg_loop.png"
-          : "/assets/visual/bg/intro/intro_bg_loop.webp";
-        const [
-          bg,
-          logo,
-          dojangWall,
-          amsaljaPng,
-          hackerPng,
-          jeongboYowonPng,
-          jojikPokryeokbaePng,
-          musaPng,
-        ] = await Promise.all([
-          PIXI.Assets.load(bgUrl).catch(() => null),
-          PIXI.Assets.load("/assets/visual/logo/black-trigram.png").catch(
-            () => null
-          ),
-          PIXI.Assets.load(
-            "/assets/visual/bg/dojang/dojang_wall_tex.png"
-          ).catch(() => null),
-          PIXI.Assets.load("/assets/visual/archetypes/amsalja.png").catch(
-            () => null
-          ),
-          PIXI.Assets.load("/assets/visual/archetypes/hacker.png").catch(
-            () => null
-          ),
-          PIXI.Assets.load("/assets/visual/archetypes/jeongbo_yowon.png").catch(
-            () => null
-          ),
-          PIXI.Assets.load(
-            "/assets/visual/archetypes/jojik_pokryeokbae.png"
-          ).catch(() => null),
-          PIXI.Assets.load("/assets/visual/archetypes/musa.png").catch(
-            () => null
-          ),
+        // Use more reliable asset paths
+        const bgPath = "/assets/visual/bg/intro/intro_bg_loop.png";
+        const logoPath = "/assets/visual/logo/black-trigram.png";
+        const dojangWallPath = "/assets/visual/bg/dojang/dojang_wall_tex.png";
+
+        const archetypePaths = {
+          amsalja: "/assets/visual/archetypes/amsalja.png",
+          hacker: "/assets/visual/archetypes/hacker.png",
+          jeongboYowon: "/assets/visual/archetypes/jeongbo_yowon.png",
+          jojikPokryeokbae: "/assets/visual/archetypes/jojik_pokryeokbae.png",
+          musa: "/assets/visual/archetypes/musa.png",
+        };
+
+        // Load main assets first
+        const bgTexture = await PIXI.Assets.load(bgPath).catch(() => null);
+        if (bgTexture && !destroyed) setBgTexture(bgTexture);
+
+        // Load other assets in parallel
+        const [logo, dojangWall] = await Promise.all([
+          PIXI.Assets.load(logoPath).catch(() => null),
+          PIXI.Assets.load(dojangWallPath).catch(() => null),
         ]);
+
         if (destroyed) return;
-        if (bg) setBgTexture(bg as PIXI.Texture);
-        if (logo) setLogoTexture(logo as PIXI.Texture);
-        if (dojangWall) setDojangWallTexture(dojangWall as PIXI.Texture);
-        setArchetypeTextures({
-          amsalja: amsaljaPng as PIXI.Texture | null,
-          hacker: hackerPng as PIXI.Texture | null,
-          jeongboYowon: jeongboYowonPng as PIXI.Texture | null,
-          jojikPokryeokbae: jojikPokryeokbaePng as PIXI.Texture | null,
-          musa: musaPng as PIXI.Texture | null,
+        if (logo) setLogoTexture(logo);
+        if (dojangWall) setDojangWallTexture(dojangWall);
+
+        // Load archetype textures
+        const archetypeResults = await Promise.all(
+          Object.entries(archetypePaths).map(async ([key, path]) => {
+            const texture = await PIXI.Assets.load(path).catch(() => null);
+            return { key, texture };
+          })
+        );
+
+        if (destroyed) return;
+
+        // Update archetype textures
+        const newArchetypeTextures = { ...archetypeTextures };
+        archetypeResults.forEach(({ key, texture }) => {
+          if (texture) {
+            newArchetypeTextures[key as keyof typeof archetypeTextures] =
+              texture;
+          }
         });
+
+        setArchetypeTextures(newArchetypeTextures);
       } catch (err) {
         console.warn("Failed to load intro assets", err);
       }
     };
-    // Defer heavy image loading to idle time
-    if ("requestIdleCallback" in window) {
-      (window as any).requestIdleCallback(loadAssets);
-    } else {
-      setTimeout(loadAssets, 100);
-    }
+
+    // Load assets after a short delay
+    const timeoutId = setTimeout(loadAssets, 100);
+
     return () => {
+      clearTimeout(timeoutId);
       destroyed = true;
     };
   }, []);
@@ -215,7 +220,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
     // eslint-disable-next-line
   }, [audio.isInitialized, audio]);
 
-  // Keyboard input for menu navigation and controls
+  // Enhanced keyboard input for menu navigation and controls
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (currentSection !== "menu" && event.key === "Escape") {
@@ -223,7 +228,9 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
         audio.playSFX("menu_back");
         return;
       }
+
       if (currentSection === "menu") {
+        // Menu navigation with arrow keys
         if (event.key === "ArrowUp") {
           setSelectedMenuIndex((prev) => {
             const next = prev === 0 ? MENU_ITEMS.length - 1 : prev - 1;
@@ -237,33 +244,49 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
             return next;
           });
         } else if (event.key === " " || event.key === "Enter") {
+          // Select the current menu item
           audio.playSFX("menu_select");
-          onMenuSelect(MENU_ITEMS[selectedMenuIndex].mode);
+          handleMenuItemSelect(MENU_ITEMS[selectedMenuIndex].mode);
+        } else if (event.key === "ArrowLeft") {
+          // Navigate archetype selection
+          setSelectedArchetype((prev) =>
+            prev === 0 ? ARCHETYPE_DATA.length - 1 : prev - 1
+          );
+          audio.playSFX("menu_hover");
+        } else if (event.key === "ArrowRight") {
+          // Navigate archetype selection
+          setSelectedArchetype((prev) => (prev + 1) % ARCHETYPE_DATA.length);
+          audio.playSFX("menu_hover");
         } else {
+          // Numeric shortcuts
           switch (event.key) {
             case "1":
               setSelectedMenuIndex(0);
-              audio.playSFX("menu_hover");
               audio.playSFX("menu_select");
-              onMenuSelect(GameMode.VERSUS);
+              handleMenuItemSelect(GameMode.VERSUS);
               break;
             case "2":
               setSelectedMenuIndex(1);
-              audio.playSFX("menu_hover");
               audio.playSFX("menu_select");
-              onMenuSelect(GameMode.TRAINING);
+              handleMenuItemSelect(GameMode.TRAINING);
               break;
             case "3":
               setSelectedMenuIndex(2);
-              audio.playSFX("menu_hover");
               audio.playSFX("menu_select");
-              onMenuSelect(GameMode.PRACTICE);
+              handleMenuItemSelect(GameMode.CONTROLS);
               break;
-            case "F1":
+            case "4":
+              setSelectedMenuIndex(3);
+              audio.playSFX("menu_select");
+              handleMenuItemSelect(GameMode.PHILOSOPHY);
+              break;
+            case "c":
+            case "C":
               setCurrentSection("controls");
               audio.playSFX("menu_select");
               break;
-            case "4":
+            case "p":
+            case "P":
               setCurrentSection("philosophy");
               audio.playSFX("menu_select");
               break;
@@ -275,26 +298,32 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [onMenuSelect, currentSection, audio, selectedMenuIndex]);
 
+  // Handle menu item selection
+  const handleMenuItemSelect = useCallback(
+    (mode: GameMode) => {
+      if (mode === GameMode.CONTROLS) {
+        setCurrentSection("controls");
+      } else if (mode === GameMode.PHILOSOPHY) {
+        setCurrentSection("philosophy");
+      } else {
+        onMenuSelect(mode);
+      }
+    },
+    [onMenuSelect]
+  );
+
   // Menu click handler with audio feedback
   const handleMenuClick = useCallback(
     (mode: GameMode) => {
       const idx = MENU_ITEMS.findIndex((item) => item.mode === mode);
       setSelectedMenuIndex(idx >= 0 ? idx : 0);
       audio.playSFX("menu_select");
-      onMenuSelect(mode);
+      handleMenuItemSelect(mode);
     },
-    [onMenuSelect, audio]
+    [audio, handleMenuItemSelect]
   );
 
   // Section navigation with audio feedback
-  const handleShowPhilosophy = useCallback(() => {
-    setCurrentSection("philosophy");
-    audio.playSFX("menu_select");
-  }, [audio]);
-  const handleShowControls = useCallback(() => {
-    setCurrentSection("controls");
-    audio.playSFX("menu_select");
-  }, [audio]);
   const handleBackToMenu = useCallback(() => {
     setCurrentSection("menu");
     audio.playSFX("menu_back");
@@ -303,13 +332,17 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
   // Responsive logo and layout calculations
   const isMobile = screenWidth < 768;
   const isTablet = screenWidth >= 768 && screenWidth < 1024;
-  const logoSize = isMobile
-    ? Math.min(screenWidth, screenHeight) * 0.35
-    : isTablet
-    ? Math.min(screenWidth, screenHeight) * 0.25
-    : Math.min(screenWidth, screenHeight) * 0.2;
 
-  const menuStartY = screenHeight * (isMobile ? 0.65 : isTablet ? 0.6 : 0.55);
+  // Reduce logo size to 75% of current
+  const logoSize = isMobile
+    ? Math.min(screenWidth, screenHeight) * 0.35 * 0.75
+    : isTablet
+    ? Math.min(screenWidth, screenHeight) * 0.25 * 0.75
+    : Math.min(screenWidth, screenHeight) * 0.2 * 0.75;
+
+  // Adjust layout for better positioning
+  const menuStartY = screenHeight * (isMobile ? 0.48 : isTablet ? 0.43 : 0.38);
+  const archetypeStartY = menuStartY + (isMobile ? 260 : isTablet ? 280 : 300);
 
   // Enhanced cyberpunk background with neon grid
   const drawEnhancedBackground = useCallback(
@@ -349,12 +382,12 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
     [screenWidth, screenHeight, isMobile]
   );
 
-  // Calculate optimal archetype image dimensions
+  // Calculate optimal archetype image dimensions - increased for more visibility
   const getArchetypeImageDimensions = () => {
-    const baseWidth = isMobile ? 120 : isTablet ? 160 : 200;
-    const baseHeight = isMobile ? 200 : isTablet ? 266 : 333;
+    // Increased size by approximately 20%
+    const baseWidth = isMobile ? 140 : isTablet ? 180 : 220;
+    const baseHeight = isMobile ? 230 : isTablet ? 290 : 360;
 
-    // Maintain aspect ratio for the tall portrait images (roughly 1:2.8)
     return {
       width: baseWidth,
       height: baseHeight,
@@ -362,7 +395,93 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
     };
   };
 
+  // Increased archetype display width
+  const archetypeDisplayWidth = isMobile
+    ? screenWidth * 0.95
+    : isTablet
+    ? screenWidth * 0.8
+    : screenWidth * 0.5;
+
   const archImageDims = getArchetypeImageDimensions();
+
+  // Function to render selected section content with proper fallback
+  const renderSectionContent = () => {
+    if (currentSection === "philosophy") {
+      return (
+        <Suspense
+          fallback={
+            <pixiContainer>
+              <pixiGraphics
+                draw={(g) => {
+                  g.clear();
+                  g.fill({
+                    color: KOREAN_COLORS.UI_BACKGROUND_DARK,
+                    alpha: 0.8,
+                  });
+                  g.roundRect(0, 0, screenWidth * 0.9, screenHeight * 0.5, 8);
+                  g.fill();
+                }}
+              />
+              <pixiText
+                text="로딩 중..."
+                style={{ fontSize: 24, fill: KOREAN_COLORS.TEXT_PRIMARY }}
+                x={screenWidth * 0.45}
+                y={screenHeight * 0.25}
+                anchor={0.5}
+              />
+            </pixiContainer>
+          }
+        >
+          <PhilosophySection
+            onBack={handleBackToMenu}
+            width={screenWidth * 0.9}
+            height={screenHeight * 0.8}
+            x={screenWidth * 0.05}
+            y={screenHeight * 0.1}
+            data-testid="philosophy-section"
+          />
+        </Suspense>
+      );
+    } else if (currentSection === "controls") {
+      return (
+        <Suspense
+          fallback={
+            <pixiContainer>
+              <pixiGraphics
+                draw={(g) => {
+                  g.clear();
+                  g.fill({
+                    color: KOREAN_COLORS.UI_BACKGROUND_DARK,
+                    alpha: 0.8,
+                  });
+                  g.roundRect(0, 0, screenWidth * 0.9, screenHeight * 0.5, 8);
+                  g.fill();
+                }}
+              />
+              <pixiText
+                text="로딩 중..."
+                style={{ fontSize: 24, fill: KOREAN_COLORS.TEXT_PRIMARY }}
+                x={screenWidth * 0.45}
+                y={screenHeight * 0.25}
+                anchor={0.5}
+              />
+            </pixiContainer>
+          }
+        >
+          <ControlsSection
+            onBack={handleBackToMenu}
+            width={screenWidth * 0.9}
+            height={screenHeight * 0.8}
+            x={screenWidth * 0.05}
+            y={screenHeight * 0.1}
+            data-testid="controls-section"
+          />
+        </Suspense>
+      );
+    }
+
+    return null;
+  };
 
   return (
     <pixiContainer
@@ -402,10 +521,10 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
         />
       )}
 
-      {/* Large Logo Section - Responsive positioning */}
+      {/* Logo Section - Centered at top and reduced to 75% size */}
       <pixiContainer
         x={screenWidth / 2}
-        y={screenHeight * (isMobile ? 0.25 : 0.3)}
+        y={screenHeight * 0.16} // Positioned higher
         data-testid="logo-section"
       >
         {logoTexture && (
@@ -424,17 +543,19 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
         <pixiGraphics
           draw={(g) => {
             g.clear();
-            g.circle(0, 0, logoSize * 0.6);
             g.fill({
               color: KOREAN_COLORS.PRIMARY_CYAN,
               alpha: 0.1,
             });
-            g.circle(0, 0, logoSize * 0.8);
+            g.circle(0, 0, logoSize * 0.6);
+            g.fill();
             g.stroke({
               width: 2,
               color: KOREAN_COLORS.ACCENT_GOLD,
               alpha: 0.6,
             });
+            g.circle(0, 0, logoSize * 0.8);
+            g.stroke();
           }}
           data-testid="logo-glow-effect"
         />
@@ -462,28 +583,23 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
           korean: "한국 무술 시뮬레이터",
           english: "Korean Martial Arts Simulator",
         }}
-        align="center"
         x={screenWidth / 2}
-        y={screenHeight * (isMobile ? 0.45 : 0.48)}
+        y={screenHeight * (isMobile ? 0.33 : 0.3)} // Adjusted position
         data-testid="main-title"
       />
 
       {/* Main Menu Section - Only shown when in menu mode */}
       {currentSection === "menu" && (
         <>
-          {/* Simplified Menu Section */}
+          {/* Menu Section */}
           <MenuSection
-            selectedMode={MENU_ITEMS[selectedMenuIndex].mode}
+            menuItems={MENU_ITEMS}
+            selectedIndex={selectedMenuIndex}
             onModeSelect={handleMenuClick}
-            onStartGame={() =>
-              handleMenuClick(MENU_ITEMS[selectedMenuIndex].mode)
-            }
-            onShowPhilosophy={handleShowPhilosophy}
-            onShowControls={handleShowControls}
             width={
               isMobile ? screenWidth * 0.9 : isTablet ? screenWidth * 0.6 : 400
             }
-            height={320}
+            height={320} // Increased height
             x={
               screenWidth / 2 -
               (isMobile
@@ -496,10 +612,10 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
             data-testid="main-menu-section"
           />
 
-          {/* Grouped Archetype Selection & Display */}
+          {/* Archetype Selection - Now positioned below menu with increased size */}
           <pixiContainer
-            x={screenWidth - (isMobile ? 220 : isTablet ? 300 : 350)}
-            y={screenHeight * 0.3}
+            x={screenWidth / 2 - archetypeDisplayWidth / 2}
+            y={archetypeStartY}
             data-testid="archetype-group"
           >
             {/* Archetype Selection Header */}
@@ -511,14 +627,14 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                     color: KOREAN_COLORS.UI_BACKGROUND_DARK,
                     alpha: 0.9,
                   });
-                  g.roundRect(0, 0, isMobile ? 200 : 280, 40, 8);
+                  g.roundRect(0, 0, archetypeDisplayWidth, 40, 8);
                   g.fill();
                   g.stroke({
                     width: 2,
                     color: KOREAN_COLORS.ACCENT_GOLD,
                     alpha: 0.8,
                   });
-                  g.roundRect(0, 0, isMobile ? 200 : 280, 40, 8);
+                  g.roundRect(0, 0, archetypeDisplayWidth, 40, 8);
                   g.stroke();
                 }}
               />
@@ -530,14 +646,15 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                   align: "center",
                   fontWeight: "bold",
                 }}
-                x={(isMobile ? 200 : 280) / 2}
+                x={archetypeDisplayWidth / 2}
                 y={20}
                 anchor={0.5}
               />
             </pixiContainer>
 
-            {/* Archetype Image Display */}
+            {/* Archetype Display - Side by Side Layout with increased size */}
             <pixiContainer y={50} data-testid="archetype-display">
+              {/* Background panel */}
               <pixiGraphics
                 draw={(g) => {
                   g.clear();
@@ -549,8 +666,8 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                   g.roundRect(
                     0,
                     0,
-                    archImageDims.width + 80,
-                    archImageDims.height + 70,
+                    archetypeDisplayWidth,
+                    isMobile ? 300 : 240, // Increased height
                     8
                   );
                   g.fill();
@@ -562,15 +679,15 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                   g.roundRect(
                     0,
                     0,
-                    archImageDims.width + 80,
-                    archImageDims.height + 70,
+                    archetypeDisplayWidth,
+                    isMobile ? 300 : 240, // Increased height
                     8
                   );
                   g.stroke();
                 }}
               />
 
-              {/* Archetype Image with proper dimensions */}
+              {/* Side-by-side or stacked layout depending on screen size */}
               {archetypeTextures[
                 ARCHETYPE_DATA[selectedArchetype]
                   .textureKey as keyof typeof archetypeTextures
@@ -584,8 +701,12 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                   }
                   width={archImageDims.width}
                   height={archImageDims.height}
-                  x={40}
-                  y={10}
+                  x={
+                    isMobile
+                      ? (archetypeDisplayWidth - archImageDims.width) / 2
+                      : 30
+                  }
+                  y={isMobile ? 10 : 20}
                   interactive={true}
                   onPointerDown={() => {
                     setSelectedArchetype(
@@ -597,57 +718,65 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
                 />
               )}
 
-              {/* Archetype Info with responsive positioning */}
+              {/* Archetype Info positioned based on screen size */}
               <pixiContainer
-                y={archImageDims.height + 20}
+                x={isMobile ? 0 : archImageDims.width + 60}
+                y={isMobile ? archImageDims.height + 20 : 20}
                 data-testid="archetype-info"
               >
                 <pixiText
                   text={`${ARCHETYPE_DATA[selectedArchetype].korean} - ${ARCHETYPE_DATA[selectedArchetype].english}`}
                   style={{
-                    fontSize: isMobile ? 12 : 14,
+                    fontSize: isMobile ? 14 : 16,
                     fill: ARCHETYPE_DATA[selectedArchetype].color,
                     fontWeight: "bold",
                     align: "center",
                   }}
-                  x={(archImageDims.width + 80) / 2}
+                  x={isMobile ? archetypeDisplayWidth / 2 : 0}
                   y={0}
-                  anchor={0.5}
+                  anchor={isMobile ? { x: 0.5, y: 0 } : { x: 0, y: 0 }}
                 />
 
                 <pixiText
                   text={ARCHETYPE_DATA[selectedArchetype].description}
                   style={{
-                    fontSize: isMobile ? 10 : 12,
+                    fontSize: isMobile ? 12 : 14,
                     fill: KOREAN_COLORS.TEXT_SECONDARY,
-                    align: "center",
+                    align: isMobile ? "center" : "left",
+                    wordWrap: true,
+                    wordWrapWidth: isMobile
+                      ? archetypeDisplayWidth - 40
+                      : archetypeDisplayWidth - archImageDims.width - 90,
                   }}
-                  x={(archImageDims.width + 80) / 2}
-                  y={20}
-                  anchor={0.5}
+                  x={isMobile ? archetypeDisplayWidth / 2 : 0}
+                  y={isMobile ? 30 : 30}
+                  anchor={isMobile ? { x: 0.5, y: 0 } : { x: 0, y: 0 }}
                 />
 
                 <pixiText
                   text={`${selectedArchetype + 1} / ${ARCHETYPE_DATA.length}`}
                   style={{
-                    fontSize: 10,
+                    fontSize: 12,
                     fill: KOREAN_COLORS.TEXT_SECONDARY,
-                    align: "center",
+                    align: isMobile ? "center" : "left",
                   }}
-                  x={(archImageDims.width + 80) / 2}
-                  y={35}
-                  anchor={0.5}
+                  x={isMobile ? archetypeDisplayWidth / 2 : 0}
+                  y={isMobile ? 80 : 100}
+                  anchor={isMobile ? { x: 0.5, y: 0 } : { x: 0, y: 0 }}
                 />
               </pixiContainer>
             </pixiContainer>
 
             {/* Archetype Navigation Buttons with responsive positioning */}
             <pixiContainer
-              y={archImageDims.height + 110}
+              y={isMobile ? 360 : 300}
               data-testid="archetype-navigation"
             >
               {/* Previous Button */}
-              <pixiContainer x={20} data-testid="prev-archetype-button">
+              <pixiContainer
+                x={archetypeDisplayWidth * 0.25 - 30}
+                data-testid="prev-archetype-button"
+              >
                 <pixiGraphics
                   draw={(g) => {
                     g.clear();
@@ -681,7 +810,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
 
               {/* Next Button */}
               <pixiContainer
-                x={archImageDims.width + 80 - 80}
+                x={archetypeDisplayWidth * 0.75 - 30}
                 data-testid="next-archetype-button"
               >
                 <pixiGraphics
@@ -720,31 +849,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
       )}
 
       {/* Philosophy and Controls sections */}
-      {currentSection === "philosophy" && (
-        <Suspense fallback={<pixiText text="로딩 중..." />}>
-          <PhilosophySection
-            onBack={handleBackToMenu}
-            width={screenWidth * 0.9}
-            height={screenHeight * 0.8}
-            x={screenWidth * 0.05}
-            y={screenHeight * 0.1}
-            data-testid="philosophy-section"
-          />
-        </Suspense>
-      )}
-
-      {currentSection === "controls" && (
-        <Suspense fallback={<pixiText text="Controls loading..." />}>
-          <ControlsSection
-            onBack={handleBackToMenu}
-            width={screenWidth * 0.9}
-            height={screenHeight * 0.8}
-            x={screenWidth * 0.05}
-            y={screenHeight * 0.1}
-            data-testid="controls-section"
-          />
-        </Suspense>
-      )}
+      {currentSection !== "menu" && renderSectionContent()}
 
       {/* Enhanced Footer with Better Mobile Layout */}
       <pixiContainer

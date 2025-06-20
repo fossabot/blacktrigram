@@ -1,6 +1,6 @@
-import React from "react";
 import * as PIXI from "pixi.js";
-import { usePixiExtensions } from "../../../../../utils/pixiExtensions";
+import React from "react";
+import usePixiExtensions from "../../../../../utils/pixiExtensions";
 import { createKoreanTextStyle, getDisplayText } from "./KoreanPixiTextUtils";
 // Fix: Import type from separate file to avoid naming conflict
 import type { KoreanText as KoreanTextType } from "../../../../../types/korean-text";

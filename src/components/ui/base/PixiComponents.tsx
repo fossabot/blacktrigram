@@ -1,15 +1,15 @@
 // Reusable PIXI.js components for Black Trigram Korean martial arts game
 
 import React, { useState } from "react"; // Fix: Remove unused useCallback
-import { usePixiExtensions, useTick } from "../../../utils/pixiExtensions";
+import usePixiExtensions, { useTick } from "../../../utils/pixiExtensions";
 // Remove direct PIXI React imports - use pixiContainer, etc. directly
-import { KOREAN_COLORS } from "../../../types/constants";
 import type { BaseButtonProps } from "../../../types/components";
-import type {
-  TrigramWheelProps,
-  ProgressTrackerProps,
-} from "../../../types/ui";
+import { KOREAN_COLORS } from "../../../types/constants";
 import type { KoreanText } from "../../../types/korean-text";
+import type {
+  ProgressTrackerProps,
+  TrigramWheelProps,
+} from "../../../types/ui";
 
 // Re-export usePixiExtensions for convenience
 export { usePixiExtensions };

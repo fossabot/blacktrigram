@@ -26,7 +26,7 @@
   "github.copilot.editor.enableCodeActions": true,
   "github.copilot.editor.iterativeEditing": true,
   "github.copilot.advanced": {
-    "length": 500,
+    "length": 2000,
     "temperature": 0.1,
     "top_p": 1,
     "inlineSuggestEnable": true

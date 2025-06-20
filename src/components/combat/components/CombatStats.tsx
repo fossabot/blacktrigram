@@ -1,12 +1,14 @@
-import React, { useCallback } from "react";
-import * as PIXI from "pixi.js";
-import { usePixiExtensions } from "../../../utils/pixiExtensions";
+import React from "react";
 import { KOREAN_COLORS } from "../../../types/constants";
 import type { PlayerState } from "../../../types/player";
 
+// Ensure PixiJS components are extended
+import { extendPixiComponents } from "../../../utils/pixiExtensions";
+extendPixiComponents();
+
 export interface CombatStatsProps {
-  readonly players: readonly [PlayerState, PlayerState];
-  readonly combatLog: readonly string[];
+  readonly players: PlayerState[];
+  readonly combatLog: string[];
   readonly x?: number;
   readonly y?: number;
   readonly width?: number;
@@ -18,117 +20,125 @@ export const CombatStats: React.FC<CombatStatsProps> = ({
   combatLog,
   x = 0,
   y = 0,
-  width = 300,
-  height = 160,
+  width = 280,
+  height = 140,
 }) => {
-  usePixiExtensions();
-
-  const panelDraw = useCallback(
-    (g: PIXI.Graphics) => {
-      g.clear();
-      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.92);
-      g.lineStyle(2, KOREAN_COLORS.ACCENT_CYAN, 0.6);
-      g.drawRoundedRect(0, 0, width, height, 10);
-      g.endFill();
-
-      // Traditional Korean pattern
-      g.lineStyle(1, KOREAN_COLORS.ACCENT_GOLD, 0.2);
-      g.drawCircle(width / 2, 25, 15);
-      g.moveTo(width / 2 - 15, 25);
-      g.arc(width / 2, 25, 15, Math.PI, 0);
-    },
-    [width, height]
-  );
-
-  const logPanelDraw = useCallback(
-    (g: PIXI.Graphics) => {
-      g.clear();
-      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_MEDIUM, 0.7);
-      g.drawRoundedRect(0, 0, width - 20, 80, 5);
-      g.endFill();
-    },
-    [width]
-  );
-
-  // Calculate accuracy safely
-  const calculateAccuracy = (player: PlayerState) => {
-    const hits = player.hitsLanded || 0;
-    const total = hits + (player.hitsTaken || 0);
-    return total > 0 ? Math.round((hits / total) * 100) : 0;
-  };
+  const isMobile = width < 300;
 
   return (
     <pixiContainer x={x} y={y} data-testid="combat-stats">
-      {/* Main Panel */}
-      <pixiGraphics draw={panelDraw} />
+      {/* Stats Grid */}
+      <pixiGraphics
+        draw={(g) => {
+          g.clear();
+          g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_MEDIUM, alpha: 0.6 });
+          g.roundRect(0, 0, width, height, 8); // Use height parameter
+          g.fill();
+        }}
+      />
 
-      {/* Title */}
+      {/* Stats Title */}
       <pixiText
-        text="전투 현황 Combat Status"
+        text="전투 통계"
         style={{
-          fontSize: 14,
+          fontSize: isMobile ? 10 : 14,
           fill: KOREAN_COLORS.ACCENT_GOLD,
           fontWeight: "bold",
-          align: "center",
         }}
-        x={width / 2}
-        y={8}
-        anchor={0.5}
+        x={10}
+        y={10}
       />
 
       {/* Combat Log */}
-      <pixiContainer x={10} y={45}>
-        <pixiText
-          text="전투 기록"
-          style={{
-            fontSize: 10,
-            fill: KOREAN_COLORS.TEXT_SECONDARY,
-          }}
-        />
-        <pixiGraphics draw={logPanelDraw} y={12} />
-
-        {combatLog.slice(-4).map((entry, index) => (
+      <pixiContainer x={10} y={30}>
+        {combatLog.length > 0 ? (
+          combatLog.slice(0, 4).map((log, index) => (
+            <pixiText
+              key={index}
+              text={log}
+              style={{
+                fontSize: isMobile ? 9 : 12,
+                fill: KOREAN_COLORS.TEXT_SECONDARY,
+              }}
+              x={0}
+              y={index * (isMobile ? 15 : 20)}
+            />
+          ))
+        ) : (
           <pixiText
-            key={index}
-            text={entry}
+            text="전투 기록이 없습니다"
             style={{
-              fontSize: 8,
-              fill: KOREAN_COLORS.TEXT_PRIMARY,
+              fontSize: isMobile ? 9 : 12,
+              fill: KOREAN_COLORS.TEXT_SECONDARY,
+              fontStyle: "italic",
             }}
-            x={5}
-            y={20 + index * 12}
+            x={0}
+            y={0}
           />
-        ))}
+        )}
       </pixiContainer>
 
-      {/* Performance Comparison */}
-      <pixiContainer x={10} y={height - 30}>
-        <pixiText
-          text="성능 비교"
-          style={{
-            fontSize: 9,
-            fill: KOREAN_COLORS.TEXT_SECONDARY,
+      {/* Stats Grid */}
+      <pixiContainer x={10} y={height - 60}>
+        {" "}
+        {/* Use height parameter here */}
+        <pixiGraphics
+          draw={(g) => {
+            g.clear();
+            g.stroke({
+              width: 1,
+              color: KOREAN_COLORS.ACCENT_GOLD,
+              alpha: 0.4,
+            });
+            g.rect(0, 0, width - 20, 50);
+            g.moveTo(0, 25);
+            g.lineTo(width - 20, 25);
+            g.moveTo((width - 20) / 2, 0);
+            g.lineTo((width - 20) / 2, 50);
+            g.stroke();
           }}
         />
-
-        {/* Accuracy comparison */}
+        {/* Player 1 Stats */}
         <pixiText
-          text={`정확도: P1 ${calculateAccuracy(players[0])}%`}
+          text={players[0].name.korean}
           style={{
-            fontSize: 7,
-            fill: KOREAN_COLORS.PLAYER_1_COLOR,
+            fontSize: isMobile ? 9 : 12,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
           }}
-          y={12}
+          x={(width - 20) / 4}
+          y={12.5}
+          anchor={0.5}
         />
-
         <pixiText
-          text={`P2 ${calculateAccuracy(players[1])}%`}
+          text={`${players[0].wins || 0}승`}
           style={{
-            fontSize: 7,
-            fill: KOREAN_COLORS.PLAYER_2_COLOR,
+            fontSize: isMobile ? 9 : 12,
+            fill: KOREAN_COLORS.ACCENT_GREEN,
           }}
-          x={width - 80}
-          y={12}
+          x={(width - 20) / 4}
+          y={37.5}
+          anchor={0.5}
+        />
+        {/* Player 2 Stats */}
+        <pixiText
+          text={players[1].name.korean}
+          style={{
+            fontSize: isMobile ? 9 : 12,
+            fill: KOREAN_COLORS.TEXT_PRIMARY,
+          }}
+          x={((width - 20) * 3) / 4}
+          y={12.5}
+          anchor={0.5}
+        />
+        <pixiText
+          text={`${players[1].wins || 0}승`}
+          style={{
+            fontSize: isMobile ? 9 : 12,
+            fill: KOREAN_COLORS.ACCENT_GREEN,
+          }}
+          x={((width - 20) * 3) / 4}
+          y={37.5}
+          anchor={0.5}
         />
       </pixiContainer>
     </pixiContainer>
