@@ -1,8 +1,8 @@
 import type { Texture } from "pixi.js";
 import React from "react";
-import { KOREAN_COLORS } from "../../types/constants";
-import { PlayerArchetype } from "../../types/enums";
-import { ResponsivePixiContainer } from "./base/ResponsivePixiComponents";
+import { KOREAN_COLORS } from "../../../types/constants";
+import { PlayerArchetype } from "../../../types/enums";
+import { ResponsivePixiContainer } from "../../ui/base/ResponsivePixiComponents";
 
 export interface ArchetypeDisplayProps {
   readonly archetype: PlayerArchetype;
