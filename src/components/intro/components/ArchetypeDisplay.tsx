@@ -1,81 +1,37 @@
 import type { Texture } from "pixi.js";
 import React from "react";
 import { KOREAN_COLORS } from "../../../types/constants";
-import { PlayerArchetype } from "../../../types/enums";
 import { ResponsivePixiContainer } from "../../ui/base/ResponsivePixiComponents";
 
-export interface ArchetypeDisplayProps {
-  readonly archetype: PlayerArchetype;
-  readonly isSelected?: boolean;
-  readonly onSelect?: (archetype: PlayerArchetype) => void;
-  readonly x: number;
-  readonly y: number;
-  readonly width: number;
-  readonly height: number;
-  readonly screenWidth: number;
-  readonly screenHeight: number;
+// Shape matching ARCHETYPE_DATA entries
+export interface ArchetypeDataShape {
+  readonly id: string;
+  readonly korean: string;
+  readonly english: string;
+  readonly description: string;
+  readonly color: number;
+  readonly textureKey: string;
 }
 
-const ARCHETYPE_INFO = {
-  [PlayerArchetype.MUSA]: {
-    korean: "무사",
-    english: "Warrior",
-    description: "전통 무사 - 힘을 통한 명예",
-    englishDescription: "Traditional Warrior - Honor through strength",
-    color: KOREAN_COLORS.TRIGRAM_GEON_PRIMARY,
-    symbol: "☰",
-  },
-  [PlayerArchetype.AMSALJA]: {
-    korean: "암살자",
-    english: "Assassin",
-    description: "그림자 암살자 - 은밀함을 통한 효율성",
-    englishDescription: "Shadow Assassin - Efficiency through stealth",
-    color: KOREAN_COLORS.TRIGRAM_SON_PRIMARY,
-    symbol: "☴",
-  },
-  [PlayerArchetype.HACKER]: {
-    korean: "해커",
-    english: "Hacker",
-    description: "사이버 전사 - 정보를 통한 힘",
-    englishDescription: "Cyber Warrior - Power through information",
-    color: KOREAN_COLORS.PRIMARY_CYAN,
-    symbol: "☲",
-  },
-  [PlayerArchetype.JEONGBO_YOWON]: {
-    korean: "정보요원",
-    english: "Agent",
-    description: "정보 요원 - 관찰을 통한 지식",
-    englishDescription: "Intelligence Agent - Knowledge through observation",
-    color: KOREAN_COLORS.TRIGRAM_TAE_PRIMARY,
-    symbol: "☱",
-  },
-  [PlayerArchetype.JOJIK_POKRYEOKBAE]: {
-    korean: "조직폭력배",
-    english: "Gangster",
-    description: "조직 폭력배 - 무자비함을 통한 생존",
-    englishDescription: "Organized Crime - Survival through ruthlessness",
-    color: KOREAN_COLORS.TRIGRAM_JIN_PRIMARY,
-    symbol: "☳",
-  },
-};
+export interface ArchetypeDisplayProps {
+  readonly archetype: ArchetypeDataShape;
+  readonly texture: Texture | null;
+  readonly total: number;
+  readonly index: number;
+  readonly onPrev: () => void;
+  readonly onNext: () => void;
+  readonly width: number;
+  readonly isMobile: boolean;
+}
 
-const ArchetypeDisplay: React.FC<{
-  archetype: (typeof ARCHETYPE_INFO)[PlayerArchetype];
-  texture: Texture | null;
-  total: number;
-  index: number;
-  onPrev: () => void;
-  onNext: () => void;
-  width: number;
-  isMobile: boolean;
-}> = React.memo(
+const ArchetypeDisplay: React.FC<ArchetypeDisplayProps> = React.memo(
   ({ archetype, texture, total, index, onPrev, onNext, width, isMobile }) => (
     <ResponsivePixiContainer
       x={0}
       y={0}
       screenWidth={width}
       screenHeight={isMobile ? 300 : 400}
-      data-testid={`archetype-display-${archetype}`}
+      data-testid={`archetype-display-${archetype.id}`}
     >
       <pixiContainer
         layout={{
