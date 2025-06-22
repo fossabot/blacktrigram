@@ -52,18 +52,28 @@
           "source.organizeImports": "explicit"
         },
 
-        // Copilot optimization
-        "github.copilot.enable": {
-          "*": true,
-          "plaintext": false,
-          "markdown": true
+        "eslint.workingDirectories": [
+          { "mode": "auto" },
+          { "directory": "./src", "changeProcessCWD": true },
+          { "directory": "./cypress", "changeProcessCWD": true }
+        ],
+        "eslint.options": {
+          "overrideConfigFile": "/workspaces/blacktrigram/.eslintrc.cjs"
         },
-        "github.copilot.editor.iterativeEditing": true,
-
-        // Performance
         "typescript.updateImportsOnFileMove.enabled": "always",
+        "javascript.updateImportsOnFileMove.enabled": "always",
         "typescript.suggest.completeFunctionCalls": true,
-        "typescript.preferences.importModuleSpecifier": "shortest"
+
+        // Better import organization
+        "typescript.preferences.importModuleSpecifier": "shortest",
+        "javascript.preferences.importModuleSpecifier": "shortest",
+
+
+        // Ensure Copilot prefers TypeScript file extensions
+        "github.copilot.fileTypes": {
+          "javascript": "typescript",
+          "javascriptreact": "typescriptreact"
+        }
       }
     }
   },
