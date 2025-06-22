@@ -1,6 +1,7 @@
-import React, { useCallback } from "react";
-import { PlayerArchetype } from "../../types/enums";
+import type { Texture } from "pixi.js";
+import React from "react";
 import { KOREAN_COLORS } from "../../types/constants";
+import { PlayerArchetype } from "../../types/enums";
 import { ResponsivePixiContainer } from "./base/ResponsivePixiComponents";
 
 export interface ArchetypeDisplayProps {
@@ -58,168 +59,105 @@ const ARCHETYPE_INFO = {
   },
 };
 
-export const ArchetypeDisplay: React.FC<ArchetypeDisplayProps> = ({
-  archetype,
-  isSelected = false,
-  onSelect,
-  x,
-  y,
-  width,
-  height,
-  screenWidth,
-  screenHeight,
-}) => {
-  const archetypeInfo = ARCHETYPE_INFO[archetype];
-  const isMobile = screenWidth < 768;
-
-  const handleClick = useCallback(() => {
-    if (onSelect) {
-      onSelect(archetype);
-    }
-  }, [onSelect, archetype]);
-
-  const borderColor = isSelected
-    ? KOREAN_COLORS.ACCENT_GOLD
-    : archetypeInfo.color;
-
-  return (
+const ArchetypeDisplay: React.FC<{
+  archetype: (typeof ARCHETYPE_INFO)[PlayerArchetype];
+  texture: Texture | null;
+  total: number;
+  index: number;
+  onPrev: () => void;
+  onNext: () => void;
+  width: number;
+  isMobile: boolean;
+}> = React.memo(
+  ({ archetype, texture, total, index, onPrev, onNext, width, isMobile }) => (
     <ResponsivePixiContainer
-      x={x}
-      y={y}
-      screenWidth={screenWidth}
-      screenHeight={screenHeight}
+      x={0}
+      y={0}
+      screenWidth={width}
+      screenHeight={isMobile ? 300 : 400}
       data-testid={`archetype-display-${archetype}`}
     >
-      {/* Background with archetype color */}
-      <pixiGraphics
-        draw={(g) => {
-          g.clear();
-          g.fill({
-            color: isSelected
-              ? KOREAN_COLORS.ACCENT_GOLD
-              : KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
-            alpha: isSelected ? 0.3 : 0.8,
-          });
-          g.roundRect(0, 0, width, height, 8);
-          g.fill();
-
-          g.stroke({
-            width: 2,
-            color: borderColor,
-            alpha: 0.9,
-          });
-          g.roundRect(0, 0, width, height, 8);
-          g.stroke();
+      <pixiContainer
+        layout={{
+          width,
+          flexDirection: isMobile ? "column" : "row",
+          alignItems: "center",
+          gap: 24,
         }}
-        interactive={!!onSelect}
-        onPointerDown={handleClick}
-        data-testid={`archetype-background-${archetype}`}
-      />
-
-      {/* Trigram Symbol */}
-      <pixiContainer x={isMobile ? 15 : 20} y={isMobile ? 15 : 20}>
-        <pixiGraphics
-          draw={(g) => {
-            g.clear();
-            g.fill({ color: archetypeInfo.color, alpha: 0.8 });
-            g.circle(0, 0, isMobile ? 16 : 20);
-            g.fill();
+        aria-label="Archetype selection"
+      >
+        {texture && (
+          <pixiSprite
+            texture={texture}
+            width={isMobile ? 120 : 180}
+            height={isMobile ? 200 : 300}
+            anchor={0.5}
+            x={isMobile ? width / 2 : 90}
+            y={isMobile ? 110 : 150}
+          />
+        )}
+        <pixiContainer
+          layout={{
+            flexDirection: "column",
+            alignItems: isMobile ? "center" : "flex-start",
+            gap: 8,
           }}
-        />
-        <pixiText
-          text={archetypeInfo.symbol}
-          style={{
-            fontSize: isMobile ? 14 : 18,
-            fill: KOREAN_COLORS.TEXT_PRIMARY,
-            fontWeight: "bold",
-            align: "center",
-          }}
-          anchor={0.5}
-          data-testid={`archetype-symbol-${archetype}`}
-        />
+        >
+          <pixiText
+            text={`${archetype.korean} - ${archetype.english}`}
+            style={{
+              fontSize: 18,
+              fill: archetype.color,
+              fontWeight: "bold",
+              fontFamily: "Noto Sans KR, NanumGothic, sans-serif",
+            }}
+          />
+          <pixiText
+            text={archetype.description}
+            style={{
+              fontSize: 14,
+              fill: KOREAN_COLORS.TEXT_SECONDARY,
+              wordWrap: true,
+              wordWrapWidth: width * 0.6,
+            }}
+          />
+          <pixiText
+            text={`${index + 1} / ${total}`}
+            style={{
+              fontSize: 12,
+              fill: KOREAN_COLORS.TEXT_SECONDARY,
+            }}
+          />
+          <pixiContainer layout={{ flexDirection: "row", gap: 12 }}>
+            <pixiGraphics
+              draw={(g) => {
+                g.clear();
+                g.beginFill(KOREAN_COLORS.ACCENT_GOLD, 0.8);
+                g.roundRect(0, 0, 40, 40, 8);
+                g.endFill();
+              }}
+              interactive
+              onPointerDown={onPrev}
+              tabIndex={0}
+              aria-label="Previous archetype"
+            />
+            <pixiGraphics
+              draw={(g) => {
+                g.clear();
+                g.beginFill(KOREAN_COLORS.ACCENT_GOLD, 0.8);
+                g.roundRect(0, 0, 40, 40, 8);
+                g.endFill();
+              }}
+              interactive
+              onPointerDown={onNext}
+              tabIndex={0}
+              aria-label="Next archetype"
+            />
+          </pixiContainer>
+        </pixiContainer>
       </pixiContainer>
-
-      {/* Korean Name */}
-      <pixiText
-        text={archetypeInfo.korean}
-        style={{
-          fontSize: isMobile ? 16 : 20,
-          fill: isSelected
-            ? KOREAN_COLORS.BLACK_SOLID
-            : KOREAN_COLORS.TEXT_PRIMARY,
-          fontWeight: "bold",
-          fontFamily: "Noto Sans KR",
-        }}
-        x={isMobile ? 50 : 60}
-        y={isMobile ? 12 : 15}
-        data-testid={`archetype-korean-${archetype}`}
-      />
-
-      {/* English Name */}
-      <pixiText
-        text={archetypeInfo.english}
-        style={{
-          fontSize: isMobile ? 12 : 14,
-          fill: isSelected
-            ? KOREAN_COLORS.BLACK_SOLID
-            : KOREAN_COLORS.TEXT_SECONDARY,
-          fontStyle: "italic",
-        }}
-        x={isMobile ? 50 : 60}
-        y={isMobile ? 30 : 35}
-        data-testid={`archetype-english-${archetype}`}
-      />
-
-      {/* Description - Only show on larger screens */}
-      {!isMobile && height > 80 && (
-        <>
-          <pixiText
-            text={archetypeInfo.description}
-            style={{
-              fontSize: 10,
-              fill: isSelected
-                ? KOREAN_COLORS.BLACK_SOLID
-                : KOREAN_COLORS.TEXT_SECONDARY,
-              wordWrap: true,
-              wordWrapWidth: width - 70,
-            }}
-            x={60}
-            y={55}
-            data-testid={`archetype-description-${archetype}`}
-          />
-
-          <pixiText
-            text={archetypeInfo.englishDescription}
-            style={{
-              fontSize: 9,
-              fill: isSelected
-                ? KOREAN_COLORS.BLACK_SOLID
-                : KOREAN_COLORS.TEXT_TERTIARY,
-              fontStyle: "italic",
-              wordWrap: true,
-              wordWrapWidth: width - 70,
-            }}
-            x={60}
-            y={height - 25}
-            data-testid={`archetype-description-english-${archetype}`}
-          />
-        </>
-      )}
-
-      {/* Selection indicator */}
-      {isSelected && (
-        <pixiGraphics
-          draw={(g) => {
-            g.clear();
-            g.fill({ color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.8 });
-            g.roundRect(width - 25, 5, 20, 8, 4);
-            g.fill();
-          }}
-          data-testid={`archetype-selected-indicator-${archetype}`}
-        />
-      )}
     </ResponsivePixiContainer>
-  );
-};
+  )
+);
 
 export default ArchetypeDisplay;

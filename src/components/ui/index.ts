@@ -14,7 +14,7 @@ export { ProgressTracker } from "./ProgressTracker";
 export { ScoreDisplay } from "./ScoreDisplay";
 export { HitEffectsLayer } from "./HitEffectsLayer";
 export { EndScreen } from "./EndScreen";
-export { ArchetypeDisplay } from "./ArchetypeDisplay";
+export { default as ArchetypeDisplay } from "./ArchetypeDisplay";
 export { KoreanHeader } from "./KoreanHeader";
 
 // Player-related UI
