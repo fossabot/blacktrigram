@@ -317,8 +317,25 @@ Game/frontend will be open source with commercial backend supporting multiplayer
 
 - [🖼️ ART_ASSETS.md](https://github.com/Hack23/blacktrigram/blob/main/ART_ASSETS.md)
   _Guidelines for sprite sheets, particle textures, color palettes, and UI icons._
-- [🎵 AUDIO.ASSETS.md](https://github.com/Hack23/blacktrigram/blob/main/AUDIO.ASSETS.md)
+- [🎵 AUDIO_ASSETS.md](https://github.com/Hack23/blacktrigram/blob/main/AUDIO_ASSETS.md)
   _List of traditional Korean instrument loops, impact SFX, and mixing notes._
+
+🔒 **CI/CD & Security Features**
+
+- [🔒 development.md](https://github.com/Hack23/blacktrigram/blob/main/development.md)
+  _The development implements comprehensive security measures:._
+- **🛡️ Supply Chain Security** - OSSF Scorecard analysis and dependency review
+- **🔍 Static Analysis** - CodeQL scanning for vulnerabilities
+- **📦 Dependency Protection** - Automated dependency vulnerability checks
+- **🔐 Runner Hardening** - All CI/CD runners are hardened with audit logging
+- **📋 Security Policies** - GitHub security advisories and vulnerability reporting
+- **🏷️ Pinned Dependencies** - All GitHub Actions pinned to specific SHA hashes
+- **📄 SBOM Generation** - Software Bill of Materials for transparency
+- **🔏 Build Attestations** - Cryptographic proof of build integrity
+- **🏆 Artifact Verification** - SLSA-compliant build provenance
+- **🕷️ ZAP Security Scanning** - OWASP ZAP dynamic application security testing
+- **⚡ Lighthouse Performance** - Automated performance and accessibility audits
+
 
 ---
 
