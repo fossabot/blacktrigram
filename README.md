@@ -12,9 +12,11 @@ _"Master the dark arts through the pursuit of the perfect strike"_
 [![GitHub Release](https://img.shields.io/github/v/release/Hack23/blacktrigram)](https://github.com/Hack23/blacktrigram/releases)
 [![License](https://img.shields.io/github/license/Hack23/blacktrigram.svg)](https://github.com/Hack23/blacktrigram/raw/master/LICENSE.md)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Hack23/blacktrigram/badge)](https://scorecard.dev/viewer/?uri=github.com/Hack23/blacktrigram)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/10777/badge)](https://bestpractices.coreinfrastructure.org/projects/10777)
 [![SLSA 3](https://slsa.dev/images/gh-badge-level3.svg)](https://github.com/Hack23/blacktrigram/attestations)
 [![Scorecard supply-chain security](https://github.com/Hack23/blacktrigram/actions/workflows/scorecards.yml/badge.svg?branch=main)](https://github.com/Hack23/blacktrigram/actions/workflows/scorecards.yml)
 [![Test & Report](https://github.com/Hack23/blacktrigram/actions/workflows/test-and-report.yml/badge.svg?branch=main)](https://github.com/Hack23/blacktrigram/actions/workflows/test-and-report.yml)
+
 
 _A realistic 2D precision combat game inspired by Korean martial arts philosophy and the I Ching_
 
@@ -294,12 +296,18 @@ npm run test:combat
 
 ## 📚 Documentation & Further Reading
 
+Game/frontend will be open source with commercial backend supporting multiplayer functionality, rankings and subscriptions to fund development and runtime of backend. Will enable progressions and persistent state of game.
+
+
 🔗 **Architecture & Design**
 
 - [📐 ARCHITECTURE.md](https://github.com/Hack23/blacktrigram/blob/main/ARCHITECTURE.md)
   _High-level C4 models, container/component views, and system context._
 - [📈 FUTURE_ARCHITECTURE.md](https://github.com/Hack23/blacktrigram/blob/main/FUTURE_ARCHITECTURE.md)
   _Vision for upcoming architectural enhancements and PWA integration._
+- [API Docs](https://blacktrigram.com/api/)
+  _Detailed API reference for all components, types, and functions in the application._
+
 
 🔗 **Combat & Mechanics**
 
@@ -314,8 +322,25 @@ npm run test:combat
 
 - [🖼️ ART_ASSETS.md](https://github.com/Hack23/blacktrigram/blob/main/ART_ASSETS.md)
   _Guidelines for sprite sheets, particle textures, color palettes, and UI icons._
-- [🎵 AUDIO.ASSETS.md](https://github.com/Hack23/blacktrigram/blob/main/AUDIO.ASSETS.md)
+- [🎵 AUDIO_ASSETS.md](https://github.com/Hack23/blacktrigram/blob/main/AUDIO_ASSETS.md)
   _List of traditional Korean instrument loops, impact SFX, and mixing notes._
+
+🔒 **CI/CD & Security Features**
+
+- [🔒 development.md](https://github.com/Hack23/blacktrigram/blob/main/development.md)
+  _The development implements comprehensive security measures:._
+- **🛡️ Supply Chain Security** - OSSF Scorecard analysis and dependency review
+- **🔍 Static Analysis** - CodeQL scanning for vulnerabilities
+- **📦 Dependency Protection** - Automated dependency vulnerability checks
+- **🔐 Runner Hardening** - All CI/CD runners are hardened with audit logging
+- **📋 Security Policies** - GitHub security advisories and vulnerability reporting
+- **🏷️ Pinned Dependencies** - All GitHub Actions pinned to specific SHA hashes
+- **📄 SBOM Generation** - Software Bill of Materials for transparency
+- **🔏 Build Attestations** - Cryptographic proof of build integrity
+- **🏆 Artifact Verification** - SLSA-compliant build provenance
+- **🕷️ ZAP Security Scanning** - OWASP ZAP dynamic application security testing
+- **⚡ Lighthouse Performance** - Automated performance and accessibility audits
+
 
 ---
 
