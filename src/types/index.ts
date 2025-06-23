@@ -55,23 +55,9 @@ export type {
 export type { GameState, MatchStatistics } from "./game";
 
 // Export component types
-export type {
-  GameUIProps,
-  GameEngineProps,
-  TrainingScreenProps,
-  CombatScreenProps,
-  CombatHUDProps,
-  CombatControlsProps,
-  CombatArenaProps,
-  IntroScreenProps,
-  EndScreenProps,
-} from "./components";
-
 // Export UI types
 export type {
-  UIComponentProps,
-  StanceIndicatorProps,
-  HealthBarProps,
+  UIComponentProps
 } from "./ui";
 
 // Export system types

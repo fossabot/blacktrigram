@@ -4,8 +4,7 @@
 
 import type { DamageRange, KoreanText } from "./common";
 import type { StatusEffect } from "./effects";
-import type { PlayerState } from "./player";
-import { TrigramStance, CombatAttackType, DamageType, GameMode } from "./enums";
+import { CombatAttackType, DamageType, TrigramStance } from "./enums";
 
 // Korean martial arts technique
 export interface KoreanTechnique {
@@ -94,81 +93,4 @@ export interface CombatStats {
   readonly techniquesUsed: number;
   readonly stamina: number;
   readonly ki: number;
-}
-
-// Fix: Move combat-specific component props here
-export interface CombatScreenProps {
-  readonly players: readonly PlayerState[];
-  readonly onPlayerUpdate: (
-    playerIndex: number,
-    updates: Partial<PlayerState>
-  ) => void;
-  readonly currentRound: number;
-  readonly timeRemaining: number;
-  readonly isPaused: boolean;
-  readonly onReturnToMenu: () => void;
-  readonly onGameEnd: (winner: number) => void;
-  readonly gameMode?: GameMode;
-  readonly width?: number;
-  readonly height?: number;
-  readonly x?: number;
-  readonly y?: number;
-}
-
-export interface CombatArenaProps {
-  readonly players: readonly [PlayerState, PlayerState];
-  readonly width?: number;
-  readonly height?: number;
-  readonly x?: number;
-  readonly y?: number;
-  readonly onPlayerClick?: (playerIndex: number) => void;
-}
-
-export interface CombatHUDProps {
-  readonly player1: PlayerState;
-  readonly player2: PlayerState;
-  readonly currentRound: number;
-  readonly timeRemaining: number;
-  readonly maxRounds: number;
-  readonly isPaused: boolean;
-  readonly width?: number;
-  readonly height?: number;
-  readonly x?: number;
-  readonly y?: number;
-  readonly onPauseToggle?: () => void;
-}
-
-export interface CombatControlsProps {
-  readonly onAttack: () => void;
-  readonly onDefend: () => void;
-  readonly onSwitchStance?: (stance: TrigramStance) => void;
-  readonly onPauseToggle: () => void;
-  readonly isPaused: boolean;
-  readonly player: PlayerState;
-  readonly onTechniqueExecute?: (technique: KoreanTechnique) => void;
-  readonly onGuard?: () => void;
-  readonly isExecutingTechnique?: boolean;
-  readonly width?: number;
-  readonly height?: number;
-  readonly x?: number;
-  readonly y?: number;
-}
-
-export interface PlayerStatusPanelProps {
-  readonly player: PlayerState;
-  readonly position: "left" | "right";
-  readonly x?: number;
-  readonly y?: number;
-  readonly width?: number;
-  readonly height?: number;
-  readonly isSelected?: boolean;
-}
-
-export interface CombatStatsProps {
-  readonly players: readonly [PlayerState, PlayerState];
-  readonly combatLog: readonly string[];
-  readonly x?: number;
-  readonly y?: number;
-  readonly width?: number;
-  readonly height?: number;
 }

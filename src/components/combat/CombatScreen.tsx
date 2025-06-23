@@ -1,6 +1,5 @@
-import { Position } from "@/types";
+import { GameMode, PlayerState, Position } from "@/types";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import type { CombatScreenProps } from "../../types/combat";
 import { KOREAN_COLORS } from "../../types/constants";
 import { HitEffect, HitEffectType } from "../../types/effects"; // Fix: Import HitEffectType from effects.ts
 import { extendPixiComponents } from "../../utils/pixiExtensions";
@@ -359,3 +358,18 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
 };
 
 export default CombatScreen;
+
+export interface CombatScreenProps {
+  players: readonly PlayerState[];
+  onPlayerUpdate: (playerIndex: number, updates: Partial<PlayerState>) => void;
+  currentRound: number;
+  timeRemaining: number;
+  isPaused: boolean;
+  onReturnToMenu: () => void;
+  onGameEnd: (winner: number) => void;
+  gameMode?: GameMode;
+  width?: number;
+  height?: number;
+  x?: number;
+  y?: number;
+}

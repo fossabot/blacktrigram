@@ -28,12 +28,4 @@ export { default as StanceIndicatorDefault } from "./StanceIndicator";
 export { default as TrigramWheelDefault } from "./TrigramWheel";
 
 // Re-export types
-export type {
-  HealthBarProps,
-  ProgressTrackerProps,
-  RoundTimerProps,
-  ScoreDisplayProps,
-  StanceIndicatorProps,
-  TrigramWheelProps,
-  UIComponentProps,
-} from "../../types/ui";
+export type { UIComponentProps } from "../../types/ui";

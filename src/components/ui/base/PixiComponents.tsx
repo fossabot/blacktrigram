@@ -3,13 +3,11 @@
 import React, { useState } from "react"; // Fix: Remove unused useCallback
 import usePixiExtensions, { useTick } from "../../../utils/pixiExtensions";
 // Remove direct PIXI React imports - use pixiContainer, etc. directly
-import type { BaseButtonProps } from "../../../types/components";
 import { KOREAN_COLORS } from "../../../types/constants";
 import type { KoreanText } from "../../../types/korean-text";
-import type {
-  ProgressTrackerProps,
-  TrigramWheelProps,
-} from "../../../types/ui";
+import type { BaseButtonProps } from "./BaseButton";
+import type { ProgressTrackerProps } from "../ProgressTracker";
+import type { TrigramWheelProps } from "../TrigramWheel";
 
 // Re-export usePixiExtensions for convenience
 export { usePixiExtensions };
@@ -115,7 +113,7 @@ export const CyberpunkPanel: React.FC<{
 };
 
 export const CyberpunkTrigramWheel: React.FC<TrigramWheelProps> = ({
-  currentStance,
+  selectedStance,
   onStanceSelect,
   onStanceChange, // Fix: Use the required prop
   size = 100,
@@ -148,7 +146,7 @@ export const CyberpunkTrigramWheel: React.FC<TrigramWheelProps> = ({
             const stanceX = size / 2 + Math.cos(angle) * (size / 3);
             const stanceY = size / 2 + Math.sin(angle) * (size / 3);
 
-            const isActive = currentStance === stance;
+            const isActive = selectedStance === stance;
             g.beginFill(
               isActive
                 ? KOREAN_COLORS.ACCENT_GOLD
@@ -334,7 +332,7 @@ export const CyberpunkButton: React.FC<EnhancedButtonProps> = ({
 };
 
 export const PixiTrigramWheel: React.FC<TrigramWheelProps> = ({
-  currentStance,
+  selectedStance,
   onStanceSelect,
   size = 100,
   x = 0,
@@ -342,7 +340,7 @@ export const PixiTrigramWheel: React.FC<TrigramWheelProps> = ({
 }) => {
   return (
     <CyberpunkTrigramWheel
-      currentStance={currentStance}
+      selectedStance={selectedStance}
       onStanceSelect={onStanceSelect}
       onStanceChange={onStanceSelect || (() => {})} // Fix: Provide required onStanceChange
       size={size}

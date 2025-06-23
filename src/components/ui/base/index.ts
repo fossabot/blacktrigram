@@ -8,11 +8,9 @@ export { BaseButton } from "./BaseButton";
 
 // Korean text system
 export * from "./korean-text";
-export { KoreanHeader } from "./KoreanHeader";
 
 // PIXI components
+export * from "./BaseButton";
 export { default as KoreanPixiComponents } from "./KoreanPixiComponents";
 export { default as PixiComponents } from "./PixiComponents";
 export * from "./ResponsivePixiComponents";
-export * from "./KoreanHeader";
-export * from "./BaseButton";
