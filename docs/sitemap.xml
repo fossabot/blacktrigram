@@ -4,7 +4,14 @@
   <!-- Homepages -->
   <url>
     <loc>https://blacktrigram.com/</loc>
-    <lastmod>2025-06-04</lastmod>
+    <lastmod>2025-06-23</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+   <url>
+    <loc>https://blacktrigram.com/api/</loc>
+    <lastmod>2025-06-23</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
