@@ -110,6 +110,19 @@ jobs:
           commit_message: "chore(release): bump version to ${{ github.event.inputs.version }}"
           tagging_message: "${{ github.event.inputs.version }}"
 
+      - name: Generate api html documentation 
+        run: npm run docs
+  
+      - name: Deploy Documentation to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@6c2d9db40f9296374acc17b90404b6e8864128c8 # v4.7.3
+        with:
+          folder: docs
+          target-folder: docs
+          branch: main
+          clean: false
+          commit-message: "docs: update documentation for ${{ needs.prepare.outputs.version || 'development' }}"
+
+
   build:
     name: Build Release Package
     needs: [prepare]
