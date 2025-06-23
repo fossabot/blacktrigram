@@ -305,6 +305,9 @@ Game/frontend will be open source with commercial backend supporting multiplayer
   _High-level C4 models, container/component views, and system context._
 - [📈 FUTURE_ARCHITECTURE.md](https://github.com/Hack23/blacktrigram/blob/main/FUTURE_ARCHITECTURE.md)
   _Vision for upcoming architectural enhancements and PWA integration._
+- [API Docs](https://blacktrigram.com/api/)
+  _Detailed API reference for all components, types, and functions in the application._
+
 
 🔗 **Combat & Mechanics**
 
