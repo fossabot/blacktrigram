@@ -229,7 +229,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
       interactive={true} /* Make the entire container interactive */
       data-testid="training-screen"
     >
-      {/* Dojang Background */}
       <DojangBackground
         width={width}
         height={height}
@@ -238,7 +237,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
         data-testid="dojang-background"
       />
 
-      {/* Training Header */}
       <pixiContainer x={width / 2} y={30} data-testid="training-header">
         <pixiText
           text="흑괘 무술 도장"
@@ -253,7 +251,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
         />
       </pixiContainer>
 
-      {/* Training Area Grid */}
       <pixiContainer data-testid="training-area">
         <pixiGraphics
           draw={(g) => {
@@ -289,7 +286,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
         />
       </pixiContainer>
 
-      {/* Training Mode Selection Panel */}
       <ResponsivePixiPanel
         title="수련 모드 선택"
         x={isMobile ? 10 : 20}
@@ -311,7 +307,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
           data-testid="mode-title"
         />
 
-        {/* Mode Selection Buttons - Fixed with proper interactive pointerdown handlers */}
         <pixiContainer
           x={10}
           y={30}
@@ -414,7 +409,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
           />
         </pixiContainer>
 
-        {/* Display current mode for testing */}
         <pixiText
           text={`현재 모드: ${trainingMode}`}
           style={{
@@ -427,7 +421,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
         />
       </ResponsivePixiPanel>
 
-      {/* Player Character */}
       <pixiContainer
         x={width * 0.25}
         y={height * 0.5}
@@ -481,7 +474,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
         />
       </pixiContainer>
 
-      {/* Training Dummy Container - Fixed interactive pointer event */}
       <pixiContainer
         x={dummy.position.x}
         y={dummy.position.y}
@@ -525,7 +517,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
           data-testid="training-dummy"
         />
 
-        {/* Dummy Health Display */}
         <pixiGraphics
           draw={(g) => {
             g.clear();
@@ -573,7 +564,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
         />
       </pixiContainer>
 
-      {/* Trigram Wheel for Stance Selection */}
       <pixiContainer x={1050} y={650} data-testid="training-trigram-wheel">
         {trigramStances.map((stance) => (
           <pixiContainer
@@ -582,7 +572,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
             interactive={true}
             onPointerDown={() => handleStanceChange(stance)}
           >
-            {/* Optionally draw a simple indicator */}
             <pixiText
               text={stance}
               style={{ fontSize: 14, fill: KOREAN_COLORS.TEXT_PRIMARY }}
@@ -592,7 +581,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
         ))}
       </pixiContainer>
 
-      {/* Stance Selection Area for Testing */}
       <pixiContainer
         x={width - (isMobile ? 120 : 150)}
         y={height - (isMobile ? 200 : 220)}
@@ -608,7 +596,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
           anchor={0.5}
         />
 
-        {/* Individual stance buttons for testing - Fixed interactive pointer events */}
         <pixiContainer
           x={-40}
           y={20}
@@ -644,7 +631,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
         </pixiContainer>
       </pixiContainer>
 
-      {/* Current Stance Indicator */}
       <StanceIndicator
         stance={selectedStance}
         x={isMobile ? width / 2 : width * 0.25}
@@ -652,7 +638,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
         data-testid="current-stance-indicator"
       />
 
-      {/* Training Controls Panel */}
       <ResponsivePixiPanel
         title="훈련 제어"
         x={isMobile ? 10 : 20}
@@ -663,7 +648,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
         screenHeight={height}
         data-testid="training-controls"
       >
-        {/* Training Toggle Button - Fixed for interactive mouse events */}
         <pixiContainer
           x={10}
           y={10}
@@ -697,7 +681,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
           />
         </pixiContainer>
 
-        {/* Execute Technique Button */}
         {isTraining && (
           <pixiContainer
             x={10}
@@ -728,7 +711,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
           </pixiContainer>
         )}
 
-        {/* Reset Dummy Button */}
         <pixiContainer
           x={10}
           y={100}
@@ -757,7 +739,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
           />
         </pixiContainer>
 
-        {/* Evaluate Button */}
         <pixiContainer
           x={10}
           y={140}
@@ -787,7 +768,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
         </pixiContainer>
       </ResponsivePixiPanel>
 
-      {/* Training Statistics Panel */}
       <ResponsivePixiPanel
         title="훈련 통계"
         x={width - (isMobile ? width * 0.45 + 10 : 270)}
@@ -864,7 +844,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
           data-testid="session-time"
         />
 
-        {/* Current stance info */}
         <pixiText
           text={`현재 자세: ${getStanceNames(selectedStance).korean}`}
           style={{
@@ -876,7 +855,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
           y={115}
         />
 
-        {/* Player experience display */}
         <pixiText
           text={`경험치: ${player.experiencePoints || 0}`}
           style={{
@@ -887,7 +865,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
           y={135}
         />
 
-        {/* Feedback message placeholder */}
         <pixiText
           text="계속 연습하세요!"
           style={{
@@ -901,7 +878,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
         />
       </ResponsivePixiPanel>
 
-      {/* Return to Menu Button - Fixed interactive pointer event */}
       <pixiContainer
         x={isMobile ? width / 2 - 80 : width / 2 - 100}
         y={height - (isMobile ? 40 : 50)}
@@ -937,7 +913,6 @@ export const TrainingScreen: React.FC<TrainingScreenProps> = (props) => {
         />
       </pixiContainer>
 
-      {/* Training Status Overlay */}
       {isTraining && (
         <pixiContainer x={width / 2} y={50} data-testid="training-status">
           <pixiGraphics
