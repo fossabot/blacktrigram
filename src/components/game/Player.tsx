@@ -23,7 +23,6 @@ export const Player: React.FC<PlayerProps> = ({ player, x, y, onClick }) => {
           g.clear();
           g.fill({ color: KOREAN_COLORS.PRIMARY_CYAN, alpha: 0.8 });
           g.rect(-30, -60, 60, 120);
-          g.fill();
         }}
         interactive={true}
         onPointerDown={onClick}
@@ -40,9 +39,8 @@ export const Player: React.FC<PlayerProps> = ({ player, x, y, onClick }) => {
         x={0}
         y={-80}
         anchor={0.5}
-      >
-        {player.name.korean}
-      </pixiText>
+        data-testid="player-name"
+      />
 
       {/* Health bar */}
       <pixiGraphics
@@ -53,12 +51,10 @@ export const Player: React.FC<PlayerProps> = ({ player, x, y, onClick }) => {
           // Background
           g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 0.8 });
           g.rect(-25, 70, 50, 8);
-          g.fill();
 
           // Health fill
           g.fill({ color: KOREAN_COLORS.POSITIVE_GREEN, alpha: 0.9 });
           g.rect(-25, 70, 50 * healthPercent, 8);
-          g.fill();
         }}
       />
     </pixiContainer>
