@@ -27,17 +27,15 @@ export const CombatStats: React.FC<CombatStatsProps> = ({
 
   return (
     <pixiContainer x={x} y={y} data-testid="combat-stats">
-      {/* Stats Grid */}
       <pixiGraphics
         draw={(g) => {
           g.clear();
           g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_MEDIUM, alpha: 0.6 });
-          g.roundRect(0, 0, width, height, 8); // Use height parameter
+          g.roundRect(0, 0, width, height, 8);
           g.fill();
         }}
       />
 
-      {/* Stats Title */}
       <pixiText
         text="전투 통계"
         style={{
@@ -49,7 +47,6 @@ export const CombatStats: React.FC<CombatStatsProps> = ({
         y={10}
       />
 
-      {/* Combat Log */}
       <pixiContainer x={10} y={30}>
         {combatLog.length > 0 ? (
           combatLog.slice(0, 4).map((log, index) => (
@@ -78,10 +75,7 @@ export const CombatStats: React.FC<CombatStatsProps> = ({
         )}
       </pixiContainer>
 
-      {/* Stats Grid */}
       <pixiContainer x={10} y={height - 60}>
-        {" "}
-        {/* Use height parameter here */}
         <pixiGraphics
           draw={(g) => {
             g.clear();
@@ -98,7 +92,6 @@ export const CombatStats: React.FC<CombatStatsProps> = ({
             g.stroke();
           }}
         />
-        {/* Player 1 Stats */}
         <pixiText
           text={players[0].name.korean}
           style={{
@@ -119,7 +112,6 @@ export const CombatStats: React.FC<CombatStatsProps> = ({
           y={37.5}
           anchor={0.5}
         />
-        {/* Player 2 Stats */}
         <pixiText
           text={players[1].name.korean}
           style={{
