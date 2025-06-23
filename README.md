@@ -12,9 +12,11 @@ _"Master the dark arts through the pursuit of the perfect strike"_
 [![GitHub Release](https://img.shields.io/github/v/release/Hack23/blacktrigram)](https://github.com/Hack23/blacktrigram/releases)
 [![License](https://img.shields.io/github/license/Hack23/blacktrigram.svg)](https://github.com/Hack23/blacktrigram/raw/master/LICENSE.md)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Hack23/blacktrigram/badge)](https://scorecard.dev/viewer/?uri=github.com/Hack23/blacktrigram)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/10777/badge)](https://bestpractices.coreinfrastructure.org/projects/10777)
 [![SLSA 3](https://slsa.dev/images/gh-badge-level3.svg)](https://github.com/Hack23/blacktrigram/attestations)
 [![Scorecard supply-chain security](https://github.com/Hack23/blacktrigram/actions/workflows/scorecards.yml/badge.svg?branch=main)](https://github.com/Hack23/blacktrigram/actions/workflows/scorecards.yml)
 [![Test & Report](https://github.com/Hack23/blacktrigram/actions/workflows/test-and-report.yml/badge.svg?branch=main)](https://github.com/Hack23/blacktrigram/actions/workflows/test-and-report.yml)
+
 
 _A realistic 2D precision combat game inspired by Korean martial arts philosophy and the I Ching_
 
