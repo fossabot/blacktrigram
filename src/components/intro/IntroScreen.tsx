@@ -361,7 +361,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
     (g: PIXI.Graphics) => {
       g.clear();
 
-      // Base dark gradient
+      // Base dark gradient using new PixiJS v8 gradient capabilities
       const gradient = new PIXI.FillGradient(0, 0, screenWidth, screenHeight);
       gradient.addColorStop(0, 0x0a0a0f);
       gradient.addColorStop(0.5, 0x1a1a2e);
@@ -370,9 +370,9 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
       g.rect(0, 0, screenWidth, screenHeight);
       g.fill();
 
-      // Cyberpunk neon grid
+      // Cyberpunk grid overlay - optimized pattern
       g.stroke({ width: 1, color: KOREAN_COLORS.PRIMARY_CYAN, alpha: 0.15 });
-      const gridSize = isMobile ? 30 : 40;
+      const gridSize = isMobile ? 40 : 60;
       for (let i = 0; i < screenWidth; i += gridSize) {
         g.moveTo(i, 0);
         g.lineTo(i, screenHeight);
@@ -383,7 +383,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
       }
       g.stroke();
 
-      // Pulsing accent lines
+      // Accent lines with proper theme integration
       g.stroke({ width: 2, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.3 });
       g.moveTo(0, screenHeight * 0.2);
       g.lineTo(screenWidth, screenHeight * 0.2);
@@ -497,17 +497,19 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
 
   return (
     <pixiContainer
-      width={screenWidth}
-      height={screenHeight}
       data-testid="intro-screen"
       layout={{
+        // Use percentage-based layout
         width: "100%",
         height: "100%",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: 20,
-        gap: 16,
+        paddingTop: isMobile ? "5%" : "2%",
+        paddingBottom: "2%",
+        paddingLeft: isMobile ? "3%" : "5%",
+        paddingRight: isMobile ? "3%" : "5%",
+        gap: isMobile ? 8 : 16,
       }}
     >
       {/* Enhanced Background Layers */}
