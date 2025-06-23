@@ -101,7 +101,7 @@ export const RoundTimer: React.FC<RoundTimerProps> = ({
           text={`라운드 ${currentRound} / ${maxRounds}`}
           style={{
             fontSize: isMobile ? 12 : 14,
-            fill: KOREAN_COLORS.TEXT_PRIMARY,
+            fill: KOREAN_COLORS.TEXT_PRIMARY as number,
             fontWeight: "bold",
             align: "center",
             fontFamily: "Noto Sans KR",

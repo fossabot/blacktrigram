@@ -1,10 +1,10 @@
 // Underground dojang background for Korean martial arts
 
-import React, { useCallback, useEffect, useState } from "react";
 import { extend } from "@pixi/react";
-import { Container, Graphics, Text, Sprite, Texture } from "pixi.js";
-import { KOREAN_COLORS } from "../../types/constants";
 import * as PIXI from "pixi.js";
+import { Container, Graphics, Sprite, Text, Texture } from "pixi.js";
+import React, { useCallback, useEffect, useState } from "react";
+import { KOREAN_COLORS } from "../../types/constants";
 
 extend({
   Container,
@@ -209,7 +209,6 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
 
   return (
     <pixiContainer {...props}>
-      {/* Background Layer */}
       {floorTexture ? (
         // Dojang Floor Texture Background
         <pixiSprite
@@ -223,14 +222,12 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
           data-testid="dojang-floor-texture"
         />
       ) : (
-        // Fallback solid background if texture fails to load
         <pixiGraphics
           draw={drawFallbackBackground}
           data-testid="dojang-fallback-background"
         />
       )}
 
-      {/* Wall accent texture (if available) */}
       {wallTexture && lighting === "traditional" && (
         <pixiSprite
           texture={wallTexture}
@@ -244,7 +241,6 @@ export const DojangBackground: React.FC<DojangBackgroundProps> = ({
         />
       )}
 
-      {/* Overlay graphics for grid lines and decorative elements */}
       <pixiGraphics draw={drawOverlay} data-testid="dojang-overlay" />
     </pixiContainer>
   );

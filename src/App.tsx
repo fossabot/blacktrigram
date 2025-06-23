@@ -1,6 +1,5 @@
 import { Application } from "@pixi/react";
 import {
-  Suspense,
   lazy,
   useCallback,
   useEffect,
@@ -180,7 +179,6 @@ function App() {
     // Show end screen if game ended
     if (gameWinner && matchStats) {
       return (
-        <Suspense fallback={<div className="loading-screen">로딩 중...</div>}>
           <EndScreen
             winner={gameWinner}
             matchStatistics={matchStats}
@@ -189,7 +187,6 @@ function App() {
             width={screenSize.width}
             height={screenSize.height}
           />
-        </Suspense>
       );
     }
 
@@ -198,9 +195,6 @@ function App() {
       switch (gameMode) {
         case GameMode.TRAINING:
           return (
-            <Suspense
-              fallback={<div className="loading-screen">로딩 중...</div>}
-            >
               <TrainingScreen
                 player={trainingPlayer}
                 onPlayerUpdate={(updates) => {
@@ -211,7 +205,6 @@ function App() {
                 width={screenSize.width}
                 height={screenSize.height}
               />
-            </Suspense>
           );
         case GameMode.VERSUS:
         case GameMode.PRACTICE:

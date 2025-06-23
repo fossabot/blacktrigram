@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
-import { TrigramStance } from "../../types/enums";
 import { KOREAN_COLORS } from "../../types/constants";
+import { TrigramStance } from "../../types/enums";
 import { ResponsivePixiContainer } from "./base/ResponsivePixiComponents";
 
 export interface StanceIndicatorProps {
@@ -90,7 +90,6 @@ export const StanceIndicator: React.FC<StanceIndicatorProps> = ({
   const radius = size / 2;
 
   const pulseAnimation = useMemo(() => {
-    // Create a subtle pulsing effect for the selected stance
     return Math.sin(Date.now() * 0.003) * 0.1 + 0.9;
   }, []);
 
@@ -103,12 +102,10 @@ export const StanceIndicator: React.FC<StanceIndicatorProps> = ({
       data-testid={`stance-indicator-${stance}`}
       {...props}
     >
-      {/* Main Stance Circle */}
       <pixiGraphics
         draw={(g) => {
           g.clear();
 
-          // Outer glow
           g.fill({
             color: stanceInfo.color,
             alpha: 0.3 * pulseAnimation,
@@ -145,7 +142,6 @@ export const StanceIndicator: React.FC<StanceIndicatorProps> = ({
         data-testid={`stance-circle-${stance}`}
       />
 
-      {/* Trigram Symbol */}
       <pixiText
         text={stanceInfo.symbol}
         style={{
@@ -160,14 +156,12 @@ export const StanceIndicator: React.FC<StanceIndicatorProps> = ({
         data-testid={`stance-symbol-${stance}`}
       />
 
-      {/* Details */}
       {showDetails && (
         <pixiContainer
           x={0}
           y={size + 10}
           data-testid={`stance-details-${stance}`}
         >
-          {/* Korean Name */}
           <pixiText
             text={`${stanceInfo.korean} (${stanceInfo.english})`}
             style={{

@@ -46,28 +46,21 @@ export const CombatHUD: React.FC<CombatHUDProps> = ({
   const drawBackground = useCallback(
     (g: PIXI.Graphics) => {
       g.clear();
-      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.95);
-      g.drawRect(0, 0, width, height);
-      g.endFill();
+      g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 0.95 });
+      g.rect(0, 0, width, height);
 
       // Gold border
-      g.lineStyle(3, KOREAN_COLORS.ACCENT_GOLD, 0.8);
-      g.drawRect(5, 5, width - 10, height - 10);
+      g.stroke({ width: 3, color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.8 });
+      g.rect(5, 5, width - 10, height - 10);
 
       // Center divider
-      g.lineStyle(2, KOREAN_COLORS.PRIMARY_CYAN, 0.6);
+      g.stroke({ width: 2, color: KOREAN_COLORS.PRIMARY_CYAN, alpha: 0.6 });
       g.moveTo(width / 2, 10);
       g.lineTo(width / 2, height - 10);
 
       // Yin-yang inspired circle at center
-      g.beginFill(KOREAN_COLORS.ACCENT_GOLD, 0.3);
-      g.drawCircle(width / 2, height / 2, 25);
-      g.endFill();
-      g.beginFill(KOREAN_COLORS.UI_BACKGROUND_DARK, 0.8);
-      g.arc(width / 2, height / 2, 25, 0, Math.PI);
-      g.arc(width / 2, height / 2 - 12.5, 12.5, Math.PI, 0, true);
-      g.arc(width / 2, height / 2 + 12.5, 12.5, 0, Math.PI, true);
-      g.endFill();
+      g.fill({ color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.3 });
+      g.circle(width / 2, height / 2, 25);
     },
     [width, height]
   );
