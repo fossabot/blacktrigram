@@ -1,18 +1,12 @@
 import { Application } from "@pixi/react";
-import {
-  lazy,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { lazy, useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
 import { AudioProvider } from "./audio/AudioProvider";
 import { CombatScreen } from "./components/combat/CombatScreen";
 import { IntroScreen } from "./components/intro/IntroScreen";
+import { MatchStatistics } from "./systems/combat";
 import { exposePixiAppForTesting } from "./test/pixi-cypress-helpers";
 import { GameMode, PlayerArchetype } from "./types/enums";
-import type { MatchStatistics } from "./types/game";
 import type { PlayerState } from "./types/player";
 import { usePixiExtensions } from "./utils/pixiExtensions";
 import { createPlayerFromArchetype } from "./utils/playerUtils";
@@ -179,14 +173,14 @@ function App() {
     // Show end screen if game ended
     if (gameWinner && matchStats) {
       return (
-          <EndScreen
-            winner={gameWinner}
-            matchStatistics={matchStats}
-            onReturnToMenu={handleReturnToMenu}
-            onRestart={() => handleGameStart(gameMode!)}
-            width={screenSize.width}
-            height={screenSize.height}
-          />
+        <EndScreen
+          winner={gameWinner}
+          matchStatistics={matchStats}
+          onReturnToMenu={handleReturnToMenu}
+          onRestart={() => handleGameStart(gameMode!)}
+          width={screenSize.width}
+          height={screenSize.height}
+        />
       );
     }
 
@@ -195,16 +189,16 @@ function App() {
       switch (gameMode) {
         case GameMode.TRAINING:
           return (
-              <TrainingScreen
-                player={trainingPlayer}
-                onPlayerUpdate={(updates) => {
-                  // Update training player state
-                  console.log("Training player updated:", updates);
-                }}
-                onReturnToMenu={handleReturnToMenu}
-                width={screenSize.width}
-                height={screenSize.height}
-              />
+            <TrainingScreen
+              player={trainingPlayer}
+              onPlayerUpdate={(updates) => {
+                // Update training player state
+                console.log("Training player updated:", updates);
+              }}
+              onReturnToMenu={handleReturnToMenu}
+              width={screenSize.width}
+              height={screenSize.height}
+            />
           );
         case GameMode.VERSUS:
         case GameMode.PRACTICE:

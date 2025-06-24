@@ -9,5 +9,7 @@ export type {
   CombatStats,
   CombatSystem,
   CombatSystemInterface,
+  MatchStatistics,
+  RoundResult,
   TrainingCombatResult,
 } from "./types";

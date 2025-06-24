@@ -4,32 +4,26 @@
 
 // Export all enums
 export {
+  CombatAttackType,
+  DamageType,
+  EffectIntensity,
   GameMode,
   GamePhase,
+  KoreanTextSize,
+  KoreanTextWeight,
   PlayerArchetype,
   TrigramStance,
   VitalPointCategory,
-  VitalPointSeverity,
   VitalPointEffectType,
-  EffectIntensity,
-  DamageType,
-  CombatAttackType,
-  KoreanTextSize,
-  KoreanTextWeight,
+  VitalPointSeverity,
 } from "./enums";
 
 // Export core types
+export type { PlayerArchetypeData } from "./anatomy";
+export type { DamageRange, Position } from "./common";
 export type { KoreanText } from "./korean-text";
-export type { Position, DamageRange } from "./common";
-export type {
-  PlayerArchetypeData
-} from "./anatomy";
 
 // Export PlayerState from player.ts
-export type { PlayerState, PlayerMatchStats } from "./player";
-
-// Export combat types
-// Export game types
-export type { GameState, MatchStatistics } from "./game";
+export type { PlayerMatchStats, PlayerState } from "./player";
 
 // Export component types
