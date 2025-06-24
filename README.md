@@ -324,6 +324,11 @@ Game/frontend will be open source with commercial backend supporting multiplayer
   _Guidelines for sprite sheets, particle textures, color palettes, and UI icons._
 - [🎵 AUDIO_ASSETS.md](https://github.com/Hack23/blacktrigram/blob/main/AUDIO_ASSETS.md)
   _List of traditional Korean instrument loops, impact SFX, and mixing notes._
+- [🎵 VIDEO_ASSETS.md](https://github.com/Hack23/blacktrigram/blob/main/VIDEO_ASSETS.md)
+  _Black Trigram: The Path of Shadows 🌑⚡🗡️ .Scene 1: Initiation Under Neon Skies 🌑🗡️🌆_
+
+
+
 
 🔒 **CI/CD & Security Features**
 
