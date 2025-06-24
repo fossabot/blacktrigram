@@ -32,7 +32,8 @@
     "find:unused": "npm run knip",
     "test:licenses": "license-compliance --direct --allow 'MIT;ISC;0BSD;BSD-2-Clause;BSD-3-Clause;Apache-2.0;Unlicense;CC0-1.0'",
     "docs": "typedoc --options typedoc.json",
-    "knip": "knip"
+    "knip": "knip",
+    "madge": "npx madge --circular --ts-config ./tsconfig.json --extensions ts,tsx src/"
   },
   "dependencies": {
     "@pixi/layout": "^3.0.2",
