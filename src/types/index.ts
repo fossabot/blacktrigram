@@ -33,5 +33,3 @@ export type { PlayerState, PlayerMatchStats } from "./player";
 export type { GameState, MatchStatistics } from "./game";
 
 // Export component types
-// Export UI types
-// Export system types

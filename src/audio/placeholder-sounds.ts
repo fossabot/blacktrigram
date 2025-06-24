@@ -1,6 +1,6 @@
 // Placeholder audio assets for Black Trigram Korean martial arts game
-import { AudioCategory } from "../types/audio";
-import { SoundEffect, MusicTrack } from "./";
+import { MusicTrack, SoundEffect } from "./";
+import { AudioCategory } from "./types";
 
 /**
  * Placeholder sound assets for Korean martial arts audio system

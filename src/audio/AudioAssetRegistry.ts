@@ -5,8 +5,8 @@
 
 import { AudioAssetRegistry as IAudioAssetRegistry } from "@/audio";
 
-import { MusicTrackId, SoundEffectId, VoiceLineId } from "../types/audio";
 import { CombatAudioMap, MusicTrack, SoundEffect, VoiceLine } from "./";
+import { MusicTrackId, SoundEffectId, VoiceLineId } from "./types";
 
 // Fix: Use class implementation instead of interface merging
 export class AudioAssetRegistry {

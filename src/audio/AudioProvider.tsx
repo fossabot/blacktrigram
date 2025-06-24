@@ -1,8 +1,8 @@
-import { IAudioManager } from "@/types/audio";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { AudioAsset, AudioConfig } from "./";
 import AudioManager from "./AudioManager";
 import placeholderAssets from "./placeholder-sounds";
+import { IAudioManager } from "./types";
 
 export interface AudioProviderProps {
   children: React.ReactNode;

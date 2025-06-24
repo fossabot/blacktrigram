@@ -6,7 +6,6 @@
 // System imports from shared types
 import { AudioAsset, AudioPlaybackOptions } from "@/audio";
 import { EffectIntensity } from "@/types";
-import { MusicTrackId, SoundEffectId } from "@/types/audio";
 import { AnimationFrame, KoreanText, Position } from "@/types/common";
 import {
   EnvironmentalEffectType,
@@ -34,6 +33,7 @@ import type {
   DisplayObject as PixiDisplayObject,
 } from "pixi.js";
 
+import { MusicTrackId, SoundEffectId } from "@/audio/types";
 import { CombatSystemInterface } from "./combat";
 import { TrigramSystemInterface } from "./trigram";
 import {

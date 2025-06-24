@@ -2,7 +2,7 @@
  * Audio utility functions for Korean martial arts game
  */
 
-import type { AudioFormat } from "../types/audio";
+import type { AudioFormat } from "./types";
 
 export const AUDIO_FORMATS: readonly AudioFormat[] = [
   "audio/webm",
