@@ -16,8 +16,36 @@ import type {
   VitalPointEffectType,
   VitalPointSeverity,
 } from "../../types";
-import { KoreanTechnique } from "../combat";
 import { StatusEffect } from "../types";
+
+export interface KoreanTechnique {
+  id: string;
+  name: {
+    korean: string;
+    english: string;
+    romanized: string;
+  };
+  koreanName: string;
+  englishName: string;
+  romanized: string;
+  description: {
+    korean: string;
+    english: string;
+  };
+  stance: TrigramStance;
+  type: string;
+  damageType: string;
+  damage: number;
+  kiCost: number;
+  staminaCost: number;
+  accuracy: number;
+  range: number;
+  executionTime: number;
+  recoveryTime: number;
+  critChance: number;
+  critMultiplier: number;
+  effects: any[];
+}
 
 /**
  * Korean text with romanization for vital point names
@@ -152,4 +180,3 @@ export interface VitalPointSystem {
   readonly checkHit: (position: Position, force: number) => VitalPointHitResult;
   readonly calculateDamage: (vitalPoint: VitalPoint, force: number) => number;
 }
-

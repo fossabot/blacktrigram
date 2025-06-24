@@ -1,11 +1,11 @@
-import React, { useMemo } from "react";
+import { MatchStatistics } from "@/systems/combat";
 import { FillGradient } from "pixi.js";
-import { PlayerState } from "../../types/player";
-import { MatchStatistics } from "../../types/game";
+import React, { useMemo } from "react";
 import { KOREAN_COLORS } from "../../types/constants";
+import { PlayerState } from "../../types/player";
 import {
-  ResponsivePixiContainer,
   ResponsivePixiButton,
+  ResponsivePixiContainer,
   ResponsivePixiPanel,
 } from "./base/ResponsivePixiComponents";
 

@@ -2,7 +2,7 @@
  * Combat System Constants for Korean Martial Arts
  */
 
-import type { SoundEffectId } from "../audio";
+import { SoundEffectId } from "@/audio/types";
 import type { TrigramStance } from "../enums";
 
 // Combat configuration

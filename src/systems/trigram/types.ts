@@ -6,13 +6,10 @@
 
 // Trigram system imports from shared types
 import { EffectType } from "@/types/enums";
-import type {
-  KoreanText,
-  PlayerArchetype,
-  PlayerState,
-  TrigramStance,
-} from "../../types";
-import { KoreanTechnique } from "../combat";
+import { TrigramStance } from "../../types/enums";
+
+import type { KoreanText, PlayerArchetype, PlayerState } from "../../types";
+import { KoreanTechnique } from "../vitalpoint";
 
 export interface TrigramTransitionCost {
   readonly ki: number;

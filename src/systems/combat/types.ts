@@ -5,38 +5,11 @@
  */
 
 // Combat-specific imports from shared types
-import type { PlayerState, TrigramStance } from "../../types";
+import { GameMode, GamePhase } from "@/types";
+import type { PlayerMatchStats, PlayerState } from "../../types/player";
 import { StatusEffect } from "../types";
 import { VitalPointHitResult } from "../vitalpoint";
-
-export interface KoreanTechnique {
-  id: string;
-  name: {
-    korean: string;
-    english: string;
-    romanized: string;
-  };
-  koreanName: string;
-  englishName: string;
-  romanized: string;
-  description: {
-    korean: string;
-    english: string;
-  };
-  stance: TrigramStance;
-  type: string;
-  damageType: string;
-  damage: number;
-  kiCost: number;
-  staminaCost: number;
-  accuracy: number;
-  range: number;
-  executionTime: number;
-  recoveryTime: number;
-  critChance: number;
-  critMultiplier: number;
-  effects: any[];
-}
+import { KoreanTechnique } from "../vitalpoint/types";
 
 export interface CombatResult {
   readonly success: boolean;
@@ -51,6 +24,56 @@ export interface CombatResult {
   readonly technique?: KoreanTechnique;
   readonly criticalHit: boolean;
   readonly timestamp: number;
+}
+
+// Round result information
+export interface RoundResult {
+  readonly roundNumber: number;
+  readonly winner: PlayerState | null;
+  readonly method: "knockout" | "time" | "forfeit" | "draw";
+  readonly duration: number;
+  readonly finalHealth: readonly [number, number];
+  readonly damageDealt: readonly [number, number];
+  readonly combatEvents: readonly CombatResult[];
+}
+
+// Match statistics - Fix: Remove duplicate and use single definition
+export interface MatchStatistics {
+  // Top-level match statistics
+  readonly totalDamageDealt: number;
+  readonly totalDamageTaken: number;
+  readonly criticalHits: number;
+  readonly vitalPointHits: number;
+  readonly techniquesUsed: number;
+  readonly perfectStrikes: number;
+  readonly consecutiveWins: number;
+  readonly matchDuration: number;
+  readonly totalMatches: number;
+  readonly maxRounds: number;
+  readonly winner: number;
+  readonly totalRounds: number;
+  readonly currentRound: number;
+  readonly timeRemaining: number;
+  readonly combatEvents: readonly CombatEventData[];
+  readonly finalScore: { player1: number; player2: number };
+  readonly roundsWon: { player1: number; player2: number };
+
+  // Individual player statistics
+  readonly player1: PlayerMatchStats;
+  readonly player2: PlayerMatchStats;
+}
+
+// Main game state interface
+export interface GameState {
+  readonly mode: GameMode;
+  readonly phase: GamePhase;
+  readonly players: readonly [PlayerState, PlayerState];
+  readonly currentRound: number;
+  readonly maxRounds: number;
+  readonly timeRemaining: number;
+  readonly isPaused: boolean;
+  readonly matchStatistics: MatchStatistics;
+  readonly winner?: PlayerState | null;
 }
 
 export interface TrainingCombatResult extends CombatResult {

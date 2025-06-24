@@ -1,33 +1,9 @@
 // Core game state and flow management
 
-import { CombatEventData, CombatResult } from "@/systems/combat";
-import { GameMode, GamePhase } from "./enums"; // Fix: Import enums only
-import type { KoreanText, PlayerState, TrigramStance } from "./index";
-import type { PlayerMatchStats } from "./player"; // Fix: Use correct import name
-
-// Main game state interface
-export interface GameState {
-  readonly mode: GameMode;
-  readonly phase: GamePhase;
-  readonly players: readonly [PlayerState, PlayerState];
-  readonly currentRound: number;
-  readonly maxRounds: number;
-  readonly timeRemaining: number;
-  readonly isPaused: boolean;
-  readonly matchStatistics: MatchStatistics;
-  readonly winner?: PlayerState | null;
-}
-
-// Round result information
-export interface RoundResult {
-  readonly roundNumber: number;
-  readonly winner: PlayerState | null;
-  readonly method: "knockout" | "time" | "forfeit" | "draw";
-  readonly duration: number;
-  readonly finalHealth: readonly [number, number];
-  readonly damageDealt: readonly [number, number];
-  readonly combatEvents: readonly CombatResult[];
-}
+import type { TrigramStance } from "./enums";
+import { GameMode } from "./enums";
+import type { KoreanText } from "./korean-text";
+import type { PlayerState } from "./player";
 
 // Match configuration
 export interface MatchConfig {
@@ -152,32 +128,6 @@ export interface GameConfig {
   readonly enableVitalPoints: boolean;
   readonly enableStatusEffects: boolean;
   readonly allowArchetypeSwitching: boolean;
-}
-
-// Match statistics - Fix: Remove duplicate and use single definition
-export interface MatchStatistics {
-  // Top-level match statistics
-  readonly totalDamageDealt: number;
-  readonly totalDamageTaken: number;
-  readonly criticalHits: number;
-  readonly vitalPointHits: number;
-  readonly techniquesUsed: number;
-  readonly perfectStrikes: number;
-  readonly consecutiveWins: number;
-  readonly matchDuration: number;
-  readonly totalMatches: number;
-  readonly maxRounds: number;
-  readonly winner: number;
-  readonly totalRounds: number;
-  readonly currentRound: number;
-  readonly timeRemaining: number;
-  readonly combatEvents: readonly CombatEventData[];
-  readonly finalScore: { player1: number; player2: number };
-  readonly roundsWon: { player1: number; player2: number };
-
-  // Individual player statistics
-  readonly player1: PlayerMatchStats;
-  readonly player2: PlayerMatchStats;
 }
 
 // Training session data

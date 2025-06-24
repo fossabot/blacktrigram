@@ -1,7 +1,8 @@
+import { PlayerArchetype, TrigramStance } from "../../types/enums";
 import type { PlayerState } from "../../types/player";
 import { CombatSystem } from "../CombatSystem";
-import { TrigramStance, PlayerArchetype } from "../../types/enums";
-import { KoreanTechnique, TrainingCombatResult } from "./";
+import { KoreanTechnique } from "../vitalpoint";
+import { TrainingCombatResult } from "./";
 
 /**
  * Training-specific combat system for Korean martial arts practice

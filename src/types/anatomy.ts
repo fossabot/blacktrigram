@@ -2,11 +2,44 @@
  * Anatomical and vital point system types
  */
 
-import { VitalPoint } from "@/systems/vitalpoint";
 import type { KoreanText, Position } from "./common";
-import { PlayerArchetype, TrigramStance } from "./enums";
+import {
+  EffectIntensity,
+  PlayerArchetype,
+  TrigramStance,
+  VitalPointCategory,
+  VitalPointEffectType,
+  VitalPointSeverity,
+} from "./enums";
 
-// Vital point definition
+// Define VitalPoint locally to avoid circular import
+export interface VitalPoint {
+  readonly id: string;
+  readonly names: {
+    readonly korean: string;
+    readonly english: string;
+    readonly romanized: string;
+  };
+  readonly position: Position;
+  readonly category: VitalPointCategory;
+  readonly severity: VitalPointSeverity;
+  readonly baseDamage?: number;
+  readonly effects: readonly VitalPointEffect[];
+  readonly description: KoreanText;
+  readonly targetingDifficulty: number;
+  readonly effectiveStances: readonly TrigramStance[];
+}
+
+export interface VitalPointEffect {
+  readonly id: string;
+  readonly type: VitalPointEffectType;
+  readonly intensity: EffectIntensity;
+  readonly duration: number;
+  readonly description: KoreanText;
+  readonly stackable: boolean;
+  readonly source?: string;
+}
+
 // Vital point effect
 // Player archetype data
 export interface PlayerArchetypeData {

@@ -6,6 +6,7 @@
 export type {
   AnatomicalRegion,
   DamageResult,
+  KoreanTechnique,
   VitalPoint,
   VitalPointEffect,
   VitalPointHitResult,

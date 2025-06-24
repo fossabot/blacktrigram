@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AudioManager } from "./AudioManager";
-import type { AudioConfig, SoundEffectId, MusicTrackId } from "../types/audio";
-import { AudioCategory } from "../types/audio";
+import type { AudioConfig, MusicTrackId, SoundEffectId } from "./types";
+import { AudioCategory } from "./types";
 
 // Enhanced mock for HTML Audio Element
 const createMockHTMLAudioElement = () => ({

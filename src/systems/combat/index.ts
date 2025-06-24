@@ -4,11 +4,12 @@
  */
 
 export type {
-  KoreanTechnique,
-  CombatResult,
-  TrainingCombatResult,
   CombatEventData,
+  CombatResult,
   CombatStats,
-  CombatSystemInterface,
   CombatSystem,
+  CombatSystemInterface,
+  MatchStatistics,
+  RoundResult,
+  TrainingCombatResult,
 } from "./types";

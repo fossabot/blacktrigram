@@ -2,7 +2,7 @@
  * Player state and related types for Korean martial arts
  */
 
-import { StatusEffect } from "@/systems";
+import { StatusEffect } from "@/systems/types";
 import type { KoreanText, Position } from "./common";
 import { CombatState, PlayerArchetype, TrigramStance } from "./enums";
 

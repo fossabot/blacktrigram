@@ -2,7 +2,7 @@
  * Korean martial arts techniques for each trigram stance
  */
 
-import { KoreanTechnique } from "@/systems/combat";
+import { KoreanTechnique } from "@/systems/vitalpoint";
 import { CombatAttackType, DamageType, TrigramStance } from "../enums";
 
 // Base techniques for each trigram stance
