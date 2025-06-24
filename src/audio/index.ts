@@ -1,18 +1,8 @@
+// filepath: /workspaces/blacktrigram/src/audio/index.ts
 /**
- * Audio system exports for Black Trigram
+ * Barrel exports for audio types
  */
 
-export { AudioProvider } from "./AudioProvider";
-export { AudioManager } from "./AudioManager";
-export { AudioAssetRegistry } from "./AudioAssetRegistry";
-export { AudioUtils } from "./AudioUtils";
-export { DefaultSoundGenerator } from "./DefaultSoundGenerator";
-export { VariantSelector } from "./VariantSelector";
-
-// Export placeholder sounds
-export * from "./placeholder-sounds";
-
-// Audio types
 export type {
   AudioAsset,
   MusicTrack,
@@ -20,11 +10,14 @@ export type {
   VoiceLine,
   AudioConfig,
   AudioEvent,
-  AudioContext3D,
   CombatAudioMap,
-  AudioManager as AudioManagerInterface,
   AudioState,
-  SoundEffectId,
-  MusicTrackId,
-  VoiceLineId,
-} from "../types/audio";
+  AudioManager,
+  EnhancedAudioAsset,
+  AudioPlaybackOptions,
+  ProceduralSoundConfig,
+  CombatAudioEvent,
+  AudioAssetRegistry,
+  AudioLoadingState,
+  AudioManagerInterface,
+} from "./types";

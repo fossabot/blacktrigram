@@ -1,11 +1,22 @@
 // Anatomical region mappings with proper boundaries
 import type { Position } from "../../types/common";
-import type { VitalPoint, AnatomicalRegion } from "../../types/anatomy";
-import { BodyRegion } from "../../types/enums";
 import { KOREAN_VITAL_POINTS } from "../../types/constants/vital-points";
+import { BodyRegion } from "../../types/enums";
+import { VitalPoint } from "./types";
+
+// Define the BodyRegionData interface since it's not exported from index
+export interface BodyRegionData {
+  readonly id: string;
+  readonly name: {
+    readonly korean: string;
+    readonly english: string;
+  };
+  readonly boundaries: readonly Position[];
+  readonly vitalPoints: readonly VitalPoint[];
+}
 
 // Anatomical region mappings with proper boundaries
-export const ANATOMICAL_REGIONS: Record<BodyRegion, AnatomicalRegion> = {
+export const ANATOMICAL_REGIONS: Record<BodyRegion, BodyRegionData> = {
   [BodyRegion.HEAD]: {
     id: "head",
     name: { korean: "머리", english: "Head" },
@@ -114,7 +125,7 @@ export const ANATOMICAL_REGIONS: Record<BodyRegion, AnatomicalRegion> = {
   },
 };
 
-// Helper functions
+// Helper functions for anatomical region operations
 export function getVitalPointsInRegion(
   region: BodyRegion
 ): readonly VitalPoint[] {
@@ -127,18 +138,18 @@ export function getRegionBoundaries(region: BodyRegion): readonly Position[] {
 
 export function isPositionInRegion(
   position: Position,
-  region: BodyRegion // Fix: Use BodyRegion type instead of string
+  region: BodyRegion
 ): boolean {
   const boundaries = getRegionBoundaries(region);
   if (boundaries.length < 4) return false;
 
   // Simple point-in-polygon test for rectangular regions
-  const [topLeft, topRight, , bottomLeft] = boundaries;
+  const [topLeft, topRight, bottomRight, bottomLeft] = boundaries;
   return (
     position.x >= topLeft.x &&
     position.x <= topRight.x &&
-    position.y >= topLeft.y &&
-    position.y <= bottomLeft.y
+    position.y >= bottomLeft.y &&
+    position.y <= bottomRight.y
   );
 }
 
@@ -149,4 +160,17 @@ export function getRegionForPosition(position: Position): BodyRegion | null {
     }
   }
   return null;
+}
+
+// Additional utility functions for Korean martial arts vital point system
+export function getRegionKoreanName(region: BodyRegion): string {
+  return ANATOMICAL_REGIONS[region]?.name.korean || "";
+}
+
+export function getRegionEnglishName(region: BodyRegion): string {
+  return ANATOMICAL_REGIONS[region]?.name.english || "";
+}
+
+export function getRegionData(region: BodyRegion): BodyRegionData | null {
+  return ANATOMICAL_REGIONS[region] || null;
 }

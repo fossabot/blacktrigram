@@ -1,13 +1,8 @@
 // Core game state and flow management
 
-import type { CombatEventData } from "./combat";
+import { CombatEventData, CombatResult } from "@/systems/combat";
 import { GameMode, GamePhase } from "./enums"; // Fix: Import enums only
-import type {
-  CombatResult,
-  KoreanText,
-  PlayerState,
-  TrigramStance,
-} from "./index";
+import type { KoreanText, PlayerState, TrigramStance } from "./index";
 import type { PlayerMatchStats } from "./player"; // Fix: Use correct import name
 
 // Main game state interface

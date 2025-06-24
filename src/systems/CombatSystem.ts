@@ -1,18 +1,15 @@
-import type {
-  CombatSystemInterface,
-  VitalPointHitResult,
-} from "../types/systems";
-import type { PlayerState, CombatResult } from "../types";
-import type { StatusEffect } from "../types/effects";
-import { VitalPointSystem } from "./VitalPointSystem";
-import { TrigramSystem } from "./TrigramSystem";
-import { VitalPointSeverity } from "../types/enums";
+import { PlayerState } from "../types";
 import { TRIGRAM_TECHNIQUES } from "../types/constants";
-import type { KoreanTechnique } from "../types/combat";
+import { VitalPointSeverity } from "../types/enums";
+import { StatusEffect } from "./";
+import { CombatResult, CombatSystemInterface, KoreanTechnique } from "./combat";
+import { TrigramSystem } from "./TrigramSystem";
+import { VitalPointHitResult } from "./vitalpoint";
+import { VitalPointSystem } from "./VitalPointSystem";
 
 export class CombatSystem implements CombatSystemInterface {
   private vitalPointSystem: VitalPointSystem;
-  protected trigramSystem: TrigramSystem; // Fix: Change from private to protected
+  protected trigramSystem: TrigramSystem;
 
   constructor() {
     this.vitalPointSystem = new VitalPointSystem();
@@ -25,7 +22,7 @@ export class CombatSystem implements CombatSystemInterface {
   resolveAttack(
     attacker: PlayerState,
     defender: PlayerState,
-    technique: KoreanTechnique, // Fix: Add technique parameter
+    technique: KoreanTechnique,
     targetedVitalPointId?: string
   ): CombatResult {
     const timestamp = Date.now();
@@ -43,12 +40,12 @@ export class CombatSystem implements CombatSystemInterface {
         attacker,
         defender,
         success: false,
-        isCritical : false,
+        isCritical: false,
         isBlocked: false,
       };
     }
 
-    // Fix: Use correct method signature - TrigramSystem.calculateStanceEffectiveness only takes 2 parameters
+    // Fix: Use correct method signature
     const stanceEffectiveness = this.trigramSystem.calculateStanceEffectiveness(
       attacker.currentStance,
       defender.currentStance
@@ -71,7 +68,7 @@ export class CombatSystem implements CombatSystemInterface {
         attacker,
         defender,
         success: false,
-        isCritical : false,
+        isCritical: false,
         isBlocked: false,
       };
     }
@@ -114,7 +111,7 @@ export class CombatSystem implements CombatSystemInterface {
       attacker,
       defender,
       success: true,
-      isCritical : vitalPointResult?.hit || false,
+      isCritical: vitalPointResult?.hit || false,
       isBlocked: false,
     };
   }
@@ -300,7 +297,6 @@ export class CombatSystem implements CombatSystemInterface {
       };
     }
 
-    // Fix: Use available methods instead of non-existent calculateVitalPointDamage
     // Calculate damage based on vital point properties and attacker archetype
     const archetypeModifier = this.getArchetypeVitalPointModifier(
       attacker.archetype,
@@ -310,7 +306,7 @@ export class CombatSystem implements CombatSystemInterface {
 
     return {
       hit: true,
-      vitalPoint,
+      vitalPointHit: vitalPoint, // Use the correct property name
       damage,
       effects: vitalPoint.effects.map((effect) => ({
         id: `${effect.id}_${Date.now()}`,
@@ -356,7 +352,7 @@ export class CombatSystem implements CombatSystemInterface {
   private executeAttack(
     attacker: PlayerState,
     defender: PlayerState,
-    technique: KoreanTechnique // Fix: Add technique parameter
+    technique: KoreanTechnique
   ): CombatResult {
     const hitRoll = Math.random();
     const accuracy = technique.accuracy || 0.8;
@@ -374,7 +370,7 @@ export class CombatSystem implements CombatSystemInterface {
         attacker,
         defender,
         success: false,
-        isCritical : false,
+        isCritical: false,
         isBlocked: false,
       };
     }
@@ -384,7 +380,7 @@ export class CombatSystem implements CombatSystemInterface {
       hit: false,
       damage: 0,
       effects: [],
-      severity: "minor" as any, // Use any to satisfy enum type
+      severity: VitalPointSeverity.MINOR, // Use the enum directly
     };
 
     const damageResult = this.calculateDamage(
@@ -405,7 +401,7 @@ export class CombatSystem implements CombatSystemInterface {
       attacker,
       defender,
       success: true,
-      isCritical : false,
+      isCritical: false,
       isBlocked: false,
     };
   }
@@ -433,15 +429,18 @@ export class CombatSystem implements CombatSystemInterface {
 
     // Apply vital point modifiers if hit
     let vitalPointMultiplier = 1.0;
-    if (hitResult.hit && hitResult.vitalPoint) {
-      const severityMultipliers = {
-        minor: 1.1,
-        moderate: 1.3,
-        major: 1.6,
-        critical: 2.0,
-        lethal: 3.0,
+    if (hitResult.hit && hitResult.vitalPointHit) {
+      // Use the correct property name
+      const severityMultipliers: Record<VitalPointSeverity, number> = {
+        [VitalPointSeverity.MINOR]: 1.1,
+        [VitalPointSeverity.MODERATE]: 1.3,
+        [VitalPointSeverity.MAJOR]: 1.6,
+        [VitalPointSeverity.CRITICAL]: 2.0,
+        [VitalPointSeverity.LETHAL]: 3.0,
       };
-      vitalPointMultiplier = severityMultipliers[hitResult.severity] || 1.0;
+
+      // Use the severity property directly
+      vitalPointMultiplier = severityMultipliers[hitResult.severity] ?? 1.0;
     }
 
     // Calculate total modifier damage
@@ -490,7 +489,7 @@ export function createCombatResult(
     technique: partialResult.technique,
     // Always set criticalHit to match critical for consistency
     criticalHit: partialResult.isCritical ?? partialResult.criticalHit ?? false,
-    timestamp: Date.now(), // <-- Add this property
+    timestamp: Date.now(),
   };
 
   return result;

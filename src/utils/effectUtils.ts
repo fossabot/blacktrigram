@@ -1,11 +1,6 @@
-import type {
-  HitEffect,
-  StatusEffect,
-  EffectType,
-  EffectIntensity,
-} from "../types/effects";
-import type { Position, KoreanText } from "../types";
-import { HitEffectType } from "../types/effects";
+import { HitEffect, StatusEffect } from "../systems";
+import type { EffectIntensity, KoreanText, Position } from "../types";
+import { EffectType, HitEffectType } from "../types/effects";
 
 /**
  * Create a hit effect for visual feedback
@@ -80,11 +75,13 @@ export function createStatusEffect(
  * Calculate effect intensity based on damage
  */
 export function calculateEffectIntensity(damage: number): EffectIntensity {
-  // Fix: Use proper EffectIntensity values from effects.ts
-  if (damage >= 50) return "extreme" as EffectIntensity;
-  if (damage >= 30) return "high" as EffectIntensity;
-  if (damage >= 15) return "medium" as EffectIntensity;
-  return "weak" as EffectIntensity;
+  // Fix: Use proper EffectIntensity values that match the type definition
+  if (damage >= 80) return "severe" as EffectIntensity; // was "extreme"
+  if (damage >= 50) return "severe" as EffectIntensity; // was "critical"
+  if (damage >= 30) return "moderate" as EffectIntensity; // was "high"
+  if (damage >= 15) return "medium" as EffectIntensity; // this one is correct
+  if (damage >= 5) return "minor" as EffectIntensity; // was "low"
+  return "weak" as EffectIntensity; // this one is correct
 }
 
 /**

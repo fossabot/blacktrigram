@@ -4,12 +4,8 @@
  */
 
 import type { PlayerArchetype, TrigramStance } from "../types/enums";
-import type {
-  SoundEffect,
-  MusicTrack,
-  MusicTrackId,
-  SoundEffectId,
-} from "../types/audio";
+import { MusicTrackId, SoundEffectId } from "../types/audio";
+import { SoundEffect, MusicTrack } from "./";
 
 export interface AudioVariantContext {
   readonly archetype?: PlayerArchetype;

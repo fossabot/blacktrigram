@@ -1,9 +1,5 @@
-/**
- * Default sound generator for Korean martial arts game
- */
-
-import type { SoundEffect, MusicTrack } from "../types/audio";
 import { AudioCategory } from "../types/audio";
+import { SoundEffect, MusicTrack } from "./";
 
 /**
  * Generates Korean martial arts specific sounds for Black Trigram

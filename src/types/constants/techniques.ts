@@ -2,8 +2,8 @@
  * Korean martial arts techniques for each trigram stance
  */
 
-import { TrigramStance, CombatAttackType, DamageType } from "../enums";
-import type { KoreanTechnique } from "../anatomy";
+import { KoreanTechnique } from "@/systems/combat";
+import { CombatAttackType, DamageType, TrigramStance } from "../enums";
 
 // Base techniques for each trigram stance
 export const TRIGRAM_TECHNIQUES: Record<

@@ -1,10 +1,6 @@
-import type {
-  PlayerState,
-  TrigramStance,
-  TrigramTransitionRule,
-  TrigramTransitionCost,
-} from "../../types";
+import { PlayerState, TrigramStance } from "../../types";
 import { TrigramStance as TrigramStanceEnum } from "../../types/enums";
+import { TrigramTransitionRule, TrigramTransitionCost } from "./";
 
 /**
  * Calculator for trigram stance transition costs and validation

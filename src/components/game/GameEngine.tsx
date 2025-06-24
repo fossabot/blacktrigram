@@ -4,7 +4,7 @@ import React, { useCallback } from "react";
 import { extend } from "@pixi/react";
 import { Container, Graphics, Text } from "pixi.js";
 import type { PlayerState } from "../../types/player";
-import type { KoreanTechnique } from "../../types/anatomy";
+import { KoreanTechnique } from "../../systems/combat";
 
 // Extend PixiJS components
 extend({

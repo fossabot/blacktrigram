@@ -2,29 +2,29 @@
  * Korean vital points (급소) for martial arts targeting
  */
 
-import type { VitalPoint, RegionData, VitalPointEffect } from "../anatomy";
+import { VitalPoint, VitalPointEffect } from "@/systems/vitalpoint";
+import type { RegionData } from "../anatomy";
 import {
-  VitalPointCategory,
-  VitalPointSeverity,
-  VitalPointEffectType,
   EffectIntensity,
+  TrigramStance,
+  VitalPointCategory,
+  VitalPointEffectType,
+  VitalPointSeverity,
 } from "../enums";
 
 // Korean vital points data
 export const KOREAN_VITAL_POINTS: readonly VitalPoint[] = [
   {
     id: "baekhoehoel",
-    korean: {
+    names: {
       korean: "백회혈",
       english: "Crown Point",
       romanized: "baekhoehoel",
     },
-    english: "Crown Point",
-    anatomicalName: "Anterior Fontanelle",
+    position: { x: 0, y: -50 },
     category: VitalPointCategory.NEUROLOGICAL,
     severity: VitalPointSeverity.CRITICAL,
-    position: { x: 0, y: -50 },
-    radius: 15,
+    baseDamage: 50,
     effects: [
       {
         id: "unconsciousness_effect",
@@ -38,28 +38,38 @@ export const KOREAN_VITAL_POINTS: readonly VitalPoint[] = [
         stackable: false,
       } as VitalPointEffect,
     ],
-    damage: { min: 40, max: 60, average: 50 },
     description: {
       korean: "머리 정수리의 중요 혈점",
       english: "Critical pressure point at crown of head",
     },
+    targetingDifficulty: 0.9,
+    effectiveStances: [TrigramStance.GEON, TrigramStance.LI, TrigramStance.JIN],
+
+    // Optional properties for backwards compatibility
+    korean: {
+      korean: "백회혈",
+      english: "Crown Point",
+      romanized: "baekhoehoel",
+    },
+    english: "Crown Point",
+    anatomicalName: "Anterior Fontanelle",
+    radius: 15,
+    damage: { min: 40, max: 60, average: 50 },
     difficulty: 0.9,
     requiredForce: 30,
     safetyWarning: "Extremely dangerous - can cause death",
   },
   {
     id: "inmyeong",
-    korean: {
+    names: {
       korean: "인명",
       english: "People's Life",
       romanized: "inmyeong",
     },
-    english: "People's Life",
-    anatomicalName: "Philtrum",
+    position: { x: 0, y: -10 },
     category: VitalPointCategory.NEUROLOGICAL,
     severity: VitalPointSeverity.MODERATE,
-    position: { x: 0, y: -10 },
-    radius: 8,
+    baseDamage: 20,
     effects: [
       {
         id: "stun_effect",
@@ -73,11 +83,23 @@ export const KOREAN_VITAL_POINTS: readonly VitalPoint[] = [
         stackable: false,
       } as VitalPointEffect,
     ],
-    damage: { min: 15, max: 25, average: 20 },
     description: {
       korean: "인중의 신경 집중 부위",
       english: "Nerve concentration area of philtrum",
     },
+    targetingDifficulty: 0.6,
+    effectiveStances: [TrigramStance.LI, TrigramStance.SON, TrigramStance.GAM],
+
+    // Optional properties for backwards compatibility
+    korean: {
+      korean: "인명",
+      english: "People's Life",
+      romanized: "inmyeong",
+    },
+    english: "People's Life",
+    anatomicalName: "Philtrum",
+    radius: 8,
+    damage: { min: 15, max: 25, average: 20 },
     difficulty: 0.6,
     requiredForce: 15,
     safetyWarning: "Can cause temporary unconsciousness",
