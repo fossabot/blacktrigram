@@ -5,7 +5,8 @@
  */
 
 // Combat-specific imports from shared types
-import type { PlayerState, TrigramStance } from "../../types";
+import type { PlayerState } from "../../types/player";
+import { TrigramStance } from "../../types/enums"
 import { StatusEffect } from "../types";
 import { VitalPointHitResult } from "../vitalpoint";
 
