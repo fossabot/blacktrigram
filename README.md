@@ -77,11 +77,11 @@ _70 anatomical targets for incapacitation_
 
 <div align="center">
 
-<img src="src/assets/CyberpunkTeamDynamics.png" alt="Cyberpunk Team Dynamics Screenshot" width="600" />
+<img src="public/CyberpunkTeamDynamics.png" alt="Cyberpunk Team Dynamics Screenshot" width="600" />
 
-<img src="src/assets/PlayerArchetypesExplained.png" alt="Player Archetypes Explained Screenshot" width="600" />
+<img src="public/PlayerArchetypesExplained.png" alt="Player Archetypes Explained Screenshot" width="600" />
 
-<img src="src/assets/PlayerArchetypesOverview.png" alt="Player Archetypes Overview Screenshot" width="600" />
+<img src="public/PlayerArchetypesOverview.png" alt="Player Archetypes Overview Screenshot" width="600" />
 
 </div>
 
@@ -324,6 +324,11 @@ Game/frontend will be open source with commercial backend supporting multiplayer
   _Guidelines for sprite sheets, particle textures, color palettes, and UI icons._
 - [🎵 AUDIO_ASSETS.md](https://github.com/Hack23/blacktrigram/blob/main/AUDIO_ASSETS.md)
   _List of traditional Korean instrument loops, impact SFX, and mixing notes._
+- [🎵 VIDEO_ASSETS.md](https://github.com/Hack23/blacktrigram/blob/main/VIDEO_ASSETS.md)
+  _Black Trigram: The Path of Shadows 🌑⚡🗡️ .Scene 1: Initiation Under Neon Skies 🌑🗡️🌆_
+
+
+
 
 🔒 **CI/CD & Security Features**
 
