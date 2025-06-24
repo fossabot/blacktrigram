@@ -2,10 +2,15 @@
  * Player state utilities and helper functions
  */
 
-import { PlayerState, PlayerArchetype, TrigramStance, Position } from "../types";
-import { CombatState } from "../types/enums";
-import { PLAYER_ARCHETYPES_DATA } from "../types/constants";
+import { PLAYER_ARCHETYPES_DATA } from "@/types/constants";
 import { StatusEffect } from "../systems";
+import {
+  PlayerArchetype,
+  PlayerState,
+  Position,
+  TrigramStance,
+} from "../types";
+import { CombatState } from "../types/enums";
 
 /**
  * Create a complete PlayerState from archetype and player index
