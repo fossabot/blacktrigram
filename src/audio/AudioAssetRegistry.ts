@@ -3,16 +3,10 @@
  * Manages all audio assets including Korean martial arts specific sounds
  */
 
-import type {
-  AudioAssetRegistry as IAudioAssetRegistry,
-  SoundEffect,
-  MusicTrack,
-  VoiceLine,
-  CombatAudioMap,
-  SoundEffectId,
-  MusicTrackId,
-  VoiceLineId,
-} from "../types/audio";
+import { AudioAssetRegistry as IAudioAssetRegistry } from "@/audio";
+
+import { MusicTrackId, SoundEffectId, VoiceLineId } from "../types/audio";
+import { CombatAudioMap, MusicTrack, SoundEffect, VoiceLine } from "./";
 
 // Fix: Use class implementation instead of interface merging
 export class AudioAssetRegistry {

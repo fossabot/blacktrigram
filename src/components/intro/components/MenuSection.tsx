@@ -1,6 +1,7 @@
-import React from "react";
-import { KOREAN_COLORS } from "../../../types/constants";
+import React, { useState } from "react";
+import { FONT_FAMILY, KOREAN_COLORS } from "../../../types/constants";
 import { GameMode } from "../../../types/enums";
+import { KoreanText } from "../../ui/base/korean-text/KoreanText";
 
 export interface MenuSectionProps {
   readonly menuItems: Array<{
@@ -25,6 +26,9 @@ export const MenuSection: React.FC<MenuSectionProps> = ({
   x,
   y,
 }) => {
+  // Track hover state for menu items
+  const [hoveredItem, setHoveredItem] = useState<number | null>(null);
+
   return (
     <pixiContainer
       x={x}
@@ -40,13 +44,16 @@ export const MenuSection: React.FC<MenuSectionProps> = ({
       }}
       data-testid="menu-section"
     >
-      {/* Background Panel */}
+      {/* Background Panel with enhanced styling */}
       <pixiGraphics
         draw={(g) => {
           g.clear();
-          g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 0.9 });
+          // Background fill with semi-transparency
+          g.fill({ color: KOREAN_COLORS.UI_BACKGROUND_DARK, alpha: 0.92 });
           g.roundRect(0, 0, width, height, 8);
           g.fill();
+
+          // Primary border
           g.stroke({
             width: 2,
             color: KOREAN_COLORS.PRIMARY_CYAN,
@@ -54,24 +61,36 @@ export const MenuSection: React.FC<MenuSectionProps> = ({
           });
           g.roundRect(0, 0, width, height, 8);
           g.stroke();
+
+          // Secondary accent border
+          g.stroke({
+            width: 1,
+            color: KOREAN_COLORS.ACCENT_GOLD,
+            alpha: 0.4,
+          });
+          g.roundRect(4, 4, width - 8, height - 8, 6);
+          g.stroke();
         }}
+        data-testid="menu-panel-background"
       />
 
-      {/* Menu Title */}
-      <pixiText
-        text="메인 메뉴 - Main Menu"
+      {/* Menu Title with KoreanText for proper bilingual support */}
+      <KoreanText
+        text={{ korean: "메인 메뉴", english: "Main Menu" }}
         style={{
           fontSize: 18,
           fill: KOREAN_COLORS.ACCENT_GOLD,
           align: "center",
           fontWeight: "bold",
+          fontFamily: FONT_FAMILY.KOREAN,
         }}
         x={width / 2}
         y={20}
         anchor={0.5}
+        data-testid="menu-title"
       />
 
-      {/* Menu Items Container */}
+      {/* Menu Items Container with proper layout */}
       <pixiContainer
         x={20}
         y={50}
@@ -82,63 +101,105 @@ export const MenuSection: React.FC<MenuSectionProps> = ({
         }}
         data-testid="main-menu-buttons"
       >
-        {menuItems.map((item, index) => (
-          <pixiContainer
-            key={item.mode}
-            y={index * 60}
-            layout={{
-              width: width - 40,
-              height: 50,
-              marginBottom: 12,
-            }}
-            data-testid={`menu-item-${item.mode}`}
-          >
-            <pixiGraphics
-              draw={(g) => {
-                g.clear();
-                g.fill({
-                  color:
-                    selectedIndex === index
-                      ? KOREAN_COLORS.ACCENT_GOLD
-                      : KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
-                  alpha: 0.8,
-                });
-                g.roundRect(0, 0, width - 40, 50, 5);
-                g.fill();
+        {menuItems.map((item, index) => {
+          const isSelected = selectedIndex === index;
+          const isHovered = hoveredItem === index;
+
+          return (
+            <pixiContainer
+              key={item.mode}
+              y={index * 60}
+              layout={{
+                width: width - 40,
+                height: 50,
+                marginBottom: 12,
               }}
-              interactive={true}
-              onPointerDown={() => onModeSelect(item.mode)}
-            />
-            <pixiText
-              text={`${item.korean} - ${item.english}`}
-              style={{
-                fontSize: 16,
-                fill:
-                  selectedIndex === index
+              data-testid={`menu-item-${item.mode}`}
+            >
+              {/* Menu Item Background */}
+              <pixiGraphics
+                draw={(g) => {
+                  g.clear();
+
+                  // Fill with appropriate color based on state
+                  g.fill({
+                    color: isSelected
+                      ? KOREAN_COLORS.ACCENT_GOLD
+                      : isHovered
+                      ? KOREAN_COLORS.UI_BACKGROUND_LIGHT
+                      : KOREAN_COLORS.UI_BACKGROUND_MEDIUM,
+                    alpha: isSelected ? 0.9 : 0.8,
+                  });
+                  g.roundRect(0, 0, width - 40, 50, 5);
+                  g.fill();
+
+                  // Add border for visual enhancement
+                  g.stroke({
+                    width: 1,
+                    color: isSelected
+                      ? KOREAN_COLORS.ACCENT_ORANGE
+                      : isHovered
+                      ? KOREAN_COLORS.ACCENT_GOLD
+                      : KOREAN_COLORS.PRIMARY_CYAN,
+                    alpha: isSelected ? 0.9 : 0.6,
+                  });
+                  g.roundRect(0, 0, width - 40, 50, 5);
+                  g.stroke();
+
+                  // Add highlight indicator for selected item
+                  if (isSelected) {
+                    g.fill({ color: KOREAN_COLORS.ACCENT_GOLD, alpha: 0.9 });
+                    g.roundRect(0, 0, 4, 50, 2);
+                    g.fill();
+                  }
+                }}
+                interactive={true}
+                onPointerDown={() => onModeSelect(item.mode)}
+                onPointerOver={() => setHoveredItem(index)}
+                onPointerOut={() => setHoveredItem(null)}
+              />
+
+              {/* Menu Item Text with proper KoreanText integration */}
+              <KoreanText
+                text={{
+                  korean: item.korean,
+                  english: item.english,
+                }}
+                style={{
+                  fontSize: 16,
+                  fill: isSelected
                     ? KOREAN_COLORS.UI_BACKGROUND_DARK
                     : KOREAN_COLORS.TEXT_PRIMARY,
-                align: "center",
-              }}
-              x={(width - 40) / 2}
-              y={25}
-              anchor={0.5}
-            />
-          </pixiContainer>
-        ))}
+                  align: "center",
+                  fontFamily: FONT_FAMILY.KOREAN,
+                  fontWeight: isSelected ? "bold" : "normal",
+                }}
+                x={(width - 40) / 2}
+                y={25}
+                anchor={0.5}
+              />
+            </pixiContainer>
+          );
+        })}
       </pixiContainer>
 
-      {/* Keyboard navigation hint */}
-      <pixiText
-        text="방향키로 메뉴 이동, Enter 키로 선택"
+      {/* Keyboard navigation hint with proper Korean text */}
+      <KoreanText
+        text={{
+          korean: "방향키로 메뉴 이동, Enter 키로 선택",
+          english: "Use arrow keys to navigate, Enter to select",
+        }}
         style={{
           fontSize: 12,
           fill: KOREAN_COLORS.TEXT_SECONDARY,
           align: "center",
           fontStyle: "italic",
+          fontFamily: FONT_FAMILY.KOREAN,
         }}
         x={width / 2}
         y={height - 20}
         anchor={0.5}
+        data-testid="menu-navigation-hint"
       />
     </pixiContainer>
   );

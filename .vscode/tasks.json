@@ -1,0 +1,13 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "TypeScript Check",
+      "type": "shell",
+      "command": "npm run check",
+      "problemMatcher": ["$tsc"],
+      "group": "build",
+      "isBackground": false
+    }
+  ]
+}

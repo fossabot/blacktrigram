@@ -1,12 +1,8 @@
-import type {
-  TrigramStance,
-  KoreanTechnique,
-  PlayerState,
-  PlayerArchetype,
-} from "../../types";
+import { TrigramStance, PlayerState, PlayerArchetype } from "../../types";
 import { TrigramStance as TrigramStanceEnum } from "../../types/enums";
 import { TRIGRAM_TECHNIQUES } from "../../types/constants/techniques";
 import { PLAYER_ARCHETYPES_DATA } from "../../types/constants/player";
+import { KoreanTechnique } from "../combat";
 
 /**
  * Korean martial arts techniques system

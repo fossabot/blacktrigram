@@ -143,20 +143,14 @@ export enum EffectType {
 // Effect intensity levels
 export enum EffectIntensity {
   WEAK = "weak",
+  MINOR = "minor",
+  LOW = "low",
   MEDIUM = "medium",
+  MODERATE = "moderate",
   HIGH = "high",
-  EXTREME = "extreme",
-}
-
-// Hit effect types for visual feedback
-export enum HitEffectType {
-  DAMAGE = "damage",
+  SEVERE = "severe",
   CRITICAL = "critical",
-  BLOCK = "block",
-  MISS = "miss",
-  VITAL_POINT = "vital_point",
-  COUNTER = "counter",
-  PARRY = "parry",
+  EXTREME = "extreme",
 }
 
 // Korean text sizing

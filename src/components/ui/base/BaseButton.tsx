@@ -1,9 +1,9 @@
 // Base button component with Korean martial arts styling
 
 import React, { useState } from "react";
-import type { BaseButtonProps } from "../../../types/components";
 import { KOREAN_COLORS } from "../../../types/constants";
 import usePixiExtensions from "../../../utils/pixiExtensions";
+
 
 export const BaseButton: React.FC<BaseButtonProps> = ({
   x = 0,
@@ -139,3 +139,17 @@ export const BaseButton: React.FC<BaseButtonProps> = ({
 };
 
 export default BaseButton;
+
+export interface BaseButtonProps {
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  text?: string;
+  koreanText?: string;
+  onClick?: () => void;
+  disabled?: boolean;
+  variant?: "primary" | "secondary" | "accent" | "ghost" | "danger";
+  children?: React.ReactNode;
+  testId?: string;
+}

@@ -1,16 +1,13 @@
-import type { KoreanText, Position } from "../../types/common";
-import type {
-  VitalPoint,
-  VitalPointEffect,
-  AnatomicalRegion,
-} from "../../types/anatomy";
 import {
-  VitalPointCategory,
-  VitalPointSeverity,
-  VitalPointEffectType,
   EffectIntensity,
-} from "../../types/enums";
-import { StatusEffect } from "@/types";
+  TrigramStance,
+  VitalPointCategory,
+  VitalPointEffectType,
+  VitalPointSeverity,
+} from "@/types";
+import type { KoreanText, Position } from "../../types/common";
+import { StatusEffect } from "../types";
+import { AnatomicalRegion, VitalPoint, VitalPointEffect } from "./types";
 
 /**
  * Korean Martial Arts Anatomy System
@@ -425,17 +422,17 @@ export function generateMeridianEffects(
   const effects: StatusEffect[] = [];
   const intensityValue = Math.min(1.0, disruptionLevel);
 
-  // Fix: Use proper enum values for effect intensity
-  let effectIntensity: "minor" | "moderate" | "severe" | "critical" = "minor";
-  if (intensityValue > 0.7) effectIntensity = "severe";
-  else if (intensityValue > 0.4) effectIntensity = "moderate";
+  // Fix: Use proper EffectIntensity enum values from types/enums.ts
+  let effectIntensity: EffectIntensity = EffectIntensity.MINOR;
+  if (intensityValue > 0.7) effectIntensity = EffectIntensity.SEVERE;
+  else if (intensityValue > 0.4) effectIntensity = EffectIntensity.MODERATE;
+  else effectIntensity = EffectIntensity.MINOR;
 
-  // Fix: Generate effects based on meridian type and disruption level
   if (disruptionLevel > 0.3) {
     const effect: StatusEffect = {
       id: `meridian_disruption_${meridianId}_${Date.now()}`,
-      type: "weakened", // Use effects.ts EffectType
-      intensity: effectIntensity,
+      type: "weakened",
+      intensity: effectIntensity, // Now uses proper enum
       duration: Math.floor(2000 + intensityValue * 3000),
       description: {
         korean: "경락 차단 효과",
@@ -503,7 +500,7 @@ export class KoreanAnatomySystem {
 export function createVitalPointEffect(
   id: string,
   type: VitalPointEffectType,
-  intensity: EffectIntensity,
+  intensity: EffectIntensity, // Use proper enum type
   duration: number,
   description: KoreanText,
   stackable: boolean = false
@@ -523,8 +520,11 @@ export function createVitalPointEffect(
 export const SAMPLE_VITAL_POINTS: readonly VitalPoint[] = [
   {
     id: "baekhoehoel",
-    korean: { korean: "백회혈", english: "Crown Point" },
-    english: "Crown Point",
+    names: {
+      korean: "백회혈",
+      english: "Crown Point",
+      romanized: "Baekhoehyeol", // Add missing romanized property
+    },
     anatomicalName: "Anterior Fontanelle",
     category: VitalPointCategory.NEUROLOGICAL,
     severity: VitalPointSeverity.CRITICAL,
@@ -547,11 +547,16 @@ export const SAMPLE_VITAL_POINTS: readonly VitalPoint[] = [
     difficulty: 0.9,
     requiredForce: 30,
     safetyWarning: "Extremely dangerous - can cause death",
+    targetingDifficulty: 0.9,
+    effectiveStances: [TrigramStance.GEON, TrigramStance.JIN], // Use proper enum values
   },
   {
     id: "inmyeong",
-    korean: { korean: "인영", english: "Man's Welcome" },
-    english: "Man's Welcome",
+    names: {
+      korean: "인영",
+      english: "Man's Welcome",
+      romanized: "Inmyeong", // Add missing romanized property
+    },
     anatomicalName: "Carotid Artery",
     category: VitalPointCategory.VASCULAR,
     severity: VitalPointSeverity.MAJOR,
@@ -574,11 +579,16 @@ export const SAMPLE_VITAL_POINTS: readonly VitalPoint[] = [
     difficulty: 0.7,
     requiredForce: 20,
     safetyWarning: "Can cause unconsciousness",
+    targetingDifficulty: 0.7,
+    effectiveStances: [TrigramStance.TAE, TrigramStance.GAM], // Use proper enum values
   },
   {
     id: "myeongmun",
-    korean: { korean: "명문", english: "Gate of Life" },
-    english: "Gate of Life",
+    names: {
+      korean: "명문",
+      english: "Gate of Life",
+      romanized: "Myeongmun", // Add missing romanized property
+    },
     anatomicalName: "L2-L3 Vertebrae",
     category: VitalPointCategory.NEUROLOGICAL,
     severity: VitalPointSeverity.MAJOR,
@@ -601,11 +611,16 @@ export const SAMPLE_VITAL_POINTS: readonly VitalPoint[] = [
     difficulty: 0.8,
     requiredForce: 25,
     safetyWarning: "Can cause temporary paralysis",
+    targetingDifficulty: 0.8,
+    effectiveStances: [TrigramStance.GAN, TrigramStance.GON], // Use proper enum values
   },
   {
     id: "jungwan",
-    korean: { korean: "중완", english: "Middle Cavity" },
-    english: "Middle Cavity",
+    names: {
+      korean: "중완",
+      english: "Middle Cavity",
+      romanized: "Jungwan", // Add missing romanized property
+    },
     anatomicalName: "Solar Plexus",
     category: VitalPointCategory.ORGAN,
     severity: VitalPointSeverity.MAJOR,
@@ -628,11 +643,16 @@ export const SAMPLE_VITAL_POINTS: readonly VitalPoint[] = [
     difficulty: 0.6,
     requiredForce: 18,
     safetyWarning: "Can cause breathing difficulties",
+    targetingDifficulty: 0.6,
+    effectiveStances: [TrigramStance.LI, TrigramStance.SON], // Use proper enum values
   },
   {
     id: "tanjoong",
-    korean: { korean: "단중", english: "Chest Center" },
-    english: "Chest Center",
+    names: {
+      korean: "단중",
+      english: "Chest Center",
+      romanized: "Danjoong", // Add missing romanized property
+    },
     anatomicalName: "Sternum",
     category: VitalPointCategory.RESPIRATORY,
     severity: VitalPointSeverity.MODERATE,
@@ -655,6 +675,8 @@ export const SAMPLE_VITAL_POINTS: readonly VitalPoint[] = [
     difficulty: 0.5,
     requiredForce: 15,
     safetyWarning: "Can cause temporary stunning",
+    targetingDifficulty: 0.5,
+    effectiveStances: [TrigramStance.GEON, TrigramStance.LI], // Use proper enum values
   },
 ] as const;
 

@@ -1,14 +1,9 @@
 // Core game state and flow management
 
-import type { CombatEventData } from "./combat";
-import type {
-  PlayerState,
-  KoreanText,
-  CombatResult,
-  TrigramStance,
-} from "./index";
-import type { PlayerMatchStats } from "./player"; // Fix: Use correct import name
+import { CombatEventData, CombatResult } from "@/systems/combat";
 import { GameMode, GamePhase } from "./enums"; // Fix: Import enums only
+import type { KoreanText, PlayerState, TrigramStance } from "./index";
+import type { PlayerMatchStats } from "./player"; // Fix: Use correct import name
 
 // Main game state interface
 export interface GameState {
@@ -220,9 +215,3 @@ export interface GameSaveData {
     readonly favoriteArchetype: string;
   };
 }
-
-// Fix: Remove GameUIProps export to avoid duplicate with components.ts
-// export interface GameUIProps { ... } // Remove this interface
-
-// Re-export PlayerMatchStats for compatibility
-export type { PlayerMatchStats } from "./player";

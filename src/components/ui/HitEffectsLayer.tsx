@@ -1,7 +1,8 @@
+import { HitEffect } from "@/systems";
 import * as PIXI from "pixi.js";
 import React, { useCallback, useEffect, useState } from "react";
 import { KOREAN_COLORS } from "../../types/constants";
-import { HitEffect } from "../../types/effects";
+import { HitEffectType } from "../../types/effects";
 
 export interface HitEffectsLayerProps {
   readonly effects: HitEffect[];
@@ -95,8 +96,11 @@ export const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({
               return;
             }
 
-            switch (effect.type) {
-              case "hit":
+            // Use enum values directly for type safety
+            const effectType = effect.type;
+
+            switch (effectType) {
+              case HitEffectType.HIT:
                 // Hit flash
                 g.fill({ color: KOREAN_COLORS.ACCENT_RED, alpha: alpha * 0.5 });
                 g.circle(
@@ -114,7 +118,7 @@ export const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({
                 g.stroke();
                 break;
 
-              case "critical_hit":
+              case HitEffectType.CRITICAL_HIT:
                 // Critical hit flash (larger, more intense)
                 g.fill({
                   color: KOREAN_COLORS.ACCENT_GOLD,
@@ -143,7 +147,7 @@ export const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({
                 g.stroke();
                 break;
 
-              case "block":
+              case HitEffectType.BLOCK:
                 // Block effect (shield-like)
                 g.stroke({ width: 3, color: KOREAN_COLORS.ACCENT_CYAN, alpha });
                 g.arc(
@@ -182,7 +186,7 @@ export const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({
                 g.stroke();
                 break;
 
-              case "miss":
+              case HitEffectType.MISS:
                 // Miss effect (swish lines)
                 g.stroke({
                   width: 2,
@@ -207,7 +211,7 @@ export const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({
                 g.fill();
                 break;
 
-              case "vital_point_strike":
+              case HitEffectType.VITAL_POINT_STRIKE:
                 // Vital point strike (pulsing circle with crosshairs)
                 g.fill({
                   color: KOREAN_COLORS.SECONDARY_MAGENTA,
@@ -255,6 +259,54 @@ export const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({
                 g.stroke();
                 break;
 
+              case HitEffectType.PARRY:
+                // Parry effect (deflection arc)
+                g.stroke({ width: 3, color: KOREAN_COLORS.ACCENT_GOLD, alpha });
+                g.arc(
+                  effect.position.x,
+                  effect.position.y,
+                  35 * effect.intensity,
+                  -Math.PI / 4,
+                  Math.PI / 4
+                );
+                g.stroke();
+
+                // Deflection sparks
+                for (let i = 0; i < 3; i++) {
+                  const angle = (Math.PI / 6) * (i - 1);
+                  const sparkX = effect.position.x + Math.cos(angle) * 40;
+                  const sparkY = effect.position.y + Math.sin(angle) * 40;
+                  g.fill({
+                    color: KOREAN_COLORS.ACCENT_GOLD,
+                    alpha: alpha * 0.8,
+                  });
+                  g.circle(sparkX, sparkY, 3);
+                  g.fill();
+                }
+                break;
+
+              case HitEffectType.COUNTER:
+                // Counter effect (spinning energy) - using PRIMARY_CYAN instead of missing SECONDARY_CYAN
+                g.stroke({
+                  width: 2,
+                  color: KOREAN_COLORS.PRIMARY_CYAN,
+                  alpha,
+                });
+                const rotation = progress * Math.PI * 4;
+                for (let i = 0; i < 4; i++) {
+                  const angle = rotation + (Math.PI / 2) * i;
+                  const x1 = effect.position.x + Math.cos(angle) * 20;
+                  const y1 = effect.position.y + Math.sin(angle) * 20;
+                  const x2 = effect.position.x + Math.cos(angle) * 40;
+                  const y2 = effect.position.y + Math.sin(angle) * 40;
+                  g.moveTo(x1, y1);
+                  g.lineTo(x2, y2);
+                }
+                g.stroke();
+                break;
+
+              case HitEffectType.GENERAL_DAMAGE:
+              case HitEffectType.STATUS_EFFECT:
               default:
                 // Default effect as fallback
                 g.fill({
@@ -267,6 +319,7 @@ export const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({
                   40 * effect.intensity
                 );
                 g.fill();
+                break;
             }
           }}
         />
@@ -275,7 +328,7 @@ export const HitEffectsLayer: React.FC<HitEffectsLayerProps> = ({
   }, []);
 
   return (
-    <pixiContainer>
+    <pixiContainer data-testid="hit-effects-layer">
       {activeEffects.map((effect) => renderEffect(effect))}
     </pixiContainer>
   );

@@ -1,14 +1,13 @@
+import { StatusEffect } from "..";
 import type { Position } from "../../types/common";
-import type { VitalPoint, VitalPointHitResult } from "../../types/anatomy";
-// Fix: Remove unused KoreanTechnique import
-// Fix: Import EffectType from effects.ts, not enums.ts
+// Fix: Import both EffectIntensity type and enum from the correct location
+import { EffectType } from "../../types/effects";
 import {
-  VitalPointSeverity,
+  EffectIntensity,
   VitalPointEffectType,
-  EffectIntensity as VitalPointEffectIntensity,
+  VitalPointSeverity,
 } from "../../types/enums";
-import type { VitalPointEffect } from "../../types/anatomy";
-import type { StatusEffect, EffectType } from "../../types/effects"; // Fix: Import from effects.ts
+import { VitalPoint, VitalPointEffect, VitalPointHitResult } from "./";
 
 export class HitDetection {
   /**
@@ -34,21 +33,24 @@ export class HitDetection {
       [VitalPointEffectType.ORGAN_DISRUPTION]: "vulnerability",
     };
 
-    // Convert VitalPointEffectIntensity to effects.ts intensity type
-    const intensityMapping: Record<
-      VitalPointEffectIntensity,
-      "minor" | "moderate" | "severe" | "critical"
-    > = {
-      [VitalPointEffectIntensity.WEAK]: "minor",
-      [VitalPointEffectIntensity.MEDIUM]: "moderate",
-      [VitalPointEffectIntensity.HIGH]: "severe",
-      [VitalPointEffectIntensity.EXTREME]: "critical",
+    // Fix: Use the correct EffectIntensity enum values from enums.ts
+    const intensityMapping: Record<EffectIntensity, EffectIntensity> = {
+      [EffectIntensity.WEAK]: EffectIntensity.WEAK,
+      [EffectIntensity.MINOR]: EffectIntensity.MINOR,
+      [EffectIntensity.LOW]: EffectIntensity.LOW,
+      [EffectIntensity.MEDIUM]: EffectIntensity.MEDIUM,
+      [EffectIntensity.MODERATE]: EffectIntensity.MODERATE,
+      [EffectIntensity.HIGH]: EffectIntensity.HIGH,
+      [EffectIntensity.SEVERE]: EffectIntensity.SEVERE,
+      [EffectIntensity.CRITICAL]: EffectIntensity.CRITICAL,
+      [EffectIntensity.EXTREME]: EffectIntensity.EXTREME,
     };
 
     return {
       id: `${vitalPointEffect.id}_${currentTime}`,
-      type: typeMapping[vitalPointEffect.type] || "weakened", // Fix: Use correct type
-      intensity: intensityMapping[vitalPointEffect.intensity] || "moderate",
+      type: typeMapping[vitalPointEffect.type] || "weakened",
+      intensity:
+        intensityMapping[vitalPointEffect.intensity] || EffectIntensity.MEDIUM,
       duration: vitalPointEffect.duration,
       description: vitalPointEffect.description,
       stackable: vitalPointEffect.stackable,
@@ -69,7 +71,11 @@ export class HitDetection {
         Math.pow(hitPosition.y - vitalPoint.position.y, 2)
     );
 
-    const isHit = distance <= vitalPoint.radius;
+    // Fix: Provide default values for potentially undefined properties
+    const radius = vitalPoint.radius ?? 10; // Default radius
+    const requiredForce = vitalPoint.requiredForce ?? 50; // Default force requirement
+
+    const isHit = distance <= radius;
 
     if (!isHit) {
       return {
@@ -82,10 +88,10 @@ export class HitDetection {
 
     // Calculate damage
     const baseDamage = vitalPoint.baseDamage || 15;
-    const forceMultiplier = Math.min(force / vitalPoint.requiredForce, 2.0);
+    const forceMultiplier = Math.min(force / requiredForce, 2.0);
     const damage = Math.floor(baseDamage * forceMultiplier);
 
-    // Fix: Convert VitalPointEffect array to StatusEffect array
+    // Convert VitalPointEffect array to StatusEffect array
     const effects = vitalPoint.effects.map((effect) =>
       HitDetection.convertVitalPointEffectToStatusEffect(effect, vitalPoint.id)
     );
