@@ -51,26 +51,75 @@ export interface AISystemConfig {
   readonly reactionTime: number;
 }
 
+export interface VitalPointSystemConfig {
+  readonly precisionRequired: number;
+  readonly damageMultipliers: Record<string, number>;
+  readonly effectDurations: Record<string, number>;
+}
+
 // Direct PixiJS imports for core types
 import type {
   Application as PixiApplication,
   DisplayObject as PixiDisplayObject,
 } from "pixi.js";
 
-import { MusicTrackId, SoundEffectId } from "@/audio/types";
-import {
-  AnimationState,
-  CollisionData,
-  PhysicsEntityConfig,
-  PhysicsEntityState,
-  RenderableConfig,
-} from "@/types/systems";
-import { CombatSystemInterface } from "./combat";
-import { TrigramSystemInterface } from "./trigram";
-import {
-  VitalPointSystemConfig,
-  VitalPointSystemInterface,
-} from "./vitalpoint";
+// Remove these imports that cause circular dependencies:
+// import { MusicTrackId, SoundEffectId } from "@/audio/types";
+// import {
+//   AnimationState,
+//   CollisionData,
+//   PhysicsEntityConfig,
+//   PhysicsEntityState,
+//   RenderableConfig,
+// } from "@/types/systems";
+// import { CombatSystemInterface } from "./combat";
+// import { TrigramSystemInterface } from "./trigram";
+// import { VitalPointSystemInterface } from "./vitalpoint";
+
+// Define types locally instead of importing
+export type MusicTrackId = string;
+export type SoundEffectId = string;
+
+export interface AnimationState {
+  readonly currentAnimationName?: string;
+  readonly currentFrameIndex: number;
+  readonly isPlaying: boolean;
+  readonly elapsedTimeInFrame: number;
+}
+
+export interface CollisionData {
+  readonly entityA: EntityId;
+  readonly entityB: EntityId;
+  readonly normal: Velocity;
+  readonly penetration: number;
+}
+
+export interface PhysicsEntityConfig {
+  readonly position: Position;
+  readonly velocity?: Velocity;
+  readonly mass?: number;
+  readonly friction?: number;
+  readonly restitution?: number;
+  readonly shape:
+    | { type: "circle"; radius: number }
+    | { type: "rectangle"; width: number; height: number };
+  readonly isStatic?: boolean;
+}
+
+export interface PhysicsEntityState {
+  readonly position: Position;
+  readonly velocity: Velocity;
+  readonly acceleration?: Velocity;
+  readonly angularVelocity?: number;
+}
+
+export interface RenderableConfig {
+  readonly displayObject: PixiDisplayObject;
+  readonly zOrder?: number;
+  readonly visible?: boolean;
+  readonly alpha?: number;
+  readonly parent?: EntityId | "stage";
+}
 
 export interface StatusEffect {
   readonly id: string;
@@ -227,6 +276,74 @@ export interface EventBusInterface {
     eventType: string,
     callback: (event: SystemEvent) => void
   ) => void;
+}
+
+// Define system interfaces without importing (to avoid circular deps)
+export interface CombatSystemInterface {
+  calculateDamage: (
+    technique: any,
+    attacker: any,
+    defender: any,
+    hitResult: any
+  ) => {
+    baseDamage: number;
+    modifierDamage: number;
+    totalDamage: number;
+    effectsApplied: readonly StatusEffect[];
+    finalDefenderState?: any;
+  };
+  resolveAttack: (
+    attacker: any,
+    defender: any,
+    technique: any,
+    targetedVitalPointId?: string
+  ) => any;
+  applyCombatResult: (
+    result: any,
+    attacker: any,
+    defender: any
+  ) => { updatedAttacker: any; updatedDefender: any };
+  getAvailableTechniques: (player: any) => readonly any[];
+}
+
+export interface VitalPointSystemInterface {
+  processHit: (
+    targetPosition: Position,
+    technique: any,
+    baseDamage: number,
+    attackerArchetype: any,
+    targetDimensions: { width: number; height: number },
+    targetedVitalPointId?: string | null
+  ) => any;
+  calculateHit: (
+    technique: any,
+    targetVitalPointId: string | null,
+    accuracyRoll: number,
+    attackerPosition: Position,
+    defenderPosition: Position,
+    defenderStance: any
+  ) => any;
+  applyVitalPointEffects: (
+    player: any,
+    vitalPoint: any,
+    intensityMultiplier?: number
+  ) => any;
+}
+
+export interface TrigramSystemInterface {
+  getTechniqueForStance: (stance: any, archetype?: any) => any | undefined;
+  calculateStanceEffectiveness: (
+    attackerStance: any,
+    defenderStance: any,
+    technique?: any
+  ) => number;
+  isValidTransition: (from: any, to: any) => boolean;
+  getTransitionCost: (
+    from: any,
+    to: any,
+    player?: any
+  ) => { ki: number; stamina: number; timeMs: number };
+  recommendStance: (player: any, opponent?: any) => any;
 }
 
 export interface GameSystemManager {
