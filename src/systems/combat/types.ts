@@ -6,38 +6,9 @@
 
 // Combat-specific imports from shared types
 import type { PlayerState } from "../../types/player";
-import { TrigramStance } from "../../types/enums"
 import { StatusEffect } from "../types";
 import { VitalPointHitResult } from "../vitalpoint";
-
-export interface KoreanTechnique {
-  id: string;
-  name: {
-    korean: string;
-    english: string;
-    romanized: string;
-  };
-  koreanName: string;
-  englishName: string;
-  romanized: string;
-  description: {
-    korean: string;
-    english: string;
-  };
-  stance: TrigramStance;
-  type: string;
-  damageType: string;
-  damage: number;
-  kiCost: number;
-  staminaCost: number;
-  accuracy: number;
-  range: number;
-  executionTime: number;
-  recoveryTime: number;
-  critChance: number;
-  critMultiplier: number;
-  effects: any[];
-}
+import { KoreanTechnique } from "../vitalpoint/types";
 
 export interface CombatResult {
   readonly success: boolean;

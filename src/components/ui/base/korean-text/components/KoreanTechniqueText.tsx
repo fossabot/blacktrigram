@@ -1,8 +1,8 @@
+import { KoreanTechnique } from "@/systems/vitalpoint";
 import * as PIXI from "pixi.js";
 import React from "react";
 import { KOREAN_COLORS } from "../../../../../types/constants";
 import usePixiExtensions from "../../../../../utils/pixiExtensions";
-import { KoreanTechnique } from "../../../../../systems/combat";
 
 export interface KoreanTechniqueTextProps {
   readonly technique: KoreanTechnique;

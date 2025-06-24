@@ -9,7 +9,7 @@ import { EffectType } from "@/types/enums";
 import { TrigramStance } from "../../types/enums";
 
 import type { KoreanText, PlayerArchetype, PlayerState } from "../../types";
-import { KoreanTechnique } from "../combat";
+import { KoreanTechnique } from "../vitalpoint";
 
 export interface TrigramTransitionCost {
   readonly ki: number;
