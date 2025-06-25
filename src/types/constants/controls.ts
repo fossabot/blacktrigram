@@ -3,7 +3,7 @@
  */
 
 // Fix: Import TrigramStance as value
-import { TrigramStance } from "../enums";
+import { TrigramStance } from "../common";
 
 // Fix: Define CombatControlsConfig locally to avoid circular dependency
 export interface CombatControlsConfig {

@@ -10,7 +10,7 @@ import { HitEffectsLayer } from "../ui/HitEffectsLayer";
 import { CombatArena } from "./components/CombatArena";
 import { CombatControls } from "./components/CombatControls";
 import { CombatHUD } from "./components/CombatHUD";
-import { CombatStats } from "./components/CombatStats";
+import { CombatStatsPanel } from "./components/CombatStatsPanel";
 import { PlayerStatusPanel } from "./components/PlayerStatusPanel";
 
 // Ensure PixiJS components are extended
@@ -246,7 +246,7 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         screenWidth={width}
         screenHeight={height}
       >
-        <CombatStats
+        <CombatStatsPanel
           players={validPlayers}
           combatLog={combatLog}
           x={0}

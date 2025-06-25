@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import type { PlayerState } from "../../../types/player";
-import { TrigramStance } from "../../../types/enums";
+import { TrigramStance } from "../../../types/common";
 import { KOREAN_COLORS } from "../../../types/constants";
 import { TRIGRAM_TECHNIQUES } from "../../../types/constants/techniques";
 

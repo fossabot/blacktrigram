@@ -1,18 +1,11 @@
-// filepath: /workspaces/blacktrigram/src/systems/trigram/index.ts
 /**
- * Barrel exports for trigram types
+ * @module systems/trigram
+ * @category Trigram System
  */
 
-export type {
-  TrigramTransitionCost,
-  TrigramTransitionRule,
-  TransitionMetrics,
-  TransitionPath,
-  TrigramData,
-  StanceTransition,
-  TrigramPhilosophy,
-  TrigramCombatStyle,
-  TrigramTheme,
-  TrigramSystemInterface,
-  TrigramSystem,
-} from "./types";
+export * from "./KoreanCulture";
+export * from "./KoreanTechniques";
+export * from "./StanceManager";
+export * from "./TransitionCalculator";
+export * from "./TrigramCalculator";
+export * from "./types";

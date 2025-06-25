@@ -1,8 +1,6 @@
 // Core game state and flow management
 
-import type { TrigramStance } from "./enums";
-import { GameMode } from "./enums";
-import type { KoreanText } from "./korean-text";
+import { GameMode, KoreanText } from "./common";
 import type { PlayerState } from "./player";
 
 // Match configuration
@@ -42,67 +40,6 @@ export enum GameEventType {
   ERROR = "error",
 }
 
-// Game settings interface
-export interface GameSettings {
-  readonly audio: {
-    readonly masterVolume: number;
-    readonly musicVolume: number;
-    readonly sfxVolume: number;
-    readonly voiceVolume: number;
-  };
-  readonly graphics: {
-    readonly resolution: "720p" | "1080p" | "1440p" | "4k";
-    readonly quality: "low" | "medium" | "high" | "ultra";
-    readonly fullscreen: boolean;
-    readonly vsync: boolean;
-    readonly frameRate: 30 | 60 | 120 | 144;
-  };
-  readonly controls: {
-    readonly keyboardLayout: "qwerty" | "azerty" | "dvorak";
-    readonly mouseSensitivity: number;
-    readonly showInputHistory: boolean;
-  };
-  readonly gameplay: {
-    readonly language: "korean" | "english" | "both";
-    readonly showRomanization: boolean;
-    readonly showVitalPoints: boolean;
-    readonly combatHints: boolean;
-    readonly difficultyLevel:
-      | "beginner"
-      | "intermediate"
-      | "advanced"
-      | "master";
-  };
-  readonly accessibility: {
-    readonly colorBlindSupport: boolean;
-    readonly highContrast: boolean;
-    readonly largeText: boolean;
-    readonly reducedMotion: boolean;
-  };
-}
-
-// Save data structure
-export interface SaveData {
-  readonly version: string;
-  readonly playerId: string;
-  readonly progress: {
-    readonly unlockedArchetypes: readonly string[];
-    readonly unlockedStages: readonly string[];
-    readonly completedModes: readonly GameMode[];
-    readonly achievements: readonly string[];
-  };
-  readonly statistics: {
-    readonly totalMatches: number;
-    readonly wins: number;
-    readonly losses: number;
-    readonly draws: number;
-    readonly favoriteArchetype: string;
-    readonly totalPlayTime: number; // milliseconds
-  };
-  readonly settings: GameSettings;
-  readonly timestamp: number;
-}
-
 // Game session interface
 export interface GameSession {
   readonly id: string;
@@ -128,20 +65,6 @@ export interface GameConfig {
   readonly enableVitalPoints: boolean;
   readonly enableStatusEffects: boolean;
   readonly allowArchetypeSwitching: boolean;
-}
-
-// Training session data
-export interface TrainingSession {
-  readonly playerId: string;
-  readonly archetype: string;
-  readonly practiceStance: TrigramStance;
-  readonly exercisesCompleted: readonly string[];
-  readonly duration: number;
-  readonly improvementMetrics: {
-    readonly accuracy: number;
-    readonly timing: number;
-    readonly technique: number;
-  };
 }
 
 // Game save data

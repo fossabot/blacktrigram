@@ -1,6 +1,6 @@
 import React, { useState } from "react";
+import { GameMode } from "../../../types/common";
 import { FONT_FAMILY, KOREAN_COLORS } from "../../../types/constants";
-import { GameMode } from "../../../types/enums";
 import { KoreanText } from "../../ui/base/korean-text/KoreanText";
 
 export interface MenuSectionProps {

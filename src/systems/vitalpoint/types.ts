@@ -180,3 +180,68 @@ export interface VitalPointSystem {
   readonly checkHit: (position: Position, force: number) => VitalPointHitResult;
   readonly calculateDamage: (vitalPoint: VitalPoint, force: number) => number;
 }
+
+// Define VitalPoint locally to avoid circular import
+export interface VitalPoint {
+  readonly id: string;
+  readonly names: {
+    readonly korean: string;
+    readonly english: string;
+    readonly romanized: string;
+  };
+  readonly position: Position;
+  readonly category: VitalPointCategory;
+  readonly severity: VitalPointSeverity;
+  readonly baseDamage?: number;
+  readonly effects: readonly VitalPointEffect[];
+  readonly description: KoreanText;
+  readonly targetingDifficulty: number;
+  readonly effectiveStances: readonly TrigramStance[];
+}
+
+export interface VitalPointEffect {
+  readonly id: string;
+  readonly type: VitalPointEffectType;
+  readonly intensity: EffectIntensity;
+  readonly duration: number;
+  readonly description: KoreanText;
+  readonly stackable: boolean;
+  readonly source?: string;
+}
+
+// Vital point effect
+// Player archetype data
+export interface PlayerArchetypeData {
+  readonly id: string;
+  readonly name: KoreanText;
+  readonly description: KoreanText;
+  readonly baseHealth: number;
+  readonly baseKi: number;
+  readonly baseStamina: number;
+  readonly coreStance: TrigramStance;
+  readonly theme: {
+    primary: number;
+    secondary: number;
+  };
+  readonly colors: {
+    primary: number;
+    secondary: number;
+  };
+  readonly stats: {
+    attackPower: number;
+    defense: number;
+    speed: number;
+    technique: number;
+  };
+  readonly favoredStances: readonly TrigramStance[];
+  readonly specialAbilities: readonly string[];
+  readonly philosophy: KoreanText;
+}
+
+// Region data
+export interface RegionData {
+  readonly name: KoreanText;
+  readonly boundaries: readonly Position[];
+  readonly vitalPoints: readonly VitalPoint[];
+  readonly vulnerabilities: readonly string[];
+}

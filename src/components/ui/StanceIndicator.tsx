@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
+import { TrigramStance } from "../../types/common";
 import { KOREAN_COLORS } from "../../types/constants";
-import { TrigramStance } from "../../types/enums";
 import { ResponsivePixiContainer } from "./base/ResponsivePixiComponents";
 
 export interface StanceIndicatorProps {

@@ -1,18 +1,18 @@
+import { KoreanText } from "@/types";
 import * as PIXI from "pixi.js";
 import {
-  type KoreanTextVariant,
+  KOREAN_COLORS,
+  KOREAN_FONT_WEIGHTS,
+} from "../../../../types/constants";
+import { KOREAN_TEXT_CONSTANTS } from "./constants";
+import {
   type KoreanTextConfig,
+  type KoreanTextVariant,
   KOREAN_FONT_FAMILY,
   KOREAN_TEXT_SIZES,
   KoreanTextSize,
   KoreanTextWeight,
 } from "./types";
-import type { KoreanText } from "../../../../types/korean-text";
-import { KOREAN_TEXT_CONSTANTS } from "./constants";
-import {
-  KOREAN_COLORS,
-  KOREAN_FONT_WEIGHTS,
-} from "../../../../types/constants";
 
 // Fix: Define missing interface locally
 interface KoreanPixiTextOptions {

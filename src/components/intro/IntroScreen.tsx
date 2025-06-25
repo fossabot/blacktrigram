@@ -26,8 +26,8 @@ const PhilosophySection = lazy(() => import("./components/PhilosophySection"));
 const ControlsSection = lazy(() => import("./components/ControlsSection"));
 
 import { useAudio } from "../../audio/AudioProvider";
+import { GameMode } from "../../types/common";
 import { KOREAN_COLORS } from "../../types/constants";
-import { GameMode } from "../../types/enums";
 import { KoreanHeader } from "../ui/KoreanHeader";
 
 // Responsive dimensions

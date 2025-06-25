@@ -3,11 +3,11 @@
 import React, { useState } from "react"; // Fix: Remove unused useCallback
 import usePixiExtensions, { useTick } from "../../../utils/pixiExtensions";
 // Remove direct PIXI React imports - use pixiContainer, etc. directly
+import type { KoreanText } from "../../../types/common";
 import { KOREAN_COLORS } from "../../../types/constants";
-import type { KoreanText } from "../../../types/korean-text";
-import type { BaseButtonProps } from "./BaseButton";
 import type { ProgressTrackerProps } from "../ProgressTracker";
 import type { TrigramWheelProps } from "../TrigramWheel";
+import type { BaseButtonProps } from "./BaseButton";
 
 // Re-export usePixiExtensions for convenience
 export { usePixiExtensions };

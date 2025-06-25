@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js";
 import React, { useCallback } from "react";
+import type { KoreanText } from "../../../types/common";
 import { FONT_FAMILY, KOREAN_COLORS } from "../../../types/constants"; // Fix: Import FONT_FAMILY
-import type { KoreanText } from "../../../types/korean-text";
 import usePixiExtensions from "../../../utils/pixiExtensions";
 
 // Fix: Define missing interfaces

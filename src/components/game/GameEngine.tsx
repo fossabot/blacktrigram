@@ -14,7 +14,7 @@ extend({
 });
 
 // Define GameEngineProps interface locally to avoid conflicts
-interface GameEngineProps {
+export interface GameEngineProps {
   readonly width: number;
   readonly height: number;
   readonly player1: PlayerState;

@@ -3,7 +3,7 @@
  */
 
 import { SoundEffectId } from "@/audio/types";
-import type { TrigramStance } from "../enums";
+import type { TrigramStance } from "../common";
 
 // Combat configuration
 export const COMBAT_CONFIG = {

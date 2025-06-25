@@ -1,15 +1,7 @@
-// filepath: /workspaces/blacktrigram/src/systems/combat/index.ts
 /**
- * Barrel exports for combat types
+ * @module systems/combat
+ * @category Combat System
  */
 
-export type {
-  CombatEventData,
-  CombatResult,
-  CombatStats,
-  CombatSystem,
-  CombatSystemInterface,
-  MatchStatistics,
-  RoundResult,
-  TrainingCombatResult,
-} from "./types";
+export * from "./TrainingCombatSystem";
+export * from "./types";

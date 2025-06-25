@@ -1,6 +1,6 @@
 import { PlayerState } from "../types";
+import { VitalPointSeverity } from "../types/common";
 import { TRIGRAM_TECHNIQUES } from "../types/constants";
-import { VitalPointSeverity } from "../types/enums";
 import { StatusEffect } from "./";
 import { CombatResult, CombatSystemInterface } from "./combat";
 import { TrigramSystem } from "./TrigramSystem";

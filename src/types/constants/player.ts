@@ -2,8 +2,8 @@
  * Player archetype constants for Korean martial arts
  */
 
-import { PlayerArchetype, TrigramStance } from "../enums";
-import type { PlayerArchetypeData } from "../anatomy";
+import { PlayerArchetypeData } from "@/systems";
+import { PlayerArchetype, TrigramStance } from "../common";
 import { KOREAN_COLORS } from "./colors";
 
 // Player archetype data

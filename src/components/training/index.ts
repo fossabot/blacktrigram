@@ -1,9 +1,9 @@
 /**
- * Training mode components for Korean martial arts practice
+ * @module components/training
+ * @category Game Components
  */
 
-// Main training screen
-export { TrainingScreen } from "./TrainingScreen";
+export * from "./TrainingScreen";
 
-// Training-specific utilities and types
+// Re-export prop types
 export type { TrainingScreenProps } from "./TrainingScreen";

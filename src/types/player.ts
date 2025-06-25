@@ -4,7 +4,7 @@
 
 import { StatusEffect } from "@/systems/types";
 import type { KoreanText, Position } from "./common";
-import { CombatState, PlayerArchetype, TrigramStance } from "./enums";
+import { CombatState, PlayerArchetype, TrigramStance } from "./common";
 
 // Core player state interface
 export interface PlayerState {

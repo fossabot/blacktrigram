@@ -6,7 +6,7 @@ import type { PlayerState } from "../../../types/player";
 import { extendPixiComponents } from "../../../utils/pixiExtensions";
 extendPixiComponents();
 
-export interface CombatStatsProps {
+export interface CombatStatsPanelProps {
   readonly players: PlayerState[];
   readonly combatLog: string[];
   readonly x?: number;
@@ -15,7 +15,7 @@ export interface CombatStatsProps {
   readonly height?: number;
 }
 
-export const CombatStats: React.FC<CombatStatsProps> = ({
+export const CombatStatsPanel: React.FC<CombatStatsPanelProps> = ({
   players,
   combatLog,
   x = 0,
@@ -137,4 +137,4 @@ export const CombatStats: React.FC<CombatStatsProps> = ({
   );
 };
 
-export default CombatStats;
+export default CombatStatsPanel;

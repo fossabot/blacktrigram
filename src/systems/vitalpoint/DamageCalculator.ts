@@ -1,5 +1,5 @@
 import { StatusEffect } from "..";
-import { PlayerArchetype } from "../../types/enums";
+import { PlayerArchetype } from "../../types/common";
 import type { PlayerState } from "../../types/player";
 import { DamageResult, KoreanTechnique, VitalPoint } from "./";
 

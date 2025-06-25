@@ -3,10 +3,51 @@
  * Manages all audio assets including Korean martial arts specific sounds
  */
 
-import { AudioAssetRegistry as IAudioAssetRegistry } from "@/audio";
+import {
+  AudioCategory,
+  CombatAudioMap,
+  MusicTrack,
+  MusicTrackId,
+  SoundEffect,
+  SoundEffectId,
+  VoiceLine,
+  VoiceLineId,
+} from "./types";
 
-import { CombatAudioMap, MusicTrack, SoundEffect, VoiceLine } from "./";
-import { MusicTrackId, SoundEffectId, VoiceLineId } from "./types";
+export interface IAudioAssetRegistry {
+  readonly music: Record<string, MusicTrack>;
+  readonly sfx: Record<string, SoundEffect>;
+  readonly voice: Record<string, VoiceLine>;
+  readonly combat: CombatAudioMap;
+}
+
+export interface EnhancedAudioAsset {
+  readonly id: string;
+  readonly type: "sound" | "music" | "voice";
+  readonly url: string;
+  readonly formats: readonly string[];
+  readonly loaded: boolean;
+  volume?: number;
+  readonly loop?: boolean;
+  category?: AudioCategory;
+  readonly metadata?: {
+    readonly duration: number;
+    readonly bitrate?: number;
+    readonly channels?: number;
+    readonly sampleRate?: number;
+  };
+  readonly preloadPriority?: "high" | "medium" | "low";
+  readonly streaming?: boolean;
+  readonly compressionOptions?: {
+    readonly format: string;
+    readonly quality: number;
+  };
+}
+
+// Enhanced audio registry with proper types
+export interface EnhancedAudioAssetRegistry extends AudioAssetRegistry {
+  readonly enhanced?: Record<string, EnhancedAudioAsset>;
+}
 
 // Fix: Use class implementation instead of interface merging
 export class AudioAssetRegistry {

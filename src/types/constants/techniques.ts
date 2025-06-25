@@ -3,7 +3,7 @@
  */
 
 import { KoreanTechnique } from "@/systems/vitalpoint";
-import { CombatAttackType, DamageType, TrigramStance } from "../enums";
+import { CombatAttackType, DamageType, TrigramStance } from "../common";
 
 // Base techniques for each trigram stance
 export const TRIGRAM_TECHNIQUES: Record<

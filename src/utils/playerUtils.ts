@@ -10,7 +10,7 @@ import {
   Position,
   TrigramStance,
 } from "../types";
-import { CombatState } from "../types/enums";
+import { CombatState } from "../types/common";
 
 /**
  * Create a complete PlayerState from archetype and player index
@@ -157,7 +157,7 @@ export function applyStatusEffect(
 /**
  * Get vital point by ID (fix return type)
  */
-export function getVitalPointById(
+export function getVitalPointByOnPlayerId(
   player: PlayerState,
   vitalPointId: string
 ): {

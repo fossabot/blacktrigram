@@ -1,4 +1,4 @@
-import { PlayerArchetype, TrigramStance } from "../../types/enums";
+import { PlayerArchetype, TrigramStance } from "../../types/common";
 import type { PlayerState } from "../../types/player";
 import { CombatSystem } from "../CombatSystem";
 import { KoreanTechnique } from "../vitalpoint";

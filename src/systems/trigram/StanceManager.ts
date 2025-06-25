@@ -1,8 +1,8 @@
 import { PlayerState } from "../../types";
-import { TrigramStance } from "../../types/enums";
-import { TrigramCalculator } from "./TrigramCalculator";
+import { TrigramStance } from "../../types/common";
 import { PLAYER_ARCHETYPES_DATA } from "../../types/constants";
 import { TrigramTransitionCost } from "./";
+import { TrigramCalculator } from "./TrigramCalculator";
 
 export interface StanceChangeResult {
   readonly success: boolean;

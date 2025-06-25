@@ -1,16 +1,7 @@
 {
   "$schema": "https://typedoc.org/schema.json",
-  "entryPoints": [
-    "./src/main.tsx",
-    "./src/App.tsx",
-    "./src/systems/index.ts",
-    "./src/types/index.ts",
-    "./src/components/index.ts",
-    "./src/hooks/index.ts",
-    "./src/utils/index.ts",
-    "./src/audio/index.ts"
-  ],
-  "entryPointStrategy": "resolve",
+  "entryPoints": ["./src/index.ts"],
+  "entryPointStrategy": "expand",
   "out": "docs/api",
   "name": "Black Trigram (흑괘) - Korean Martial Arts Combat Simulator API",
   "readme": "README.md",
@@ -32,7 +23,7 @@
     "**/*.ipynb",
     "**/*.css"
   ],
-  "excludeExternals": true,
+  "excludeExternals": false,
   "excludePrivate": false,
   "excludeProtected": false,
   "excludeNotDocumented": false,
@@ -134,7 +125,7 @@
     "protected": true,
     "private": true,
     "inherited": true,
-    "external": false
+    "external": true
   },
   "commentStyle": "jsdoc",
   "useTsLinkResolution": true,
@@ -149,7 +140,8 @@
       "Container": "https://pixijs.download/release/docs/scene.Container.html",
       "Graphics": "https://pixijs.download/release/docs/scene.Graphics.html",
       "Text": "https://pixijs.download/release/docs/scene.Text.html",
-      "Sprite": "https://pixijs.download/release/docs/scene.Sprite.html"
+      "Sprite": "https://pixijs.download/release/docs/scene.Sprite.html",
+      "DisplayObject": "https://pixijs.download/release/docs/scene.DisplayObject.html"
     },
     "react": {
       "*": "https://react.dev/reference/react/"

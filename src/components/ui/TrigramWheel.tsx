@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from "react";
-import { TrigramStance } from "../../types/enums";
+import { TrigramStance } from "../../types/common";
 import { KOREAN_COLORS } from "../../types/constants";
 import { ResponsivePixiContainer } from "./base/ResponsivePixiComponents";
 

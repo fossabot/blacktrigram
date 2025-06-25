@@ -426,23 +426,6 @@ export function createKoreanStatusEffect(
   );
 }
 
-export function createVitalPointEffect(
-  vitalPointName: string,
-  effectType: EffectType,
-  duration: number = 5000
-): StatusEffect {
-  return createStatusEffect(
-    `vital_point_${effectType}`,
-    effectType, // This is correct - use the parameter directly
-    "medium" as EffectIntensity,
-    duration,
-    {
-      korean: `${vitalPointName} 급소 타격`,
-      english: `${vitalPointName} vital point strike`,
-    }
-  );
-}
-
 export function createTrigramEffect(
   stanceName: string,
   effectType: EffectType,

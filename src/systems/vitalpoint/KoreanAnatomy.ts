@@ -681,7 +681,7 @@ export const SAMPLE_VITAL_POINTS: readonly VitalPoint[] = [
 ] as const;
 
 // Anatomical regions with proper boundaries
-export const ANATOMICAL_REGIONS: Record<string, AnatomicalRegion> = {
+export const ANATOMICAL_REGIONS_DATA: Record<string, AnatomicalRegion> = {
   head: {
     id: "head",
     name: { korean: "머리", english: "Head" },
@@ -752,11 +752,11 @@ export const ANATOMICAL_REGIONS: Record<string, AnatomicalRegion> = {
 export function getVitalPointsInRegion(
   regionId: string
 ): readonly VitalPoint[] {
-  return ANATOMICAL_REGIONS[regionId]?.vitalPoints || [];
+  return ANATOMICAL_REGIONS_DATA[regionId]?.vitalPoints || [];
 }
 
 export function getRegionBoundaries(regionId: string): readonly Position[] {
-  return ANATOMICAL_REGIONS[regionId]?.boundaries || [];
+  return ANATOMICAL_REGIONS_DATA[regionId]?.boundaries || [];
 }
 
 export function isPositionInRegion(
@@ -777,7 +777,7 @@ export function isPositionInRegion(
 }
 
 export function getRegionForPosition(position: Position): string | null {
-  for (const regionId of Object.keys(ANATOMICAL_REGIONS)) {
+  for (const regionId of Object.keys(ANATOMICAL_REGIONS_DATA)) {
     if (isPositionInRegion(position, regionId)) {
       return regionId;
     }

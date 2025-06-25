@@ -54,11 +54,6 @@ export interface AudioChannel {
   readonly connectedSources: readonly string[];
 }
 
-// Enhanced audio registry with proper types
-export interface EnhancedAudioAssetRegistry extends AudioAssetRegistry {
-  readonly enhanced?: Record<string, EnhancedAudioAsset>;
-}
-
 // Audio platform capabilities
 export interface AudioCapabilities {
   readonly supportsWebAudio: boolean;
@@ -68,7 +63,6 @@ export interface AudioCapabilities {
   readonly spatialAudio: boolean;
   readonly realTimeEffects: boolean;
 }
-
 
 export interface IAudioManager {
   readonly isInitialized: boolean;
@@ -169,16 +163,6 @@ export interface CombatAudioMap {
   readonly ui: Record<string, SoundEffectId>;
 }
 
-export interface AudioManager {
-  readonly isInitialized: boolean;
-  readonly fallbackMode: boolean;
-  readonly currentMusicTrack: MusicTrackId | null;
-  readonly masterVolume: number;
-  readonly musicVolume: number;
-  readonly sfxVolume: number;
-  readonly muted: boolean;
-}
-
 export interface AudioState {
   readonly isPlaying: boolean;
   readonly isPaused: boolean;
@@ -193,29 +177,6 @@ export interface AudioState {
   readonly currentMusicTrack: string | null;
   readonly isInitialized: boolean;
   readonly fallbackMode: boolean;
-}
-
-export interface EnhancedAudioAsset {
-  readonly id: string;
-  readonly type: "sound" | "music" | "voice";
-  readonly url: string;
-  readonly formats: readonly string[];
-  readonly loaded: boolean;
-  volume?: number;
-  readonly loop?: boolean;
-  category?: AudioCategory;
-  readonly metadata?: {
-    readonly duration: number;
-    readonly bitrate?: number;
-    readonly channels?: number;
-    readonly sampleRate?: number;
-  };
-  readonly preloadPriority?: "high" | "medium" | "low";
-  readonly streaming?: boolean;
-  readonly compressionOptions?: {
-    readonly format: string;
-    readonly quality: number;
-  };
 }
 
 export interface AudioPlaybackOptions {
@@ -248,13 +209,6 @@ export interface CombatAudioEvent {
   readonly critical?: boolean;
 }
 
-export interface AudioAssetRegistry {
-  readonly music: Record<string, MusicTrack>;
-  readonly sfx: Record<string, SoundEffect>;
-  readonly voice: Record<string, VoiceLine>;
-  readonly combat: CombatAudioMap;
-}
-
 export interface AudioLoadingState {
   readonly total: number;
   readonly loaded: number;
@@ -262,6 +216,14 @@ export interface AudioLoadingState {
   readonly currentAsset?: string;
   readonly progress: number;
   readonly errors: readonly string[];
+}
+export interface AudioSystemInterface {
+  playSFX: (id: SoundEffectId, options?: AudioPlaybackOptions) => void;
+  playMusic: (id: MusicTrackId, options?: AudioPlaybackOptions) => void;
+  stopMusic: (id?: MusicTrackId, fadeOutDuration?: number) => void;
+  setVolume: (type: "master" | "sfx" | "music", volume: number) => void;
+  loadAudioAsset: (asset: AudioAsset) => Promise<void>;
+  isMusicPlaying: (id?: MusicTrackId) => boolean;
 }
 
 export interface AudioManagerInterface extends IAudioManager {}

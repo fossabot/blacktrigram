@@ -1,4 +1,4 @@
-import { TrigramStance } from "../../types/enums";
+import { TrigramStance } from "../../types/common";
 
 /**
  * Enhanced stance effectiveness matrix for Korean martial arts

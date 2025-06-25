@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { TrigramStance } from "../../types/common";
 import {
-  TrigramCalculator,
   STANCE_EFFECTIVENESS_MATRIX,
+  TrigramCalculator,
 } from "./TrigramCalculator";
-import { TrigramStance } from "../../types/enums";
 
 describe("TrigramCalculator", () => {
   let calc: TrigramCalculator;

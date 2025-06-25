@@ -1,7 +1,10 @@
+// Import enums from enums.ts
+
 // Combat effects and status system for Korean martial arts
 
 // Hit effect for visual feedback
 // Hit effect types
+
 export enum HitEffectType {
   GENERAL_DAMAGE = "general_damage",
   CRITICAL_HIT = "critical_hit",
@@ -14,17 +17,34 @@ export enum HitEffectType {
   HIT = "hit",
 }
 
-// Fix: Add missing EffectIntensity values
-export type EffectIntensity =
-  | "weak" // Fix: Add weak
-  | "minor"
-  | "low"
-  | "medium"
-  | "moderate"
-  | "high"
-  | "severe"
-  | "critical"
-  | "extreme"; // Fix: Add extreme
+// Effect types for status effects
+export enum HitEffectEnum {
+  STUN = "stun",
+  WEAKNESS = "weakness",
+  STAMINA_DRAIN = "stamina_drain",
+  VULNERABILITY = "vulnerability",
+  BLEEDING = "bleeding",
+  BUFF = "buff",
+  DEBUFF = "debuff",
+  PARALYSIS = "paralysis",
+  POISON = "poison",
+  BURN = "burn",
+  FREEZE = "freeze",
+  CONFUSION = "confusion",
+}
+
+// Effect intensity levels
+export enum EffectIntensity {
+  WEAK = "weak",
+  MINOR = "minor",
+  LOW = "low",
+  MEDIUM = "medium",
+  MODERATE = "moderate",
+  HIGH = "high",
+  SEVERE = "severe",
+  CRITICAL = "critical",
+  EXTREME = "extreme",
+}
 
 // Status effects that can be applied to players
 // Effect types
@@ -46,26 +66,24 @@ export type EffectType =
 
 // Particle effect for visual feedback
 // Particle effect types
-export enum ParticleType {
-  SPARK = "spark",
-  BLOOD = "blood",
-  ENERGY = "energy",
-  DUST = "dust",
-  FLASH = "flash",
-  SMOKE = "smoke",
-  LIGHTNING = "lightning",
-  WIND = "wind",
-}
+export type ParticleType =
+  | "spark"
+  | "blood"
+  | "energy"
+  | "dust"
+  | "flash"
+  | "smoke"
+  | "lightning"
+  | "wind";
 
 // Environmental effect
 // Environmental effect types
-export enum EnvironmentalEffectType {
-  SMOKE = "smoke",
-  FIRE = "fire",
-  ICE = "ice",
-  WIND = "wind",
-  LIGHTNING = "lightning",
-  DARKNESS = "darkness",
-  LIGHT = "light",
-  PRESSURE = "pressure",
-}
+export type EnvironmentalEffectType =
+  | "smoke"
+  | "fire"
+  | "ice"
+  | "wind"
+  | "lightning"
+  | "darkness"
+  | "light"
+  | "pressure";
