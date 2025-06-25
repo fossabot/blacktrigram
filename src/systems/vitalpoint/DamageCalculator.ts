@@ -1,6 +1,6 @@
-import { StatusEffect } from "..";
 import { PlayerArchetype } from "../../types/common";
-import type { PlayerState } from "../../types/player";
+import { PlayerState } from "../player";
+import { StatusEffect } from "../types";
 import { DamageResult, KoreanTechnique, VitalPoint } from "./";
 
 export class DamageCalculator {

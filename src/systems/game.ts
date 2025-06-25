@@ -1,6 +1,6 @@
 // Core game state and flow management
 
-import { GameMode, KoreanText } from "./common";
+import { GameMode, KoreanText } from "@/types";
 import type { PlayerState } from "./player";
 
 // Match configuration

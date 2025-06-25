@@ -4,10 +4,10 @@ import "./App.css";
 import { AudioProvider } from "./audio/AudioProvider";
 import { CombatScreen } from "./components/combat/CombatScreen";
 import { IntroScreen } from "./components/intro/IntroScreen";
+import { PlayerState } from "./systems";
 import { MatchStatistics } from "./systems/combat";
 import { exposePixiAppForTesting } from "./test/pixi-cypress-helpers";
 import { GameMode, PlayerArchetype } from "./types/common";
-import type { PlayerState } from "./types/player";
 import { usePixiExtensions } from "./utils/pixiExtensions";
 import { createPlayerFromArchetype } from "./utils/playerUtils";
 

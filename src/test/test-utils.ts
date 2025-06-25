@@ -1,8 +1,8 @@
+import { PlayerState } from "@/systems";
 import type { RenderOptions } from "@testing-library/react";
 import { render } from "@testing-library/react";
 import React from "react";
 import { CombatState, PlayerArchetype, TrigramStance } from "../types/common";
-import type { PlayerState } from "../types/player";
 
 export function renderWithPixi(ui: React.ReactElement) {
   return render(ui);

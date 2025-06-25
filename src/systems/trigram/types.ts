@@ -9,11 +9,11 @@ import { TrigramStance } from "../../types/common";
 
 import {
   KOREAN_COLORS,
-  type EffectType,
   type KoreanText,
   type PlayerArchetype,
-  type PlayerState,
 } from "../../types";
+import { EffectType } from "../effects";
+import { PlayerState } from "../player";
 import { KoreanTechnique } from "../vitalpoint";
 
 export interface TrigramTransitionCost {

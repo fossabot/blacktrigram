@@ -1,8 +1,8 @@
 import React from "react";
 import { KOREAN_COLORS } from "../../../types/constants";
-import type { PlayerState } from "../../../types/player";
 
 // Ensure PixiJS components are extended
+import { PlayerState } from "@/systems";
 import { extendPixiComponents } from "../../../utils/pixiExtensions";
 extendPixiComponents();
 

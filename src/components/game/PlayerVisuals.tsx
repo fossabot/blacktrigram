@@ -1,7 +1,6 @@
-import { PLAYER_ARCHETYPES_DATA } from "@/systems";
+import { PLAYER_ARCHETYPES_DATA, PlayerState } from "@/systems";
 import React from "react";
 import { KOREAN_COLORS } from "../../types/constants";
-import type { PlayerState } from "../../types/player";
 import { lightenColor } from "../../utils/colorUtils";
 import usePixiExtensions from "../../utils/pixiExtensions";
 

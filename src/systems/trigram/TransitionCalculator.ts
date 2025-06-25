@@ -1,5 +1,6 @@
-import { PlayerState, TrigramStance } from "../../types";
+import { TrigramStance } from "../../types";
 import { TrigramStance as TrigramStanceEnum } from "../../types/common";
+import { PlayerState } from "../player";
 import { TrigramTransitionCost, TrigramTransitionRule } from "./";
 
 /**

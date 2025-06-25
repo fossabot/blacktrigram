@@ -77,6 +77,9 @@ export type {
 
 export * from "./combat";
 export * from "./CombatSystem";
+export * from "./effects";
+export * from "./game";
+export * from "./player";
 export * from "./trigram";
 export * from "./TrigramSystem";
 export * from "./types";

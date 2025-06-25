@@ -5,6 +5,12 @@
 
 // System imports from shared types - avoid circular dependencies
 import { AudioSystemInterface, SoundEffectId } from "@/audio";
+import type {
+  EffectIntensity,
+  EnvironmentalEffectType,
+  HitEffectType,
+  ParticleType,
+} from "@/systems/effects";
 import { KOREAN_COLORS } from "@/types";
 import {
   KoreanText,
@@ -12,12 +18,6 @@ import {
   Position,
   TrigramStance,
 } from "@/types/common";
-import type {
-  EffectIntensity,
-  EnvironmentalEffectType,
-  HitEffectType,
-  ParticleType,
-} from "@/types/effects";
 
 export interface AnimationConfig {
   readonly name: string;

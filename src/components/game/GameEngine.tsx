@@ -1,10 +1,10 @@
 // Complete game engine for Black Trigram Korean martial arts
 
+import { PlayerState } from "@/systems";
 import { extend } from "@pixi/react";
 import { Container, Graphics, Text } from "pixi.js";
 import React, { useCallback } from "react";
 import { KoreanTechnique } from "../../systems/vitalpoint";
-import type { PlayerState } from "../../types/player";
 
 // Extend PixiJS components
 extend({

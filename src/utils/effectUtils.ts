@@ -1,6 +1,6 @@
 import { HitEffect, StatusEffect } from "../systems";
-import type { EffectIntensity, KoreanText, Position } from "../types";
-import { EffectType, HitEffectType } from "../types/effects";
+import { EffectIntensity, EffectType, HitEffectType } from "../systems/effects";
+import type { KoreanText, Position } from "../types";
 
 /**
  * Create a hit effect for visual feedback

@@ -1,5 +1,5 @@
 import { TrigramStance } from "../types/common";
-import type { PlayerState } from "../types/player";
+import { PlayerState } from "./player";
 
 import { TRIGRAM_STANCES_ORDER, TrigramTransitionCost } from "./trigram";
 import { TrigramCalculator } from "./trigram/TrigramCalculator";

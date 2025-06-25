@@ -3,8 +3,13 @@
  */
 
 import { StatusEffect } from "@/systems/types";
-import type { KoreanText, Position } from "./common";
-import { CombatState, PlayerArchetype, TrigramStance } from "./common";
+import {
+  CombatState,
+  KoreanText,
+  PlayerArchetype,
+  Position,
+  TrigramStance,
+} from "@/types";
 
 // Core player state interface
 export interface PlayerState {

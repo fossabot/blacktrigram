@@ -1,12 +1,12 @@
 // Korean vital points for Black Trigram (흑괘)
 // Complete, culturally accurate, bilingual (Korean, English, Romanization)
-import { EffectIntensity } from "@/types";
 import {
   TrigramStance,
   VitalPointCategory,
   VitalPointEffectType,
   VitalPointSeverity,
 } from "../../types/common";
+import { EffectIntensity } from "../effects";
 import { VitalPoint } from "./types";
 
 /**

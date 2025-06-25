@@ -6,7 +6,7 @@
 
 // Combat-specific imports from shared types
 import { GameMode, GamePhase, Position, TrigramStance } from "@/types";
-import type { PlayerMatchStats, PlayerState } from "../../types/player";
+import { PlayerMatchStats, PlayerState } from "../player";
 import { StatusEffect } from "../types";
 import { VitalPointHitResult } from "../vitalpoint";
 import { KoreanTechnique } from "../vitalpoint/types";

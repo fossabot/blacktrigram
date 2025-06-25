@@ -1,11 +1,11 @@
 import {
-  EffectIntensity,
   TrigramStance,
   VitalPointCategory,
   VitalPointEffectType,
   VitalPointSeverity,
 } from "@/types";
 import type { KoreanText, Position } from "../../types/common";
+import { EffectIntensity } from "../effects";
 import { StatusEffect } from "../types";
 import { AnatomicalRegion, VitalPoint, VitalPointEffect } from "./types";
 

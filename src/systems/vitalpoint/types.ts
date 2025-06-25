@@ -6,16 +6,16 @@
 // Vital point system imports from shared types
 import type {
   DamageRange,
-  EffectIntensity,
   KoreanText,
   PlayerArchetype,
-  PlayerState,
   Position,
   TrigramStance,
   VitalPointCategory,
   VitalPointEffectType,
   VitalPointSeverity,
 } from "../../types";
+import { EffectIntensity } from "../effects";
+import { PlayerState } from "../player";
 import { StatusEffect } from "../types";
 
 export interface KoreanTechnique {

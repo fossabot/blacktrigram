@@ -1,8 +1,8 @@
 import { HitEffect } from "@/systems";
 import * as PIXI from "pixi.js";
 import React, { useCallback, useEffect, useState } from "react";
+import { HitEffectType } from "../../systems/effects";
 import { KOREAN_COLORS } from "../../types/constants";
-import { HitEffectType } from "../../types/effects";
 
 export interface HitEffectsLayerProps {
   readonly effects: HitEffect[];
