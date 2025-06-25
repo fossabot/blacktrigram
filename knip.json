@@ -1,0 +1,15 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["src/index.ts"],
+  "project": ["**/*.{ts,tsx}"],
+  "eslint": {
+    "config": [".eslintrc.cjs"]
+  },
+  "cypress": {
+    "entry": [
+      "cypress.config.ts",
+      "cypress/e2e/*.spec.ts",
+      "cypress/support/*.ts"
+    ]
+  }
+}
