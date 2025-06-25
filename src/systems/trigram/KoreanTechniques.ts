@@ -1,7 +1,7 @@
 import { PlayerArchetype, PlayerState, TrigramStance } from "../../types";
-import { PLAYER_ARCHETYPES_DATA } from "../../types/constants/player";
-import { TRIGRAM_TECHNIQUES } from "../../types/constants/techniques";
 import { TrigramStance as TrigramStanceEnum } from "../../types/common";
+import { TRIGRAM_TECHNIQUES } from "../../types/constants/techniques";
+import { PLAYER_ARCHETYPES_DATA } from "../types";
 import { KoreanTechnique } from "../vitalpoint";
 
 /**

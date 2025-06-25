@@ -2,8 +2,7 @@
  * Player state utilities and helper functions
  */
 
-import { PLAYER_ARCHETYPES_DATA } from "@/types/constants";
-import { StatusEffect } from "../systems";
+import { PLAYER_ARCHETYPES_DATA, StatusEffect } from "../systems";
 import {
   PlayerArchetype,
   PlayerState,

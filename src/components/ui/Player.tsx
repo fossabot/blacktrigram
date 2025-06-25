@@ -1,9 +1,10 @@
 // Complete Player UI component with Korean martial arts character rendering
 
+import { PLAYER_ARCHETYPES_DATA } from "@/systems";
 import { PlayerState } from "@/types";
 import * as PIXI from "pixi.js";
 import React, { useCallback, useMemo } from "react";
-import { KOREAN_COLORS, PLAYER_ARCHETYPES_DATA } from "../../types/constants";
+import { KOREAN_COLORS } from "../../types/constants";
 import { getArchetypeColors } from "../../utils/colorUtils";
 import { usePixiExtensions } from "../../utils/pixiExtensions";
 import { BaseComponentProps } from "./";

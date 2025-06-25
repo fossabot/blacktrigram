@@ -6,7 +6,6 @@
 export { CYBERPUNK_COLORS, KOREAN_COLORS } from "./colors";
 export { COMBAT_CONFIG, COMBAT_CONSTANTS } from "./combat";
 export { COMBAT_TIMING, DAMAGE_CONSTANTS, GAME_CONFIG } from "./game";
-export { PLAYER_ARCHETYPES_DATA } from "./player";
 export { TECHNIQUE_PROPERTIES, TRIGRAM_TECHNIQUES } from "./techniques";
 export {
   FONT_FAMILY,
@@ -52,5 +51,4 @@ export const MAX_TRANSITION_COST_STAMINA = 30;
 export const MAX_TRANSITION_TIME_MILLISECONDS = 1000;
 
 // Re-export from sub-modules
-export * from "./player";
 export * from "./techniques";

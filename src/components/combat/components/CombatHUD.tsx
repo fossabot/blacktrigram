@@ -1,6 +1,6 @@
+import { PLAYER_ARCHETYPES_DATA } from "@/systems";
 import React, { useCallback } from "react";
 import { KOREAN_COLORS } from "../../../types/constants";
-import { PLAYER_ARCHETYPES_DATA } from "../../../types/constants/player";
 import type { PlayerState } from "../../../types/player";
 import { extendPixiComponents } from "../../../utils/pixiExtensions";
 import { HealthBar } from "../../ui/HealthBar";

@@ -1,9 +1,9 @@
 import { TrigramStance } from "../types/common";
-import { PLAYER_ARCHETYPES_DATA } from "../types/constants/player";
 import type { PlayerState } from "../types/player";
 
 import { TRIGRAM_STANCES_ORDER, TrigramTransitionCost } from "./trigram";
 import { TrigramCalculator } from "./trigram/TrigramCalculator";
+import { PLAYER_ARCHETYPES_DATA } from "./types";
 
 export class TrigramSystem {
   private calculator: TrigramCalculator;

@@ -1,6 +1,6 @@
 import { PlayerState } from "../../types";
 import { TrigramStance } from "../../types/common";
-import { PLAYER_ARCHETYPES_DATA } from "../../types/constants";
+import { PLAYER_ARCHETYPES_DATA } from "../types";
 import { TrigramTransitionCost } from "./";
 import { TrigramCalculator } from "./TrigramCalculator";
 
