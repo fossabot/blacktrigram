@@ -3,10 +3,6 @@
  */
 
 // Fix: Remove duplicate exports and ensure proper imports
-export {
-  TECHNIQUE_PROPERTIES,
-  TRIGRAM_TECHNIQUES,
-} from "../../systems/trigram/techniques";
 export { CYBERPUNK_COLORS, KOREAN_COLORS } from "./colors";
 export {
   FONT_FAMILY,

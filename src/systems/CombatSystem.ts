@@ -1,9 +1,9 @@
 import { PlayerState } from "../types";
 import { VitalPointSeverity } from "../types/common";
-import { TRIGRAM_TECHNIQUES } from "../types/constants";
-import { StatusEffect } from "./";
 import { CombatResult, CombatSystemInterface } from "./combat";
+import { TRIGRAM_TECHNIQUES } from "./trigram";
 import { TrigramSystem } from "./TrigramSystem";
+import { StatusEffect } from "./types";
 import { KoreanTechnique, VitalPointHitResult } from "./vitalpoint";
 import { VitalPointSystem } from "./VitalPointSystem";
 
