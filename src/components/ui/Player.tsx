@@ -7,7 +7,7 @@ import React, { useCallback, useMemo } from "react";
 import { KOREAN_COLORS } from "../../types/constants";
 import { getArchetypeColors } from "../../utils/colorUtils";
 import { usePixiExtensions } from "../../utils/pixiExtensions";
-import { BaseComponentProps } from "./";
+import { BaseComponentProps } from "./types";
 
 export interface PlayerProps extends BaseComponentProps {
   readonly playerState: PlayerState;
