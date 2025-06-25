@@ -53,20 +53,20 @@
   "tsconfig": "tsconfig.json",
   "lang": "en",
   "githubPages": true,
-  "sourceLinkTemplate": "https://github.com/YOUR_USERNAME/blacktrigram/blob/{gitRevision}/{path}#L{line}",
+  "sourceLinkTemplate": "https://github.com/Hack23/blacktrigram/blob/{gitRevision}/{path}#L{line}",
   "disableSources": false,
   "gitRevision": "main",
   "gitRemote": "origin",
   "navigationLinks": {
-    "GitHub": "https://github.com/YOUR_USERNAME/blacktrigram",
-    "README": "https://github.com/YOUR_USERNAME/blacktrigram/blob/main/README.md",
-    "Game Design": "https://github.com/YOUR_USERNAME/blacktrigram/blob/main/game-design.md",
-    "Architecture": "https://github.com/YOUR_USERNAME/blacktrigram/blob/main/ARCHITECTURE.md",
-    "Combat System": "https://github.com/YOUR_USERNAME/blacktrigram/blob/main/COMBAT_ARCHITECTURE.md"
+    "GitHub": "https://github.com/Hack23/blacktrigram",
+    "README": "https://github.com/Hack23/blacktrigram/blob/main/README.md",
+    "Game Design": "https://github.com/Hack23/blacktrigram/blob/main/game-design.md",
+    "Architecture": "https://github.com/Hack23/blacktrigram/blob/main/ARCHITECTURE.md",
+    "Combat System": "https://github.com/Hack23/blacktrigram/blob/main/COMBAT_ARCHITECTURE.md"
   },
   "sidebarLinks": {
-    "Game Documentation": "https://github.com/YOUR_USERNAME/blacktrigram/tree/main/docs",
-    "Korean Martial Arts": "https://github.com/YOUR_USERNAME/blacktrigram/blob/main/mindmap.md"
+    "Game Documentation": "https://github.com/Hack23/blacktrigram/tree/main/docs",
+    "Korean Martial Arts": "https://github.com/Hack23/blacktrigram/blob/main/mindmap.md"
   },
   "searchInComments": true,
   "logLevel": "Info",
