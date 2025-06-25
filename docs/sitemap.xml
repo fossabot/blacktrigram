@@ -3,14 +3,14 @@
   <!-- Main Pages -->
   <url>
     <loc>https://blacktrigram.com/</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
@@ -18,14 +18,14 @@
   <!-- API Documentation Structure Pages -->
   <url>
     <loc>https://blacktrigram.com/api/modules.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/hierarchy.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -33,7 +33,7 @@
   <!-- Classes -->
   <url>
     <loc>https://blacktrigram.com/api/classes/KoreanCulture.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -41,21 +41,21 @@
   <!-- Functions -->
   <url>
     <loc>https://blacktrigram.com/api/functions/App.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/functions/getAnatomicalZones.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/functions/getVitalPointsByCategory.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -63,28 +63,28 @@
   <!-- Interfaces - Game Core -->
   <url>
     <loc>https://blacktrigram.com/api/interfaces/GameConfig.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/interfaces/GameState.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/interfaces/GameSystemManager.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/interfaces/GameSaveData.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -92,21 +92,21 @@
   <!-- Interfaces - Combat System -->
   <url>
     <loc>https://blacktrigram.com/api/interfaces/CombatArenaProps.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/interfaces/CombatAudioMap.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/interfaces/RoundResult.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -114,42 +114,42 @@
   <!-- Interfaces - Vital Points System -->
   <url>
     <loc>https://blacktrigram.com/api/interfaces/VitalPoint.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/interfaces/VitalPointNames.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/interfaces/VitalPointEffect.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/interfaces/VitalPointSystem.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/interfaces/VitalPointSystemInterface.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/interfaces/VitalPointSystemConfig.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -157,21 +157,21 @@
   <!-- Interfaces - Anatomical System -->
   <url>
     <loc>https://blacktrigram.com/api/interfaces/AnatomicalRegion.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/interfaces/RegionData.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/interfaces/EnergyMeridian.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -179,35 +179,35 @@
   <!-- Interfaces - System Architecture -->
   <url>
     <loc>https://blacktrigram.com/api/interfaces/SystemConfig.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/interfaces/SystemPerformance.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/interfaces/AISystemConfig.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/interfaces/EventBusInterface.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/interfaces/RenderingSystemInterface.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -215,14 +215,14 @@
   <!-- Interfaces - UI/UX -->
   <url>
     <loc>https://blacktrigram.com/api/interfaces/Theme.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/interfaces/TransitionPath.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -230,35 +230,35 @@
   <!-- Interfaces - Utility -->
   <url>
     <loc>https://blacktrigram.com/api/interfaces/Config.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/interfaces/Result.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/interfaces/Size.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/interfaces/Velocity.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/interfaces/RenderableConfig.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -266,21 +266,21 @@
   <!-- Variables - Game Configuration -->
   <url>
     <loc>https://blacktrigram.com/api/variables/GAME_CONFIG.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/variables/GAME_METADATA.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/variables/UI_LAYOUT.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -288,21 +288,21 @@
   <!-- Variables - Combat System -->
   <url>
     <loc>https://blacktrigram.com/api/variables/CombatArena.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/variables/GameEngine.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/variables/TRIGRAM_TECHNIQUES.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -310,7 +310,7 @@
   <!-- Variables - Vital Points Data -->
   <url>
     <loc>https://blacktrigram.com/api/variables/SAMPLE_VITAL_POINTS.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -318,35 +318,35 @@
   <!-- Variables - Korean Cultural Data -->
   <url>
     <loc>https://blacktrigram.com/api/variables/KOREAN_ANATOMICAL_ZONES.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/variables/KOREAN_ANATOMICAL_ZONES_ARRAY.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/variables/KOREAN_TECHNIQUE_CATEGORIES.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/variables/ANATOMICAL_REGIONS_DATA.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/variables/ENERGY_MERIDIANS_ARRAY.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
@@ -354,14 +354,14 @@
   <!-- Variables - Audio System -->
   <url>
     <loc>https://blacktrigram.com/api/variables/ARCHETYPE_MUSIC_THEMES.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
     <loc>https://blacktrigram.com/api/variables/ALL_PLACEHOLDER_MUSIC.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -369,7 +369,7 @@
   <!-- Types -->
   <url>
     <loc>https://blacktrigram.com/api/types/Percentage.html</loc>
-    <lastmod>2025-01-23</lastmod>
+    <lastmod>2025-06-24</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.5</priority>
   </url>
