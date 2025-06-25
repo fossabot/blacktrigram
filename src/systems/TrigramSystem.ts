@@ -1,10 +1,9 @@
-import { TrigramStance } from "../types/enums";
-import type { PlayerState } from "../types/player";
-import { PLAYER_ARCHETYPES_DATA } from "../types/constants/player";
+import { TrigramStance } from "../types/common";
+import { PlayerState } from "./player";
 
+import { TRIGRAM_STANCES_ORDER, TrigramTransitionCost } from "./trigram";
 import { TrigramCalculator } from "./trigram/TrigramCalculator";
-import { TRIGRAM_STANCES_ORDER } from "../types/constants";
-import { TrigramTransitionCost } from "./trigram";
+import { PLAYER_ARCHETYPES_DATA } from "./types";
 
 export class TrigramSystem {
   private calculator: TrigramCalculator;

@@ -1,8 +1,8 @@
+import { PlayerState } from "@/systems";
 import { MatchStatistics } from "@/systems/combat";
 import { FillGradient } from "pixi.js";
 import React, { useMemo } from "react";
 import { KOREAN_COLORS } from "../../types/constants";
-import { PlayerState } from "../../types/player";
 import {
   ResponsivePixiButton,
   ResponsivePixiContainer,

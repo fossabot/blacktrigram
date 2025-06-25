@@ -1,16 +1,15 @@
-// Base UI component exports for Korean martial arts game
+/**
+ * @module components/ui/base
+ * @category UI Components
+ */
 
-// Background components
-export { BackgroundGrid } from "./BackgroundGrid";
-
-// Button components
-export { BaseButton } from "./BaseButton";
-
-// Korean text system
-export * from "./korean-text";
-
-// PIXI components
+export * from "./BackgroundGrid";
 export * from "./BaseButton";
-export { default as KoreanPixiComponents } from "./KoreanPixiComponents";
-export { default as PixiComponents } from "./PixiComponents";
+export * from "./korean-text";
+export * from "./KoreanPixiComponents";
+export * from "./PixiComponents";
+export * from "./PixiTestableComponents";
 export * from "./ResponsivePixiComponents";
+
+// Re-export component prop types
+export type { BaseButtonProps } from "./BaseButton";

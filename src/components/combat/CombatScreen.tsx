@@ -1,8 +1,8 @@
-import { HitEffect } from "@/systems";
-import { GameMode, PlayerState, Position } from "@/types";
+import { HitEffect, PlayerState } from "@/systems";
+import { GameMode, Position } from "@/types";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { HitEffectType } from "../../systems/effects"; // Fix: Import HitEffectType from effects.ts
 import { KOREAN_COLORS } from "../../types/constants";
-import { HitEffectType } from "../../types/effects"; // Fix: Import HitEffectType from effects.ts
 import { extendPixiComponents } from "../../utils/pixiExtensions";
 import { DojangBackground } from "../game/DojangBackground";
 import { ResponsivePixiPanel } from "../ui/base/ResponsivePixiComponents";
@@ -10,7 +10,7 @@ import { HitEffectsLayer } from "../ui/HitEffectsLayer";
 import { CombatArena } from "./components/CombatArena";
 import { CombatControls } from "./components/CombatControls";
 import { CombatHUD } from "./components/CombatHUD";
-import { CombatStats } from "./components/CombatStats";
+import { CombatStatsPanel } from "./components/CombatStatsPanel";
 import { PlayerStatusPanel } from "./components/PlayerStatusPanel";
 
 // Ensure PixiJS components are extended
@@ -246,7 +246,7 @@ export const CombatScreen: React.FC<CombatScreenProps> = ({
         screenWidth={width}
         screenHeight={height}
       >
-        <CombatStats
+        <CombatStatsPanel
           players={validPlayers}
           combatLog={combatLog}
           x={0}

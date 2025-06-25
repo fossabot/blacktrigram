@@ -1,16 +1,13 @@
-// filepath: /workspaces/blacktrigram/src/systems/vitalpoint/index.ts
 /**
- * Barrel exports for vitalpoint types
+ * @module systems/vitalpoint
+ * @category Vital Point System
  */
 
-export type {
-  AnatomicalRegion,
-  DamageResult,
-  KoreanTechnique,
-  VitalPoint,
-  VitalPointEffect,
-  VitalPointHitResult,
-  VitalPointSystem,
-  VitalPointSystemConfig,
-  VitalPointSystemInterface,
-} from "./types";
+export * from "./DamageCalculator";
+export * from "./HitDetection";
+export * from "./KoreanAnatomy";
+export * from "./KoreanVitalPoints";
+export * from "./types";
+
+// Re-export types
+export type { VitalPointNames } from "./types";

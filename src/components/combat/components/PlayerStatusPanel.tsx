@@ -1,6 +1,6 @@
+import { PlayerState } from "@/systems";
 import React from "react";
 import { KOREAN_COLORS } from "../../../types/constants";
-import type { PlayerState } from "../../../types/player";
 import { extendPixiComponents } from "../../../utils/pixiExtensions";
 
 // Ensure PixiJS components are extended
@@ -25,7 +25,6 @@ export const PlayerStatusPanel: React.FC<PlayerStatusPanelProps> = ({
   x = 0,
   y = 0,
 }) => {
-
   return (
     <pixiContainer x={x} y={y} data-testid={`player-status-${position}`}>
       {/* Basic Player Info */}

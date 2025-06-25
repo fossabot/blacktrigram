@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js";
 import React from "react";
+import type { KoreanText } from "../../../../../types/common";
 import { KOREAN_COLORS } from "../../../../../types/constants";
-import type { KoreanText } from "../../../../../types/korean-text";
 import usePixiExtensions from "../../../../../utils/pixiExtensions";
 
 export interface KoreanMartialTextProps {

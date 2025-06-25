@@ -2,15 +2,9 @@
  * Player state utilities and helper functions
  */
 
-import { PLAYER_ARCHETYPES_DATA } from "@/types/constants";
-import { StatusEffect } from "../systems";
-import {
-  PlayerArchetype,
-  PlayerState,
-  Position,
-  TrigramStance,
-} from "../types";
-import { CombatState } from "../types/enums";
+import { PLAYER_ARCHETYPES_DATA, PlayerState, StatusEffect } from "../systems";
+import { PlayerArchetype, Position, TrigramStance } from "../types";
+import { CombatState } from "../types/common";
 
 /**
  * Create a complete PlayerState from archetype and player index
@@ -157,7 +151,7 @@ export function applyStatusEffect(
 /**
  * Get vital point by ID (fix return type)
  */
-export function getVitalPointById(
+export function getVitalPointByOnPlayerId(
   player: PlayerState,
   vitalPointId: string
 ): {

@@ -1,5 +1,5 @@
+import type { PlayerArchetype } from "../types/common";
 import { KOREAN_COLORS } from "../types/constants/colors";
-import type { PlayerArchetype } from "../types/enums";
 
 /**
  * Convert RGB components to hex color

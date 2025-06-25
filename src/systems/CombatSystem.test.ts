@@ -1,14 +1,15 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import CombatSystem from "./CombatSystem";
-import { TrainingCombatSystem } from "./combat/TrainingCombatSystem";
-import { createPlayerFromArchetype } from "../utils/playerUtils";
+import { beforeEach, describe, expect, it } from "vitest";
+import type { PlayerState } from "../types";
 import {
-  TrigramStance,
-  PlayerArchetype,
   CombatAttackType,
   DamageType,
-} from "../types/enums";
-import type { PlayerState, KoreanTechnique } from "../types";
+  PlayerArchetype,
+  TrigramStance,
+} from "../types/common";
+import { createPlayerFromArchetype } from "../utils/playerUtils";
+import CombatSystem from "./CombatSystem";
+import { TrainingCombatSystem } from "./combat/TrainingCombatSystem";
+import { KoreanTechnique } from "./vitalpoint";
 
 describe("CombatSystem", () => {
   let combatSystem: CombatSystem;

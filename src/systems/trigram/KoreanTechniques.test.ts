@@ -1,10 +1,9 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+import { PlayerArchetype, TrigramStance } from "../../types/common";
 import {
   KoreanTechniquesSystem,
   getTechniquesByStance,
 } from "./KoreanTechniques";
-import { TrigramStance, PlayerArchetype } from "../../types/enums";
-import type { KoreanTechnique } from "../../types/combat";
 
 describe("KoreanTechniquesSystem", () => {
   describe("getAllTechniques", () => {
@@ -110,7 +109,7 @@ describe("getTechniquesByStance", () => {
   });
 });
 
-import { describe, it, expect } from "vitest";
+import { KoreanTechnique } from "../vitalpoint";
 import * as KT from "./KoreanTechniques";
 
 describe("KoreanTechniques module", () => {

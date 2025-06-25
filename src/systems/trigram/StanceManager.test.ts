@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach } from "vitest";
-import { StanceManager } from "./StanceManager";
-import { TrigramStance, PlayerArchetype } from "../../types/enums";
-import { createPlayerFromArchetype } from "../../utils/playerUtils";
+import { beforeEach, describe, expect, it } from "vitest";
 import type { PlayerState } from "../../types";
+import { PlayerArchetype, TrigramStance } from "../../types/common";
+import { createPlayerFromArchetype } from "../../utils/playerUtils";
+import { StanceManager } from "./StanceManager";
 
 describe("StanceManager", () => {
   let stanceManager: StanceManager;

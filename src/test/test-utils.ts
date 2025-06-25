@@ -1,9 +1,8 @@
-import React from "react";
-import { render } from "@testing-library/react";
-import type { PlayerState } from "../types/player";
-import { PlayerArchetype, TrigramStance } from "../types/enums";
+import { PlayerState } from "@/systems";
 import type { RenderOptions } from "@testing-library/react";
-import { CombatState } from "../types/enums";
+import { render } from "@testing-library/react";
+import React from "react";
+import { CombatState, PlayerArchetype, TrigramStance } from "../types/common";
 
 export function renderWithPixi(ui: React.ReactElement) {
   return render(ui);
@@ -61,5 +60,5 @@ export function customRender(
   });
 }
 
-export { customRender as render };
 export * from "@testing-library/react";
+export { customRender as render };

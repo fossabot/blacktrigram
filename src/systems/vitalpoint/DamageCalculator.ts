@@ -1,6 +1,6 @@
-import { StatusEffect } from "..";
-import { PlayerArchetype } from "../../types/enums";
-import type { PlayerState } from "../../types/player";
+import { PlayerArchetype } from "../../types/common";
+import { PlayerState } from "../player";
+import { StatusEffect } from "../types";
 import { DamageResult, KoreanTechnique, VitalPoint } from "./";
 
 export class DamageCalculator {

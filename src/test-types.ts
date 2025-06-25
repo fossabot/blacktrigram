@@ -1,6 +1,7 @@
 // Test utility types for Black Trigram Korean martial arts game
 
-import type { PlayerState, TrigramStance, PlayerArchetype } from "./types";
+import { PlayerState } from "./systems";
+import type { PlayerArchetype, TrigramStance } from "./types";
 
 // Mock player state for testing Korean martial arts combat
 export interface MockPlayerState extends PlayerState {

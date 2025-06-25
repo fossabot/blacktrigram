@@ -1,12 +1,13 @@
 /**
  * Barrel exports for systems types
+ * @module systems
+ * @category Game Systems
  */
 
 // Export base types
 export type {
   AISystemConfig,
   AnimationSystemInterface,
-  AudioSystemInterface,
   CombatSystemConfig,
   CombatSystemInterface,
   DisplayHitEffect,
@@ -62,3 +63,25 @@ export type {
   TrigramTransitionCost,
   TrigramTransitionRule,
 } from "./trigram";
+
+// Re-export system types
+export type {
+  AnimationConfig,
+  AnimationState,
+  CollisionData,
+  PhysicsEntityConfig,
+  PhysicsEntityState,
+  RenderableConfig,
+  Velocity,
+} from "./types";
+
+export * from "./combat";
+export * from "./CombatSystem";
+export * from "./effects";
+export * from "./game";
+export * from "./player";
+export * from "./trigram";
+export * from "./TrigramSystem";
+export * from "./types";
+export * from "./vitalpoint";
+export * from "./VitalPointSystem";

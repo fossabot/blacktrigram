@@ -1,11 +1,10 @@
 // This file should primarily re-export types from the main /src/types/korean-text.ts
 // or define very local, component-specific sub-types if absolutely necessary.
 
-import type { KoreanText, TrigramStance } from "../../../../types";
 import type { ReactNode } from "react";
+import type { KoreanText, TrigramStance } from "../../../../types";
 
 // Fix: Re-export KoreanText from main types
-export type { KoreanText } from "../../../../types/korean-text";
 
 // Add xsmall to KoreanTextSize
 export type KoreanTextSize =

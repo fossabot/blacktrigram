@@ -1,8 +1,8 @@
 // Complete Player component with Korean martial arts character rendering
 
+import { PlayerState } from "@/systems";
 import React from "react";
 import { KOREAN_COLORS } from "../../types/constants";
-import type { PlayerState } from "../../types/player";
 import usePixiExtensions from "../../utils/pixiExtensions";
 
 export interface PlayerProps {

@@ -3,7 +3,7 @@ import React from "react";
 import usePixiExtensions from "../../../../../utils/pixiExtensions";
 import { createKoreanTextStyle, getDisplayText } from "./KoreanPixiTextUtils";
 // Fix: Import type from separate file to avoid naming conflict
-import type { KoreanText as KoreanTextType } from "../../../../../types/korean-text";
+import type { KoreanText as KoreanTextType } from "../../../../../types/common";
 
 export interface KoreanTextProps {
   readonly text: KoreanTextType;

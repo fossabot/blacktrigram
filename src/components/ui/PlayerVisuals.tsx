@@ -1,8 +1,8 @@
-import React from "react";
+import { PLAYER_ARCHETYPES_DATA, PlayerState } from "@/systems";
 import * as PIXI from "pixi.js";
+import React from "react";
+import { KOREAN_COLORS } from "../../types/constants";
 import { usePixiExtensions } from "../../utils/pixiExtensions";
-import { KOREAN_COLORS, PLAYER_ARCHETYPES_DATA } from "../../types/constants";
-import type { PlayerState } from "../../types/player";
 
 export interface PlayerVisualsProps {
   readonly playerState: PlayerState;

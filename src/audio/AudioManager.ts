@@ -1,5 +1,10 @@
-import { AudioAsset, AudioConfig } from "./";
-import { IAudioManager, MusicTrackId, SoundEffectId } from "./types";
+import {
+  AudioAsset,
+  AudioConfig,
+  IAudioManager,
+  MusicTrackId,
+  SoundEffectId,
+} from "./types";
 
 export class AudioManager implements IAudioManager {
   private _masterVolume: number = 1.0;

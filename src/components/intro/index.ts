@@ -1,5 +1,7 @@
 /**
  * Intro screen components export
+ * @module components/intro
+ * @category Game Components
  */
 
 // Main screen
@@ -20,3 +22,6 @@ export { MenuSection } from "./components/MenuSection";
 export type { MenuSectionProps } from "./components/MenuSection";
 export { PhilosophySection } from "./components/PhilosophySection";
 export type { PhilosophySectionProps } from "./components/PhilosophySection";
+
+// Re-export prop types
+export type { IntroScreenProps } from "./IntroScreen";

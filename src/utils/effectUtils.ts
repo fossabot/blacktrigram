@@ -1,6 +1,6 @@
 import { HitEffect, StatusEffect } from "../systems";
-import type { EffectIntensity, KoreanText, Position } from "../types";
-import { EffectType, HitEffectType } from "../types/effects";
+import { EffectIntensity, EffectType, HitEffectType } from "../systems/effects";
+import type { KoreanText, Position } from "../types";
 
 /**
  * Create a hit effect for visual feedback
@@ -423,23 +423,6 @@ export function createKoreanStatusEffect(
     intensity,
     duration,
     { korean: koreanName, english: englishName }
-  );
-}
-
-export function createVitalPointEffect(
-  vitalPointName: string,
-  effectType: EffectType,
-  duration: number = 5000
-): StatusEffect {
-  return createStatusEffect(
-    `vital_point_${effectType}`,
-    effectType, // This is correct - use the parameter directly
-    "medium" as EffectIntensity,
-    duration,
-    {
-      korean: `${vitalPointName} 급소 타격`,
-      english: `${vitalPointName} vital point strike`,
-    }
   );
 }
 

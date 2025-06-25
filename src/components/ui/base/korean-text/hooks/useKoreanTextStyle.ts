@@ -1,10 +1,7 @@
+import { KoreanTextSize, KoreanTextWeight } from "@/types";
+import * as PIXI from "pixi.js";
 import { useMemo } from "react";
 import { KOREAN_TEXT_CONSTANTS } from "../constants";
-import type {
-  KoreanTextSize,
-  KoreanTextWeight,
-} from "../../../../../types/korean-text";
-import * as PIXI from "pixi.js";
 
 export interface UseKoreanTextStyleOptions {
   readonly size?: KoreanTextSize;

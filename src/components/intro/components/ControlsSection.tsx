@@ -1,6 +1,6 @@
+import { COMBAT_CONTROLS } from "@/systems";
 import React from "react";
 import { KOREAN_COLORS } from "../../../types/constants";
-import { COMBAT_CONTROLS } from "../../../types/constants/controls";
 import {
   ResponsivePixiButton,
   ResponsivePixiContainer,

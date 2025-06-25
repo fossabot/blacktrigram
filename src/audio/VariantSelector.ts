@@ -3,9 +3,8 @@
  * Selects appropriate audio variants based on combat context and archetype
  */
 
-import type { PlayerArchetype, TrigramStance } from "../types/enums";
-import { MusicTrack, SoundEffect } from "./";
-import { MusicTrackId, SoundEffectId } from "./types";
+import type { PlayerArchetype, TrigramStance } from "../types/common";
+import { MusicTrack, MusicTrackId, SoundEffect, SoundEffectId } from "./types";
 
 export interface AudioVariantContext {
   readonly archetype?: PlayerArchetype;

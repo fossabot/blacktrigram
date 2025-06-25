@@ -1,10 +1,10 @@
+import { PlayerState } from "@/systems";
 import { extend } from "@pixi/react";
 import { Container, Graphics, Text } from "pixi.js";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { AudioProvider, useAudio } from "../../audio/AudioProvider";
+import { TrigramStance } from "../../types/common";
 import { KOREAN_COLORS } from "../../types/constants";
-import { TrigramStance } from "../../types/enums";
-import type { PlayerState } from "../../types/player";
 import { DojangBackground } from "../game/DojangBackground";
 import { StanceIndicator } from "../ui/StanceIndicator";
 import { ResponsivePixiPanel } from "../ui/base/ResponsivePixiComponents";

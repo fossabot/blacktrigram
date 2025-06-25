@@ -12,21 +12,21 @@ export { KoreanTitle } from "./KoreanTitle";
 // Fix: Export functions from the utils file instead since KoreanPixiTextUtils.tsx doesn't have all exports
 export {
   createKoreanPixiText,
-  getKoreanTextMetrics,
   formatKoreanText,
+  getKoreanTextMetrics,
   sizeToPixelValue,
 } from "../utils";
 
 // Fix: For PIXI-specific utilities, we'll create simple wrapper functions
 export const createKoreanPixiTextWithFallback = (
-  text: import("../../../../../types/korean-text").KoreanText,
+  text: import("../../../../../types/common").KoreanText,
   preferEnglish: boolean = false
 ): string => {
   return preferEnglish ? text.english : text.korean;
 };
 
 export const createKoreanPixiMultilineText = (
-  text: import("../../../../../types/korean-text").KoreanText
+  text: import("../../../../../types/common").KoreanText
 ): string => {
   return `${text.korean}\n${text.english}`;
 };
