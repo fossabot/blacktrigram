@@ -8,8 +8,6 @@ export {
   TRIGRAM_TECHNIQUES,
 } from "../../systems/trigram/techniques";
 export { CYBERPUNK_COLORS, KOREAN_COLORS } from "./colors";
-export { COMBAT_CONFIG, COMBAT_CONSTANTS } from "./combat";
-export { COMBAT_TIMING, DAMAGE_CONSTANTS, GAME_CONFIG } from "./game";
 export {
   FONT_FAMILY,
   FONT_SIZES,
@@ -23,9 +21,6 @@ export { HEALTH_COLORS, UI_CONSTANTS } from "./ui";
 
 // Fix: Provide default export
 export { KOREAN_COLORS as default } from "./colors";
-
-// Fix: Export COMBAT_CONTROLS from controls
-export { COMBAT_CONTROLS } from "./controls";
 
 // Fix: Add missing KOREAN_TYPOGRAPHY export
 export { KOREAN_TYPOGRAPHY } from "./typography";
@@ -43,15 +38,6 @@ export const ARCHETYPE_TECHNIQUE_BONUSES: Record<
   // Define bonuses for each archetype
 };
 
-export const ENHANCED_DAMAGE_CONSTANTS = {
-  CRITICAL_MULTIPLIER: 2.0,
-  VITAL_POINT_MULTIPLIER: 1.5,
-  COMBO_MULTIPLIER: 1.2,
-} as const;
-
 export const MAX_TRANSITION_COST_KI = 50;
 export const MAX_TRANSITION_COST_STAMINA = 30;
 export const MAX_TRANSITION_TIME_MILLISECONDS = 1000;
-
-// Re-export from sub-modules
-export * from "../../systems/trigram/techniques";

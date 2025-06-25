@@ -4,7 +4,7 @@
  */
 
 // System imports from shared types - avoid circular dependencies
-import { AudioSystemInterface } from "@/audio";
+import { AudioSystemInterface, SoundEffectId } from "@/audio";
 import { KOREAN_COLORS } from "@/types";
 import {
   KoreanText,
@@ -635,3 +635,679 @@ export const BASE_PLAYER_STATS = {
   SPEED: 75,
   TECHNIQUE: 75,
 } as const;
+
+// Combat configuration
+export const COMBAT_CONFIG = {
+  MAX_HEALTH: 100,
+  MAX_KI: 100,
+  MAX_STAMINA: 100,
+  MAX_BALANCE: 100,
+  MAX_CONSCIOUSNESS: 100,
+
+  // Damage multipliers
+  CRITICAL_HIT_MULTIPLIER: 2.0,
+  VITAL_POINT_MULTIPLIER: 1.5,
+  COUNTER_ATTACK_MULTIPLIER: 1.3,
+
+  // Status thresholds
+  LOW_HEALTH_THRESHOLD: 25,
+  CRITICAL_HEALTH_THRESHOLD: 10,
+  UNCONSCIOUS_THRESHOLD: 0,
+  STAMINA_EXHAUSTED_THRESHOLD: 0,
+
+  // Recovery rates (per second)
+  STAMINA_RECOVERY_RATE: 10,
+  KI_RECOVERY_RATE: 5,
+  BALANCE_RECOVERY_RATE: 15,
+  CONSCIOUSNESS_RECOVERY_RATE: 2,
+
+  // Combat timing (milliseconds)
+  TECHNIQUE_COOLDOWN: 500,
+  STANCE_CHANGE_COOLDOWN: 200,
+  BLOCK_DURATION: 300,
+  RECOVERY_TIME: 400,
+} as const;
+
+// Enhanced damage calculation constants
+export const ENHANCED_DAMAGE_CONSTANTS = {
+  BASE_DAMAGE: 10,
+  CRITICAL_MULTIPLIER: 2.0,
+  VITAL_POINT_MULTIPLIER: 1.5,
+  ARMOR_REDUCTION: 0.1,
+  STANCE_DEFENSE_BONUS: 0.2,
+  BALANCE_IMPACT_MULTIPLIER: 0.3,
+  CONSCIOUSNESS_THRESHOLD: 30,
+  PAIN_THRESHOLD: 80,
+
+  // New damage factors
+  TECHNIQUE_POWER_MODIFIER: 0.2,
+  ARCHETYPE_BONUS: 0.15,
+  COMBO_MULTIPLIER: 1.2,
+  PERFECT_TIMING_BONUS: 0.3,
+  BASE_CRIT_CHANCE: 0.1, // Added: Base critical hit chance (e.g., 10%)
+} as const;
+
+// Combat system constants for Korean martial arts
+
+export const COMBAT_CONSTANTS = {
+  // Damage calculation
+  BASE_DAMAGE: 10,
+  CRITICAL_MULTIPLIER: 2.0,
+  VITAL_POINT_MULTIPLIER: 1.5,
+
+  // Status thresholds
+  LOW_HEALTH_THRESHOLD: 30,
+  CRITICAL_HEALTH_THRESHOLD: 15,
+  EXHAUSTED_STAMINA_THRESHOLD: 20,
+
+  // Recovery rates (per second)
+  STAMINA_RECOVERY_RATE: 5,
+  KI_RECOVERY_RATE: 3,
+  CONSCIOUSNESS_RECOVERY_RATE: 2,
+
+  // Combat timing
+  ATTACK_COOLDOWN: 500, // milliseconds
+  STANCE_CHANGE_COOLDOWN: 300,
+  BLOCK_WINDOW: 200,
+
+  // Balance and momentum
+  BALANCE_RECOVERY_RATE: 10,
+  MOMENTUM_DECAY_RATE: 5,
+
+  // Pain and status effects
+  PAIN_DECAY_RATE: 3,
+  STATUS_EFFECT_DURATION: 3000,
+} as const;
+
+// Combat controls mapping
+export const COMBAT_CONTROLS = {
+  // Trigram stance system (1-8 keys)
+  stanceControls: {
+    "1": {
+      stance: "geon" as TrigramStance,
+      korean: "건",
+      technique: "천둥벽력",
+    },
+    "2": {
+      stance: "tae" as TrigramStance,
+      korean: "태",
+      technique: "유수연타",
+    },
+    "3": { stance: "li" as TrigramStance, korean: "리", technique: "화염지창" },
+    "4": {
+      stance: "jin" as TrigramStance,
+      korean: "진",
+      technique: "벽력일섬",
+    },
+    "5": {
+      stance: "son" as TrigramStance,
+      korean: "손",
+      technique: "선풍연격",
+    },
+    "6": {
+      stance: "gam" as TrigramStance,
+      korean: "감",
+      technique: "수류반격",
+    },
+    "7": {
+      stance: "gan" as TrigramStance,
+      korean: "간",
+      technique: "반석방어",
+    },
+    "8": {
+      stance: "gon" as TrigramStance,
+      korean: "곤",
+      technique: "대지포옹",
+    },
+  },
+
+  // Movement controls
+  movement: {
+    WASD: "Tactical positioning and footwork",
+    ArrowKeys: "Alternative movement system",
+  },
+
+  // Combat actions
+  combat: {
+    SPACE: "Execute current stance technique",
+    SHIFT: "Defensive guard/block position",
+    CTRL: "Precision vital point targeting mode",
+    TAB: "Cycle through player archetypes",
+  },
+
+  // System controls
+  system: {
+    ESC: "Pause menu / Return to intro",
+    F1: "Help / Controls guide",
+    M: "Mute / Audio settings",
+  },
+} as const;
+
+// Damage types
+export const DAMAGE_TYPES = {
+  PHYSICAL: "physical",
+  ENERGY: "energy",
+  VITAL_POINT: "vital_point",
+  PSYCHOLOGICAL: "psychological",
+} as const;
+
+// Combat phases
+export const COMBAT_PHASES = {
+  PREPARATION: "preparation",
+  ENGAGEMENT: "engagement",
+  EXECUTION: "execution",
+  RECOVERY: "recovery",
+  RESOLUTION: "resolution",
+} as const;
+
+// Combat audio mapping
+export const COMBAT_AUDIO_MAP: Record<string, SoundEffectId> = {
+  light_attack: "attack_light",
+  medium_attack: "attack_medium",
+  heavy_attack: "attack_heavy",
+  critical_attack: "attack_critical",
+
+  light_hit: "hit_light",
+  medium_hit: "hit_medium",
+  heavy_hit: "hit_heavy",
+  critical_hit: "critical_hit",
+
+  block: "block_success",
+  guard_break: "block_break",
+  miss: "miss",
+
+  stance_change: "stance_change",
+  technique: "technique_execute",
+
+  match_start: "match_start",
+  combat_end: "combat_end",
+  victory: "victory",
+  defeat: "defeat",
+
+  guard: "guard",
+} as const;
+
+// Combat state transitions
+export const COMBAT_STATE_MACHINE = {
+  idle: {
+    canTransitionTo: ["attacking", "defending", "moving", "stunned"],
+    duration: Infinity,
+  },
+  attacking: {
+    canTransitionTo: ["idle", "recovering", "stunned"],
+    duration: 500,
+  },
+  defending: {
+    canTransitionTo: ["idle", "attacking", "stunned"],
+    duration: 300,
+  },
+  moving: {
+    canTransitionTo: ["idle", "attacking", "defending"],
+    duration: 200,
+  },
+  stunned: {
+    canTransitionTo: ["idle"],
+    duration: 1000,
+  },
+  recovering: {
+    canTransitionTo: ["idle"],
+    duration: 400,
+  },
+  unconscious: {
+    canTransitionTo: ["idle"],
+    duration: 5000,
+  },
+} as const;
+
+// Training-specific combat constants
+export const TRAINING_COMBAT_SETTINGS = {
+  techniqueCooldown: 500,
+  perfectStrikeThreshold: 0.7,
+  maxTrainingSession: 300000, // 5 minutes
+  kiRegenerationRate: 2,
+  staminaRegenerationRate: 1.5,
+} as const;
+
+// Combat state transitions for training mode
+export const TRAINING_STATE_MACHINE = {
+  practicing: {
+    canTransitionTo: ["idle", "executing", "recovering"],
+    duration: Infinity,
+  },
+  executing: {
+    canTransitionTo: ["practicing", "idle"],
+    duration: 800,
+  },
+  recovering: {
+    canTransitionTo: ["practicing", "idle"],
+    duration: 300,
+  },
+} as const;
+
+// Technique execution results
+export const TECHNIQUE_RESULTS = {
+  SUCCESS: "success",
+  BLOCKED: "blocked",
+  MISSED: "missed",
+  COUNTERED: "countered",
+  INTERRUPTED: "interrupted",
+} as const;
+
+// Combat effectiveness modifiers
+export const EFFECTIVENESS_MODIFIERS = {
+  stance_advantage: 1.2,
+  stance_disadvantage: 0.8,
+  counter_attack: 1.5,
+  perfect_timing: 1.3,
+  off_balance: 0.7,
+  fatigued: 0.6,
+  focused: 1.1,
+} as const;
+
+// Combat resource costs
+export const RESOURCE_COSTS = {
+  KI: {
+    BASIC_TECHNIQUE: 5,
+    ADVANCED_TECHNIQUE: 10,
+    SPECIAL_TECHNIQUE: 15,
+    ULTIMATE_TECHNIQUE: 25,
+  },
+  STAMINA: {
+    BASIC_ATTACK: 8,
+    HEAVY_ATTACK: 15,
+    BLOCK: 5,
+    DODGE: 10,
+    STANCE_CHANGE: 12,
+  },
+} as const;
+
+// Hit detection constants
+export const HIT_DETECTION = {
+  PRECISION_THRESHOLD: 0.8,
+  VITAL_POINT_THRESHOLD: 0.9,
+  BASE_ACCURACY: 0.7,
+  MAX_ACCURACY: 0.95,
+
+  // Hit boxes
+  PLAYER_HITBOX_WIDTH: 60,
+  PLAYER_HITBOX_HEIGHT: 180,
+  VITAL_POINT_RADIUS: 15,
+} as const;
+
+// Status effect durations
+export const STATUS_DURATIONS = {
+  STUN: 1500,
+  POISON: 5000,
+  BURN: 3000,
+  BLEED: 4000,
+  WEAKNESS: 6000,
+  STRENGTH_BUFF: 8000,
+} as const;
+
+export interface CombatControlsConfig {
+  readonly stanceControls: Record<
+    string,
+    { stance: string; korean: string; technique: string }
+  >;
+  readonly movement: Record<string, string>;
+  readonly combat: Record<string, string>;
+  readonly system: Record<string, string>;
+}
+
+// Key mapping for easier lookup
+export const KEYBOARD_MAPPING = {
+  // Stance keys
+  STANCE_1: "1",
+  STANCE_2: "2",
+  STANCE_3: "3",
+  STANCE_4: "4",
+  STANCE_5: "5",
+  STANCE_6: "6",
+  STANCE_7: "7",
+  STANCE_8: "8",
+
+  // Combat actions
+  EXECUTE_TECHNIQUE: " ", // Space
+  BLOCK: "Shift",
+  TARGET_MODE: "Control",
+  ARCHETYPE_CYCLE: "Tab",
+
+  // Movement
+  MOVE_UP: "w",
+  MOVE_DOWN: "s",
+  MOVE_LEFT: "a",
+  MOVE_RIGHT: "d",
+
+  // System
+  PAUSE: "Escape",
+  HELP: "F1",
+  MUTE: "m",
+} as const;
+
+/**
+ * Get the stance associated with a given key.
+ *
+ * @param key - The key to lookup.
+ * @returns The corresponding stance, or null if not found.
+ */
+export function getStanceFromKey(key: string): TrigramStance | null {
+  const stanceMap: Record<string, TrigramStance> = {
+    "1": TrigramStance.GEON,
+    "2": TrigramStance.TAE,
+    "3": TrigramStance.LI,
+    "4": TrigramStance.JIN,
+    "5": TrigramStance.SON,
+    "6": TrigramStance.GAM,
+    "7": TrigramStance.GAN,
+    "8": TrigramStance.GON,
+  };
+  return stanceMap[key] || null;
+}
+
+export interface CombatControlsConfig {
+  readonly stanceControls: Record<
+    string,
+    { stance: string; korean: string; technique: string }
+  >;
+  readonly movement: Record<string, string>;
+  readonly combat: Record<string, string>;
+  readonly system: Record<string, string>;
+}
+
+// Input handling types
+export interface InputEvent {
+  readonly type: "keydown" | "keyup" | "pointerdown" | "pointerup";
+  readonly key?: string;
+  readonly position?: { x: number; y: number };
+  readonly timestamp: number;
+}
+
+export interface CombatInput {
+  readonly player: number;
+  readonly action: string;
+  readonly data?: any;
+}
+
+// Gesture types
+export interface Gesture {
+  readonly type: "tap" | "hold" | "swipe" | "combo";
+  readonly duration?: number;
+  readonly direction?: "up" | "down" | "left" | "right";
+  readonly sequence?: string[];
+}
+
+export const DEFAULT_GAME_SPEED = 1.0;
+
+/**
+ * Core game configuration constants for Black Trigram
+ */
+
+// Game configuration
+export const GAME_CONFIG = {
+  // Canvas dimensions
+  CANVAS_WIDTH: 1200,
+  CANVAS_HEIGHT: 800,
+  TARGET_FPS: 60,
+  MIN_FPS: 30,
+
+  // Combat settings
+  ROUND_DURATION: 180, // seconds
+  MAX_ROUNDS: 3,
+  KO_THRESHOLD: 0,
+
+  // Player settings
+  BASE_HEALTH: 100,
+  BASE_KI: 100,
+  BASE_STAMINA: 100,
+
+  // Player positions
+  PLAYER_START_POS_X_1: 300,
+  PLAYER_START_POS_X_2: 900,
+  PLAYER_START_POS_Y: 400,
+
+  // Physics
+  GRAVITY: 9.8,
+  FRICTION: 0.85,
+
+  // UI settings
+  UI_PADDING: 20,
+  BUTTON_HEIGHT: 50,
+
+  // Audio settings
+  MASTER_VOLUME: 1.0,
+  MUSIC_VOLUME: 0.7,
+  SFX_VOLUME: 0.8,
+
+  // Debug settings
+  DEBUG_MODE: false,
+  SHOW_HITBOXES: false,
+  SHOW_VITAL_POINTS: false,
+} as const;
+
+// Add missing player colors
+export const PLAYER_COLORS = {
+  PLAYER_1_COLOR: 0x0099ff, // Blue
+  PLAYER_2_COLOR: 0xff9900, // Orange
+} as const;
+
+// Difficulty settings
+export const DIFFICULTY_SETTINGS = {
+  BEGINNER: {
+    AI_REACTION_TIME: 800,
+    DAMAGE_MULTIPLIER: 0.7,
+    TECHNIQUE_SUCCESS_RATE: 0.6,
+  },
+  INTERMEDIATE: {
+    AI_REACTION_TIME: 600,
+    DAMAGE_MULTIPLIER: 1.0,
+    TECHNIQUE_SUCCESS_RATE: 0.8,
+  },
+  EXPERT: {
+    AI_REACTION_TIME: 400,
+    DAMAGE_MULTIPLIER: 1.3,
+    TECHNIQUE_SUCCESS_RATE: 0.9,
+  },
+  MASTER: {
+    AI_REACTION_TIME: 200,
+    DAMAGE_MULTIPLIER: 1.5,
+    TECHNIQUE_SUCCESS_RATE: 0.95,
+  },
+} as const;
+
+// Game phases
+export const GAME_PHASES = {
+  INTRO: "intro",
+  TRAINING: "training",
+  COMBAT: "combat",
+  VICTORY: "victory",
+  DEFEAT: "defeat",
+} as const;
+
+// Game version and metadata
+export const GAME_METADATA = {
+  VERSION: "1.0.0",
+  BUILD: "2024.1",
+  TITLE: "흑괘 (Black Trigram)",
+  SUBTITLE: "Korean Martial Arts Combat Simulator",
+  DEVELOPER: "Black Trigram Team",
+  COPYRIGHT: "© 2024 Black Trigram",
+} as const;
+
+// Performance thresholds
+export const PERFORMANCE_THRESHOLDS = {
+  TARGET_FPS: 60,
+  MIN_FPS: 30,
+  FRAME_TIME_WARNING: 20, // ms
+  MEMORY_WARNING: 100, // MB
+  GARBAGE_COLLECTION_THRESHOLD: 50, // MB
+} as const;
+
+// Combat timing constants
+export const COMBAT_TIMING = {
+  ATTACK_WINDOW: 500, // ms
+  DEFENSE_WINDOW: 300, // ms
+  RECOVERY_TIME: 200, // ms
+  COUNTER_WINDOW: 150, // ms
+} as const;
+
+// Damage calculation constants
+export const DAMAGE_CONSTANTS = {
+  BASE_DAMAGE: 10,
+  CRITICAL_MULTIPLIER: 2.0,
+  VITAL_POINT_MULTIPLIER: 1.5,
+  ARMOR_REDUCTION: 0.1,
+  STANCE_DEFENSE_BONUS: 0.2,
+  BALANCE_IMPACT_MULTIPLIER: 0.3,
+  CONSCIOUSNESS_THRESHOLD: 30,
+  PAIN_THRESHOLD: 80,
+  BASE_CRIT_CHANCE: 0.1, // Added: Base critical hit chance (e.g., 10%)
+  TECHNIQUE_ACCURACY_MODIFIER: 1.0, // Added
+  STANCE_EFFECTIVENESS_RANGE: { MIN: 0.5, MAX: 1.5 }, // Added
+  PERFECT_TIMING_BONUS: 0.3, // Added
+} as const;
+
+// Animation timings
+export const ANIMATION_TIMINGS = {
+  STANCE_TRANSITION: 300,
+  TECHNIQUE_STARTUP: 150,
+  TECHNIQUE_ACTIVE: 100,
+  TECHNIQUE_RECOVERY: 250,
+  HIT_STUN: 200,
+  BLOCK_STUN: 100,
+  KNOCKDOWN_RECOVERY: 1000,
+} as const;
+
+// UI Layout constants
+export const UI_LAYOUT = {
+  HUD_HEIGHT: 80,
+  CONTROLS_HEIGHT: 120,
+  SIDEBAR_WIDTH: 200,
+  MARGIN: 20,
+  BUTTON_HEIGHT: 50,
+  BUTTON_WIDTH: 150,
+} as const;
+
+// Audio volume defaults
+export const AUDIO_DEFAULTS = {
+  MASTER_VOLUME: 0.7,
+  SFX_VOLUME: 0.8,
+  MUSIC_VOLUME: 0.5,
+  AMBIENT_VOLUME: 0.3,
+} as const;
+
+// Calculated constants based on GAME_CONFIG
+export const HALF_CANVAS_WIDTH = GAME_CONFIG.CANVAS_WIDTH / 2;
+export const HALF_CANVAS_HEIGHT = GAME_CONFIG.CANVAS_HEIGHT / 2;
+export const CANVAS_ASPECT_RATIO =
+  GAME_CONFIG.CANVAS_WIDTH / GAME_CONFIG.CANVAS_HEIGHT;
+export const FRAME_TIME = 1000 / GAME_CONFIG.TARGET_FPS;
+export const TICK_RATE = GAME_CONFIG.TARGET_FPS;
+
+// Player distance calculations
+export const PLAYER_DISTANCE =
+  GAME_CONFIG.PLAYER_START_POS_X_2 - GAME_CONFIG.PLAYER_START_POS_X_1;
+export const CENTER_POSITION_X =
+  (GAME_CONFIG.PLAYER_START_POS_X_1 + GAME_CONFIG.PLAYER_START_POS_X_2) / 2;
+
+// Combat ranges
+export const COMBAT_RANGES = {
+  MELEE_RANGE: 80,
+  CLOSE_RANGE: 120,
+  MEDIUM_RANGE: 200,
+  LONG_RANGE: 300,
+  MAX_RANGE: PLAYER_DISTANCE,
+} as const;
+
+// Game state constants
+export const GAME_STATES = {
+  LOADING: "loading",
+  MENU: "menu",
+  CHARACTER_SELECT: "character_select",
+  TRAINING: "training",
+  COMBAT: "combat",
+  PAUSED: "paused",
+  GAME_OVER: "game_over",
+} as const;
+
+// Input constants
+export const INPUT_CONSTANTS = {
+  DOUBLE_TAP_TIME: 300, // ms
+  HOLD_THRESHOLD: 500, // ms
+  GESTURE_TIMEOUT: 1000, // ms
+  COMBO_TIMEOUT: 2000, // ms
+} as const;
+
+// Visual effect constants
+export const VISUAL_EFFECTS = {
+  HIT_FLASH_DURATION: 100,
+  SCREEN_SHAKE_INTENSITY: 5,
+  PARTICLE_LIFETIME: 1000,
+  GLOW_PULSE_SPEED: 2,
+  STANCE_GLOW_OPACITY: 0.3,
+} as const;
+
+// Training mode constants
+export const TRAINING_CONFIG = {
+  DUMMY_HEALTH: 1000,
+  AUTO_RESET_TIME: 5000, // ms
+  SHOW_FRAME_DATA: true,
+  SHOW_HITBOXES: true,
+  INFINITE_KI: true,
+  INFINITE_STAMINA: true,
+} as const;
+
+// Game mode configurations
+export const GAME_MODE_CONFIG = {
+  VERSUS: {
+    allowPause: true,
+    timeLimit: 180,
+    rounds: 3,
+    enableAI: false,
+  },
+  TRAINING: {
+    allowPause: true,
+    timeLimit: null,
+    rounds: 1,
+    enableAI: true,
+    infiniteResources: true,
+  },
+  PRACTICE: {
+    allowPause: true,
+    timeLimit: null,
+    rounds: 1,
+    enableAI: false,
+    infiniteResources: true,
+  },
+} as const;
+
+// Performance settings
+export const PERFORMANCE_CONFIG = {
+  MAX_PARTICLES: 100,
+  MAX_SOUND_SOURCES: 16,
+  TEXTURE_QUALITY: "high",
+  ENABLE_SHADOWS: true,
+  ENABLE_POST_PROCESSING: true,
+} as const;
+
+// Korean martial arts specific settings
+export const MARTIAL_ARTS_CONFIG = {
+  VITAL_POINTS_COUNT: 70,
+  TRIGRAM_STANCES_COUNT: 8,
+  PLAYER_ARCHETYPES_COUNT: 5,
+
+  // Combat timing
+  ATTACK_WINDOW: 500, // milliseconds
+  COUNTER_WINDOW: 300,
+  BLOCK_WINDOW: 200,
+
+  // Stance transition
+  MIN_STANCE_CHANGE_INTERVAL: 500,
+  STANCE_CHANGE_COST_BASE: 10,
+
+  // Damage calculations
+  BASE_DAMAGE_MULTIPLIER: 1.0,
+  CRITICAL_HIT_MULTIPLIER: 1.5,
+  VITAL_POINT_MULTIPLIER: 2.0,
+} as const;
+
+export default GAME_CONFIG;
