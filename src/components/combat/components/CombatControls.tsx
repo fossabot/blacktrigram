@@ -1,8 +1,8 @@
 import React, { useCallback, useState } from "react";
-import type { PlayerState } from "../../../types/player";
+import { TRIGRAM_TECHNIQUES } from "../../../systems/trigram/techniques";
 import { TrigramStance } from "../../../types/common";
 import { KOREAN_COLORS } from "../../../types/constants";
-import { TRIGRAM_TECHNIQUES } from "../../../types/constants/techniques";
+import type { PlayerState } from "../../../types/player";
 
 // Import extendPixiComponents to ensure proper component registration
 import { extendPixiComponents } from "../../../utils/pixiExtensions";

@@ -3,10 +3,13 @@
  */
 
 // Fix: Remove duplicate exports and ensure proper imports
+export {
+  TECHNIQUE_PROPERTIES,
+  TRIGRAM_TECHNIQUES,
+} from "../../systems/trigram/techniques";
 export { CYBERPUNK_COLORS, KOREAN_COLORS } from "./colors";
 export { COMBAT_CONFIG, COMBAT_CONSTANTS } from "./combat";
 export { COMBAT_TIMING, DAMAGE_CONSTANTS, GAME_CONFIG } from "./game";
-export { TECHNIQUE_PROPERTIES, TRIGRAM_TECHNIQUES } from "./techniques";
 export {
   FONT_FAMILY,
   FONT_SIZES,
@@ -51,4 +54,4 @@ export const MAX_TRANSITION_COST_STAMINA = 30;
 export const MAX_TRANSITION_TIME_MILLISECONDS = 1000;
 
 // Re-export from sub-modules
-export * from "./techniques";
+export * from "../../systems/trigram/techniques";

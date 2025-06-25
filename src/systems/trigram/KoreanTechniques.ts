@@ -1,8 +1,8 @@
 import { PlayerArchetype, PlayerState, TrigramStance } from "../../types";
 import { TrigramStance as TrigramStanceEnum } from "../../types/common";
-import { TRIGRAM_TECHNIQUES } from "../../types/constants/techniques";
 import { PLAYER_ARCHETYPES_DATA } from "../types";
 import { KoreanTechnique } from "../vitalpoint";
+import { TRIGRAM_TECHNIQUES } from "./techniques";
 
 /**
  * Korean martial arts techniques system
@@ -90,7 +90,7 @@ export function getTechniquesByStance(
 }
 
 // Export TRIGRAM_TECHNIQUES for tests
-export { TRIGRAM_TECHNIQUES } from "../../types/constants/techniques";
+export { TRIGRAM_TECHNIQUES } from "./techniques";
 
 // Export technique effectiveness matrix
 export const TECHNIQUE_EFFECTIVENESS_MATRIX: Record<
