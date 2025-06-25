@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, fireEvent, screen } from "@testing-library/react";
-import React, { type ReactElement } from "react";
 import "@testing-library/jest-dom";
-import { TRIGRAM_DATA, TRIGRAM_STANCES_ORDER } from "../../types/constants";
+import { fireEvent, render, screen } from "@testing-library/react";
+import React, { type ReactElement } from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { TRIGRAM_DATA, TRIGRAM_STANCES_ORDER } from "../../systems/trigram";
 
 // Mock audio manager
 const mockAudio = {
