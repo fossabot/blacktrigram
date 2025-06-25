@@ -1,9 +1,9 @@
-import { StatusEffect } from "..";
 import type { Position } from "../../types/common";
+import { VitalPoint, VitalPointEffect, VitalPointHitResult } from "./types";
 // Fix: Import both EffectIntensity type and enum from the correct location
 import { VitalPointEffectType, VitalPointSeverity } from "../../types/common";
 import { EffectIntensity, EffectType } from "../effects";
-import { VitalPoint, VitalPointEffect, VitalPointHitResult } from "./";
+import { StatusEffect } from "../types";
 
 export class HitDetection {
   /**

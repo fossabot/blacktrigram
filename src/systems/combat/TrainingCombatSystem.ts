@@ -2,7 +2,7 @@ import { PlayerArchetype, TrigramStance } from "../../types/common";
 import { CombatSystem } from "../CombatSystem";
 import { PlayerState } from "../player";
 import { KoreanTechnique } from "../vitalpoint";
-import { TrainingCombatResult } from "./";
+import { TrainingCombatResult } from "./types";
 
 /**
  * Training-specific combat system for Korean martial arts practice
