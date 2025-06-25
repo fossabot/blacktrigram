@@ -1,8 +1,7 @@
 // Korean martial arts vital point system
 
-import { Position } from "../types";
-import { VitalPointSeverity } from "../types/common";
-import { VitalPoint, VitalPointHitResult } from "./vitalpoint";
+import { Position, VitalPointSeverity } from "../types/common";
+import { VitalPoint, VitalPointHitResult } from "./vitalpoint/types";
 
 export class VitalPointSystem {
   private vitalPoints: VitalPoint[] = [];
