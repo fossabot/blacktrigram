@@ -1,5 +1,4 @@
-import { MusicTrack, SoundEffect } from "./";
-import { AudioCategory } from "./types";
+import { AudioCategory, MusicTrack, SoundEffect } from "./types";
 
 /**
  * Generates Korean martial arts specific sounds for Black Trigram
