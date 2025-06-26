@@ -88,9 +88,7 @@ _70 anatomical targets for incapacitation_
 <div align="center">
 
 <img src="public/CyberpunkTeamDynamics.png" alt="Cyberpunk Team Dynamics Screenshot" width="600" />
-
 <img src="public/PlayerArchetypesExplained.png" alt="Player Archetypes Explained Screenshot" width="600" />
-
 <img src="public/PlayerArchetypesOverview.png" alt="Player Archetypes Overview Screenshot" width="600" />
 
 </div>
