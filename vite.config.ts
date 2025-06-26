@@ -4,7 +4,6 @@ import { readFileSync } from "fs";
 import path from "path";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
-import { defineConfig as defineVitestConfig } from "vitest/config";
 
 // Read version from package.json
 interface PackageJson {
@@ -24,6 +23,11 @@ export default defineConfig(({ command, mode }) => ({
     // Support for TypeScript paths
     tsconfigPaths(),
   ],
+  define: {
+    APP_VERSION: JSON.stringify(packageJson.version),
+    "import.meta.env.APP_VERSION": JSON.stringify(packageJson.version),
+  },
+
   // Use relative paths for production builds (GitHub Pages)
   base: command === "build" ? "./" : "/",
   resolve: {
@@ -113,7 +117,8 @@ export default defineConfig(({ command, mode }) => ({
     minifyIdentifiers: true,
     minifyWhitespace: true,
     minifySyntax: true,
-    minify: true, // Enable minification in dev for better perf testing
+    // Remove the minify property - individual minify options are already set
+    // minify: true, // Enable minification in dev for better perf testing
     // Optimize for Korean text rendering
     charset: "utf8",
   },
@@ -125,9 +130,6 @@ export default defineConfig(({ command, mode }) => ({
     hmr: { overlay: false },
     middlewareMode: false,
     compress: true, // Enable gzip compression in dev
-  },
-  define: {
-    APP_VERSION: JSON.stringify(packageJson.version),
   },
 
   // Preview server optimizations
