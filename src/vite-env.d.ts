@@ -1,7 +1,20 @@
 /// <reference types="vite/client" />
 /// <reference types="react" />
 
-import type { Application, Container, Graphics, Text, Sprite } from "pixi.js";
+import type { Application, Container, Graphics, Sprite, Text } from "pixi.js";
+
+interface ImportMetaEnv {
+  readonly VITE_BASE_URL: string;
+  readonly VITE_API_URL: string;
+  readonly VITE_ENABLE_ANALYTICS: string;
+  readonly APP_VERSION: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
+
+declare const APP_VERSION: string;
 
 // Global JSX declarations for PixiJS components
 declare global {

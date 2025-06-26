@@ -21,6 +21,8 @@ import React, {
 } from "react";
 import { MenuSection } from "./components/MenuSection";
 
+const APP_VERSION = import.meta.env.APP_VERSION;
+
 // Lazy load heavy sections
 const PhilosophySection = lazy(() => import("./components/PhilosophySection"));
 const ControlsSection = lazy(() => import("./components/ControlsSection"));
@@ -908,6 +910,27 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({
           }
           x={0}
           y={isMobile ? -8 : -10}
+          anchor={0.5}
+          data-testid="footer-link"
+        />
+
+        <pixiText
+          text={`Version ${APP_VERSION}`}
+          style={{
+            fontSize: isMobile ? 9 : 12,
+            fill: KOREAN_COLORS.SECONDARY_MAGENTA,
+            align: "center",
+            fontWeight: "bold",
+          }}
+          interactive={true}
+          onPointerTap={() =>
+            window.open(
+              `https://github.com/Hack23/blacktrigram/releases/tag/v${APP_VERSION}`,
+              "_blank"
+            )
+          }
+          x={0}
+          y={isMobile ? 8 : 10}
           anchor={0.5}
           data-testid="footer-link"
         />
